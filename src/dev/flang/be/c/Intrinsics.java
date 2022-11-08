@@ -68,6 +68,14 @@ public class Intrinsics extends ANY
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
+    put("Type.name"            , (c,cl,outer,in) ->
+        {
+          var tmp = new CIdent("tmp");
+          var str = c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl));
+          var rc  = c._fuir.clazzResultClazz(cl);
+          return CStmnt.seq(c.constString(str, tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        });
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
@@ -115,12 +123,48 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI
-    put("fuzion.std.fileio.write"        , noFileIo); // NYI
-    put("fuzion.std.fileio.exists"       , noFileIo); // NYI
-    put("fuzion.std.fileio.delete"       , noFileIo); // NYI
-    put("fuzion.std.fileio.move"         , noFileIo); // NYI
-    put("fuzion.std.fileio.create_dir"   , noFileIo); // NYI
+    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          var writingIdent = new CIdent("writing");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w")))),
+            // Testing if fopen was successful
+            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
+            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
+            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            // If EOF is reached then the operation was successful otherwise FALSE will be returned
+            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
+            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.exists"       , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.delete"       ,  (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A0.castTo("char *")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
@@ -704,17 +748,8 @@ public class Intrinsics extends ANY
         var at = c._fuir.clazzTypeParameterActualType(cl);
         if (at >= 0)
           {
-            // intrinsic is a type parameter, so create type instance:
-            //
-            // NYI: this does not work yet. Eventually. type instances should become
-            // unit types so this should not be needed at all.
-            var res = c._names.newTemp();
-            CIdent tname = new CIdent("tname");
-            var rc = c._fuir.clazzResultClazz(cl);
-            return CStmnt.seq(c.declareAllocAndInitClazzId(rc, res),
-                              c.constString(c._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), tname),
-                              res.deref().field(new CIdent("fields")).field(new CIdent("fzF_0_name")).assign(tname.castTo("void*")),
-                              res.ret());
+            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
+            return CStmnt.EMPTY;
           }
         else
           {

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = basicIntegers
+override NAME = basicIntegers
 include ../simple.mk

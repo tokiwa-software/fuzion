@@ -85,10 +85,18 @@ FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
-MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
-MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
-MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
-MOD_JAVA_DESKTOP      = $(BUILD_DIR)/modules/java.desktop/__marker_for_make__
+MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
+MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
+MOD_JAVA_DATATRANSFER_DIR      = $(BUILD_DIR)/modules/java.datatransfer
+MOD_JAVA_DESKTOP_DIR           = $(BUILD_DIR)/modules/java.desktop
+MOD_JAVA_BASE                  = $(MOD_JAVA_BASE_DIR).fum
+MOD_JAVA_XML                   = $(MOD_JAVA_XML_DIR).fum
+MOD_JAVA_DATATRANSFER          = $(MOD_JAVA_DATATRANSFER_DIR).fum
+MOD_JAVA_DESKTOP               = $(MOD_JAVA_DESKTOP_DIR).fum
+MOD_JAVA_BASE_FZ_FILES         = $(MOD_JAVA_BASE_DIR)/__marker_for_make__
+MOD_JAVA_XML_FZ_FILES          = $(MOD_JAVA_XML_DIR)/__marker_for_make__
+MOD_JAVA_DATATRANSFER_FZ_FILES = $(MOD_JAVA_DATATRANSFER_DIR)/__marker_for_make__
+MOD_JAVA_DESKTOP_FZ_FILES      = $(MOD_JAVA_DESKTOP_DIR)/__marker_for_make__
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
@@ -279,7 +287,7 @@ $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 # keep make from deleting $(MOD_BASE) on ctrl-C:
 .PRECIOUS: $(MOD_BASE)
 
-$(MOD_TERMINAL): $(MOB_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/terminal.fz
+$(MOD_TERMINAL): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/terminal.fz
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src -saveLib=$@
 
@@ -288,19 +296,19 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(MOD_JAVA_BASE): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0"
 	touch $@
 
-$(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_XML_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0"
-	# NYI: manually delete redundant features
+# NYI: cleanup: see #463: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.xml/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.xml/Java/jdk_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.xml/Java/javax_pkg.fz
@@ -308,31 +316,55 @@ $(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
 	rm -f $(BUILD_DIR)/modules/java.xml/Java/com/sun_pkg.fz
 	touch $@
 
-$(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_DATATRANSFER_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0"
-	# NYI: manually delete redundant features
+# NYI: cleanup: see #463: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/sun_pkg.fz
-	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz
+# NYI: cleanup: see #462: manually move these features to the main directory
+# since otherwise they would not be found automatically.
+	mv $(BUILD_DIR)/modules/java.datatransfer/Java/sun/datatransfer_pkg.fz $(BUILD_DIR)/modules/java.datatransfer/
+	mv $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz  $(BUILD_DIR)/modules/java.datatransfer/
 	touch $@
 
-$(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_DESKTOP_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0"
-	# NYI: manually delete redundant features
+# NYI: cleanup: see #462: manually move these features to the main directory
+# since otherwise they would not be found automatically.
+	mv $(BUILD_DIR)/modules/java.desktop/Java/com/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
+	mv $(BUILD_DIR)/modules/java.desktop/Java/java/*.fz $(BUILD_DIR)/modules/java.desktop/
+	mv $(BUILD_DIR)/modules/java.desktop/Java/javax/*.fz $(BUILD_DIR)/modules/java.desktop/
+	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/swing_pkg.fz $(BUILD_DIR)/modules/java.desktop/sun_swing_pkg.fz
+	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/print_pkg.fz $(BUILD_DIR)/modules/java.desktop/sun_print_pkg.fz
+	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
+# NYI: cleanup: see #463: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/javax_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/com_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/sun_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/com/sun_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java/awt_pkg.fz
 	touch $@
+
+$(MOD_JAVA_BASE): $(MOD_JAVA_BASE_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(^D) -saveLib=$@
+
+$(MOD_JAVA_XML): $(MOD_JAVA_BASE) $(MOD_JAVA_XML_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JAVA_XML_DIR) -modules=java.base -saveLib=$@
+
+$(MOD_JAVA_DATATRANSFER): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JAVA_DATATRANSFER_DIR) -modules=java.base,java.xml -saveLib=$@
+
+$(MOD_JAVA_DESKTOP): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JAVA_DESKTOP_DIR) -modules=java.base,java.xml,java.datatransfer -saveLib=$@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
@@ -377,13 +409,13 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 run_tests: run_tests_int run_tests_c
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT .IGNORE: run_tests_int
+.PHONY .SILENT: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT .IGNORE: run_tests_c
+.PHONY .SILENT: run_tests_c
 run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c

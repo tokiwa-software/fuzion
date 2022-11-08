@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = stringstest
+override NAME = stringstest
 include ../positive.mk

@@ -105,7 +105,7 @@ public class FormalGenerics extends ANY
    */
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
-    if (asActuals_ == actualGenerics)
+    if (_asActuals == actualGenerics)
       {
         return true;
       }
@@ -213,7 +213,7 @@ public class FormalGenerics extends ANY
   }
 
 
-  private List<AbstractType> asActuals_ = null;
+  private List<AbstractType> _asActuals = null;
 
 
   /**
@@ -238,7 +238,7 @@ public class FormalGenerics extends ANY
    */
   public List<AbstractType> asActuals()
   {
-    List<AbstractType> result = asActuals_;
+    List<AbstractType> result = _asActuals;
     if (result == null)
       {
         if (this == FormalGenerics.NONE)
@@ -256,7 +256,7 @@ public class FormalGenerics extends ANY
                 result.add(new Type((HasSourcePosition) g.typeParameter(), g));
               }
           }
-        asActuals_ = result;
+        _asActuals = result;
       }
 
     if (POSTCONDITIONS) ensure

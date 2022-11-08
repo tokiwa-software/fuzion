@@ -158,7 +158,8 @@ public class Intrinsics extends ANY
 
   static
   {
-    put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(1)); /* NYI: args after cmd name not supported yet */
+    put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
+    put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
     put("fuzion.std.args.get"  , (interpreter, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
@@ -169,7 +170,7 @@ public class Intrinsics extends ANY
             }
           else
             {
-              return  Interpreter.value("argument#"+i); // NYI: args after cmd name not supported yet
+              return  Interpreter.value(Interpreter._options_.getBackendArgs().get(i - 1));
             }
         });
     put("fuzion.std.out.write", (interpreter, innerClazz) ->
@@ -231,7 +232,7 @@ public class Intrinsics extends ANY
             }
           byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
           Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
-          byte[] fileContent = (byte[])args.get(3).arrayData()._array;
+          byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
               Files.write(path, fileContent);

@@ -152,8 +152,7 @@ class Layout extends ANY
             var ff = f.feature();
             // NYI: Ugly special handling, clean up:
             var fc =
-              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS) :
-              ff.isOuterRef() && ff.outer().isOuterRefCopyOfValue() ? f._outer.actualClazz0(ff.resultType(), f._select)
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS)
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;

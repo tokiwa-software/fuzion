@@ -159,6 +159,9 @@ u8s : wrappingIntegers u8 is
   redef min => zero
   redef max => u8 0xff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u8 0xff
+
 
 # u8 -- returns value of unit type u8s
 #

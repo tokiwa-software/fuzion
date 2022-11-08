@@ -142,6 +142,15 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   private AbstractFeature _typeFeature = null;
 
 
+  /**
+   * Flag used in dev.flang.fe.SourceModule to avoid endless recursion when
+   * loading inner features from source directories.
+   *
+   * NYI: CLEANUP: Remove when #462 is fixed.
+   */
+  public boolean _loadedInner = false;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
@@ -487,10 +496,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             name = name + "_" + (_typeFeatureId_++);
           }
         var p = pos();
-        // redef name := "<type name>"
-        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", Contract.EMPTY_CONTRACT, Impl.FIELD);
-        // type.#type : p1.#type, p2.#type is
-        //   redef name => "<type name>"
         var inh = new List<AbstractCall>();
         for (var pc: inherits())
           {
@@ -506,7 +511,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
                              inh,
                              Contract.EMPTY_CONTRACT,
-                             new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
+                             new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
         _typeFeature = tf;
         res._module.findDeclarations(tf, o);
         tf.scheduleForResolution(res);
@@ -824,7 +829,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * - explicit renaming during inheritance
    *
-   * @param module the main SrcModule
+   * @param module the main SrcModule if available (used for debugging only)
    *
    * @param f a feature that is declared in or inherted by this feature
    *

@@ -72,7 +72,7 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
   postfix !! => isError
 
 
-  # value of a outcome that is known to contain a value
+  # value of an outcome that is known to contain a value
   #
   # This can only be called in cases where it is known for sure that this
   # outcomee is not an error.  A runtime error will be created otherwise.
@@ -83,6 +83,14 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
   is
     outcome.this ? v T   => v
                  | error => panic "outcome.val called on error"
+
+
+  # value of an outcome or default if outcome contains err
+  #
+  val(default T) T
+  is
+    outcome.this ? v T   => v
+                 | error => default
 
 
   # error of an outcome that is known to contain an error
@@ -114,6 +122,21 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
   redef asString =>
     outcome.this ? v T     => v.asString
                  | e error => "--$e--"
+
+  # returns o if outcome is ok, otherwise return the outcome's own
+  # error.
+  and (O type, o outcome O) outcome O is
+    if ok
+      o
+    else
+      outcome.this
+
+  # returns o if outcome is not ok, otherwise return this outcome's value.
+  or (o outcome T) outcome T is
+    if !ok
+      o
+    else
+      outcome.this
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a

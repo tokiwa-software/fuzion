@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = int_test
+override NAME = int_test
 include ../positive.mk

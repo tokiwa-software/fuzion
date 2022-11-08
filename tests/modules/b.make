@@ -17,12 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java.io
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java.io -- NYI: remove?
-#
-public java.io is
+override MAKEFILE_DIR = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+override TEST_DIR = $(realpath $(MAKEFILE_DIR)/modules)
+override NAME = $(TEST_DIR)/src/test_modules
+override FUZION_OPTIONS = -sourceDirs=$(TEST_DIR)/src -modules=b -moduleDirs=$(TEST_DIR)/modules
+include ../simple.mk

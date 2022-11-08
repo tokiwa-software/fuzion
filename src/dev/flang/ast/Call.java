@@ -126,7 +126,7 @@ public class Call extends AbstractCall
    * The feature that is called by this call, resolved when
    * loadCalledFeature() is called.
    */
-  public AbstractFeature calledFeature_;
+  public AbstractFeature _calledFeature;
 
 
   /**
@@ -159,8 +159,8 @@ public class Call extends AbstractCall
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
    */
-  public boolean isInheritanceCall_ = false;
-  public boolean isInheritanceCall() { return isInheritanceCall_; }
+  public boolean _isInheritanceCall = false;
+  public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
   /**
@@ -388,7 +388,7 @@ public class Call extends AbstractCall
     this._generics = NO_GENERICS;
     this._actuals = NO_PARENTHESES;
     this.target = t;
-    this.calledFeature_ = calledFeature;
+    this._calledFeature = calledFeature;
     this._type = null;
   }
 
@@ -427,7 +427,7 @@ public class Call extends AbstractCall
     this._select        = -1;
     this._generics       = NO_GENERICS;
     this._actuals       = Expr.NO_EXPRS;
-    this.calledFeature_ = anonymous;
+    this._calledFeature = anonymous;
   }
 
 
@@ -457,7 +457,7 @@ public class Call extends AbstractCall
     this._generics = generics;
     this._actuals = actuals;
     this.target = target;
-    this.calledFeature_ = calledFeature;
+    this._calledFeature = calledFeature;
     this._type = type;
   }
 
@@ -631,8 +631,8 @@ public class Call extends AbstractCall
         result = res.resolveType(result, thiz);
         cb._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
         _actuals = new List<Expr>(result);
-        calledFeature_ = Types.resolved.f_bool_AND;
-        name = calledFeature_.featureName().baseName();
+        _calledFeature = Types.resolved.f_bool_AND;
+        name = _calledFeature.featureName().baseName();
       }
   }
 
@@ -724,7 +724,7 @@ public class Call extends AbstractCall
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
        : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    if (calledFeature_ == null)
+    if (_calledFeature == null)
       {
         var actualsResolved = false;
         if (name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
@@ -736,23 +736,23 @@ public class Call extends AbstractCall
               {
                 var fo = calledFeatureCandidates(targetFeature, res, thiz);
                 FeatureName calledName = FeatureName.get(name, _actuals.size());
-                calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList() /* remove? */);
-                if (calledFeature_ != null &&
+                _calledFeature = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList() /* remove? */);
+                if (_calledFeature != null &&
                     _generics.isEmpty() &&
-                    _actuals.size() != calledFeature_.valueArguments().size() &&
-                    !calledFeature_.hasOpenGenericsArgList())
+                    _actuals.size() != _calledFeature.valueArguments().size() &&
+                    !_calledFeature.hasOpenGenericsArgList())
                   {
                     splitOffTypeArgs(thiz);
                   }
                 resolveTypesOfActuals(res,thiz);
                 actualsResolved = true;
-                if (calledFeature_ == null)
+                if (_calledFeature == null)
                   {
-                    calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
-                    if (calledFeature_ == null)
+                    _calledFeature = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
+                    if (_calledFeature == null)
                       {
                         findChainedBooleans(res, thiz);
-                        if (calledFeature_ == null) // nothing found, so flag error
+                        if (_calledFeature == null) // nothing found, so flag error
                           {
                             AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
                           }
@@ -802,10 +802,10 @@ public class Call extends AbstractCall
   {
     var g = new List<AbstractType>();
     var a = new List<Expr>();
-    var ts = calledFeature_.typeArguments();
+    var ts = _calledFeature.typeArguments();
     var tn = ts.size();
     var ti = 0;
-    var vs = calledFeature_.valueArguments();
+    var vs = _calledFeature.valueArguments();
     var vn = vs.size();
     var i = 0;
     ListIterator<Expr> ai = _actuals.listIterator();
@@ -879,7 +879,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Check if this call when the calledFeature_ would be ff needs special
+   * Check if this call when the _calledFeature would be ff needs special
    * handling of the argument count.  This is the case for open generics, "fun
    * a.b.f" calls and implicit calls using f() for f returning Function value.
    *
@@ -918,7 +918,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (Errors.count() > 0 || calledFeatureKnown());
 
-    AbstractFeature result = calledFeature_ != null ? calledFeature_ : Types.f_ERROR;
+    AbstractFeature result = _calledFeature != null ? _calledFeature : Types.f_ERROR;
 
     if (POSTCONDITIONS) ensure
       (result != null);
@@ -933,7 +933,7 @@ public class Call extends AbstractCall
    */
   boolean calledFeatureKnown()
   {
-    return calledFeature_ != null;
+    return _calledFeature != null;
   }
 
 
@@ -958,7 +958,7 @@ public class Call extends AbstractCall
             (target instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : target.toString() + ".")
-      + (name != null ? name : calledFeature_.featureName().baseName())
+      + (name != null ? name : _calledFeature.featureName().baseName())
       + (_generics.isEmpty() ? "" : "<" + _generics + ">")
       + (_actuals.isEmpty() ? "" : "(" + _actuals +")")
       + (_select < 0        ? "" : "." + _select);
@@ -1082,8 +1082,8 @@ public class Call extends AbstractCall
     Call result = this;
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
         _type.isFunType() &&
-        calledFeature_ != Types.resolved.f_function && // exclude inherits call in function type
-        calledFeature_.arguments().size() == 0 &&
+        _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+        _calledFeature.arguments().size() == 0 &&
         hasParentheses())
       {
         // a Function: the result is the first generic argument
@@ -1126,11 +1126,11 @@ public class Call extends AbstractCall
     if (CHECKS) check
       (frmlT == Types.intern(frmlT));
 
-    var declF = calledFeature_.outer();
+    var declF = _calledFeature.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
     if (declF != heirF)
       {
-        var a = calledFeature_.handDown(res, new AbstractType[] { frmlT }, heirF);
+        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heirF);
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1196,7 +1196,7 @@ public class Call extends AbstractCall
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 Generic g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(g.feature() == calledFeature_
+                var frmlTs = g.replaceOpen(g.feature() == _calledFeature
                                            ? _generics
                                            : target.type().generics());
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
@@ -1206,7 +1206,7 @@ public class Call extends AbstractCall
             else
               {
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
-                frmlT = frmlT.actualType(calledFeature_, _generics);
+                frmlT = frmlT.actualType(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
                 if (CHECKS) check
                   (frmlT != null);
@@ -1267,7 +1267,7 @@ public class Call extends AbstractCall
    */
   private void resolveFormalArgumentTypes(Resolution res)
   {
-    var fargs = calledFeature_.valueArguments();
+    var fargs = _calledFeature.valueArguments();
     resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
                                                     : new AbstractType[fargs.size()];
     Arrays.fill(resolvedFormalArgumentTypes, Types.t_ERROR);
@@ -1322,19 +1322,19 @@ public class Call extends AbstractCall
     var tt = targetTypeOrConstraint(res);
     if (_select < 0 && t.isOpenGeneric())
       {
-        AstErrors.cannotAccessValueOfOpenGeneric(pos(), calledFeature_, t);
+        AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
         t = Types.t_ERROR;
       }
     else if (_select >= 0 && !t.isOpenGeneric())
       {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), calledFeature_, name, _select, t);
+        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, name, _select, t);
         t = Types.t_ERROR;
       }
     else if (_select < 0)
       {
         t = t.resolve(res, tt.featureOfType());
         t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
-        if (calledFeature_.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
+        if (_calledFeature.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
           {  /* specialize t for the target type here */
             t = new Type(t, t.generics(), target.type());
           }
@@ -1345,8 +1345,8 @@ public class Call extends AbstractCall
         int sz = types.size();
         if (_select >= sz)
           {
-            AstErrors.selectorRange(pos(), sz, calledFeature_, name, _select, types);
-            calledFeature_ = Types.f_ERROR;
+            AstErrors.selectorRange(pos(), sz, _calledFeature, name, _select, types);
+            _calledFeature = Types.f_ERROR;
             t = Types.t_ERROR;
           }
         else
@@ -1354,20 +1354,20 @@ public class Call extends AbstractCall
             t = types.get(_select);
           }
       }
-    if (calledFeature_.isTypeParameter())
+    if (_calledFeature.isTypeParameter())
       {
-        if (_select >= 0 || calledFeature_.isOpenTypeParameter())
+        if (_select >= 0 || _calledFeature.isOpenTypeParameter())
           {
             throw new Error("NYI (see #283): Calling open type parameter");
           }
         var tptype = t.resolve(res, tt.featureOfType());
-        if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
+        if (!tptype.isGenericArgument())
           {
             tptype = tptype.featureOfType().typeFeature(res).thisType();
           }
         _type = tptype;
       }
-    else if (calledFeature_ == Types.resolved.f_Types_get)
+    else if (_calledFeature == Types.resolved.f_Types_get)
       { // NYI (see #282): special handling could maybe be avoided? Maybe make
         // this special handling the normal handlng for all features whose
         // result type depends on a generic that can be replaced by an actual
@@ -1426,7 +1426,7 @@ public class Call extends AbstractCall
    */
   private void inferGenericsFromArgs(Resolution res, AbstractFeature outer)
   {
-    var cf = calledFeature_;
+    var cf = _calledFeature;
     int sz = cf.generics().list.size();
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
     String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
@@ -1504,7 +1504,7 @@ public class Call extends AbstractCall
    */
   void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
   {
-    var cf = calledFeature_;
+    var cf = _calledFeature;
     int count = 1; // argument count, for error messages
     ListIterator<Expr> aargs = _actuals.listIterator();
     var va = cf.valueArguments();
@@ -1578,7 +1578,7 @@ public class Call extends AbstractCall
     if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
-        if (g.feature() == calledFeature_)
+        if (g.feature() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.index();
             if (foundAt[i] == null || actualType.isAssignableFromOrContainsError(_generics.get(i)))
@@ -1664,7 +1664,7 @@ public class Call extends AbstractCall
       {
         var rg = formalType.generics().get(0).genericArgument();
         var ri = rg.index();
-        var cf = calledFeature_;
+        var cf = _calledFeature;
         if (rg.feature() == cf && foundAt[ri] == null)
           {
             var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, _generics);
@@ -1697,24 +1697,24 @@ public class Call extends AbstractCall
     FormalGenerics.resolve(res, _generics, outer);
 
     if (CHECKS) check
-      (Errors.count() > 0 || calledFeature_ != null);
+      (Errors.count() > 0 || _calledFeature != null);
 
-    if (calledFeature_ == null)
+    if (_calledFeature == null)
       {
         _type = Types.t_ERROR;
       }
     else
       {
-        if (_generics == NO_GENERICS && calledFeature_.generics() != FormalGenerics.NONE)
+        if (_generics == NO_GENERICS && _calledFeature.generics() != FormalGenerics.NONE)
           {
             inferGenericsFromArgs(res, outer);
           }
-        if (calledFeature_.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+        if (_calledFeature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                     pos(),
                                                                     "call",
-                                                                    "Called feature: "+calledFeature_.qualifiedName()+"\n"))
+                                                                    "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
-            var cf = calledFeature_;
+            var cf = _calledFeature;
             var t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                      : cf.resultTypeIfPresent(res, _generics);
             if (t == null)
@@ -1723,19 +1723,19 @@ public class Call extends AbstractCall
                   (() ->
                    {
                      var t2 = cf.resultTypeForTypeInference(pos(), res, _generics);
-                     resolveType(res, t2, calledFeature_.outer());
+                     resolveType(res, t2, _calledFeature.outer());
                    });
               }
             else
               {
-                resolveType(res, t, calledFeature_.outer());
+                resolveType(res, t, _calledFeature.outer());
                 if (_isTailRecursive)
                   {
                     cf.whenResolvedTypes
                       (() ->
                        {
                          var t2 = cf.resultTypeForTypeInference(pos(), res, _generics);
-                         resolveType(res, t2, calledFeature_.outer());
+                         resolveType(res, t2, _calledFeature.outer());
                        });
                   }
 
@@ -1862,12 +1862,12 @@ public class Call extends AbstractCall
                 var frmlT = resolvedFormalArgumentTypes[count];
                 if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl))
                   {
-                    AstErrors.incompatibleArgumentTypeInCall(calledFeature_, count, frmlT, actl);
+                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }
                 count++;
               }
           }
-        if (calledFeature_.isChoice())
+        if (_calledFeature.isChoice())
           {
             boolean ok = false;
             if (outer != null && outer.isChoice())
@@ -1879,12 +1879,12 @@ public class Call extends AbstractCall
               }
             if (!ok)
               {
-                AstErrors.cannotCallChoice(pos(), calledFeature_);
+                AstErrors.cannotCallChoice(pos(), _calledFeature);
               }
           }
 
         // Check that generics match formal generic constraints
-        var fi = calledFeature_.generics().list.iterator();
+        var fi = _calledFeature.generics().list.iterator();
         var gi = _generics.iterator();
         while (fi.hasNext() &&
                gi.hasNext()    ) // NYI: handling of open generic arguments
@@ -1939,7 +1939,7 @@ public class Call extends AbstractCall
         //   a || b into if a true  else b
         //   a: b   into if a b     else true
         //   !a     into if a false else true
-        var cf = calledFeature_;
+        var cf = _calledFeature;
         if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(target, _actuals.get(0), BoolConst.FALSE); }
         else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
         else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = redefineAsVoid
+override NAME = redefineAsVoid
 include ../simple.mk

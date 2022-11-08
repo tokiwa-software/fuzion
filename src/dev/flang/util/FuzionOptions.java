@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.util.ArrayList;
+
 
 /**
  * FrontEndOptions specify the configuration of the front end
@@ -62,6 +64,15 @@ public class FuzionOptions extends ANY
    * not allowed if run in a web playground.
    */
   final boolean _enableUnsafeIntrinsics;
+
+
+  /*
+   * Array that can be set to pass arbitrary arguments to the backend. Currently used
+   * for passing arguments given to the interpreter to the fuzion.std.args intrinsics.
+   */
+  private ArrayList<String> _backendArgs;
+  public void setBackendArgs(ArrayList<String> args) { _backendArgs = args; }
+  public ArrayList<String> getBackendArgs() { return _backendArgs; }
 
 
   private boolean _tailRecursionInsteadOfLoops; // NYI: move to FrontendOptions

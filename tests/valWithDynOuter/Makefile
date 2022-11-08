@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = valWithDynOuter
+override NAME = valWithDynOuter
 include ../positive.mk

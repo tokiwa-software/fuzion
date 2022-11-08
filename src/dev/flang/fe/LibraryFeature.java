@@ -89,7 +89,10 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Unique index of this feature.
+   * Index of this feature within _libModule._data.
+   *
+   * This index is unique for features within _libModule, i.e., not unique
+   * globally.
    */
   final int _index;
 
@@ -164,6 +167,10 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * Create LibraryFeature
+   *
+   * @param lib the module this was defined in
+   *
+   * @param index index within lib where this was defined.
    */
   LibraryFeature(LibraryModule lib, int index)
   {

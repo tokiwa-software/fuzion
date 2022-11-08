@@ -39,7 +39,6 @@ import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.AstErrors;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -53,9 +52,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
@@ -157,6 +154,12 @@ public class LibraryModule extends Module
   final ModuleRef[] _modules;
 
 
+  /**
+   * The front end that loaded this module.
+   */
+  private final FrontEnd _fe;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -167,16 +170,10 @@ public class LibraryModule extends Module
   {
     super(dependsOn);
 
+    _fe = fe;
     _mir = null;
     _data = data;
     _universe = universe;
-    var dm = fe._options._dumpModules;
-    if (DUMP ||
-        dm != null && dm.contains(name()))
-      {
-        System.out.println(dump());
-      }
-
     _sourceFiles = new ArrayList<>(sourceFilesCount());
     var sfc = sourceFilesCount();
     for (int i = 0; i < sfc; i++)
@@ -191,12 +188,18 @@ public class LibraryModule extends Module
       {
         var n = moduleRefName(p);
         var v = moduleRefVersion(p);
-        var mr = new ModuleRef(fe, moduleOffset, n, v);
+        var mr = new ModuleRef(moduleOffset, n, v, fe.loadModule(n));
         _modules[i] = mr;
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
       }
-    fe._modules.put(name(), this);
+
+    var dm = fe._options._dumpModules;
+    if (DUMP ||
+        dm != null && dm.contains(name()))
+      {
+        System.out.println(dump());
+      }
   }
 
 
@@ -263,17 +266,12 @@ public class LibraryModule extends Module
   public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
-    if (outer instanceof LibraryFeature lf && lf._libModule == this)
+    var l = (outer instanceof LibraryFeature lf && lf._libModule == this)
+      ? lf.declaredFeatures() // the declared features are declared in this module
+      : features(outer);      // the declared features are declared in another module
+    for (var d : l)
       {
-        var l = lf.declaredFeatures();
-        for (var d : l)
-          {
-            result.put(d.featureName(), d);
-          }
-      }
-    else if (outer.isUniverse())
-      {
-        return featuresMap();
+        result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
       }
     return result;
   }
@@ -326,25 +324,26 @@ public class LibraryModule extends Module
 
 
   /**
-   * The features declared within universe by this module
+   * The features declared within outer by this module
+   *
+   * @param outer an outer feature
+   *
+   * @return list of inner features of outer that are declared by this library
+   * module.
    */
-  List<AbstractFeature> features()
+  List<AbstractFeature> features(AbstractFeature outer)
   {
-    return innerFeatures(innerFeaturesPos());
-  }
-
-
-  /**
-   * The features declared within universe by this module
-   */
-  SortedMap<FeatureName, AbstractFeature> featuresMap()
-  {
-    var res = new TreeMap<FeatureName, AbstractFeature>();
-    for (var f : features())
+    var n = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    for (int i = 0; i < n; i++)
       {
-        res.put(f.featureName(), f);
+        if (feature(declFeaturesOuter(at)) == outer)
+          {
+            return innerFeatures(declFeaturesInnerPos(at));
+          }
+        at = declFeaturesNextPos(at);
       }
-    return res;
+    return new List<>();
   }
 
 
@@ -368,113 +367,6 @@ public class LibraryModule extends Module
         _innerFeatures.put(at, result);
       }
     return result;
-  }
-
-
-  /**
-   * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result may be null if this module does not contribute anything to
-   * outer.
-   *
-   * @param outer the declaring feature
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
-  {
-    var res = new TreeMap<FeatureName, AbstractFeature>();
-    if (outer instanceof LibraryFeature olf)
-      {
-        var declared = olf.declaredFeatures();
-        for (var d : declared)
-          {
-            res.put(d.featureName(), d);
-          }
-        findInheritedFeatures(res, outer);
-      }
-    else if (outer.isUniverse())
-      {
-        var declared = features();
-        for (var d : declared)
-          {
-            res.put(d.featureName(), d);
-          }
-      }
-    return res;
-  }
-
-
-  /**
-   * Find all inherited features and add them to declaredOrInheritedFeatures_.
-   * In case an existing feature was found, check if there is a conflict and if
-   * so, report an error message (repeated inheritance).
-   *
-   * NYI: This is somewhat redundant with SourceModule.findInheritedFeatures,
-   * maybe join these two as Module.findInheritedFeatures?
-   *
-   * @param outer the declaring feature
-   */
-  private void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer)
-  {
-    for (var p : outer.inherits())
-      {
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            var s =
-              ((cf instanceof LibraryFeature clf) ? clf._libModule
-                                                  : this          ).declaredOrInheritedFeatures(cf);
-            for (var fnf : s.entrySet())
-              {
-                var fn = fnf.getKey();
-                var f = fnf.getValue();
-                if (CHECKS) check
-                  (cf != outer);
-
-                var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
-                addInheritedFeature(set, outer, p, newfn, f);
-              }
-          }
-      }
-  }
-
-
-
-  /**
-   * Helper method for findInheritedFeatures and addToHeirs to add a feature
-   * that this feature inherits.
-   *
-   * NYI: This is somewhat redundant with SourceModule.addInheritedFeature,
-   * maybe join these two as Module.addInheritedFeature?
-   *
-   * @param pos the source code position of the inherits call responsible for
-   * the inheritance.
-   *
-   * @param fn the name of the feature, after possible renaming during inheritance
-   *
-   * @param f the feature to be added.
-   */
-  private void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, HasSourcePosition pos, FeatureName fn, AbstractFeature f)
-  {
-    var s = set;
-    var existing = s == null ? null : s.get(fn);
-    if (existing != null)
-      {
-        if (existing.outer().inheritsFrom(f.outer()))  // NYI: better check existing.redefines(f)
-          {
-            f = existing;
-          }
-        else if (f.outer().inheritsFrom(existing.outer()))  // NYI: better check f.redefines(existing)
-          {
-          }
-        else if (existing == f && f.generics() != FormalGenerics.NONE ||
-                 existing != f && declaredFeatures(outer).get(fn) == null)
-          {
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-          }
-      }
-    s.put(fn, f);
   }
 
 
@@ -505,7 +397,7 @@ public class LibraryModule extends Module
    */
   AbstractType type(int at)
   {
-    AbstractType result = _libraryTypes.get(at);
+    var result = _libraryTypes.get(at);
     if (result == null)
       {
         var k = typeKind(at);
@@ -515,7 +407,7 @@ public class LibraryModule extends Module
           }
         else if (k == -3)
           {
-            return Types.resolved.universe.thisType();
+            return _fe._universe.thisType();
           }
         else if (k == -2)
           {
@@ -523,43 +415,36 @@ public class LibraryModule extends Module
             var k2 = typeKind(at2);
             if (CHECKS) check
               (k2 == -1 || k2 >= 0);
-            result = type(at2);
+            return type(at2);
             // we do not cache references to types, so don't add this to _libraryTypes for at.
+          }
+        else if (k == -1)
+          {
+            result = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
           }
         else
           {
-            LibraryType res;
-            if (k < 0)
+            if (CHECKS) check
+              (k >= 0);
+            var feature = libraryFeature(typeFeature(at));
+            var makeRef = typeIsRef(at);
+            var generics = Type.NONE;
+            if (k > 0)
               {
-                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
-              }
-            else
-              {
-                var feature = libraryFeature(typeFeature(at));
-                var makeRef = typeIsRef(at);
-                var generics = Type.NONE;
-                if (k > 0)
+                var i = typeActualGenericsPos(at);
+                generics = new List<AbstractType>();
+                var gi = 0;
+                while (gi < k)
                   {
-                    var i = typeActualGenericsPos(at);
-                    generics = new List<AbstractType>();
-                    var gi = 0;
-                    while (gi < k)
-                      {
-                        generics.add(type(i));
-                        i = typeNextPos(i);
-                        gi++;
-                      }
+                    generics.add(type(i));
+                    i = typeNextPos(i);
+                    gi++;
                   }
-                else
-                  {
-                    generics = Type.NONE;
-                  }
-                var outer = type(typeOuterPos(at));
-                res = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
               }
-            _libraryTypes.put(at, res);
-            result = res;
+            var outer = type(typeOuterPos(at));
+            result = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
           }
+        _libraryTypes.put(at, result);
       }
     return result;
   }
@@ -603,11 +488,13 @@ Module File
 
               | 1      | u128          | module version
 
-              | 1      | int           | number modules this module depends on n
+              | 1      | int           | number of modules this module depends on n
 
               | n      | ModuleRef     | reference to another module
 
-              | 1      | InnerFeatures | inner Features
+              | 1      | int           | number of DeclFeatures entries m
+
+              | m      | DeclFeatures  | features declared in this module
 
               | 1      | SourceFiles   | source code files
 |====
@@ -626,11 +513,13 @@ Module File
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | u128          | module version                                |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | number modules this module depends on n       |
+   *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | n      | ModuleRef     | reference to another module                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   |        | 1      | int           | number of DeclFeatures entries m              |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | m      | DeclFeatures  | features declared in this module              |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -696,9 +585,28 @@ Module File
       }
     return at;
   }
-  int innerFeaturesPos()
+  int moduleNumDeclFeaturesPos()
   {
     return moduleRefsNextPos();
+  }
+  int moduleNumDeclFeatures()
+  {
+    return _data.getInt(moduleNumDeclFeaturesPos());
+  }
+  int moduleDeclFeaturesPos()
+  {
+    return moduleNumDeclFeaturesPos() + 4;
+  }
+  int moduleSourceFilesPos()
+  {
+    var n = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    while (n > 0)
+      {
+        n--;
+        at = declFeaturesNextPos(at);
+      }
+    return at;
   }
 
 
@@ -758,6 +666,52 @@ ModuleRef
   int moduleRefNextPos(int at)
   {
     return moduleRefVersionNextPos(at);
+  }
+
+
+  /*
+--asciidoc--
+
+DeclFeatures
+^^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.6+|true      | 1      | int           | outer feature index, 0 for outer==universe
+
+              | 1      | InnerFeatures | inner Features
+|====
+
+--asciidoc--
+
+   *   +---------------------------------------------------------------------------------+
+   *   | DeclFeatures                                                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+
+  int declFeaturesOuterPos(int at)
+  {
+    return at;
+  }
+  int declFeaturesOuter(int at)
+  {
+    return _data.getInt(declFeaturesOuterPos(at));
+  }
+  int declFeaturesInnerPos(int at)
+  {
+    return declFeaturesOuterPos(at) + 4;
+  }
+  int declFeaturesNextPos(int at)
+  {
+    return innerFeaturesNextPos(declFeaturesInnerPos(at));
   }
 
 
@@ -863,7 +817,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0YCYkkkk  k = kind                            |
+   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -2168,7 +2122,7 @@ SourceFiles
    */
   int sourceFilesPos()
   {
-    return innerFeaturesNextPos(innerFeaturesPos());
+    return moduleSourceFilesPos();
   }
   int sourceFilesCountPos()
   {
@@ -2301,11 +2255,20 @@ SourceFile
     hd.mark(versionPos(), "module version");
     hd.mark(moduleRefsCountPos(), "module refs count");
     hd.mark(moduleRefsPos(), "module refs");
-    hd.mark(innerFeaturesPos(), "InnerFeatures");
-    dump(hd, features());
+    hd.mark(moduleNumDeclFeaturesPos(), "declFeatures count");
+    var nd = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    while (nd > 0)
+      {
+        hd.mark(at, "DeclFeatures");
+        hd.mark(declFeaturesInnerPos(at), "InnerFeatures");
+        dump(hd, features(feature(declFeaturesOuter(at))));
+        at = declFeaturesNextPos(at);
+        nd--;
+      }
     hd.mark(sourceFilesPos(), "SourceFiles");
     var n = sourceFilesCount();
-    var at = sourceFilesFirstSourceFilePos();
+    at = sourceFilesFirstSourceFilePos();
     while (n > 0)
       {
         hd.mark(at, "Source: " + sourceFileName(at));

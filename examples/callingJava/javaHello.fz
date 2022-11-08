@@ -59,8 +59,8 @@ is
   # let's work a bit with Java:
   #
   javaString := java.lang.String.new "Hello Java 🌍!"                          # create Java string, type Java.java.lang.String
-//  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8   # get its UTF8 bytes, type is fuzion.java.Array<i8>
-  javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array<i8>
+//  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8   # get its UTF8 bytes, type is fuzion.java.Array i8
+  javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array i8
   match javaBytes
     err error => say "got an error: $err"
     bytes fuzion.java.Array =>

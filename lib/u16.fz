@@ -170,6 +170,9 @@ u16s : wrappingIntegers u16 is
   redef min => u16 0
   redef max => u16 0xffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u16 0xffff
+
 
 # u16 -- returns value of unit type u16s
 #

@@ -260,7 +260,7 @@ Sequence(T type) ref is
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap(B type, f T -> Sequence<B>) =>
+  # flatMap(B type, f T -> Sequence B) =>
   #   asList.flatMap f
   flatMapSequence(B type, f T -> Sequence B) =>
     asList.flatMap f

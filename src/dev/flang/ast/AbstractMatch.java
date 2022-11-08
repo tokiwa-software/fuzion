@@ -58,7 +58,7 @@ public abstract class AbstractMatch extends Expr
    * Id to store the match's subject's clazz in the static outer clazz at
    * runtime.
    */
-  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/

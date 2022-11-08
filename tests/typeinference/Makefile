@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = typeinference
+override NAME = typeinference
 include ../positive.mk

@@ -85,35 +85,7 @@ public class FrontEnd extends ANY
     {
       return UNIVERSE_NAME;
     }
-
-    public AbstractFeature get(String name, int argcount)
-    {
-      AbstractFeature result = Types.f_ERROR;
-      var d = _module.declaredFeatures(this);
-      var set = (argcount >= 0
-                 ? FeatureName.getAll(d, name, argcount)
-                 : FeatureName.getAll(d, name          )).values();
-      if (set.size() == 1)
-        {
-          for (var f2 : set)
-            {
-              result = f2;
-            }
-        }
-      else if (set.isEmpty())
-        {
-          AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
-        }
-      else
-        { // NYI: This might happen if the user adds additional features
-          // with different argCounts. name should contain argCount to
-          // avoid this
-          AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-        }
-      return result;
-    }
   }
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -131,7 +103,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The base module if it was loade from base.fum, null otherwise.
+   * The base module if it was loaded from base.fum, null otherwise.
    */
   public final LibraryModule _baseModule;
 
@@ -140,7 +112,7 @@ public class FrontEnd extends ANY
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
-  TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**
@@ -173,8 +145,11 @@ public class FrontEnd extends ANY
     var lms = new List<LibraryModule>();
     if (options._loadBaseLib)
       {
-        _baseModule = module(modulePath("base"));
-        lms.add(_baseModule);
+        _baseModule = module("base", modulePath("base"));
+        if (_baseModule != null)
+          {
+            lms.add(_baseModule);
+          }
       }
     else
       {
@@ -183,12 +158,12 @@ public class FrontEnd extends ANY
     for (int i = 0; i < options._modules.size(); i++)
       {
         var m = _options._modules.get(i);
-        var p = modulePath(_options._modules.get(i));
-        if (Files.exists(p))
+        var loaded = loadModule(m, true);
+        if (loaded != null)
           {
-            lms.add(module(p));
+            lms.add(loaded);
           }
-        else
+        else if (Errors.count() == 0)
           { // NYI: Fallback if module file does not exists use source files instead. Remove this.
             sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(m)));
           }
@@ -207,34 +182,100 @@ public class FrontEnd extends ANY
 
 
   /**
+   * Determine the path of the base modules, "$(FUZION)/modules".
+   */
+  private Path baseModuleDir()
+  {
+    return _options._fuzionHome.resolve("modules");
+  }
+
+
+  /**
    * Determine the path to load module 'name' from.  E.g., for module 'base',
    * this returns the path '<fuzionHome>/modules/base.fum'.
    *
-   * @þaram a module name, without path or suffix
+   * @param a module name, without path or suffix
    *
-   * @return the path to the module, never null.
+   * @return the path to the module, null if not found.
    */
   private Path modulePath(String name)
   {
-    return _options._fuzionHome.resolve("modules").resolve(name + ".fum");
+    var n = name + ".fum";
+    var p = baseModuleDir().resolve(n);
+    var i = 0;
+    var mds = _options._moduleDirs;
+    while (!Files.exists(p) && i < mds.size())
+      {
+        p = Path.of(mds.get(i)).resolve(n);
+        i++;
+      }
+    return p;
   }
 
 
   /**
    * Load module from given path.
    */
-  private LibraryModule module(Path p)
+  private LibraryModule module(String m, Path p)
   {
+    LibraryModule result = null;
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        return new LibraryModule(this, data, new LibraryModule[0], _universe);
+        result = new LibraryModule(this, data, new LibraryModule[0], _universe);
+        if (!m.equals(result.name()))
+          {
+            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+                         m + "' but found '" + result.name() + "'");
+          }
+        _modules.put(m, result);
       }
     catch (IOException io)
       {
         Errors.error("FrontEnd I/O error when reading module file",
                      "While trying to read file '"+ p + "' received '" + io + "'");
-        return null;
+      }
+    return result;
+  }
+
+  /**
+   * Load library module with given module name
+   *
+   * @param m the module name, excluding path or ".fum" suffix
+   *
+   * @return the loaded module or null if it was not found or an error occured.
+   */
+  LibraryModule loadModule(String m)
+  {
+    return loadModule(m, false);
+  }
+  LibraryModule loadModule(String m,
+                           boolean ignoreNotFound // NYI: remove when module support is stable
+                           )
+  {
+    var result = _modules.get(m);
+    if (result != null)
+      {
+        return result;
+      }
+    else
+      {
+        var p = modulePath(m);
+        if (p != null)
+          {
+            return module(m, p);
+          }
+        else if (ignoreNotFound)
+          {
+            return null;
+          }
+        else
+          {
+            Errors.error("Module file '"+(m + ".fum")+"' for module '"+m+"' not found, "+
+                         "module directories checked are '" + baseModuleDir() + "' and " +
+                         _options._moduleDirs.toString("'","', '", "'") + ".");
+            return null;
+          }
       }
   }
 
@@ -264,6 +305,20 @@ public class FrontEnd extends ANY
   public SourceModule module()
   {
     return _module;
+  }
+
+
+  /**
+   * During resolution, load all inner classes of this that are
+   * defined in separate files.
+   */
+  void loadInnerFeatures(AbstractFeature f)
+  {
+    var m = module();
+    if (m != null)
+      {
+        m.loadInnerFeatures(f);
+      }
   }
 
 }

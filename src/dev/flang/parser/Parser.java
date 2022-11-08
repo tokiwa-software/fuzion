@@ -328,7 +328,7 @@ field       : returnType
    */
   Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh)
   {
-    if (p.kind_ == Impl.Kind.Of)
+    if (p._kind == Impl.Kind.Of)
       {
         var ng = new List<AbstractType>();
         addFeaturesFromBlock(first, l, p._code, ng, p);
@@ -379,7 +379,7 @@ field       : returnType
   {
     if (s instanceof Block b)
       {
-        b.statements_.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
+        b._statements.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
       }
     else if (s instanceof Feature f)
       {
@@ -634,7 +634,7 @@ name        : IDENT                            // all parts of name must be in s
           case t_ident  : result = identifier(mayBeAtMinIndent); next(); break;
           case t_infix  :
           case t_prefix :
-          case t_postfix: result = opName(mayBeAtMinIndent);  break;
+          case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
           case t_ternary:
             {
               next();
@@ -754,16 +754,24 @@ opName      : "infix"   op
             | "prefix"  op
             | "postfix" op
             ;
+   *
+   * @param ignoreError to not report an error but just return
+   * Errors.ERROR_STRING in case we did not find 'op'.
+   *
    * @param mayBeAtMinIndent
    *
    */
-  String opName(boolean mayBeAtMinIndent)
+  String opName(boolean mayBeAtMinIndent, boolean ignoreError)
   {
     String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
-    String n = inPrePost + " " + operatorOrError();
-    match(Token.t_op, "infix/prefix/postfix name");
-    return n;
+    String res = operatorOrError();
+    if (!ignoreError || res != Errors.ERROR_STRING)
+      {
+        match(Token.t_op, "infix/prefix/postfix name");
+        res = inPrePost + " " + res;
+      }
+    return res;
   }
 
 
@@ -2782,7 +2790,7 @@ nextValue   : COMMA exprInLine
         // iterations:
         if (skipComma())
           {
-            p2 = new Impl(pos, exprInLine(), p2.kind_);
+            p2 = new Impl(pos, exprInLine(), p2._kind);
           }
       }
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
@@ -3208,9 +3216,7 @@ dotEnv      : simpletype dot "env"
    */
   Env dotEnv()
   {
-    var t = current() == Token.t_lparen
-      ? bracketTermWithNLs(PARENS, "env", ()->type())
-      : simpletype(null);
+    var t = typeInParens();
     skipDot();
     match(Token.t_env, "env");
     return new Env(posObject(), t);
@@ -3226,9 +3232,7 @@ dotType     : simpletype dot "type"
    */
   Expr dotType()
   {
-    var t = current() == Token.t_lparen
-      ? bracketTermWithNLs(PARENS, "type", ()->type())
-      : simpletype(null);
+    var t = typeInParens();
     skipDot();
     match(Token.t_type, "type");
     return new DotType(posObject(), t);
@@ -3259,12 +3263,10 @@ dotType     : simpletype dot "type"
   EnvOrType skipDotEnvOrType()
   {
     return
-      !((skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
-        && skipDot()
-        ) ? EnvOrType.none :
-      skip(Token.t_env ) ? EnvOrType.env  :
-      skip(Token.t_type) ? EnvOrType.type
-                         : EnvOrType.none;
+      !(skipTypeInParens() && skipDot()) ? EnvOrType.none :
+      skip(Token.t_env )                 ? EnvOrType.env  :
+      skip(Token.t_type)                 ? EnvOrType.type
+                                         : EnvOrType.none;
   }
 
 
@@ -3278,7 +3280,7 @@ dotType     : simpletype dot "type"
   boolean skipDotType()
   {
     return
-      (skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
+      skipTypeInParens()
       && skipDot()
       && skip(Token.t_type);
   }

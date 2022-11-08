@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = unboxOuterRef
+override NAME = unboxOuterRef
 include ../simple.mk

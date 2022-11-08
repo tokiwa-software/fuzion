@@ -28,7 +28,7 @@
 # tuple types provide algebraic product types of all the generic arguments
 # provided to tuple.
 #
-# The values within a tuple 'tuple<A, B, C>' can be accessed via the tuple's
+# The values within a tuple 'tuple A B C' can be accessed via the tuple's
 # argument field 'values' followed by a selector referring to the generic
 # argument's position: 'values.0', 'values.1' and 'values.2', respectively.
 #
@@ -39,7 +39,7 @@
 #
 # is equivalent to
 #
-#   t := tuple(a, b, c, ... )
+#   t := tuple a b c ...
 #
 # The actual generic types are inferred from the static types of the values
 # 'a', 'b', 'c', ... the tuple is created from.
@@ -85,28 +85,28 @@
 # however, tuples are not assignment compatible with general features even
 # if they would destructure into the same types, i.e.,
 #
-#   u tuple<i32, i32> = p  # will cause compile time error
+#   u tuple i32 i32 = p  # will cause compile time error
 #   q point = (7, 12)      # will cause compile time error
 #
 # The unit tuple '()' can be used as a short-hand to create the empty tuple
-# 'tuple<>()'.  The empty tuple can be destructured like any other tuple
+# 'tuple'.  The empty tuple can be destructured like any other tuple
 # using
 #
 #   () := ()
 #
 # even though this has no effect.
 #
-# An instance of the single tuple 'tuple<A>(a)' can not be created using
-# syntactic sugar '(a)', this will produce the plain value of 'a' instead.
-# However, destructuring of a single tuple is possible:
+# An instance of the single tuple 'tuple A' with sole element 'a' can not
+# be created using syntactic sugar '(a)', this will produce the plain
+# value of 'a' instead. However, destructuring of a single tuple is possible:
 #
-#  (a0) := tuple<A>(a)
+#  (a0) := tuple a
 #
 # which is equivalent to
 #
 #   a0 := a
 #
-# NYI: A single tuple 'tuple<A>' is currently not assignment compatible with
+# NYI: A single tuple 'tuple A' is currently not assignment compatible with
 # type 'A', which would make handling of general tuples easier.
 #
 # tuples and destructuring can be used to swap two elements or create a

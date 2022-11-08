@@ -1,0 +1,29 @@
+string.blub => "string.blub"
+
+test_modules is
+  s string := ""
+
+  # check qualified addition to base.fum feature string
+  say s.blub
+  say "".blub
+
+  # check sub-directory addition to base.fum feature string
+  say s.bla
+  say "".bla
+
+  # check additions to 'a' in modules a.fum and b.fum
+  say a.x
+  say a.y
+  say a.z
+
+  # test type features for types from base.fum that are used in a.fum
+  #
+  say (Types.get fuzion.java)
+  say (Types.get fuzion.java.JavaVoid)
+  say (Types.get fuzion.java.JavaObject)
+
+# NYI: see #461: following lines, when uncommented, show problems related to #461
+#
+#  say (Types.get fuzion.java.JavaString)
+#  say (Types.get (fuzion.java.Array bool))
+#  say (Types.get (fuzion.java.Array u8))

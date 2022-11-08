@@ -197,6 +197,9 @@ i64s : wrappingIntegers i64 is
   redef min => -0x_8000_0000_0000_0000
   redef max =>  0x_7fff_ffff_ffff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i64 -1
+
 
 # i64 -- returns value of unit type i64s
 #

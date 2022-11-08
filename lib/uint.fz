@@ -304,17 +304,20 @@ is
   # this uint as a string, may contain leading zeros
   #
   private asString0 string is
-    if uint.this = zero
-      "0"
+    mrd := uint 1_000_000_000
+    (q, rem) := uint.this.divide_with_remainder mrd
+
+    if q = zero
+      (rem.data.first (u32 0)).asString
     else
-      mrd := uint 1_000_000_000
-      (q, rem) := uint.this.divide_with_remainder mrd
       q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
 
 
   redef asString string is
-    ascii_code_zero := codepoints.ascii_digit.first.as_u8
-    strings.fromBytes asString0.utf8.dropWhile(x -> x=ascii_code_zero)
+    if uint.this = zero
+      "0"
+    else
+      asString0
 
 
 uint (val u64) uint is

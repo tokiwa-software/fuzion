@@ -69,6 +69,12 @@ wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers 
   isMin => thiz == min
   isMax => thiz == max
 
+  # check if this type of wrappingInteger is bounded
+  #
+  # wrappingIntegers are assumed to be a bound set by default, so
+  # this returns true unless redefined by an implementation
+  redef is_bounded => true
+
   # basic operations with runtime error on overflow
 
   # negation, with check for overflow
@@ -180,6 +186,13 @@ wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers 
     else
       thiz ** other
 
+  # bitwise NOT
+  redef prefix ~ W
+    pre
+      is_bounded
+  is
+    thiz ^ all_bits_set
+
 
 # wrappingIntegers -- unit type defining features related to wrappingInteger
 # but not requiring an instance
@@ -188,3 +201,6 @@ wrappingIntegers(W (wrappingInteger W).type) : numerics W is
 
   min W is abstract
   max W is abstract
+
+  # returns the number in whose bit representation all bits are ones
+  all_bits_set W is abstract
