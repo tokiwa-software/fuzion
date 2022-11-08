@@ -180,6 +180,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
+    // NYI: cleanup: would be nice to implement this as follows or similar:
+    //
+    //   return this == Types.resolved.f_choice;
+    //
     return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
   }
 
