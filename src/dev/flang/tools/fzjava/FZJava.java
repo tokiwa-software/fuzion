@@ -31,6 +31,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
+import dev.flang.tools.FuzionHome;
 import dev.flang.tools.Tool;
 
 import dev.flang.util.Errors;
@@ -213,7 +214,7 @@ public class FZJava extends Tool
       {
         List<String> emptyList = new List<>();
         var feOptions = new FrontEndOptions(/* verbose */ 0,
-                                            /* fuzionHome */ _options._fuzionHome,
+                                            /* fuzionHome */ (new FuzionHome())._fuzionHome,
                                             /* loadBaseLib */ true,
                                             /* eraseInternalNamesInLib */ true,
                                             /* modules */ _options._loadModules,

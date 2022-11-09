@@ -44,12 +44,6 @@ public class FZJavaOptions extends ANY
 
 
   /**
-   * Names of Java properties accepted by fzjava:
-   */
-  static final String FUZION_HOME_PROPERTY = "fuzion.home";
-
-
-  /**
    * Some public members in a Java module may return a result type or expect an
    * argument that that is not public.  This flag enables warnings in this case.
    */
@@ -95,19 +89,6 @@ public class FZJavaOptions extends ANY
    * Should existing files be overwritten?
    */
   boolean _overwrite = false;
-
-
-  /**
-   * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
-   * _fuzionHome.
-   */
-  private String _fuzionHomeProperty = System.getProperty(FUZION_HOME_PROPERTY);
-
-
-  /**
-   * Home directory of the Fuzion installation.
-   */
-  Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
 
 }
 
