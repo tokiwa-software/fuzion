@@ -28,7 +28,7 @@
 panic (
 
   # the provider this effect uses to panic
-  p panicProvider,
+  p Panic_Provider,
 
   redef r effectMode.val
   ) : effect r
@@ -53,9 +53,9 @@ panic =>
 panic(msg string) => panic.panic msg
 
 
-# panicProvider -- abstract panic
+# Panic_Provider -- abstract panic
 #
-panicProvider ref is
+Panic_Provider ref is
 
   # panic with the given message
   #
@@ -72,7 +72,7 @@ panic_type is
 
   # default panic provider using io.err and exit with return code 1
   #
-  defaultPanicProvider : panicProvider is
+  defaultPanicProvider : Panic_Provider is
 
     # panic with the given message and exit with return code 1
     #
