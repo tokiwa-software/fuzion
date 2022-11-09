@@ -105,8 +105,8 @@ random =>
 simple_random(seed u64, rr ()->unit) =>
   _ := random (simple_random_provider seed seed) (effectMode.inst rr)
 
-timeSeededRandom(rr ()->unit) =>
-  _ := random simple_random_providers.timeSeeded (effectMode.inst rr)
+time_seeded_random(rr ()->unit) =>
+  _ := random simple_random_providers.time_seeded (effectMode.inst rr)
 
 
 # Random_Provider -- abstract source of random numbers
@@ -193,14 +193,14 @@ simple_random_providers is
        match s.parse_u64
          seed u64 => simple_random_provider seed 98765432109876543
          e error  => panic "Failed to parse value in env var '$random_seed_env_var': $e"
-     nil      => timeSeeded
+     nil      => time_seeded
 
 
   # create a time-seeded simple provider for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  timeSeeded Random_Provider is
+  time_seeded Random_Provider is
     # initialize with large numbers XORed with nano time
     #
     simple_random_provider (u64 77777777777777 ^ time.nano.read) 98765432109876543
@@ -209,5 +209,5 @@ simple_random_providers is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  timeSeeded(rr ()->unit) =>
-    _ := random timeSeeded (effectMode.inst rr)
+  time_seeded(rr ()->unit) =>
+    _ := random time_seeded (effectMode.inst rr)
