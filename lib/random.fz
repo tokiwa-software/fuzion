@@ -28,7 +28,7 @@
 random (
 
   # the provider this effect uses to create random numbers
-  p randomProvider,
+  p Random_Provider,
 
   redef r effectMode.val
   ) : effect r
@@ -109,27 +109,27 @@ timeSeededRandom(rr ()->unit) =>
   _ := random simpleRandomProviders.timeSeeded (effectMode.inst rr)
 
 
-# randomProvider -- abstract source of random numbers
+# Random_Provider -- abstract source of random numbers
 #
 # This provides the random number input to be used by the 'random' effect.
 # Implementation may be dumb sequences of pseudo-random numbers or high-qualiity
 # cryptographic random number generators
 #
-# A randomProvider contains an immutable state, repeated calls to 'get' result
+# A Random_Provider contains an immutable state, repeated calls to 'get' result
 # in the same value.  To produce a sequence of different random numbers, 'next'
-# must be used to create a new instance of 'randomProvider' before 'get' can be
+# must be used to create a new instance of 'Random_Provider' before 'get' can be
 # used to obtain the new random number.
 #
-randomProvider ref is
+Random_Provider ref is
 
-  # create a new instance of randomProvider containing a new state. Depending
+  # create a new instance of Random_Provider containing a new state. Depending
   # on the qualifity of this random number generator, this might be a simple
-  # function of the original randomProvider or it might use an external source
+  # function of the original Random_Provider or it might use an external source
   # of entropy to create a new instance.
   #
-  next randomProvider is abstract
+  next Random_Provider is abstract
 
-  # Return the random number stored in this instance of randomProvider, in the
+  # Return the random number stored in this instance of Random_Provider, in the
   # range 0..u64.max
   #
   # NOTE: this feature is pure, i.e., repeated calls on the same target result
@@ -152,11 +152,11 @@ randoms is
 # for security and that do not meet typical requirements for a good
 # random number generator.
 #
-simpleRandomProvider(seed1 u64, seed2 u64) : randomProvider is
+simpleRandomProvider(seed1 u64, seed2 u64) : Random_Provider is
 
   # get next instance by shuffling bits in seeds around
   #
-  next randomProvider is
+  next Random_Provider is
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -200,7 +200,7 @@ simpleRandomProviders is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  timeSeeded randomProvider is
+  timeSeeded Random_Provider is
     # initialize with large numbers XORed with nano time
     #
     simpleRandomProvider (u64 77777777777777 ^ time.nano.read) 98765432109876543
