@@ -424,7 +424,7 @@ class Fuzion extends Tool
   /**
    * List of module directories added using '-moduleDirs'.
    */
-  List<String> _moduleDirs = null;
+  List<String> _moduleDirs = new List<>();
 
 
   /**
@@ -745,7 +745,7 @@ class Fuzion extends Tool
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
-            else if (a.startsWith("-moduleDirs="             )) { _moduleDirs = new List<>(); _moduleDirs.addAll(parseStringListArg(a)); }
+            else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }

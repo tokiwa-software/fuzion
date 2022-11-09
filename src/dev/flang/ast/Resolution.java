@@ -462,7 +462,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (af.state().atLeast(Feature.State.RESOLVED_TYPES));
+      (Errors.count() > 0 || af.state().atLeast(Feature.State.RESOLVED_TYPES));
   }
 
 

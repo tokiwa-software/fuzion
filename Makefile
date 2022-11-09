@@ -100,19 +100,23 @@ MOD_JAVA_DESKTOP_FZ_FILES      = $(MOD_JAVA_DESKTOP_DIR)/__marker_for_make__
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
-ALL = \
-	$(BUILD_DIR)/bin/fz \
-	$(BUILD_DIR)/bin/fzjava \
-	$(MOD_BASE) \
-	$(MOD_TERMINAL) \
-	$(MOD_JAVA_BASE) \
-	$(MOD_JAVA_XML) \
-	$(MOD_JAVA_DATATRANSFER) \
-	$(MOD_JAVA_DESKTOP) \
-	$(BUILD_DIR)/tests \
-	$(BUILD_DIR)/examples \
-        $(BUILD_DIR)/README.md \
-        $(BUILD_DIR)/release_notes.md \
+FUZION_BASE = \
+			$(BUILD_DIR)/bin/fz \
+			$(BUILD_DIR)/bin/fzjava \
+			$(MOD_BASE) \
+			$(MOD_TERMINAL)
+
+FUZION_JAVA_MODULES = \
+					$(MOD_JAVA_BASE) \
+					$(MOD_JAVA_XML) \
+					$(MOD_JAVA_DATATRANSFER) \
+					$(MOD_JAVA_DESKTOP)
+
+FUZION_FILES = \
+			 $(BUILD_DIR)/tests \
+			 $(BUILD_DIR)/examples \
+			 $(BUILD_DIR)/README.md \
+			 $(BUILD_DIR)/release_notes.md
 
 DOCUMENTATION = \
 	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
@@ -122,7 +126,10 @@ SHELL_SCRIPTS = \
 	bin/fzjava
 
 .PHONY: all
-all: $(ALL)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
+
+.PHONY: without-java-modules
+without-java-modules: $(FUZION_BASE) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -296,7 +303,7 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(MOD_JAVA_BASE_FZ_FILES): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
