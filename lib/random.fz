@@ -102,7 +102,7 @@ random =>
   randoms.installDefault
   random.env
 
-simpleRandom(seed u64, rr ()->unit) =>
+simple_random(seed u64, rr ()->unit) =>
   _ := random (simple_random_provider seed seed) (effectMode.inst rr)
 
 timeSeededRandom(rr ()->unit) =>
