@@ -33,19 +33,19 @@
 #
 testRedefine is
 
-  getter <A> ref is
+  getter (A type) ref is
     get A is abstract
 
-  good : getter<string | i32 | nil> is
+  good : getter (string | i32 | nil) is
     get string | i32 | nil is 42
 
-  bad1 : getter<string | i32 | nil> is
+  bad1 : getter (string | i32 | nil) is
     get i32 is 42
 
-  bad2 : getter<string | i32 | nil> is
+  bad2 : getter (string | i32 | nil) is
     get => 42
 
-  show(g getter<string | i32 | nil>) =>
+  show(g getter (string | i32 | nil)) =>
     say g.get
 
   yak "good: "; show good

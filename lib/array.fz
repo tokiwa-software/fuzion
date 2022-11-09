@@ -45,7 +45,7 @@ array(redef T type,
 
   indices => 0..length-1
 
-  index [ ] (i i32) T
+  redef index [ ] (i i32) T
     pre
       safety: 0 <= i < length
   is
@@ -155,6 +155,13 @@ array(redef T type,
   #
   map(B type, f T -> B) array B is
     array B array.this.length (i -> f array.this[i])
+
+
+  # variant of map which additionally passes the index to
+  # the mapping function f
+  #
+  map_indexed(B type, f (T, i32) -> B) array B is
+    array B array.this.length (i -> f array.this[i] i)
 
 
   # fold the elements of this array using the given monoid.

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = doubledeclaration_negative
+override NAME = doubledeclaration_negative
 include ../negative.mk

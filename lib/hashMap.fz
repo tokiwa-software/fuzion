@@ -67,9 +67,7 @@ is
       k in ks
       v in vs
     do
-      ix := at k
-      store ix
-#     store (at k)     # NYI! Currently parser treats this like a declaration
+      store (at k)
 
       # store k,v for index at,
       store (at i32) unit is
@@ -83,9 +81,7 @@ is
             if ek = k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
             else         # conflict
-              newAt := collision at
-              store newAt
-#             store (collision at)     # NYI! Currently parser treats this like a declaration
+              store (collision at)
 
 /* NYI: With better pattern matching, this could be:
         match mcontents[at]
@@ -110,26 +106,19 @@ is
           if ek = k
             v
           else
-            newAt := collision at
-            retrieve newAt
-#           retrieve (collision at)     # NYI! Currently parser treats this like a declaration
+            retrieve (collision at)
 
-    ix := at k
-    retrieve ix
-#   retrieve (at k)     # NYI! Currently parser treats this like a declaration
+    retrieve (at k)
 
 
-  # get a stream of all key/value pairs in this map
+  # get a list of all key/value pairs in this map
   #
   items Sequence (tuple HK V) is
-    res : Sequence (tuple HK V) is
-      redef asList =>
-        contents
-          .filter      (o -> o??)
-          .mapSequence (o -> match o
-                               nil     => panic "filter failed"
-                               t tuple => t)
-    res
+    contents
+      .filter      (o -> o??)
+      .mapSequence (o -> match o
+                            nil     => panic "filter failed"
+                            t tuple => t)
 
 
 # hashMaps -- unit type feature declaring features related to haspMap

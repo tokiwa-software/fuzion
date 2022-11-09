@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = choice_negative
+override NAME = choice_negative
 include ../negative.mk

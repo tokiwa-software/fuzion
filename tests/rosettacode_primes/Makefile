@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 export FUZION_JAVA_STACK_SIZE = 16m # required since tail recursion is not optimized yet
-NAME = primes
+override NAME = primes
 include ../positive.mk

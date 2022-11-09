@@ -216,6 +216,7 @@ public class CFG extends ANY
 
   static
   {
+    put("Type.name"                      , (cfg, cl) -> { } );
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debugLevel"                     , (cfg, cl) -> { } );
@@ -224,6 +225,13 @@ public class CFG extends ANY
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
     put("fuzion.std.out.write"           , (cfg, cl) -> { } );
     put("fuzion.std.err.write"           , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.read"         , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.get_file_size", (cfg, cl) -> { } );
+    put("fuzion.std.fileio.write"        , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.exists"       , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.delete"       , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.move"         , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.create_dir"   , (cfg, cl) -> { } );
     put("fuzion.std.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.std.err.flush"           , (cfg, cl) -> { } );
     put("fuzion.stdin.nextByte"          , (cfg, cl) -> { } );

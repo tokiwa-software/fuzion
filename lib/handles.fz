@@ -165,7 +165,7 @@ handles_(T type) => handles T unit unit (array T 0 x->do) effectMode.plain
 #
 handles(T type) =>
   (handles_type T).installDefault
-  handles<T, unit>.env
+  (handles T unit).env
 
 
 # handle value created by 'handles.new'

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = testRedefine
+override NAME = testRedefine
 include ../simple.mk

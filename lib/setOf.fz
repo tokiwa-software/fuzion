@@ -28,3 +28,34 @@
 # This feature creates an instance of a Set.
 #
 setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs
+
+
+# set_of -- routine to initialize a set from a Sequence of hashable elements
+#
+# This feature creates an instance of a Set.
+#
+# NYI name clash with feature above
+set_of(K (hasHash K).type, vs Sequence K) Set K is
+
+  private map := CTrie K unit
+  vs.forAll (k -> map.add k unit)
+
+  ref : Set K
+
+    # does this set contain the given value?
+    #
+    contains (k K) bool is
+      map[k].exists
+
+
+    # list representation of values in this set
+    #
+    asList list K is
+      map.keys.asList
+
+
+    # add new element k to this set.
+    #
+    add (k K) Set K is
+      set_of (vs++[k])
+

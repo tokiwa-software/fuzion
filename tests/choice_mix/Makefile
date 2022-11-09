@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = choice_mix
+override NAME = choice_mix
 include ../positive.mk

@@ -26,7 +26,7 @@
 functions is
 
     y(f ()->i32){}
-    x0(f Function<i32, Object, i32>) is
+    x0(f Function i32 Object i32) is
       say "here 1x0---------------"
       r1 i32 := f.call "hallo" 3
       say "here 2x0---------------"
@@ -61,13 +61,13 @@ functions is
     x ((o, i) -> { o.hashCode + i })  // implicit assignment to result from last statement
 
     say "here 1c---------------"
-    x (ref : Function<i32,Object,i32> {
+    x (ref : Function i32 Object i32 {
         redefine call(o Object, i i32) i32 is
           say "in anonymous function: $o"
           o.hashCode + i
        })
 
-    f ref : Function<i32,Object,i32> is
+    f ref : Function i32 Object i32 is
         redefine call(o Object, i i32) i32 is
           say "here f.call---------------"
           set result := o.hashCode + i

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = looptest_negative
+override NAME = looptest_negative
 include ../negative.mk

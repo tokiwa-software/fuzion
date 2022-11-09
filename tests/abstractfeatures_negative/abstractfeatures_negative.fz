@@ -30,10 +30,10 @@ abstractfeatures_negative is
       f(a A) is abstract                         //  1. should flag an error: abstract feature not implemented
       g(a A) is abstract                         // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                     //  2. should flag an error: abstract feature f not implemented
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f 3 true 5
 
   opengenerics12
@@ -46,10 +46,10 @@ abstractfeatures_negative is
       f4(a A) is abstract                          // ok, not called.
       f5(a A) is abstract                          // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       //  6. should flag an error: abstract features f1, f2, f3 not implemented
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f1 3 true 5
     y.f2 3 true 5
     y.f3 3 true 5
@@ -61,7 +61,7 @@ abstractfeatures_negative is
       f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
       g(a A) is abstract                           // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       //  8. should flag an error: abstract feature f not implemented
     x.f 3 true 5
@@ -76,7 +76,7 @@ abstractfeatures_negative is
       f4(a A) is abstract                          // ok, not called.
       f5(a A) is abstract                          // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       // 12. should flag an error: abstract features f1, f2, f3 not implemented
     x.f1 3 true 5

@@ -78,7 +78,7 @@ float(redef F (float F).type) : numeric F, floats F is
 
   # ceiling: the smallest integer greater or equal to this
   ceil F is
-    if fract < zero
+    if fract <= zero
       thiz - fract
     else
       thiz - fract + one

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = overloading_negative
+override NAME = overloading_negative
 include ../negative.mk

@@ -105,6 +105,7 @@ u16(val u16) : wrappingInteger u16, hasInterval u16, u16s is
   as_u32  => thiz.as_i32.as_u32
   as_u64  => thiz.as_i32.as_u64
   as_u128 => thiz.as_i32.as_u128
+  as_int  => int as_i64
 
   low8bits u8 is intrinsic
   castTo_i16 i16 is intrinsic
@@ -168,6 +169,9 @@ u16s : wrappingIntegers u16 is
 
   redef min => u16 0
   redef max => u16 0xffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u16 0xffff
 
 
 # u16 -- returns value of unit type u16s

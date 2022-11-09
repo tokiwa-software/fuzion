@@ -135,6 +135,7 @@ public class Lexer extends SourceFile
     t_lcrochet,    // [
     t_rcrochet,    // ]
     t_semicolon,   // ;
+    t_question,    // ?
     t_numliteral,  // 123
     t_ident,       // abc
     t_stringQQ,    // "abc"
@@ -162,15 +163,11 @@ public class Lexer extends SourceFile
     t_loop("loop"),
     t_while("while"),
     t_until("until"),
-    t_require("require"),
-    t_ensure("ensure"),
-    t_invariant("invariant"),
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
     t_inv("inv"),
     t_var("var"),
-    t_old("old"),
     t_match("match"),
     t_fun("fun"),
     t_value("value"),
@@ -280,6 +277,7 @@ public class Lexer extends SourceFile
             case t_lcrochet          : result = "left crochet '['"                           ; break;
             case t_rcrochet          : result = "right crochet ']'"                          ; break;
             case t_semicolon         : result = "semicolon ';'"                              ; break;
+            case t_question          : result = "question mark '?'"                          ; break;
             case t_numliteral        : result = "numeric literal"                            ; break;
             case t_ident             : result = "identifier"                                 ; break;
             case t_stringQQ          : result = "string constant"                            ; break;
@@ -616,6 +614,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Is parsing restrict to one line?  This is enabled by a call to sameLine()
+   * with a positive argument.
+   *
+   * @return true iff parsing is restricted to current line
+   */
+  boolean isRestrictedToLine()
+  {
+    return _sameLine >= 0;
+  }
+
+
+  /**
    * Restrict parsing until the next occurence of white space.  Symbols after
    * fromPos that are preceded by white space will be replaced by t_spaceLimit.
    *
@@ -924,7 +934,7 @@ public class Lexer extends SourceFile
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
                 codePointInLine(_curPos) == 1      ? skipUntilEOL() // comment until end of line
-                                                   : skipOp();
+                                                   : skipOp(Token.t_op);
               break;
             }
           /**
@@ -949,7 +959,7 @@ OPERATOR  : ( '!'
           */
           case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
             {
-              token = skipOp();
+              token = skipOp(p == '?' ? Token.t_question : Token.t_op);
               break;
             }
           /**
@@ -963,21 +973,17 @@ LF          : ( '\r'? '\n'
             {
               int last = p;
               p = curCodePoint();
-              if (isNewLine(last,p))
-                {
-                  _curLine++;
-                }
+              token = checkWhiteSpace(last, p);
               while (kind(p) == K_WS)
                 {
                   nextCodePoint();
                   last = p;
                   p = curCodePoint();
-                  if (isNewLine(last,p))
+                  if (token != Token.t_error)
                     {
-                      _curLine++;
+                      token = checkWhiteSpace(last,p);
                     }
                 }
-              token = Token.t_ws;
               break;
             }
           case K_SLASH   :   // '/', introducing a comment or an operator.
@@ -985,7 +991,7 @@ LF          : ( '\r'? '\n'
               p = curCodePoint();
               token = kind(p) == K_SLASH ? skipUntilEOL() : // comment until end of line
                       p == '*'           ? skipComment()
-                                         : skipOp();
+                                         : skipOp(Token.t_op);
               break;
             }
           /**
@@ -1110,6 +1116,34 @@ IDENT     : ( 'a'..'z'
           }
       }
     _curToken = token;
+  }
+
+
+  /**
+   * Check if given consecutive white space code points are acceptable,
+   * increment _curLine if last/p start a new line.
+   *
+   * @param p1 the first code point
+   *
+   * @param p2 the second code point
+   *
+   * @return Token.t_ws or Token.t_error in case of illegal white space.
+   */
+  Token checkWhiteSpace(int p1, int p2)
+  {
+    var result = Token.t_ws;
+    if (isNewLine(p1, p2))
+      {
+        _curLine++;
+      }
+    else if (p1 != ' ')
+      {
+        Errors.error(sourcePos(),
+                     "Unexpected white space character \\u" + Integer.toHexString(0x1000000+p1).substring(1).toUpperCase() + " found",
+                     null);
+        result = Token.t_error;
+      }
+    return result;
   }
 
 
@@ -1717,7 +1751,7 @@ HEX_TAIL    : "." HEX_DIGITS
       var v =
         ('0' <= d && d <= '9') ? d - (int) '0' :
         ('a' <= d && d <= 'z') ? d - (int) 'a' + 10 :
-        ('A' <= d && d <= 'Z') ? d - (int) 'Z' + 10 : Integer.MAX_VALUE;
+        ('A' <= d && d <= 'Z') ? d - (int) 'A' + 10 : Integer.MAX_VALUE;
       if (v >= _base._base)
         {
           Errors.error(sourcePos(),
@@ -1846,15 +1880,16 @@ HEX_TAIL    : "." HEX_DIGITS
    *
    * @return Token.t_op
    */
-  private Token skipOp()
+  private Token skipOp(Token res)
   {
     int p = curCodePoint();
     while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
       {
+        res = Token.t_op;
         nextCodePoint();
         p = curCodePoint();
       }
-    return Token.t_op;
+    return res;
   }
 
 

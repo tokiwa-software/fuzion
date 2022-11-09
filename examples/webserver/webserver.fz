@@ -50,7 +50,7 @@ webserver is
 
 /* NYI: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
 
-     accept outcome<unit> is
+     accept outcome unit is
        # accept and handle connection
        s := serversocket.accept?
        input  := io.BufferedReader.new (io.InputStreamReader.new s.getInputStream?)
@@ -67,7 +67,7 @@ webserver is
 
        # helper to read request
        #
-       read outcome<string> is
+       read outcome string is
          for
            r := "", "$r$s\n"
            s := input.readLine?
@@ -77,7 +77,7 @@ webserver is
 
        # helper to send data in HTTP response with status 200
        #
-       send200(data string) outcome<unit> is
+       send200(data string) outcome unit is
          output.writeBytes ( "HTTP/1.1 200 OK\n"
                            + "Connection: close\n"
                            + "Server: Fuzion demo WebServer v0.01\n"
@@ -89,7 +89,7 @@ webserver is
        unit
 */
 
-         accept outcome<unit> is
+         accept outcome unit is
            # accept and handle connection
            match ss.accept
              e error => e
@@ -106,7 +106,7 @@ webserver is
                        req := read
                        say "got request ({req.byteLength} bytes): $req"
                        if req.startsWith "GET "
-                         send200 "<html>Hello Fuzion $n!</html>";
+                         send200 "<html>Hello Fuzion $n!</html>"
 
                        # close streams
                        input.close

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = choicetest
+override NAME = choicetest
 include ../positive.mk

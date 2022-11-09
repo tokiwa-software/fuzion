@@ -36,7 +36,7 @@ floating_point_numbers is
       "FAILED: "
     say (s + msg)
 
-  generic_tests<T: float<T>>(a T) is
+  generic_tests(T (float T).type, a T) is
 
     zero := a.zero
     one := a.one

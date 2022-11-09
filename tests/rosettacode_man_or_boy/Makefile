@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 export FUZION_JAVA_STACK_SIZE = 16m # required for manorboy(10)
-NAME = man_or_boy
+override NAME = man_or_boy
 include ../positive.mk

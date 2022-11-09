@@ -43,9 +43,9 @@ overloading_negative is
     y := a 42
     z := a 47 11
 
-    a1 a := ?      // 1. should flag an error: ambiguous types
-    a2 a := ?      // 2. should flag an error: ambiguous types
-    a3 a := ?      // 3. should flag an error: ambiguous types
+    a1 a := a            // 1. should flag an error: ambiguous types
+    a2 a := a 42         // 2. should flag an error: ambiguous types
+    a3 a := a 47 11      // 3. should flag an error: ambiguous types
     set a1 := a
     set a2 := a 42
     set a3 := a 47 11
@@ -60,9 +60,9 @@ overloading_negative is
     y := a 42
     z := a 47 11
 
-    a1 a := ?      // 4. should flag an error: type not found
-    a2 a := ?      // 5. should flag an error: type not found
-    a3 a := ?      // 6. should flag an error: type not found
+    a1 a := a            // 4. should flag an error: type not found
+    a2 a := a 42         // 5. should flag an error: type not found
+    a3 a := a 47 11      // 6. should flag an error: type not found
     set a1 := a
     set a2 := a 42
     set a3 := a 47 11

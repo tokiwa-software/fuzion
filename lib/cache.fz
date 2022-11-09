@@ -23,7 +23,21 @@
 #
 # -----------------------------------------------------------------------
 
-# cache result of f for cache key T
+# (globally) cache result of f for cache key T
+#
+# example:
+#
+#
+# cache_key(val sortedArray i32) is
+#               ^-------- the actual type we want to cache
+# ^------- a feature declaring a type which we use as a cache key
+#            wrapping the actual data we want to cache
+#
+# we can now use this key:
+#
+# fn () -> cache_key := () -> cache_key (sortedArrayOf [6,4,1,9])
+# from_cache => (cache cache_key fn).val
+#                                ^--- will only be computed the first time we run from_cache
 #
 cache(T type, f () -> T) T is
 

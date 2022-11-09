@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = inheritance
+override NAME = inheritance
 include ../positive.mk

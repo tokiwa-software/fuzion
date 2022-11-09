@@ -32,7 +32,7 @@ private args (
   redef r effectMode.val,
 
   _ unit
-  ) : array string all.internalArray unit unit unit, effect r
+  ) : searchablelist all.asList, effect r
 is
 
 

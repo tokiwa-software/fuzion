@@ -1,0 +1,64 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature stat
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# stat -- effect providing operations to retrieve file stats 
+#
+private stat(
+  ps Provided_Stat,
+  redef r effectMode.val
+  ) : stats, effect r is
+
+  # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
+  #
+  size(path string) =>
+    tmp := ps.size path
+    replace
+    tmp
+
+# short-hand for accessing stat effect in current environment
+#
+stat => 
+  stats.installDefault
+  stat.env
+
+# reference to the stats that could be provided
+#
+Provided_Stat ref is
+  size(path string) outcome i64 is abstract
+
+# the default file stat provided which is the file size via fuzion.std.fileio.get_file_size
+#
+default_provided_stat : Provided_Stat is
+  size(path string) =>
+    fuzion.std.fileio.get_file_size path
+
+# unit type feature defining features related to stat effect but not requiring an
+# instance.
+#
+stats is
+  # install default effect io.file.stat
+  installDefault unit is 
+    if !(effects.exists io.file.stat)
+      _ := stat default_provided_stat effectMode.default

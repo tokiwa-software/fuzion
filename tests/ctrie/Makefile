@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = ctrie_test
+override NAME = ctrie_test
 include ../positive.mk

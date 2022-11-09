@@ -34,8 +34,8 @@ checkGenericConstraint is
   H is
     h i32 is abstract
 
-  hm<T : H> (x T) is
+  hm (T H.type, x T) is
     x.h
     unit
 
-  m := hm<m32> m32     # should produce error, m32 is not compatible to H
+  m := hm m32 m32     # should produce error, m32 is not compatible to H

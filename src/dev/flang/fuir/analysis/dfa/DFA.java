@@ -906,6 +906,7 @@ public class DFA extends ANY
 
   static
   {
+    put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
     put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
@@ -915,6 +916,13 @@ public class DFA extends ANY
     put("fuzion.std.exit"                , cl -> null );
     put("fuzion.std.out.write"           , cl -> Value.UNIT );
     put("fuzion.std.err.write"           , cl -> Value.UNIT );
+    put("fuzion.std.fileio.read"         , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
+    put("fuzion.std.fileio.get_file_size", cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.write"        , cl -> cl._dfa._bool );
+    put("fuzion.std.fileio.exists"       , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.delete"       , cl -> cl._dfa._bool );
+    put("fuzion.std.fileio.move"         , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.create_dir"   , cl -> cl._dfa._bool );
     put("fuzion.std.out.flush"           , cl -> Value.UNIT );
     put("fuzion.std.err.flush"           , cl -> Value.UNIT );
     put("fuzion.stdin.nextByte"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

@@ -267,9 +267,13 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == Clazzes.c_TRUE .getIfCreated() ||
-       _clazz == Clazzes.c_FALSE.getIfCreated()   );
+       _clazz == Clazzes.c_FALSE.getIfCreated() ||
+       _clazz.isRef() && _clazz.asValue() == Clazzes.bool.getIfCreated());
 
-    return _clazz == Clazzes.c_TRUE.getIfCreated();
+    return
+      _clazz == Clazzes.c_TRUE .getIfCreated() ? true  :
+      _clazz == Clazzes.c_FALSE.getIfCreated() ? false
+                                               : nonrefs[0] == 1;
   }
 
 

@@ -20,32 +20,41 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Old
+ * Source of class DotType
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
+import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
+
 
 /**
- * Old <description>
+ * DotType is expression of the form 'xyz.type' that evaluates to an instance of
+ * 'Type'.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Old extends ExprWithPos
+public class DotType extends Expr
 {
-
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   *
+   * The sourcecode position of this expression, used for error messages.
    */
-  public Expr e;
+  private final SourcePosition _pos;
 
 
-  /*--------------------------  constructors  ---------------------------*/
+  /**
+   * actual generic arguments, set by parser
+   */
+  public AbstractType _lhs;
+
+
+  /*-------------------------- constructors ---------------------------*/
 
 
   /**
@@ -53,12 +62,12 @@ public class Old extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param e
+   * @param n
    */
-  public Old(Expr e)
+  public DotType(SourcePosition pos, AbstractType lhs)
   {
-    super(e.pos());
-    this.e = e;
+    _pos = pos;
+    _lhs = lhs;
   }
 
 
@@ -66,21 +75,17 @@ public class Old extends ExprWithPos
 
 
   /**
-   * Load all features that are called by this expression.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param thiz the class that contains this expression.
+   * The sourcecode position of this expression, used for error messages.
    */
-  void loadCalledFeature(Resolution res, AbstractFeature thiz)
+  public SourcePosition pos()
   {
-    e.loadCalledFeature(res, thiz);
+    return _pos;
   }
 
 
+
   /**
-   * visit all the statements within this Old.
+   * visit all the features, expressions, statements within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -89,47 +94,28 @@ public class Old extends ExprWithPos
    *
    * @return this.
    */
-  public Old visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    e = e.visit(v, outer);
-    return this;
+    _lhs = _lhs.visit(v, outer);
+    return v.action(this, outer);
   }
 
 
   /**
-   * visit all the statements within this Old.
+   * determine the static type of all expressions and declared features in this feature
    *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * @param res the resolution instance.
+   *
+   * @param outer the root feature that contains this statement.
    */
-  public void visitStatements(StatementVisitor v)
+  public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
-    super.visitStatements(v);
-    e.visitStatements(v);
+    AbstractType t = _lhs;
+    var tc = new Call(pos(), new Universe(), "Types", new List<>(),  new List<>(),  new List<>());
+    tc.resolveTypes(res, outer);
+    return (new Call(_pos, tc, "get", new List<>(_lhs), new List<>(), new List<>())).resolveTypes(res, outer);
   }
 
-
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  public AbstractType type()
-  {
-    return e.typeForFeatureResultTypeInferencing();
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return "old "+e;
-  }
 
 }
 

@@ -126,6 +126,9 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
       debug: thiz >= 0
     is
       u128 0 as_i64.as_u64
+  as_int int is
+    int as_i64
+
 
   # casting bit representation to unsigned
   low8bits    u8   is castTo_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
@@ -180,6 +183,9 @@ i32s : wrappingIntegers i32 is
 
   redef min => -0x_8000_0000
   redef max =>  0x_7fff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i32 -1
 
 
 # i32 -- returns value of unit type i32s

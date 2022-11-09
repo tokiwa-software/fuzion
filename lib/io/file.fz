@@ -23,7 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-# file -- a unit type that contains effects related to files
+# file -- a unit type that contains effects related to file I/O
 #
-private file is
-    # NYI
+public file is

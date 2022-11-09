@@ -61,13 +61,18 @@ public fuzion.java is
   is
     isNull bool is intrinsic
 
+    # dummy feature to make sure JavaObject.type exists. This is required since
+    # Java-related intrinsics may return an array of JavaObject and require JavaObject.type.
+    #
+    _ignore_ => JavaObject.type
+
 
   # A Java array
   #
   public Array(redef T type, private redef javaRef Object) ref : Sequence T, JavaObject javaRef
   is
-    length            => arrayLength T Array.this
-    index [ ] (i i32) => arrayGet    T Array.this i
+    length                  => arrayLength T Array.this
+    redef index [ ] (i i32) => arrayGet    T Array.this i
     redef asList => asList 0
 
     # create list starting at index from

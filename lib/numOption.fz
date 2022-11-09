@@ -36,8 +36,8 @@ is
 
   # Does this option contain a value of type T?
   #
-  exists => numOption.this ? T   => true
-                           | nil => false
+  exists => (numOption.this ? T   => true
+                            | nil => false)
 
 
   # short-hand postfix operator for 'exists'
@@ -137,9 +137,9 @@ is
 #
 #   o := numOption x
 #
-# insted of
+# instead of
 #
-#   o numOption<TypeOfX> := x
+#   o numOption TypeOfX := x
 #
 numOption(T (numeric T).type, o numOption T) => o
 

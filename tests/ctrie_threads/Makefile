@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = ctrie_threads
+override NAME = ctrie_threads
 include ../positive.mk
