@@ -33,7 +33,9 @@ private stat(
 
   # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
   #
-  size(path string) =>
+  size(
+       # the (relative or absolute) file name, using platform specific path separators
+       path string) =>
     tmp := ps.size path
     replace
     tmp
@@ -41,7 +43,9 @@ private stat(
   # checks if the file/directory in the path exists or not
   # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
   #
-  exists(path string) =>
+  exists(
+         # the (relative or absolute) file name, using platform specific path separators
+         path string) =>
     tmp := ps.exists path
     replace
     tmp
