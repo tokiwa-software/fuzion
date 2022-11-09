@@ -103,10 +103,10 @@ random =>
   random.env
 
 simpleRandom(seed u64, rr ()->unit) =>
-  _ := random (simpleRandomProvider seed seed) (effectMode.inst rr)
+  _ := random (simple_random_provider seed seed) (effectMode.inst rr)
 
 timeSeededRandom(rr ()->unit) =>
-  _ := random simpleRandomProviders.timeSeeded (effectMode.inst rr)
+  _ := random simple_random_providers.timeSeeded (effectMode.inst rr)
 
 
 # Random_Provider -- abstract source of random numbers
@@ -144,7 +144,7 @@ randoms is
 
   installDefault is
     if !effects.exists random
-      _ := random simpleRandomProviders.default effectMode.default
+      _ := random simple_random_providers.default effectMode.default
 
 
 
@@ -152,7 +152,7 @@ randoms is
 # for security and that do not meet typical requirements for a good
 # random number generator.
 #
-simpleRandomProvider(seed1 u64, seed2 u64) : Random_Provider is
+simple_random_provider(seed1 u64, seed2 u64) : Random_Provider is
 
   # get next instance by shuffling bits in seeds around
   #
@@ -162,18 +162,18 @@ simpleRandomProvider(seed1 u64, seed2 u64) : Random_Provider is
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
     rot1 := s2 & 0x3f
     rot2 := s1 & 0x3f
-    (simpleRandomProvider ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
-                          ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
+    (simple_random_provider ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
+                            ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
 
   # get current random number
   #
   get u64 is seed1
 
 
-# type related to simpleRandomProvider declaring features not requiring an instance
-# of simpleRandomProvider
+# type related to simple_random_provider declaring features not requiring an instance
+# of simple_random_provider
 #
-simpleRandomProviders is
+simple_random_providers is
 
   # name of env var to provide default random seed.
   #
@@ -191,7 +191,7 @@ simpleRandomProviders is
     match envir.vars.get random_seed_env_var
      s string =>
        match s.parse_u64
-         seed u64 => simpleRandomProvider seed 98765432109876543
+         seed u64 => simple_random_provider seed 98765432109876543
          e error  => panic "Failed to parse value in env var '$random_seed_env_var': $e"
      nil      => timeSeeded
 
@@ -203,7 +203,7 @@ simpleRandomProviders is
   timeSeeded Random_Provider is
     # initialize with large numbers XORed with nano time
     #
-    simpleRandomProvider (u64 77777777777777 ^ time.nano.read) 98765432109876543
+    simple_random_provider (u64 77777777777777 ^ time.nano.read) 98765432109876543
 
   # create a time-seed sprovider for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
