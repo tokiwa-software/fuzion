@@ -538,10 +538,14 @@ public class C extends ANY
     Errors.showAndExit();
 
     var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
-    var command = new List<String>(cCompiler, "-O3");
+    var command = new List<String>(cCompiler);
     if(_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
+      }
+    else
+      {
+        command.addAll("-O3");
       }
     if(_options._useBoehmGC)
       {
