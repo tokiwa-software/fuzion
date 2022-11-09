@@ -370,8 +370,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result or an if
-   * with one branch not producing a result.
+   * whose last statement is not an expression that produces a result.
    */
   boolean producesResult()
   {

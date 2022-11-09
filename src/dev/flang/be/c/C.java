@@ -585,6 +585,7 @@ public class C extends ANY
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
        "#include <pthread.h>\n"+
+       "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
        "\n");
     cf.print
