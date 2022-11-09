@@ -226,32 +226,24 @@ public class ParseUnicodeData extends ANY
     _name = name;
     var p = Path.of(name);
     _lastModified = Files.readAttributes(p, BasicFileAttributes.class).lastModifiedTime();
-    try
-      {
-        Files.lines(p).forEach(s -> {
-            var e = new CP(s);
-            _codepoints.add(e);
-            if (_lastCP != null && e._code <= _lastCP._code)
-              {
-                System.err.println("*** error, expected unicode data to be sorted");
-                System.exit(1);
-              }
-            if (_firstCP != null && (_firstCP.isLast() || !e.isLast() && e._code > _lastCP._code + 1 || e.isFirst() || e._category != _firstCP._category))
-              {
-                finishBlock();
-              }
-            if (_firstCP == null || e._category != _firstCP._category)
-              {
-                _firstCP = e;
-              }
-            _lastCP = e;
-          });
-      }
-    catch (IOException | UncheckedIOException e)
-      {
-        System.err.println("*** I/O error: " + e);
-        System.exit(1);
-      }
+    Files.lines(p).forEach(s -> {
+        var e = new CP(s);
+        _codepoints.add(e);
+        if (_lastCP != null && e._code <= _lastCP._code)
+          {
+            System.err.println("*** error, expected unicode data to be sorted");
+            System.exit(1);
+          }
+        if (_firstCP != null && (_firstCP.isLast() || !e.isLast() && e._code > _lastCP._code + 1 || e.isFirst() || e._category != _firstCP._category))
+          {
+            finishBlock();
+          }
+        if (_firstCP == null || e._category != _firstCP._category)
+          {
+            _firstCP = e;
+          }
+        _lastCP = e;
+      });
     if (_firstCP != null)
       {
         finishBlock();
