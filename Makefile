@@ -549,10 +549,6 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/swing_pkg.fz $(BUILD_DIR)/modules/java.desktop/sun_swing_pkg.fz
 	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/print_pkg.fz $(BUILD_DIR)/modules/java.desktop/sun_print_pkg.fz
 	mv $(BUILD_DIR)/modules/java.desktop/Java/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
-# NYI: cleanup: see #463: manually delete redundant features
-# Is it necessary to remove awt_pkg.fz here? It is not getting generated, but
-# this is not due to my changes.
-	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java/awt_pkg.fz
 	touch $@
 
 $(MOD_JAVA_COMPILER_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
