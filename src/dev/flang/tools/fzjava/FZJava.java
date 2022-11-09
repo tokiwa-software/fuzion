@@ -100,11 +100,8 @@ public class FZJava extends Tool
 
   /**
    * The features that have already been defined in the loaded library modules.
-   * Maps the qualified name of the feature to the qualified name of the feature.
-   * This is a map rather than a set because Java's Sets do not provide efficient
-   * methods for checking whether an element is in a set.
    */
-  TreeMap<String, String> _existingFeatures = new TreeMap<String, String>();
+  TreeSet<String> _existingFeatures = new TreeSet<String>();
 
 
   /*--------------------------  static methods  -------------------------*/
@@ -266,7 +263,7 @@ public class FZJava extends Tool
 
         for (var fn : df.values())
           {
-            _existingFeatures.put(fn.qualifiedName(), fn.qualifiedName());
+            _existingFeatures.add(fn.qualifiedName());
             recurseDeclaredFeatures(fe, fn);
           }
       }
@@ -502,7 +499,7 @@ public class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
-        if (_existingFeatures.get(pkg.replace("/", ".")) != null)
+        if (_existingFeatures.contains(pkg.replace("/", ".")))
           {
             // do not generate duplicate features
             return;
