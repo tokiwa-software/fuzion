@@ -260,7 +260,7 @@ public class FZJava extends Tool
    */
   private void recurseDeclaredFeatures(FrontEnd fe, AbstractFeature f)
   {
-    for (var m : fe._modules.values())
+    for (var m : fe.getModules())
       {
         var df = m.declaredFeatures(f);
 

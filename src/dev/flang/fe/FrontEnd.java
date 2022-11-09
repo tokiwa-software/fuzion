@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.TreeMap;
 
@@ -112,7 +113,7 @@ public class FrontEnd extends ANY
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
-  public TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**
@@ -319,6 +320,15 @@ public class FrontEnd extends ANY
       {
         m.loadInnerFeatures(f);
       }
+  }
+
+
+  /**
+   * Return the collection of loaded modules.
+   */
+  public Collection<LibraryModule> getModules()
+  {
+    return _modules.values();
   }
 
 }
