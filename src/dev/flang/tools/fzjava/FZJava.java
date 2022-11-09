@@ -196,9 +196,9 @@ public class FZJava extends Tool
               }
           }
       }
-    if (_options._modules.isEmpty())
+    if (_options._modules.isEmpty() || _options._modules.size() != 1)
       {
-        fatal("require at least one module given as a command line argument");
+        fatal("require exactly one module given as a command line argument");
       }
     return () -> execute();
   }
