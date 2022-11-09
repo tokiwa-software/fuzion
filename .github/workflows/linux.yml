@@ -25,8 +25,7 @@ on:
   push:
     branches:
       - 'main'
-  pull_request:
-    types: [review_requested, ready_for_review]
+  pull_request: {}
 
 env:
   PRECONDITIONS: true
