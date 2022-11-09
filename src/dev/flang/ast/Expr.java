@@ -316,12 +316,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
     if (t.compareTo(Types.resolved.t_void) != 0)
       {
-        if ((!t.isRef() || isCallToOuterRef()) &&
-            (frmlT.isRef() ||
-             (frmlT.isChoice() &&
-              !frmlT.isAssignableFrom(t) &&
-              frmlT.isAssignableFrom(t.asRef()))) ||
-            frmlT.isGenericArgument())
+        if (needsBoxing(frmlT))
           {
             result = new Box(result, frmlT);
             t = result.type();
@@ -334,6 +329,32 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
     return result;
   }
 
+  /**
+   * Is boxing needed when we assign to frmlT?
+   * @param frmlT the formal type we are assigning to.
+   */
+  private boolean needsBoxing(AbstractType frmlT)
+  {
+    var t = type();
+    if (frmlT.isGenericArgument())
+      {
+        return true;
+      }
+    else if (t.isRef() && !isCallToOuterRef())
+      {
+        return false;
+      }
+    else if (frmlT.isRef())
+      {
+        return true;
+      }
+    else
+      {
+        return frmlT.isChoice() &&
+          !frmlT.isAssignableFrom(t) &&
+          frmlT.isAssignableFrom(t.asRef());
+      }
+  }
 
   /**
    * Is this a compile-time constant?
