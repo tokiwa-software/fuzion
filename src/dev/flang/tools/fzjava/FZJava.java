@@ -212,20 +212,20 @@ public class FZJava extends Tool
     if (createDestDir())
       {
         List<String> emptyList = new List<>();
-        var feOptions = new FrontEndOptions(0,
-                                            _options._fuzionHome,
-                                            true,
-                                            true,
-                                            _options._loadModules,
-                                            _options._moduleDirs,
-                                            emptyList,
-                                            0,
-                                            true,
-                                            true,
-                                            emptyList,
-                                            false,
-                                            null,
-                                            true);
+        var feOptions = new FrontEndOptions(/* verbose */ 0,
+                                            /* fuzionHome */ _options._fuzionHome,
+                                            /* loadBaseLib */ true,
+                                            /* eraseInternalNamesInLib */ true,
+                                            /* modules */ _options._loadModules,
+                                            /* moduleDirs */ _options._moduleDirs,
+                                            /* dumpModules */ emptyList,
+                                            /* fuzionDebugLevel */ 0,
+                                            /* fuzionSafety */ true,
+                                            /* enableUnsafeIntrinsics */ true,
+                                            /* sourceDirs */ emptyList,
+                                            /* readStdin */ false,
+                                            /* main */ null,
+                                            /* loadSources */ true);
         _fe = new FrontEnd(feOptions);
 
         recurseDeclaredFeatures(_fe, _fe._universe);
