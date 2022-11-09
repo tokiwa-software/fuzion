@@ -123,6 +123,6 @@ codepoints is
     else if utf8EncodedInThreeBytes.contains c
       3
     else if utf8EncodedInFourBytes.contains c
-      3
+      4
     else
       error "first byte is not the start of utf-8 character."
