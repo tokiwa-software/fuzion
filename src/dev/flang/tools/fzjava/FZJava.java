@@ -211,7 +211,7 @@ public class FZJava extends Tool
   {
     if (createDestDir())
       {
-        List<String> emptyList = new List<String>();
+        List<String> emptyList = new List<>();
         var feOptions = new FrontEndOptions(0,
                                             _options._fuzionHome,
                                             true,
