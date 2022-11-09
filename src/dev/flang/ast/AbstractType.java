@@ -809,11 +809,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_unit.
+   * such type exists, return Types.t_UNDEFINED.
    *
    * @param that another type or null
    *
-   * @return a type that is assignable both from this and that, or null if none
+   * @return a type that is assignable both from this and that, or Types.t_UNDEFINED if none
    * exists.
    */
   AbstractType union(AbstractType that)
