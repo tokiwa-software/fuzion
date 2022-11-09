@@ -537,7 +537,12 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    var command = new List<String>("clang", "-O3");
+    var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
+    var command = new List<String>(cCompiler, "-O3");
+    if(_options._cFlags != null)
+      {
+        command.addAll(_options._cFlags.split(" "));
+      }
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc");
