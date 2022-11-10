@@ -158,7 +158,7 @@ public class If extends ExprWithPos
    * Create an Iterator over all branches in this if statement, including all
    * else-if branches.
    */
-  private Iterator<Expr> branches()
+  Iterator<Expr> branches()
   {
     return new Iterator<Expr>()
     {
