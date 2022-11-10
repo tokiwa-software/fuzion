@@ -47,7 +47,7 @@
 # Type void is assignable to all other types, e.g, we can assign void to a value
 # of type i32:
 #
-#   i i32 := fuzion.std.exit 1
+#   i i32 := exit 1
 #
 # Since no value of type void can ever be produced, the assignment is dead code that
 # will be removed by the fuzion implementation.
