@@ -66,4 +66,4 @@ iftest_negative is
     if b // 6. should flag an error: Incompatible types in branches of if statement
       "Hello"
 
-  fuzion.std.exit exitCode
+  exit exitCode

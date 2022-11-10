@@ -133,4 +133,4 @@ floating_point_math is
   chck (f64s.positiveInfinity.as_f32 == f32s.positiveInfinity)                 "f64:  ∞  as_f32        = f32s.∞ "
   chck (f32s.isNaN f64s.NaN.as_f32)                                            "f64: NaN as_f32 isNaN "
 
-  fuzion.std.exit exitCode
+  exit exitCode

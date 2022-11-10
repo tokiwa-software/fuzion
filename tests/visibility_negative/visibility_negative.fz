@@ -611,4 +611,4 @@ visibility_negative is
    say c  // 316. should flag an error: feature not visible
   visiA
 
-  fuzion.std.exit exitCode
+  exit exitCode
