@@ -17,39 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test valWithDynOuter
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# A test fore value types that have inner features that depend on their outer
-# feature and that expand the lifespan of the outer feature's instance until
-# after the call to the outer feature
-#
-valWithLongLife is
-
-  exitCode := 0
-
-  chck(s, expected string) =>
-    if s = expected
-      say "PASSED: $s"
-    else
-      say "FAILED: $s /= $expected"
-      set exitCode := 1
-
-
-  v (f string, id i32) is
-    e (eid u8) is
-      redef asString => "{v.this.asString}-$eid"
-    redef asString => f+id
-
-  g(f string, id i32, eid u8) => (v f id).e eid
-
-  a := g "a" 1 11
-  b := g "b" 2 22
-  c := g "c" 3 33
-
-  chck "a1-11 b2-22 c3-33" "$a $b $c"
-
-  exit exitCode
+override NAME = test_equals
+include ../simple.mk

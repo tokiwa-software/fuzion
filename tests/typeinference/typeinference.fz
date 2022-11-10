@@ -98,4 +98,4 @@ typeinference is
             e E => e
         )
 
-  fuzion.std.exit exitCode
+  exit exitCode

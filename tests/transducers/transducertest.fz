@@ -50,4 +50,4 @@ transducertest : transducers is
   r := [human(4), human(12), human(30)].into (ages ∘ gt_ten)
   chck ((comparable_sequence r) = (comparable_sequence [12, 30]))                          "compose transducers"
 
-  fuzion.std.exit exitCode
+  exit exitCode

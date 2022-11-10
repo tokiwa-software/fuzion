@@ -185,4 +185,4 @@ is
         f.setVisible false
 
   gfx
-  fuzion.std.exit 0   # explicitly exit since JVM would otherwise keep us alive
+  exit 0   # explicitly exit since JVM would otherwise keep us alive

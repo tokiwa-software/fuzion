@@ -400,4 +400,4 @@ inheritance is
         set exitCode := 1
   inheritOuter
 
-  fuzion.std.exit exitCode
+  exit exitCode
