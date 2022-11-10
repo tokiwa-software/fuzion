@@ -371,16 +371,9 @@ class Fuzion extends Tool
 
 
   /**
-   * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
-   * _fuzionHome.
-   */
-  private String _fuzionHomeProperty = System.getProperty(FUZION_HOME_PROPERTY);
-
-
-  /**
    * Home directory of the Fuzion installation.
    */
-  Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
+  Path _fuzionHome = (new FuzionHome())._fuzionHome;
 
 
   /**
