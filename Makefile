@@ -262,6 +262,14 @@ FUZION_BASE = \
 			$(MOD_BASE) \
 			$(MOD_TERMINAL)
 
+# NYI: This is missing the following modules from JDK 17:
+#
+# - jdk.hotspot.agent
+# - jdk.jcmd
+# - jdk.incubator.concurrent
+# - jdk.incubator.vector
+#
+# These cause odd ClassNotFound errors.
 FUZION_JAVA_MODULES = \
 					$(MOD_JAVA_BASE) \
 					$(MOD_JAVA_XML) \
