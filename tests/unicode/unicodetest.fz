@@ -42,4 +42,4 @@ unicodetest is
   chck ("Hallo Welt".upper_case = "HALLO WELT") "string to upper case"
   chck ("Hallo Welt".lower_case = "hallo welt") "string to lower case"
 
-  fuzion.std.exit exitCode
+  exit exitCode
