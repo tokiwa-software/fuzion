@@ -28,15 +28,15 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
 
 /*---------------------------------------------------------------------*/
 
@@ -53,6 +53,10 @@ public class Types extends ANY
 
 
   private static Map<Type, Type> types;
+
+
+  private static Queue<Type> uncheckedTypes;
+
 
   /**
    * Name of abstract features for function types:
@@ -278,6 +282,7 @@ public class Types extends ANY
     t_UNDEFINED = new Type(UNDEFINED_NAME);
     t_ERROR     = new Type(ERROR_NAME    );
     f_ERROR     = new Feature(true);
+    uncheckedTypes = new LinkedList<>();
   }
 
 
@@ -307,6 +312,7 @@ public class Types extends ANY
             if (existing == null)
               {
                 types.put(t,t);
+                scheduleForConstraintCheck(t);
                 existing = t;
               }
             t._interned = existing;
@@ -314,6 +320,48 @@ public class Types extends ANY
         at = existing;
       }
     return at;
+  }
+
+
+  private static void scheduleForConstraintCheck(Type t)
+  {
+    uncheckedTypes.add(t);
+  }
+
+
+  public static void checkConstraints()
+  {
+    while(!uncheckedTypes.isEmpty())
+      {
+        checkConstraints(uncheckedTypes.poll());
+      }
+  }
+
+
+  private static void checkConstraints(Type t)
+  {
+    if (t.feature != null)
+      {
+        // NYI deduplicate this code: also in Call.checkTypes()
+
+        // Check that generics match formal generic constraints
+        var fi = t.featureOfType().generics().list.iterator();
+        var gi = t.generics().iterator();
+        while (fi.hasNext() &&
+              gi.hasNext()    ) // NYI: handling of open generic arguments
+          {
+            var f = fi.next();
+            var g = gi.next();
+
+            if (CHECKS) check
+              (Errors.count() > 0 || f != null && g != null);
+            if (f != null && g != null &&
+                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
+              {
+                AstErrors.incompatibleActualGeneric(t.pos(), f, g);
+              }
+          }
+      }
   }
 
 

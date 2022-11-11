@@ -258,6 +258,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
+    Types.checkConstraints();
   }
 
 
