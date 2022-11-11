@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
@@ -1523,6 +1524,19 @@ public class AstErrors extends ANY
     error(pos,
       "Loss of precision for: " + _originalString,
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  {
+    error(pos,
+      "Names of arguments used in this feature must be distinct.",
+          "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
+          + duplicateNames
+            .stream()
+            .map(n -> sbn(n))
+            .collect(Collectors.joining(", ")) + "\n"
+          + "To solve this, rename the arguments to have unique names."
+        );
   }
 }
 
