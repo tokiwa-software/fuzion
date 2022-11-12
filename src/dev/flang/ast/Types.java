@@ -28,9 +28,8 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -53,9 +52,6 @@ public class Types extends ANY
 
 
   private static Map<Type, Type> types;
-
-
-  private static Queue<Type> uncheckedTypes;
 
 
   /**
@@ -282,7 +278,6 @@ public class Types extends ANY
     t_UNDEFINED = new Type(UNDEFINED_NAME);
     t_ERROR     = new Type(ERROR_NAME    );
     f_ERROR     = new Feature(true);
-    uncheckedTypes = new LinkedList<>();
   }
 
 
@@ -312,7 +307,6 @@ public class Types extends ANY
             if (existing == null)
               {
                 types.put(t,t);
-                scheduleForConstraintCheck(t);
                 existing = t;
               }
             t._interned = existing;
@@ -323,18 +317,10 @@ public class Types extends ANY
   }
 
 
-  private static void scheduleForConstraintCheck(Type t)
-  {
-    uncheckedTypes.add(t);
-  }
-
-
   public static void checkConstraints()
   {
-    while(!uncheckedTypes.isEmpty())
-      {
-        checkConstraints(uncheckedTypes.poll());
-      }
+    new HashSet<>(types.keySet())
+      .forEach(t -> checkConstraints(t));
   }
 
 
