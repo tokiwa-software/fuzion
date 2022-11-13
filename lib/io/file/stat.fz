@@ -23,13 +23,25 @@
 #
 # -----------------------------------------------------------------------
 
-# stat -- effect providing operations to retrieve file stats 
+meta_data(_size i64, time i64, is_regular bool, is_dir bool) is
+
+# stat -- effect providing operations to retrieve file stats
 #
 private stat(
   ps Provided_Stat,
   redef r effectMode.val,
   _ unit
   ) : stats, effect r is
+
+  stats(path string) outcome meta_data is
+    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, is it regular file? true : false, is it dir? true : false]
+    if (fuzion.std.fileio.stats (fuzion.sys.c_string path) data.internalArray.data)
+      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+    else
+      error "error"
+    
+
+
 
   # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
   #

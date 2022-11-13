@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeMap;
@@ -306,6 +307,29 @@ public class Intrinsics extends ANY
           try
             {
               Files.createDirectory(path);
+              return new boolValue(true);
+            }
+          catch (Exception e)
+            {
+              return new boolValue(false);
+            }
+        });
+    put("fuzion.std.fileio.stats", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
+          long[] stats = (long[])args.get(2).arrayData()._array;
+          try
+            {
+              BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
+              stats[0] = metadata.size();
+              stats[1] = metadata.lastModifiedTime().to(TimeUnit.SECONDS);
+              stats[2] = metadata.isRegularFile()? 1:0;
+              stats[3] = metadata.isDirectory()? 1:0;
               return new boolValue(true);
             }
           catch (Exception e)

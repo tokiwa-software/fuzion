@@ -197,3 +197,5 @@ public fileio is
                  path Object,
                  # dummy parameter to enable overload
                  _ unit) bool is intrinsic
+
+  stats(path Object, datas Object) bool is intrinsic
