@@ -23,7 +23,17 @@
 #
 # -----------------------------------------------------------------------
 
-meta_data(_size i64, time i64, is_regular bool, is_dir bool) is
+# meta_data will be a feature storing the metadata of file/dir
+#
+meta_data(
+          # the size of the file/dir
+          size i64,
+          # the time of creation of the file/dir
+          time i64,
+          # boolean to check if the pathname is a regular file
+          is_regular bool,
+          # boolean to check if the pathname is a directory
+          is_dir bool) is
 
 # stat -- effect providing operations to retrieve file stats
 #
@@ -33,24 +43,18 @@ private stat(
   _ unit
   ) : stats, effect r is
 
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  #
   stats(path string) outcome meta_data is
-    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, is it regular file? true : false, is it dir? true : false]
-    if (fuzion.std.fileio.stats (fuzion.sys.c_string path) data.internalArray.data)
+    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
+    if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
+      replace
       meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
     else
-      error "error"
-    
-
-
-
-  # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
-  #
-  size(
-       # the (relative or absolute) file name, using platform specific path separators
-       path string) =>
-    tmp := ps.size path
-    replace
-    tmp
+      replace
+      error "error while retrieving meta_data for the following file/dir: $path"
 
   # checks if the file/directory in the path exists or not
   # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
@@ -78,14 +82,14 @@ stat =>
 # reference to the stats that could be provided
 #
 Provided_Stat ref is
-  size(path string) outcome i64 is abstract
+  stats(path Object, meta_data_arr Object) outcome meta_data is abstract
   exists(path string) outcome bool is abstract
 
-# the default file stat provided which is the file size via fuzion.std.fileio.get_file_size
+# the default file stat provided
 #
 default_provided_stat : Provided_Stat is
-  size(path string) =>
-    fuzion.std.fileio.get_file_size path
+  stats(path Object, meta_data_arr Object) =>
+    fuzion.std.fileio.stats path meta_data_arr
   
   exists(path string) =>
     fuzion.std.fileio.exists path
