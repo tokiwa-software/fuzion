@@ -199,3 +199,4 @@ public fileio is
                  _ unit) bool is intrinsic
 
   stats(path Object, meta_data Object) bool is intrinsic
+  lstats(path Object, meta_data Object) bool is intrinsic

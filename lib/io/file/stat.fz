@@ -43,9 +43,20 @@ private stat(
   _ unit
   ) : stats, effect r is
 
+  # checks if the file/directory in the path exists or not
+  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
+  #
+  exists(
+          # the (relative or absolute) file name, using platform specific path separators
+          path string) =>
+    tmp := ps.exists path
+    replace
+    tmp
+
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
   # in case of failure an error will be returned
+  # this feature resolves symbolic links
   #
   stats(path string) outcome meta_data is
     data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
@@ -56,33 +67,47 @@ private stat(
       replace
       error "error while retrieving meta_data for the following file/dir: $path"
 
-  # checks if the file/directory in the path exists or not
-  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  # this feature does not resolve symbolic links and returns stats of the link itself
   #
-  exists(
-         # the (relative or absolute) file name, using platform specific path separators
-         path string) =>
-    tmp := ps.exists path
-    replace
-    tmp
+  lstats(path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
+    if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
+      replace
+      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+    else
+      replace
+      error "error while retrieving meta_data for the following file/dir: $path"
 
-#short-hand for creating and installing effect
+# short-hand for creating and installing effect
 #
-stat(ps Provided_Stat, f () -> unit) =>
+stat_custom(ps Provided_Stat, f () -> unit) =>
   s := stat ps effectMode.new unit
   s.use0 f
   unit
 
-# short-hand for accessing stat effect in current environment
+# short-hand for accessing and using stats provided by the stat effect in current environment
 #
-stat => 
+stat(path string, resolve bool) => 
   stats.installDefault
-  stat.env
+  if resolve
+    stat.env.stats(path)
+  else
+    stat.env.lstats(path)
+
+# short-hand for accessing and using exists feature provided by the stat effect in current environment
+#
+exists(path string) =>
+  stats.installDefault
+  stat.env.exists(path)
 
 # reference to the stats that could be provided
 #
 Provided_Stat ref is
   stats(path Object, meta_data_arr Object) bool is abstract
+  lstats(path Object, meta_data_arr Object) bool is abstract
   exists(path string) outcome bool is abstract
 
 # the default file stat provided
@@ -90,7 +115,10 @@ Provided_Stat ref is
 default_provided_stat : Provided_Stat is
   stats(path Object, meta_data_arr Object) =>
     fuzion.std.fileio.stats path meta_data_arr
-  
+
+  lstats(path Object, meta_data_arr Object) =>
+    fuzion.std.fileio.lstats path meta_data_arr
+
   exists(path string) =>
     fuzion.std.fileio.exists path
 
