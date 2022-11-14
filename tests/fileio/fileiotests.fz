@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of tests for File I/O operations
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+fileiotests =>
+
+  dir := "testdir"
+  newdir := "newdir"
+  file := dir + "/" + "testfile"
+
+  content := "Hello world 🌍"
+
+  f := io.file
+
+  writer := f.write
+  reader := f.read
+  stats := f.stat
+
+  say "$dir exists: {stats.exists dir}"
+  match writer.create_dir dir
+    unit => say "$dir was created"
+    error =>
+  say "$dir exists: {stats.exists dir}"
+
+  say "$file exists: {stats.exists file}"
+  match writer.write_all file content.utf8.asArray
+    unit => say "$file was created"
+    error =>
+  say "$file exists: {stats.exists file}"
+
+  match stats.size file
+    size i64 => say "$file size is $size"
+    error =>
+
+  match reader.read_all file
+    bytes array u8 =>
+      filecontent := strings.fromBytes bytes
+      say "file content bytes: $bytes"
+      say "file content is $filecontent"
+    error =>
+
+  match f.delete file
+    unit => say "$file was deleted"
+    error =>
+  say "$file exists: {stats.exists file}"
+
+  say "$dir exists: {stats.exists dir}"
+  say "$newdir exists: {stats.exists newdir}"
+  match f.move dir newdir
+    unit => say "$dir is now: $newdir"
+    error =>
+  say "$newdir exists: {stats.exists newdir}"
+  say "$dir exists: {stats.exists dir}"
+
+  match f.delete newdir
+    unit => say "$newdir was deleted"
+    error =>
+  say "$newdir exists: {stats.exists newdir}"
