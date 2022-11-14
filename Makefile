@@ -970,7 +970,7 @@ $(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
 	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
 # NYI integrate into fz: fz -docs
-$(BUILD_DIR)/apidocs: $(CLASS_FILES_TOOLS_DOCS)
+$(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
 	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare $(BUILD_DIR)/apidocs
 
 # NYI integrate into fz: fz -docs
