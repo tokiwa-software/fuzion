@@ -28,7 +28,7 @@
 # This is intendend for high precision time specification and measurement, it
 # uses a time resolution of 1ns.
 #
-# The maximum value is about 580 years, so this is not intenden for use in
+# The maximum value is about 580 years, so this is not intended for use in
 # calendars that may require time spans exceeding several centuries or millenia,
 # nor astrological time spans.
 #

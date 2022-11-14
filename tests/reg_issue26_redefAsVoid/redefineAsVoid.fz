@@ -44,7 +44,7 @@ redefineAsVoid is
   #
   redef f void is
     say "PASSED: exiting f that was redefined to return void."
-    fuzion.std.exit 0
+    exit 0
 
  h
  unit

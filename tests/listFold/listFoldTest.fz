@@ -130,4 +130,4 @@ listFoldTest is
   // product 5 ff would overflow
   //  say "product 5 is {l5.fold i32.product}"
 
-  fuzion.std.exit exitCode
+  exit exitCode

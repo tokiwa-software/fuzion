@@ -27,15 +27,35 @@
 #
 private stat(
   ps Provided_Stat,
-  redef r effectMode.val
+  redef r effectMode.val,
+  _ unit
   ) : stats, effect r is
 
   # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
   #
-  size(path string) =>
+  size(
+       # the (relative or absolute) file name, using platform specific path separators
+       path string) =>
     tmp := ps.size path
     replace
     tmp
+
+  # checks if the file/directory in the path exists or not
+  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
+  #
+  exists(
+         # the (relative or absolute) file name, using platform specific path separators
+         path string) =>
+    tmp := ps.exists path
+    replace
+    tmp
+
+#short-hand for creating and installing effect
+#
+stat(ps Provided_Stat, f () -> unit) =>
+  s := stat ps effectMode.new unit
+  s.use0 f
+  unit
 
 # short-hand for accessing stat effect in current environment
 #
@@ -47,12 +67,16 @@ stat =>
 #
 Provided_Stat ref is
   size(path string) outcome i64 is abstract
+  exists(path string) outcome bool is abstract
 
 # the default file stat provided which is the file size via fuzion.std.fileio.get_file_size
 #
 default_provided_stat : Provided_Stat is
   size(path string) =>
     fuzion.std.fileio.get_file_size path
+  
+  exists(path string) =>
+    fuzion.std.fileio.exists path
 
 # unit type feature defining features related to stat effect but not requiring an
 # instance.
@@ -61,4 +85,4 @@ stats is
   # install default effect io.file.stat
   installDefault unit is 
     if !(effects.exists io.file.stat)
-      _ := stat default_provided_stat effectMode.default
+      _ := stat default_provided_stat effectMode.default unit

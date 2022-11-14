@@ -284,7 +284,7 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(3)));
+          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
           try
             {
               Files.move(oldPath, newPath);

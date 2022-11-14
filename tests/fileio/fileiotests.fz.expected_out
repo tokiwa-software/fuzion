@@ -1,0 +1,18 @@
+testdir exists: false
+testdir was created
+testdir exists: true
+testdir/testfile exists: false
+testdir/testfile was created
+testdir/testfile exists: true
+testdir/testfile size is 16
+file content bytes: [72,101,108,108,111,32,119,111,114,108,100,32,240,159,140,141]
+file content is Hello world 🌍
+testdir/testfile was deleted
+testdir/testfile exists: false
+testdir exists: true
+newdir exists: false
+testdir is now: newdir
+newdir exists: true
+testdir exists: false
+newdir was deleted
+newdir exists: false

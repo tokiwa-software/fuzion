@@ -137,6 +137,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * cached result of nonStaticTypeFeature()
+   */
+  private AbstractFeature _nonStaticTypeFeature = null;
+
+
+  /**
    * cached result of typeFeature()
    */
   private AbstractFeature _typeFeature = null;
@@ -180,6 +186,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
+    // NYI: cleanup: would be nice to implement this as follows or similar:
+    //
+    //   return this == Types.resolved.f_choice;
+    //
     return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
   }
 
@@ -455,15 +465,18 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param res Resolution instance used to resolve types in this call.
    *
+   * @param nonStatic true iff target of this call should be nonStaticTypeFeature()
+   * or typeFeature().
+   *
    * @return instance of Call to be used for the parent call in typeFeature().
    */
-  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res)
+  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, boolean nonStatic)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
-      : outer().typeCall(p, new List<>(), res);
-    var tf = typeFeature(res);
+      : outer().typeCall(p, new List<>(), res, false);
+    var tf = nonStatic ? nonStaticTypeFeature(res) : typeFeature(res);
     return new Call(p,
                     tf.featureName().baseName(),
                     typeParameters,
@@ -475,7 +488,57 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * For every Type 't', the corresponding type feature 't.type'.
+   * The direct ancestor of typeFeature().  This feature inherits from the
+   * abstract type features of all direct ancestors of this, and, if there are
+   * no direct ancestors (for Object), this inherits from 'Type'.
+   *
+   * This does, however, not inherit from Type_STATIC.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  private AbstractFeature nonStaticTypeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS),
+       res != null);
+
+    if (_nonStaticTypeFeature == null)
+      {
+        if (hasTypeFeature())
+          {
+            _nonStaticTypeFeature = typeFeature().inherits().get(0).calledFeature();
+          }
+        else
+          {
+            var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
+            if (!isConstructor() && !isChoice())
+              {
+                name = name + "_" + (_typeFeatureId_++);
+              }
+            var inh = new List<AbstractCall>();
+            for (var pc: inherits())
+              {
+                inh.add(pc.calledFeature().typeCall(pos(), new List<>(), res, true));
+              }
+            if (inh.isEmpty())
+              {
+                inh.add(new Call(pos(), "Type"));
+              }
+            _nonStaticTypeFeature = existingOrNewTypeFeature(res, name, inh);
+          }
+      }
+    return _nonStaticTypeFeature;
+  }
+
+
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.
+   *
+   * The type feature has two ancestors: nonStaticTypeFeature() and Type_STATIC.
    *
    * @param res Resolution instance used to resolve this for types.
    *
@@ -489,35 +552,55 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (!hasTypeFeature())
       {
-        var o = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
-        var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
-        if (!isConstructor() && !isChoice())
-          {
-            name = name + "_" + (_typeFeatureId_++);
-          }
+        var atf = nonStaticTypeFeature(res);
+        var aname = atf.featureName().baseName();
+        var i = aname.lastIndexOf(FuzionConstants.TYPE_NAME);
+        if (CHECKS) check
+          (i >= 0); // TYPE_NAME must be part of aname
+        var name = aname.substring(0, i) + FuzionConstants.TYPE_STATIC_NAME + aname.substring(i + FuzionConstants.TYPE_NAME.length());
+        var inh = new List<AbstractCall>
+          (new Call(pos(), aname),
+           new Call(pos(), null, "Type_STATIC", null, new List<>(new Actual(thisType(), null)), null));
+        // make sure outer type feature exists, otherwise tests/reg_issues455-456_dot_type fails (NYI: check why exactly?)
+        var ot = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
+        _typeFeature = existingOrNewTypeFeature(res, name, inh);
+      }
+    var result = typeFeature();
+    check
+      (result != null);
+    return result;
+  }
+
+
+  /**
+   * Helper method for typeFeature and nonStaticTypeFeature to create a new
+   * feature with given name and inherits clause iff no such feature exists in
+   * outer().nonStaticTypeFeature().
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @param name the name of the type feature to be created
+   *
+   * @param inh the inheritance clause of the new type feature.
+   */
+  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractCall> inh)
+  {
+    var o = outer() == null || outer().isUniverse() ? universe() : outer().nonStaticTypeFeature(res);
+    var df = res._module.declaredOrInheritedFeatures(o);
+    var result = df.get(FeatureName.get(name, 0));
+    if (result == null)
+      {
         var p = pos();
-        var inh = new List<AbstractCall>();
-        for (var pc: inherits())
-          {
-            var c = pc.calledFeature().typeCall(p,
-                                                true ? new List<>() : pc.generics(), // NYI (see #284): Support generics in parent types!
-                                                res);
-            inh.add(c);
-          }
-        if (inh.isEmpty())
-          {
-            inh.add(new Call(p, "Type"));
-          }
         var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
                              inh,
                              Contract.EMPTY_CONTRACT,
                              new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
-        _typeFeature = tf;
+        result = tf;
         res._module.findDeclarations(tf, o);
         tf.scheduleForResolution(res);
         res.resolveDeclarations(tf);
       }
-    return typeFeature();
+    return result;
   }
 
 

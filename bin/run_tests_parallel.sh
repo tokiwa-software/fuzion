@@ -66,7 +66,7 @@ VERBOSE="${VERBOSE:-""}"
 rm -rf "$BUILD_DIR"/run_tests.results
 
 # print collected results up until interruption
-trap "echo """"; cat ""$BUILD_DIR""/run_tests.results; exit 130;" INT
+trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
 
 N=$(nproc --all || echo 1)
 open_sem "$N"
@@ -80,16 +80,23 @@ for test in $TESTS; do
       echo -n "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
-      (make "$TARGET" -e -C >"$test"/out.txt "$test" 2>/dev/null \
-          && (echo -n "." && echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results) \
-          || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results))
+      if make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+        echo -n "."
+        echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results
+      else
+        echo -n "#"
+        echo "$test: failed" >>"$BUILD_DIR"/run_tests.results
+        cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
+      fi
     fi
   }
   run_with_lock task
 done
 wait
 
-echo -n " $(cat "$BUILD_DIR"/run_tests.results | grep ok$      | wc -l)/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $(cat "$BUILD_DIR"/run_tests.results | grep skipped$ | wc -l) skipped,"
-echo    " $(cat "$BUILD_DIR"/run_tests.results | grep failed$  | wc -l) failed."
-cat "$BUILD_DIR"/run_tests.results | grep failed$ || echo -n
+echo -n " $(grep --count ok$ "$BUILD_DIR"/run_tests.results || true)/$(echo "$TESTS" | wc -w) tests passed,"
+echo -n " $(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true) skipped,"
+echo    " $(grep --count failed$ "$BUILD_DIR"/run_tests.results || true) failed."
+if grep failed$ "$BUILD_DIR"/run_tests.results; then
+  cat "$BUILD_DIR"/run_tests.failures
+fi

@@ -51,4 +51,4 @@ stringstest is
 
   chck "Nested: { "-{ a + b }-" * 3 }"="Nested: -7--7--7-" "nested \{}"
 
-  fuzion.std.exit exitCode
+  exit exitCode

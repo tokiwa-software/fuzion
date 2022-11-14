@@ -138,4 +138,4 @@ looptest_negative is
   testBooleanUntil7 { do { } until !false }; testBooleanUntil7  // ok
   testBooleanUntil8 { do { } until !true  }; testBooleanUntil8  // ok
 
-  fuzion.std.exit exitCode
+  exit exitCode

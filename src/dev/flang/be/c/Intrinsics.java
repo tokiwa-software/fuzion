@@ -123,7 +123,20 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
+            CExpr.decl("struct stat", statIdent),
+            // result = size if successful
+            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
+            // result = -1 if it failed
+            resultIdent.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
           var fileIdent = new CIdent("f");
@@ -143,7 +156,21 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.exists"       , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.exists"       ,  (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
+            // Testing if fopen was successful hence file/dir exists
+            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), 
+            CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
+            // If errno is ENOENT, file/dir does not exist
+            CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
+            // else return -1 to represent other errors
+            CExpr.int8const(-1).ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.delete"       ,  (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
@@ -154,7 +181,17 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.move"         , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(A0.castTo("char *"), A1.castTo("char *")))),
+            // Testing if rename was successful
+            CExpr.iff(resultIdent.eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
