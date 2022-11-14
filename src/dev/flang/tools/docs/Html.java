@@ -323,7 +323,7 @@ public class Html
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace("$FUZION", DocsOptions.baseApiDir)
+      .replace("$FUZION/lib", DocsOptions.baseApiDir)
       + "#l" + f.pos()._line;
   }
 
