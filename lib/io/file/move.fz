@@ -41,11 +41,11 @@ private move(
 
 # short-hand for creating and installing effects
 #
-move(f () -> unit) => move default_move_operation f
+move_custom(f () -> unit) => move_custom default_move_operation f
 
 # short-hand for creating and installing effects
 #
-move(mop Move_Operation, f () -> unit) => # NYI : overload
+move_custom(mop Move_Operation, f () -> unit) => # NYI : overload
     s := move mop effectMode.new unit
     s.use0 f
     unit
