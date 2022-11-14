@@ -163,27 +163,6 @@ public class Call extends AbstractCall
   public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
-  /**
-   * Is this a tail recursive call?
-   *
-   * This is used to allow cyclic type inferencing of the form
-   *
-   *   f is
-   *     if c
-   *       x
-   *     else
-   *       f
-   *
-   * Which must return a value of x's type.
-   *
-   * NYI: This is currently set explicitly by Loop.java. It should be a function
-   * that automatically detects tail recursive calls, i.e., calls without
-   * dynamic binding with target == current and with no code apart from setting
-   * the result to the returned value after the call.
-   */
-  public boolean _isTailRecursive = false;
-
-
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -1683,6 +1662,79 @@ public class Call extends AbstractCall
     return result;
   }
 
+
+  /**
+   * Is this a tail recursive call?
+   *
+   * A tail recursive call within 'outer' is a call to 'outer' whose result is
+   * returned without any further modification.
+   *
+   * This means, any call
+   *
+   *    target.outer arg1 arg2 ...
+   *
+   * is a tail recursive call provided that the result returned is not
+   * processed. The call may be dynamic, i.e., target may evalute to something
+   * different than outer.outer.
+   *
+   * This is used to allow cyclic type inferencing of the form
+   *
+   *   f =>
+   *     if c
+   *       x
+   *     else
+   *       f
+   *
+   * Which must return a value of x's type.
+   */
+  boolean isTailRecursive(AbstractFeature outer)
+  {
+    return
+      calledFeature() == outer &&
+      returnsThis(outer.code());
+  }
+
+
+  /**
+   * Check if the result returns by the given expression is the result of this
+   * call (i.e., this call is a tail call in e).
+   *
+   * @param e an expression.
+   *
+   * @return true iff this is a expression that can produce the result of e (but
+   * not necesarily the only one).
+   */
+  boolean returnsThis(Expr e)
+  {
+    if (e instanceof If i)
+      {
+        var it = i.branches();
+        while (it.hasNext())
+          {
+            if (returnsThis(it.next()))
+              {
+                return true;
+              }
+          }
+      }
+    else if (e instanceof Match m)
+      {
+        for (var c : m.cases())
+          {
+            if (returnsThis(c.code()))
+              {
+                return true;
+              }
+          }
+      }
+    else if (e instanceof Block b)
+      {
+        var r = b.resultExpression();
+        return r != null && returnsThis(r);
+      }
+    return e == this;
+  }
+
   /**
    * determine the static type of all expressions and declared features in this feature
    *
@@ -1715,7 +1767,7 @@ public class Call extends AbstractCall
                                                                     "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;
-            var t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
+            var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                      : cf.resultTypeIfPresent(res, _generics);
             if (t == null)
               {
@@ -1729,7 +1781,7 @@ public class Call extends AbstractCall
             else
               {
                 resolveType(res, t, _calledFeature.outer());
-                if (_isTailRecursive)
+                if (isTailRecursive(outer))
                   {
                     cf.whenResolvedTypes
                       (() ->

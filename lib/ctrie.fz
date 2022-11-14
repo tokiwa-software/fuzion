@@ -118,8 +118,11 @@ private CNode(CTK (hasHash CTK).type, CTV type, bmp u32, array array (Branch CTK
 
 
 # a container, T or linked list node
-# NYI should probably inhert from choice but nesting of choices leads to bugs currently, see: https://github.com/tokiwa-software/fuzion/issues/213
 private MainNode(CTK (hasHash CTK).type, CTV type, data choice (CNode CTK CTV) (TNode CTK CTV) (LNode CTK CTV), gen i32) ref : hasEquals (MainNode CTK CTV) is
+
+  # a previous node that gets set during a generational aware compare and set
+  prev choice (FNode CTK CTV) (MainNode CTK CTV) nil := nil
+
   redef asString =>
     match data
       cNode CNode => "$cNode"
@@ -139,16 +142,6 @@ private MainNode(CTK (hasHash CTK).type, CTV type, data choice (CNode CTK CTV) (
       cNode CNode => cNode.asList
       tNode TNode => tNode.asList
       lNode LNode => lNode.mapSequence (sn -> (sn.k, sn.v))
-
-
-  # a previous node that gets set during a generational aware compare and set
-  prev choice (FNode CTK CTV) (MainNode CTK CTV) nil := nil
-  set_prev(m MainNode CTK CTV) unit
-  pre match prev
-        nil => true
-        * => false
-  is
-    set prev := m
 
   # compare and set `prev`
   CAS_PREV(o,n choice (FNode CTK CTV) (MainNode CTK CTV) nil) =>
@@ -206,7 +199,7 @@ private INode(CTK (hasHash CTK).type, CTV type, data MainNode CTK CTV) ref : has
 
   # generation aware compare and set
   GCAS(o MainNode CTK CTV, n MainNode CTK CTV, ct ref CTrie CTK CTV) choice RESTART OK is
-    n.set_prev o
+    n.CAS_PREV o nil
     if(CAS o n)
       GCAS_Commit n ct
       match n.prev

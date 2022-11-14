@@ -205,7 +205,7 @@ inheritance is
     B ref : Z is
     if cnt < 10
       set cnt := cnt + 1
-      B
+      _ := B
 
   /* more complex inheritcane of outer feateature, with one more level of nesting: */
   tricky_Inheritance is
@@ -218,7 +218,7 @@ inheritance is
             say "tricky_Inheritance.Z.B.q: $cnt"
         if cnt < 10
           set cnt := cnt + 1
-          B.q
+          _ := B.q
     unit
   tricky_Inheritance
 
@@ -400,4 +400,4 @@ inheritance is
         set exitCode := 1
   inheritOuter
 
-  fuzion.std.exit exitCode
+  exit exitCode

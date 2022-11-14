@@ -120,4 +120,4 @@ int_test is
   chck ((u64 3) .as_int = int 3 ) "i64.as_int"
 
 
-  fuzion.std.exit exitCode
+  exit exitCode

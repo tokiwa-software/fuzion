@@ -35,7 +35,7 @@ u16(val u16) : wrappingInteger u16, hasInterval u16, u16s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => !isZero
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u16) => max -° thiz < other
   redef underflowOnAdd(other u16) => false
 

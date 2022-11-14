@@ -71,6 +71,17 @@ string ref : hasHash string, ordered string, strings is
 
   infix == (other string) => string.this = other    # NYI: #498: replace by 'infix ='
 
+
+  # compare two strings byte-by-byte
+  #
+  # result is true iff the strings have the same number of utf8 bytes and those
+  # bytes are equal.
+  #
+  string.type.equality(a, b string) =>
+    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
+      & a.utf8.count = b.utf8.count
+
+
   # does this come before other?
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
@@ -336,6 +347,7 @@ string ref : hasHash string, ordered string, strings is
                               e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                             else
                               ret (codepoint res) c4.tail
+              else fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
         else if u8 0x80 <= b1 <= 0xbf then e1 "stray continuation byte without preceding leading byte."
         else if u8 0xf5 <= b1 <= 0xfd then e1 "codes 0xf5..0xfd are undefined."
         else if u8 0xfe <= b1 <= 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
@@ -584,4 +596,3 @@ strings is
   zChar     => "z".utf8.first
   capAChar  => "A".utf8.first
   capZChar  => "Z".utf8.first
-
