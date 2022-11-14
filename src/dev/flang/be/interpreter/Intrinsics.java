@@ -327,7 +327,7 @@ public class Intrinsics extends ANY
             {
               BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
               stats[0] = metadata.size();
-              stats[1] = metadata.creationTime().to(TimeUnit.SECONDS);
+              stats[1] = metadata.lastModifiedTime().to(TimeUnit.SECONDS);
               stats[2] = metadata.isRegularFile()? 1:0;
               stats[3] = metadata.isDirectory()? 1:0;
               return new boolValue(true);

@@ -192,6 +192,30 @@ public class Intrinsics extends ANY
             );
         }
         );
+    put("fuzion.std.fileio.stats"   , (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var metadata = new CIdent("metadata");
+          return CStmnt.seq(
+            CExpr.decl("struct stat", statIdent),
+            CExpr.decl("long *", metadata),
+            metadata.assign(A1.castTo("long *")),
+            // write stats in metadata if stat was successful and return true
+            CExpr.iff(
+              CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CStmnt.seq(
+                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                c._names.FZ_TRUE.ret()
+                )
+              ),
+            // return false if stat failed
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
