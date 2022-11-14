@@ -62,7 +62,7 @@ public fileio is
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
     arr := fuzion.sys.c_string path
-    size := get_file_size arr path.byteLength
+    size := get_file_size arr unit
     if size != -1
       size
     else
@@ -73,8 +73,8 @@ public fileio is
   private get_file_size(
                         # the internal array data representing the file path in bytes
                         path Object,
-                        # the length of the internal array representing the path
-                        path_length i32) i64 is intrinsic
+                        # dummy parameter
+                        _ unit) i64 is intrinsic
 
   # creates a new file using an array of u8 as content and a string as the file path
   # it overwrites the file, if it exists, or creates a new one if it does not exist
@@ -193,5 +193,5 @@ public fileio is
   private create_dir(
                  # the internal array data representing the dir path in bytes
                  path Object,
-                 # dummy parameter
+                 # dummy parameter to enable overload
                  _ unit) bool is intrinsic

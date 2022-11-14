@@ -595,6 +595,7 @@ public class C extends ANY
        "#include <setjmp.h>\n"+
        "#include <pthread.h>\n"+
        "#include <errno.h>\n"+
+       "#include <sys/stat.h>\n"+
        "\n");
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
