@@ -41,11 +41,11 @@ private delete(
 
 # short-hand for creating and intalling effect
 #
-delete(f () -> unit) => delete default_delete_operation f # NYI : overload
+delete_custom(f () -> unit) => delete_custom default_delete_operation f # NYI : overload
 
 # short-hand for creating and installing effect
 #
-delete(dop Delete_Operation, f () -> unit) =>
+delete_custom(dop Delete_Operation, f () -> unit) =>
     s := delete dop effectMode.new unit
     s.use0 f
     unit
