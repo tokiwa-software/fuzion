@@ -509,7 +509,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         if (hasTypeFeature())
           {
-            _nonStaticTypeFeature = typeFeature().inherits().get(0).calledFeature();
+            _nonStaticTypeFeature = typeFeature().typeFeaturesNonStaticParent();
           }
         else
           {
@@ -533,6 +533,21 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return _nonStaticTypeFeature;
   }
 
+
+  /**
+   * For a given static type feature, get the corresponding non-static type
+   * feature this inherits from.
+   */
+  public AbstractFeature typeFeaturesNonStaticParent()
+  {
+    if (PRECONDITIONS) require
+      (// An ugly, low-level way to check this is a static type feature
+       featureName().baseName().indexOf(FuzionConstants.TYPE_STATIC_NAME) >= 0);
+
+    // the first parent of a static type feature is the corresponding non-static
+    // type feature
+    return inherits().get(0).calledFeature();
+  }
 
   /**
    * For every feature 'f', this produces the corresponding type feature
@@ -559,7 +574,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           (i >= 0); // TYPE_NAME must be part of aname
         var name = aname.substring(0, i) + FuzionConstants.TYPE_STATIC_NAME + aname.substring(i + FuzionConstants.TYPE_NAME.length());
         var inh = new List<AbstractCall>
-          (new Call(pos(), aname),
+          (new Call(pos(), aname),  // call to non-static parent, must be first inherits call, see typeFeaturesNonStaticParent()!
            new Call(pos(), null, "Type_STATIC", null, new List<>(new Actual(thisType(), null)), null));
         // make sure outer type feature exists, otherwise tests/reg_issues455-456_dot_type fails (NYI: check why exactly?)
         var ot = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
@@ -585,20 +600,17 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractCall> inh)
   {
-    var o = outer() == null || outer().isUniverse() ? universe() : outer().nonStaticTypeFeature(res);
-    var df = res._module.declaredOrInheritedFeatures(o);
-    var result = df.get(FeatureName.get(name, 0));
+    var nonStaticOuterType = outer() == null || outer().isUniverse() ? universe() : outer().nonStaticTypeFeature(res);
+    var outerType          = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
+    var result = res._module.declaredOrInheritedFeatures(nonStaticOuterType).get(FeatureName.get(name, 0));
     if (result == null)
       {
         var p = pos();
-        var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
-                             inh,
-                             Contract.EMPTY_CONTRACT,
-                             new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
-        result = tf;
-        res._module.findDeclarations(tf, o);
-        tf.scheduleForResolution(res);
-        res.resolveDeclarations(tf);
+        var typeFeature = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
+                                      inh,
+                                      Contract.EMPTY_CONTRACT,
+                                      new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
+        result = res._module.addTypeFeature(outerType, typeFeature);
       }
     return result;
   }
