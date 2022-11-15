@@ -62,7 +62,7 @@ public fileio is
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
     arr := fuzion.sys.c_string path
-    size := get_file_size arr path.byteLength
+    size := get_file_size arr unit
     if size != -1
       size
     else
@@ -73,8 +73,8 @@ public fileio is
   private get_file_size(
                         # the internal array data representing the file path in bytes
                         path Object,
-                        # the length of the internal array representing the path
-                        path_length i32) i64 is intrinsic
+                        # dummy parameter
+                        _ unit) i64 is intrinsic
 
   # creates a new file using an array of u8 as content and a string as the file path
   # it overwrites the file, if it exists, or creates a new one if it does not exist
@@ -160,7 +160,7 @@ public fileio is
               new_path string) outcome unit is
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
-    if move arr0 old_path.byteLength arr1 new_path.byteLength
+    if move arr0 arr1 unit
       unit
     else
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
@@ -170,12 +170,10 @@ public fileio is
   private move(
                # the internal array data representing the old file/dir path in bytes
                old_path Object,
-               # the length of the internal array representing the old path
-               old_path_length i32,
                # the internal array data representing the new file/dir path in bytes
                new_path Object,
-               # the length of the internal array representing the new path
-               new_path_length i32) bool is intrinsic
+               # dummy parameter
+               _ unit) bool is intrinsic
 
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
@@ -195,5 +193,5 @@ public fileio is
   private create_dir(
                  # the internal array data representing the dir path in bytes
                  path Object,
-                 # dummy parameter
+                 # dummy parameter to enable overload
                  _ unit) bool is intrinsic

@@ -163,27 +163,6 @@ public class Call extends AbstractCall
   public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
-  /**
-   * Is this a tail recursive call?
-   *
-   * This is used to allow cyclic type inferencing of the form
-   *
-   *   f is
-   *     if c
-   *       x
-   *     else
-   *       f
-   *
-   * Which must return a value of x's type.
-   *
-   * NYI: This is currently set explicitly by Loop.java. It should be a function
-   * that automatically detects tail recursive calls, i.e., calls without
-   * dynamic binding with target == current and with no code apart from setting
-   * the result to the returned value after the call.
-   */
-  public boolean _isTailRecursive = false;
-
-
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -1697,18 +1676,22 @@ public class Call extends AbstractCall
    * is a tail recursive call provided that the result returned is not
    * processed. The call may be dynamic, i.e., target may evalute to something
    * different than outer.outer.
+   *
+   * This is used to allow cyclic type inferencing of the form
+   *
+   *   f =>
+   *     if c
+   *       x
+   *     else
+   *       f
+   *
+   * Which must return a value of x's type.
    */
   boolean isTailRecursive(AbstractFeature outer)
   {
-    var result =
+    return
       calledFeature() == outer &&
       returnsThis(outer.code());
-
-    // NYI: cleanup: remove _isTailRecursive flag if this check never fails.
-    if (CHECKS) check
-      (!_isTailRecursive || result);
-
-    return result;
   }
 
 

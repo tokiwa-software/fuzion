@@ -848,7 +848,7 @@ public class AstErrors extends ANY
           "Qualified declaration not allowed for field",
           "All fields have to be declared textually within the source of their outer features.\n" +
           "Field declared: " + sqn(q) + "\n" +
-          "To fix this, you could move the declaration into the implementation of feature " + sqn(o) +
+          "To solve this, you could move the declaration into the implementation of feature " + sqn(o) +
           ".  Alternatively, you can declare a routine instead.");
   }
 

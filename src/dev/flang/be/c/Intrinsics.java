@@ -123,7 +123,20 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
+            CExpr.decl("struct stat", statIdent),
+            // result = size if successful
+            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
+            // result = -1 if it failed
+            resultIdent.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
           var fileIdent = new CIdent("f");
@@ -168,7 +181,17 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.move"         , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(A0.castTo("char *"), A1.castTo("char *")))),
+            // Testing if rename was successful
+            CExpr.iff(resultIdent.eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
