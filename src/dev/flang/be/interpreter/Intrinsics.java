@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeMap;
@@ -230,9 +231,13 @@ public class Intrinsics extends ANY
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
+          boolean appendFlag = args.get(3).boolValue();
           try
             {
-              Files.write(path, fileContent);
+              if (appendFlag)
+                Files.write(path, fileContent, StandardOpenOption.APPEND);
+              else
+                Files.write(path, fileContent);
               return new boolValue(true);
             }
           catch (Exception e)
@@ -240,6 +245,25 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
+    // put("fuzion.std.fileio.append", (interpreter, innerClazz) -> args ->
+    //     {
+    //       if (!ENABLE_UNSAFE_INTRINSICS)
+    //         {
+    //           System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+    //           System.exit(1);
+    //         }
+    //       Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
+    //       byte[] content = (byte[])args.get(2).arrayData()._array;
+    //       try
+    //         {
+    //           Files.write(path, content, StandardOpenOption.APPEND);
+    //           return new boolValue(true);
+    //         }
+    //       catch (Exception e)
+    //         {
+    //           return new boolValue(false);
+    //         }
+    //     });
     put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
