@@ -137,7 +137,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.write"        , (c,cl,outer,in) -> // NYI : needs to support append
         {
           var fileIdent = new CIdent("f");
           var writingIdent = new CIdent("writing");
