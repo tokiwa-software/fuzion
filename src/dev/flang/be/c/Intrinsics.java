@@ -544,7 +544,23 @@ public class Intrinsics extends ANY
                             c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
-    put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
+    put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
+                                                                      A1.castTo("char*") /* value */,
+                                                                      CExpr.int32const(1) /* overwrite */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
           var call = c._fuir.lookupCall(oc);
