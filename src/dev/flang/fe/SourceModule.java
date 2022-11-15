@@ -649,13 +649,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (!inherited && d._declaredFeatures != null)
       {
         if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn));
+          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
         d._declaredFeatures.put(fn, inner);
       }
     if (d._declaredOrInheritedFeatures != null)
       {
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn));
+          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
         d._declaredOrInheritedFeatures.put(fn, inner);
       }
   }
