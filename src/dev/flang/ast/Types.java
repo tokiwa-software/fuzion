@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -52,7 +51,6 @@ public class Types extends ANY
 
 
   private static Map<Type, Type> types;
-
 
   /**
    * Name of abstract features for function types:
