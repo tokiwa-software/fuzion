@@ -542,11 +542,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (PRECONDITIONS) require
       (// An ugly, low-level way to check this is a static type feature
+       this == Types.f_ERROR ||
        featureName().baseName().indexOf(FuzionConstants.TYPE_STATIC_NAME) >= 0);
 
     // the first parent of a static type feature is the corresponding non-static
     // type feature
-    return inherits().get(0).calledFeature();
+    return
+      this == Types.f_ERROR ? this : inherits().get(0).calledFeature();
   }
 
   /**
