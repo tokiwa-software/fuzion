@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -1041,7 +1040,13 @@ hw25 is
         var result = switch (clazzKind(cc))
           {
           case Abstract, Choice -> false;
-          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          case Intrinsic, Routine, Field ->
+            (cc.isInstantiated() || cc.feature().isOuterRef())
+            && cc != Clazzes.conststring.getIfCreated()
+            && !cc.isAbsurd()
+            // NYI: this should not depend on string comparison!
+            && !(cc.feature().qualifiedName().equals("void.absurd"))
+            ;
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;
@@ -1693,7 +1698,7 @@ hw25 is
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isAssignableFrom(cg))
+                if (t.isDirectlyAssignableFrom(cg))
                   {
                     resultL.add(tag);
                   }

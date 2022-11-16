@@ -1193,6 +1193,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Check if a value of clazz other can be assigned to a field of this clazz
+   * without the need for tagging.
+   *
+   * @other the value to be assigned to a field of type this
+   *
+   * @return true iff other can be assigned to a field of type this.
+   */
+  public boolean isDirectlyAssignableFrom(Clazz other)
+  {
+    return this._type.isDirectlyAssignableFrom(other._type);
+  }
+
+
+
+  /**
    * Helper routine for compareTo: compare the outer classes.  If outer are refs
    * for both clazzes, they can be considered the same as long as their outer
    * classes (recursively) are the same. If they are values, they need to be
@@ -1531,7 +1546,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
           {
             if (CHECKS) check
               (result < 0);

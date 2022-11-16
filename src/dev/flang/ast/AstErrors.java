@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
@@ -1512,6 +1514,16 @@ public class AstErrors extends ANY
     error(pos,
       "Loss of precision for: " + _originalString,
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  {
+    error(value.pos(),
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(value.type()))
+          .map(cg -> s(cg))
+          .collect(Collectors.joining(", "))
+      );
   }
 }
 

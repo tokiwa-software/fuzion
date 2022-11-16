@@ -77,8 +77,14 @@ public class Tag extends Expr
     super();
 
     if (PRECONDITIONS) require
-      (value != null);
-
+      (value != null,
+       taggedType.isChoice(),
+       taggedType
+         .choiceGenerics()
+         .stream()
+         .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+         .count() == 1
+       );
     this._value = value;
     this._taggedType = taggedType;
   }
