@@ -317,40 +317,6 @@ public class Types extends ANY
   }
 
 
-  public static void checkConstraints()
-  {
-    new HashSet<>(types.keySet())
-      .forEach(t -> checkConstraints(t));
-  }
-
-
-  private static void checkConstraints(Type t)
-  {
-    if (t.feature != null)
-      {
-        // NYI deduplicate this code: also in Call.checkTypes()
-
-        // Check that generics match formal generic constraints
-        var fi = t.featureOfType().generics().list.iterator();
-        var gi = t.generics().iterator();
-        while (fi.hasNext() &&
-              gi.hasNext()    ) // NYI: handling of open generic arguments
-          {
-            var f = fi.next();
-            var g = gi.next();
-
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null && g != null);
-            if (f != null && g != null &&
-                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
-              {
-                AstErrors.incompatibleActualGeneric(t.pos(), f, g);
-              }
-          }
-      }
-  }
-
-
   /**
    * Return the total number of unique types stored globally.
    */

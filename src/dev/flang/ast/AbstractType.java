@@ -995,6 +995,46 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return result;
   }
 
+
+  /**
+   * Check if contraints of this type are satisfied.
+   * Returns itself on success or t_ERROR if constraints are not met.
+   */
+  public AbstractType checkConstraints(SourcePosition pos)
+  {
+    // NYI caching?
+    var result = this;
+    if (!isGenericArgument())
+      {
+        // NYI deduplicate this code?: also in Call.checkTypes()
+
+        // Check that generics match formal generic constraints
+        var fi = featureOfType().generics().list.iterator();
+        var gi = generics().iterator();
+        while (fi.hasNext() &&
+              gi.hasNext()    ) // NYI: handling of open generic arguments
+          {
+            var f = fi.next();
+            var g = gi.next();
+            g.checkConstraints(pos);
+            if(compareTo(f.constraint()) != 0) {
+              f.constraint().checkConstraints(pos);
+            }
+
+            if (CHECKS) check
+              (Errors.count() > 0 || f != null && g != null);
+            if (f != null && g != null &&
+                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
+              {
+                AstErrors.incompatibleActualGeneric(pos, f, g);
+                result = Types.t_ERROR;
+              }
+          }
+      }
+    return result;
+  }
+
+
 }
 
 /* end of file */

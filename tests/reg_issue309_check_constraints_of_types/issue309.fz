@@ -26,4 +26,9 @@
 
 issue309 is
   a is
-  b Set a is abstract  // should flag an error: Incompatible type parameter
+  b Set a is abstract          // 1. should flag an error: Incompatible type parameter
+
+  b(T type) Set T is abstract  // 2. should flag an error: Incompatible type parameter
+
+  c(T (hasEquals T).type) is
+  d c a is abstract            // 3. should flag an error: Incompatible type parameter
