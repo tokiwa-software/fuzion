@@ -779,7 +779,7 @@ class LibraryOut extends ANY
       }
     else if (s instanceof Call c)
       {
-        lastPos = expressions(c.target, lastPos);
+        lastPos = expressions(c.target(), lastPos);
         for (var a : c._actuals)
           {
             lastPos = expressions(a, lastPos);

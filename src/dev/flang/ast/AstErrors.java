@@ -485,12 +485,12 @@ public class AstErrors extends ANY
 
   static void wrongNumberOfActualArguments(Call call)
   {
-    int fsz = call.resolvedFormalArgumentTypes.length;
+    int fsz = call._resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call.resolvedFormalArgumentTypes)
+    for (var t : call._resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
