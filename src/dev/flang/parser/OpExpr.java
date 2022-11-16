@@ -331,7 +331,7 @@ public class OpExpr extends ANY
       {
         Object o = els.get(i);
         if (o instanceof String) System.out.print(o);
-        else if (o instanceof Call) System.out.print(((Call)o).name);
+        else if (o instanceof Call c) System.out.print(c.name());
         else System.out.print("E");
       }
     System.out.println();

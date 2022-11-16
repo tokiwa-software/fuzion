@@ -565,7 +565,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.visit(new FeatureVisitor()
       {
         public Call      action(Call      c, AbstractFeature outer) {
-          if (c.name == null)
+          if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
