@@ -715,7 +715,7 @@ public class Call extends AbstractCall
               {
                 var fo = calledFeatureCandidates(targetFeature, res, thiz);
                 FeatureName calledName = FeatureName.get(name, _actuals.size());
-                _calledFeature = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList() /* remove? */);
+                _calledFeature = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList() /* remove? */);
                 if (_calledFeature != null &&
                     _generics.isEmpty() &&
                     _actuals.size() != _calledFeature.valueArguments().size() &&
@@ -728,14 +728,18 @@ public class Call extends AbstractCall
                 if (_calledFeature == null)
                   {
                     _calledFeature = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
-                    if (_calledFeature == null)
-                      {
-                        findChainedBooleans(res, thiz);
-                        if (_calledFeature == null) // nothing found, so flag error
-                          {
-                            AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
-                          }
-                      }
+                  }
+                if (_calledFeature == null)
+                  {
+                    findChainedBooleans(res, thiz);
+                  }
+                if (_calledFeature == null)
+                  {
+                    findOperatorOnOuter(res, thiz);
+                  }
+                if (_calledFeature == null) // nothing found, so flag error
+                  {
+                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
                   }
               }
           }
@@ -766,6 +770,53 @@ public class Call extends AbstractCall
                }
            }
        });
+  }
+
+
+  /**
+   * For an infix, prefix or postfix operator call of the form
+   *
+   *   a ⨁ b     -- or --
+   *   ⨁ a       -- or --
+   *   a ⨁
+   *
+   * that was not found within the target 'a', try to find this operator in 'thiz'
+   * or any outer feature.  If found in X.Y.Z.this, then convert this call into
+   *
+   *   X.Y.Z.this.infix  ⨁ a b     -- or --
+   *   X.Y.Z.this.prefix ⨁ a       -- or --
+   *   X.Y.Z.this.postix ⨁ a       ,
+   *
+   * respectively.  This permits the introduction of binary or unary operators
+   * within any feature, e.g., within unit type features that can be inherited
+   * from or even in the universe.
+   *
+   * If successful, field _calledFeature will be set to the called feature and
+   * fields target and _actuals will be changed accordingly.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param thiz the surrounding feature
+   */
+  void findOperatorOnOuter(Resolution res, AbstractFeature thiz)
+  {
+    if (name.startsWith("infix "  ) ||
+        name.startsWith("prefix " ) ||
+        name.startsWith("postfix ")    )
+      {
+        var calledName = FeatureName.get(name, _actuals.size()+1);
+        var oldTarget = target;
+        target = null;
+        var fo = calledFeatureCandidates(thiz, res, thiz);
+        _calledFeature = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff, true));
+        if (_calledFeature != null)
+          {
+            var oldActuals = _actuals;
+            _actuals = new List(oldTarget);
+            _actuals.addAll(oldActuals);
+          }
+      }
   }
 
 
@@ -874,9 +925,20 @@ public class Call extends AbstractCall
   }
 
 
-  private boolean mayMatchArgList(AbstractFeature ff)
+  /**
+   * Check if the actual arguments to this call may match the formal arguments
+   * for calling ff.
+   *
+   * @param ff the candidate that might be called
+   *
+   * @param addOne true iff one actual argument will be added (used in
+   * findOperatorOnOuter wich will add the target to the actual arguments).
+   *
+   * @return true if ff is a valid candidate to be called.
+   */
+  private boolean mayMatchArgList(AbstractFeature ff, boolean addOne)
   {
-    var asz = _actuals.size();
+    var asz = _actuals.size() + (addOne ? 1 : 0);
     var fvsz = ff.valueArguments().size();
     var ftsz = ff.typeArguments().size();
 
