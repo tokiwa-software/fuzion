@@ -17,14 +17,31 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java.lang.System
+#  Source code of Fuzion test issue536
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java.lang.System -- NYI: remove?
+# Regression test for #536: https://github.com/tokiwa-software/fuzion/issues/536
 #
-public java.lang.System is
-  out java.io.PrintStream is
-    fuzion.java.getStaticField java.io.PrintStream "java.lang.System" "out"
+issue536 is
+
+  # missing else branch, indirect assignment
+  # of unit to choice `outcome unit`
+  log_indirect(a bool) outcome unit is
+    if !a
+        error "a is false"
+
+  say (log_indirect (envir.args.count < 2))
+  say (log_indirect (envir.args.count > 2))
+
+
+  # missing else branch, direct assignment
+  # of unit to result of log_direct
+  log_direct(a bool) unit is
+    if !a
+        unit
+
+  say (log_direct (envir.args.count < 2))
+  say (log_direct (envir.args.count > 2))

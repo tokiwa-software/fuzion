@@ -17,15 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java.io.PrintStream
+#  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java.io.PrintStream -- NYI: remove?
-#
-public java.io.PrintStream(forbiddenToCallDirectly void) ref : fuzion.java.JavaObject(Object) is
-
-  public println(s string) unit is
-    _ := fuzion.java.callVirtual fuzion.java.JavaVoid "java.io.PrintStream" "println" "(Ljava/lang/String;)V" PrintStream.this [fuzion.java.stringToJavaObject s]
+override NAME = fileiotests
+FUZION_OPTIONS = -unsafeIntrinsics=on
+include ../simple.mk

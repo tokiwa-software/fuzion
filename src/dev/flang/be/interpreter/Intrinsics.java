@@ -189,11 +189,10 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              File file = new File(new String(pathBytes , StandardCharsets.UTF_8));
+              File file = new File(utf8ByteArrayDataToString(args.get(1)));
               FileInputStream fs = new FileInputStream(file);
               fs.read(byteArr);
               fs.close();
@@ -211,8 +210,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               long fileLength = Files.size(path);
@@ -230,8 +228,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
@@ -250,8 +247,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               boolean b = Files.exists(path);
@@ -269,8 +265,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               boolean b = Files.deleteIfExists(path);
@@ -288,10 +283,8 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] oldPathBytes = (byte[])args.get(1).arrayData()._array;
-          Path oldPath = Path.of(new String(oldPathBytes, StandardCharsets.UTF_8));
-          byte[] newPathBytes = (byte[])args.get(3).arrayData()._array;
-          Path newPath = Path.of(new String(newPathBytes, StandardCharsets.UTF_8));
+          Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
+          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
           try
             {
               Files.move(oldPath, newPath);
@@ -309,8 +302,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               Files.createDirectory(path);

@@ -17,12 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java -- unit type grouping wrappers to java code
-#
-java is
+override NAME = issue580
+include ../simple.mk

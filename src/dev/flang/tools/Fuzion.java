@@ -83,6 +83,8 @@ class Fuzion extends Tool
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = false;
   static boolean _xdfa_ = true;
+  static String _cCompiler_ = null;
+  static String _cFlags_ = null;
 
 
   /**
@@ -106,7 +108,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] ";
+        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -126,11 +128,21 @@ class Fuzion extends Tool
             _xdfa_ = parseOnOffArg(o);
             result = true;
           }
+        else if (o.startsWith("-CC="))
+          {
+            _cCompiler_ = o.substring(4);
+            result = true;
+          }
+        else if (o.startsWith("-CFlags="))
+          {
+            _cFlags_ = o.substring(8);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_), fuir).compile();
       }
     },
 
@@ -371,16 +383,9 @@ class Fuzion extends Tool
 
 
   /**
-   * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
-   * _fuzionHome.
-   */
-  private String _fuzionHomeProperty = System.getProperty(FUZION_HOME_PROPERTY);
-
-
-  /**
    * Home directory of the Fuzion installation.
    */
-  Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
+  Path _fuzionHome = (new FuzionHome())._fuzionHome;
 
 
   /**
@@ -424,7 +429,7 @@ class Fuzion extends Tool
   /**
    * List of module directories added using '-moduleDirs'.
    */
-  List<String> _moduleDirs = null;
+  List<String> _moduleDirs = new List<>();
 
 
   /**
@@ -745,7 +750,7 @@ class Fuzion extends Tool
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
-            else if (a.startsWith("-moduleDirs="             )) { _moduleDirs = new List<>(); _moduleDirs.addAll(parseStringListArg(a)); }
+            else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }

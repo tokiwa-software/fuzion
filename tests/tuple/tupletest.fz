@@ -286,4 +286,4 @@ tupletest is
 # (_,t15a2,_) := (01, true, 23); // 28. should flag an error, duplicate declaration
 # (_,_,t15a3) := (01, true, 23); // 28. should flag an error, duplicate declaration
 
-  fuzion.std.exit exitCode
+  exit exitCode

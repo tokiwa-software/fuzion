@@ -73,4 +73,4 @@ redef_args is
     chck (a = 2) "redefined field as in #165"
 
 
-  fuzion.std.exit exitCode
+  exit exitCode

@@ -35,7 +35,7 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => isMin
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other i32) => thiz > 0 && max -° thiz < other
   redef underflowOnAdd(other i32) => thiz < 0 && min -° thiz > other
 

@@ -141,10 +141,11 @@ public class FrontEndOptions extends FuzionOptions
           enableUnsafeIntrinsics);
 
     if (PRECONDITIONS) require
-                         (verbose >= 0,
-                          fuzionHome != null,
-                          !readStdin || main == null,
-                          modules != null);
+      (verbose >= 0,
+       fuzionHome != null,
+       !readStdin || main == null,
+       modules != null,
+       moduleDirs != null);
 
     _fuzionHome = fuzionHome;
     _loadBaseLib = loadBaseLib;

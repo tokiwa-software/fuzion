@@ -28,6 +28,9 @@
 # type features 'f.type' are declared implicitly for every feature f.
 # Type features do not contain state, they are unit types.
 #
+# All type features inherit directly (Object.type) or indirectly (all
+# others type features) from this feature.
+#
 Type ref is
 
 
@@ -41,6 +44,29 @@ Type ref is
   # result has the form "Type of '<name>'", but this might change in the future
   #
   redef asString => "Type of '$name'"
+
+
+# Type_STATIC -- direct parent feature of all type features
+#
+# type features 'f.type' are declared implicitly for every feature f.
+# Type features do not contain state, they are unit types.
+#
+# All type features inherit directly from this feature.
+#
+Type_STATIC(STATIC_THIS_TYPE type) is
+
+  # equality implements the default equality relation for values of this type.
+  #
+  # This relation must be
+  #
+  #  - reflexive (equality a b),
+  #  - symmetric (equality a b = equality b a), and
+  #  - transitive ((equality a b && equality b c) : equality a c).
+  #
+  # result is true iff 'a' is considered to represent the same abstract value
+  # as 'b'.
+  #
+  equality(a, b STATIC_THIS_TYPE) bool is abstract
 
 
 # Types -- features related to Type but not requiring an instance of Type
