@@ -589,7 +589,8 @@ public class Call extends AbstractCall
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
       {
-        var b = cb._actuals.get(0);
+        var bix = cb._actuals.size() - 1; // index of 'b' in first call 'a < b'
+        var b = cb._actuals.get(bix);
         b = res.resolveType(b, thiz);
         String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
         var tmp = new Feature(res,
@@ -608,7 +609,8 @@ public class Call extends AbstractCall
         t1 = res.resolveType(t1    , thiz);
         as = res.resolveType(as    , thiz);
         result = res.resolveType(result, thiz);
-        cb._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
+        cb._actuals.set(cb._actuals.size()-1,
+                        new Block(b.pos(),new List<Stmnt>(as, t1)));
         _actuals = new List<Expr>(result);
         _calledFeature = Types.resolved.f_bool_AND;
         name = _calledFeature.featureName().baseName();
@@ -640,8 +642,9 @@ public class Call extends AbstractCall
   {
     return
       name.startsWith("infix ") &&
-      _actuals.size() == 1 &&
-      _generics == NO_GENERICS;
+      (_actuals.size() == 1 /* normal infix operator 'a.infix + b' */                ||
+       _actuals.size() == 2 /* infix on different target 'X.Y.Z.this.infix + a b' */    ) &&
+      true; /* no check for _generics.size(), we allow infix operator to infer arbitrary number of type parameters */
   }
 
 
