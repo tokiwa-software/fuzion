@@ -74,6 +74,7 @@ test_equals =>
   #
   red_cat  := test_equals_types.colored_text test_equals_types.red  "cat".utf8
   blue_cat := test_equals_types.colored_text test_equals_types.blue "cat".utf8
+  red_dog  := test_equals_types.colored_text test_equals_types.red  "dog".utf8
   blue_dog := test_equals_types.colored_text test_equals_types.blue "dog".utf8
 
   say "comparing red cat and blue cat as strings: {eq3 red_cat blue_cat}"
@@ -86,6 +87,15 @@ test_equals =>
   say "comparing red cat and red cat as colored_text: {infix ≟ red_cat red_cat}"
   say "comparing red cat and blue cat as colored_text: {red_cat ≟ blue_cat}"
   say "comparing red cat and red cat as colored_text: {red_cat ≟ red_cat}"
+  say "comparing red cat, blue cat and blue dog as colored_text: {red_cat ≟ blue_cat ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue dog as colored_text: {blue_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing red dog, blue dog and blue dog as colored_text: {red_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue cat as colored_text: {blue_dog ≟ blue_dog ≟ blue_cat}"
+  say "comparing red dog, red dog, red dog and red dog as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red cat, red dog, red dog and red dog as colored_text: {red_cat ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red cat, red dog and red dog as colored_text: {red_dog ≟ red_cat ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red dog, red cat and red dog as colored_text: {red_dog ≟ red_dog ≟ red_cat ≟ red_dog}"
+  say "comparing red dog, red dog, red dog and red cat as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_cat}"
 
 
 test_equals
