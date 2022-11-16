@@ -35,15 +35,15 @@ nested_choice_negative =>
             nil nil => "inner nil"
             unit => "unit"
 
-  c my_choice := nil // should flag an error: ambigous assignment
+  c my_choice := nil // 1. should flag an error: ambigous assignment
 
   my_string : string is
   my_choice2 : choice string my_string is
-  my_choice2 := "str" // should flag an error: generics must be disjoint
+  my_choice2 := "str" // 2. should flag an error: generics must be disjoint
 
   my_i32 : i32 1 is
   my_choice3 : choice i32 my_i32 is
-  my_choice3 := my_i32 // should flag an error: generics must be disjoint
+  my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
 
   my_generic_choice(A,B type) : choice A B is
-  a my_generic_choice string my_string := "string" // should flag an error: generics must be disjoint
+  a my_generic_choice string my_string := "string" // 4. should flag an error: generics must be disjoint
