@@ -242,6 +242,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isDirectlyAssignableFrom(AbstractType actual)
+  {
+    return (!isChoice() && isAssignableFrom(actual))
+         || (isChoice() && compareTo(actual) == 0);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.
    *
@@ -748,7 +762,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
-   * time errore in case this is not the case.
+   * time error in case this is not the case.
    */
   void checkChoice(SourcePosition pos)
   {
@@ -773,8 +787,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         (t1.isDirectlyAssignableFrom(t2) ||
+                          t2.isDirectlyAssignableFrom(t1) )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
