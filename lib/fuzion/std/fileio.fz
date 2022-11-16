@@ -87,7 +87,7 @@ public fileio is
                # the content of the file as an u8 array
                content array u8) outcome unit is
     arr := fuzion.sys.c_string path
-    if write arr content.internalArray.data false
+    if write arr content.internalArray.data content.length 0
       unit
     else
       error "an error occurred during writing the file: \"$path\""
@@ -101,7 +101,9 @@ public fileio is
                 # the internal array data representing the content bytes to insert in file
                 content Object,
                 # the length of the internal array representing the content
-                append bool) bool is intrinsic
+                length i32,
+                # the length of the internal array representing the content
+                append i8) bool is intrinsic
 
   # writes bytes to the end of an existing file
   # returns outcome of unit in case of success
@@ -112,7 +114,7 @@ public fileio is
                 # the content to add as an u8 array
                 content array u8) outcome unit is
     arr := fuzion.sys.c_string path
-    if write arr content.internalArray.data true
+    if write arr content.internalArray.data content.length 1
       unit
     else
       error "an error occurred during writing the file: \"$path\""

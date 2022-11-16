@@ -63,6 +63,7 @@ public class Intrinsics extends ANY
   static CIdent A0 = new CIdent("arg0");
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
+  static CIdent A3 = new CIdent("arg3");
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
@@ -114,7 +115,7 @@ public class Intrinsics extends ANY
             // Testing if fopen was successful
             CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
             CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
             CExpr.call("fclose", new List<>(fileIdent)),
@@ -137,17 +138,19 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.write"        , (c,cl,outer,in) -> // NYI : needs to support append
+    put("fuzion.std.fileio.write"        , (c,cl,outer,in) -> // NYI : seg fault
         {
           var fileIdent = new CIdent("f");
           var writingIdent = new CIdent("writing");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w")))),
+            CExpr.decl("FILE *", fileIdent),
+            CExpr.iff(A3.castTo("bool"), CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("a"))))),
+            CExpr.iff(A3.castTo("bool").not(), CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w"))))),
             // Testing if fopen was successful
             CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
             CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
             CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
             CExpr.call("fclose", new List<>(fileIdent)),

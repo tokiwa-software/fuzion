@@ -231,10 +231,10 @@ public class Intrinsics extends ANY
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
-          boolean appendFlag = args.get(3).boolValue();
+          int appendFlag = args.get(3).i8Value();
           try
             {
-              if (appendFlag)
+              if (appendFlag == 1)
                 Files.write(path, fileContent, StandardOpenOption.APPEND);
               else
                 Files.write(path, fileContent);
