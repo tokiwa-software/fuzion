@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
@@ -144,6 +143,11 @@ public class Clazzes extends ANY
             }
         }
       return _clazz;
+    }
+    public void clear()
+    {
+      _dummy = null;
+      _clazz = null;
     }
   }
 
@@ -1292,6 +1296,55 @@ public class Clazzes extends ANY
   public static void addUsedFeature(AbstractFeature f, HasSourcePosition at)
   {
     f._usedAt = at;
+  }
+
+  /**
+   * reset all statically held data
+   * and set closed to false again
+   */
+  public static void reset()
+  {
+    clazzes.clear();
+    _clazzesForTypes_.clear();
+    clazzesToBeVisited.clear();
+    universe.clear();
+    c_void.clear();
+    bool.clear();
+    c_TRUE.clear();
+    c_FALSE.clear();
+    i8.clear();
+    i16.clear();
+    i32.clear();
+    i64.clear();
+    u8.clear();
+    u16.clear();
+    u32.clear();
+    u64.clear();
+    f32.clear();
+    f64.clear();
+    ref_i8.clear();
+    ref_i16.clear();
+    ref_i32.clear();
+    ref_i64.clear();
+    ref_u8.clear();
+    ref_u16.clear();
+    ref_u32.clear();
+    ref_u64.clear();
+    ref_f32.clear();
+    ref_f64.clear();
+    object.clear();
+    string.clear();
+    conststring.clear();
+    c_unit.clear();
+    error.clear();
+    constStringInternalArray = null;
+    fuzionSysArray_u8 = null;
+    fuzionSysArray_u8_data = null;
+    fuzionSysArray_u8_length = null;
+    closed = false;
+    _whenCalledDynamically_.clear();
+    _whenCalled_.clear();
+    _calledDynamically_.clear();
   }
 
 
