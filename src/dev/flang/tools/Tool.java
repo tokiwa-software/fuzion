@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 
 import java.util.TreeSet;
@@ -155,8 +157,10 @@ public abstract class Tool extends ANY
       }
     catch(Throwable e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        var sw = new StringWriter();
+        var pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        Errors.fatal(sw.toString());
       }
   }
 

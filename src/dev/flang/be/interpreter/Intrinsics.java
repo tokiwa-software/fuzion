@@ -186,8 +186,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
@@ -207,8 +206,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -225,8 +223,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
@@ -244,8 +241,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -262,8 +258,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -280,8 +275,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
           Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
@@ -299,8 +293,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -372,16 +365,14 @@ public class Intrinsics extends ANY
           var actualGenerics = innerClazz._type.generics();
           if ((actualGenerics == null) || (actualGenerics.size() != 1))
             {
-              System.err.println("fuzion.java.getStaticField called with wrong number of actual generic arguments");
-              System.exit(1);
+              Errors.fatal("fuzion.java.getStaticField called with wrong number of actual generic arguments");
             }
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
             {
               if (!ENABLE_UNSAFE_INTRINSICS)
                 {
-                  System.err.println("*** error: unsafe feature "+in+" disabled");
-                  System.exit(1);
+                  Errors.fatal("*** error: unsafe feature "+in+" disabled");
                 }
               Instance clazzOrThizI = (Instance) args.get(1);
               Instance fieldI = (Instance) args.get(2);
@@ -405,8 +396,7 @@ public class Intrinsics extends ANY
             {
               if (!ENABLE_UNSAFE_INTRINSICS)
                 {
-                  System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-                  System.exit(1);
+                  Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
                 }
               int a = 1;
               var clNameI =                      (Instance) args.get(a++);
@@ -431,8 +421,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           return new i32Value(Array.getLength(arr));
@@ -441,8 +430,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           var ix  = args.get(2).i32Value();
@@ -454,8 +442,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arrA = args.get(1).arrayData();
           var res = arrA._array;
@@ -466,8 +453,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var str = utf8ByteArrayDataToString(args.get(1));
           Clazz resultClazz = innerClazz.resultClazz();
@@ -477,8 +463,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
           return Interpreter.value(javaString == null ? "--null--" : javaString);
@@ -487,8 +472,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var b = args.get(1).i8Value();
           var jb = Byte.valueOf((byte) b);
@@ -499,8 +483,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var c = args.get(1).u16Value();
           var jc = Character.valueOf((char) c);
@@ -511,8 +494,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var s = args.get(1).i16Value();
           var js = Short.valueOf((short) s);
@@ -523,8 +505,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var i = args.get(1).i32Value();
           var ji = Integer.valueOf(i);
@@ -535,8 +516,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var l = args.get(1).i64Value();
           var jl = Long.valueOf(l);
@@ -547,8 +527,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var f32 = args.get(1).f32Value();
           var jf = Float.valueOf(f32);
@@ -559,8 +538,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var d = args.get(1).f64Value();
           var jd = Double.valueOf(d);
@@ -571,8 +549,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var b = args.get(1).boolValue();
           var jb = Boolean.valueOf(b);

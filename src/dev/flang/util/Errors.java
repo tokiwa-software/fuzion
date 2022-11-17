@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.TreeSet;
 
 
@@ -99,6 +97,12 @@ public class Errors extends ANY
   public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
   public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
+
+
+  // For use in e.g. the language server where we
+  // want to continue even in the presence of fatal errors.
+  // Normally this will remain set to false.
+  public static boolean preventExit = false;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -349,7 +353,19 @@ public class Errors extends ANY
   {
     error(s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
+  }
+
+
+  /**
+   * Call System.exit in case preventExit is false.
+   */
+  private static void exit(int status)
+  {
+    if (!preventExit)
+      {
+        System.exit(status);
+      }
   }
 
 
@@ -367,7 +383,7 @@ public class Errors extends ANY
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
   }
 
 
@@ -408,13 +424,13 @@ public class Errors extends ANY
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
   }
 
 
   /**
    * Check if any errors found.  If so, show the number of errors and
-   * System.exit(1).
+   * exit(1).
    *
    * Otherwise, if warningStatistics is true, report the number of warnings
    * encountered.  Return normally in this case.
@@ -436,7 +452,7 @@ public class Errors extends ANY
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
                 ".");
-        System.exit(1);
+        exit(1);
       }
     else if (warningStatistics && warningCount() > 0)
       {
@@ -447,7 +463,7 @@ public class Errors extends ANY
 
   /**
    * Check if any errors found.  If so, show the number of errors and
-   * System.exit(1).
+   * exit(1).
    */
   public static void showAndExit()
   {
