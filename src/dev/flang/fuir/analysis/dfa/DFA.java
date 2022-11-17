@@ -976,6 +976,10 @@ public class DFA extends ANY
     put("i16.infix =="                   , cl -> cl._dfa._bool );
     put("i32.infix =="                   , cl -> cl._dfa._bool );
     put("i64.infix =="                   , cl -> cl._dfa._bool );
+    put("i8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
+    put("i16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("i32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("i64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
     put("i8.infix !="                    , cl -> cl._dfa._bool );
     put("i16.infix !="                   , cl -> cl._dfa._bool );
     put("i32.infix !="                   , cl -> cl._dfa._bool );
