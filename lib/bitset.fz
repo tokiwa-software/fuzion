@@ -89,11 +89,7 @@ is
   bitset.type.equality(a, b bitset) bool is
      h := a.highest >>= i -> b.highest >>= j -> i.max j
      match h
-       _ nil =>
-         if a.highest!! && b.highest!!
-           true
-         else
-           false
+       _ nil => a.highest!! && b.highest!!
        m u64 =>
          for
            r := true, r && (a.has i <=> b.has i)
