@@ -148,6 +148,9 @@ u128(hi, lo u64) : wrappingInteger u128, hasInterval u128, u128s is
   redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
   redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
 
+  u128.type.equality(a, b u128) =>
+    a.hi = b.hi && a.lo = b.lo
+
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
   redef infix /= (other u128) bool is !(thiz = other)
 
