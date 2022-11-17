@@ -157,10 +157,7 @@ public abstract class Tool extends ANY
       }
     catch(Throwable e)
       {
-        var sw = new StringWriter();
-        var pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        Errors.fatal(sw.toString());
+        Errors.fatal(e);
       }
   }
 

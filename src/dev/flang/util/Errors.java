@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.TreeSet;
 
 
@@ -354,6 +356,22 @@ public class Errors extends ANY
     error(s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
     exit(1);
+  }
+
+
+  /**
+   * Record the given error found during compilation and exit immediately with
+   * exit code 1.
+   *
+   * @param e the exception that lead to the failure
+   *
+   */
+  public static void fatal(Throwable e)
+  {
+    var sw = new StringWriter();
+    var pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    fatal(sw.toString());
   }
 
 
