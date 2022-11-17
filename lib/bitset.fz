@@ -78,7 +78,7 @@ is
   infix == (other bitset) bool is
      h := highest >>= i -> other.highest >>= j -> i.max j
      match h
-       _ nil => true
+       _ nil => highest!! && other.highest!!
        m u64 =>
          for
            r := true, r && ((has i) <=> other.has i)
