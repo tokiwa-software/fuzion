@@ -1,6 +1,6 @@
 /*
 
-This file is part of the Fuzion docs generator implementation.
+This file is part of the Fuzion language implementation.
 
 The Fuzion docs generator implementation is free software: you can redistribute it
 and/or modify it under the terms of the GNU General Public License as published
