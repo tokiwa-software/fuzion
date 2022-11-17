@@ -71,6 +71,16 @@ is
     else
       true
 
+  # NYI: #637:
+  # matrix.type.equality(M (numeric M).type, a, b matrix M) =>
+  #   for
+  #     x in a.e
+  #     y in a.e
+  #   until x /= y
+  #     false
+  #   else
+  #     true
+
   redef infix != (b matrix M) => !(a = b)
 
   # NYI: total order
