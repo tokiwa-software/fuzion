@@ -47,8 +47,8 @@ private stat(
   # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
   #
   exists(
-          # the (relative or absolute) file name, using platform specific path separators
-          path string) =>
+         # the (relative or absolute) file name, using platform specific path separators
+         path string) =>
     tmp := ps.exists path
     replace
     tmp
@@ -58,7 +58,9 @@ private stat(
   # in case of failure an error will be returned
   # this feature resolves symbolic links
   #
-  stats(path string) outcome meta_data is
+  stats(
+        # the (relative or absolute) file name, using platform specific path separators
+        path string) outcome meta_data is
     data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
@@ -72,7 +74,9 @@ private stat(
   # in case of failure an error will be returned
   # this feature does not resolve symbolic links and returns stats of the link itself
   #
-  lstats(path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+  lstats(
+         # the (relative or absolute) file name, using platform specific path separators
+         path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
     data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
@@ -81,16 +85,30 @@ private stat(
       replace
       error "error while retrieving meta_data for the following file/dir: $path"
 
-# short-hand for creating and installing effect
+# short-hand for installing the default stat effect to the provided code
+#
+stat(f () -> unit) => stat_custom default_provided_stat f
+
+# short-hand for creating and installing a customized stat effect
 #
 stat_custom(ps Provided_Stat, f () -> unit) =>
   s := stat ps effectMode.new unit
   s.use0 f
   unit
 
-# short-hand for accessing and using stats provided by the stat effect in current environment
+# short-hand for accessing the stat effect in current environment
 #
-stat(path string, resolve bool) => 
+stat => 
+  stats.installDefault
+  stat.env
+
+# short-hand for accessing and using stats/lstats provided by the stat effect in current environment
+#
+stat(
+     # the (relative or absolute) file name, using platform specific path separators
+     path string,
+     # a boolean resolve flag to resolve symbolic links or not
+     resolve bool) => 
   stats.installDefault
   if resolve
     stat.env.stats(path)
