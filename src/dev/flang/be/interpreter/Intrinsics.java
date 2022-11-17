@@ -793,6 +793,7 @@ public class Intrinsics extends ANY
     put("f32.infix %"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
     put("f32.infix **"          , (interpreter, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
     put("f32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
+    put("f32.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(             (args.get(1).f32Value()  ==  args.get(2).f32Value() )));
     put("f32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() != args.get(1).f32Value())));
     put("f32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
     put("f32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
@@ -809,6 +810,7 @@ public class Intrinsics extends ANY
     put("f64.infix %"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
     put("f64.infix **"          , (interpreter, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
     put("f64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
+    put("f64.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(             (args.get(1).f64Value()  ==  args.get(2).f64Value() )));
     put("f64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())));
     put("f64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
     put("f64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));

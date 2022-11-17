@@ -415,6 +415,8 @@ public class Intrinsics extends ANY
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.infix =="         ,
         "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.#type_STATIC.equality",
+        "f64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix !="         ,
         "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <"          ,

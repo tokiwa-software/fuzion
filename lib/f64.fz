@@ -53,6 +53,8 @@ f64(val f64) : float f64, f64s is
   redef infix >  (other f64) bool is intrinsic
   redef infix >= (other f64) bool is intrinsic
 
+  f64.type.equality(a, b f64) bool is intrinsic
+
 
   # conversion
 
