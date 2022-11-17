@@ -347,6 +347,10 @@ public class Intrinsics extends ANY
         "u16.infix =="         ,
         "u32.infix =="         ,
         "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.#type_STATIC.equality",
+        "u16.#type_STATIC.equality",
+        "u32.#type_STATIC.equality",
+        "u64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.infix !="          ,
         "u16.infix !="         ,
         "u32.infix !="         ,

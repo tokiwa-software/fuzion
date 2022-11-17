@@ -1050,6 +1050,10 @@ public class DFA extends ANY
     put("u16.infix =="                   , cl -> cl._dfa._bool );
     put("u32.infix =="                   , cl -> cl._dfa._bool );
     put("u64.infix =="                   , cl -> cl._dfa._bool );
+    put("u8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
+    put("u16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("u32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("u64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
     put("u8.infix !="                    , cl -> cl._dfa._bool );
     put("u16.infix !="                   , cl -> cl._dfa._bool );
     put("u32.infix !="                   , cl -> cl._dfa._bool );
