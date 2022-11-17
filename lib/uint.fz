@@ -243,6 +243,10 @@ is
     data.count = other.data.count &
       ((data.zip other.data (a,b -> a = b)) ∀ (x->x))
 
+  uint.type.equality(a, b uint) bool is
+    a.data.count = b.data.count &&
+      ((a.data.zip b.data (c,d -> c = d)) ∀ (x->x))
+
 
   # less or equal
   infix <= (other uint) =>

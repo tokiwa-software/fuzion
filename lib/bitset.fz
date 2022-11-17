@@ -86,6 +86,17 @@ is
          else
            r
 
+  bitset.type.equality(a, b bitset) bool is
+     h := a.highest >>= i -> b.highest >>= j -> i.max j
+     match h
+       _ nil => a.highest!! && b.highest!!
+       m u64 =>
+         for
+           r := true, r && (a.has i <=> b.has i)
+           i in u64 0 .. m
+         else
+           r
+
   # create a string representation of a bitset of the form "{2, 4}
   #
   redef asString string is
