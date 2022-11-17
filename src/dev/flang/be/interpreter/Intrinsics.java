@@ -314,7 +314,9 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.stats", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.stats",
+        "fuzion.std.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
+        (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {

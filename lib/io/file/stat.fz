@@ -28,7 +28,7 @@
 meta_data(
           # the size of the file/dir
           size i64,
-          # the time of creation of the file/dir
+          # the time of last modification of the file/dir
           time i64,
           # boolean to check if the pathname is a regular file
           is_regular bool,
@@ -61,7 +61,7 @@ private stat(
   stats(
         # the (relative or absolute) file name, using platform specific path separators
         path string) outcome meta_data is
-    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
+    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
       meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
@@ -77,7 +77,7 @@ private stat(
   lstats(
          # the (relative or absolute) file name, using platform specific path separators
          path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
-    data := array 4 i->(i64 0) # data will contain: [size, time of creation in seconds, regular file? 1 : 0, dir? 1 : 0]
+    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
       meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
