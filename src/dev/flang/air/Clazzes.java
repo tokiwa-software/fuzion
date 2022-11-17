@@ -1298,7 +1298,11 @@ public class Clazzes extends ANY
     f._usedAt = at;
   }
 
-  public static void clear()
+  /**
+   * reset all statically held data
+   * and set closed to false again
+   */
+  public static void reset()
   {
     clazzes.clear();
     _clazzesForTypes_.clear();
