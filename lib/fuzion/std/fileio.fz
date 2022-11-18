@@ -102,7 +102,7 @@ public fileio is
                 content Object,
                 # the length of the internal array representing the content
                 length i32,
-                # the length of the internal array representing the content
+                # append flag: 1 to append data, 0 to overwrite data
                 append i8) bool is intrinsic
 
   # writes bytes to the end of an existing file

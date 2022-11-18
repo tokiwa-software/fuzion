@@ -231,13 +231,17 @@ public class Intrinsics extends ANY
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
-          int appendFlag = args.get(3).i8Value();
+          int appendFlag = args.get(4).i8Value();
           try
             {
-              if (appendFlag == 1)
-                Files.write(path, fileContent, StandardOpenOption.APPEND);
-              else
-                Files.write(path, fileContent);
+              switch (appendFlag) {
+                case 1:
+                  Files.write(path, fileContent, StandardOpenOption.APPEND);
+                  break;
+                default:
+                  Files.write(path, fileContent);
+                  break;
+              }
               return new boolValue(true);
             }
           catch (Exception e)
@@ -245,25 +249,6 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    // put("fuzion.std.fileio.append", (interpreter, innerClazz) -> args ->
-    //     {
-    //       if (!ENABLE_UNSAFE_INTRINSICS)
-    //         {
-    //           System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-    //           System.exit(1);
-    //         }
-    //       Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-    //       byte[] content = (byte[])args.get(2).arrayData()._array;
-    //       try
-    //         {
-    //           Files.write(path, content, StandardOpenOption.APPEND);
-    //           return new boolValue(true);
-    //         }
-    //       catch (Exception e)
-    //         {
-    //           return new boolValue(false);
-    //         }
-    //     });
     put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
