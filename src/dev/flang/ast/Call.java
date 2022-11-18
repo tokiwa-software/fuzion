@@ -33,6 +33,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -819,6 +821,10 @@ public class Call extends AbstractCall
             var oldActuals = _actuals;
             _actuals = new List(oldTarget);
             _actuals.addAll(oldActuals);
+          }
+        else
+          {
+            _target = oldTarget;
           }
       }
   }
