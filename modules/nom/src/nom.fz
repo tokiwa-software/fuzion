@@ -262,3 +262,90 @@ nom is
             p_cached.put (p())
             parse input
 
+
+
+  parsers : combinator, string_parsers, sequence, branch, multi is
+
+    json_value : choice string i64 f64 bool nil (Sequence json_value) (map string json_value) is
+      redef asString string is
+        match json_value.this
+          s string => "\"$s\""
+          i i64 => $i
+          f f64 => $f
+          b bool => $b
+          n nil => "null"
+          seq Sequence => $seq
+          m map => $m
+
+    json =>
+
+      # parser for a json string
+      # NYI escapings
+      parser_string :=
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) string (delimited (tag "\"") (take_while0 codepoint (c-> (c ≠ "\"") & (c ≠ "\\"))) (tag "\"")) (x -> strings.fromCodepoints x)
+
+      # parser for a json number
+      # NYI fraction, negative numbers, exponents
+      parser_number parser (Sequence codepoint) (Sequence codepoint) json_value :=
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (take_while1 (c -> codepoints.ascii_digit.contains c.val)) (x -> (strings.fromCodepoints x).parse_i64.val)
+
+      # parser for true
+      parser_true :=
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "true") (x -> true)
+
+      # parser for false
+      parser_false :=
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "false") (x -> false)
+
+      # parser for null
+      parser_null :=
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "null") (x -> nil)
+
+      # parser for json array
+      parser_array =>
+        parser_no_values parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+          map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence json_value) whitespace0 (x -> lists.empty json_value)
+
+        parser_comma_sep_value parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+          separated_list1 (tag ",") parser_json_value_delimited_lazy
+
+        tmp parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence json_value) json_value tmp (x->x)
+
+      # parser for json object
+      parser_object =>
+        parser_key_value parser (Sequence codepoint) (Sequence codepoint) (tuple string json_value) :=
+          separated_pair (delimited whitespace0 parser_string whitespace0) (tag ":") parser_json_value_delimited_lazy
+
+        parser_no_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) :=
+          map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) whitespace0 (x -> lists.empty (tuple string json_value))
+
+        parser_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) :=
+          separated_list1 (tag ",") parser_key_value
+
+        parser_object_seq_tuple parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) :=
+          delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
+
+        map_res (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) json_value parser_object_seq_tuple (x -> mapOf x.asArray)
+
+      # parser for a json_value: true, false, [], {}, numbers, strings etc.
+      parser_json_value =>
+        alt (Sequence codepoint) (Sequence codepoint) json_value [
+          map_res (Sequence codepoint) (Sequence codepoint) string json_value parser_string (x->x),
+          parser_number,
+          parser_object,
+          parser_array,
+          parser_number,
+          parser_true,
+          parser_false,
+          parser_null]
+
+      # parser for json_value which may be surrounded by whitespace
+      parser_json_value_delimited => delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_json_value whitespace0
+
+      # parser for json_value which may be surrounded by whitespace, lazy flavour
+      # NYI if this is field leads to crashes
+      parser_json_value_delimited_lazy => as_lazy (Sequence codepoint) (Sequence codepoint) json_value ()->parser_json_value_delimited
+
+      # map parser to take string input
+      to_string_input parser_json_value_delimited
