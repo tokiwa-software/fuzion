@@ -162,7 +162,7 @@ nom is
             match (parse s1.rest)
               s2 success I (Sequence O) => success s2.rest ([s1.out]++s2.out).as_seq
               error => panic "invalid state, many0 must always succeed."
-          # NYI type inference should infer correct type of emtpy array
+          # NYI type inference should infer correct type of empty array
           error => success input (lists.empty O).as_seq
 
     # parse a separated list of values, zero or more values
@@ -173,7 +173,7 @@ nom is
             match (many0 (combinator.preceded p_sep p_value)).parse s1.rest
               s2 success => success s2.rest ([s1.out]++s2.out).as_seq
               e error => panic "invalid state, many always succeeds"
-          # NYI type inference should infer correct type of emtpy array
+          # NYI type inference should infer correct type of empty array
           error => success input (lists.empty O).as_seq
 
     # parse a separated list of values, one or more values
