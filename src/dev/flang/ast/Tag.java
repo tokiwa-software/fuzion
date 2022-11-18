@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
 
@@ -79,11 +80,12 @@ public class Tag extends Expr
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
-       taggedType
-         .choiceGenerics()
-         .stream()
-         .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
-         .count() == 1
+       Errors.count() > 0
+        || taggedType
+            .choiceGenerics()
+            .stream()
+            .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+            .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit
         || value.type().compareTo(Types.resolved.t_unit) == 0
