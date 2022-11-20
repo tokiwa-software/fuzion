@@ -42,11 +42,11 @@ nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence, nom.branch, no
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) u8 (take_while_m_n 2 2 (fun is_valid)) (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (take_while_m_n 2 2 (fun is_valid)).map u8 (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := preceded (tag "#") (tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
-    parser_hex_color_seq_codepoints := map_res (Sequence codepoint) (Sequence codepoint) (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+    parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> (r,g,b) := t; hex_color r g b)
     # convert parser to take string not codepoints as input
     # NYI: using this crashes in c backend currently
     parser_hex_color := to_string_input parser_hex_color_seq_codepoints
