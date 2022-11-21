@@ -201,3 +201,11 @@ public fileio is
   private open_source(
                       # a Fuzion Object represention the path for the source to be opened
                       path Object) i64 is intrinsic # NYI : only works using the C back-end
+
+  # intrinsic that closes an IO source using a file descriptor created by open_source
+  # returns TRUE in success
+  # returns FALSE in failure
+  #
+  private close_source(
+                      # the file descriptor
+                      fd i64) bool is intrinsic # NYI : only works using the C back-end
