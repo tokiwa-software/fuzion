@@ -195,3 +195,7 @@ public fileio is
                  path Object,
                  # dummy parameter to enable overload
                  _ unit) bool is intrinsic
+
+  private open_source(path Object) i64 is intrinsic
+
+  private read_source(fd i64, content_holder Object, size i32) unit is intrinsic
