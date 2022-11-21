@@ -1,0 +1,94 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature closeable
+#
+# -----------------------------------------------------------------------
+
+# closeable -- effect for handling a resource that can be opened an closed
+#
+# closeable provides an operation 'open' that opens and file and stores a
+# file handler (currently an integer representing a file descriptor) in
+# mutable state.
+#
+closeable : effect effectMode.plain
+is
+
+  # mutuable field to store the file descriptor
+  private fd option i32 := nil
+
+  # install this effect and execute 'f'. Wrap the result of 'f' into an
+  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
+  # wrap an error into the resulting 'outcome'.
+  with(R type, f ()->R) outcome R is
+    (run (outcome R) (()->
+      ret := outcome f()
+      match closeable.env.fd
+        nil => ret
+        f i32 => panic "unclosed resource fd {f}") ((_)->error "closeable aborted unexpectedly!"))
+
+  # dummy low-level feature
+  # should be replaced by a feature that will actually open files
+  private sys_open(s Object, flags i32) i32 is 0
+
+  # dummy low-level feature
+  # should be replaced by a feature that will actually close files
+  private sys_close(fd i32) i32 is 0
+
+  # dummy low-level feature
+  # should be replaced by a feature that will actually get the erorr
+  # from the previous call
+  private sys_errno() i32 is 0
+
+  # high-level feature that opens a file and handles potential errors
+  open(path string) outcome i32 is
+    f := sys_open (fuzion.sys.c_string path) 0
+
+    if f < 0
+      error "error opening file {path}: {sys_errno}"
+    else
+      set fd := f
+      f
+
+  # high-level feature that closes a file and handles potential errors
+  close outcome i32 is
+    match fd
+      nil => 0
+      f i32 =>
+        b := sys_close f
+
+        if b < 0
+          error "error closing fd {f}: {sys_errno}"
+
+        set fd := nil
+
+        b
+
+# convenience routine to create a new instance of 'closeable' and run 'f' in
+# it.
+#
+closeable(R type, f ()->R) =>
+  closeable.with f
+
+# convenience routine to create a new instance of 'closeable' and run 'f' in
+# it. Return the result of 'f' directly or panic in case 'f' is aborted.
+closeableOrPanic(R type, f ()->R) outcome R is
+  match closeable.with f
+    e error => panic $e
+    r R => r
