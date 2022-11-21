@@ -1,0 +1,44 @@
+name: run tests on windows
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  run_tests:
+    name: windows run tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          path-type: minimal
+# NYI maybe use mingw64 here?
+          msystem: MSYS
+# git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            mingw-w64-x86_64-clang
+
+      - name: install choco packages
+        shell: powershell
+        run: choco install openjdk --version 18.0.0
+
+      - uses: actions/checkout@v2
+
+      - name: extend PATH
+        run: echo "/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin" >> $GITHUB_PATH
+
+      - name: echo PATH
+        run: echo "$PATH"
+
+      - name: echo versions
+        run: clang --version && javac --version
+
+      - name: run tests
+        run: make run_tests
