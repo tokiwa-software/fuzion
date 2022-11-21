@@ -39,6 +39,7 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.List;
 
 /**
@@ -290,11 +291,18 @@ public class ParseUnicodeData extends ANY
 
   public static void main(String[] args) throws IOException
   {
-    if (args.length != 1)
+    try
       {
-        Errors.fatal("Usage: ParseUnicodeData <UnicodeData.txt>");
+        if (args.length != 1)
+          {
+            Errors.fatal("Usage: ParseUnicodeData <UnicodeData.txt>");
+          }
+        new ParseUnicodeData(args[0]);
       }
-    new ParseUnicodeData(args[0]);
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
   }
 
 

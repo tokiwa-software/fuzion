@@ -101,12 +101,6 @@ public class Errors extends ANY
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
-  // For use in e.g. the language server where we
-  // want to continue even in the presence of fatal errors.
-  // Normally this will remain set to false.
-  public static boolean preventExit = false;
-
-
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -376,14 +370,11 @@ public class Errors extends ANY
 
 
   /**
-   * Call System.exit in case preventExit is false.
+   * Throw runtime error FatalError containing exit status code.
    */
   private static void exit(int status)
   {
-    if (!preventExit)
-      {
-        System.exit(status);
-      }
+    throw new FatalError(status);
   }
 
 
