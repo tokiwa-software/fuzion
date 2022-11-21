@@ -207,14 +207,14 @@ public class Intrinsics extends ANY
           var filepointer = new CIdent("fp");
           return CStmnt.seq(
             CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")), filepointer.deref().field(new CIdent("_fileno")).castTo("fzT_1i64").ret()),
+            CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")), filepointer.castTo("fzT_1i64").ret()),
             CExpr.int64const(-1).ret()
             );
         }
         );
     put("fuzion.std.fileio.read_source"   , (c,cl,outer,in) ->
         {
-          return CExpr.call("read", new List<>(A0, A1, A2));
+          return CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")));
         }
         );
     put("fuzion.std.out.flush" ,
