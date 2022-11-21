@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
@@ -104,18 +105,13 @@ public class Util
   }
 
 
-  public static final Path fuzionHome (){
-    return Path.of(System.getProperty("fuzion.home")).normalize().toAbsolutePath();
-  }
-
-
   /**
    * get line as string of source position pos
    */
   private static String lineAt(SourcePosition pos)
   {
     var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), fuzionHome().toString())).toUri();
+      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().toString())).toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos._line - 1);

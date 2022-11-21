@@ -49,6 +49,7 @@ import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
+import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -72,7 +73,7 @@ public class Docs
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
-    /* fuzionHome              */ Util.fuzionHome(),
+    /* fuzionHome              */ new FuzionHome()._fuzionHome,
     /* loadBaseLib             */ true,
     /* eraseInternalNamesInLib */ false,
     /* modules                 */ new List<>(),
