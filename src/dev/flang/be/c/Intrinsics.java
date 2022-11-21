@@ -214,7 +214,10 @@ public class Intrinsics extends ANY
         );
     put("fuzion.std.fileio.close_source"   , (c,cl,outer,in) ->
         {
-          return CExpr.call("fclose", new List<>(A0.castTo("FILE *")));
+          return CStmnt.seq(
+            CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
         }
         );
     put("fuzion.std.out.flush" ,
