@@ -24,6 +24,7 @@ jobs:
             make
             git
             mingw-w64-x86_64-clang
+            diffutils
 
       - name: install choco packages
         shell: powershell
