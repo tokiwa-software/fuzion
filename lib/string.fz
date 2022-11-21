@@ -78,8 +78,8 @@ string ref : hasHash string, ordered string, strings is
   # bytes are equal.
   #
   string.type.equality(a, b string) =>
-    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
-      & a.utf8.count = b.utf8.count
+    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
+      & a.utf8.count ≟ b.utf8.count
 
 
   # does this come before other?
