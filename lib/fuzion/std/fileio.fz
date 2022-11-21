@@ -196,6 +196,8 @@ public fileio is
                  # dummy parameter to enable overload
                  _ unit) bool is intrinsic
 
-  private open_source(path Object) i64 is intrinsic
-
-  private read_source(fd i64, content_holder Object, size i32) unit is intrinsic
+  # intrinsic that opens an IO source using a path and returns an i64 representing the source handler (file descriptor)
+  # returns -1 in case of an error
+  private open_source(
+                      # a Fuzion Object represention the path for the source to be opened
+                      path Object) i64 is intrinsic # NYI : only works using the C back-end

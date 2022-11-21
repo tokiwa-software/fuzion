@@ -212,11 +212,6 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.read_source"   , (c,cl,outer,in) ->
-        {
-          return CExpr.call("read", new List<>(A0, A1, A2));
-        }
-        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
