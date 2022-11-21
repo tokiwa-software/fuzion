@@ -290,7 +290,6 @@ public class Html
       <head>
         <meta charset="utf-8" />
         <title>Fuzion Docs - $qualifiedName</title>
-        <link rel="stylesheet" type="text/css" href="/reboot.css" />
         <link rel="stylesheet" type="text/css" href="/style.css" />
       </head>
       <body>""" +

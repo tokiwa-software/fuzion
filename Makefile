@@ -976,7 +976,6 @@ $(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
 # NYI integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(CLASS_FILES_TOOLS_DOCS)
-	cp assets/docs/reboot.css $(BUILD_DIR)/debugdocs/
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
 	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 # NYI replace with jwebserver?
