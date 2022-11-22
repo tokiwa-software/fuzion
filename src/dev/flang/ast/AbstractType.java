@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -1017,9 +1016,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var f = fi.next();
             var g = gi.next();
             g.checkConstraints(pos);
-            if(compareTo(f.constraint()) != 0) {
-              f.constraint().checkConstraints(pos);
-            }
+            if (compareTo(f.constraint()) != 0)
+              {
+                f.constraint().checkConstraints(pos);
+              }
 
             if (CHECKS) check
               (Errors.count() > 0 || f != null && g != null);
