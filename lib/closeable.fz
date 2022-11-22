@@ -33,15 +33,13 @@ is
   # mutuable field to store the file descriptor
   private fd := mut (option i32) nil
 
-  # install this effect and execute 'f'. Wrap the result of 'f' into an
-  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
-  # wrap an error into the resulting 'outcome'.
-  with(R type, f ()->R) outcome R is
-    (run (outcome R) (()->
-      ret := outcome f()
+  # install this effect and execute 'f' in the effect's environment
+  with(R type, f ()->R) R is
+    (run R (()->
+      ret := f.call
       match closeable.env.fd.get
         nil => ret
-        f i32 => panic "unclosed resource fd {f}") ((_)->error "closeable aborted unexpectedly!"))
+        f i32 => panic "unclosed resource fd {f}") ((_)->panic "closeable aborted unexpectedly!"))
 
   # dummy low-level feature
   # should be replaced by a feature that will actually open files
@@ -85,10 +83,3 @@ is
 #
 closeable(R type, f ()->R) =>
   closeable.with f
-
-# convenience routine to create a new instance of 'closeable' and run 'f' in
-# it. Return the result of 'f' directly or panic in case 'f' is aborted.
-closeableOrPanic(R type, f ()->R) outcome R is
-  match closeable.with f
-    e error => panic $e
-    r R => r
