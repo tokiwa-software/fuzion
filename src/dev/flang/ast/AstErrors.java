@@ -720,16 +720,16 @@ public class AstErrors extends ANY
     if (choiceGenerics.size() == missingMatches.size())
       {
         error(pos,
-        "" + skw("match") + " expression requires at least one case",
-        "Match statement at " + pos.show() + "\n" +
-        "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
       }
     else
       {
         error(pos,
-        "" + skw("match") + " statement does not cover all of the subject's types",
-        "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-        subjectTypes(choiceGenerics));
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
       }
   }
 
