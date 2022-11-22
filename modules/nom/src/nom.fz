@@ -284,7 +284,13 @@ nom is
 
   parsers : combinator, string_parsers, sequence, branch, multi is
 
-    json_value : choice string i64 f64 bool nil (Sequence json_value) (map string json_value) is
+    # NYI this is a workaround java.lang.Error: check-condition failed: dev.flang.me.MiddleEnd:findUsedFeatures:327
+    # type feature for `map string json_value` is currently not created
+    Json_Object(data (map string json_value)) ref is
+      redef asString string is
+        $data
+
+    json_value : choice string i64 f64 bool nil (Sequence json_value) Json_Object is
       redef asString string is
         match json_value.this
           s string => "\"$s\""
@@ -293,7 +299,7 @@ nom is
           b bool => $b
           n nil => "null"
           seq Sequence => $seq
-          m map => $m
+          m Json_Object => $m
 
     json =>
 
@@ -390,7 +396,7 @@ nom is
         parser_object_seq_tuple parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) :=
           delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
 
-        parser_object_seq_tuple.map json_value (x -> mapOf x.asArray)
+        parser_object_seq_tuple.map json_value (x -> Json_Object (mapOf x.asArray))
 
       # parser for a json_value: true, false, [], {}, numbers, strings etc.
       parser_json_value =>
