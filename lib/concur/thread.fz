@@ -28,7 +28,7 @@
 thread (
 
   # the provider this effect uses to spawn threads
-  p threadProvider,
+  p Thread_Provider,
 
   redef r effectMode.val
   ) : effect r
@@ -50,9 +50,9 @@ thread =>
   thread.env
 
 
-# threadProvider -- abstract source of concurrency
+# Thread_Provider -- abstract source of concurrency
 #
-threadProvider ref is
+Thread_Provider ref is
 
   # spawn a new thread using given code
   #
@@ -70,7 +70,7 @@ thread_type is
 
 # default concurrency provider
 #
-defaultThread : threadProvider is
+defaultThread : Thread_Provider is
 
   # spawn a new thread using given code
   #

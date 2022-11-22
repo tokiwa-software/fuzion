@@ -78,10 +78,21 @@ is
   infix == (other bitset) bool is
      h := highest >>= i -> other.highest >>= j -> i.max j
      match h
-       _ nil => true
+       _ nil => highest!! && other.highest!!
        m u64 =>
          for
            r := true, r && ((has i) <=> other.has i)
+           i in u64 0 .. m
+         else
+           r
+
+  bitset.type.equality(a, b bitset) bool is
+     h := a.highest >>= i -> b.highest >>= j -> i.max j
+     match h
+       _ nil => a.highest!! && b.highest!!
+       m u64 =>
+         for
+           r := true, r && (a.has i <=> b.has i)
            i in u64 0 .. m
          else
            r

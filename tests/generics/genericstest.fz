@@ -188,4 +188,4 @@ genericstest is
     unit
   opengenerics12
 
-  fuzion.std.exit exitCode
+  exit exitCode

@@ -35,7 +35,7 @@ u128(hi, lo u64) : wrappingInteger u128, hasInterval u128, u128s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => !isZero
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u128) => max -° thiz < other
   redef underflowOnAdd(other u128) => false
 
@@ -147,6 +147,9 @@ u128(hi, lo u64) : wrappingInteger u128, hasInterval u128, u128s is
   redef infix <= (other u128) bool is hi < other.hi || hi = other.hi && lo <= other.lo
   redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
   redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
+
+  u128.type.equality(a, b u128) =>
+    a.hi ≟ b.hi && a.lo ≟ b.lo
 
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
   redef infix /= (other u128) bool is !(thiz = other)

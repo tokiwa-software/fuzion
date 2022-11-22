@@ -537,7 +537,16 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    var command = new List<String>("clang", "-O3");
+    var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
+    var command = new List<String>(cCompiler);
+    if(_options._cFlags != null)
+      {
+        command.addAll(_options._cFlags.split(" "));
+      }
+    else
+      {
+        command.addAll("-O3");
+      }
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc");
@@ -586,6 +595,7 @@ public class C extends ANY
        "#include <setjmp.h>\n"+
        "#include <pthread.h>\n"+
        "#include <errno.h>\n"+
+       "#include <sys/stat.h>\n"+
        "\n");
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
@@ -647,7 +657,7 @@ public class C extends ANY
                        )
                        .flatMap(x -> x)
                        .iterator())),
-                 CStmnt.decl("__thread", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
+                 CStmnt.decl("_Thread_local", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
                )
              );
            }

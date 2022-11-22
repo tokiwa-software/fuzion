@@ -25,10 +25,10 @@
 
 
 # stdin -- effect providing several features
-# for consuming the given byteInputHandler
+# for consuming the given Byte_Input_Handler
 #
 private stdin(
-    ip byteInputHandler,
+    ip Byte_Input_Handler,
     # action to be taken: plain nomad, install or replace?
     redef r effectMode.val,
     _ unit
@@ -36,7 +36,7 @@ private stdin(
 
 
   # for a stdin instance installed in the current environment,
-  # install next instance of byteInputHandler,
+  # install next instance of Byte_Input_Handler,
   # 'stdin.env' will provide the new instance.
   #
   private next => stdin ip.next mode unit
@@ -105,7 +105,7 @@ private end_of_file is
 
 
 # short-hand for creating and installing stdin effect
-stdin(h byteInputHandler, f () -> unit) =>
+stdin(h Byte_Input_Handler, f () -> unit) =>
   s := stdin h effectMode.new unit
   s.use0 f
   unit
@@ -123,18 +123,18 @@ stdins is
       s.default
 
 
-byteInputHandler ref is
+Byte_Input_Handler ref is
 
-  next byteInputHandler is abstract
+  next Byte_Input_Handler is abstract
 
   # NYI using choice, until open generic for error in outcome is implemented
   get choice u8 end_of_file error is abstract
 
 
 # the default input handler reading bytes via fuzion.stdin.nextByte
-defaultInputHandler(r choice u8 end_of_file error) : byteInputHandler is
+defaultInputHandler(r choice u8 end_of_file error) : Byte_Input_Handler is
 
-  next byteInputHandler is
+  next Byte_Input_Handler is
     v := fuzion.stdin.nextByte
     if v = -1
       defaultInputHandler end_of_file

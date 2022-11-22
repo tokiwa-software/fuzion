@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 
 import java.util.TreeSet;
@@ -46,6 +48,7 @@ import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
 
@@ -153,10 +156,13 @@ public abstract class Tool extends ANY
         parseArgs(_args).run();
         Errors.showAndExit(true);
       }
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
     catch(Throwable e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        Errors.fatal(e);
       }
   }
 

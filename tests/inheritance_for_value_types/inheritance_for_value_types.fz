@@ -88,4 +88,4 @@ inheritance_for_value_types is
   // v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
   // v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
-  fuzion.std.exit exitCode
+  exit exitCode

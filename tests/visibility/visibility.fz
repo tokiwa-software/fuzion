@@ -337,4 +337,4 @@ visibility is
     r := red magenta; say "red magenta is $r"
   visiB
 
-  fuzion.std.exit exitCode
+  exit exitCode

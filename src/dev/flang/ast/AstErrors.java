@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -486,12 +487,12 @@ public class AstErrors extends ANY
 
   static void wrongNumberOfActualArguments(Call call)
   {
-    int fsz = call.resolvedFormalArgumentTypes.length;
+    int fsz = call._resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call.resolvedFormalArgumentTypes)
+    for (var t : call._resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
@@ -651,14 +652,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
-  {
-    error(pos,
-          "" + skw("match") + " expression requires at least one case",
-          "Match statement at " + mpos.show() + "\n" +
-          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
-  }
-
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
@@ -724,10 +717,20 @@ public class AstErrors extends ANY
 
   static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
-    error(pos,
-          "" + skw("match") + " statement does not cover all of the subject's types",
-          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-          subjectTypes(choiceGenerics));
+    if (choiceGenerics.size() == missingMatches.size())
+      {
+        error(pos,
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+      }
+    else
+      {
+        error(pos,
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
+      }
   }
 
   /**
@@ -833,17 +836,6 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
-        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
-        // fact that type features can be defined repeatedly.
-        if (f.qualifiedName().endsWith("#type"))
-          {
-            warning(pos,
-                    "Duplicate feature declaration (ignored since these are type features, see #461)",
-                    "Feature that was declared repeatedly: " + s(f) + "\n" +
-                    "originally declared at " + existing.pos().show() + "\n" +
-                    "To solve this, consider renaming one of these two features or changing its number of arguments");
-            return;
-          }
         error(pos,
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(f) + "\n" +
@@ -860,7 +852,7 @@ public class AstErrors extends ANY
           "Qualified declaration not allowed for field",
           "All fields have to be declared textually within the source of their outer features.\n" +
           "Field declared: " + sqn(q) + "\n" +
-          "To fix this, you could move the declaration into the implementation of feature " + sqn(o) +
+          "To solve this, you could move the declaration into the implementation of feature " + sqn(o) +
           ".  Alternatively, you can declare a routine instead.");
   }
 
@@ -1537,6 +1529,16 @@ public class AstErrors extends ANY
             .collect(Collectors.joining(", ")) + "\n"
           + "To solve this, rename the arguments to have unique names."
         );
+  }
+
+  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  {
+    error(value.pos(),
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(value.type()))
+          .map(cg -> s(cg))
+          .collect(Collectors.joining(", "))
+      );
   }
 }
 

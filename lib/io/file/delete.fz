@@ -27,7 +27,8 @@
 #
 private delete(
     dop Delete_Operation,
-    redef r effectMode.val
+    redef r effectMode.val,
+    _ unit
   ) : deletes, effect r is
 
     # deletes the file/dir represented by the path
@@ -37,6 +38,17 @@ private delete(
         tmp := dop.delete path
         replace
         tmp
+
+# short-hand for creating and intalling effect
+#
+delete_custom(f () -> unit) => delete_custom default_delete_operation f # NYI : overload
+
+# short-hand for creating and installing effect
+#
+delete_custom(dop Delete_Operation, f () -> unit) =>
+    s := delete dop effectMode.new unit
+    s.use0 f
+    unit
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 #
@@ -62,4 +74,4 @@ deletes is
     # install default effect io.file.delete
     installDefault unit is
         if !(effects.exists io.file.delete)
-            _ := delete default_delete_operation effectMode.default
+            _ := delete default_delete_operation effectMode.default unit

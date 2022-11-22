@@ -123,7 +123,20 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
+            CExpr.decl("struct stat", statIdent),
+            // result = size if successful
+            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
+            // result = -1 if it failed
+            resultIdent.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
           var fileIdent = new CIdent("f");
@@ -168,7 +181,17 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.move"         , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(A0.castTo("char *"), A1.castTo("char *")))),
+            // Testing if rename was successful
+            CExpr.iff(resultIdent.eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
@@ -250,6 +273,10 @@ public class Intrinsics extends ANY
         "i16.infix =="         ,
         "i32.infix =="         ,
         "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.#type_STATIC.equality",
+        "i16.#type_STATIC.equality",
+        "i32.#type_STATIC.equality",
+        "i64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.infix !="          ,
         "i16.infix !="         ,
         "i32.infix !="         ,
@@ -320,6 +347,10 @@ public class Intrinsics extends ANY
         "u16.infix =="         ,
         "u32.infix =="         ,
         "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.#type_STATIC.equality",
+        "u16.#type_STATIC.equality",
+        "u32.#type_STATIC.equality",
+        "u64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.infix !="          ,
         "u16.infix !="         ,
         "u32.infix !="         ,
@@ -384,6 +415,8 @@ public class Intrinsics extends ANY
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.infix =="         ,
         "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.#type_STATIC.equality",
+        "f64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix !="         ,
         "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <"          ,
@@ -521,7 +554,23 @@ public class Intrinsics extends ANY
                             c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
-    put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
+    put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
+                                                                      A1.castTo("char*") /* value */,
+                                                                      CExpr.int32const(1) /* overwrite */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
           var call = c._fuir.lookupCall(oc);
