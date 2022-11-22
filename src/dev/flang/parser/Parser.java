@@ -30,7 +30,6 @@ import java.nio.file.Path;
 
 import dev.flang.ast.*;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -2218,19 +2217,12 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
-        var start = posObject();
-        var cpos = posObject();
         var c = cases();
-        var end = posObject();
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "match");
           }
-        if (c.isEmpty())
-          {
-            AstErrors.matchCasesMissing(cpos, pos);
-            return new Match(pos, e, new List<>());
-          }
+        // missing match cases are checked for when resolving types
         return new Match(pos, e, c);
       });
   }
