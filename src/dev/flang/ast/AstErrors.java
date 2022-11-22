@@ -652,14 +652,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
-  {
-    error(pos,
-          "" + skw("match") + " expression requires at least one case",
-          "Match statement at " + mpos.show() + "\n" +
-          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
-  }
-
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
@@ -725,10 +717,20 @@ public class AstErrors extends ANY
 
   static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
-    error(pos,
-          "" + skw("match") + " statement does not cover all of the subject's types",
-          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-          subjectTypes(choiceGenerics));
+    if (choiceGenerics.size() == missingMatches.size())
+      {
+        error(pos,
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+      }
+    else
+      {
+        error(pos,
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
+      }
   }
 
   /**
