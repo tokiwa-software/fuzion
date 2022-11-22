@@ -31,7 +31,7 @@ closeable : effect effectMode.plain
 is
 
   # mutuable field to store the file descriptor
-  private fd option i32 := nil
+  private fd := mut (option i32) nil
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
@@ -39,7 +39,7 @@ is
   with(R type, f ()->R) outcome R is
     (run (outcome R) (()->
       ret := outcome f()
-      match closeable.env.fd
+      match closeable.env.fd.get
         nil => ret
         f i32 => panic "unclosed resource fd {f}") ((_)->error "closeable aborted unexpectedly!"))
 
@@ -63,12 +63,12 @@ is
     if f < 0
       error "error opening file {path}: {sys_errno}"
     else
-      set fd := f
+      fd <- f
       f
 
   # high-level feature that closes a file and handles potential errors
   close outcome i32 is
-    match fd
+    match fd.get
       nil => 0
       f i32 =>
         b := sys_close f
@@ -76,7 +76,7 @@ is
         if b < 0
           error "error closing fd {f}: {sys_errno}"
 
-        set fd := nil
+        fd <- nil
 
         b
 
