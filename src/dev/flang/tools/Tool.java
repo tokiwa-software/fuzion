@@ -151,19 +151,7 @@ public abstract class Tool extends ANY
    */
   protected void run()
   {
-    try
-      {
-        parseArgs(_args).run();
-        Errors.showAndExit(true);
-      }
-    catch (FatalError e)
-      {
-        System.exit(e.getStatus());
-      }
-    catch(Throwable e)
-      {
-        Errors.fatal(e);
-      }
+    Errors.runAndExit(() -> parseArgs(_args).run());
   }
 
 

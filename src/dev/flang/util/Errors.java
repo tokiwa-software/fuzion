@@ -672,6 +672,30 @@ public class Errors extends ANY
     _warnings_.clear();
   }
 
+
+  public static void runAndExit(Runnable r)
+  {
+    try
+      {
+        try
+          {
+            r.run();
+            Errors.showAndExit(true);
+          }
+        catch (Throwable e)
+          {
+            if (!(e instanceof FatalError))
+              {
+                Errors.fatal(e);
+              }
+          }
+      }
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
+  }
+
 }
 
 /* end of file */
