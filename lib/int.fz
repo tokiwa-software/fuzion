@@ -144,7 +144,7 @@ is
   infix == (other int) bool is
     ns = other.ns & n = other.n
 
-  int.type.equality(a, b int) bool is
+  type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
 
   orderedThis int is int ns n
@@ -191,7 +191,7 @@ ints is
 
 plus is
 minus is
-sign : choice plus minus, hasEquals sign is
+sign : choice plus minus, has_equality, hasEquals sign is
   infix = (o sign) bool is
     match sign.this
       plus =>
@@ -218,4 +218,3 @@ sign : choice plus minus, hasEquals sign is
     match sign.this
       plus => ""
       minus => "-"
-

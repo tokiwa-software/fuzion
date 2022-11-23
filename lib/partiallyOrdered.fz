@@ -32,7 +32,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-partiallyOrdered(P (partiallyOrdered P).type) : hasEquals P
+partiallyOrdered(P (partiallyOrdered P).type) : has_equality, hasEquals P
 
 /* NYI: quantor intrinsics not supported yet:
 

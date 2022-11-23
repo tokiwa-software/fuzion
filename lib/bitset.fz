@@ -28,6 +28,7 @@
 bitset : choice nil          # empty bitset
                 u64          # unit bitset
                 (array bool) # general
+       , has_equality
 is
 
   # test if the given bit is part of this bitset
@@ -86,7 +87,7 @@ is
          else
            r
 
-  bitset.type.equality(a, b bitset) bool is
+  type.equality(a, b bitset) bool is
      h := a.highest >>= i -> b.highest >>= j -> i.max j
      match h
        _ nil => a.highest!! && b.highest!!
