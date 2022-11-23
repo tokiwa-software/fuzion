@@ -202,21 +202,36 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.open_source"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.on_open"   , (c,cl,outer,in) ->
         {
           var filepointer = new CIdent("fp");
+          var openresults = new CIdent("open_results");
           return CStmnt.seq(
-            CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")), filepointer.castTo("fzT_1i64").ret()),
-            CExpr.int64const(-1).ret()
+            CExpr.decl("long *", openresults),
+            openresults.assign(A1.castTo("long *")),
+            CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("r")))),
+            CExpr.iff(
+              CExpr.notEq(filepointer, new CIdent("NULL")),
+              CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))
+              ),
+            openresults.index(CExpr.ident("1")).assign(new CIdent("errno").castTo("fzT_1i64"))
             );
         }
         );
-    put("fuzion.std.fileio.close_source"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.on_close"   , (c,cl,outer,in) ->
         {
           return CStmnt.seq(
             CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.get_error"   , (c,cl,outer,in) ->
+        {
+          var errno = new CIdent("current_errno"); 
+          return CStmnt.seq(
+            CStmnt.decl("int ", errno, new CIdent("errno")),
+            errno.castTo("fzT_1i32").ret()
             );
         }
         );
