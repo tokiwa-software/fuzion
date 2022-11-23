@@ -1069,7 +1069,7 @@ lint/java: $(JARS_JFREE_SVG_JAR)
 
 .PHONY: lint/javadoc
 lint/javadoc: $(JARS_JFREE_SVG_JAR)
-	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_ALL) \
+	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
 		$(JAVA_FILES_AST) \
