@@ -47,7 +47,7 @@
 # Type void is assignable to all other types, e.g, we can assign void to a value
 # of type i32:
 #
-#   i i32 := fuzion.std.exit 1
+#   i i32 := exit 1
 #
 # Since no value of type void can ever be produced, the assignment is dead code that
 # will be removed by the fuzion implementation.
@@ -56,7 +56,7 @@
 # is done, it will turn all features that have arguments of that type into absurd
 # features.  Also, this will ensure that any feature that produces a result of that
 # type to never return a result (typically to not be callable in the first place as
-# well).  An example could be a stack of capacity zero: stack<void>(0) with an
+# well).  An example could be a stack of capacity zero: stack void 0 with an
 # absurd
 #
 #   stack.push(void)
@@ -76,7 +76,7 @@ void(absurd void) is absurd
 
 # NYI: possible alternative definitions base on choice types
 #
-# void : choice <> is
+# void : choice is
 #
-# void (absurd choice<>) is absurd
+# void (absurd choice) is absurd
 #

@@ -313,7 +313,6 @@ public class Loop extends ANY
     initialArguments(formalArguments, initialActuals, nextActuals);
     var initialCall       = new Call(pos, loopName, initialActuals);
     var tailRecursiveCall = new Call(pos, loopName, nextActuals   );
-    tailRecursiveCall._isTailRecursive = true;
     if (_nextIteration == null)
       {
         _nextIteration = tailRecursiveCall;

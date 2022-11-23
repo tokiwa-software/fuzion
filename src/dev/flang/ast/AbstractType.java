@@ -241,6 +241,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isDirectlyAssignableFrom(AbstractType actual)
+  {
+    return (!isChoice() && isAssignableFrom(actual))
+         || (isChoice() && compareTo(actual) == 0);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.
    *
@@ -747,7 +761,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
-   * time errore in case this is not the case.
+   * time error in case this is not the case.
    */
   void checkChoice(SourcePosition pos)
   {
@@ -772,8 +786,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         (t1.isDirectlyAssignableFrom(t2) ||
+                          t2.isDirectlyAssignableFrom(t1) )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
@@ -808,11 +822,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_unit.
+   * such type exists, return Types.t_UNDEFINED.
    *
    * @param that another type or null
    *
-   * @return a type that is assignable both from this and that, or null if none
+   * @return a type that is assignable both from this and that, or Types.t_UNDEFINED if none
    * exists.
    */
   AbstractType union(AbstractType that)
@@ -941,6 +955,115 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public String name()
   {
     return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
+  }
+
+
+  /**
+   * For a given type t, get the type of t's type feature. E.g., for t==string,
+   * this will return the type of string.type.
+   *
+   * @param t the type whose type's type we want to get
+   *
+   * @return the type of t's type.
+   */
+  public AbstractType typeType()
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       featureOfType().state().atLeast(Feature.State.RESOLVED));
+
+    return typeType(null);
+  }
+
+
+  /**
+   * For a given type t, get the type of t's type feature. E.g., for t==string,
+   * this will return the type of string.type, which is 'string.#type_STATIC
+   * string'
+   *
+   * @param res Resolution instance used to resolve the type feature that might
+   * need to be created.
+   *
+   * @param t the type whose type's type we want to get
+   *
+   * @return the type of t's type.
+   */
+  AbstractType typeType(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
+
+    var result = this;
+    if (!featureOfType().isUniverse())
+      {
+        var f = res == null ? featureOfType().typeFeature()
+                            : featureOfType().typeFeature(res);
+        result = Types.intern(new Type(f.pos(),
+                                       f.featureName().baseName(),
+                                       new List<>(this),
+                                       outer().typeType(res),
+                                       f,
+                                       Type.RefOrVal.Value));
+      }
+    return result;
+  }
+
+
+  /**
+   * In a call on 'target' with formal argument type this, if target is a type
+   * parameter and this depends on that type feature's THIS_TYPE, then replace
+   * THIS_TYPE by the type of target.
+   *
+   * @param target the target of the call
+   */
+  AbstractType replace_THIS_TYPE(Expr target)
+  {
+    var result = this;
+    var tt = target.type();
+    if (!tt.isGenericArgument())
+      {
+        var tf = tt.featureOfType();
+        if (dependsOnGenerics() &&
+            tf.isStaticTypeFeature() &&
+            target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
+          {
+            if (isGenericArgument())
+              {
+                if (genericArgument().typeParameter() == tf.typeFeaturesNonStaticParent().arguments().get(0))
+                  { // a call of the form 'T.f x' where 'f' is declared as 'abc.type.f(arg THIS_TYPE)', so replace 'THIS_TYPE' by 'T'.
+                    // NYI: replace THIS_TYPE recursively in frmlT, e.g., in case formT is 'Option THIS_TYPE'.
+                    result = new Type(tc.pos(), new Generic(tc.calledFeature()));
+                  }
+              }
+            else
+              {
+                var g = generics();
+                var ng = g;
+                for (int i = 0; i < g.size(); i++)
+                  {
+                    var gi = g.get(i);
+                    var gi2 = gi.replace_THIS_TYPE(target);
+                    if (gi != gi2)
+                      {
+                        if (ng != g)
+                          {
+                            ng = new List<>();
+                            ng.addAll(g);
+                          }
+                        ng.set(i, gi2);
+                      }
+                  }
+                var o = outer();
+                var no = o != null ? o.replace_THIS_TYPE(target) : null;
+                if (ng != g || no != o)
+                  {
+                    result = new Type(this, ng, no);
+                  }
+              }
+          }
+      }
+    return result;
   }
 
 

@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.TreeMap;
 
@@ -85,35 +86,7 @@ public class FrontEnd extends ANY
     {
       return UNIVERSE_NAME;
     }
-
-    public AbstractFeature get(String name, int argcount)
-    {
-      AbstractFeature result = Types.f_ERROR;
-      var d = _module.declaredFeatures(this);
-      var set = (argcount >= 0
-                 ? FeatureName.getAll(d, name, argcount)
-                 : FeatureName.getAll(d, name          )).values();
-      if (set.size() == 1)
-        {
-          for (var f2 : set)
-            {
-              result = f2;
-            }
-        }
-      else if (set.isEmpty())
-        {
-          AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
-        }
-      else
-        { // NYI: This might happen if the user adds additional features
-          // with different argCounts. name should contain argCount to
-          // avoid this
-          AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-        }
-      return result;
-    }
   }
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -131,7 +104,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The base module if it was loade from base.fum, null otherwise.
+   * The base module if it was loaded from base.fum, null otherwise.
    */
   public final LibraryModule _baseModule;
 
@@ -347,6 +320,15 @@ public class FrontEnd extends ANY
       {
         m.loadInnerFeatures(f);
       }
+  }
+
+
+  /**
+   * Return the collection of loaded modules.
+   */
+  public Collection<LibraryModule> getModules()
+  {
+    return _modules.values();
   }
 
 }

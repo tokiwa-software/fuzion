@@ -260,7 +260,7 @@ Sequence(T type) ref is
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap(B type, f T -> Sequence<B>) =>
+  # flatMap(B type, f T -> Sequence B) =>
   #   asList.flatMap f
   flatMapSequence(B type, f T -> Sequence B) =>
     asList.flatMap f
@@ -274,11 +274,17 @@ Sequence(T type) ref is
 
 
   # reduce this Sequence to R with an initial value init
-  # and a reducing function f
-  reduce(R type, init R, f (R,T) -> R) R is
+  # and a reducing function f.
+  # the reduction is finished once f yields abort or
+  # if the end of the sequence is reached.
+  #
+  reduce(R type, init R, f (R,T) -> R | abort R) R is
     match asList
       nil => init
-      c Cons => c.tail.reduce R (f init c.head) f
+      c Cons =>
+        match f init c.head
+          a abort => a.val
+          r R => c.tail.reduce r f
 
 
   # insert element v at position at

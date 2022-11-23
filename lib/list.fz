@@ -39,9 +39,8 @@
 #
 #
 list(A type) : choice nil (Cons A (list A)), Sequence A is
-# list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
-# list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
-# list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
+# NYI: #530 (review comment): The following should work but causes an error:
+# list(A type) : nil | Cons A (list A), Sequence A is
 
 
   # create a list from this Sequence.

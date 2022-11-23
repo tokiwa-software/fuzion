@@ -244,7 +244,7 @@ public class FUIR extends IR
 
 
   /**
-   * Add cl to the set of clazzes in this FUIR and assign an id to to.
+   * Add cl to the set of clazzes in this FUIR and assign an id to cl.
    */
   private void add(Clazz cl)
   {
@@ -625,7 +625,7 @@ public class FUIR extends IR
    * @param valuecl a clazz id of a static clazz of a value that is stored in an
    * instance of cl.
    *
-   * @return id of the valuecl, correspods to the value to be stored in the tag.
+   * @return id of the valuecl, corresponds to the value to be stored in the tag.
    */
   public int clazzChoiceTag(int cl, int valuecl)
   {
@@ -1034,7 +1034,13 @@ hw25 is
         var result = switch (clazzKind(cc))
           {
           case Abstract, Choice -> false;
-          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          case Intrinsic, Routine, Field ->
+            (cc.isInstantiated() || cc.feature().isOuterRef())
+            && cc != Clazzes.conststring.getIfCreated()
+            && !cc.isAbsurd()
+            // NYI: this should not depend on string comparison!
+            && !(cc.feature().qualifiedName().equals("void.absurd"))
+            ;
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;
@@ -1686,7 +1692,7 @@ hw25 is
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isAssignableFrom(cg))
+                if (t.isDirectlyAssignableFrom(cg))
                   {
                     resultL.add(tag);
                   }

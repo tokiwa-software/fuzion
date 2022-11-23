@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 
 /**
- * List provides a simple generic linked listed used throughout Fuzion, in
+ * List provides a simple generic linked list used throughout Fuzion, in
  * particular in the AST.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)

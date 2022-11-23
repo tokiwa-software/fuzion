@@ -97,7 +97,8 @@ public class Escape extends ANY
   public boolean doesCurEscape(int cl)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == IR.FeatureKind.Routine);
+      ( _fuir.clazzKind(cl) == IR.FeatureKind.Routine
+     || _fuir.clazzKind(cl) == IR.FeatureKind.Intrinsic);
 
     return _fuir.clazzResultField(cl) == -1 // a constructor, i.e., current instance is returned!
       || doesCurEscapeCached(cl);

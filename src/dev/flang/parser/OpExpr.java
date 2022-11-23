@@ -331,7 +331,7 @@ public class OpExpr extends ANY
       {
         Object o = els.get(i);
         if (o instanceof String) System.out.print(o);
-        else if (o instanceof Call) System.out.print(((Call)o).name);
+        else if (o instanceof Call c) System.out.print(c.name());
         else System.out.print("E");
       }
     System.out.println();
@@ -373,7 +373,7 @@ public class OpExpr extends ANY
                                             new Precedence( 8,        "#"  ),
                                             new Precedence(14, 7, 14, "$"  ),
                                             new Precedence( 6,        ""   ),
-                                            new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺"),
+                                            new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟"),
                                             new Precedence( 4,        "&"  ),
                                             new Precedence( 3,        "|⦶⦷"),
                                             new Precedence( 2,        "∀"  ),

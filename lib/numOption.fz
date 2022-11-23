@@ -137,9 +137,9 @@ is
 #
 #   o := numOption x
 #
-# insted of
+# instead of
 #
-#   o numOption<TypeOfX> := x
+#   o numOption TypeOfX := x
 #
 numOption(T (numeric T).type, o numOption T) => o
 

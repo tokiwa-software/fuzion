@@ -36,7 +36,7 @@ callWithUninstantiatedTarget is
   #
   x y is
     say "x takes the back door out"
-    fuzion.std.exit 0
+    exit 0
 
   # y is only used as a type, never instantiated
   #

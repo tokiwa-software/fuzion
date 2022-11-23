@@ -88,3 +88,8 @@ numericSequence(N (numeric N).type, from Sequence N) : Sequence N, hasEquals (nu
   infix = (o numericSequence N) bool is
     ((zip o a,b->a=b) ∀ x->x)
       & count = o.count
+
+  # NYI: #637:
+  # numericSequence.type.equality(N (numeric N).type, a, b numericSequence N) bool is
+  #   ((a.zip b c,d->equals N c d) ∀ x->x)
+  #     & a.count ≟ b.count

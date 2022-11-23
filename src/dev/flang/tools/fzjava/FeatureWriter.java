@@ -63,6 +63,11 @@ class FeatureWriter extends ANY
   static void write(FZJava fzj, String fn, String suffix, String data)
   {
     var fzp = fzj._options._dest;
+    if (fzj._options._modules.size() > 1)
+      {
+        fzp = fzp.resolve(fzj._currentModule);
+      }
+
     while (fn.indexOf("/") >= 0)
       {
         var d = mangle(fn.substring(0, fn.indexOf("/")));

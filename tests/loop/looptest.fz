@@ -266,4 +266,4 @@ looptest is
   chck (testWriteToDeclaredVar2.values.0 == 100  ) "testWriteToDeclaredVar returns (100, 10000)"
   chck (testWriteToDeclaredVar2.values.1 == 10000) "testWriteToDeclaredVar returns (100, 10000)"
 
-  fuzion.std.exit exitCode
+  exit exitCode

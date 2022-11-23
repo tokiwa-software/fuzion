@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -316,24 +319,95 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
     if (t.compareTo(Types.resolved.t_void) != 0)
       {
-        if ((!t.isRef() || isCallToOuterRef()) &&
-            (frmlT.isRef() ||
-             (frmlT.isChoice() &&
-              !frmlT.isAssignableFrom(t) &&
-              frmlT.isAssignableFrom(t.asRef()))) ||
-            frmlT.isGenericArgument())
+        if (needsBoxing(frmlT))
           {
             result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && t.compareTo(frmlT) != 0 && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
-            result = new Tag(result, frmlT);
+            result = tag(frmlT, result);
           }
       }
     return result;
   }
 
+
+  /**
+   * handle tagging when assigning value to choice frmlT
+   * @param frmlT
+   * @param value
+   * @return
+   */
+  private Expr tag(AbstractType frmlT, Expr value)
+  {
+    if(PRECONDITIONS) require
+      (frmlT.isChoice());
+
+    // Case 1: types are equal, no tagging necessary
+    if (frmlT.compareTo(value.type()) == 0)
+      {
+        return value;
+      }
+    // Case 2: no nested tagging necessary:
+    // there is a choice generic in this choice
+    // that this value is "directly" assignable to
+    else if (frmlT
+              .choiceGenerics()
+              .stream()
+              .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type())))
+      {
+        return new Tag(value, frmlT);
+      }
+    // Case 3: nested tagging necessary
+    // value is only assignable to choice element
+    // that itself is a choice
+    else
+      {
+        // we assign to the choice generic
+        // that expr is assignable to
+        var cgs = frmlT
+          .choiceGenerics()
+          .stream()
+          .filter(cg -> cg.isChoice() && cg.isAssignableFrom(value.type()))
+          .collect(Collectors.toList());
+
+        if (cgs.size() > 1)
+          {
+            AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+          }
+
+        return tag(frmlT, tag(cgs.get(0), value));
+      }
+  }
+
+
+  /**
+   * Is boxing needed when we assign to frmlT?
+   * @param frmlT the formal type we are assigning to.
+   */
+  private boolean needsBoxing(AbstractType frmlT)
+  {
+    var t = type();
+    if (frmlT.isGenericArgument())
+      {
+        return true;
+      }
+    else if (t.isRef() && !isCallToOuterRef())
+      {
+        return false;
+      }
+    else if (frmlT.isRef())
+      {
+        return true;
+      }
+    else
+      {
+        return frmlT.isChoice() &&
+          !frmlT.isAssignableFrom(t) &&
+          frmlT.isAssignableFrom(t.asRef());
+      }
+  }
 
   /**
    * Is this a compile-time constant?
@@ -370,8 +444,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result or an if
-   * with one branch not producing a result.
+   * whose last statement is not an expression that produces a result.
    */
   boolean producesResult()
   {

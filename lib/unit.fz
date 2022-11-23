@@ -50,19 +50,19 @@
 #
 # Another application of the unit type are generic features when certain generic
 # values are not needed and can be ignored.  An example could be a generic map
-# implementation map<K,V> that maps values of type K to values of type V.  Using
-# unit as the actual generic argument for V, e.g., map<string,unit> creates a
+# implementation map K V that maps values of type K to values of type V.  Using
+# unit as the actual generic argument for V, e.g., map string unit creates a
 # map that stores no data for each key, which essentially turns the map into a
 # set of the map's keys.
 #
 # The Fuzion library knows several different unit types.  Another example is nil,
 # which is used as the alternative type in an option.  This enables the use of
-# option<void>, which can store two distinct values, void and nil.
+# option void, which can store two distinct values, void and nil.
 #
 # Other unit types in Fuzion are TRUE and FALSE.
 #
 # The simplest syntax to create a value of unit type is an empty block '{}'. Note
-# that an empty tuple 'tuple<>' is a different unit value of a different type and
+# that an empty tuple 'tuple' is a different unit value of a different type and
 # the syntax '()' is (at least for now) not supported.
 #
 # Please note the fundamental difference between
@@ -85,9 +85,9 @@ unit is
 
 # NYI: possible alternative definitions based on tuple types
 #
-# unit : tuple <> is
+# unit : tuple is
 #
-# unit (contents tuple<>) is
+# unit (contents tuple) is
 #
 
   # human readable string
