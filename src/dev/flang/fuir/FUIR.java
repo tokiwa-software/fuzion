@@ -30,13 +30,11 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
-import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -44,7 +42,6 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
-import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -57,12 +54,10 @@ import dev.flang.ast.Unbox; // NYI: remove dependency
 
 import dev.flang.ir.IR;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -496,10 +491,8 @@ public class FUIR extends IR
   {
     var cc = clazz(cl);
     var res = cc.feature().featureName().baseName();
-    if (!cc._type.generics().isEmpty())
-      {
-        res = res + cc._type.generics().toString("<",",",">");
-      }
+    res = res + cc._type.generics()
+      .toString(" ", " ", "", t -> t.toString(true));
     return res;
   }
 

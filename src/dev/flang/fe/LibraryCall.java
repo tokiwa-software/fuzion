@@ -182,6 +182,7 @@ public abstract class LibraryCall extends AbstractCall
    *
    * @return
    */
+  // NYI move this to AbstractCall
   public String toString()
   {
     var t = target();
@@ -190,8 +191,9 @@ public abstract class LibraryCall extends AbstractCall
             ? ""
             : t.toString() + ".")
       + calledFeature().featureName().baseName()
-      + (generics().isEmpty() ? "" : "<" + generics() + ">")
-      + (actuals().isEmpty() ? "" : "(" + actuals() +")")
+      + (_generics.isEmpty() && _actuals.isEmpty() ? "": " ")
+      + _generics.toString("", " ", "", at -> at.toString(true))
+      + _actuals.toString("", " ", "", e -> e.toString(true))
       //+ (select() < 0        ? "" : "." + select())
       ;
   }

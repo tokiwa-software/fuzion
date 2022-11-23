@@ -227,10 +227,8 @@ public class NormalType extends LibraryType
         result = result + (isRef() ? "ref " : "value ");
       }
     result = result + (featureOfType().featureName().baseName());
-    if (generics() != Type.NONE)
-      {
-        result = result + "<" + generics() + ">";
-      }
+    result = result + generics()
+      .toString(" ", " ", "", t -> t.toString(true));
     return result;
   }
 

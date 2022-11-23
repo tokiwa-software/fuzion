@@ -951,6 +951,7 @@ public class Call extends AbstractCall
    *
    * @return
    */
+  // NYI move this to AbstractCall
   public String toString()
   {
     return (target == null ||
@@ -959,8 +960,9 @@ public class Call extends AbstractCall
             ? ""
             : target.toString() + ".")
       + (name != null ? name : _calledFeature.featureName().baseName())
-      + (_generics.isEmpty() ? "" : "<" + _generics + ">")
-      + (_actuals.isEmpty() ? "" : "(" + _actuals +")")
+      + (_generics.isEmpty() && _actuals.isEmpty() ? "": " ")
+      + _generics.toString("", " ", "", t -> t.toString(true))
+      + _actuals.toString("", " ", "", e -> e.toString(true))
       + (_select < 0        ? "" : "." + _select);
   }
 

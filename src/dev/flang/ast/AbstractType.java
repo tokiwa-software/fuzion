@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -994,6 +993,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
+
+
+
+  /**
+   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   */
+  public String toString(boolean wrapInBrackets)
+  {
+    return wrapInBrackets && dependsOnGenerics()
+           ? "(" + toString() + ")"
+           : toString();
+  }
+
 
 }
 
