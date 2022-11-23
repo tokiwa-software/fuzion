@@ -53,6 +53,7 @@ import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -1186,10 +1187,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return true iff other can be assigned to a field of type this.
    */
+  @Deprecated(forRemoval = true) // NYI only isDirectlyAssignableFrom should be used after AST
   public boolean isAssignableFrom(Clazz other)
   {
     return this._type.isAssignableFrom(other._type);
   }
+
+
+  /**
+   * Check if a value of clazz other can be assigned to a field of this clazz
+   * without the need for tagging.
+   *
+   * @other the value to be assigned to a field of type this
+   *
+   * @return true iff other can be assigned to a field of type this.
+   */
+  public boolean isDirectlyAssignableFrom(Clazz other)
+  {
+    return this._type.isDirectlyAssignableFrom(other._type);
+  }
+
 
 
   /**
@@ -1531,7 +1548,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
           {
             if (CHECKS) check
               (result < 0);
@@ -1935,20 +1952,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
-   * actually, a.type.b.type.c.type.
+   * actually, '((a.type a).b.type b).c.type c'.
    */
   Clazz typeClazz()
   {
-    var cf = _type.featureOfType();
-    if (cf.isUniverse())
-      {
-        return this;
-      }
-    else
-      {
-        var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType(), _outer.typeClazz());
-      }
+    return feature().isUniverse() ? this
+                                  : Clazzes.create(_type.typeType(),
+                                                   _outer.typeClazz());
   }
 
 

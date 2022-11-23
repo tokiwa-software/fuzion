@@ -186,14 +186,12 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              File file = new File(new String(pathBytes , StandardCharsets.UTF_8));
+              File file = new File(utf8ByteArrayDataToString(args.get(1)));
               FileInputStream fs = new FileInputStream(file);
               fs.read(byteArr);
               fs.close();
@@ -208,11 +206,9 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               long fileLength = Files.size(path);
@@ -227,11 +223,9 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
@@ -247,11 +241,9 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               boolean b = Files.exists(path);
@@ -266,11 +258,9 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               boolean b = Files.deleteIfExists(path);
@@ -285,13 +275,10 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] oldPathBytes = (byte[])args.get(1).arrayData()._array;
-          Path oldPath = Path.of(new String(oldPathBytes, StandardCharsets.UTF_8));
-          byte[] newPathBytes = (byte[])args.get(3).arrayData()._array;
-          Path newPath = Path.of(new String(newPathBytes, StandardCharsets.UTF_8));
+          Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
+          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
           try
             {
               Files.move(oldPath, newPath);
@@ -306,11 +293,9 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
               Files.createDirectory(path);
@@ -380,16 +365,14 @@ public class Intrinsics extends ANY
           var actualGenerics = innerClazz._type.generics();
           if ((actualGenerics == null) || (actualGenerics.size() != 1))
             {
-              System.err.println("fuzion.java.getStaticField called with wrong number of actual generic arguments");
-              System.exit(1);
+              Errors.fatal("fuzion.java.getStaticField called with wrong number of actual generic arguments");
             }
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
             {
               if (!ENABLE_UNSAFE_INTRINSICS)
                 {
-                  System.err.println("*** error: unsafe feature "+in+" disabled");
-                  System.exit(1);
+                  Errors.fatal("*** error: unsafe feature "+in+" disabled");
                 }
               Instance clazzOrThizI = (Instance) args.get(1);
               Instance fieldI = (Instance) args.get(2);
@@ -413,8 +396,7 @@ public class Intrinsics extends ANY
             {
               if (!ENABLE_UNSAFE_INTRINSICS)
                 {
-                  System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-                  System.exit(1);
+                  Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
                 }
               int a = 1;
               var clNameI =                      (Instance) args.get(a++);
@@ -439,8 +421,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           return new i32Value(Array.getLength(arr));
@@ -449,8 +430,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           var ix  = args.get(2).i32Value();
@@ -462,8 +442,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var arrA = args.get(1).arrayData();
           var res = arrA._array;
@@ -474,8 +453,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var str = utf8ByteArrayDataToString(args.get(1));
           Clazz resultClazz = innerClazz.resultClazz();
@@ -485,8 +463,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
           return Interpreter.value(javaString == null ? "--null--" : javaString);
@@ -495,8 +472,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var b = args.get(1).i8Value();
           var jb = Byte.valueOf((byte) b);
@@ -507,8 +483,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var c = args.get(1).u16Value();
           var jc = Character.valueOf((char) c);
@@ -519,8 +494,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var s = args.get(1).i16Value();
           var js = Short.valueOf((short) s);
@@ -531,8 +505,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var i = args.get(1).i32Value();
           var ji = Integer.valueOf(i);
@@ -543,8 +516,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var l = args.get(1).i64Value();
           var jl = Long.valueOf(l);
@@ -555,8 +527,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var f32 = args.get(1).f32Value();
           var jf = Float.valueOf(f32);
@@ -567,8 +538,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var d = args.get(1).f64Value();
           var jd = Double.valueOf(d);
@@ -579,8 +549,7 @@ public class Intrinsics extends ANY
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
+              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           var b = args.get(1).boolValue();
           var jb = Boolean.valueOf(b);
@@ -637,6 +606,7 @@ public class Intrinsics extends ANY
     put("i8.infix >>"           , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  >>  args.get(1).i8Value() )));
     put("i8.infix <<"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  <<  args.get(1).i8Value() )));
     put("i8.infix =="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  ==  args.get(1).i8Value() )));
+    put("i8.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(            (args.get(1).i8Value()  ==  args.get(2).i8Value() )));
     put("i8.infix !="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  !=  args.get(1).i8Value() )));
     put("i8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  <   args.get(1).i8Value() )));
     put("i8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  >   args.get(1).i8Value() )));
@@ -656,6 +626,7 @@ public class Intrinsics extends ANY
     put("i16.infix >>"          , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() >>  args.get(1).i16Value())));
     put("i16.infix <<"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() <<  args.get(1).i16Value())));
     put("i16.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() ==  args.get(1).i16Value())));
+    put("i16.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).i16Value() ==  args.get(2).i16Value())));
     put("i16.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() !=  args.get(1).i16Value())));
     put("i16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() <   args.get(1).i16Value())));
     put("i16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() >   args.get(1).i16Value())));
@@ -676,6 +647,7 @@ public class Intrinsics extends ANY
     put("i32.infix >>"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())));
     put("i32.infix <<"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())));
     put("i32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() ==  args.get(1).i32Value())));
+    put("i32.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).i32Value() ==  args.get(2).i32Value())));
     put("i32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() !=  args.get(1).i32Value())));
     put("i32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() <   args.get(1).i32Value())));
     put("i32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() >   args.get(1).i32Value())));
@@ -695,6 +667,7 @@ public class Intrinsics extends ANY
     put("i64.infix >>"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() >>  args.get(1).i64Value())));
     put("i64.infix <<"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() <<  args.get(1).i64Value())));
     put("i64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() ==  args.get(1).i64Value())));
+    put("i64.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).i64Value() ==  args.get(2).i64Value())));
     put("i64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() !=  args.get(1).i64Value())));
     put("i64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() <   args.get(1).i64Value())));
     put("i64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() >   args.get(1).i64Value())));
@@ -714,6 +687,7 @@ public class Intrinsics extends ANY
     put("u8.infix >>"           , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  >>> args.get(1).u8Value() )));
     put("u8.infix <<"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  <<  args.get(1).u8Value() )));
     put("u8.infix =="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u8Value()  ==  args.get(1).u8Value() )));
+    put("u8.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(            (args.get(1).u8Value()  ==  args.get(2).u8Value() )));
     put("u8.infix !="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u8Value()  !=  args.get(1).u8Value() )));
     put("u8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <  0));
     put("u8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >  0));
@@ -734,6 +708,7 @@ public class Intrinsics extends ANY
     put("u16.infix >>"          , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() >>> args.get(1).u16Value())));
     put("u16.infix <<"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() <<  args.get(1).u16Value())));
     put("u16.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u16Value() ==  args.get(1).u16Value())));
+    put("u16.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).u16Value()  ==  args.get(2).u16Value() )));
     put("u16.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u16Value() !=  args.get(1).u16Value())));
     put("u16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <  0));
     put("u16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >  0));
@@ -757,6 +732,7 @@ public class Intrinsics extends ANY
     put("u32.infix >>"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() >>> args.get(1).u32Value())));
     put("u32.infix <<"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() <<  args.get(1).u32Value())));
     put("u32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u32Value() ==  args.get(1).u32Value())));
+    put("u32.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).u32Value()  ==  args.get(2).u32Value() )));
     put("u32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u32Value() !=  args.get(1).u32Value())));
     put("u32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <  0));
     put("u32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >  0));
@@ -780,6 +756,7 @@ public class Intrinsics extends ANY
     put("u64.infix >>"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() >>> args.get(1).u64Value())));
     put("u64.infix <<"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() <<  args.get(1).u64Value())));
     put("u64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u64Value() ==  args.get(1).u64Value())));
+    put("u64.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(           (args.get(1).u64Value()  ==  args.get(2).u64Value() )));
     put("u64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u64Value() !=  args.get(1).u64Value())));
     put("u64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <  0));
     put("u64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >  0));
@@ -793,6 +770,7 @@ public class Intrinsics extends ANY
     put("f32.infix %"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
     put("f32.infix **"          , (interpreter, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
     put("f32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
+    put("f32.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(             (args.get(1).f32Value()  ==  args.get(2).f32Value() )));
     put("f32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() != args.get(1).f32Value())));
     put("f32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
     put("f32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
@@ -809,6 +787,7 @@ public class Intrinsics extends ANY
     put("f64.infix %"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
     put("f64.infix **"          , (interpreter, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
     put("f64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
+    put("f64.#type_STATIC.equality", (interpreter, innerClazz) -> args -> new boolValue(             (args.get(1).f64Value()  ==  args.get(2).f64Value() )));
     put("f64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())));
     put("f64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
     put("f64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));

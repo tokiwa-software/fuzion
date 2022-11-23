@@ -61,6 +61,18 @@ public class FZJavaOptions extends ANY
 
 
   /**
+   * List of modules to check for existing features given by '-modules'.
+   */
+  List<String> _loadModules = new List<String>();
+
+
+  /**
+   * List of module directories added using '-moduleDirs'.
+   */
+  List<String> _moduleDirs = new List<String>();
+
+
+  /**
    * The set of regex patterns to use to filter java classes, e.g., ["java..*",
    * "javax..*"]
    */

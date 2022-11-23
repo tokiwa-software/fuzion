@@ -1,7 +1,9 @@
-name: windows run tests
+name: run tests on windows
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
 
 jobs:
   run_tests:
@@ -22,6 +24,7 @@ jobs:
             make
             git
             mingw-w64-x86_64-clang
+            diffutils
 
       - name: install choco packages
         shell: powershell
@@ -29,19 +32,12 @@ jobs:
 
       - uses: actions/checkout@v2
 
-# NYI how to set PATH permanently?
+# NYI how can we set PATH???
       - name: echo PATH
         run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && echo "$PATH"
 
       - name: echo versions
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && clang --version && javac --version
+        run:  export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && clang --version && javac --version
 
-      - name: build
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && make
-
-      - name: run tests c
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && ./bin/run_tests.sh build c
-
-      - name: run tests int
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && ./bin/run_tests.sh build int
-
+      - name: run tests
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && make run_tests

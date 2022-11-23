@@ -35,14 +35,14 @@ mix_inheritance_and_outer is
       set exitCode := 1
 
   # x is a generic feature:
-  x<A> (v A) ref is
+  x (A type, v A) ref is
 
     # y is a feature declared within x that also inherits from x
     #
     # Consequently, features of x such as v exist twice, the inherited
     # version and the outer version.
     #
-    y : x<i32> 42 is
+    y : x i32 42 is
 
       # this should access the outer x's v field of type A
       getXThisV => x.this.v
@@ -53,19 +53,19 @@ mix_inheritance_and_outer is
       # NYI: if renaming is supported, we could change the inherited v's name and access
       # the outer v without qualification.
 
-  say x<string>("Hello").v
-  say x<string>("Hello").y.v
-  say x<string>("Hello").y.getXThisV
-  say x<string>("Hello").y.getInheritedV
-  z := x<string>("Hello").y
+  say (x "Hello").v
+  say (x "Hello").y.v
+  say (x "Hello").y.getXThisV
+  say (x "Hello").y.getInheritedV
+  z := (x "Hello").y
   say z.v
   say z.getXThisV
   say z.getInheritedV
 
-  chck (  x<string>("Hello").v               = "Hello") "x<string>.v"
-  chck (  x<string>("Hello").y.v             = 42     ) "x<string>.y.v"
-# chck (  x<string>("Hello").y.getXThisV     = "Hello") "x<string>.y.getXThisV"      # NYI: causes type error!
-  chck ("{x<string>("Hello").y.getXThisV}"   = "Hello") "x<string>.y.getXThisV"
-  chck (  x<string>("Hello").y.getInheritedV = 42     ) "x<string>.y.getInheritedV"
+  chck (  (x "Hello").v               = "Hello") "(x string).v"
+  chck (  (x "Hello").y.v             = 42     ) "(x string).y.v"
+# chck (  (x "Hello").y.getXThisV     = "Hello") "(x string).y.getXThisV"      # NYI: causes type error!
+  chck ("{(x "Hello").y.getXThisV}"   = "Hello") "(x string).y.getXThisV"
+  chck (  (x "Hello").y.getInheritedV = 42     ) "(x string).y.getInheritedV"
 
-  fuzion.std.exit exitCode
+  exit exitCode

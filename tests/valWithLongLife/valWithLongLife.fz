@@ -52,4 +52,4 @@ valWithLongLife is
 
   chck "a1-11 b2-22 c3-33" "$a $b $c"
 
-  fuzion.std.exit exitCode
+  exit exitCode
