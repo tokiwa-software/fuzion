@@ -362,6 +362,10 @@ public class Errors extends ANY
    */
   public static void fatal(Throwable e)
   {
+    if (e instanceof FatalError fe)
+      {
+        throw fe;
+      }
     var sw = new StringWriter();
     var pw = new PrintWriter(sw);
     e.printStackTrace(pw);
@@ -670,6 +674,27 @@ public class Errors extends ANY
   {
     _errors_.clear();
     _warnings_.clear();
+  }
+
+
+  public static void runAndExit(Runnable r)
+  {
+    try
+      {
+        try
+          {
+            r.run();
+            Errors.showAndExit(true);
+          }
+        catch (Throwable e)
+          {
+            Errors.fatal(e);
+          }
+      }
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
   }
 
 }
