@@ -17,20 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature equals
+#  Source code of Fuzion standard library feature has_equality
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# equals -- feature that compares two values using the equality relation
-# defined in their type
+# has_equality -- feature for immutable values that define an equality relation
 #
-equals(T type, a, b T) => T.equality a b
-equals2(T has_equality.type, a, b T) => T.equality2 a b
+has_equality is
 
 
-# infix ≟ -- infix operation as short-hand for 'equals'
-#
-infix ≟(T type, a, b T) => equals T a b
-infix ≟≟(T has_equality.type, a, b T) => equals2 T a b
+  # equality implements the default equality relation for values of this type.
+  #
+  # This relation must be
+  #
+  #  - reflexive (equality a b),
+  #  - symmetric (equality a b = equality b a), and
+  #  - transitive ((equality a b && equality b c) : equality a c).
+  #
+  # result is true iff 'a' is considered to represent the same abstract value
+  # as 'b'.
+  #
+  type.equality2(aa, bb THIS_TYPE) bool is abstract
