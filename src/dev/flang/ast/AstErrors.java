@@ -1530,6 +1530,19 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
+  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  {
+    error(pos,
+      "Names of arguments used in this feature must be distinct.",
+          "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
+          + duplicateNames
+            .stream()
+            .map(n -> sbn(n))
+            .collect(Collectors.joining(", ")) + "\n"
+          + "To solve this, rename the arguments to have unique names."
+        );
+  }
+
   public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
   {
     error(value.pos(),
