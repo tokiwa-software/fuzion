@@ -107,6 +107,13 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of type parameter for type features.  This type parameter will be set
+   * to the actual static type.
+   */
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   x := if a then 0 else 1

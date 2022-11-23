@@ -53,6 +53,7 @@ import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -1951,20 +1952,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
-   * actually, a.type.b.type.c.type.
+   * actually, '((a.type a).b.type b).c.type c'.
    */
   Clazz typeClazz()
   {
-    var cf = _type.featureOfType();
-    if (cf.isUniverse())
-      {
-        return this;
-      }
-    else
-      {
-        var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType(), _outer.typeClazz());
-      }
+    return feature().isUniverse() ? this
+                                  : Clazzes.create(_type.typeType(),
+                                                   _outer.typeClazz());
   }
 
 

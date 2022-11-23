@@ -494,9 +494,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
        {
          var q = inner._qname;
          var n = q.get(at);
-         var o = n == FuzionConstants.TYPE_NAME
-           ? outer.typeFeature(_res)
-           : lookupFeatureForType(inner.pos(), n, outer);
+         var o =
+           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer) :
+           inner.belongsToNonStaticType() ? outer.nonStaticTypeFeature(_res)
+                                          : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -779,7 +780,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else if (existing.outer() == outer)
       {
-        if (Errors.count() == 0)
+        if (existing.isTypeFeature())
+          {
+            // NYI: see #461: type features may currently be declared repeatedly in different modules
+          }
+        else if (Errors.count() == 0)
           { // This can happen only as the result of previous errors since this
             // case was already handled in addDeclaredInnerFeature:
             throw new Error();
