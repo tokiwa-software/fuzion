@@ -458,7 +458,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   public String toString(boolean wrapInBrackets)
   {
     return wrapInBrackets
-           // NYI might not always be needed
+           // NYI wrapping might not always be needed
            ? "(" + toString() + ")"
            : toString();
   }
