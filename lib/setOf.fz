@@ -59,3 +59,9 @@ set_of(K (hasHash K).type, vs Sequence K) Set K is
     add (k K) Set K is
       set_of (vs++[k])
 
+
+    # remove an element k from the set if it exists.
+    # return the same set if it does not exist.
+    #
+    remove (k K) Set K is
+      set_of (vs.filter (x -> !(x = k)))
