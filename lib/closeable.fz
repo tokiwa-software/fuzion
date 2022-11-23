@@ -27,56 +27,45 @@
 # file handler (currently an integer representing a file descriptor) in
 # mutable state.
 #
+Resource ref : hasHash Resource is
+  # NYI: cannot specify open because number of arguments might differ
+  # open is abstract
+  # perhaps we don't even need it.
+
+  close outcome unit is abstract
+
+  hash u64 is abstract
+
+  infix = (o Resource) bool is
+    hash ≟ o.hash
+
 closeable : effect effectMode.plain
 is
 
-  # mutuable field to store the file descriptor
-  private fd := mut (option i32) nil
+  # (mutable) map/set of open resources
+  private open_resources := CTrie Resource Resource
 
   # install this effect and execute 'f' in the effect's environment
   with(R type, f ()->R) R is
     (run R (()->
       ret := f.call
-      match closeable.env.fd.get
-        nil => ret
-        f i32 => panic "unclosed resource fd {f}") ((_)->panic "closeable aborted unexpectedly!"))
+      if closeable.env.open_resources.size ≟ 0
+        ret
+      else
+        panic "unclosed resource fd {f}") ((_)->panic "closeable aborted unexpectedly!"))
 
-  # dummy low-level feature
-  # should be replaced by a feature that will actually open files
-  private sys_open(s Object, flags i32) i32 is 0
+  # open an abstract resource
+  private open(r Resource) unit is
+    # NYI: do we need some kind of duplicate handling?
+    # this is currently changes nothing if r is already in open_resources
+    open_resources.add r r
 
-  # dummy low-level feature
-  # should be replaced by a feature that will actually close files
-  private sys_close(fd i32) i32 is 0
-
-  # dummy low-level feature
-  # should be replaced by a feature that will actually get the erorr
-  # from the previous call
-  private sys_errno() i32 is 0
-
-  # high-level feature that opens a file and handles potential errors
-  open(path string) outcome i32 is
-    f := sys_open (fuzion.sys.c_string path) 0
-
-    if f < 0
-      error "error opening file {path}: {sys_errno}"
-    else
-      fd <- f
-      f
-
-  # high-level feature that closes a file and handles potential errors
-  close outcome i32 is
-    match fd.get
-      nil => 0
-      f i32 =>
-        b := sys_close f
-
-        if b < 0
-          error "error closing fd {f}: {sys_errno}"
-
-        fd <- nil
-
-        b
+  # close an abstract resource, return an error if trying to close a resource
+  # that has not been opened.
+  private close(r Resource) outcome unit is
+    match open_resources.remove r
+      res Resource => res.close
+      n (CTrie Resource Resource).NOTFOUND => error "tried closing resource that was not opened in the first place"
 
 # convenience routine to create a new instance of 'closeable' and run 'f' in
 # it.
