@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile to be included for positve tests
+#  Source code of Fuzion test Makefile to be included for positive tests
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -34,4 +34,4 @@ int:
 	$(FUZION) $(NAME) 2>err.txt
 
 c:
-	($(FUZION) $(NAME) -c -o=testbin && ./testbin) 2>err.txt
+	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt

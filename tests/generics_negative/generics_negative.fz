@@ -25,14 +25,17 @@
 
 generics_negative is
 
+  # any produces a 'void' value that is assignable to anything.
+  any => panic "trying to create void"
+
   opengenerics1 (A type...) is
   opengenerics2 (A type, B type...) is
   opengenerics3 (A type, B type, C type...) is
 
   opengenerics4 (A type, B type, C type...) is
-    a A := ?;
-    b B := ?;
-    c C := ?; // 4. should flag an error, open generic cannot be field type.
+    a A := any;
+    b B := any;
+    c C := any; // 4. should flag an error, open generic cannot be field type.
 
   opengenerics5a (A type, B type, C type...) is
     f1(a A) is
@@ -48,33 +51,33 @@ generics_negative is
     f3(a A, b B, c C) is abstract
     f4(a A, b B, c C, a1 A) is abstract  // 6. should flag an error, open generic can only be used for last argument
 
-  opengenerics7 (A type, B type, C type...) : opengenerics6<A,A,A,A> is
+  opengenerics7 (A type, B type, C type...) : opengenerics6 A A A A is
 
-  opengenerics8 (A type, B type, C type...) : opengenerics6<B,B,B,B> is
+  opengenerics8 (A type, B type, C type...) : opengenerics6 B B B B is
 
-  opengenerics9 (A type, B type, C type...) : opengenerics6<C,A,A,A> is // 7. should flag an error: open generic cannot be used as generic argument
+  opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is // 7. should flag an error: open generic cannot be used as generic argument
 
   opengenerics10 (A type, B type, C type...) is  // NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
-    x1 : choice<A> is
-    x2 : choice<A,B> is
-    x3 : choice<A,C,B> is  // 8. should flag an error: choice cannot use open generic
+    x1 : choice A is
+    x2 : choice A B is
+    x3 : choice A C B is  // 8. should flag an error: choice cannot use open generic
 
-  opengenerics11 ref : Function<i32> is
+  opengenerics11 ref : Function i32 is
     redefine call() i32 is 42
-  opengenerics15 ref : Function<i32, bool> is
+  opengenerics15 ref : Function i32 bool is
     redefine call(x bool) i32 is 42
-  opengenerics17 ref : Function<unit> is
+  opengenerics17 ref : Function unit is
     redefine call() unit is
-  opengenerics21 ref : Function<unit,i32> is
+  opengenerics21 ref : Function unit i32 is
     redefine call(x i32) unit is
 
-  f1 Function<i32> := opengenerics11
+  f1 Function i32 := opengenerics11
   f1r1 := f1.call()
   f1r2 := f1.call 7              //  9. should flag an error, wrong number of arguments
   f1r1a := f1()
   f1r2a := f1 7                  // 10. should flag an error, wrong number of arguments
 
-  f2 Function<i32,bool> := opengenerics15
+  f2 Function i32 bool := opengenerics15
   f2r1 := f2.call()              // 11. should flag an error, wrong number of arguments
   f2r2 := f2.call true
   f2r3 := f2.call true false     // 12. should flag an error, wrong number of arguments
@@ -82,13 +85,13 @@ generics_negative is
   f2r2a := f2 true
   f2r3a := f2 true false         // 14. should flag an error, wrong number of arguments
 
-  r1 Function<unit> := opengenerics17
+  r1 Function unit := opengenerics17
   r1r1 := r1.call()
   r1r2 := r1.call 7              // 15. should flag an error, wrong number of arguments
   r1r1a := r1()
   r1r2a := r1 7                  // 16. should flag an error, wrong number of arguments
 
-  r2 Function<unit,i32,bool> := fun (i i32, b bool) is
+  r2 Function unit i32 bool := (i, b) ->
   r2r1 := r2.call()              // 17. should flag an error, wrong number of arguments
   r2r2 := r2.call 3              // 18. should flag an error, wrong number of arguments
   r2r3 := r2.call 3 false
@@ -98,22 +101,22 @@ generics_negative is
   r2r3a := r2 3 false
   r2r4a := r2 3 false 7          // 22. should flag an error, wrong number of arguments
 
-  opengenerics23<A,B,C> is
+  opengenerics23 A B C is
     f(a A.i32) i32 is 3          // 23. should flag an error: generic used as outer type
-    x A<i32> := ?                // 24. should flag an error: generic must not have generic args
+    x A i32 := any               // 24. should flag an error: generic must not have generic args
 
   opengenerics24 is
-    x1 Function<> := ?           // 25. should flag an error: not enough generics
+    x1 Function := any           // 25. should flag an error: not enough generics
     x1.call()       // should be ignored by compiler after previous errors
     x1()            // should be ignored by compiler after previous errors
-    x2 Function<i32,bool> := ?
+    x2 Function i32 bool := any
     i2a i32  := x2.call true
     j2a i32  := x2.call 3         // 26. should flag an error: wrong argument type
     b2a bool := x2.call true      // 27. should flag an error: wrong type in assignment
     i2b i32  := x2 true
     j2b i32  := x2 3              // 28. should flag an error: wrong argument type
     b2b bool := x2 true           // 29. should flag an error: wrong type in assignment
-    x3 Function<unit,i32,bool> := ?
+    x3 Function unit i32 bool := any
     x3.call 3 true
     x3.call false false          // 30. should flag an error: wrong argument type
     x3.call 3 3                  // 31. should flag an error: wrong argument type
@@ -125,21 +128,21 @@ generics_negative is
     x3 3 true 3                  // 36. should flag an error: wrong argument count
     x3 3                         // 37. should flag an error: wrong argument count
 
-    g<A,B,C> is
-    x4 g<> := ?                      // 38. should flag an error: not enough generics
-    x5 g<i32> := ?                   // 39. should flag an error: not enough generics
-    x6 g<i32,i32> := ?               // 40. should flag an error: not enough generics
-    x7 g<i32,i32,i32> := ?
-    x8 g<i32,i32,i32,i32> := ?       // 41. should flag an error: too many generics
+    g A B C is
+    x4 g := any                  // 38. should flag an error: not enough generics
+    x5 g i32 := any              // 39. should flag an error: not enough generics
+    x6 g i32 i32 := any          // 40. should flag an error: not enough generics
+    x7 g i32 i32 i32 := any
+    x8 g i32 i32 i32 i32 := any  // 41. should flag an error: too many generics
 
 
   features_from_separate_source_file is
-    hjkl qwerty<i32>.uiop.asdfg.hjkl := qwerty<i32>.uiop.asdfg.hjkl 42
+    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
     qwerty.uiop.asdfg                                       // 42. should flag an error: missing generic argument to qwerty
-    asdfg1 qwerty<i32>.uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
-    asdfg2 qwerty<i32>.uiop.asdfg := qwerty<i32>.uiop.asdfg
-    uiop qwerty<i32>.uiop := qwerty<i32>.uiop
-    qwert qwerty<i32> := qwerty<i32>
+    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
+    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+    uiop (qwerty i32).uiop := (qwerty i32).uiop
+    qwert qwerty i32 := qwerty i32
     set hjkl := qwert.uiop.asdfg.hjkl                       // 44. should flag an error: missing actual argument to hjkl
     set asdfg1 := uiop.asdfg
     set asdfg2 := uiop.asdfg
@@ -147,14 +150,14 @@ generics_negative is
   features_from_separate_source_file
 
   outerGenerics is
-    A<T,U> is
-      B<V,W>(y U) is
+    A(T,U type) is
+      B(V,W type, y U) is
         p is
           say "y is $y"
-    x0 A<i32,bool  > := A<i32,bool>
-    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool> true
-    x2 A<i32,i32   >.B<string,bool> := A<i64,bool>.B<string,bool> true  // 45. should flag an error: incompatible types
-    x3 A<i32,string>.B<string,bool> := x1                               // 46. should flag an error: incompatible types
+    x0 (A i32 bool  ) := A i32 bool
+    x1 ((A i32 bool  ).B string bool) := (A i32 bool).B string bool true
+    x2 ((A i32 i32   ).B string bool) := (A i64 bool).B string bool true  // 45. should flag an error: incompatible types
+    x3 ((A i32 string).B string bool) := x1                               // 46. should flag an error: incompatible types
     x1.p
     x2.p
     x3.p
@@ -165,7 +168,7 @@ generics_negative is
     F(A type...) ref is
       f(a A) is abstract
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
       redefine f(a0 i32, a1 bool, a2 i32) is
 
     x G := G
@@ -173,7 +176,7 @@ generics_negative is
     x.f "string" false 7  // 47. should flag an error: incompatilbe argument #1
     x.f 4 3 7             // 48. should flag an error: incompatilbe argument #2
     x.f 4 false "false"   // 49. should flag an error: incompatilbe argument #3
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f 3 true 5
     y.f "string" false 8  // 49. should flag an error: incompatilbe argument #1
     y.f 9 10 8            // 50. should flag an error: incompatilbe argument #2

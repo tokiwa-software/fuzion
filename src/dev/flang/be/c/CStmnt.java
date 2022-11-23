@@ -265,7 +265,9 @@ abstract class CStmnt extends ANY
    *
    * @param ident the name of the function
    *
-   * @param argsWithTypes the arguments, pairs of type and name.
+   * @param argsTypes the argument types
+   *
+   * @param argsIds the argument identifiers
    *
    * @param body the body of the function or null for forward declaration.
    *
@@ -273,11 +275,12 @@ abstract class CStmnt extends ANY
    */
   static CStmnt functionDecl(String resultType,
                              CIdent ident,
-                             List<String> argsWithTypes,
+                             List<String> argTypes,
+                             List<CIdent> argIds,
                              CStmnt body)
   {
     if (PRECONDITIONS) require
-      (argsWithTypes.size() % 2 == 0);
+      (argTypes.size() == argIds.size());
 
     return new CStmnt()
       {
@@ -286,12 +289,12 @@ abstract class CStmnt extends ANY
           sb.append(resultType).append(" ");
           ident.code(sb);
           sb.append("(");
-          for (int i = 0; i < argsWithTypes.size(); i += 2)
+          for (int i = 0; i < argTypes.size(); i++)
             {
               sb.append(i > 0 ? ", " : "")
-                .append(argsWithTypes.get(i))
-                .append(" ")
-                .append(argsWithTypes.get(i+1));
+                .append(argTypes.get(i))
+                .append(" ");
+              argIds.get(i).code(sb);
             }
           sb.append(")");
           if (body != null)
@@ -476,6 +479,51 @@ abstract class CStmnt extends ANY
           sb.append(")\n")
             .append("{\n");
           s.codeSemi(sb.indent());
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
+  }
+
+
+
+  /**
+   * An goto statement
+   *
+   * @param l the label to go to
+   *
+   * @return the goto statment
+   */
+  static CStmnt gowto(String l)
+  {
+    return new CStmnt()
+      {
+        void code(CString sb)
+        {
+          sb.append("goto " + l);
+        }
+    };
+  }
+
+
+
+  /**
+   * Add labell l before this statement, such that is is posible to 'goto $l'.
+   *
+   * @param l identifier to be used as a label for this.
+   */
+  CStmnt label(String l)
+  {
+    var orig = this;
+    return new CStmnt()
+      {
+        void code(CString sb)
+        {
+          sb.append("\n"+l+":\n{\n");
+          orig.codeSemi(sb.indent());
           sb.append("}\n");
         }
         boolean needsSemi()

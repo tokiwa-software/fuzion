@@ -242,6 +242,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isDirectlyAssignableFrom(AbstractType actual)
+  {
+    return (!isChoice() && isAssignableFrom(actual))
+         || (isChoice() && compareTo(actual) == 0);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.
    *
@@ -271,9 +285,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isAssignableFrom(Expr expr)
   {
     var actlT = expr.type();
-
-    if (CHECKS) check
-      (actlT == Types.intern(actlT));
 
     return isAssignableFromOrContainsError(actlT) &&
       (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
@@ -361,7 +372,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             for (var t : actualTypes(featureOfType(), g, generics()))
               {
-                if (Types.intern(t).isAssignableFrom(actual))
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null &&
+                    Types.intern(t).isAssignableFrom(actual))
                   {
                     result = true;
                   }
@@ -472,7 +486,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             boolean changes = false;
             for (var t: genericsToReplace)
               {
-                changes = changes || t.actualType(f, actualGenerics) != t;
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null)
+                  {
+                    changes = changes || t.actualType(f, actualGenerics) != t;
+                  }
               }
             if (changes)
               {
@@ -530,7 +549,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var t: generics())
                   {
-                    if (t.dependsOnGenerics())
+                    if (CHECKS) check
+                      (Errors.count() > 0 || t != null);
+                    if (t != null &&
+                        t.dependsOnGenerics())
                       {
                         result = YesNo.yes;
                       }
@@ -740,7 +762,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
-   * time errore in case this is not the case.
+   * time error in case this is not the case.
    */
   void checkChoice(SourcePosition pos)
   {
@@ -765,8 +787,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         (t1.isDirectlyAssignableFrom(t2) ||
+                          t2.isDirectlyAssignableFrom(t1) )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
@@ -801,11 +823,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_unit.
+   * such type exists, return Types.t_UNDEFINED.
    *
    * @param that another type or null
    *
-   * @return a type that is assignable both from this and that, or null if none
+   * @return a type that is assignable both from this and that, or Types.t_UNDEFINED if none
    * exists.
    */
   AbstractType union(AbstractType that)
@@ -893,7 +915,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                       {
                         var tgt = tg.next();
                         var ogt = og.next();
-                        result = tgt.compareTo(ogt);
+
+                        if (CHECKS) check
+                          (Errors.count() > 0 || tgt != null && ogt != null);
+
+                        if (tgt != null && ogt != null)
+                          {
+                            result = tgt.compareTo(ogt);
+                          }
                       }
                   }
               }
@@ -967,15 +996,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = outer
               + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
               + featureOfType().featureName().baseName();
-      }
-    for (var g : generics())
-      {
-        var gs = g.asString();
-        if (gs.indexOf(" ") >= 0)
+        for (var g : generics())
           {
-            gs = "(" + gs + ")";
+            var gs = g.asString();
+            if (gs.indexOf(" ") >= 0)
+              {
+                gs = "(" + gs + ")";
+              }
+            result = result + " " + gs;
           }
-        result = result + " " + gs;
       }
     return result;
   }

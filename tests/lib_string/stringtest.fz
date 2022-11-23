@@ -1,0 +1,47 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test string
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# tests some basic functionality of library feature string
+stringtest is
+
+  say ("hell😀" * 3)
+
+  say "".isEmpty
+  say "notEmpty".isEmpty
+
+  say ("hell😀"="hell😀")
+  say ("hell😀"="again")
+
+
+  match "13".parse_integer i32 10
+    n i32 => say n=13
+    error => say "FAIL"
+
+  say 10
+  say [0,1,2]
+
+  say (strings.fromCodepoints "hell😀".asCodepoints)
+
+  say (strings.fromArray ((marrays Object).new 1 nil))

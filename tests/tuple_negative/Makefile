@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = tuple_negative
+override NAME = tuple_negative
 include ../negative.mk

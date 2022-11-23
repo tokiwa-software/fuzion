@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 
 import java.util.TreeSet;
@@ -46,6 +48,7 @@ import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
 
@@ -60,11 +63,6 @@ public abstract class Tool extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
-
-  /**
-   * Placeholder within USAGE0() result to hold standard options.
-   */
-  public static final String STD_OPTIONS = "@STANDARD_OPTIONS@";
 
   private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] " +
     "[" + Errors.MAX_ERROR_MESSAGES_OPTION   + "=<n>] " +
@@ -141,21 +139,11 @@ public abstract class Tool extends ANY
 
 
   /**
-   * The basic usage, using STD_OPTIONS as a placeholder for standard
-   * options.
-   */
-  protected abstract String USAGE0();
-
-
-  /**
-   * The usage, created from USAGE0() by adding STANDARD_OPTIONS().
+   * The usage, must include STANDARD_OPTIONS(xtra).
    *
    * @param xtra include extra options
    */
-  protected final String USAGE(boolean xtra)
-  {
-    return USAGE0().replace(STD_OPTIONS, STANDARD_OPTIONS(xtra));
-  }
+  protected abstract String USAGE(boolean xtra);
 
 
   /**
@@ -168,10 +156,13 @@ public abstract class Tool extends ANY
         parseArgs(_args).run();
         Errors.showAndExit(true);
       }
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
     catch(Throwable e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        Errors.fatal(e);
       }
   }
 
@@ -331,7 +322,7 @@ public abstract class Tool extends ANY
   protected int parsePositiveIntArg(String a, int defawlt)
   {
     if (PRECONDITIONS) require
-      (a.split("=").length == 2);
+      (a.split("=").length == 1 || a.split("=").length == 2);
 
     int result = defawlt;
     var s = a.split("=");
@@ -358,7 +349,7 @@ public abstract class Tool extends ANY
    *
    * @return the string after the first "=" in a, may be empty, may not be null
    */
-  protected String parseString(String a)
+  protected static String parseString(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -374,7 +365,7 @@ public abstract class Tool extends ANY
    *
    * @return the path after the first "=" in a.
    */
-  protected Path parsePath(String a)
+  protected static Path parsePath(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -390,7 +381,7 @@ public abstract class Tool extends ANY
    *
    * @return true iff a is set to 'on' or an error was reported.
    */
-  protected boolean parseOnOffArg(String a)
+  protected static boolean parseOnOffArg(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -418,15 +409,19 @@ public abstract class Tool extends ANY
    *
    * @return the list containing the single elements, e.g. ["abc","def","ghi"]
    */
-  protected List<String> parseStringListArg(String a)
+  protected static List<String> parseStringListArg(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
 
     List<String> result = new List<>();
-    for (var s : a.substring(a.indexOf("=")+1).split(","))
+    var strings = a.substring(a.indexOf("=")+1);
+    if (!strings.equals(""))
       {
-        result.add(s);
+        for (var s : strings.split(","))
+          {
+            result.add(s);
+          }
       }
     return result;
   }

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = illegal_assignment
+override NAME = illegal_assignment
 include ../negative.mk

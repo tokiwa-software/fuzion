@@ -38,21 +38,21 @@ quantors is
   #
   # NYI: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
-  #   forAll<A...>(f Function<bool, A>) bool is intrinsic
+  #   forAll(A..., f A -> bool) bool is intrinsic
   #
-  forAll  <A0                           >(f Function<bool, A0                                    >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is fuzion.std.panic "quantors are for analysis only"
-  forAll10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll  (A0                                     type, f (A0                                    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll2 (A0, A1                                 type, f (A0, A1                                ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll3 (A0, A1, A2                             type, f (A0, A1, A2                            ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll4 (A0, A1, A2, A3                         type, f (A0, A1, A2, A3                        ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll5 (A0, A1, A2, A3, A4                     type, f (A0, A1, A2, A3, A4                    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll6 (A0, A1, A2, A3, A4, A5                 type, f (A0, A1, A2, A3, A4, A5                ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll7 (A0, A1, A2, A3, A4, A5, A6             type, f (A0, A1, A2, A3, A4, A5, A6            ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll8 (A0, A1, A2, A3, A4, A5, A6, A7         type, f (A0, A1, A2, A3, A4, A5, A6, A7        ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll9 (A0, A1, A2, A3, A4, A5, A6, A7, A8     type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand forAll using '∀' symbol
-  prefix ∀ <A>(f Function<bool, A>) => forAll f
+  prefix ∀ (A type, f A -> bool) => forAll f
 
   # exists quantors for use in analysis parts of contracts
   #
@@ -61,24 +61,24 @@ quantors is
   #
   # NYI: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
-  #   exists<A...>(f Function<bool, A>) bool is intrinsic
+  #   exists(A..., f A -> bool) bool is intrinsic
   #
-  exists  <A0                           >(f Function<bool, A0                                    >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is fuzion.std.panic "quantors are for analysis only"
-  exists10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is fuzion.std.panic "quantors are for analysis only"
+  exists  (A0                                     type, f (A0                                    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists2 (A0, A1                                 type, f (A0, A1                                ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists3 (A0, A1, A2                             type, f (A0, A1, A2                            ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists4 (A0, A1, A2, A3                         type, f (A0, A1, A2, A3                        ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists5 (A0, A1, A2, A3, A4                     type, f (A0, A1, A2, A3, A4                    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists6 (A0, A1, A2, A3, A4, A5                 type, f (A0, A1, A2, A3, A4, A5                ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists7 (A0, A1, A2, A3, A4, A5, A6             type, f (A0, A1, A2, A3, A4, A5, A6            ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists8 (A0, A1, A2, A3, A4, A5, A6, A7         type, f (A0, A1, A2, A3, A4, A5, A6, A7        ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists9 (A0, A1, A2, A3, A4, A5, A6, A7, A8     type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8    ) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
+  exists10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand exists using '∃' symbol
-  prefix ∃ <A>(f Function<bool, A>) => exists f
+  prefix ∃ (A type, f A -> bool) => exists f
 
   /*
     NYI: eventually, the following declaration should become possible:
 
-    prefix ∃ <A>(f Function<bool, A>) => !∀ fun bool.prefix ! ∘ f
+    prefix ∃ (A type, f A -> bool) => !∀ fun bool.prefix ! ∘ f
   */

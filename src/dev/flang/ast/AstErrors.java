@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
@@ -85,7 +87,7 @@ public class AstErrors extends ANY
   }
   static String s(AbstractType t)
   {
-    return st(t.toString());
+    return st(t == null ? "--null--" : t.toString());
   }
   static String s(ReturnType rt)
   {
@@ -193,7 +195,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
           "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To slve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
+          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
   }
 
 
@@ -233,7 +235,7 @@ public class AstErrors extends ANY
           "Feature implementation using " + code("of") + " must contain only constructors. ",
           "Feature " + sqn(f._qname) + " is not a constructor.\n" +
           "Declaration started at " + ofPos.show() + "\n" +
-          (f.impl().kind_ == Impl.Kind.RoutineDef
+          (f.impl()._kind == Impl.Kind.RoutineDef
            ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
               "ensure that the code results in a value of type " + st("unit") + " " +
               "in the declaration of " + sqn(f._qname) + ".\n")
@@ -339,7 +341,7 @@ public class AstErrors extends ANY
           frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
           frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
           frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
-          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : "**error**";
+          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
         remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
       }
     else
@@ -485,12 +487,12 @@ public class AstErrors extends ANY
 
   static void wrongNumberOfActualArguments(Call call)
   {
-    int fsz = call.resolvedFormalArgumentTypes.length;
+    int fsz = call._resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call.resolvedFormalArgumentTypes)
+    for (var t : call._resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
@@ -524,7 +526,7 @@ public class AstErrors extends ANY
    * i.e., "call" or "type".
    *
    * @param detail2 optional extra lines of detail message giving further
-   * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
+   * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
   static void wrongNumberOfGenericArguments(FormalGenerics fg,
                                             List<AbstractType> actualGenerics,
@@ -715,10 +717,20 @@ public class AstErrors extends ANY
 
   static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
-    error(pos,
-          "" + skw("match") + " statement does not cover all of the subject's types",
-          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-          subjectTypes(choiceGenerics));
+    if (choiceGenerics.size() == missingMatches.size())
+      {
+        error(pos,
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+      }
+    else
+      {
+        error(pos,
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
+      }
   }
 
   /**
@@ -817,11 +829,19 @@ public class AstErrors extends ANY
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    error(pos,
-          "Duplicate feature declaration",
-          "Feature that was declared repeatedly: " + s(f) + "\n" +
-          "originally declared at " + existing.pos().show() + "\n" +
-          "To solve this, consider renaming one of these two features or changing its number of arguments");
+    // suppress error message if errors were reported already and any feature
+    // involved is f_ERROR
+    if (count() == 0 || (f                != Types.f_ERROR &&
+                         f       .outer() != Types.f_ERROR &&
+                         existing         != Types.f_ERROR &&
+                         existing.outer() != Types.f_ERROR    ))
+      {
+        error(pos,
+              "Duplicate feature declaration",
+              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "originally declared at " + existing.pos().show() + "\n" +
+              "To solve this, consider renaming one of these two features or changing its number of arguments");
+      }
   }
 
   public static void qualifiedDeclarationNotAllowedForField(Feature f)
@@ -832,7 +852,7 @@ public class AstErrors extends ANY
           "Qualified declaration not allowed for field",
           "All fields have to be declared textually within the source of their outer features.\n" +
           "Field declared: " + sqn(q) + "\n" +
-          "To fix this, you could move the declaration into the implementation of feature " + sqn(o) +
+          "To solve this, you could move the declaration into the implementation of feature " + sqn(o) +
           ".  Alternatively, you can declare a routine instead.");
   }
 
@@ -896,18 +916,30 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  static boolean errorInOuterFeatures(AbstractFeature f)
+  {
+    while (f != null && f != Types.f_ERROR)
+      {
+        f = f.outer();
+      }
+    return f == Types.f_ERROR;
+  }
+
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
                                     AbstractFeature targetFeature)
   {
-    var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
-                                                     calledName.argCount());
-    error(call.pos(),
-          "Could not find called feature",
-          "Feature not found: " + sbn(calledName) + "\n" +
-          "Target feature: " + s( targetFeature) + "\n" +
-          "In call: " + s(call) + "\n" +
-          solution);
+    if (count() == 0 || !errorInOuterFeatures(targetFeature))
+      {
+        var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+                                                         calledName.argCount());
+        error(call.pos(),
+              "Could not find called feature",
+              "Feature not found: " + sbn(calledName) + "\n" +
+              "Target feature: " + s(targetFeature) + "\n" +
+              "In call: " + s(call) + "\n" +
+              solution);
+      }
   }
 
   static void expectedActualTypeInCall(SourcePosition pos,
@@ -1051,7 +1083,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Formal generic cannot have generic arguments",
-          "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
+          "In a type with generic arguments >>A B<<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
           "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
@@ -1479,11 +1511,21 @@ public class AstErrors extends ANY
           typesMsg);
   }
 
-  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType type_)
+  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType _type)
   {
     error(pos,
       "Loss of precision for: " + _originalString,
-      "Expected number given in base " + _base + " to fit into " + type_ + " without loss of precision.");
+      "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  {
+    error(value.pos(),
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(value.type()))
+          .map(cg -> s(cg))
+          .collect(Collectors.joining(", "))
+      );
   }
 }
 

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = forwardref_negative
+override NAME = forwardref_negative
 include ../negative.mk

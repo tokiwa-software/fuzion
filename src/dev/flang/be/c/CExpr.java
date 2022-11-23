@@ -837,6 +837,10 @@ abstract class CExpr extends CStmnt
    */
   CExpr assign(CExpr value)
   {
+    if (PRECONDITIONS) require
+      (value != null,
+       this != CExpr.UNIT);
+
     CExpr inner = this;
     return new CExpr()
       {

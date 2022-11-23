@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = abstractfeatures_negative
+override NAME = abstractfeatures_negative
 include ../negative.mk

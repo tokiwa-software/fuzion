@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = floating_point_numbers
+override NAME = floating_point_numbers
 include ../positive.mk

@@ -25,8 +25,8 @@
 
 # state -- represent a state using a monad
 #
-# this can be used both a plain or as a oneway monad to store a state
-# in a way orthogonal to the actual compuation.
+# this can be used both as plain or as a oneway monad to store a state
+# in a way orthogonal to the actual computation.
 #
 #
 state(
@@ -40,7 +40,7 @@ state(
   # the current state
   get S,
 
-  redef r effectModes
+  redef r effectMode.val
   ) ref : onewayMonad T (state T S) r
 is
 
@@ -97,9 +97,9 @@ state(S type, initialValue S) => state unit initialValue effectMode.plain
 # return result of r.
 #
 state(S, R type, initialValue S, r ()->R) =>
-  res R := ?
-  state unit S unit initialValue (effectMode.inst ()->set res := r.call)
-  res
+  res option R := nil
+  state unit S unit initialValue (effectMode.inst (()->set res := r.call))
+  res.get
 
 
 # type related to state declaring features not requiring an instance of state
@@ -109,7 +109,7 @@ states(T, S type) is
 
 # short-hand for accessing state monad for given type in current environment
 #
-state_of(S type) => state<unit,S>.env
+state_of(S type) => (state unit S).env
 
 
 # short-hand for getting state monad for given type in current environment

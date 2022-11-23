@@ -94,8 +94,7 @@ public class Match extends AbstractMatch
   {
     if (PRECONDITIONS) require
       (e != null,
-       c != null,
-       !c.isEmpty());
+       c != null);
 
     _subject = e;
     _cases = c;
@@ -148,14 +147,19 @@ public class Match extends AbstractMatch
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     var st = _subject.type();
-    if (st.isGenericArgument())
+    if (CHECKS) check
+      (Errors.count() > 0 || st != Types.t_ERROR);
+    if (st != Types.t_ERROR)
       {
-        AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
-      }
-    if (st.featureOfType() instanceof Feature stf) { stf.resolveTypes(res); }
-    if (!st.isChoice())
-      {
-        AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
+        if (st.isGenericArgument())
+          {
+            AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
+          }
+        res.resolveTypes(st.featureOfType());
+        if (!st.isChoice())
+          {
+            AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
+          }
       }
     var cgs = st.choiceGenerics();
     if (CHECKS) check
@@ -165,7 +169,13 @@ public class Match extends AbstractMatch
         var i = cgs.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().resolve(res, outer));
+            var n = i.next();
+            if (CHECKS) check
+              (Errors.count() > 0 || n != null);
+            if (n != null)
+              {
+                i.set(n.resolve(res, outer));
+              }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;

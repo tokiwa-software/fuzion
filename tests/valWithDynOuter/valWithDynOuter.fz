@@ -146,4 +146,4 @@ valWithDynOuter is
   test_mut o.g ".ss-s:s.x."
   chck o.f "ss"
 
-  fuzion.std.exit exitCode
+  exit exitCode

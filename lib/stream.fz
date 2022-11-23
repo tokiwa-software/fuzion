@@ -28,22 +28,22 @@
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
 # of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
-stream(redef T type) ref : Sequence<T> is
+stream(redef T type) ref : Sequence T is
 
   # create a list from this stream
   #
-  asList0 option<some<list<T>>> := nil
-  redef asList list<T> is
+  asList0 option (some (list T)) := nil
+  redef asList list T is
     if !asList0.exists
       set asList0 := some fromStream
     asList0.get.val
 
   # this must not be called more than once!
-  private fromStream list<T> is
+  private fromStream list T is
     if hasNext
       h := next
-      ref : Cons<T,list<T>>
-        memoizedTail option<some<list<T>>> := nil
+      ref : Cons T (list T)
+        memoizedTail option (some (list T)) := nil
         head => h
         tail =>
           if !memoizedTail.exists
@@ -53,9 +53,11 @@ stream(redef T type) ref : Sequence<T> is
       nil
 
 
+  # take n items from stream, less if stream has fewer than n items
+  #
   redef take (n i32) =>
     for
-      a := marray 0 (fuzion.sys.array<T> 0), a.add x
+      a := marray 0 (fuzion.sys.array T 0), a.add x
       i in (1..n)
     while hasNext
       x := next
@@ -71,7 +73,7 @@ stream(redef T type) ref : Sequence<T> is
   # Default implementation uses asList.  Heirs must redefine at least
   # one of asList or asStream.
   #
-  redef asStream stream<T> is stream.this
+  redef asStream stream T is stream.this
 
 
   # apply f to all elements in this stream
@@ -92,9 +94,9 @@ stream(redef T type) ref : Sequence<T> is
   # create a new stream that contains the first elements of this stream for
   # which 'f e' is false
   #
-  redef before(f T -> bool) stream<T> is before0 f
-  before0(f T -> bool) ref : stream<T> is
-    nextCache := stream.this.next  # NYI should be option<T> and set to None if !stream.this.hasNext
+  redef before(f T -> bool) stream T is before0 f
+  before0(f T -> bool) ref : stream T is
+    nextCache := stream.this.next  # NYI should be option T and set to None if !stream.this.hasNext
     redef hasNext => !f(nextCache)
     redef next T is
       res := nextCache
@@ -104,21 +106,7 @@ stream(redef T type) ref : Sequence<T> is
 
   # create new stream from all elements for which predicate f is true
   #
-  redef filter(f T -> bool) Sequence<T> is filter0 f
-  filter0(f T -> bool) ref : stream<T> is
-    cache T := ?  # NYI: should be option<T>
-    cacheOk := false
-    next2
-    redef hasNext => cacheOk
-    redef next T is
-      res := cache
-      set cacheOk := false
-      next2
-      res
-    next2 unit is
-      while !cacheOk && stream.this.hasNext
-        set cache := stream.this.next
-        set cacheOk := f(cache)
+  redef filter(f T -> bool) => asList.filter f
 
 
   # check if predicate f holds for all elements produced by this stream
@@ -152,7 +140,7 @@ stream(redef T type) ref : Sequence<T> is
 
   # get the next element or nil if !hasNext
   #
-  nextIfExists option<T> is
+  nextIfExists option T is
     if hasNext
       next
     else
@@ -170,15 +158,16 @@ stream(redef T type) ref : Sequence<T> is
   # count the elements of this stream
   #
   redef count i32 is
-    # NYI: check if this works: map<i32>(x -> 1).fold i32.sum
-    asList.map<i32>(x -> 1).fold i32.sum
+    # NYI: check if this works: (map i32 x->1).fold i32.sum
+    asList.map i32 x->1
+          .fold i32.sum
 
 
   # collect all items from this stream into an array
   #
-  redef asArray array<T> is
+  redef asArray array T is
     for
-      a := marray 0 (fuzion.sys.array<T> 0), a.add x
+      a := marray 0 (fuzion.sys.array T 0), a.add x
     while hasNext
       x := next
     else
@@ -188,7 +177,7 @@ stream(redef T type) ref : Sequence<T> is
   # create a stream that consists of all be the elements if this stream followed
   # by all the elements of s
   #
-  concatStreams (s stream<T>) ref : stream<T> is
+  concatStreams (s stream T) ref : stream T is
     hasNext => stream.this.hasNext || s.hasNext
     next => if (stream.this.hasNext) stream.this.next else s.next
 
@@ -196,9 +185,8 @@ stream(redef T type) ref : Sequence<T> is
   # create a string from the elements of this stream
   #
   redef asString ref string is
-    # NYI: check if this works: map<string>(x-> x.asString).fold strings.concat ", "
-    #
-    stream.this.asString ", "
+    (map string (x -> x.asString))
+      .fold (strings.concat ", ")
 
 
   # create a string representation of this list including all the string
@@ -212,8 +200,8 @@ stream(redef T type) ref : Sequence<T> is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
   #
-  map<B>(f T -> B) stream<B> is
-    ref : stream<B>
+  map(B type, f T -> B) stream B is
+    ref : stream B
       hasNext => stream.this.hasNext
       next B is f stream.this.next
 
@@ -221,7 +209,7 @@ stream(redef T type) ref : Sequence<T> is
   # NYI: This currently does not work with the C backend since generics resolution
   # for stream.this.next confuses the type from the outer feature (T) with the type
   # from the inherited feature (B).
-  map_broken <B>(f T -> B) : stream<B> is
+  map_broken(B type, f T -> B) : stream B is
     hasNext => stream.this.hasNext
     next B is f stream.this.next
 
@@ -230,16 +218,54 @@ stream(redef T type) ref : Sequence<T> is
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  redef fold (m Monoid<T>) => fold m.e m
+  redef fold (m Monoid T) => fold m.e m
 
 
   # fold the elements of this stream using the given monoid m and initial value s.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  fold (s T, m Monoid<T>) =>
+  fold (s T, m Monoid T) =>
     for
       r := s, m.op r next
     while hasNext
     else
       r
+
+
+# streams -- unit type defining features related
+# to streams but not requiring an instance
+#
+streams is
+
+  # creates a - potentially infinite - stream by using given supplier
+  # end of stream is reached once supplier returns nil
+  # note that the supplier is called only once for each hasNext/next cycle
+  #
+  generate(T type, supplier () -> option T) stream T is
+
+    not_initialized is
+    depleted is
+    val := mut (choice T not_initialized depleted) not_initialized
+
+    read =>
+      match val.get
+        not_initialized =>
+          match supplier()
+            t T => val <- t
+            nil => val <- depleted
+        * =>
+      val.get
+
+    reset =>
+      val <- not_initialized
+
+    ref: stream T
+      redef hasNext bool is
+        match read
+          v T => true
+          * => false
+      redef next T is
+        match read
+          v T => reset; v
+          * => fuzion.std.panic "there is no next value available"

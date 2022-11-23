@@ -150,169 +150,8 @@ public class Function extends ExprWithPos
       (c._actuals.size() == 0);
 
     this._call = c;
-    c.forFun = true;
+    c._forFun = true;
     this._wrapper = null;
-  }
-
-
-  /**
-   * Constructor defining a function inline, e.g.,
-   *
-   *  x(fun (o Object, i int) int { result = o.hashCode + i; });
-   *
-   * which is equivalent to
-   *
-   *  _anonymous<#>_f_: Function<int,Object,int>
-   *   {
-   *     redefine int call(Object o, int i)
-   *     {
-   *       result = o.hashCode + i;
-   *     };
-   *   }
-   *  x(_anonymous<#>_f_());
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param r the return type or null for a routine
-   *
-   * @param a the arguments list
-   *
-   * @param i the inheritance clause
-   *
-   * @param c the contract
-   *
-   * @param b the code
-   */
-  public Function(SourcePosition pos,
-                  ReturnType r,
-                  List<Feature> a,
-                  List<AbstractCall> i,
-                  Contract c,
-                  Block b)
-  {
-    this(pos, r, a, i, c, new Impl(b.pos(), b, Impl.Kind.Routine));
-  }
-
-
-  /**
-   * Constructor defining a function inline, e.g.,
-   *
-   *  x(fun (o Object, i int) => o.hashCode + i);
-   *
-   * which is equivalent to
-   *
-   *  _anonymous<#>_f_: Function<int,Object,int>
-   *   {
-   *     redefine call(o Object, i int) => o.hashCode + i;
-   *   }
-   *  x(_anonymous<#>_f_());
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param r the return type or null for a routine
-   *
-   * @param a the arguments list
-   *
-   * @param i the inheritance clause
-   *
-   * @param c the contract
-   *
-   * @param e the code
-   */
-  public Function(SourcePosition pos,
-                  ReturnType r,
-                  List<Feature> a,
-                  List<AbstractCall> i,
-                  Contract c,
-                  Expr e)
-  {
-    // NYI: This currently does not work to define a function without a result as in
-    //  fun () => {}
-    this(pos, r, a, i, c, new Impl(e.pos(), e, Impl.Kind.RoutineDef));
-  }
-
-
-  /**
-   * Constructor defining a function inline, e.g.,
-   *
-   *  x(fun int (Object o, int i) { result = o.hashCode + i; });
-   *
-   * which is equivalent to
-   *
-   *  _anonymous<#>_f_: Function<int,Object,int>
-   *   {
-   *     redefine int call(Object o, int i)
-   *     {
-   *       result = o.hashCode + i;
-   *     };
-   *   }
-   *  x(_anonymous<#>_f_());
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param r the return type or null for a routine
-   *
-   * @param a the arguments list
-   *
-   * @param i the inheritance clause
-   *
-   * @param c the contract
-   *
-   * @param p the code
-   */
-  private Function(SourcePosition pos,
-                   ReturnType r,
-                   List<Feature> a,
-                   List<AbstractCall> i,
-                   Contract c,
-                   Impl p)
-  {
-    super(pos);
-
-    /* We have an expression of the form
-     *
-     *   fun (o Object, i int) int { result = o.hashCode + i; });
-     *
-     * so we replace it by
-     *
-     * --Fun<id>-- : Function<R,A1,A2,...>
-     * {
-     *   public redefine R call(A1 a1, A2 a2, ...)
-     *   {
-     *     result = o.hashCode + i;
-     *   }
-     * }
-     * [..]
-     *         --Fun<id>--()
-     * [..]
-     */
-
-    Feature f = new Feature(pos, r, new List<String>("call"), a, i, c, p);
-    this._feature = f;
-
-    List<AbstractType> generics = new List<>();
-    generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
-    for (int j = 0; j < a.size(); j++)
-      {
-        generics.add(Types.t_UNDEFINED);
-      }
-    // inherits clause for wrapper feature: Function<R,A,B,C,...>
-    _inheritsCall = new Call(pos,
-                             Types.FUNCTION_NAME,
-                             generics,
-                             Expr.NO_EXPRS);
-    List<Stmnt> statements = new List<Stmnt>(f);
-    String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
-    _wrapper = new Feature(pos,
-                           Consts.VISIBILITY_INVISIBLE,
-                           Consts.MODIFIER_FINAL,
-                           RefType.INSTANCE,
-                           new List<String>(wrapperName),
-                           NO_FEATURES,
-                           new List<>(_inheritsCall),
-                           new Contract(null,null,null),
-                           new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
-    _call = new Call(pos, _wrapper);
   }
 
 
@@ -372,8 +211,7 @@ public class Function extends ExprWithPos
               {
                 if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for constructor type not allowed");
-                    System.exit(1);
+                    Errors.fatal("NYI: fun for constructor type not allowed");
                   }
               }
           }
@@ -487,13 +325,13 @@ public class Function extends ExprWithPos
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
-                                   new Contract(null,null,null),
+                                   Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
-                _wrapper.scheduleForResolution(res);
-                res.resolveTypes();
+                res.resolveDeclarations(_wrapper);
+                res.resolveTypes(f);
                 result = f.resultType();
                 gs.set(0, result);
               }
@@ -588,7 +426,7 @@ public class Function extends ExprWithPos
                      : new Type("unit"));
         for (var a : f.arguments())
           {
-            a.resolveTypes(res);
+            res.resolveTypes(a);
             generics.add(a.resultType());
           }
       }
@@ -620,7 +458,7 @@ public class Function extends ExprWithPos
       }
     else
       {
-        _inheritsCall.generics = generics(res);
+        _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
         // Call.resolveType returns something differnt than this only for an
         // immediate function call, which is never the case in an inherits
@@ -699,7 +537,7 @@ public class Function extends ExprWithPos
              * [..]
              */
             Call call = this._call;
-            call.forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
+            call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors aor special case
@@ -717,17 +555,17 @@ public class Function extends ExprWithPos
               {
                 String name = "a"+argnum;
                 actual_args.add(new Call(pos(), null, name));
-                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, new Contract(null,null,null)));
+                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
-            Call callWithArgs = new Call(pos(), null, call.name, actual_args);
+            Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
             Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
                                         formal_args,
                                         NO_CALLS,
-                                        new Contract(null,null,null),
+                                        Contract.EMPTY_CONTRACT,
                                         new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef));
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
@@ -744,11 +582,11 @@ public class Function extends ExprWithPos
                                            new List<String>(wrapperName),
                                            NO_FEATURES,
                                            inherits,
-                                           new Contract(null,null,null),
+                                           Contract.EMPTY_CONTRACT,
                                            new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
-            res._module.findDeclarations(function, call.target.type().featureOfType());
+            res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
-                              call.target,
+                              call.target(),
                               function)
               .resolveTypes(res, outer);
           }

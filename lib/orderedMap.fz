@@ -32,10 +32,10 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-orderedMap(OK ordered<OK>.type,
+orderedMap(OK ordered OK .type,
            redef V type,
-           ks array<OK>,
-           vs array<V>) : map<OK, V>
+           ks array OK,
+           vs array V) : map OK V
   pre
     ks.length == vs.length
 
@@ -43,11 +43,11 @@ is
 
   # entry is an index in ks/vs
 
-  entry(i i32) : ordered<entry> is
+  entry(i i32) : ordered entry is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence<entry> (i -> entry i)).asArray
+  sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence (i -> entry i)).asArray
 
   # number of entries in this map
   #
@@ -58,26 +58,26 @@ is
   #
   # performance is O(log size).
   #
-  index [] (k OK) option<V> is
+  index [] (k OK) option V is
     sortedEntries.find (e -> ks[e.i] <> k)
-                 .map<V> (i -> sortedEntries[i].val)
+                 .map (i -> sortedEntries[i].val)
 
 
-  # get a stream of all key/value pairs in this map
+  # get an array of all key/value pairs in this map
   #
-  items Sequence<tuple<OK,V>> is sortedEntries.map<tuple<OK,V>> (e -> (e.key, e.val))
+  items Sequence (tuple OK V) is sortedEntries.map (e -> (e.key, e.val))
 
 
   # add mapping from k to v
   #
-  add(k OK, v V) orderedMap<OK,V> is
+  add(k OK, v V) orderedMap OK V is
     match index[](k)
       nil =>
         (orderedMap
           (ks++[k]).asArray
           (vs++[v]).asArray)
       V =>
-        va := array<V> size (i -> if ks[i]=k then v else vs[i])
+        va := array size (i -> if ks[i]=k then v else vs[i])
         (orderedMap ks va)
 
 
@@ -97,11 +97,11 @@ is
 #
 # NYI: move to orderedMap.type
 #
-orderedMaps<OK : ordered<OK>, V> is
+orderedMaps (OK ordered OK .type, V type) is
 
 
   # create an empty instance of orderedMap
   #
   empty => (orderedMap
-            Sequences.empty<OK>.asArray
-            Sequences.empty<V>.asArray)
+            (Sequences.empty OK).asArray
+            (Sequences.empty V ).asArray)

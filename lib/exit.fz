@@ -28,9 +28,9 @@
 exit (
 
   # the handler this effect uses to exit
-  p exitHandler,
+  p Exit_Handler,
 
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : effect r
@@ -57,13 +57,13 @@ exit(code i32) => exit.exit code
 
 # install given exit handler and run code with it.
 #
-exit(handler exitHandler, code ()->unit) =>
+exit(handler Exit_Handler, code ()->unit) =>
   exit handler (effectMode.inst code) unit
 
 
-# exitHandler -- abstract exit
+# Exit_Handler -- abstract exit
 #
-exitHandler ref is
+Exit_Handler ref is
 
   # exit with the given message
   #
@@ -75,12 +75,12 @@ exitHandler ref is
 exit_type is
 
   installDefault is
-    if !(effects.exists<exit>)
+    if !effects.exists exit
       _ := exit defaultExitHandler effectMode.default unit
 
   # default exit handler using io.err and exit with return code 1
   #
-  defaultExitHandler : exitHandler is
+  defaultExitHandler : Exit_Handler is
 
     # exit with the given message and exit with return code 1
     #

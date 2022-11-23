@@ -68,4 +68,6 @@ Functions is
   #
   compose(A,B,C type,
           g B -> C,
-          f A -> B) A -> C is a -> g (f a)
+          f A -> B) A -> C
+  is
+    a -> g (f a)

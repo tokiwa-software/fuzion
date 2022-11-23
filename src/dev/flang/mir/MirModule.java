@@ -47,7 +47,7 @@ public interface MirModule
   /**
    * The binary data from this module's .mir file.
    */
-  ByteBuffer data();
+  ByteBuffer data(String name);
 
 
   /**

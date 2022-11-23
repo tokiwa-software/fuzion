@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = genericstest
+override NAME = genericstest
 include ../positive.mk

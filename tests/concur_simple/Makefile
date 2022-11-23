@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = concur_simple
+override NAME = concur_simple
 include ../simple.mk

@@ -95,9 +95,15 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of type features.
+   * Name of (dynamic) type features.
    */
   public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+
+
+  /**
+   * Name of static type features.
+   */
+  public static final String TYPE_STATIC_NAME = INTERNAL_NAME_PREFIX + "type_STATIC";
 
 
   /**
@@ -169,6 +175,12 @@ public class FuzionConstants extends ANY
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
 
+  /**
+   * Suffix added to module files.
+   */
+  public static final String MODULE_FILE_SUFFIX = ".fum";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
 
@@ -208,6 +220,13 @@ public class FuzionConstants extends ANY
    * relative path of build directory.
    */
   public static final Path SYMBOLIC_FUZION_HOME = Path.of("$FUZION");
+
+
+  /**
+   * Directory to be used for sources in module files
+   */
+  public static final Path SYMBOLIC_FUZION_HOME_LIB_SOURCE = SYMBOLIC_FUZION_HOME.resolve("lib");
+
 
   /*-----------------  special values used in AIR file  -----------------*/
 

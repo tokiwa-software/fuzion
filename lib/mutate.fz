@@ -56,7 +56,7 @@
 private /* NYI: type:pub */ mutate(
 
   # action to be taken: plain monad, install or replace?
-  redef r effectModes
+  redef r effectMode.val
   ) : effect r
 is
 
@@ -96,6 +96,17 @@ is
       )
      =>
       put (f get)
+
+
+    # creates a copy of the mutable field
+    #
+    copy new T is
+      mut get
+
+
+    # returns `asString` of the current value
+    #
+    redef asString => get.asString
 
 
   # install default instance of mutate

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.parser;
 
+import java.util.LinkedList;
+
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -63,7 +65,7 @@ public class FList extends ANY implements Stmnt
   /**
    * The features in this list
    */
-  final List<Feature> _list;
+  final LinkedList<Feature> _list = new LinkedList<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -74,7 +76,7 @@ public class FList extends ANY implements Stmnt
    */
   public FList(List<Feature> l)
   {
-    _list = l;
+    _list.addAll(l);
   }
 
 

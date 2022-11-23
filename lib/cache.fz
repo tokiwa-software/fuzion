@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature cache
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# (globally) cache result of f for cache key T
+#
+# example:
+#
+#
+# cache_key(val sortedArray i32) is
+#               ^-------- the actual type we want to cache
+# ^------- a feature declaring a type which we use as a cache key
+#            wrapping the actual data we want to cache
+#
+# we can now use this key:
+#
+# fn () -> cache_key := () -> cache_key (sortedArrayOf [6,4,1,9])
+# from_cache => (cache cache_key fn).val
+#                                ^--- will only be computed the first time we run from_cache
+#
+cache(T type, f () -> T) T is
+
+  # use wrapper type because we do not want to prevent
+  # the use of `state` for type T
+  cache_item(T type, val T) is
+
+  if !(effects.exists (state unit (cache_item T)))
+    _ := state unit (cache_item T) unit (cache_item f()) effectMode.default
+
+  state_get (cache_item T)
+    .val

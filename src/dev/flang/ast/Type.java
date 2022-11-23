@@ -145,7 +145,7 @@ public class Type extends AbstractType
    * actual outer type taken from the type of the outer feature of this type's
    * feature.
    */
-  AbstractType outerCache_;
+  AbstractType _outerCache;
 
 
   /**
@@ -383,7 +383,7 @@ public class Type extends AbstractType
     this.pos                = original.pos;
     this._refOrVal          = refOrVal;
     this.name               = original.name;
-    this._generics           = original._generics;
+    this._generics          = original._generics;
     this._outer             = original._outer;
     this.feature            = original.feature;
     this.generic            = original.generic;
@@ -460,7 +460,7 @@ public class Type extends AbstractType
    *
    * @return a Type instance that represents this function
    */
-  public static Type funType(SourcePosition pos, Type returnType, List<AbstractType> arguments)
+  public static Type funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
@@ -814,7 +814,7 @@ public class Type extends AbstractType
    */
   public AbstractType outer()
   {
-    var result = outerCache_;
+    var result = _outerCache;
     if (result == null)
       {
         result = _outer;
@@ -840,7 +840,7 @@ public class Type extends AbstractType
             if (result != null)
               {
                 result = Types.intern(result);
-                outerCache_ = result;
+                _outerCache = result;
               }
           }
       }
@@ -862,7 +862,9 @@ public class Type extends AbstractType
       {
         for (var t: _generics)
           {
-            result = result || t.containsError();
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || t == null || t.containsError();
           }
       }
 
@@ -891,7 +893,9 @@ public class Type extends AbstractType
       {
         for (var t: _generics)
           {
-            result = result || !exceptFirst && t.containsUndefined(false);
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || !exceptFirst && t != null && t.containsUndefined(false);
             exceptFirst = false;
           }
       }

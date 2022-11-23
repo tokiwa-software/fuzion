@@ -25,7 +25,7 @@
 
 # i8 -- 8-bit signed integer values
 #
-i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
+i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
 
   redef thiz => i8.this.val
   redef orderedThis => i8.this.val
@@ -35,7 +35,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => isMin
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other i8) => thiz > zero && max -° thiz < other
   redef underflowOnAdd(other i8) => thiz < zero && min -° thiz > other
 
@@ -84,6 +84,8 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   redef infix >  (other i8) bool is intrinsic
   redef infix >= (other i8) bool is intrinsic
 
+  i8.type.equality(a, b i8) bool is intrinsic
+
   # conversion to u32, i64 and u64, with range check
   as_i16  => as_i32.as_i16
   as_i32 i32 is intrinsic
@@ -115,6 +117,8 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
       debug: thiz >= zero
     is
       castTo_u128
+  as_int int is
+    int as_i64
 
   # casting to unsigned, adding 1<<8 if negative
   castTo_u8   u8   is intrinsic           # 3 -> 3, -3 -> 0xfd
@@ -124,7 +128,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   castTo_u128 u128 is castTo_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval<i8> is abstract, fz should not complain about this conflict.
+  # from hasInterval i8 is abstract, fz should not complain about this conflict.
   redef max => i8 0x7f
 
 
@@ -156,7 +160,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #
-i8s : wrappingIntegers<i8> is
+i8s : wrappingIntegers i8 is
 
   redef name => "i8"
 
@@ -165,6 +169,9 @@ i8s : wrappingIntegers<i8> is
 
   redef min => i8 -0x80
   redef max => i8  0x7f
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i8 -1
 
 
 # i8 -- returns value of unit type i8s

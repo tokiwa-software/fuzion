@@ -23,6 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = stdintest
+override NAME = stdintest
 
 include ../simple_inp.mk

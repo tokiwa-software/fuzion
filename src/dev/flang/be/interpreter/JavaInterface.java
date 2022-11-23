@@ -26,18 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import dev.flang.ast.Types;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 
 
 /**
@@ -67,20 +66,17 @@ public class JavaInterface extends ANY
       }
     catch (IllegalAccessException e)
       {
-        System.err.println("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        System.err.println("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     return result;
@@ -113,7 +109,7 @@ public class JavaInterface extends ANY
 
 
   /**
-   * str2type converts a type descriptor of a field into the correpsonding type.
+   * str2type converts a type descriptor of a field into the corresponding type.
    *
    * @param str a type descriptor, e.g. "Z", "Ljava/lang/String;".
    *
@@ -197,6 +193,7 @@ public class JavaInterface extends ANY
     return result;
   }
 
+
   /**
    * Extract Java object from an Instance of fuzion.java.JavaObject
    *
@@ -205,7 +202,44 @@ public class JavaInterface extends ANY
    */
   static Object instanceToJavaObject(Instance i)
   {
-    return ((JavaRef)i.refs[0])._javaRef;
+    var res = ((JavaRef)i.refs[0])._javaRef;
+    if (res != null)
+      {
+        // convert Value[] containing Java instances into corresponding Java array
+        if (res instanceof Value[] va)
+          {
+            var oa = new Object[va.length];
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                oa[ix] = instanceToJavaObject((Instance) va[ix]);
+              }
+
+            // find most general array element clazz ec
+            Class ec = null;
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                if (oa[ix] != null)
+                  {
+                    var nc = oa[ix].getClass();
+                    if (ec == null || nc.isAssignableFrom(ec))
+                      {
+                        ec = nc;
+                      }
+                  }
+              }
+
+            if (ec != null && ec != Object.class)
+              {
+                res = Array.newInstance(ec , va.length);
+                System.arraycopy(oa, 0, res, 0, oa.length);
+              }
+            else
+              {
+                res = oa;
+              }
+          }
+      }
+    return res;
   }
 
 
@@ -386,8 +420,7 @@ public class JavaInterface extends ANY
     var  p = getPars(sig);
     if (p == null)
       {
-        System.err.println("could not parse signature >>"+sig+"<<");
-        System.exit(1);
+        Errors.fatal("could not parse signature >>"+sig+"<<");
       }
     Class cl;
     try
@@ -396,9 +429,8 @@ public class JavaInterface extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
                            clName + " calling " + (name == null ? "new " + clName : name ) + sig);
-        System.exit(1);
         cl = Object.class; // not reached.
       }
     try
@@ -414,13 +446,24 @@ public class JavaInterface extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
-        System.exit(1);
       }
     Object[] argz = instanceToJavaObjects(args);
     try
       {
+        for (var i = 0; i < argz.length; i++)
+          {
+            var pi = p[i];
+            var ai = argz[i];
+            // in case parameter type is some array and argument is empty array,
+            // the type of the argument derived form the elements will be
+            // Object[], so we create a more specific array:
+            if (pi.isArray() && ai != null && Array.getLength(ai) == 0 && pi != ai.getClass())
+              {
+                argz[i] = Array.newInstance(pi.componentType(), 0);
+              }
+          }
         res = (name == null) ? co.newInstance(argz) : m.invoke(thiz, argz);
       }
     catch (InvocationTargetException e)

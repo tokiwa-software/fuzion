@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
+i64(val i64) : wrappingInteger i64, hasInterval i64, i64s is
 
   redef thiz => i64.this.val
   redef orderedThis => i64.this.val
@@ -35,7 +35,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => isMin
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other i64) => thiz > 0 && max -° thiz < other
   redef underflowOnAdd(other i64) => thiz < 0 && min -° thiz > other
 
@@ -83,6 +83,8 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   redef infix <= (other i64) bool is intrinsic
   redef infix >  (other i64) bool is intrinsic
   redef infix >= (other i64) bool is intrinsic
+
+  i64.type.equality(a, b i64) bool is intrinsic
 
   as_i8 i8
     pre
@@ -140,6 +142,9 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
       analysis:  result.as_i64 == thiz
     is
       u128 0 castTo_u64
+  as_int int is
+    int val
+
 
   # casting bit representation to unsigned
   low8bits   u8  is castTo_u64.low8bits
@@ -184,7 +189,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
-i64s : wrappingIntegers<i64> is
+i64s : wrappingIntegers i64 is
 
   redef name => "i64"
 
@@ -193,6 +198,9 @@ i64s : wrappingIntegers<i64> is
 
   redef min => -0x_8000_0000_0000_0000
   redef max =>  0x_7fff_ffff_ffff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i64 -1
 
 
 # i64 -- returns value of unit type i64s

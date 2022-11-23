@@ -25,36 +25,36 @@
 
 argumentcount_negative is
 
-  opengenerics11 ref : Function<i32> is
+  opengenerics11 ref : Function i32 is
     redefine call() i32 is 42
-  opengenerics12 ref : Function<i32> is
+  opengenerics12 ref : Function i32 is
     redefine call(x i32) i32 is 42  // 1. should flag an error, wrong number of arguments
-  opengenerics13 ref : Function<i32> is
+  opengenerics13 ref : Function i32 is
     redefine call(x, y i32) i32 is 42  // 2. should flag an error, wrong number of arguments
 
-  opengenerics14 ref : Function<i32, bool> is
+  opengenerics14 ref : Function i32 bool is
     redefine call() i32 is 42  // 3. should flag an error, wrong number of arguments
-  opengenerics15 ref : Function<i32, bool> is
+  opengenerics15 ref : Function i32 bool is
     redefine call(x bool) i32 is 42
-  opengenerics16 ref : Function<i32, bool> is
+  opengenerics16 ref : Function i32 bool is
     redefine call(x bool, y bool) i32 is 42  // 4. should flag an error, wrong number of arguments
 
-  opengenerics17 ref : Function<unit> is
+  opengenerics17 ref : Function unit is
     redefine call() is
-  opengenerics18 ref : Function<unit> is
+  opengenerics18 ref : Function unit is
     redefine call(x i32) is // 5. should flag an error, wrong number of arguments
-  opengenerics19 ref : Function<unit> is
+  opengenerics19 ref : Function unit is
     redefine call(x, y i32) is // 6. should flag an error, wrong number of arguments
 
-  opengenerics20 ref : Function<unit,bool> is
+  opengenerics20 ref : Function unit bool is
     redefine call() is // 7. should flag an error, wrong number of arguments
-  opengenerics21 ref : Function<unit,bool> is
+  opengenerics21 ref : Function unit bool is
     redefine call(x bool) is
-  opengenerics22 ref : Function<unit,i32> is
+  opengenerics22 ref : Function unit i32 is
     redefine call(x, y bool) is // 8. should flag an error, wrong number of arguments
 
-  r3 Function<unit>          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
-  r4 Function<unit,i32,bool> := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
+  r3 Function unit          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
+  r4 Function unit i32 bool := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
 
-  f3 Function<i32,i32>   := opengenerics15   // 11. should flag an error: incompatible types due to incompatible generics
-  f4 Function<bool,bool> := opengenerics15   // 12. should flag an error: incompatible types due to incompatible generics
+  f3 Function i32 i32   := opengenerics15   // 11. should flag an error: incompatible types due to incompatible generics
+  f4 Function bool bool := opengenerics15   // 12. should flag an error: incompatible types due to incompatible generics

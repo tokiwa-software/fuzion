@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = typecheck_negative
+override NAME = typecheck_negative
 include ../negative.mk

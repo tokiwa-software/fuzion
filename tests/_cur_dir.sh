@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is part of the Fuzion language implementation.
 #
@@ -36,7 +36,7 @@ set -euo pipefail
 CURDIR="$PWD"
 if [ -x "$(command -v cygpath)" ]
 then
-    CURDIR=$(cygpath -w "$PWD" | sed 's/\\/\\\\/g')
+    CURDIR=$(cygpath -w "$PWD" | sed 's/\\/\//g')
 fi
 
 echo "$CURDIR"

@@ -26,10 +26,10 @@
 # out -- effect providing an output stream
 #
 private out (
-  redef p canPrint,
+  redef p Can_Print,
 
   # action to be taken: install or default?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : printEffect p r
@@ -43,7 +43,7 @@ out(rr ()->unit) => out defaultPrintToOut rr
 
 # short-hand for creating and installing out effect
 #
-out(p canPrint, rr ()->unit) =>
+out(p Can_Print, rr ()->unit) =>
   out p (effectMode.inst rr) unit
   unit
 
@@ -55,7 +55,7 @@ out =>
   io.out.env
 
 
-defaultPrintToOut : canPrint is
+defaultPrintToOut : Can_Print is
 
   print(s Object) => stdout.print s
 
@@ -67,5 +67,5 @@ outs is
 
   # install default effect out using defaultPrint
   installDefault unit is
-    if !(effects.exists<io.out>)
+    if !effects.exists io.out
       _ := out defaultPrintToOut effectMode.default unit

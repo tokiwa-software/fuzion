@@ -1,3 +1,165 @@
+## 2022-??-??: V0.079dev
+
+
+## 2022-08-15: V0.078
+
+- parser
+
+  - unified handling of indentation for blocks of statements, actual arguments,
+    match and .. ? .. | .. expressions, etc.
+
+  - actual arguments may now be indented and broken into several lines as
+    follows
+
+      call_with_four_args arg1 arg2 arg3 arg4
+
+      call_with_four_args arg1 arg2
+                          arg3 arg4
+
+      call_with_four_args arg1
+                          arg2
+                          arg3
+                          arg4
+
+      call_with_four_args
+        arg1 arg2 arg3 arg4
+
+      call_with_four_args
+        arg1 arg2
+        arg3 arg4
+
+      call_with_four_args
+        arg1
+        arg2
+        arg3
+        arg4
+
+  - fixed several corner cases related to indentation
+
+  - Exceptions to single-line expression as in
+
+      if expr ? a => true
+              | b => false
+        say "true"
+
+    have been removed, now requires parentheses
+
+      if (expr ? a => true
+               | b => false)
+        say "true"
+
+  - 't.env' and 't.type' expression now permit the type 't' to be in parentheses
+    '(t).env' and '(t).type' such that type parameters can be provided '(list
+    i32).type' or '(cache myType).env'.
+
+  - remove support for function types using 'fun' keyword, must use lambda
+    notation such as '(i32, bool) -> string' instead.
+
+- base lib
+
+  - started adding support for file I/O
+
+  - new feature 'ascii' defining ASCII control codes
+
+  - removed use of '<'/'>' for generics in favor of new type parameter syntax.
+
+  - added 'cache' effect to allow a simple caching of results.
+
+- tests
+
+  - added positive and negative tests for indentation: 'indentation' and
+    'indentation_negative', contain many examples of good and bad
+    indentation.
+
+
+## 2022-08-03: V0.077
+
+- Fuzion language
+
+  - added syntax sugar for tuple types like '(i32, list bool)'.
+
+  - allowed types to be put in parentheses, i.e., '(stack i32)' is the same as
+    'stack i32'.  Syntax of '.env' and '.type' will require parentheses, i.e.,
+    instead of 'stack i32 .type' one will have to write '(stack i32).type' and
+    similarly for '.env'.
+
+  - changed parser to allow actual arguments passed to type parameters to be any
+    type, including function types '(i32)->bool' or tuples '(i32, string)'.
+
+  - removed support for lambdas using 'fun' keyword, i.e., instead of 'fun (x
+    i32) -> x+x', you have to write 'x -> x+x'.  Type inference from a lambda is
+    not possible, though.
+
+  - features with empty argument list and a result type that is put in
+    parentheses (usually a tuple) now require an empty argument list '()' since
+    the result type would otherwise be parsed as an argument list.
+
+- C backend
+
+  - use DFA to remove fields and calls to read (removed) unit type fields
+
+  - do not create code for intrinsics that are found to be unreachable during
+    DFA.
+
+- DFA
+
+  - cleanup and minor enhancements
+
+
+## 2022-07-27: V0.076
+
+- C backend
+
+  - GC support using the Boehm–Demers–Weiser garbage collector. Use '-useGC'
+    option for the 'fz' command.
+
+  - result of application-wide data-flow analysis is now used to control code
+    generation resulting in smaller binaries and (usually) faster build
+    time. This can be controlled using 'fz' with option '-Xdfa=(on|off)'.
+
+- FUIR
+
+  - Added generic abstract interpreter that provides the basic infrastructure
+    for abstract interpretation.  This abstract interpreter is used for the C
+    backend and will be used for other backend and static analysis such as
+    data-flow analysis.
+
+  - added application-wide data-flow analysis
+
+  - 'fz' command has new option '-dfa' that runs DFA analysis as backend. Should
+    be used with '-verbose=<n>' for 'n>0' to get ouput other than just errors.
+
+- base lib
+
+  - started adding support for file I/O.
+
+  - 'mapOf' now can be used with an array of '(key, value)' tuples
+
+  - 'asString' on mutable value now calls asString on the value.
+
+## 2022-07-04: V0.075
+
+- C backend
+
+  - tail recursive calls are now optimized using a goto to the beginning of the
+    feature's code.
+
+- FUIR
+
+  - added analysis to detect tail calls and escape analysis for 'this' instance.
+    The analysis results are used for tail recursion optimization in the C
+    backend.
+
+- fzjava
+
+  - fixed passing of arrays of references when calling Java code from Fuzion
+    features.
+
+- throughout
+
+  - many bug fixes
+
+
 ## 2022-05-31: V0.074
 
 - Fuzion language
@@ -8,7 +170,7 @@
     value parameters, with just n actual value arguments.
 
     If an overloaded f with n formal arguments (type or value) exists, a call
-    with n actual arguments with always call this f with n formal arguments.
+    with n actual arguments will always call this f with n formal arguments.
 
 - fz command
 
@@ -31,7 +193,7 @@
     ```
       i32.type.blabla is say "this is blabla in i32.type"
     ```
-  - type features now inherit from the type features of corresponding to the
+  - type features now inherit from the type features corresponding to the
     plain features their corresponding plain feature inherits from.
 
 - stdlib

@@ -27,15 +27,15 @@
 #
 # option represents an optional value of type T
 #
-option<T> :
-  choice<T, nil>,
-  monad<T, option<T>>
+option(T type) :
+  choice T nil,
+  monad T (option T)
 is
 
   # Does this option contain a value of type T?
   #
-  exists => option.this ? T   => true
-                        | nil => false
+  exists => (option.this ? T   => true
+                         | nil => false)
 
 
   # short-hand postfix operator for 'exists'
@@ -56,36 +56,36 @@ is
   # monadic operator
   #
   # This is handy to implement functions on optional values. As an example,
-  # take an option<string> and you would like to add a filename suffix to
+  # take an option string and you would like to add a filename suffix to
   # this string if it is present. Then you can do this as follows:
   #
-  #   addTxt(o option<string>) => o >>= s -> option<string> is s + ".txt"
+  #   addTxt(o option string) => o >>= s -> option string is s + ".txt"
   #
   # NYI: With better type inference and syntactic sugar, this should be
   #
-  #   addTxt(o option<string>) => o >>= s -> s + ".txt"
+  #   addTxt(o option string) => o >>= s -> s + ".txt"
   #
-  # NYI: Should maybe have generic parameter <B> and result in option<B>
+  # NYI: Should maybe have generic parameter B and result in option B
   #
-  redef infix >>= (f T -> option<T>) => option.this.bind f
+  redef infix >>= (f T -> option T) => option.this.bind f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f T -> option<B>) option<B> is
+  bind(B type, f T -> option B) option B is
     option.this ? v T => f v
                 | nil => nil
 
 
   # synonyme for infix >>=
-  andThen (f T -> option<T>) => option.this >>= f
+  andThen (f T -> option T) => option.this >>= f
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  map <B> (f T -> B) option<B> is
+  map(B type, f T -> B) option B is
     option.this ? v T => f v
                 | nil => nil
 
@@ -137,14 +137,14 @@ is
 #
 # insted of
 #
-#   o option<TypeOfX> := x
+#   o option TypeOfX := x
 #
-option<T> (o option<T>) => o
+option(T type, o option T) => o
 
 
 # type related to option declaring features not requiring an instance of option
 #
-options(redef A type) : monads<A, option<A>> is
+options(redef A type) : monads A (option A) is
 
 
   # return function

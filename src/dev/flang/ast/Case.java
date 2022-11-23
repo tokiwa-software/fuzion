@@ -85,7 +85,7 @@ public class Case extends AbstractCase
    * Counter for a unique id for this case statement. This is used to store data
    * in the runtime clazz for this case.
    */
-  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -104,7 +104,7 @@ public class Case extends AbstractCase
    * @param c code to be executed in case of a match
    */
   public Case(SourcePosition pos,
-              Type t,
+              AbstractType t,
               String n,
               Block c)
   {
@@ -300,8 +300,11 @@ public class Case extends AbstractCase
       (!hasErrors || Errors.count() > 0);
     for (var cg : cgs)
       {
-        if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
-            !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
+        if (CHECKS) check
+          (Errors.count() > 0 || cg != null);
+        if (cg != null &&
+            (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+             !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;
             hasErrors = hasErrors || t.containsError();

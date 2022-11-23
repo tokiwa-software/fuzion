@@ -31,7 +31,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-hasEquals<HE: hasEquals<HE>> is
+hasEquals(HE (hasEquals HE).type) is
 
   # equality check for immutable values
   #

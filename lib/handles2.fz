@@ -33,15 +33,17 @@
 # For performance, this implementation uses mutable state. It can consequently
 # only be used as a one-way monad.
 #
-private handles2<T,X>(
+private handles2(
+  T, X type,
+
   # the inner value of this monad
   v X,
 
-  lastOpt option<handle2_0<T>>,
+  lastOpt option (handle2_0 T),
 
   # action to be taken: plain monad, install or replace?
-  redef r effectModes
-  ) : onewayMonad<X, handles2<T,X>> r
+  redef r effectMode.val
+  ) : onewayMonad X (handles2 T X) r
 is
 
   # create a new instance with one additional handle
@@ -51,11 +53,11 @@ is
   new (
     # initial value refered to by the new handle
     w T
-    ) handles2<T,X>
+    ) handles2 T X
   post
     result.hasLast
   is
-    handles2<T,X> v (handle2_0 w) mode
+    handles2 T X v (handle2_0 w) mode
 
 
   # has one element been created using 'new'?
@@ -88,7 +90,7 @@ is
   #
   get (
     # a handle created by 'new'
-    h handle2_0<T>
+    h handle2_0 T
     )
    =>
     h.get
@@ -98,7 +100,7 @@ is
   #
   put (
     # a handle created by 'new'
-    h handle2_0<T>,
+    h handle2_0 T,
 
     # the new value to be stored with 'h'
     w T)
@@ -106,11 +108,12 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>
     h.put w
-    handles2<T,X> v lastOpt mode
+    handles2 T X v lastOpt mode
 
 
   # create a new instance with the value refered to by a given handle read and
@@ -118,7 +121,7 @@ is
   #
   update (
     # a handle created by 'new'
-    h handle2_0<T>,
+    h handle2_0 T,
 
     # function calculcating the new value from the old value
     f T->T
@@ -127,41 +130,43 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>
     h.put (f h.get)
-    handles2<T,X> v lastOpt mode
+    handles2 T X v lastOpt mode
 
 
-  infix >>= (f X -> handles2<T,X>) => bind<X> f
+  infix >>= (f X -> handles2 T X) => bind X f
 
-  bind <B> (f X -> handles2<T,B>) handles2<T,B> is
-    handles2<T,B> (f v).v lastOpt effectMode.plain
+  bind(B type, f X -> handles2 T B) handles2 T B is
+    handles2 T B (f v).v lastOpt effectMode.plain
 
-  return<B> (w B) => handles2<T,B> w lastOpt effectMode.plain
+  return(B type, w B) => handles2 T B w lastOpt effectMode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
-handles2<T>(rr ()->unit) =>
-  handles2<T,unit> unit nil (effectMode.inst rr)
+handles2(T type, rr ()->unit) =>
+  handles2 T unit unit nil (effectMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2_<T> => handles2<T,unit> unit nil effectMode.plain
+handles2_(T type) => handles2 T unit unit nil effectMode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
-handles2<T> =>
-  handles2_type<T>.installDefault
-  handles2<T,unit>.env
+handles2(T type) =>
+  (handles2_type T).installDefault
+  (handles2 T unit).env
 
 
 # handle value created by 'handles2.new'
 #
-private handle2_0<T>(
+private handle2_0(
+  T type,
 
   # get value stored in this handle
   #
@@ -173,26 +178,26 @@ is
   #
   put(new_val T) is
     set get := new_val
-    handles2<T,unit>.env.replace
+    (handles2 T unit).env.replace
 
   # update value stored in this handle using f.
   #
   update(f T->T) =>
     set get := f get
-    handles2<T,unit>.env.replace
+    (handles2 T unit).env.replace
     get
 
 # unit type containing features related to handles but nor requiring an instance
 #
-handles2_type<T> is
+handles2_type(T type) is
 
   # install default instance of handles2
   #
   installDefault unit is
-    handles2<T,unit> unit nil effectMode.default
+    handles2 T unit unit nil effectMode.default
     unit
 
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-handle2<T>(v T) => handles2<T>.create v
+handle2(T type, v T) => (handles2 T).create v

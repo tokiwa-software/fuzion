@@ -28,14 +28,15 @@ package dev.flang.fe;
 
 import java.io.IOException;
 
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.TreeMap;
 
 import dev.flang.mir.MIR;
 
@@ -48,6 +49,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 
@@ -84,35 +86,7 @@ public class FrontEnd extends ANY
     {
       return UNIVERSE_NAME;
     }
-
-    public AbstractFeature get(String name, int argcount)
-    {
-      AbstractFeature result = Types.f_ERROR;
-      var d = _module.declaredFeatures(this);
-      var set = (argcount >= 0
-                 ? FeatureName.getAll(d, name, argcount)
-                 : FeatureName.getAll(d, name          )).values();
-      if (set.size() == 1)
-        {
-          for (var f2 : set)
-            {
-              result = f2;
-            }
-        }
-      else if (set.isEmpty())
-        {
-          AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
-        }
-      else
-        { // NYI: This might happen if the user adds additional features
-          // with different argCounts. name should contain argCount to
-          // avoid this
-          AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-        }
-      return result;
-    }
   }
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -130,9 +104,16 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The base module if it was loade from base.fum, null otherwise.
+   * The base module if it was loaded from base.fum, null otherwise.
    */
   public final LibraryModule _baseModule;
+
+
+  /**
+   * The library modules loaded so far.  Maps the module name, e.g. "base" to
+   * the corresponding LibraryModule instance.
+   */
+  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**
@@ -156,21 +137,40 @@ public class FrontEnd extends ANY
     var universe = new Universe();
     _universe = universe;
 
-    var sourcePaths = sourcePaths();
+    var sourcePaths = options.sourcePaths();
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
+    var lms = new List<LibraryModule>();
+    if (options._loadBaseLib)
+      {
+        _baseModule = module("base", modulePath("base"));
+        if (_baseModule != null)
+          {
+            lms.add(_baseModule);
+          }
+      }
+    else
+      {
+        _baseModule = null;
+      }
     for (int i = 0; i < options._modules.size(); i++)
       {
-        sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+        var m = _options._modules.get(i);
+        var loaded = loadModule(m, true);
+        if (loaded != null)
+          {
+            lms.add(loaded);
+          }
+        else if (Errors.count() == 0)
+          { // NYI: Fallback if module file does not exists use source files instead. Remove this.
+            sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(m)));
+          }
       }
-    LibraryModule[] dependsOn;
-    var save = options._saveBaseLib;
-    _baseModule = save == null ? baseModule() : null;
-    dependsOn = _baseModule == null ? new LibraryModule[] { } : new LibraryModule[] { _baseModule };
-    if (options._loadSources && Errors.count() == 0)
+    var dependsOn = lms.toArray(LibraryModule[]::new);
+    if (options._loadSources)
       {
         _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
         _module.createASTandResolve();
@@ -179,42 +179,104 @@ public class FrontEnd extends ANY
       {
         _module = null;
       }
-    if (save != null && Errors.count() == 0)
+  }
+
+
+  /**
+   * Determine the path of the base modules, "$(FUZION)/modules".
+   */
+  private Path baseModuleDir()
+  {
+    return _options._fuzionHome.resolve("modules");
+  }
+
+
+  /**
+   * Determine the path to load module 'name' from.  E.g., for module 'base',
+   * this returns the path '<fuzionHome>/modules/base.fum'.
+   *
+   * @param a module name, without path or suffix
+   *
+   * @return the path to the module, null if not found.
+   */
+  private Path modulePath(String name)
+  {
+    var n = name + ".fum";
+    var p = baseModuleDir().resolve(n);
+    var i = 0;
+    var mds = _options._moduleDirs;
+    while (!Files.exists(p) && i < mds.size())
       {
-        saveModule(save);
+        p = Path.of(mds.get(i)).resolve(n);
+        i++;
       }
+    return p;
   }
 
 
   /**
-   * Get all the paths to use to read source code from
+   * Load module from given path.
    */
-  private Path[] sourcePaths()
+  private LibraryModule module(String m, Path p)
   {
-    return
-      (_options._saveBaseLib != null  ) ? new Path[] { _options._fuzionHome.resolve("lib") } :
-      (_options._readStdin         ||
-       _options._inputFile != null    ) ? new Path[] { }
-                                        : new Path[] { Path.of(".") };
-  }
-
-
-  /**
-   * Load Base module for given options.
-   */
-  private LibraryModule baseModule()
-  {
-    var b = _options._fuzionHome.resolve("modules").resolve("base.fum");
-    try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
+    LibraryModule result = null;
+    try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        return new LibraryModule("base", data, new LibraryModule[0], _universe);
+        result = new LibraryModule(this, data, new LibraryModule[0], _universe);
+        if (!m.equals(result.name()))
+          {
+            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+                         m + "' but found '" + result.name() + "'");
+          }
+        _modules.put(m, result);
       }
     catch (IOException io)
       {
         Errors.error("FrontEnd I/O error when reading module file",
-                     "While trying to read file '"+ b + "' received '" + io + "'");
-        return null;
+                     "While trying to read file '"+ p + "' received '" + io + "'");
+      }
+    return result;
+  }
+
+  /**
+   * Load library module with given module name
+   *
+   * @param m the module name, excluding path or ".fum" suffix
+   *
+   * @return the loaded module or null if it was not found or an error occured.
+   */
+  LibraryModule loadModule(String m)
+  {
+    return loadModule(m, false);
+  }
+  LibraryModule loadModule(String m,
+                           boolean ignoreNotFound // NYI: remove when module support is stable
+                           )
+  {
+    var result = _modules.get(m);
+    if (result != null)
+      {
+        return result;
+      }
+    else
+      {
+        var p = modulePath(m);
+        if (p != null)
+          {
+            return module(m, p);
+          }
+        else if (ignoreNotFound)
+          {
+            return null;
+          }
+        else
+          {
+            Errors.error("Module file '"+(m + ".fum")+"' for module '"+m+"' not found, "+
+                         "module directories checked are '" + baseModuleDir() + "' and " +
+                         _options._moduleDirs.toString("'","', '", "'") + ".");
+            return null;
+          }
       }
   }
 
@@ -232,25 +294,6 @@ public class FrontEnd extends ANY
   }
 
 
-  /**
-   * Save _module to a module file
-   */
-  private void saveModule(Path p)
-  {
-    var data = _module.data();
-    System.out.println(" + " + p);
-    try (var os = Files.newOutputStream(p))
-      {
-        Channels.newChannel(os).write(data);
-      }
-    catch (IOException io)
-      {
-        Errors.error("FrontEnd I/O error when writing module file",
-                     "While trying to write file '"+ p + "' received '" + io + "'");
-      }
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -263,6 +306,29 @@ public class FrontEnd extends ANY
   public SourceModule module()
   {
     return _module;
+  }
+
+
+  /**
+   * During resolution, load all inner classes of this that are
+   * defined in separate files.
+   */
+  void loadInnerFeatures(AbstractFeature f)
+  {
+    var m = module();
+    if (m != null)
+      {
+        m.loadInnerFeatures(f);
+      }
+  }
+
+
+  /**
+   * Return the collection of loaded modules.
+   */
+  public Collection<LibraryModule> getModules()
+  {
+    return _modules.values();
   }
 
 }

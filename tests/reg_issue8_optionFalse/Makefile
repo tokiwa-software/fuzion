@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = bugOptionFalse
+override NAME = bugOptionFalse
 include ../simple.mk

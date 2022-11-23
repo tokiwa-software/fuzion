@@ -29,7 +29,7 @@
 #
 basicIntegers =>
 
-  test<T: wrappingInteger<T>> (a, b T) unit is
+  test(T (wrappingInteger T).type, a, b T) unit is
     say "{a.name}: $a +° $b = {a +° b}"
     say "{a.name}: $a -° $b = {a -° b}"
     say "{a.name}: $a *° $b = {a *° b}"
@@ -37,14 +37,14 @@ basicIntegers =>
       say "{a.name}: $a / $b = {a / b}"
       say "{a.name}: $a % $b = {a % b}"
 
-  test_i64 (a, b i64) unit is test<i64> a                      b
-  test_i32 (a, b i64) unit is test<i32> a.low32bits.castTo_i32 b.low32bits.castTo_i32
-  test_i16 (a, b i64) unit is test<i16> a.low16bits.castTo_i16 b.low16bits.castTo_i16
-  test_i8  (a, b i64) unit is test<i8>  a.low8bits.castTo_i8   b.low8bits.castTo_i8
-  test_u64 (a, b i64) unit is test<u64> a.castTo_u64           b.castTo_u64
-  test_u32 (a, b i64) unit is test<u32> a.low32bits            b.low32bits
-  test_u16 (a, b i64) unit is test<u16> a.low16bits            b.low16bits
-  test_u8  (a, b i64) unit is test<u8>  a.low8bits             b.low8bits
+  test_i64 (a, b i64) unit is test i64 a                      b
+  test_i32 (a, b i64) unit is test i32 a.low32bits.castTo_i32 b.low32bits.castTo_i32
+  test_i16 (a, b i64) unit is test i16 a.low16bits.castTo_i16 b.low16bits.castTo_i16
+  test_i8  (a, b i64) unit is test i8  a.low8bits.castTo_i8   b.low8bits.castTo_i8
+  test_u64 (a, b i64) unit is test u64 a.castTo_u64           b.castTo_u64
+  test_u32 (a, b i64) unit is test u32 a.low32bits            b.low32bits
+  test_u16 (a, b i64) unit is test u16 a.low16bits            b.low16bits
+  test_u8  (a, b i64) unit is test u8  a.low8bits             b.low8bits
 
   testAll (a, b i64) is
     test_i64 a b

@@ -68,7 +68,14 @@ public class Intrinsics extends ANY
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
-    put("safety", (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
+    put("Type.name"            , (c,cl,outer,in) ->
+        {
+          var tmp = new CIdent("tmp");
+          var str = c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl));
+          var rc  = c._fuir.clazzResultClazz(cl);
+          return CStmnt.seq(c.constString(str, tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        });
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
@@ -94,6 +101,107 @@ public class Intrinsics extends ANY
                                 outOrErr(in)
                               ));
         });
+    IntrinsicCode noFileIo = (c,cl,outer,in) ->
+      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
+                 CExpr.exit(1));
+    put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          var readingIdent = new CIdent("reading");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
+            // Testing if fopen was successful
+            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
+            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
+            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            // If EOF is reached then the operation was successful otherwise FALSE will be returned
+            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
+            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
+            CExpr.decl("struct stat", statIdent),
+            // result = size if successful
+            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
+            // result = -1 if it failed
+            resultIdent.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          var writingIdent = new CIdent("writing");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w")))),
+            // Testing if fopen was successful
+            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
+            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
+            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            // If EOF is reached then the operation was successful otherwise FALSE will be returned
+            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
+            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.exists"       ,  (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
+            // Testing if fopen was successful hence file/dir exists
+            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), 
+            CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
+            // If errno is ENOENT, file/dir does not exist
+            CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
+            // else return -1 to represent other errors
+            CExpr.int8const(-1).ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.delete"       ,  (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A0.castTo("char *")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.move"         , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(A0.castTo("char *"), A1.castTo("char *")))),
+            // Testing if rename was successful
+            CExpr.iff(resultIdent.eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
@@ -101,7 +209,14 @@ public class Intrinsics extends ANY
           var cIdent = new CIdent("c");
           return CStmnt.seq(
             CExpr.decl("int", cIdent, CExpr.call("getchar", new List<>())),
-            CExpr.iff(cIdent.eq(new CIdent("EOF")),CExpr.int32const(-1).ret()),
+            CExpr.iff(cIdent.eq(new CIdent("EOF")),
+              CStmnt.seq(
+                // -1 EOF
+                CExpr.iff(CExpr.call("feof", new List<>(CExpr.ident("stdin"))), CExpr.int32const(-1).ret()),
+                // -2 some other error
+                CExpr.int32const(-2).ret()
+              )
+            ),
             cIdent.castTo("fzT_1i32").ret()
           );
         });
@@ -158,6 +273,10 @@ public class Intrinsics extends ANY
         "i16.infix =="         ,
         "i32.infix =="         ,
         "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.#type_STATIC.equality",
+        "i16.#type_STATIC.equality",
+        "i32.#type_STATIC.equality",
+        "i64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.infix !="          ,
         "i16.infix !="         ,
         "i32.infix !="         ,
@@ -228,6 +347,10 @@ public class Intrinsics extends ANY
         "u16.infix =="         ,
         "u32.infix =="         ,
         "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.#type_STATIC.equality",
+        "u16.#type_STATIC.equality",
+        "u32.#type_STATIC.equality",
+        "u64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.infix !="          ,
         "u16.infix !="         ,
         "u32.infix !="         ,
@@ -292,6 +415,8 @@ public class Intrinsics extends ANY
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.infix =="         ,
         "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.#type_STATIC.equality",
+        "f64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix !="         ,
         "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <"          ,
@@ -396,7 +521,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.array.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return CExpr.call("malloc",
+          return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
     put("fuzion.sys.array.setel", (c,cl,outer,in) ->
@@ -429,7 +554,23 @@ public class Intrinsics extends ANY
                             c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
-    put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
+    put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
+                                                                      A1.castTo("char*") /* value */,
+                                                                      CExpr.int32const(1) /* overwrite */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
+                                            .eq(CExpr.int32const(0)),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        });
+     put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
           var call = c._fuir.lookupCall(oc);
@@ -437,16 +578,28 @@ public class Intrinsics extends ANY
             {
               var pt = new CIdent("pt");
               var res = new CIdent("res");
+              var arg = new CIdent("arg");
               return CStmnt.seq(CExpr.decl("pthread_t *", pt),
                                 CExpr.decl("int", res),
-                                pt.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("pthread_t")))),
+                                CExpr.decl("struct " + CNames.fzThreadStartRoutineArg.code() + "*", arg),
+
+                                pt.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("pthread_t")))),
                                 CExpr.iff(pt.eq(CNames.NULL),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("pthread_t")),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+
+                                arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
+                                CExpr.iff(arg.eq(CNames.NULL),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+
+                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
+                                arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
+
                                 res.assign(CExpr.call("pthread_create", new List<>(pt,
                                                                                    CNames.NULL,
-                                                                                   CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *(*)(void *)"),
-                                                                                   A0.castTo("void *")))),
+                                                                                   CNames.fzThreadStartRoutine.adrOf(),
+                                                                                   arg))),
                                 CExpr.iff(res.ne(CExpr.int32const(0)),
                                           CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))));
@@ -490,10 +643,10 @@ public class Intrinsics extends ANY
         "effect.abortable"     ,
         "effect.abort"         , (c,cl,outer,in) ->
         {
-          var ecl = effectType(c, cl);
-          var ev  = c._names.env(ecl);
-          var evi = c._names.envInstalled(ecl);
-          var evj = c._names.envJmpBuf(ecl);
+          var ecl = c._fuir.effectType(cl);
+          var ev  = c._names.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
+          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evj = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
           var o   = c._names.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
@@ -551,7 +704,7 @@ public class Intrinsics extends ANY
     put("effects.exists"       , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
-          var evi = c._names.envInstalled(ecl);
+          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
 
@@ -592,6 +745,15 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
 
 
+  /**
+   * Get the names of all intrinsics supported by this backend.
+   */
+  public static Set<String> supportedIntrinsics()
+  {
+    return _intrinsics_.keySet();
+  }
+
+
   /*---------------------------  constructors  --------------------------*/
 
 
@@ -604,15 +766,6 @@ public class Intrinsics extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Get the names of all intrinsics supported by this backend.
-   */
-  public static Set<String> supportedIntrinsics()
-  {
-    return _intrinsics_.keySet();
-  }
 
 
   /**
@@ -658,17 +811,8 @@ public class Intrinsics extends ANY
         var at = c._fuir.clazzTypeParameterActualType(cl);
         if (at >= 0)
           {
-            // intrinsic is a type parameter, so create type instance:
-            //
-            // NYI: this does not work yet. Eventually. type instances should become
-            // unit types so this should not be needed at all.
-            var res = c._names.newTemp();
-            CIdent tname = new CIdent("tname");
-            var rc = c._fuir.clazzResultClazz(cl);
-            return CStmnt.seq(c.declareAllocAndInitClazzId(rc, res),
-                              c.constString(c._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), tname),
-                              res.deref().field(new CIdent("fields")).field(new CIdent("fzF_0_name")).assign(tname.castTo("void*")),
-                              res.ret());
+            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
+            return CStmnt.EMPTY;
           }
         else
           {
@@ -682,54 +826,6 @@ public class Intrinsics extends ANY
           }
       }
   }
-
-
-  /**
-   * Is cl one of the instrinsics in effect that changes the effect in
-   * the current environment?
-   *
-   * @param c the C backend
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return true for effect.install and similar features.
-   */
-  static boolean isEffect(C c, int cl)
-  {
-    if (PRECONDITIONS) require
-      (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-
-    return switch(c._fuir.clazzIntrinsicName(cl))
-      {
-      case "effect.replace",
-           "effect.default",
-           "effect.abortable",
-           "effect.abort" -> true;
-      default -> false;
-      };
-  }
-
-
-  /**
-   * For an intrinstic in effect that changes the effect in the
-   * current environment, return the type of the environment.  This type is used
-   * to distinguish different environments.
-   *
-   * @param c the C backend
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return the type of the outer feature of cl
-   */
-  static int effectType(C c, int cl)
-  {
-    if (PRECONDITIONS) require
-      (isEffect(c, cl));
-
-    var or = c._fuir.clazzOuterRef(cl);
-    return c._fuir.clazzResultClazz(or);
-  }
-
 
 
   /**

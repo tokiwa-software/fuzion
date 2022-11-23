@@ -1,0 +1,73 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ctrie_test
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+ctrie_test is
+  ctrie := CTrie i32 string
+
+  all := psSet 0..100
+  removed := psSet 0..100:2
+  readded := psSet 0..100:3
+
+  # snapshot
+  no_items := ctrie.items
+
+  for k in all do
+    ctrie.add k "v$k"
+
+  # snapshot
+  all_items := ctrie.items
+
+  for k in removed do
+    ctrie.remove k
+
+  # snapshot
+  half_of_items := ctrie.items
+
+  for k in readded do
+    ctrie.add k "v$k"
+
+  # NYI Set should have `except()` feature
+  no  := removed.filter (x -> !(readded.contains x))
+  yes := (psSet (all.filter (x -> !(removed.contains x)))) ⋃ readded
+
+  if no ∃  (k -> (ctrie.lookup k).exists)
+    panic "value in slot that should be empty"
+
+  if yes ∃ (k -> (ctrie.lookup k).get /= "v$k")
+    panic "a lookup for a key returns incorrect value or none at all"
+
+  if ctrie.size /= yes.size
+    panic "ctrie size is incorrect"
+
+  if no_items.count /= 0
+    panic "no items count should be zero"
+
+  if all_items.count /= 101
+    panic "all items count should be 101"
+
+  if half_of_items.count /= 50
+    panic "half of items should be 50"
+
+  say "all 😀"

@@ -28,4 +28,14 @@
 #
 # This feature creates an instance of a map.
 #
-mapOf<K : ordered<K>,V> (ks array<K>, vs array<V>) map<K,V> is orderedMap ks vs
+mapOf(K (ordered K).type, V type, ks array K, vs array V) map K V is orderedMap ks vs
+
+
+# mapOf -- routine to initialize a map from an array of key value tuples
+#
+# This feature creates an instance of a map.
+#
+# example: mapOf [(key1, value1), (key2, value2)]
+#
+mapOf(K (ordered K).type, V type, kvs array (tuple K V)) map K V is
+  orderedMap (kvs.map (kv -> kv.values.0)) (kvs.map (kv -> kv.values.1))

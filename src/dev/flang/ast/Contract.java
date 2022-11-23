@@ -49,7 +49,7 @@ public class Contract
   /**
    * Empty contract
    */
-  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, NO_COND);
+  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -65,11 +65,6 @@ public class Contract
    */
   public List<Cond> ens;
 
-  /**
-   *
-   */
-  public List<Cond> inv;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -84,12 +79,10 @@ public class Contract
    * @param i
    */
   public Contract(List<Cond> r,
-                  List<Cond> e,
-                  List<Cond> i)
+                  List<Cond> e)
   {
     req = r == null || r.isEmpty() ? NO_COND : r;
     ens = e == null || e.isEmpty() ? NO_COND : e;
-    inv = i == null || i.isEmpty() ? NO_COND : i;
   }
 
 
@@ -110,7 +103,6 @@ public class Contract
       {
         for (Cond c: req) { c.visit(v, outer); }
         for (Cond c: ens) { c.visit(v, outer); }
-        for (Cond c: inv) { c.visit(v, outer); }
       }
   }
 
@@ -127,7 +119,6 @@ public class Contract
       {
         for (Cond c: req) { c.visitStatements(v); }
         for (Cond c: ens) { c.visitStatements(v); }
-        for (Cond c: inv) { c.visitStatements(v); }
       }
   }
 
@@ -147,10 +138,6 @@ public class Contract
     if ((ens != null) && (!ens.isEmpty()))
       {
         res.append("\n  ensure ").append(ens);
-      }
-    if ((inv != null) && (!inv.isEmpty()))
-      {
-        res.append("\n  invariant ").append(inv);
       }
     return res.toString();
   }
