@@ -55,19 +55,6 @@ Type ref is
 #
 Type_STATIC(STATIC_THIS_TYPE type) is
 
-  # equality implements the default equality relation for values of this type.
-  #
-  # This relation must be
-  #
-  #  - reflexive (equality a b),
-  #  - symmetric (equality a b = equality b a), and
-  #  - transitive ((equality a b && equality b c) : equality a c).
-  #
-  # result is true iff 'a' is considered to represent the same abstract value
-  # as 'b'.
-  #
-  equality(a, b STATIC_THIS_TYPE) bool is abstract
-
 
 # Types -- features related to Type but not requiring an instance of Type
 #

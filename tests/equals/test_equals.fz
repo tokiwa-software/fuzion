@@ -109,7 +109,7 @@ test_equals_types is
   # Has_color provides an equality relation for instances that provide
   # a 'col' feature
   #
-  Has_color ref is
+  Has_color ref : has_equality is
 
     # the color of this instance
     #
@@ -117,7 +117,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    redef type.equality(a, b test_equals_types.Has_color) =>
+    type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -144,10 +144,10 @@ test_equals_types is
     # the string
     utf8 Sequence u8)
 
-   : Has_color, string is
+   : Has_color, string, has_equality is
 
     # equality relation comparing color and strings
     #
-    redef type.equality(a, b test_equals_types.colored_text) =>
+    type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
-       string.type.equality a b   )
+       string.type.equality       a b   )

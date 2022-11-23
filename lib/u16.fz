@@ -84,7 +84,7 @@ u16(val u16) : wrappingInteger u16, hasInterval u16, u16s is
   redef infix >  (other u16) bool is intrinsic
   redef infix >= (other u16) bool is intrinsic
 
-  u16.type.equality(a, b u16) bool is intrinsic
+  type.equality(a, b u16) bool is intrinsic
 
   as_i8 i8
     pre
