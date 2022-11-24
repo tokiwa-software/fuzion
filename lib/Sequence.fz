@@ -122,7 +122,7 @@ Sequence(T type) ref is
   infix | (f T -> unit) => forAll f
 
 
-  # create a stream, infix operator synonyme for asStream
+  # create a stream, postfix operator synonyme for asStream
   #
   postfix | => asStream
 
