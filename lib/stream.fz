@@ -82,7 +82,7 @@ stream(redef T type) ref : Sequence T is
 
   # Return this stream as a stream.
   #
-  # This is a helper function that needs to be defined because stream is a heir
+  # This is a helper function that needs to be defined because stream is an heir
   # of Sequence.
   #
   redef asStream stream T is stream.this
