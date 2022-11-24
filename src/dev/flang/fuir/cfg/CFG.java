@@ -232,9 +232,9 @@ public class CFG extends ANY
     put("fuzion.std.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.move"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.create_dir"   , (cfg, cl) -> { } );
-    put("fuzion.std.fileio.on_open"      , (cfg, cl) -> { } );
-    put("fuzion.std.fileio.on_close"     , (cfg, cl) -> { } );
-    put("fuzion.std.fileio.get_error"    , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.on_open_c"    , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.on_close_c"   , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.get_error_c"  , (cfg, cl) -> { } );
     put("fuzion.std.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.std.err.flush"           , (cfg, cl) -> { } );
     put("fuzion.stdin.nextByte"          , (cfg, cl) -> { } );

@@ -202,7 +202,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.on_open"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.on_open_c"   , (c,cl,outer,in) ->
         {
           var filepointer = new CIdent("fp");
           var openresults = new CIdent("open_results");
@@ -218,7 +218,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.on_close"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.on_close_c"   , (c,cl,outer,in) ->
         {
           return CStmnt.seq(
             CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
@@ -226,7 +226,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_error"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.get_error_c"   , (c,cl,outer,in) ->
         {
           var errno = new CIdent("current_errno"); 
           return CStmnt.seq(

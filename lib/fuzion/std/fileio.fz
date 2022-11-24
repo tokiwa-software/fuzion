@@ -201,11 +201,11 @@ public fileio is
   # in case of failure returns tuple nil i64 where the second parameter represents the error number 
   # NYI : return type might be modified to a choice of generics instead
   #
-  public open_c(
-                     # a Fuzion Object represention the path for the source to be opened
-                     path Object) tuple i64 i64 | tuple nil i64 is # NYI : this only work in the C back-end, , _c refers to the C back-end
+  public open(
+              # a Fuzion Object represention the path for the source to be opened
+              path Object) tuple i64 i64 | tuple nil i64 is # NYI : this only work in the C back-end, , _c refers to the C back-end
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
-    on_open path open_results.internalArray.data
+    on_open_c path open_results.internalArray.data
     if open_results[1]==0
       tuple open_results[0] open_results[1]
     else
@@ -214,26 +214,27 @@ public fileio is
   # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end
   # after opening the source represented by the path parameter
   #
-  private on_open(
-                  # a Fuzion Object represention the path for the source to be opened
-                  path Object, 
-                  # open_results[file descriptor, error number] as a Fuzion Object
-                  open_results Object) unit is intrinsic # NYI : this only work in the C back-end
+  private on_open_c(
+                    # a Fuzion Object represention the path for the source to be opened
+                    path Object, 
+                    # open_results[file descriptor, error number] as a Fuzion Object
+                    open_results Object) unit is intrinsic # NYI : this only work in the C back-end
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
   # returns tuple bool i64 where the bool parameter is the result of the operation and the i64 parameter is the error number which is 0 in case result is true
   #
-  public close_c(fd i64) tuple bool i64 is # NYI : this only work in the C back-end, _c refers to the C back-end
-    tuple (on_close fd) get_error
+  public close(
+               # file descriptor
+               fd i64) tuple bool i64 is # NYI : this only work in the C back-end, _c refers to the C back-end
+    tuple (on_close_c fd) get_error_c
 
   # intrinsic to return the errno from C back-end as i64
   #
-  private get_error i64 is intrinsic # NYI : this only work in the C back-end
-
+  private get_error_c i64 is intrinsic # NYI : this only work in the C back-end
 
   # intrinsic that takes an i64 value that represents the file descriptor and closes the stream
   # returns a bool to represent the result of the operation
   #
-  private on_close(
-                   # file descriptor
-                   fd i64) bool is intrinsic # NYI : this only work in the C back-end
+  private on_close_c(
+                     # file descriptor
+                     fd i64) bool is intrinsic # NYI : this only work in the C back-end
