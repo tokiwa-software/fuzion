@@ -201,11 +201,11 @@ public fileio is
   # in case of failure returns tuple nil i64 where the second parameter represents the error number 
   # NYI : return type might be modified to a choice of generics instead
   #
-  public open_source(
+  public open_c(
                      # a Fuzion Object represention the path for the source to be opened
-                     path Object) tuple i64 i64 | tuple nil i64 is # NYI : this only work in the C back-end
+                     path Object) tuple i64 i64 | tuple nil i64 is # NYI : this only work in the C back-end, , _c refers to the C back-end
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
-    on_open(path, open_results.internalArray.data)
+    on_open path open_results.internalArray.data
     if open_results[1]==0
       tuple open_results[0] open_results[1]
     else
@@ -223,7 +223,7 @@ public fileio is
   # Closes an IO source using an i64 representing the source handler (file descriptor)
   # returns tuple bool i64 where the bool parameter is the result of the operation and the i64 parameter is the error number which is 0 in case result is true
   #
-  public close_source(fd i64) tuple bool i64 is # NYI : this only work in the C back-end
+  public close_c(fd i64) tuple bool i64 is # NYI : this only work in the C back-end, _c refers to the C back-end
     tuple (on_close fd) get_error
 
   # intrinsic to return the errno from C back-end as i64
