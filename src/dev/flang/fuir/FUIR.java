@@ -1742,11 +1742,11 @@ hw25 is
 
 
   /**
-   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.
    *
-   * @param cl index of a clazz that is a heir of 'Function'.
+   * @param cl index of a clazz that is an heir of 'Function'.
    */
   public int lookupCall(int cl)
   {

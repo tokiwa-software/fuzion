@@ -1081,7 +1081,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * @param t a type used in this feature, must not be an open generic type
    * (which can be replaced by several types during inheritance).
    *
-   * @param heir a heir of this, might be equal to this.
+   * @param heir an heir of this, might be equal to this.
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
@@ -1172,7 +1172,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param parent a loaded feature
    *
-   * @return true iff this is a heir of parent.
+   * @return true iff this is an heir of parent.
    */
   public boolean inheritsFrom(AbstractFeature parent)
   {
