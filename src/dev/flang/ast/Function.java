@@ -150,7 +150,7 @@ public class Function extends ExprWithPos
       (c._actuals.size() == 0);
 
     this._call = c;
-    c.forFun = true;
+    c._forFun = true;
     this._wrapper = null;
   }
 
@@ -538,7 +538,7 @@ public class Function extends ExprWithPos
              * [..]
              */
             Call call = this._call;
-            call.forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
+            call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors aor special case
@@ -559,7 +559,7 @@ public class Function extends ExprWithPos
                 formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
-            Call callWithArgs = new Call(pos(), null, call.name, actual_args);
+            Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
             Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
@@ -585,9 +585,9 @@ public class Function extends ExprWithPos
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
                                            new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
-            res._module.findDeclarations(function, call.target.type().featureOfType());
+            res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
-                              call.target,
+                              call.target(),
                               function)
               .resolveTypes(res, outer);
           }

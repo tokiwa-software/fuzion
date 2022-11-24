@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
@@ -485,12 +487,12 @@ public class AstErrors extends ANY
 
   static void wrongNumberOfActualArguments(Call call)
   {
-    int fsz = call.resolvedFormalArgumentTypes.length;
+    int fsz = call._resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call.resolvedFormalArgumentTypes)
+    for (var t : call._resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
@@ -848,7 +850,7 @@ public class AstErrors extends ANY
           "Qualified declaration not allowed for field",
           "All fields have to be declared textually within the source of their outer features.\n" +
           "Field declared: " + sqn(q) + "\n" +
-          "To fix this, you could move the declaration into the implementation of feature " + sqn(o) +
+          "To solve this, you could move the declaration into the implementation of feature " + sqn(o) +
           ".  Alternatively, you can declare a routine instead.");
   }
 
@@ -1512,6 +1514,16 @@ public class AstErrors extends ANY
     error(pos,
       "Loss of precision for: " + _originalString,
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  {
+    error(value.pos(),
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(value.type()))
+          .map(cg -> s(cg))
+          .collect(Collectors.joining(", "))
+      );
   }
 }
 

@@ -2229,7 +2229,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         if (c.isEmpty())
           {
             AstErrors.matchCasesMissing(cpos, pos);
-            return new Block(pos, new List<>());
+            return new Match(pos, e, new List<>());
           }
         return new Match(pos, e, c);
       });

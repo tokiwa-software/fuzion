@@ -67,6 +67,12 @@ bool : choice FALSE TRUE, hasEquals bool is
   infix = (other bool) bool is
     bool.this <=> other
 
+  bool.type.equality(a, b bool) =>
+    if a
+      b
+    else
+      !b
+
   # xor
   infix ^   (other bool) => if bool.this (!other) else  other
 

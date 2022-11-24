@@ -921,7 +921,7 @@ public class DFA extends ANY
     put("fuzion.std.fileio.write"        , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.exists"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.std.fileio.delete"       , cl -> cl._dfa._bool );
-    put("fuzion.std.fileio.move"         , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.move"         , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.create_dir"   , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.stats"        , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.std.fileio.lstats"       , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
@@ -978,6 +978,10 @@ public class DFA extends ANY
     put("i16.infix =="                   , cl -> cl._dfa._bool );
     put("i32.infix =="                   , cl -> cl._dfa._bool );
     put("i64.infix =="                   , cl -> cl._dfa._bool );
+    put("i8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
+    put("i16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("i32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("i64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
     put("i8.infix !="                    , cl -> cl._dfa._bool );
     put("i16.infix !="                   , cl -> cl._dfa._bool );
     put("i32.infix !="                   , cl -> cl._dfa._bool );
@@ -1048,6 +1052,10 @@ public class DFA extends ANY
     put("u16.infix =="                   , cl -> cl._dfa._bool );
     put("u32.infix =="                   , cl -> cl._dfa._bool );
     put("u64.infix =="                   , cl -> cl._dfa._bool );
+    put("u8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
+    put("u16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("u32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("u64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
     put("u8.infix !="                    , cl -> cl._dfa._bool );
     put("u16.infix !="                   , cl -> cl._dfa._bool );
     put("u32.infix !="                   , cl -> cl._dfa._bool );
@@ -1112,6 +1120,8 @@ public class DFA extends ANY
     put("f64.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.infix =="                   , cl -> cl._dfa._bool );
     put("f64.infix =="                   , cl -> cl._dfa._bool );
+    put("f32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("f64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
     put("f32.infix !="                   , cl -> cl._dfa._bool );
     put("f64.infix !="                   , cl -> cl._dfa._bool );
     put("f32.infix <"                    , cl -> cl._dfa._bool );
@@ -1202,6 +1212,8 @@ public class DFA extends ANY
         });
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa._bool );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
+    put("fuzion.sys.env_vars.set0"       , cl -> cl._dfa._bool );
+    put("fuzion.sys.env_vars.unset0"     , cl -> cl._dfa._bool );
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);

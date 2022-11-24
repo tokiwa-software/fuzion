@@ -1186,10 +1186,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return true iff other can be assigned to a field of type this.
    */
+  @Deprecated(forRemoval = true) // NYI only isDirectlyAssignableFrom should be used after AST
   public boolean isAssignableFrom(Clazz other)
   {
     return this._type.isAssignableFrom(other._type);
   }
+
+
+  /**
+   * Check if a value of clazz other can be assigned to a field of this clazz
+   * without the need for tagging.
+   *
+   * @other the value to be assigned to a field of type this
+   *
+   * @return true iff other can be assigned to a field of type this.
+   */
+  public boolean isDirectlyAssignableFrom(Clazz other)
+  {
+    return this._type.isDirectlyAssignableFrom(other._type);
+  }
+
 
 
   /**
@@ -1531,7 +1547,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
           {
             if (CHECKS) check
               (result < 0);

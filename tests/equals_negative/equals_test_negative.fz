@@ -1,0 +1,59 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test equals_test_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+equals_test_negative is
+
+  # control test that should pass:
+
+  ok1 := equals_test_ok 42
+  ok2 := equals_test_ok 42
+
+  say "equals ok1 ok2 is {equals ok1 ok2}"
+
+  # negative tests should fail:
+
+  a1 := equals_test_a 42
+  a2 := equals_test_a 42
+
+  say "equals a1 a2 is {equals a1 a2}"     # NYI: would be better if the error was flagged here
+
+  b1 := equals_test_b 42
+  b2 := equals_test_b 42
+
+  say "b1.infix ≟ b2 is {b1.infix ≟ b2}"   # NYI: would be better if the error was flagged here
+
+  c1 := equals_test_c 42
+  c2 := equals_test_c 42
+
+  say "c1 ≟ c2 is {c1 ≟ c2}"               # NYI: would be better if the error was flagged here
+
+# control test that should pass
+equals_test_ok(x i32) is
+  equals_test_ok.type.equality(a, b equals_test_ok) => a.x = b.x
+
+# negative tests should fail
+equals_test_a(x i32) is  # 1. should flag an error: equals_test_a does not implement equality
+equals_test_b(x i32) is  # 2. should flag an error: equals_test_b does not implement equality
+equals_test_c(x i32) is  # 3. should flag an error: equals_test_c does not implement equality

@@ -35,7 +35,7 @@ i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => isMin
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other i8) => thiz > zero && max -° thiz < other
   redef underflowOnAdd(other i8) => thiz < zero && min -° thiz > other
 
@@ -83,6 +83,8 @@ i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
   redef infix <= (other i8) bool is intrinsic
   redef infix >  (other i8) bool is intrinsic
   redef infix >= (other i8) bool is intrinsic
+
+  i8.type.equality(a, b i8) bool is intrinsic
 
   # conversion to u32, i64 and u64, with range check
   as_i16  => as_i32.as_i16

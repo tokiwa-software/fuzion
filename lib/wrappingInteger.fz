@@ -35,7 +35,7 @@ wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers 
   # would negation -thiz cause an overflow?
   wrappedOnNeg bool is abstract
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   overflowOnAdd(other W) bool is abstract
   underflowOnAdd(other W) bool is abstract
   wrappedOnAdd(other W) => overflowOnAdd(other) || underflowOnAdd(other)

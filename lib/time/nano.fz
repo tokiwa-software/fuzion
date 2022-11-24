@@ -35,7 +35,7 @@
 # wake you up at 6h30 every morning.
 #
 private nano (
-  p nanoTimeProvider,
+  p Nano_Time_Provider,
 
   # action to be taken: install or default?
   redef r effectMode.val,
@@ -64,7 +64,7 @@ nano(rr ()->unit) => nano defaultNanoTime rr
 
 # short-hand for creating and installing time.nano effect
 #
-nano(p nanoTimeProvider, rr ()->unit) =>
+nano(p Nano_Time_Provider, rr ()->unit) =>
   nano p (effectMode.inst rr) unit
   unit
 
@@ -78,7 +78,7 @@ nano =>
 
 # abstract provider that can deliver a nano time
 #
-nanoTimeProvider ref is
+Nano_Time_Provider ref is
 
   # no guarantee can be given for precision nor resolution
   read u64 is abstract
@@ -87,7 +87,7 @@ nanoTimeProvider ref is
   sleep(d duration) unit is abstract
 
 
-defaultNanoTime : nanoTimeProvider is
+defaultNanoTime : Nano_Time_Provider is
 
   # no guarantee can be given for precision nor resolution
   read => fuzion.std.nano_time
