@@ -1519,7 +1519,7 @@ public class Call extends AbstractCall
           {
             missing.add(g);
             if (CHECKS) check
-              (Errors.count() > 0 || i < _generics.size());
+              (Errors.count() > 0 || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
                 _generics.set(i, Types.t_ERROR);
