@@ -61,7 +61,7 @@ Sequence(T type) ref is
   asStream stream T is asList.asStream
 
 
-  # is this list empty?
+  # is this Sequence empty?
   #
   isEmpty => asList.isEmpty
 
