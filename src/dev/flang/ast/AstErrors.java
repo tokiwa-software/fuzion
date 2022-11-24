@@ -652,14 +652,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
-  {
-    error(pos,
-          "" + skw("match") + " expression requires at least one case",
-          "Match statement at " + mpos.show() + "\n" +
-          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
-  }
-
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
@@ -725,10 +717,20 @@ public class AstErrors extends ANY
 
   static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
-    error(pos,
-          "" + skw("match") + " statement does not cover all of the subject's types",
-          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-          subjectTypes(choiceGenerics));
+    if (choiceGenerics.size() == missingMatches.size())
+      {
+        error(pos,
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+      }
+    else
+      {
+        error(pos,
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
+      }
   }
 
   /**
@@ -834,6 +836,18 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
+        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
+        // fact that type features can be defined repeatedly.
+        if (f.isTypeFeature())
+          {
+            warning(pos,
+                    "Duplicate feature declaration (ignored since these are type features, see #461)",
+                    "Feature that was declared repeatedly: " + s(f) + "\n" +
+                    "originally declared at " + existing.pos().show() + "\n" +
+                    "To solve this, consider renaming one of these two features or changing its number of arguments");
+            return;
+          }
+
         error(pos,
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(f) + "\n" +
@@ -1514,6 +1528,19 @@ public class AstErrors extends ANY
     error(pos,
       "Loss of precision for: " + _originalString,
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  {
+    error(pos,
+      "Names of arguments used in this feature must be distinct.",
+          "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
+          + duplicateNames
+            .stream()
+            .map(n -> sbn(n))
+            .collect(Collectors.joining(", ")) + "\n"
+          + "To solve this, rename the arguments to have unique names."
+        );
   }
 
   public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)

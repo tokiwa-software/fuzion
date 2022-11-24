@@ -31,14 +31,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import dev.flang.ast.Types;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 
 
 /**
@@ -68,20 +66,17 @@ public class JavaInterface extends ANY
       }
     catch (IllegalAccessException e)
       {
-        System.err.println("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        System.err.println("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
-        System.exit(1);
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         result = null;
       }
     return result;
@@ -425,8 +420,7 @@ public class JavaInterface extends ANY
     var  p = getPars(sig);
     if (p == null)
       {
-        System.err.println("could not parse signature >>"+sig+"<<");
-        System.exit(1);
+        Errors.fatal("could not parse signature >>"+sig+"<<");
       }
     Class cl;
     try
@@ -435,9 +429,8 @@ public class JavaInterface extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
                            clName + " calling " + (name == null ? "new " + clName : name ) + sig);
-        System.exit(1);
         cl = Object.class; // not reached.
       }
     try
@@ -453,9 +446,8 @@ public class JavaInterface extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
-        System.exit(1);
       }
     Object[] argz = instanceToJavaObjects(args);
     try

@@ -37,23 +37,23 @@ equals_test_negative is
   a1 := equals_test_a 42
   a2 := equals_test_a 42
 
-  say "equals a1 a2 is {equals a1 a2}"     # NYI: would be better if the error was flagged here
+  say "equals a1 a2 is {equals a1 a2}"      # 1. should flag an error: equals_test_a does not implement equality
 
   b1 := equals_test_b 42
   b2 := equals_test_b 42
 
-  say "b1.infix ≟ b2 is {b1.infix ≟ b2}"   # NYI: would be better if the error was flagged here
+  say "b1.infix ≟ b2 is {b1.infix ≟ b2}"    # 2. should flag an error: equals_test_b does not implement equality
 
   c1 := equals_test_c 42
   c2 := equals_test_c 42
 
-  say "c1 ≟ c2 is {c1 ≟ c2}"               # NYI: would be better if the error was flagged here
+  say "c1 ≟ c2 is {c1 ≟ c2}"                # 3. should flag an error: equals_test_c does not implement equality
 
 # control test that should pass
-equals_test_ok(x i32) is
+equals_test_ok(x i32) : has_equality is
   equals_test_ok.type.equality(a, b equals_test_ok) => a.x = b.x
 
 # negative tests should fail
-equals_test_a(x i32) is  # 1. should flag an error: equals_test_a does not implement equality
-equals_test_b(x i32) is  # 2. should flag an error: equals_test_b does not implement equality
-equals_test_c(x i32) is  # 3. should flag an error: equals_test_c does not implement equality
+equals_test_a(x i32) is
+equals_test_b(x i32) is
+equals_test_c(x i32) is

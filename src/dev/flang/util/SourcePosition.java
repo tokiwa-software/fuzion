@@ -218,7 +218,9 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   String fileName()
   {
-    return _sourceFile._fileName.toString();
+    return _sourceFile._fileName.toString()
+      // special handling, windows
+      .replace("\\", "/");
   }
 
   /**

@@ -211,8 +211,7 @@ public class Function extends ExprWithPos
               {
                 if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for constructor type not allowed");
-                    System.exit(1);
+                    Errors.fatal("NYI: fun for constructor type not allowed");
                   }
               }
           }

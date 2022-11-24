@@ -104,6 +104,11 @@ public class FZJava extends Tool
    */
   TreeSet<String> _existingFeatures = new TreeSet<String>();
 
+  /**
+   * The name of the module that is currently being processed.
+   */
+  String _currentModule;
+
 
   /*--------------------------  static methods  -------------------------*/
 
@@ -309,6 +314,11 @@ public class FZJava extends Tool
    */
   void processModule(String m)
   {
+    // clean up in case a previous run of processModule filled this already:
+    _currentModule = m.substring(0, m.length() - 5);
+    _pkgs.clear();
+    _classes.clear();
+
     var p = modulePath(m);
     if (_verbose > 0)
       {

@@ -657,7 +657,7 @@ public class C extends ANY
                        )
                        .flatMap(x -> x)
                        .iterator())),
-                 CStmnt.decl("__thread", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
+                 CStmnt.decl("_Thread_local", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
                )
              );
            }
