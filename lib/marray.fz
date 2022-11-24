@@ -92,6 +92,8 @@ is
   as_array =>
     array T length (i -> marray.this[i])
 
+  # create a stream from this marray
+  #
   redef asStream => as_array.asStream
 
 
