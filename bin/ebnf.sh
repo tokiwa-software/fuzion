@@ -58,7 +58,7 @@ EBNF_HEADER="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
 # combine parser and lexer
 EBNF="${EBNF_HEADER}${EBNF_PARSER}${NEW_LINE}${EBNF_LEXER}"
 # replace " by '
-EBNF=$(sed 's/"/\x27/g' <<< "$EBNF")
+EBNF=${EBNF//\"/\'}
 
 echo "$EBNF"
 

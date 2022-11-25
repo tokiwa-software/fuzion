@@ -55,7 +55,7 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
     ($1 "$2" >"$2".expected_out 2>"$2".expected_err0) || true
-    cat "$2".expected_err0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >"$2".expected_err
+    sed "s|${CURDIR[\\\/]}|--CURDIR--/|g" >"$2".expected_err < "$2".expected_err0
     rm -rf "$2".expected_err0
     echo "RECORDED $2"
 fi
