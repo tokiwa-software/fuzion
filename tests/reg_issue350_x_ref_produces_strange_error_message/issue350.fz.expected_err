@@ -1,0 +1,8 @@
+
+[32m--CURDIR--/issue350.fz:26:1:[39m [1;31merror 1[0m[1m: Illegal '[35mref[39m' in feature definition using '[36m=>[39m'[0m
+[34mx ref =>
+[33m^[0m
+For function definition using '[36m=>[39m', the type is determined automatically, it must not be given explicitly.
+Feature declared: '[35mx[39m'
+
+one error.

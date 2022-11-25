@@ -1891,23 +1891,13 @@ public class Feature extends AbstractFeature implements Stmnt
     Stmnt result = this;
 
     if (CHECKS) check
-      (this.outer() == outer);
+      (this.outer() == outer,
+        Errors.count() > 0 ||
+        (_impl._kind != Impl.Kind.FieldDef &&
+         _impl._kind != Impl.Kind.FieldActual &&
+         _impl._kind != Impl.Kind.RoutineDef)
+        || _returnType == NoType.INSTANCE);
 
-    if (_impl._kind == Impl.Kind.FieldDef    ||
-        _impl._kind == Impl.Kind.FieldActual    )
-      {
-        if ((_returnType != NoType.INSTANCE))
-          {
-            AstErrors.fieldDefMustNotHaveType(_pos, this, _returnType, _impl._initialValue);
-          }
-      }
-    if (_impl._kind == Impl.Kind.RoutineDef)
-      {
-        if ((_returnType != NoType.INSTANCE))
-          {
-            AstErrors.routineDefMustNotHaveType(_pos, this, _returnType, _impl._code);
-          }
-      }
     if (_impl._initialValue != null)
       {
         /* add assignment of initial value: */
