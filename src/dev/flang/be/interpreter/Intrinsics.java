@@ -42,6 +42,8 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -83,6 +85,22 @@ public class Intrinsics extends ANY
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+
+
+  /**
+   * This will contain the current open buffers for read operations
+   * The key represents a file descriptor
+   * The value represents the open buffer
+   */
+  private static TreeMap<Long, BufferedReader> _openFilesForRead_ = new TreeMap<Long, BufferedReader>();
+
+
+  /**
+   * This will contain the current open buffers for write operations
+   * The key represents a file descriptor
+   * The value represents the open buffer
+   */
+  private static TreeMap<Long, BufferedWriter> _openFilesForWrite_ = new TreeMap<Long, BufferedWriter>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -311,6 +329,49 @@ public class Intrinsics extends ANY
           catch (Exception e)
             {
               return new boolValue(false);
+            }
+        });
+    put("fuzion.std.fileio.close", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          long fd = args.get(1).i64Value();
+          try
+            {
+              if (_openFilesForRead_.containsKey(fd))
+                {
+                  _openFilesForRead_.remove(fd).close();
+                  return new i8Value(1);
+                }
+              return new i8Value(-2);
+            } 
+          catch (Exception e)
+            {
+              return new i8Value(-1);
+            }
+        });
+    put("fuzion.std.fileio.open", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
+          long fd;
+          try
+            {
+              BufferedReader br = Files.newBufferedReader(path);
+              fd = _openFilesForRead_.isEmpty() ? 10000 : _openFilesForRead_.lastKey()+1;
+              _openFilesForRead_.put(fd, br);
+              return new i64Value(fd);
+            } 
+          catch (Exception e)
+            {
+              return new i64Value(-1);
             }
         });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
