@@ -196,9 +196,9 @@ public fileio is
                  # dummy parameter to enable overload
                  _ unit) bool is intrinsic
 
-  # Opens an IO source using a path and returns 
-  # in case of success returns tuple i64 i64 where the first i64 parameter is the file descriptor and the second is the error number which is 0
-  # in case of failure returns tuple nil i64 where the second parameter represents the error number 
+  # Opens an IO source using a path 
+  # in case of success it returns tuple i64 i64 where the first i64 parameter is the file descriptor and the second is the error number which is 0
+  # in case of failure it returns tuple nil i64 where the second parameter represents the error number 
   # NYI : return type might be modified to a choice of generics instead
   #
   public open(
