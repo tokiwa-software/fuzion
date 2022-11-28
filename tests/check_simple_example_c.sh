@@ -64,7 +64,7 @@ else
     fi
     head -n 100 "$expout" >tmp_exp_out.txt
     if diff tmp_exp_out.txt tmp_out.txt; then
-        if "$experr" tmp_err.txt >/dev/null; then
+        if diff "$experr" tmp_err.txt >/dev/null; then
             echo -ne "\033[32;1mPASSED\033[0m."
         else
             if [ -s "$experr" ] && [ -s tmp_err.txt ]; then
