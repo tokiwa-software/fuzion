@@ -345,19 +345,20 @@ public class Intrinsics extends ANY
               switch (args.get(3).i8Value()) {
                 case 0:
                   InputStream fis = new FileInputStream(utf8ByteArrayDataToString(args.get(1)));
-                  fd = _openInputStreams_.isEmpty() ? 10000 : _openInputStreams_.lastKey()+1;
+                  // to prevent duplicate FDs
+                  fd = (_openOutputStreams_.isEmpty() && _openInputStreams_.isEmpty())? 10000 : _openOutputStreams_.size() + _openInputStreams_.size() + 10000;
                   _openInputStreams_.put(fd, fis);
                   open_results[0] = fd;
                   break;
                 case 1:
                   OutputStream fos = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)));
-                  fd = _openOutputStreams_.isEmpty() ? 10000 : _openOutputStreams_.lastKey()+1;
+                  fd = (_openOutputStreams_.isEmpty() && _openInputStreams_.isEmpty())? 10000 : _openOutputStreams_.size() + _openInputStreams_.size() + 10000;
                   _openOutputStreams_.put(fd, fos);
                   open_results[0] = fd;
                   break;
                 case 2:
                   OutputStream fas = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)), true);
-                  fd = _openOutputStreams_.isEmpty() ? 10000 : _openOutputStreams_.lastKey()+1;
+                  fd = (_openOutputStreams_.isEmpty() && _openInputStreams_.isEmpty())? 10000 : _openOutputStreams_.size() + _openInputStreams_.size() + 10000;
                   _openOutputStreams_.put(fd, fas);
                   open_results[0] = fd;
                   break;
