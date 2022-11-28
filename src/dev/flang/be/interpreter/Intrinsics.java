@@ -42,12 +42,12 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,19 +88,19 @@ public class Intrinsics extends ANY
 
 
   /**
-   * This will contain the current open buffers for read operations
+   * This will contain the current open streams for read operations
    * The key represents a file descriptor
-   * The value represents the open buffer
+   * The value represents the open stream
    */
-  private static TreeMap<Long, BufferedReader> _openFilesForRead_ = new TreeMap<Long, BufferedReader>();
+  private static TreeMap<Long, InputStream> _openInputStreams_ = new TreeMap<Long, InputStream>();
 
 
   /**
-   * This will contain the current open buffers for write operations
+   * This will contain the current open streams for write operations
    * The key represents a file descriptor
-   * The value represents the open buffer
+   * The value represents the open stream
    */
-  private static TreeMap<Long, BufferedWriter> _openFilesForWrite_ = new TreeMap<Long, BufferedWriter>();
+  private static TreeMap<Long, OutputStream> _openOutputStreams_ = new TreeMap<Long, OutputStream>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -331,7 +331,49 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.close", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.on_open", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          var open_results = (long[])args.get(2).arrayData()._array; 
+          long fd;
+          try
+            {
+              switch (args.get(3).i8Value()) {
+                case 0:
+                  InputStream fis = new FileInputStream(utf8ByteArrayDataToString(args.get(1)));
+                  fd = _openInputStreams_.isEmpty() ? 10000 : _openInputStreams_.lastKey()+1;
+                  _openInputStreams_.put(fd, fis);
+                  open_results[0] = fd;
+                  break;
+                case 1:
+                  OutputStream fos = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)));
+                  fd = _openOutputStreams_.isEmpty() ? 10000 : _openOutputStreams_.lastKey()+1;
+                  _openOutputStreams_.put(fd, fos);
+                  open_results[0] = fd;
+                  break;
+                case 2:
+                  OutputStream fas = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)), true);
+                  fd = _openOutputStreams_.isEmpty() ? 10000 : _openOutputStreams_.lastKey()+1;
+                  _openOutputStreams_.put(fd, fas);
+                  open_results[0] = fd;
+                  break;
+                default:
+                  open_results[1] = -1;
+                  System.err.println("*** error: unknown open flag: "+args.get(3).i8Value());
+                  System.exit(1);
+              }
+            }
+          catch (Exception e)
+            {
+              open_results[1] = -1;
+            }
+          return Value.EMPTY_VALUE;
+        });
+    put("fuzion.std.fileio.on_close", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -341,33 +383,17 @@ public class Intrinsics extends ANY
           long fd = args.get(1).i64Value();
           try
             {
-              if (_openFilesForRead_.containsKey(fd))
+              if (_openInputStreams_.containsKey(fd))
                 {
-                  _openFilesForRead_.remove(fd).close();
-                  return new i8Value(1);
+                  _openInputStreams_.remove(fd).close();
+                  return new i64Value(0);
                 }
-              return new i8Value(-2);
-            } 
-          catch (Exception e)
-            {
-              return new i8Value(-1);
-            }
-        });
-    put("fuzion.std.fileio.open", (interpreter, innerClazz) -> args ->
-        {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          long fd;
-          try
-            {
-              BufferedReader br = Files.newBufferedReader(path);
-              fd = _openFilesForRead_.isEmpty() ? 10000 : _openFilesForRead_.lastKey()+1;
-              _openFilesForRead_.put(fd, br);
-              return new i64Value(fd);
+              if (_openOutputStreams_.containsKey(fd))
+                {
+                  _openOutputStreams_.remove(fd).close();
+                  return new i64Value(0);
+                }
+              return new i64Value(-1);
             } 
           catch (Exception e)
             {
