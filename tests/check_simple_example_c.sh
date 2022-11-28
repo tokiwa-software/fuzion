@@ -47,13 +47,12 @@ else
 
     rm -f testbin
 
-    ( ($1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
+    ( ($1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
     # (($1 -c $2 -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
-    sed "s|${CURDIR[\\\/]}|--CURDIR--/|g" > tmp_err.txt < tmp_err0.txt
-    rm -rf tmp_err0.txt
+    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
 
     expout=$2.expected_out
     experr=$2.expected_err
