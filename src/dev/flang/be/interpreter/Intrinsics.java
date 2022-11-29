@@ -364,7 +364,7 @@ public class Intrinsics extends ANY
                   break;
                 default:
                   open_results[1] = -1;
-                  System.err.println("*** error: unknown open flag: "+args.get(3).i8Value());
+                  System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
                   System.exit(1);
               }
             }

@@ -243,8 +243,10 @@ public class Intrinsics extends ANY
                     )
                   )
                 ), 
-              CStmnt.seq(CExpr.call("printf", new List<>(CExpr.string("default"))),
-                CStmnt.BREAK)
+              CStmnt.seq(
+                CExpr.fprintfstderr("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\n"),
+                CExpr.exit(1)
+                )
               ),
             openresults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
             );
