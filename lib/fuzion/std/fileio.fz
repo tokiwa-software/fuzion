@@ -196,7 +196,7 @@ public fileio is
                      # dummy parameter to enable overload
                      _ unit) bool is intrinsic
 
-  # Opens an IO source using a path and a flag to represent the opening method
+  # Opens an IO source using a Fuzion Object as path and an i8 flag to represent the opening method (Read: 0, Write: 1, Append: 2)
   # returns tuple (option i64) i64
   # the tuple's first parameter is the file descriptor (nil in failure) and the second is the error number (0 in success) or -1 in the interpreter
   #
