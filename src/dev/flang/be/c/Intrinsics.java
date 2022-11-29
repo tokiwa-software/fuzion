@@ -206,21 +206,56 @@ public class Intrinsics extends ANY
         {
           var filepointer = new CIdent("fp");
           var openresults = new CIdent("open_results");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
             CExpr.decl("long *", openresults),
             openresults.assign(A1.castTo("long *")),
-            CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("r")))),
-            CExpr.iff(
-              CExpr.notEq(filepointer, new CIdent("NULL")),
-              CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))
+            CExpr.decl("int", errno),
+            errno.assign(new CIdent("0")),
+            CStmnt.suitch(
+              A2.castTo("int"),
+              new List<>(
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(0)),
+                  CStmnt.seq(
+                    CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("r")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(1)),
+                  CStmnt.seq(
+                    CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("w")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(2)),
+                  CStmnt.seq(
+                    CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  )
+                ), 
+              CStmnt.seq(CExpr.call("printf", new List<>(CExpr.string("default"))),
+                CStmnt.BREAK)
               ),
-            openresults.index(CExpr.ident("1")).assign(new CIdent("errno").castTo("fzT_1i64"))
+            openresults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
             );
         }
         );
     put("fuzion.std.fileio.on_close"   , (c,cl,outer,in) ->
         {
+          var errno = new CIdent("errno");
           return CStmnt.seq(
+            CExpr.decl("int", errno),
+            errno.assign(new CIdent("0")),
             CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), CExpr.int8const(0).ret()),
             new CIdent("errno").castTo("fzT_1i64").ret()
             );
