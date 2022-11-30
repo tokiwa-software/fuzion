@@ -85,22 +85,6 @@ public class CTypes extends ANY
 
 
   /**
-   * Test is a given clazz is not -1 and stores data.
-   *
-   * @param cl the clazz defining a type, may be -1
-   *
-   * @return true if cl != -1 and not unit or void type.
-   */
-  boolean hasData(int cl)
-  {
-    return cl != -1 &&
-      !_fuir.clazzIsUnitType(cl) &&
-      !_fuir.clazzIsVoidType(cl) &&
-      cl != _fuir.clazzUniverse();
-  }
-
-
-  /**
    * The type of a field.  This is the usually the same as clazz() of
    * the field's result clazz, except for outer refs for which
    * clazzFieldIsAdrOfValue, where it is a pointer to that type.
