@@ -1309,24 +1309,6 @@ public class AstErrors extends ANY
           "Faulty generic argument: " + s(t) + " at " + t.pos().show());
   }
 
-  static void fieldDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr initialValue)
-  {
-    error(pos,
-          "Field definition using " + ss(":=")+ " must not specify an explicit type",
-          "Definition of field: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(initialValue));
-  }
-
-  static void routineDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr code)
-  {
-    error(pos,
-          "Function definition using " + ss("=>") + " must not specify an explicit type",
-          "Definition of function: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(code));
-  }
-
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
   {
     // NYI: It would be nice to output the whole cycle here as part of the detail message
@@ -1490,6 +1472,15 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
           "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
+          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Feature declared: " + s(f));
+  }
+
+  static void illegalResultTypeRefTypeRoutineDef(Feature f)
+  {
+    error(f.pos(),
+          "Illegal " + skw("ref") + " in feature definition using " + ss("=>"),
           "For function definition using " + ss("=>") + ", the type is determined automatically, " +
           "it must not be given explicitly.\n" +
           "Feature declared: " + s(f));
