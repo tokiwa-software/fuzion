@@ -1,0 +1,368 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature tree
+#
+# -----------------------------------------------------------------------
+
+# tree -- feature used to define trees
+#
+# tree implements a purely functional variant (that is, no mutations happen)
+# of a binary search tree of bounded balance, as presented in the papers:
+#
+#   Nievergelt, J. and Reingold, E. M. (1973): Binary search trees of bounded
+#   balance. In: SIAM J. Computing 2(1), March 1973
+#
+#   Adams, S. (1992): Implementing Sets Efficiently in a Functional Language.
+#   Technical report CSTR 92-10. University of Southhampton.
+#
+# This implementation is based on the implementation for Standard ML by Stephen
+# Adams, which can be accessed at:
+#
+#   https://groups.csail.mit.edu/mac/users/adams/BB/BB.sml
+#
+# which includes the following copyright notice:
+#
+#   Copyright 1992-1996 Stephen Adams.
+#
+#   This software may be used freely provided that:
+#     1. This copyright notice is attached to any copy, derived work,
+#        or work including all or part of this software.
+#     2. Any derived work must contain a prominent notice stating that
+#        it has been altered from the original.
+#
+#
+tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
+
+  # returns the size of the tree, i.e. the number of elements it contains
+  size u32 is
+    tree.this ? nil        => 0
+              | n TreeNode => n.count
+
+  # returns true if and only if a is an element of the tree
+  member(a A) bool is
+    tree.this ? nil => false # an empty tree contains no element
+              | n TreeNode =>
+                if a < n.datum
+                  n.left.member a
+                else if a > n.datum
+                  n.right.member a
+                else
+                  true
+
+  # unicode alias for member
+  infix ∋ (a A) bool is
+    member a
+
+  # returns a string representation of the tree
+  #
+  # E represents an empty tree
+  #
+  # A non-empty node of the tree is represented as
+  #
+  #   T(v, c, l, r)
+  #
+  # where v is the content of the node, c is the number
+  # of elements in the subtree represented by the node,
+  # l is the left subtree of the node, and r is the right
+  # subtree of the node.
+  redef asString string is
+    tree.this ? nil => "E"
+              | n TreeNode => "T({n.datum}, {n.count}, {n.left}, {n.right})"
+
+  # To understand the following two definitions, we define the weight of a tree
+  # to be its size plus one. A tree of bounded balance is considered to be out of
+  # balance at a node if the weight of the left subtree of the node is greater than
+  # delta times the weight of the right subtree of the node, and vice versa.
+  # Only in these cases a rebalancing is necessary.
+  #
+  # The gamma constant is used to determine whether it is necessary to do a single or
+  # a double rotation to resolve the imbalance.
+  #
+  # According to the paper
+  #
+  #   Hirai, Y. and Yamamoto, K. (2011): Balancing weight-balanced trees. In: Journal of
+  #   Functional Programming, 21(3):287, DOI: https://dx.doi.org/10.1017/S0956796811000104
+  #
+  # the only integer solution is <3, 2>. Note that by the convention of that paper, we use
+  # the original WBT algorithm.
+  private delta u32 is 3
+
+  # Constant used to determine whether a single or double rotation is done to resolve
+  # an imbalance in the tree. See the comment of delta for more information.
+  private gamma u32 is 2
+
+  # creates a tree from a value and a left and right subtree, and ensures that the
+  # count field of TreeNode is set correctly.
+  private smart_node(datum A, left, right tree A) tree A is
+    treenode A (tree A) (tree A) datum (left.size + 1 + right.size) left right
+
+  # do a single rotation to the left at the given subtree
+  private single_L(datum A, left, right tree A) tree A is
+    match right
+      nil => panic "panic"
+      r TreeNode =>
+        smart_node r.datum (smart_node datum left r.left) r.right
+
+  # do a double rotation to the left at the given subtree
+  private double_L(datum A, left tree A, right tree A) tree A is
+    match right
+      nil => panic "panic"
+      r TreeNode =>
+        match r.left
+          nil => panic "panic"
+          rl TreeNode =>
+            smart_node rl.datum (smart_node datum left rl.left) (smart_node r.datum rl.right r.right)
+
+  # do a single rotation to the right at the given subtree
+  private single_R(datum A, left, right tree A) tree A is
+    match left
+      nil => panic "panic"
+      l TreeNode =>
+        smart_node l.datum l.left (smart_node datum l.right right)
+
+  # do a double rotation to the right at the given subtree
+  private double_R(datum A, left, right tree A) tree A is
+    match left
+      nil => panic "panic"
+      l TreeNode =>
+        match l.right
+          nil => panic "panic"
+          lr TreeNode =>
+            smart_node lr.datum (smart_node l.datum l.left lr.left) (smart_node datum lr.right right)
+
+  # given a subtree, decide if rebalancing is necessary
+  #
+  # returns the subtree as a result, rebalanced if it was necessary.
+  private tree_prime(datum A, left tree A, right tree A) tree A is
+    ln := left.size + 1
+    rn := right.size + 1
+
+    if rn > (delta * ln)
+      # right is too big
+      match right
+        nil => panic "panic"
+        r TreeNode =>
+          rln := r.left.size + 1
+          rrn := r.right.size + 1
+
+          if rln < gamma * rrn
+            single_L datum left right
+          else
+            double_L datum left right
+    else if ln > (delta * rn)
+      # left is too big
+      match left
+        nil => panic "panic"
+        l TreeNode =>
+          lln := l.left.size + 1
+          lrn := l.right.size + 1
+
+          if lrn < gamma * lln
+            single_R datum left right
+          else
+            double_R datum left right
+    else
+      smart_node datum left right
+
+  # returns this tree if it contains the element a,
+  # otherwise returns a new tree that contains a.
+  add(a A) tree A is
+    tree.this ? nil => smart_node a nil nil
+              | n TreeNode =>
+                if a < n.datum
+                  tree_prime n.datum (n.left.add a) n.right
+                else if n.datum < a
+                  tree_prime n.datum n.left (n.right.add a)
+                else
+                  n
+
+  # returns this tree if it does not contain the element a,
+  # otherwise returns a new tree that does not contain a.
+  delete(a A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if a < n.datum
+                  tree_prime n.datum (n.left.delete a) n.right
+                else if n.datum < a
+                  tree_prime n.datum n.left (n.right.delete a)
+                else
+                  delete_root
+
+  # for a non-empty tree only, returns the tree that does not contain
+  # the root node of this tree.
+  private delete_root tree A is
+    tree.this ? nil => panic "delete_root called on empty tree!"
+              | n TreeNode =>
+                match n.left
+                  nil => n.right
+                  l TreeNode =>
+                    match n.right
+                      nil => n.left
+                      r TreeNode =>
+                        tree_prime n.right.minimum n.left n.right.delete_minimum
+
+  # for a non-empty tree only, returns the minimal element in this tree.
+  minimum A is
+    tree.this ? nil => panic "panic"
+              | n TreeNode =>
+                match n.left
+                  nil => n.datum
+                  l TreeNode => n.left.minimum
+
+  # for a non-empty tree only, returns the tree that does not contain
+  # the minimal element of this tree.
+  private delete_minimum tree A is
+    tree.this ? nil => panic "delete_minimum called on empty tree!"
+              | n TreeNode =>
+                match n.left
+                  nil => n.right
+                  l TreeNode => tree_prime n.datum n.left.delete_minimum n.right
+
+  private concat3(datum A, left, right tree A) tree A is
+    match left
+      nil => right.add datum
+      l TreeNode =>
+        match right
+          nil => left.add datum
+          r TreeNode =>
+            if (delta * (left.size + 1)) < (right.size + 1)
+              tree_prime r.datum (concat3 datum left r.left) r.right
+            else if (delta * (right.size + 1)) < (left.size + 1)
+              tree_prime l.datum l.left (concat3 datum l.right right)
+            else
+              smart_node datum left right
+
+  private split_lt(a A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if a < n.datum
+                  n.left.split_lt a
+                else if n.datum < a
+                  concat3 n.datum n.left (n.right.split_lt a)
+                else
+                  n.left
+
+  private split_gt(a A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if n.datum < a
+                  n.right.split_gt a
+                else if a < n.datum
+                  concat3 n.datum (n.left.split_gt a) n.right
+                else
+                  n.right
+
+  # Returns the union of this and another tree, i.e. the tree that contains
+  # all the elements of this tree and all the elements of the other tree.
+  #
+  # TODO implement hedge_union for optimization!
+  union(other tree A) tree A is
+    tree.this ? nil => other
+              | n TreeNode =>
+                other ? nil => tree.this
+                      | on TreeNode =>
+                        l0 := split_lt on.datum
+                        r0 := split_gt on.datum
+
+                        concat3 on.datum (l0.union on.left) (r0.union on.right)
+
+  # unicode alias for union
+  infix ∪ (other tree A) tree A is
+    union other
+
+  # TODO optimization on page 19/21 in the paper by Adams
+  private concat(other tree A) tree A is
+    other ? nil => tree.this
+          | on TreeNode => concat3 other.minimum tree.this other.delete_minimum
+
+  # Returns the tree that contains all the elements contained in this tree but
+  # not the other, given tree.
+  difference(other tree A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                other ? nil => tree.this
+                      | on TreeNode =>
+                        l0 := split_lt on.datum
+                        r0 := split_gt on.datum
+
+                        (l0.difference on.left).concat (r0.difference on.right)
+
+  # unicode alias for difference
+  infix ∖ (other tree A) tree A is
+    difference other
+
+  # Returns the tree that contains all the elements that are contained in both
+  # this and the other, given tree.
+  intersection(other tree A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                other ? nil => nil
+                      | on TreeNode =>
+                        l0 := split_lt on.datum
+                        r0 := split_gt on.datum
+
+                        if member on.datum
+                          concat3 on.datum (l0.intersection on.left) (r0.intersection on.right)
+                        else
+                          (l0.intersection on.left).concat (r0.intersection on.right)
+
+  # unicode alias for intersection
+  infix ∩ (other tree A) tree A is
+    intersection other
+
+  # Returns the rank of an element in the tree, or nil if the given element is
+  # not a member of this tree.
+  rank(a A) option u32 is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if a < n.datum
+                  n.left.rank a
+                else if a > n.datum
+                  n.right.rank a ? nil => panic "rank panic"
+                                 | r u32 => r + n.left.size + 1
+                else
+                  n.left.size
+
+  # Access an element of the tree by its rank. Returns the element
+  # found at the given rank, or nil if the tree is empty (this includes
+  # the case where the rank given is out of the bounds of this tree).
+  index [] (i u32) option A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                ln := n.left.size
+
+                if i < ln
+                  n.left.index[] i
+                else if i > ln
+                  n.right.index[] (i - ln - 1)
+                else
+                  n.datum
+
+# trees -- unit type defining features related to tree but not requiring an
+# instance
+trees is
+
+  # returns an empty tree of elements of type A.
+  empty(A (ordered A).type) tree A is
+    nil
+
+  # returns a tree of elements of type A that contains just the element a.
+  singleton(A (ordered A).type, a A) tree A is
+    treenode A (tree A) (tree A) a 1 nil nil
