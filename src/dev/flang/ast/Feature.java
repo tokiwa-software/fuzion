@@ -1429,7 +1429,7 @@ public class Feature extends AbstractFeature implements Stmnt
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
         af.visitStatements(s -> {
-            if (s instanceof AbstractCall c && DependsOnOuterRef(c))
+            if (s instanceof AbstractCall c && dependsOnOuterRef(c))
               {
                 result.add(c);
               }
@@ -1444,7 +1444,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param c
    * @return
    */
-  private boolean DependsOnOuterRef(AbstractCall c)
+  private boolean dependsOnOuterRef(AbstractCall c)
   {
     return c.calledFeature() == outerRef() ||
     // see issue #698 for an example where this applies.
