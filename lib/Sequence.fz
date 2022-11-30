@@ -378,7 +378,15 @@ Sequence(T type) ref is
   # every element in the sequence
   #
   indexed list (tuple i32 T) is
-    zip (0..) (a,b -> (b, a))
+    indexed 0
+
+
+  # adds an index to every element
+  # in the sequence starting at start_idx
+  #
+  indexed(I (hasInterval I).type, start_idx I) list (tuple I T) is
+    zip (start_idx..) (a,b -> (b, a))
+
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring
