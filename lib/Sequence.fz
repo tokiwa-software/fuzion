@@ -117,12 +117,12 @@ Sequence(T type) ref is
   forAll(f T -> unit) unit is asStream.forAll f
 
 
-  # create a stream and have it consumed by f, infix operator synonyme of forAll.
+  # create a stream and have it consumed by f, infix operator synonym of forAll.
   #
   infix | (f T -> unit) => forAll f
 
 
-  # create a stream, infix operator synonyme for asStream
+  # create a stream, infix operator synonym for asStream
   #
   postfix | => asStream
 
@@ -145,13 +145,13 @@ Sequence(T type) ref is
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   infix |& (f T -> bool) => filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
@@ -212,7 +212,7 @@ Sequence(T type) ref is
   concatSequences (s Sequence T) Sequence T is asList.concat s.asList
 
 
-  # infix operand synonyme for concatSequences
+  # infix operand synonym for concatSequences
   #
   infix ++ (s Sequence T) => asList ++ s.asList
 

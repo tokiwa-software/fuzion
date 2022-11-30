@@ -353,7 +353,7 @@ O(n log n).
       addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
 
 
-  # infix operator synonyme for union of two psMaps
+  # infix operator synonym for union of two psMaps
   #
   infix ⋃ (other ref psMap PK V) => union other  # NYI: #167: 'ref' due to lack of 'like this'
 

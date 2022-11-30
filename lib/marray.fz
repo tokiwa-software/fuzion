@@ -82,7 +82,7 @@ is
     marray T length+1 d
 
 
-  # infix operator synonyme for add
+  # infix operator synonym for add
   #
   infix + (o T) => add o
 

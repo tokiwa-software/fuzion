@@ -71,7 +71,7 @@
 #   red => {}
 #
 # The first declares a feature red that defines a new unit type red, the second
-# declares a feature red with result type unit, i.e., a synonyme for unit as in
+# declares a feature red with result type unit, i.e., a synonym for unit as in
 #
 #   red unit is {}
 #
