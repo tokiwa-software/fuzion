@@ -93,7 +93,7 @@ stream(redef T type) ref : Sequence T is
   redef forAll(f T -> unit) unit is while hasNext do f(next)
 
 
-  # apply f to all elements in this stream, infix operator synonyme of forAll.
+  # apply f to all elements in this stream, infix operator synonym of forAll.
   #
   redef infix | (f T -> unit) unit is while hasNext do f(next)
 
