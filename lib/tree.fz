@@ -114,14 +114,14 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
     treenode A (tree A) (tree A) datum (left.size + 1 + right.size) left right
 
   # do a single rotation to the left at the given subtree
-  private single_L(datum A, left, right tree A) tree A is
+  private single_l(datum A, left, right tree A) tree A is
     match right
       nil => panic "panic"
       r TreeNode =>
         smart_node r.datum (smart_node datum left r.left) r.right
 
   # do a double rotation to the left at the given subtree
-  private double_L(datum A, left tree A, right tree A) tree A is
+  private double_l(datum A, left tree A, right tree A) tree A is
     match right
       nil => panic "panic"
       r TreeNode =>
@@ -131,14 +131,14 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
             smart_node rl.datum (smart_node datum left rl.left) (smart_node r.datum rl.right r.right)
 
   # do a single rotation to the right at the given subtree
-  private single_R(datum A, left, right tree A) tree A is
+  private single_r(datum A, left, right tree A) tree A is
     match left
       nil => panic "panic"
       l TreeNode =>
         smart_node l.datum l.left (smart_node datum l.right right)
 
   # do a double rotation to the right at the given subtree
-  private double_R(datum A, left, right tree A) tree A is
+  private double_r(datum A, left, right tree A) tree A is
     match left
       nil => panic "panic"
       l TreeNode =>
@@ -163,9 +163,9 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
           rrn := r.right.size + 1
 
           if rln < gamma * rrn
-            single_L datum left right
+            single_l datum left right
           else
-            double_L datum left right
+            double_l datum left right
     else if ln > (delta * rn)
       # left is too big
       match left
@@ -175,9 +175,9 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
           lrn := l.right.size + 1
 
           if lrn < gamma * lln
-            single_R datum left right
+            single_r datum left right
           else
-            double_R datum left right
+            double_r datum left right
     else
       smart_node datum left right
 
