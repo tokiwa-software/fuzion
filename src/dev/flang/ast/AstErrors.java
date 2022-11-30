@@ -255,8 +255,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
           "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
-          "To solve this, if your intention was to return a result value, use " + ss("set " + FuzionConstants.RESULT_NAME + " := <value>") + ".\n"+
-          "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
+          "To solve this, choose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
 
