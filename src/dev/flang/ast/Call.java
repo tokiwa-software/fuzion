@@ -1355,7 +1355,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the type result type of the called feature, might be open genenric.
+   * @param t the result type of the called feature, might be open genenric.
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
