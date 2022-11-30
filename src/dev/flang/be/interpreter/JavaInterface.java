@@ -248,8 +248,8 @@ public class JavaInterface extends ANY
    *
    * @param o a Java object
    *
-   * @param resultClazz the clazz to wrap o into.  Must be either a heir of
-   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is a heir of
+   * @param resultClazz the clazz to wrap o into.  Must be either an heir of
+   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is an heir of
    * 'fuzion.java.JavaObject'.
    *
    * @return a value of resultClazz that contains o.
@@ -269,8 +269,8 @@ public class JavaInterface extends ANY
    *
    * @param e a Java exception
    *
-   * @param resultClazz the clazz to wrap o into.  Must be either a heir of
-   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is a heir of
+   * @param resultClazz the clazz to wrap o into.  Must be either an heir of
+   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is an heir of
    * 'fuzion.java.JavaObject'.
    *
    * @return a value of resultClazz that contains o or, in case e!=null, e.

@@ -47,7 +47,7 @@ open_sem(){
 run_with_lock(){
     local x
     # this read waits until there is something to read
-    read -u 3 -n 3 x && ((0==x)) || exit "$x"
+    read -r -u 3 -n 3 x && ((0==x)) || exit "$x"
     (
      ( "$@"; )
     # push the return code of the command to the semaphore

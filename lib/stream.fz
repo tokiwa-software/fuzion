@@ -25,14 +25,29 @@
 
 # stream -- a stream of values
 #
+# A stream contains mutable state, so it cannot be reused or shared
+# between threads.
+#
+# The mutable nature of streams requires particular prudence, as even basic
+# actions, such as calling asString on a stream will consume values and thus
+# change the state of the stream, as the following example demonstrates:
+#
+#   a := [1, 2, 3, 4, 5].asStream
+#   say a
+#   say a
+#
+# In this example, the first invocation of say will print "1, 2, 3, 4, 5",
+# the second invocation will print "".
+#
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
 # of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
 stream(redef T type) ref : Sequence T is
 
+  asList0 option (some (list T)) := nil
+
   # create a list from this stream
   #
-  asList0 option (some (list T)) := nil
   redef asList list T is
     if !asList0.exists
       set asList0 := some fromStream
@@ -65,13 +80,10 @@ stream(redef T type) ref : Sequence T is
       (a.take i).asList
 
 
-  # create a stream of T.
+  # Return this stream as a stream.
   #
-  # A stream contains mutable state, so it cannot be reused or shared
-  # between threads.
-  #
-  # Default implementation uses asList.  Heirs must redefine at least
-  # one of asList or asStream.
+  # This is a helper function that needs to be defined because stream is an heir
+  # of Sequence.
   #
   redef asStream stream T is stream.this
 
@@ -81,7 +93,7 @@ stream(redef T type) ref : Sequence T is
   redef forAll(f T -> unit) unit is while hasNext do f(next)
 
 
-  # apply f to all elements in this stream, infix operator synonyme of forAll.
+  # apply f to all elements in this stream, infix operator synonym of forAll.
   #
   redef infix | (f T -> unit) unit is while hasNext do f(next)
 
@@ -189,7 +201,7 @@ stream(redef T type) ref : Sequence T is
       .fold (strings.concat ", ")
 
 
-  # create a string representation of this list including all the string
+  # create a string representation of this stream including all the string
   # representations of its contents, separated by 'sep'.
   #
   redef asString (sep string) => asList.asString sep

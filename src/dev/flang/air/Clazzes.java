@@ -245,6 +245,9 @@ public class Clazzes extends ANY
    */
   public static Clazz intern(Clazz c)
   {
+    if (PRECONDITIONS) require
+      (c._type != Types.t_ERROR);
+
     Clazz existing = clazzes.get(c);
     if (existing == null)
       {
