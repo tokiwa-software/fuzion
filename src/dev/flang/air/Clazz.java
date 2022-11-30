@@ -1747,7 +1747,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Helper for isInstantiated to check if outer clazz this is a ref and there
    * are heir clazzes of this that are refs and that are instantiated.
    *
-   * @return true iff this is a ref and there exists a heir of this that is
+   * @return true iff this is a ref and there exists an heir of this that is
    * instantiated.
    */
   public boolean hasInstantiatedHeirs()
@@ -2240,7 +2240,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param ft the type that is an open generic
    *
-   * @param fouter the outer feature where ft is used. This might be a heir of
+   * @param fouter the outer feature where ft is used. This might be an heir of
    * _outer.feature() in case ft is the result type of an inherited feature.
    */
   List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)

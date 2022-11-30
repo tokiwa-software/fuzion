@@ -134,7 +134,7 @@ public class Type extends AbstractType
    * the _outer of "r" is "p.q", and the outer of "q" is "p".
    *
    * However, if p is declared in a, after type resolution, the outer type of
-   * "p" is "a" or maybe a heir of "a".
+   * "p" is "a" or maybe an heir of "a".
    */
   private AbstractType _outer;
 

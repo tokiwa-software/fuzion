@@ -275,7 +275,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check if given value can be assigned to this static type.  In addition to
    * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
-   * (Current or an outer ref) that might be a value type that is a heir of this
+   * (Current or an outer ref) that might be a value type that is an heir of this
    * type.
    *
    * @param expr the expression to be assigned to a variable of this type.
