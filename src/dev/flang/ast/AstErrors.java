@@ -1240,7 +1240,8 @@ public class AstErrors extends ANY
     error(pos,
           "Choice type must not access fields of surrounding scope.",
           "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-          accesses);
+          accesses + "\n" +
+          "To solve this, you might move the accessed fields outside of the common outer feature.");
   }
 
   static void choiceMustNotBeRef(SourcePosition pos)
