@@ -288,6 +288,20 @@ Sequence(T type) ref is
           r R => c.tail.reduce r f
 
 
+  # reduce this Sequence to `outcome R`
+  # with an initial value `init` and a reducing function `f`.
+  # the reduction is finished once `f` yields `abort` or
+  # if the end of the sequence is reached.
+  #
+  reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R is
+    match asList
+      nil => init
+      c Cons =>
+        match f init c.head
+          a abort => a.val
+          r R => c.tail.reduce_or_error r f
+
+
   # insert element v at position at
   #
   insert(at i32, v T)
