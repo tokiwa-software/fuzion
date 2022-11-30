@@ -1,0 +1,107 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion ex_tree
+#
+# -----------------------------------------------------------------------
+
+ex_tree is
+
+  a := trees.empty i32
+  say a.size
+  say (a.member 42)
+  say (a.member 17)
+
+  b := trees.singleton 17
+  say b.size
+  say (b ∋ 17)
+  say (b ∋ 42)
+
+  all := psSet 0..100
+  removed := psSet 0..100:2
+  readded := psSet 0..100:4
+  reremoved := psSet 0..100:6
+
+  treeAll tree i32 is
+    for
+      k in all
+      x := trees.empty i32, x.add k
+    else
+      x
+
+  lla := treeAll
+  say lla
+
+  treeRemoved tree i32 is
+    for
+      k in removed
+      x := lla, x.delete k
+    else
+      x
+
+  devomer := treeRemoved
+  say devomer
+
+  treeReadded tree i32 is
+    for
+      k in readded
+      x := devomer, x.add k
+    else
+      x
+
+  deddaer := treeReadded
+  say deddaer
+
+  treeReremoved tree i32 is
+    for
+      k in reremoved
+      x := deddaer, x.delete k
+    else
+      x
+
+  devomerer := treeReremoved
+  say devomerer
+
+  treeA tree i32 is
+    for
+      k in [0, 400, 3000, 50000]
+      x := trees.empty i32, x.add k
+    else
+      x
+
+  aTree := treeA
+  say aTree
+
+  say (aTree ∪ deddaer)
+  anotherTree := aTree ∖ deddaer
+  say anotherTree
+  say (deddaer ∖ aTree)
+  say (aTree ∩ deddaer)
+
+  for
+    k in [400, 3000, 50000]
+  do
+    say (aTree.rank k)
+    say (anotherTree.rank k)
+
+  for
+    k in [u32 0, u32 1, u32 2, u32 3]
+  do
+    say aTree[k]
+    say anotherTree[k]
