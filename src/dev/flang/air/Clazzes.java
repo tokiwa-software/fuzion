@@ -1176,7 +1176,7 @@ public class Clazzes extends ANY
   public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (!thiz.dependsOnGenerics(),
+      (Errors.count()>0 || !thiz.dependsOnGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
        Errors.count()>0 || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
