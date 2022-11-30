@@ -206,7 +206,7 @@ public class CNames extends ANY
   static final CIdent fzThreadEffectsEnvironment = new CIdent(THRD_PREFIX + "effectsEnvironment");
 
   /*
-   * the identifier of the function passed to pthread_create
+   * the identifier of the function passed to thrd_create
    */
   static final CIdent fzThreadStartRoutine       = new CIdent(THRD_PREFIX + "startRoutine");
 

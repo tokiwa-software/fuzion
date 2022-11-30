@@ -551,8 +551,8 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
-    // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-o", name, cname);
+    // NYI link libmath only when needed
+    command.addAll("-lm", "-o", name, cname);
 
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
@@ -593,7 +593,7 @@ public class C extends ANY
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
-       "#include <pthread.h>\n"+
+       "#include <threads.h>\n"+
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
        "\n");
