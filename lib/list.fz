@@ -299,6 +299,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # Lazily filter the elements of a list.
   #
+  # The result contains exactly those elements for which p
+  # is true.
+  #
   redef filter (p A -> bool) Sequence A is
     filter0 p
 
