@@ -676,7 +676,9 @@ public class C extends ANY
 
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+                        CExpr.call(_names.function(_fuir.mainClazzId(), true), new List<>()),
+                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())
+                        ));
     cf.println("}");
   }
 

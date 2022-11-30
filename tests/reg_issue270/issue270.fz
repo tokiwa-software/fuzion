@@ -1,0 +1,4 @@
+ex
+  pre false
+  =>
+  say "hello"

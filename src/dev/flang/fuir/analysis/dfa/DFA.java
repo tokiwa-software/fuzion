@@ -768,8 +768,15 @@ public class DFA extends ANY
    */
   public void dfa()
   {
+    var callMainPre = newCall(_fuir.mainClazzId(),
+                              true,
+                              Value.UNIT,
+                              new List<>(),
+                              null /* env */,
+                              () -> { System.out.println("program entry point"); return "  "; });
+
     var callMain = newCall(_fuir.mainClazzId(),
-                           false /* NYI: main's precondition is not analyzed */,
+                           false,
                            Value.UNIT,
                            new List<>(),
                            null /* env */,
