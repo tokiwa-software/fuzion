@@ -79,6 +79,8 @@ array(redef T type,
     array T length.max(i+1) (ix -> if (ix == i) v else if (ix >= length) z else array.this[ix])
 
 
+  # create a stream from this array
+  #
   redef asStream ref : stream T is
 
     # NYI: we create heap allocated instance of array explicitly, needed while
