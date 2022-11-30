@@ -79,6 +79,11 @@ public class Consts
    */
   public static final int MODIFIER_FINAL        = 0x0080;
 
+  /**
+   * 'dyn' modifier to force feature within type feature to be dynamic.
+   */
+  public static final int MODIFIER_DYN          = 0x0100;
+
 
   /**
    *

@@ -1177,10 +1177,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
         var t2 = f.resultType();
-        if ((t1.isChoice()
-             ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
-             : !t1.isAssignableFrom(t2)) &&
-            t2 != Types.resolved.t_void)
+        if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
+          { // NYI: CLEANUP: #706: allow redefintion of THIS_TYPE in type features for now, these are created internally.
+          }
+        else if ((t1.isChoice()
+                  ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
+                  : !t1.isAssignableFrom(t2)) &&
+                 t2 != Types.resolved.t_void)
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }

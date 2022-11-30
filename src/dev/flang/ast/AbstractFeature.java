@@ -486,18 +486,37 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   */
+  public boolean isTypeFeaturesThisType()
+  {
+    // NYI: CLEANUP: #706: Replace string operation by a flag marking this features as a 'THIS_TYPE' type parameter
+    return
+      isTypeParameter() &&
+      outer().isTypeFeature() &&
+      featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE);
+  }
+
+
+  /**
    * This type feature declared as
    *
    *    abc.type.xyz is ...
    *
    * will go to abc's static type unless this is true.
+   *
+   * Currently, this is true for abstract features and for those marked with the
+   * 'dyn' modifier.
+   *
+   * NYI: FUTURE ENHANCEMENT: 'dyn' type featurs: We might be more automatic
+   * here and, e.g., let all features that depend on generic parameter
+   * FuzionConstants.TYPE_FEATURE_THIS_TYPE go to the dynamic type.
    */
   public boolean belongsToNonStaticType()
   {
-    // currently, only abstract features go to the dynamic type.  We might be
-    // more flexible here and let all features that depend on generic parameter
-    // FuzionConstants.TYPE_FEATURE_THIS_TYPE go to the dynamic type.
-    return isAbstract();
+    return
+      isAbstract() ||
+      (this instanceof Feature f) && (f.modifiers() & Consts.MODIFIER_DYN) != 0;
   }
 
 
@@ -558,11 +577,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         else
           {
-            var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
+            var name = featureName().baseName() + ".";
             if (!isConstructor() && !isChoice())
               {
                 name = name + "_" + (_typeFeatureId_++);
               }
+            name = name + FuzionConstants.TYPE_NAME;
             var inh = new List<AbstractCall>();
             for (var pc: inherits())
               {
@@ -662,7 +682,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var typeArg = new Feature(p,
                                   visibility(),
                                   outer().isUniverse() && featureName().baseName().equals("Object") && !statc ? 0 : Consts.MODIFIER_REDEFINE,
-                                  new Type("Object"),
+                                  thisType(),
                                   FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                   Contract.EMPTY_CONTRACT,
                                   Impl.TYPE_PARAMETER);
