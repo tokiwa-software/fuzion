@@ -287,10 +287,17 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
   infix ∪ (other tree A) tree A is
     union other
 
-  # TODO optimization on page 19/21 in the paper by Adams
   private concat(other tree A) tree A is
-    other ? nil => tree.this
-          | on TreeNode => concat3 other.minimum tree.this other.delete_minimum
+    tree.this ? nil => other
+              | n TreeNode =>
+                other ? nil => tree.this
+                      | on TreeNode =>
+                        if (delta * (size + 1)) < (other.size + 1)
+                          tree_prime on.datum (concat on.left) on.right
+                        else if (delta * (other.size + 1)) < (size + 1)
+                          tree_prime n.datum n.left (n.right.concat other)
+                        else
+                          tree_prime other.minimum tree.this other.delete_minimum
 
   # Returns the tree that contains all the elements contained in this tree but
   # not the other, given tree.
