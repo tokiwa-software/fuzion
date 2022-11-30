@@ -36,6 +36,9 @@
 # Lists can typically be traversed using only immutable data. This makes them
 # more flexible than streams that require to store and update their state.
 #
+# A list is immutable, so it can be reused and shared between threads.
+# Compared to a stream, a list may require more (heap) allocation.
+#
 #
 #
 list(A type) : choice nil (Cons A (list A)), Sequence A is
@@ -43,10 +46,10 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 # list(A type) : nil | Cons A (list A), Sequence A is
 
 
-  # create a list from this Sequence.
+  # Return this list as a list.
   #
-  # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
+  # This is a helper function that needs to be defined because list is an heir
+  # of Sequence.
   #
   redef asList list A is list.this
 
@@ -70,7 +73,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => c.tail.count n+1
 
 
-  # get the head of this list if it exists
+  # get the head of this list if it exists, nil if it does
+  # not exist
   #
   head option A
   is
@@ -247,7 +251,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               head => c.head
               tail => c.tail.concat t
 
-  # infix operand synonyme for concat
+  # infix operand synonym for concat
   #
   redef infix ++ (t Sequence A) => concat t.asList
 
@@ -298,6 +302,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   # Lazily filter the elements of a list.
+  #
+  # The result contains exactly those elements for which p
+  # is true.
   #
   redef filter (p A -> bool) Sequence A is
     filter0 p

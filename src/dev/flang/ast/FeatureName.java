@@ -40,7 +40,7 @@ import dev.flang.util.Errors;
  * string like "sort", "i32", "prefix -", "#result", etc., and the number of
  * formal arguments to that feature.
  *
- * The FeatureName may change when a feature is inherited by a heir class: If
+ * The FeatureName may change when a feature is inherited by an heir class: If
  * the feature has an argument of an open generic type, the actual number of
  * arguments may change by replacing that argument by the actual generic
  * arguments.

@@ -1007,7 +1007,7 @@ run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) 
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
@@ -1023,7 +1023,7 @@ run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JA
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
