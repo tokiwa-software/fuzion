@@ -29,6 +29,8 @@ package dev.flang.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 
 /**
@@ -104,12 +106,19 @@ public class Errors extends ANY
   /*-----------------------------  classes  -----------------------------*/
 
 
+
+  public enum Severity {
+    Error, Warning
+  }
+
+
   public static class Error implements Comparable<Error>
   {
     public final SourcePosition pos;
     public final String msg, detail;
+    public final Severity severity;
 
-    Error(SourcePosition pos, String msg, String detail)
+    Error(SourcePosition pos, String msg, String detail, Severity severity)
     {
       if (PRECONDITIONS) require
         (pos != null,
@@ -118,6 +127,7 @@ public class Errors extends ANY
       this.pos    = pos;
       this.msg    = msg == null ? "*** unknown error ***" : msg;  // just in case, should not be needed
       this.detail = detail == null ? "" : detail;
+      this.severity = severity;
     }
 
     /**
@@ -131,6 +141,10 @@ public class Errors extends ANY
                     : ((pos == null)
                        ? +1
                        : pos.compareTo(o.pos)));
+      if (result == 0)
+        {
+          result = severity.ordinal() - o.severity.ordinal();
+        }
       if (result == 0)
         {
           result = msg.compareTo(o.msg);
@@ -168,33 +182,6 @@ public class Errors extends ANY
   public static int warningCount()
   {
     return _warnings_.size();
-  }
-
-
-  /**
-   * Convert given message into an error message preceded by "error <count>: "
-   * and increment the count.
-   *
-   * @param s a message, e.g., "undefined variable".
-   *
-   * @return a message including error count, e..g, "error 23: undefined variable".
-   */
-  static String errorMessage(String s)
-  {
-    return Terminal.BOLD_RED + "error " + count() + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
-  }
-
-
-  /**
-   * Convert given message into a warning message preceded by "warning: ".
-   *
-   * @param s a message, e.g., "battery low".
-   *
-   * @return a message including error count, e..g, "warning: battery low".
-   */
-  static String warningMessage(String s)
-  {
-    return Terminal.BOLD_YELLOW + "warning " + warningCount() + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
   }
 
 
@@ -252,16 +239,14 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail, Severity.Error);
     if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
       {
         _errors_.add(e);
-        print(pos, errorMessage(msg), detail);
         if (count() >= MAX_ERROR_MESSAGES)
           {
             showAndExit();
           }
-        //Thread.dumpStack();
       }
   }
 
@@ -298,20 +283,22 @@ public class Errors extends ANY
    * warningMessage().
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
+   *
+   * @param severity the severity
+   *
+   * @param num the number of the error/warning
    */
-  private static void print(SourcePosition pos, String msg, String detail)
+  private static void print(SourcePosition pos, String msg, String detail, Severity severity, int num)
   {
-    if (true)  // true: a blank line before errors, false: separation line between errors
-      {
-        System.err.println();
-      }
-    else
-      {
-        System.err.println("------------");
-      }
+    System.err.println();
+
+    var n = severity == Severity.Error
+            ? Terminal.BOLD_RED + "error " + num + Terminal.RESET
+            : Terminal.BOLD_YELLOW + "warning " + num + Terminal.RESET;
+
     if (pos == null)
       {
-        println(msg);
+        println(n + Terminal.BOLD + ": " + msg + Terminal.RESET);
         if (detail != null && !detail.equals(""))
           {
             println(detail);
@@ -320,7 +307,7 @@ public class Errors extends ANY
       }
     else
       {
-        pos.show(msg, detail);
+        pos.show(n + Terminal.BOLD + ": " + msg + Terminal.RESET, detail);
       }
   }
 
@@ -452,6 +439,26 @@ public class Errors extends ANY
    */
   public static void showAndExit(boolean warningStatistics)
   {
+    // error counter
+    var ec = new AtomicInteger(0);
+    // warning counter
+    var wc = new AtomicInteger(0);
+    Stream
+      .concat(
+        _errors_
+          .stream()
+          .limit(MAX_ERROR_MESSAGES)
+          .map(e -> new Pair<>(ec.incrementAndGet(), e)),
+        _warnings_
+          .stream()
+          .limit(MAX_WARNING_MESSAGES)
+          .map(w -> new Pair<>(wc.incrementAndGet(), w))
+      )
+      .forEach(p ->
+        {
+          print(p._v1.pos, p._v1.msg, p._v1.detail, p._v1.severity, p._v0);
+        });
+
     if (count() > 0)
       {
         if (count() >= MAX_ERROR_MESSAGES)
@@ -528,11 +535,10 @@ public class Errors extends ANY
             detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
               "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
           }
-        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail, Severity.Warning);
         if (!_warnings_.contains(e))
           {
             _warnings_.add(e);
-            print(pos, warningMessage(msg), detail);
           }
       }
   }
