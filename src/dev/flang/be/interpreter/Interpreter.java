@@ -37,6 +37,7 @@ import java.util.Map;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
@@ -228,11 +229,16 @@ public class Interpreter extends ANY
           }
         catch (RuntimeException | Error e)
           {
+            if ((e instanceof FatalError))
+              {
+                throw e;
+              }
             if (!(e instanceof StackOverflowError))
               {
                 Errors.error("*** " + e + "\n" + callStack());
                 throw e;
               }
+            // any unexpected error
             Errors.fatal("*** " + e + "\n" + callStack());
           }
         if (CHECKS) check

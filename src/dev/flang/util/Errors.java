@@ -334,9 +334,7 @@ public class Errors extends ANY
    */
   public static void fatal(String s, String detail)
   {
-    error(s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
-    exit(1);
+    fatal(null, s, detail);
   }
 
 
@@ -382,6 +380,8 @@ public class Errors extends ANY
   public static void fatal(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
+    show(false);
+
     System.err.println("*** fatal errors encountered, stopping.");
     exit(1);
   }
@@ -422,22 +422,19 @@ public class Errors extends ANY
    */
   public static void runTime(SourcePosition pos, String s, String detail)
   {
-    error(pos, s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
-    exit(1);
+    fatal(pos, s, detail);
   }
 
 
   /**
-   * Check if any errors found.  If so, show the number of errors and
-   * exit(1).
+   * Check if any errors found.  If so, show the number of errors.
    *
    * Otherwise, if warningStatistics is true, report the number of warnings
-   * encountered.  Return normally in this case.
+   * encountered.
    *
    * @param warningStatistics true iff warning count should be printed.
    */
-  public static void showAndExit(boolean warningStatistics)
+  private static void show(boolean warningStatistics)
   {
     // error counter
     var ec = new AtomicInteger(0);
@@ -472,11 +469,29 @@ public class Errors extends ANY
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
                 ".");
-        exit(1);
       }
     else if (warningStatistics && warningCount() > 0)
       {
         println(singularOrPlural(warningCount(), "warning") + ".");
+      }
+  }
+
+
+  /**
+   * Check if any errors found.
+   * If so, show the number of errors and exit(1).
+   *
+   * Otherwise, if warningStatistics is true, report the number of warnings
+   * encountered.  Return normally in this case.
+   *
+   * @param warningStatistics true iff warning count should be printed.
+   */
+  private static void showAndExit(boolean warningStatistics)
+  {
+    show(warningStatistics);
+    if (count() > 0)
+      {
+        exit(1);
       }
   }
 
