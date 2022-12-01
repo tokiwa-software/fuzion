@@ -42,12 +42,10 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,19 +86,11 @@ public class Intrinsics extends ANY
 
 
   /**
-   * This will contain the current open streams for read operations
+   * This will contain the current open streams
    * The key represents a file descriptor
    * The value represents the open stream
    */
-  private static TreeMap<Long, InputStream> _openInputStreams_ = new TreeMap<Long, InputStream>();
-
-
-  /**
-   * This will contain the current open streams for write operations
-   * The key represents a file descriptor
-   * The value represents the open stream
-   */
-  private static TreeMap<Long, OutputStream> _openOutputStreams_ = new TreeMap<Long, OutputStream>();
+  private static TreeMap<Long, RandomAccessFile> _openStreams_ = new TreeMap<Long, RandomAccessFile>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -351,24 +341,25 @@ public class Intrinsics extends ANY
             {
               switch (args.get(3).i8Value()) {
                 case 0:
-                  InputStream fis = new FileInputStream(utf8ByteArrayDataToString(args.get(1)));
+                  RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
                   fd = _currentAvailableFileDescriptor_;
                   _currentAvailableFileDescriptor_++;
-                  _openInputStreams_.put(fd, fis);
+                  _openStreams_.put(fd, fis);
                   open_results[0] = fd;
                   break;
                 case 1:
-                  OutputStream fos = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)));
+                  RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
                   fd = _currentAvailableFileDescriptor_;
                   _currentAvailableFileDescriptor_++;
-                  _openOutputStreams_.put(fd, fos);
+                  _openStreams_.put(fd, fos);
                   open_results[0] = fd;
                   break;
                 case 2:
-                  OutputStream fas = new FileOutputStream(utf8ByteArrayDataToString(args.get(1)), true);
+                  RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
+                  fas.seek(fas.length());
                   fd = _currentAvailableFileDescriptor_;
                   _currentAvailableFileDescriptor_++;
-                  _openOutputStreams_.put(fd, fas);
+                  _openStreams_.put(fd, fas);
                   open_results[0] = fd;
                   break;
                 default:
@@ -393,14 +384,14 @@ public class Intrinsics extends ANY
           long fd = args.get(1).i64Value();
           try
             {
-              if (_openInputStreams_.containsKey(fd))
+              if (_openStreams_.containsKey(fd))
                 {
-                  _openInputStreams_.remove(fd).close();
+                  _openStreams_.remove(fd).close();
                   return new i64Value(0);
                 }
-              if (_openOutputStreams_.containsKey(fd))
+              if (_openStreams_.containsKey(fd))
                 {
-                  _openOutputStreams_.remove(fd).close();
+                  _openStreams_.remove(fd).close();
                   return new i64Value(0);
                 }
               return new i64Value(-1);
