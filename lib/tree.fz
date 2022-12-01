@@ -30,7 +30,7 @@
 #   balance. In: SIAM J. Computing 2(1), March 1973
 #
 #   Adams, S. (1992): Implementing Sets Efficiently in a Functional Language.
-#   Technical report CSTR 92-10. University of Southhampton.
+#   Technical report CSTR 92-10. University of Southampton.
 #
 # This implementation is based on the implementation for Standard ML by Stephen
 # Adams, which can be accessed at:
@@ -271,17 +271,12 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
 
   # Returns the union of this and another tree, i.e. the tree that contains
   # all the elements of this tree and all the elements of the other tree.
-  #
-  # TODO implement hedge_union for optimization!
   union(other tree A) tree A is
-    tree.this ? nil => other
-              | n TreeNode =>
-                other ? nil => tree.this
-                      | on TreeNode =>
-                        l0 := split_lt on.datum
-                        r0 := split_gt on.datum
-
-                        concat3 on.datum (l0.union on.left) (r0.union on.right)
+    other ? nil => tree.this
+          | on TreeNode =>
+            tree.this ? nil => other
+                      | n TreeNode =>
+                        concat3 n.datum (uni_hi n.left (other.trim_hi n.datum) n.datum) (uni_lo n.right (other.trim_lo n.datum) n.datum)
 
   # unicode alias for union
   infix ∪ (other tree A) tree A is
@@ -361,6 +356,54 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
                   n.right.index[] (i - ln - 1)
                 else
                   n.datum
+
+  private trim(lo, hi A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if lo < n.datum
+                  if n.datum < hi
+                    tree.this
+                  else
+                    n.left.trim(lo, hi)
+                else
+                  n.right.trim(lo, hi)
+
+  private uni_bd(left, right tree A, lo, hi A) tree A is
+    right ? nil => left
+          | r TreeNode =>
+            left ? nil => concat3 r.datum (r.left.split_gt lo) (r.right.split_lt hi)
+                 | l TreeNode =>
+                   concat3 l.datum (uni_bd l.left (right.trim lo l.datum) lo l.datum) (uni_bd l.right (left.trim l.datum hi) l.datum hi)
+
+  private trim_lo(lo A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if lo < n.datum
+                  tree.this
+                else
+                  n.right.trim_lo lo
+
+  private trim_hi(hi A) tree A is
+    tree.this ? nil => nil
+              | n TreeNode =>
+                if n.datum < hi
+                  tree.this
+                else
+                  n.left.trim_hi hi
+
+  private uni_hi(left, right tree A, hi A) tree A is
+    right ? nil => left
+          | r TreeNode =>
+            left ? nil => concat3 r.datum r.left (r.right.split_lt hi)
+                 | l TreeNode =>
+                   concat3 l.datum (uni_hi l.left (right.trim_hi l.datum) l.datum) (uni_bd l.right (left.trim l.datum hi) l.datum hi)
+
+  private uni_lo(left, right tree A, lo A) tree A is
+    right ? nil => left
+          | r TreeNode =>
+            left ? nil => concat3 r.datum (r.left.split_gt lo) r.right
+                 | l TreeNode =>
+                   concat3 l.datum (uni_bd l.left (right.trim lo l.datum) lo l.datum) (uni_lo l.right (left.trim_lo l.datum) l.datum)
 
 # trees -- unit type defining features related to tree but not requiring an
 # instance
