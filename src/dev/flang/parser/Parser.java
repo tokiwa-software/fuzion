@@ -786,6 +786,7 @@ modifier    : "lazy"
             | "redefine"
             | "const"
             | "leaf"
+            | "dyn"
             ;
    *
    * @return logically or'ed set of Consts.MODIFIER_* constants found.
@@ -806,6 +807,7 @@ modifier    : "lazy"
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_const       : m = Consts.MODIFIER_CONST       ; break;
           case t_leaf        : m = Consts.MODIFIER_LEAF        ; break;
+          case t_dyn         : m = Consts.MODIFIER_DYN         ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
@@ -838,7 +840,8 @@ modifier    : "lazy"
       case t_redef       :
       case t_redefine    :
       case t_const       :
-      case t_leaf        : return true;
+      case t_leaf        :
+      case t_dyn         : return true;
       default            : return false;
       }
   }

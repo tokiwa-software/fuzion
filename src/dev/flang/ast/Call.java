@@ -2025,7 +2025,10 @@ public class Call extends AbstractCall
             if (f != null && g != null &&
                 !f.constraint().constraintAssignableFrom(g))
               {
-                AstErrors.incompatibleActualGeneric(pos(), f, g);
+                if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+                  {
+                    AstErrors.incompatibleActualGeneric(pos(), f, g);
+                  }
               }
           }
       }

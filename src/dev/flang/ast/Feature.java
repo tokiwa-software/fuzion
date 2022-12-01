@@ -150,6 +150,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * the modifiers of this feature
    */
   public final int _modifiers;
+  public int modifiers() { return _modifiers; }
 
 
   /**
