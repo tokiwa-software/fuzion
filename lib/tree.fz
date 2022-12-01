@@ -150,7 +150,7 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
   # given a subtree, decide if rebalancing is necessary
   #
   # returns the subtree as a result, rebalanced if it was necessary.
-  private join(datum A, left tree A, right tree A) tree A is
+  private tree_prime(datum A, left tree A, right tree A) tree A is
     ln := left.size + 1
     rn := right.size + 1
 
@@ -187,9 +187,9 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
     tree.this ? nil => smart_node a nil nil
               | n TreeNode =>
                 if a < n.datum
-                  join n.datum (n.left.add a) n.right
+                  tree_prime n.datum (n.left.add a) n.right
                 else if n.datum < a
-                  join n.datum n.left (n.right.add a)
+                  tree_prime n.datum n.left (n.right.add a)
                 else
                   n
 
@@ -199,9 +199,9 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
     tree.this ? nil => nil
               | n TreeNode =>
                 if a < n.datum
-                  join n.datum (n.left.delete a) n.right
+                  tree_prime n.datum (n.left.delete a) n.right
                 else if n.datum < a
-                  join n.datum n.left (n.right.delete a)
+                  tree_prime n.datum n.left (n.right.delete a)
                 else
                   delete_root
 
@@ -216,7 +216,7 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
                     match n.right
                       nil => n.left
                       r TreeNode =>
-                        join n.right.minimum n.left n.right.delete_minimum
+                        tree_prime n.right.minimum n.left n.right.delete_minimum
 
   # for a non-empty tree only, returns the minimal element in this tree.
   minimum A is
@@ -233,7 +233,7 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
               | n TreeNode =>
                 match n.left
                   nil => n.right
-                  l TreeNode => join n.datum n.left.delete_minimum n.right
+                  l TreeNode => tree_prime n.datum n.left.delete_minimum n.right
 
   private concat3(datum A, left, right tree A) tree A is
     match left
@@ -243,9 +243,9 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
           nil => left.add datum
           r TreeNode =>
             if (delta * (left.size + 1)) < (right.size + 1)
-              join r.datum (concat3 datum left r.left) r.right
+              tree_prime r.datum (concat3 datum left r.left) r.right
             else if (delta * (right.size + 1)) < (left.size + 1)
-              join l.datum l.left (concat3 datum l.right right)
+              tree_prime l.datum l.left (concat3 datum l.right right)
             else
               smart_node datum left right
 
@@ -293,11 +293,11 @@ tree(A (ordered A).type) : choice nil (TreeNode A (tree A) (tree A)) is
                 other ? nil => tree.this
                       | on TreeNode =>
                         if (delta * (size + 1)) < (other.size + 1)
-                          join on.datum (concat on.left) on.right
+                          tree_prime on.datum (concat on.left) on.right
                         else if (delta * (other.size + 1)) < (size + 1)
-                          join n.datum n.left (n.right.concat other)
+                          tree_prime n.datum n.left (n.right.concat other)
                         else
-                          join other.minimum tree.this other.delete_minimum
+                          tree_prime other.minimum tree.this other.delete_minimum
 
   # Returns the tree that contains all the elements contained in this tree but
   # not the other, given tree.
