@@ -161,6 +161,7 @@ public class Lexer extends SourceFile
     t_in("in"),
     t_do("do"),
     t_dyn("dyn"),
+    t_fixed("fixed"),
     t_loop("loop"),
     t_while("while"),
     t_until("until"),
