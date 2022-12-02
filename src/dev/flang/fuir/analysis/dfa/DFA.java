@@ -1288,6 +1288,18 @@ public class DFA extends ANY
                           */
         );
 
+    // NYI
+    put("concur.atomic.atom", cl ->
+    {
+      return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+    });
+    put("concur.atomic.read", cl ->
+    {
+      // NYI is (un)boxing needed here?
+      return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+    });
+    put("concur.atomic.compare_exchange_weak", cl -> cl._dfa._bool);
+
     put("fuzion.java.JavaObject.isNull"  , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.arrayGet"           , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.arrayLength"        , cl -> NYIintrinsicMissing(cl) );

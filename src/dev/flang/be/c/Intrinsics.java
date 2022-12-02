@@ -162,7 +162,7 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
             // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), 
+            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")),
             CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
             // If errno is ENOENT, file/dir does not exist
             CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
@@ -730,6 +730,33 @@ public class Intrinsics extends ANY
     put("fuzion.java.javaStringToString" , noJava);
     put("fuzion.java.stringToJavaObject0", noJava);
     put("fuzion.java.u16ToJavaObject"    , noJava);
+
+    put("concur.atomic.atom",(c,cl,outer,in) -> {
+      var t = c._types.atomicType(cl);
+      var res = new CIdent("res");
+      return CStmnt.seq(
+        CExpr.decl(null, t, res),
+        res.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType(t)))),
+        CExpr.call("atomic_init", new List<>(res, A0)),
+        res.castTo("void *").ret()
+      );
+    });
+
+    put("concur.atomic.read",(c,cl,outer,in) -> {
+      return CStmnt.seq(
+        CExpr.call("atomic_load", new List<>(A0.castTo(c._types.atomicType(cl)))).ret()
+      );
+    });
+
+    put("concur.atomic.compare_exchange_weak",(c,cl,outer,in) -> {
+      return  CStmnt.seq(
+        CStmnt.iff(
+          CExpr.call("atomic_compare_exchange_weak", new List<>(A0.castTo(c._types.atomicType(cl)), A1.adrOf(), A2)),
+          c._names.FZ_TRUE.ret()),
+        c._names.FZ_FALSE.ret()
+      );
+    });
+
   }
 
 

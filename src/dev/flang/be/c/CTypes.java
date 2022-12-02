@@ -337,6 +337,14 @@ public class CTypes extends ANY
     return result;
   }
 
+
+  String atomicType(int cl)
+  {
+    var ecl = _fuir.clazzActualGeneric(cl, 0);
+    var isRef = _fuir.clazzIsRef(ecl);
+    return "_Atomic ( " + _names.struct(ecl) + (isRef ? "*" : "") + " ) *";
+  }
+
 }
 
 /* end of file */

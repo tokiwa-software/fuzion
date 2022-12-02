@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature atomic
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+atomic is
+
+  # a reference that is created by atom
+  # and needs to be passed to all atomic operations
+  Atom(T type) ref is
+
+
+  # creates an Atom
+  atom(T type, init T) Atom T is intrinsic
+
+
+  # read the current value of the atom
+  read(T type, a Atom T) T is intrinsic
+
+
+  # exchange the current value of the atom by
+  # desired if the current value matches expected
+  # weak version: may fail even if expected matches
+  # returns if successful
+  compare_exchange_weak(T type, a Atom T, expected T, desired T) bool is intrinsic

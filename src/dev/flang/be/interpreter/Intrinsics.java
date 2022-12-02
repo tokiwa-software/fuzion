@@ -28,8 +28,6 @@ package dev.flang.be.interpreter;
 
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.air.Clazz;
@@ -37,11 +35,9 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.List;
 
 import java.lang.reflect.Array;
 
-import java.io.PrintStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,6 +50,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -860,6 +858,45 @@ public class Intrinsics extends ANY
           var cl = innerClazz.actualGenerics()[0];
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
         });
+    put("concur.atomic.atom"                   , (interpreter, innerClazz) -> args ->
+    {
+      return new WrappedInstance(innerClazz.resultClazz(), new AtomicReference<Value>(args.get(1)));
+    });
+    put("concur.atomic.read"                  , (interpreter, innerClazz) -> args ->
+    {
+      var o = ((WrappedInstance)args.get(1))._obj;
+      return ((AtomicReference<Value>)o).get();
+    });
+    put("concur.atomic.compare_exchange_weak" , (interpreter, innerClazz) -> args ->
+    {
+      var wi = (WrappedInstance)args.get(1);
+      var r = (AtomicReference<Value>)wi._obj;
+      if(args.get(2) instanceof LValue lv){
+        var now = r.get();
+        if (
+          lv._clazz == Clazzes.bool .getIfCreated() && now.boolValue() != lv.boolValue()
+          || lv._clazz == Clazzes.i8 .getIfCreated() && now.i8Value() != lv.i8Value()
+          || lv._clazz == Clazzes.i16 .getIfCreated() && now.i16Value() != lv.i16Value()
+          || lv._clazz == Clazzes.i32 .getIfCreated() && now.i32Value() != lv.i32Value()
+          || lv._clazz == Clazzes.i64 .getIfCreated() && now.i64Value() != lv.i64Value()
+          || lv._clazz == Clazzes.u8 .getIfCreated() && now.u8Value() != lv.u8Value()
+          || lv._clazz == Clazzes.u16 .getIfCreated() && now.u16Value() != lv.u16Value()
+          || lv._clazz == Clazzes.u32 .getIfCreated() && now.u32Value() != lv.u32Value()
+          || lv._clazz == Clazzes.u64 .getIfCreated() && now.u64Value() != lv.u64Value()
+          || lv._clazz == Clazzes.f32 .getIfCreated() && now.f32Value() != lv.f32Value()
+          || lv._clazz == Clazzes.f64 .getIfCreated() && now.f64Value() != lv.f64Value()
+          )
+          {
+            return new boolValue(false);
+          }
+        return new boolValue(r.weakCompareAndSetPlain(now, args.get(3)));
+      }
+      else if(args.get(2) instanceof Instance){
+        return new boolValue(r.weakCompareAndSetPlain(args.get(2).instance(), args.get(3)));
+      }else{
+        return new boolValue(r.weakCompareAndSetPlain(args.get(2), args.get(3)));
+      }
+    });
   }
 
 

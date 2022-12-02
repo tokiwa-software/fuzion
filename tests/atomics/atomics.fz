@@ -1,0 +1,40 @@
+atomics =>
+
+  a := "hello"
+  n := "world"
+
+
+  atom := concur.atomic.atom a
+
+  # hello
+  say (concur.atomic.read atom)
+
+  # false
+  say (concur.atomic.compare_exchange_weak atom n n)
+
+  # hello
+  say (concur.atomic.read atom)
+
+  r := concur.atomic.read atom
+
+  # true
+  say (concur.atomic.compare_exchange_weak atom r n)
+
+  # world
+  say (concur.atomic.read atom)
+
+  atomic_counter := concur.atomic.atom (u64 7)
+
+  say (concur.atomic.read atomic_counter)
+
+  for i in 1..100 do
+    concur.thread.spawn (() ->
+      do
+        c := concur.atomic.read atomic_counter
+      until concur.atomic.compare_exchange_weak atomic_counter c c+1
+    )
+
+  time.nano.sleep (time.duration 1E9)
+
+  # NYI
+  say (concur.atomic.read atomic_counter)

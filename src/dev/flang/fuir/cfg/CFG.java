@@ -530,6 +530,9 @@ public class CFG extends ANY
     put("fuzion.java.javaStringToString" , (cfg, cl) -> { } );
     put("fuzion.java.stringToJavaObject0", (cfg, cl) -> { } );
     put("fuzion.java.u16ToJavaObject"    , (cfg, cl) -> { } );
+    put("concur.atomic.atom"             , (cfg, cl) -> { } );
+    put("concur.atomic.read"             , (cfg, cl) -> { } );
+    put("concur.atomic.compare_exchange_weak"    , (cfg, cl) -> { } );
   }
 
 
