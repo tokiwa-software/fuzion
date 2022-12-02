@@ -781,11 +781,8 @@ modifiers   : modifier modifiers
             |
             ;
 modifier    : "lazy"
-            | "synchronized"
             | "redef"
             | "redefine"
-            | "const"
-            | "leaf"
             | "dyn"
             ;
    *
@@ -802,11 +799,8 @@ modifier    : "lazy"
         switch (current())
           {
           case t_lazy        : m = Consts.MODIFIER_LAZY        ; break;
-          case t_synchronized: m = Consts.MODIFIER_SYNCHRONIZED; break;
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_const       : m = Consts.MODIFIER_CONST       ; break;
-          case t_leaf        : m = Consts.MODIFIER_LEAF        ; break;
           case t_dyn         : m = Consts.MODIFIER_DYN         ; break;
           default            : throw new Error();
           }
@@ -836,11 +830,8 @@ modifier    : "lazy"
     switch (current())
       {
       case t_lazy        :
-      case t_synchronized:
       case t_redef       :
       case t_redefine    :
-      case t_const       :
-      case t_leaf        :
       case t_dyn         : return true;
       default            : return false;
       }
