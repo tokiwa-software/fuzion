@@ -50,6 +50,12 @@ public class Consts
   public static final int MODIFIER_REDEFINE     = 0x0010;
 
   /**
+   * 'fixed' modifier to force feature to be fixed, i.e., not inherited by
+   * heirs.
+   */
+  public static final int MODIFIER_FIXED        = 0x0100;
+
+  /**
    * 'dyn' modifier to force feature within type feature to be dynamic.
    */
   public static final int MODIFIER_DYN          = 0x0100;
