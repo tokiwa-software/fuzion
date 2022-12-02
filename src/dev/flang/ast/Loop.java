@@ -337,7 +337,7 @@ public class Loop extends ANY
     var p = block.pos();
     Feature loop = new Feature(p,
                                Consts.VISIBILITY_INVISIBLE,
-                               Consts.MODIFIER_FINAL,
+                               0,
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
@@ -476,7 +476,7 @@ public class Loop extends ANY
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
                                     Consts.VISIBILITY_INVISIBLE,
-                                    Consts.MODIFIER_FINAL,
+                                    0,
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),
