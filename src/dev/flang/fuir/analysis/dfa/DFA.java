@@ -1291,12 +1291,14 @@ public class DFA extends ANY
     // NYI
     put("concur.atomic.atom", cl ->
     {
-      return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+      var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+      return cl._dfa.newInstance(rc, cl._context);
     });
     put("concur.atomic.read", cl ->
     {
-      // NYI is (un)boxing needed here?
-      return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+      var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+      var res = cl._dfa.newInstance(rc, cl._context);
+      return res;
     });
     put("concur.atomic.compare_exchange_weak", cl -> cl._dfa._bool);
 

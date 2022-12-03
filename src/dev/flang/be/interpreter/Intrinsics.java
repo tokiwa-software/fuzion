@@ -860,42 +860,75 @@ public class Intrinsics extends ANY
         });
     put("concur.atomic.atom"                   , (interpreter, innerClazz) -> args ->
     {
-      return new WrappedInstance(innerClazz.resultClazz(), new AtomicReference<Value>(args.get(1)));
+      return new AtomicReferenceInstance(innerClazz.resultClazz(), new AtomicReference<Value>(args.get(1)));
     });
     put("concur.atomic.read"                  , (interpreter, innerClazz) -> args ->
     {
-      var o = ((WrappedInstance)args.get(1))._obj;
+      var o = ((AtomicReferenceInstance)args.get(1))._obj;
       return ((AtomicReference<Value>)o).get();
     });
     put("concur.atomic.compare_exchange_weak" , (interpreter, innerClazz) -> args ->
     {
-      var wi = (WrappedInstance)args.get(1);
+      var wi = (AtomicReferenceInstance)args.get(1);
       var r = (AtomicReference<Value>)wi._obj;
-      if(args.get(2) instanceof LValue lv){
-        var now = r.get();
-        if (
-          lv._clazz == Clazzes.bool .getIfCreated() && now.boolValue() != lv.boolValue()
-          || lv._clazz == Clazzes.i8 .getIfCreated() && now.i8Value() != lv.i8Value()
-          || lv._clazz == Clazzes.i16 .getIfCreated() && now.i16Value() != lv.i16Value()
-          || lv._clazz == Clazzes.i32 .getIfCreated() && now.i32Value() != lv.i32Value()
-          || lv._clazz == Clazzes.i64 .getIfCreated() && now.i64Value() != lv.i64Value()
-          || lv._clazz == Clazzes.u8 .getIfCreated() && now.u8Value() != lv.u8Value()
-          || lv._clazz == Clazzes.u16 .getIfCreated() && now.u16Value() != lv.u16Value()
-          || lv._clazz == Clazzes.u32 .getIfCreated() && now.u32Value() != lv.u32Value()
-          || lv._clazz == Clazzes.u64 .getIfCreated() && now.u64Value() != lv.u64Value()
-          || lv._clazz == Clazzes.f32 .getIfCreated() && now.f32Value() != lv.f32Value()
-          || lv._clazz == Clazzes.f64 .getIfCreated() && now.f64Value() != lv.f64Value()
-          )
-          {
-            return new boolValue(false);
-          }
-        return new boolValue(r.weakCompareAndSetPlain(now, args.get(3)));
+      var expected = args.get(2);
+      var desired = args.get(3);
+
+      if (expected instanceof Instance)
+      {
+        return new boolValue(r.weakCompareAndSetPlain(expected, desired));
       }
-      else if(args.get(2) instanceof Instance){
-        return new boolValue(r.weakCompareAndSetPlain(args.get(2).instance(), args.get(3)));
-      }else{
-        return new boolValue(r.weakCompareAndSetPlain(args.get(2), args.get(3)));
-      }
+
+      if(CHECKS) check
+        (expected instanceof boolValue ||
+        expected instanceof i8Value    ||
+        expected instanceof i16Value   ||
+        expected instanceof i32Value   ||
+        expected instanceof i64Value   ||
+        expected instanceof u8Value    ||
+        expected instanceof u16Value   ||
+        expected instanceof u32Value   ||
+        expected instanceof u64Value   ||
+        expected instanceof f32Value   ||
+        expected instanceof f64Value   ||
+        expected instanceof ValueWithClazz);
+
+      var current = r.get();
+
+      if (expected instanceof boolValue && current.boolValue()!= expected.boolValue() ||
+          expected instanceof i8Value   && current.i8Value()  != expected.i8Value()   ||
+          expected instanceof i16Value  && current.i16Value() != expected.i16Value()  ||
+          expected instanceof i32Value  && current.i32Value() != expected.i32Value()  ||
+          expected instanceof i64Value  && current.i64Value() != expected.i64Value()  ||
+          expected instanceof u8Value   && current.u8Value()  != expected.u8Value()   ||
+          expected instanceof u16Value  && current.u16Value() != expected.u16Value()  ||
+          expected instanceof u32Value  && current.u32Value() != expected.u32Value()  ||
+          expected instanceof u64Value  && current.u64Value() != expected.u64Value()  ||
+          expected instanceof f32Value  && current.f32Value() != expected.f32Value()  ||
+          expected instanceof f64Value  && current.f64Value() != expected.f64Value()
+      )
+        {
+          return new boolValue(false);
+        }
+
+      if (expected instanceof ValueWithClazz vc && (
+            vc._clazz == Clazzes.bool.getIfCreated() && current.boolValue()!= vc.boolValue() ||
+            vc._clazz == Clazzes.i8  .getIfCreated() && current.i8Value()  != vc.i8Value()   ||
+            vc._clazz == Clazzes.i16 .getIfCreated() && current.i16Value() != vc.i16Value()  ||
+            vc._clazz == Clazzes.i32 .getIfCreated() && current.i32Value() != vc.i32Value()  ||
+            vc._clazz == Clazzes.i64 .getIfCreated() && current.i64Value() != vc.i64Value()  ||
+            vc._clazz == Clazzes.u8  .getIfCreated() && current.u8Value()  != vc.u8Value()   ||
+            vc._clazz == Clazzes.u16 .getIfCreated() && current.u16Value() != vc.u16Value()  ||
+            vc._clazz == Clazzes.u32 .getIfCreated() && current.u32Value() != vc.u32Value()  ||
+            vc._clazz == Clazzes.u64 .getIfCreated() && current.u64Value() != vc.u64Value()  ||
+            vc._clazz == Clazzes.f32 .getIfCreated() && current.f32Value() != vc.f32Value()  ||
+            vc._clazz == Clazzes.f64 .getIfCreated() && current.f64Value() != vc.f64Value()
+            )
+        )
+        {
+          return new boolValue(false);
+        }
+      return new boolValue(r.weakCompareAndSetPlain(current, desired));
     });
   }
 

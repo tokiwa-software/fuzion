@@ -1,8 +1,33 @@
 atomics =>
 
+  # primitive value
+
+  atom := concur.atomic.atom 1
+  # false
+  say (concur.atomic.compare_exchange_weak atom 0 2)
+  # true
+  say (concur.atomic.compare_exchange_weak atom 1 2)
+  # 2
+  say (concur.atomic.read atom)
+
+
+
+  # const string
+
+  atom := concur.atomic.atom "hello"
+  # hello
+  say (concur.atomic.read atom)
+  # false
+  say (concur.atomic.compare_exchange_weak atom "olla" "world")
+  # false
+  say (concur.atomic.compare_exchange_weak atom "hello" "world")
+
+
+
+  # ref string
+
   a := "hello"
   n := "world"
-
 
   atom := concur.atomic.atom a
 
@@ -23,18 +48,52 @@ atomics =>
   # world
   say (concur.atomic.read atom)
 
-  atomic_counter := concur.atomic.atom (u64 7)
 
-  say (concur.atomic.read atomic_counter)
+
+  # counting in 100 threads
+
+  atom := concur.atomic.atom (u64 7)
+
+  say (concur.atomic.read atom)
 
   for i in 1..100 do
     concur.thread.spawn (() ->
       do
-        c := concur.atomic.read atomic_counter
-      until concur.atomic.compare_exchange_weak atomic_counter c c+1
+        c := concur.atomic.read atom
+      until concur.atomic.compare_exchange_weak atom c c+1
     )
 
   time.nano.sleep (time.duration 1E9)
 
-  # NYI
-  say (concur.atomic.read atomic_counter)
+  # 107
+  say (concur.atomic.read atom)
+
+
+
+  # NYI large atomic operation may incur significant performance penalty; the access size (16 bytes) exceeds the max lock-free size
+  # # choice
+
+  # c outcome nil := nil
+
+  # atom := concur.atomic.atom c
+
+  # # true
+  # say (concur.atomic.compare_exchange_weak atom c (error ""))
+  # # error
+  # say (concur.atomic.read atom)
+
+
+  # NYI large atomic operation may incur significant performance penalty; the access size (16 bytes) exceeds the max lock-free size
+  # # simple feature
+
+  # f := 1⁄2
+
+  # atom := concur.atomic.atom f
+
+  # # false
+  # say (concur.atomic.compare_exchange_weak atom 3⁄2 7⁄4)
+  # rf := concur.atomic.read atom
+  # # true
+  # say (concur.atomic.compare_exchange_weak atom rf 3⁄4)
+  # # 3 ⁄ 4
+  # say (concur.atomic.read atom)
