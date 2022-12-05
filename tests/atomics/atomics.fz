@@ -1,6 +1,6 @@
 atomics =>
 
-  # primitive value
+  # primitive value numeric
 
   atom := concur.atomic.atom 1
   # false
@@ -8,6 +8,16 @@ atomics =>
   # true
   say (concur.atomic.compare_exchange_weak atom 1 2)
   # 2
+  say (concur.atomic.read atom)
+
+
+
+  # primitive value bool
+
+  atom := concur.atomic.atom false
+  # true
+  say (concur.atomic.compare_exchange_weak atom false true)
+  # true
   say (concur.atomic.read atom)
 
 

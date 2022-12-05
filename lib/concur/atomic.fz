@@ -27,6 +27,10 @@ atomic is
 
   # a reference that is created by atom
   # and needs to be passed to all atomic operations
+  # T needs to be a either ref or a primitive type like
+  # bool, i8, i16, ... ,u64, f32, f64
+  # NYI it is not possible right now to contrain type like
+  # described above
   Atom(T type) ref is
 
 
