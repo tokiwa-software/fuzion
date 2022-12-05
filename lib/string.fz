@@ -550,6 +550,49 @@ string ref : has_equality, hasHash string, ordered string, strings is
       (s * missing) + string.this
 
 
+  # Splits this string at codepoints where p is true and returns the result as a
+  # list of strings. In case multiple, neighboring codepoints in the string are
+  # evaluated to be true by p, this does not cause empty strings to be added to
+  # the result list, rather this case is being treated as being one big separator.
+  fields_func(p codepoint -> bool) list string is
+    state_wrapper(l list string, in_run bool, start_pos, current_pos i32) is
+
+    i := state_wrapper (lists.empty string) false 0 0
+    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+      match p c
+        TRUE =>
+          match r.in_run
+            TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+        FALSE =>
+          match r.in_run
+            TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper r.l false r.start_pos (r.current_pos + 1))
+
+    match last_state.in_run
+      TRUE => last_state.l
+      FALSE => last_state.l ++ [(substring last_state.start_pos)]
+
+
+  # Cuts out the first appearance of the string sep from this string, in other words,
+  # returns a tuple of two strings and a bool, the first string is the substring before
+  # the first appreance of sep, the second string is the substring after the first
+  # appearance of sep. The bool result is true iff sep appears in this string.
+  #
+  # If sep does not appear in this string at all, return this string as the first string,
+  # the empty string as the second, and false as the bool.
+  cut(sep string) tuple string string bool is
+    match find sep
+      nil => (string.this, "", false)
+      i i32 =>
+        l := byteLength
+        sepl := sep.byteLength
+
+        before := strings.fromBytes utf8.slice(0, i)
+        after := strings.fromBytes utf8.slice(i + sepl, l)
+        (before, after, true)
+
+
 # strings -- unit type defining features related to string but not
 # requiring an instance
 #
@@ -578,6 +621,19 @@ strings is
   concat(a, b string) string is
     ref : string
       utf8 Sequence u8 is a.utf8 ++ b.utf8
+
+
+  # Takes a sequence of strings and concatenates its elements, while adding the separator
+  # sep in between its elements. In case an empty sequence is given, returns the empty string.
+  join(elems Sequence string, sep string) string is
+    if elems.isEmpty
+      ""
+    else
+      for
+        elem in elems
+        res := elem, concat (concat res sep) elem
+      else
+        res
 
 
   # create string by concatenating the results of $a[a.indices].
