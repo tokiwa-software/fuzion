@@ -84,7 +84,7 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
   redef infix >  (other i32) bool is intrinsic
   redef infix >= (other i32) bool is intrinsic
 
-  i32.type.equality(a, b i32) bool is intrinsic
+  type.equality(a, b i32) bool is intrinsic
 
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
@@ -171,6 +171,21 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
   #
   onesCount i32 is
     val.castTo_u32.onesCount
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  type.zero => 0
+
+
+  # identity element for 'infix *'
+  #
+  type.one  => 1
 
 
 # i32s -- unit type defining features related to i32 but not requiring an

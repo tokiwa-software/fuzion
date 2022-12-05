@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util.unicode;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -39,6 +38,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.List;
 
 /**
@@ -87,8 +88,7 @@ public class ParseUnicodeData extends ANY
       var e = s.split(";");
       if (e.length < 10)
         {
-          System.err.println("*** error, expected 15 entries, found "+e.length+" for "+s);
-          System.exit(1);
+          Errors.fatal("*** error, expected 15 entries, found "+e.length+" for "+s);
         }
       _code = Integer.parseInt(e[0],16);
       _name = e[1];
@@ -209,8 +209,7 @@ public class ParseUnicodeData extends ANY
             var e = new CP(s);
             if (_lastCP != null && e._code <= _lastCP._code)
               {
-                System.err.println("*** error, expected unicode data to be sorted");
-                System.exit(1);
+                Errors.fatal("*** error, expected unicode data to be sorted");
               }
             if (_firstCP != null && (_firstCP.isLast() || !e.isLast() && e._code > _lastCP._code + 1 || e.isFirst() || e._category != _firstCP._category))
               {
@@ -228,8 +227,7 @@ public class ParseUnicodeData extends ANY
       }
     catch (IOException | UncheckedIOException e)
       {
-        System.err.println("*** I/O error: " + e);
-        System.exit(1);
+        Errors.fatal("*** I/O error: " + e);
       }
     if (_firstCP != null)
       {
@@ -293,12 +291,18 @@ public class ParseUnicodeData extends ANY
 
   public static void main(String[] args) throws IOException
   {
-    if (args.length != 1)
+    try
       {
-        System.err.println("Usage: ParseUnicodeData <UnicodeData.txt>");
-        System.exit(1);
+        if (args.length != 1)
+          {
+            Errors.fatal("Usage: ParseUnicodeData <UnicodeData.txt>");
+          }
+        new ParseUnicodeData(args[0]);
       }
-    new ParseUnicodeData(args[0]);
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
   }
 
 

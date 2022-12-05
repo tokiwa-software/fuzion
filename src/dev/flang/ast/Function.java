@@ -211,8 +211,7 @@ public class Function extends ExprWithPos
               {
                 if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for constructor type not allowed");
-                    System.exit(1);
+                    Errors.fatal("NYI: fun for constructor type not allowed");
                   }
               }
           }
@@ -321,7 +320,7 @@ public class Function extends ExprWithPos
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Consts.VISIBILITY_INVISIBLE,
-                                   Consts.MODIFIER_FINAL,
+                                   0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
@@ -578,7 +577,7 @@ public class Function extends ExprWithPos
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
                                            Consts.VISIBILITY_INVISIBLE,
-                                           Consts.MODIFIER_FINAL,
+                                           0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),
                                            NO_FEATURES,

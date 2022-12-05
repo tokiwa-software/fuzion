@@ -1174,6 +1174,14 @@ public class Call extends AbstractCall
 
     var declF = _calledFeature.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
+    if (target() instanceof Call tc              &&
+        tc.calledFeature().isTypeParameter()     &&
+        heirF.isStaticTypeFeature()              &&
+        calledFeature().outer().isTypeFeature()  &&
+        calledFeature().belongsToNonStaticType()    )
+      {  // divert calls T.f with a type parameter as target to the non-static type if needed.
+        heirF = heirF.typeFeaturesNonStaticParent();
+      }
     if (declF != heirF)
       {
         var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heirF);
@@ -1251,6 +1259,7 @@ public class Call extends AbstractCall
               }
             else
               {
+                frmlT = frmlT.replace_THIS_TYPE(target());
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
@@ -1346,7 +1355,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the type result type of the called feature, might be open genenric.
+   * @param t the result type of the called feature, might be open genenric.
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
@@ -1425,7 +1434,7 @@ public class Call extends AbstractCall
           }
         else
           {
-            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, t.generics());
+            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, _generics);
             if (_type == null)
               {
                 throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
@@ -1510,7 +1519,7 @@ public class Call extends AbstractCall
           {
             missing.add(g);
             if (CHECKS) check
-              (Errors.count() > 0 || i < _generics.size());
+              (Errors.count() > 0 || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
                 _generics.set(i, Types.t_ERROR);
@@ -2016,7 +2025,10 @@ public class Call extends AbstractCall
             if (f != null && g != null &&
                 !f.constraint().constraintAssignableFrom(g))
               {
-                AstErrors.incompatibleActualGeneric(pos(), f, g);
+                if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+                  {
+                    AstErrors.incompatibleActualGeneric(pos(), f, g);
+                  }
               }
           }
       }

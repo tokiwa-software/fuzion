@@ -30,7 +30,6 @@ import java.nio.file.Path;
 
 import dev.flang.ast.*;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -782,11 +781,9 @@ modifiers   : modifier modifiers
             |
             ;
 modifier    : "lazy"
-            | "synchronized"
             | "redef"
             | "redefine"
-            | "const"
-            | "leaf"
+            | "dyn"
             ;
    *
    * @return logically or'ed set of Consts.MODIFIER_* constants found.
@@ -802,11 +799,10 @@ modifier    : "lazy"
         switch (current())
           {
           case t_lazy        : m = Consts.MODIFIER_LAZY        ; break;
-          case t_synchronized: m = Consts.MODIFIER_SYNCHRONIZED; break;
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_const       : m = Consts.MODIFIER_CONST       ; break;
-          case t_leaf        : m = Consts.MODIFIER_LEAF        ; break;
+          case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
+          case t_dyn         : m = Consts.MODIFIER_DYN         ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
@@ -835,11 +831,10 @@ modifier    : "lazy"
     switch (current())
       {
       case t_lazy        :
-      case t_synchronized:
       case t_redef       :
       case t_redefine    :
-      case t_const       :
-      case t_leaf        : return true;
+      case t_fixed       :
+      case t_dyn         : return true;
       default            : return false;
       }
   }
@@ -2218,19 +2213,12 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
-        var start = posObject();
-        var cpos = posObject();
         var c = cases();
-        var end = posObject();
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "match");
           }
-        if (c.isEmpty())
-          {
-            AstErrors.matchCasesMissing(cpos, pos);
-            return new Match(pos, e, new List<>());
-          }
+        // missing match cases are checked for when resolving types
         return new Match(pos, e, c);
       });
   }
@@ -3507,20 +3495,29 @@ implFldInit : ":=" exprInLine
   /**
    * Parse type
    *
-type        : onetype ( PIPE onetype ) *
+type        : thistype
+            | onetype ( PIPE onetype ) *
             ;
    */
   AbstractType type()
   {
-    var result = onetype();
-    if (isOperator('|'))
+    AbstractType result;
+    if (isThistype())
       {
-        List<AbstractType> l = new List<>(result);
-        while (skip('|'))
+        result = thistype();
+      }
+    else
+      {
+        result = onetype();
+        if (isOperator('|'))
           {
-            l.add(onetype());
+            List<AbstractType> l = new List<>(result);
+            while (skip('|'))
+              {
+                l.add(onetype());
+              }
+            result = new Type(result.pos(), "choice", l, null);
           }
-        result = new Type(result.pos(), "choice", l, null);
       }
     return result;
   }
@@ -3574,24 +3571,80 @@ type        : onetype ( PIPE onetype ) *
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
    * @param allowTypeThatIsNotExpression false to forbid types that cannot be
-   * parsed as expressions such as lambdas types with argument types that are
+   * parsed as expressions such as lambda types with argument types that are
    * not just argNames.
    *
    * @return true iff a type was found and skipped, otherwise no type was found
    * and the parser/lexer is at an undefined position.
    */
   boolean skipType(boolean allowTypeInParentheses, boolean allowTypeThatIsNotExpression)
-  { // we forbide tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
+  { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
-    var result = skipOneType(true, allowTypeThatIsNotExpression);
-    while (result && skip('|'))
+    boolean result = allowTypeThatIsNotExpression && skipThistype();
+    if (!result)
       {
-        result = skipOneType(true, allowTypeThatIsNotExpression);
-        hasForbiddenParentheses = false;
+        var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
+        var res = skipOneType(true, allowTypeThatIsNotExpression);
+        while (res && skip('|'))
+          {
+            res = skipOneType(true, allowTypeThatIsNotExpression);
+            hasForbiddenParentheses = false;
+          }
+        result = res && !hasForbiddenParentheses;
       }
-    return result && !hasForbiddenParentheses;
+    return result;
+  }
+
+
+  /**
+   * Parse thistype
+   *
+thistype    : qualThis dot "type"
+            ;
+   */
+  AbstractType thistype()
+  {
+    var q = qualThis();
+    matchOperator(".", "thistype");
+    match(Token.t_type, "thistype");
+    return new Type("NYI: thistype");
+  }
+
+
+  /**
+   * Check if the current position is a thistype.  Does not change the position
+   * of the parser.
+   *
+   * @return true iff the next token(s) form a thistype.
+   */
+  boolean isThistype()
+  {
+    var result = isQualThisPrefix();
+    if (result)
+      {
+        var f = fork();
+        var ignore = f.qualThis();
+        result = f.skipDot() && f.skip(Token.t_type);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position starts a thistype and skip it.
+   *
+   * @return true iff the next token(s) is a thistype, otherwise no thistype was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipThistype()
+  {
+    var result = isThistype();
+    if (result)
+      {
+        var ignore = thistype();
+      }
+    return result;
   }
 
 
@@ -3658,7 +3711,8 @@ typeOpt     : type
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipOneType() {
+  boolean skipOneType()
+  {
     return skipOneType(true, true);
   }
 
@@ -3789,7 +3843,6 @@ typeTail    : dot simpletype
       }
     return result;
   }
-
 
 
   /**

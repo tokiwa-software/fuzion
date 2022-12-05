@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash string, ordered string, strings is
+string ref : has_equality, hasHash string, ordered string, strings is
 
   redef orderedThis => string.this
 
@@ -77,9 +77,9 @@ string ref : hasHash string, ordered string, strings is
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
   #
-  string.type.equality(a, b string) =>
-    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
-      & a.utf8.count = b.utf8.count
+  type.equality(a, b string) =>
+    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
+      & a.utf8.count ≟ b.utf8.count
 
 
   # does this come before other?

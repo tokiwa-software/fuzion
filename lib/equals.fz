@@ -26,9 +26,9 @@
 # equals -- feature that compares two values using the equality relation
 # defined in their type
 #
-equals(T type, a, b T) => T.equality a b
+equals(T has_equality.type, a, b T) => T.equality a b
 
 
 # infix ≟ -- infix operation as short-hand for 'equals'
 #
-infix ≟(T type, a, b T) => equals T a b
+infix ≟(T has_equality.type, a, b T) => equals T a b

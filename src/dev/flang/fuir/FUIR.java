@@ -35,7 +35,6 @@ import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
-import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -43,7 +42,6 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
-import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -56,12 +54,10 @@ import dev.flang.ast.Unbox; // NYI: remove dependency
 
 import dev.flang.ir.IR;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -1742,11 +1738,11 @@ hw25 is
 
 
   /**
-   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.
    *
-   * @param cl index of a clazz that is a heir of 'Function'.
+   * @param cl index of a clazz that is an heir of 'Function'.
    */
   public int lookupCall(int cl)
   {
@@ -2045,6 +2041,22 @@ hw25 is
 
     var or = clazzOuterRef(cl);
     return clazzResultClazz(or);
+  }
+
+
+  /**
+   * Test is a given clazz is not -1 and stores data.
+   *
+   * @param cl the clazz defining a type, may be -1
+   *
+   * @return true if cl != -1 and not unit or void type.
+   */
+  public boolean hasData(int cl)
+  {
+    return cl != -1 &&
+      !clazzIsUnitType(cl) &&
+      !clazzIsVoidType(cl) &&
+      cl != clazzUniverse();
   }
 
 

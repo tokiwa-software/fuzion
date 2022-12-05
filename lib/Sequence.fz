@@ -61,7 +61,7 @@ Sequence(T type) ref is
   asStream stream T is asList.asStream
 
 
-  # is this list empty?
+  # is this Sequence empty?
   #
   isEmpty => asList.isEmpty
 
@@ -72,7 +72,7 @@ Sequence(T type) ref is
   count => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
-  # get the head of this list, panic if list is empty
+  # get the first element of this Sequence, panic if Sequence is empty
   #
   first
     pre
@@ -80,17 +80,17 @@ Sequence(T type) ref is
     => asList.forceHead
 
 
-  # get the head of this list or default if sequence is empty
+  # get the first element of this Sequence or default if sequence is empty
   #
   first(default T)
     =>
       if isEmpty then default else first
 
 
-  # get the last element of this list, panic if list is empty
+  # get the last element of this Sequence, panic if Sequence is empty
   #
   # This may take time in O(count), in particular, it may not terminate
-  # for an infinite list.
+  # for an infinite Sequence.
   #
   last
     pre
@@ -98,7 +98,7 @@ Sequence(T type) ref is
    => asList.last
 
 
-  # get the last element of this list or default if sequence is empty
+  # get the last element of this Sequence or default if sequence is empty
   #
   last(default T)
     =>
@@ -117,12 +117,12 @@ Sequence(T type) ref is
   forAll(f T -> unit) unit is asStream.forAll f
 
 
-  # create a stream and have it consumed by f, infix operator synonyme of forAll.
+  # create a stream and have it consumed by f, infix operator synonym of forAll.
   #
   infix | (f T -> unit) => forAll f
 
 
-  # create a stream, infix operator synonyme for asStream
+  # create a stream, postfix operator synonym for asStream
   #
   postfix | => asStream
 
@@ -139,18 +139,19 @@ Sequence(T type) ref is
 
 
   # create a new stream and filter its elements using predicate f
+  # values for which f is false are dropped
   #
   filter   (f T -> bool) Sequence T is asList.filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   infix |& (f T -> bool) => filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
@@ -195,12 +196,12 @@ Sequence(T type) ref is
   #
   splitAt(at i32) => ((take at), (drop at))
 
-  # Lazily take the first elements of a list for which predicate 'p' holds.
+  # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
   takeWhile (p T -> bool) => asList.takeWhile p
 
 
-  # Lazily drop the first elements of a list for which predicate 'p' holds.
+  # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
   dropWhile (p T -> bool) => asList.dropWhile p
 
@@ -211,7 +212,7 @@ Sequence(T type) ref is
   concatSequences (s Sequence T) Sequence T is asList.concat s.asList
 
 
-  # infix operand synonyme for concatSequences
+  # infix operand synonym for concatSequences
   #
   infix ++ (s Sequence T) => asList ++ s.asList
 
@@ -222,20 +223,20 @@ Sequence(T type) ref is
   cycle list T is asList.cycle
 
 
-  # create a lazy list of all the tails of this list, including the complete list
-  # 'list.this' and the empty list 'nil'.
+  # create a lazy list of all the tails of this Sequence, including the complete Sequence
+  # as a list and the empty list 'nil'.
   #
   tails list (list T) is asList.tails
 
 
-  # create a string representation of this list including all the string
+  # create a string representation of this Sequence including all the string
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
   redef asString => asList.asString
 
 
-  # create a string representation of this list including all the string
+  # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
   #
   asString (sep string) => asList.asString sep
@@ -246,10 +247,10 @@ Sequence(T type) ref is
   as_strings => mapSequence c->c.asString
 
 
-  # map the Sequence to a new Sequence applying function f to all elements
+  # map the Sequence to a new list applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
-  # in the list are accessed.
+  # in the resulting list are accessed.
   #
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
@@ -287,6 +288,20 @@ Sequence(T type) ref is
           r R => c.tail.reduce r f
 
 
+  # reduce this Sequence to `outcome R`
+  # with an initial value `init` and a reducing function `f`.
+  # the reduction is finished once `f` yields `abort` or
+  # if the end of the sequence is reached.
+  #
+  reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R is
+    match asList
+      nil => init
+      c Cons =>
+        match f init c.head
+          a abort => a.val
+          r R => c.tail.reduce_or_error r f
+
+
   # insert element v at position at
   #
   insert(at i32, v T)
@@ -305,7 +320,7 @@ Sequence(T type) ref is
 
 
   # create a new list from the result of applying 'f' to the
-  # elements of this list and 'b' in order.
+  # elements of this Sequence and 'b' in order.
   #
   zip(U,V type, b Sequence U, f (T,U)->V) => asList.zip0 b.asList f
 
@@ -363,7 +378,15 @@ Sequence(T type) ref is
   # every element in the sequence
   #
   indexed list (tuple i32 T) is
-    zip (0..) (a,b -> (b, a))
+    indexed 0
+
+
+  # adds an index to every element
+  # in the sequence starting at start_idx
+  #
+  indexed(I (hasInterval I).type, start_idx I) list (tuple I T) is
+    zip (start_idx..) (a,b -> (b, a))
+
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring
@@ -372,7 +395,7 @@ Sequence(T type) ref is
 Sequences is
 
 
-  # create an empty list
+  # create an empty list and return it as a Sequence
   #
   empty(T type) Sequence T is
     lists.empty T
@@ -396,13 +419,13 @@ Sequences is
     e => empty T
 
 
-  # determine the index of element x within list l.  0 if x is at the head
+  # determine the index of element x within Sequence l.  0 if x is at the head
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
   indexIn(A (hasEquals A).type, l Sequence A, x A) => (searchableSequence A l).indexOf x
 
 
-  # get the index of x within this list or nil if it does not exist
+  # get the index of x within this Sequence or nil if it does not exist
   #
   find(A (hasEquals A).type, l Sequence A, x Sequence A) => (searchableSequence A l).find x

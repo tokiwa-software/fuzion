@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -37,6 +38,8 @@ import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -147,6 +150,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * the modifiers of this feature
    */
   public final int _modifiers;
+  public int modifiers() { return _modifiers; }
 
 
   /**
@@ -650,6 +654,22 @@ public class Feature extends AbstractFeature implements Stmnt
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
+
+    // check args for duplicate names
+    if (!a.stream()
+          .map(arg -> arg.featureName().baseName())
+          .filter(argName -> !argName.equals("_"))
+          .allMatch(new HashSet<>()::add))
+      {
+        var usedNames = new HashSet<>();
+        var duplicateNames = a.stream()
+              .map(arg -> arg.featureName().baseName())
+              .filter(argName -> !argName.equals("_"))
+              .filter(argName -> !usedNames.add(argName))
+              .collect(Collectors.toSet());
+        // NYI report pos of arguments not pos of feature
+        AstErrors.argumentNamesNotDistinct(pos, duplicateNames);
+      }
 
     this._arguments = a;
     this._featureName = FeatureName.get(n, arguments().size());
@@ -1872,23 +1892,13 @@ public class Feature extends AbstractFeature implements Stmnt
     Stmnt result = this;
 
     if (CHECKS) check
-      (this.outer() == outer);
+      (this.outer() == outer,
+        Errors.count() > 0 ||
+        (_impl._kind != Impl.Kind.FieldDef &&
+         _impl._kind != Impl.Kind.FieldActual &&
+         _impl._kind != Impl.Kind.RoutineDef)
+        || _returnType == NoType.INSTANCE);
 
-    if (_impl._kind == Impl.Kind.FieldDef    ||
-        _impl._kind == Impl.Kind.FieldActual    )
-      {
-        if ((_returnType != NoType.INSTANCE))
-          {
-            AstErrors.fieldDefMustNotHaveType(_pos, this, _returnType, _impl._initialValue);
-          }
-      }
-    if (_impl._kind == Impl.Kind.RoutineDef)
-      {
-        if ((_returnType != NoType.INSTANCE))
-          {
-            AstErrors.routineDefMustNotHaveType(_pos, this, _returnType, _impl._code);
-          }
-      }
     if (_impl._initialValue != null)
       {
         /* add assignment of initial value: */

@@ -53,6 +53,7 @@ import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -1746,7 +1747,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Helper for isInstantiated to check if outer clazz this is a ref and there
    * are heir clazzes of this that are refs and that are instantiated.
    *
-   * @return true iff this is a ref and there exists a heir of this that is
+   * @return true iff this is a ref and there exists an heir of this that is
    * instantiated.
    */
   public boolean hasInstantiatedHeirs()
@@ -1951,20 +1952,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
-   * actually, a.type.b.type.c.type.
+   * actually, '((a.type a).b.type b).c.type c'.
    */
   Clazz typeClazz()
   {
-    var cf = _type.featureOfType();
-    if (cf.isUniverse())
-      {
-        return this;
-      }
-    else
-      {
-        var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType(), _outer.typeClazz());
-      }
+    return feature().isUniverse() ? this
+                                  : Clazzes.create(_type.typeType(),
+                                                   _outer.typeClazz());
   }
 
 
@@ -2246,7 +2240,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param ft the type that is an open generic
    *
-   * @param fouter the outer feature where ft is used. This might be a heir of
+   * @param fouter the outer feature where ft is used. This might be an heir of
    * _outer.feature() in case ft is the result type of an inherited feature.
    */
   List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
