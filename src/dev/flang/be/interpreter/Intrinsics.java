@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
@@ -103,7 +104,7 @@ public class Intrinsics extends ANY
    * This will represent the current available file descriptor number to be used as a key for the openstreams maps
    * The value of this variable will be incremented each time a new stream is created
    */
-  private static long _currentAvailableFileDescriptor_ = 10000;
+  private static Stack<Long> _availableFileDescriptors_ = new Stack<Long>();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -170,6 +171,31 @@ public class Intrinsics extends ANY
     return result;
   }
 
+  /**
+   * Checks the file descriptors stack and expands it as necessary.
+   *
+   * @return the next available file descriptor.
+   */
+  private static long getAvailableFileDescriptor()
+  {
+    if (_availableFileDescriptors_.empty())
+      {
+        for(long i=10000;i<99999;i++)
+          {
+            _availableFileDescriptors_.push(i);
+          }
+      }
+    if (_availableFileDescriptors_.size()==1)
+      {
+        long lastFD = _availableFileDescriptors_.pop();
+        for(long i=lastFD+1;i<lastFD+89999;i++)
+          {
+            _availableFileDescriptors_.push(i);
+          }
+        _availableFileDescriptors_.push(lastFD);
+      }
+    return _availableFileDescriptors_.pop();
+  }
 
   static
   {
@@ -342,23 +368,20 @@ public class Intrinsics extends ANY
               switch (args.get(3).i8Value()) {
                 case 0:
                   RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
-                  fd = _currentAvailableFileDescriptor_;
-                  _currentAvailableFileDescriptor_++;
+                  fd = getAvailableFileDescriptor();
                   _openStreams_.put(fd, fis);
                   open_results[0] = fd;
                   break;
                 case 1:
                   RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  fd = _currentAvailableFileDescriptor_;
-                  _currentAvailableFileDescriptor_++;
+                  fd = getAvailableFileDescriptor();
                   _openStreams_.put(fd, fos);
                   open_results[0] = fd;
                   break;
                 case 2:
                   RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
                   fas.seek(fas.length());
-                  fd = _currentAvailableFileDescriptor_;
-                  _currentAvailableFileDescriptor_++;
+                  fd = getAvailableFileDescriptor();
                   _openStreams_.put(fd, fas);
                   open_results[0] = fd;
                   break;
@@ -387,11 +410,7 @@ public class Intrinsics extends ANY
               if (_openStreams_.containsKey(fd))
                 {
                   _openStreams_.remove(fd).close();
-                  return new i64Value(0);
-                }
-              if (_openStreams_.containsKey(fd))
-                {
-                  _openStreams_.remove(fd).close();
+                  _availableFileDescriptors_.push(fd);
                   return new i64Value(0);
                 }
               return new i64Value(-1);
