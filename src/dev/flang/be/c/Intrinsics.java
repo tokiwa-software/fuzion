@@ -106,18 +106,13 @@ public class Intrinsics extends ANY
                  CExpr.exit(1));
     put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
         {
-          var fileIdent = new CIdent("f");
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            // Testing if fopen was successful
-            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
-            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
-            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
             CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
@@ -139,18 +134,14 @@ public class Intrinsics extends ANY
         );
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
-          var fileIdent = new CIdent("f");
+          // var fileIdent = new CIdent("f");
           var writingIdent = new CIdent("writing");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w")))),
-            // Testing if fopen was successful
-            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
-            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
-            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
             CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );

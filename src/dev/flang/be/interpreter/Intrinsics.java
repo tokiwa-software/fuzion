@@ -232,11 +232,8 @@ public class Intrinsics extends ANY
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              File file = new File(utf8ByteArrayDataToString(args.get(1)));
-              FileInputStream fs = new FileInputStream(file);
-              fs.read(byteArr);
-              fs.close();
-              return new boolValue(true);
+              int bytesRead = _openStreams_.get(args.get(1).i64Value()).read(byteArr);
+              return args.get(3).i32Value() == bytesRead ? new boolValue(true) : new boolValue(false);
             }
           catch (Exception e)
             {
@@ -266,11 +263,10 @@ public class Intrinsics extends ANY
             {
               Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
-              Files.write(path, fileContent);
+              _openStreams_.get(args.get(1).i64Value()).write(fileContent);
               return new boolValue(true);
             }
           catch (Exception e)
