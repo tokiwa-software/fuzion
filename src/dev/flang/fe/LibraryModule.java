@@ -97,6 +97,13 @@ public class LibraryModule extends Module
 
 
   /**
+   * The base index of this module. When converting local indices to global
+   * indices, the _globalBase will be added.
+   */
+  final int _globalBase;
+
+
+  /**
    * The module binary data, contents of .mir file.
    */
   final ByteBuffer _data;
@@ -166,10 +173,11 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
   {
     super(dependsOn);
 
+    _globalBase = globalBase;
     _fe = fe;
     _mir = null;
     _data = data;
@@ -222,11 +230,21 @@ public class LibraryModule extends Module
 
 
   /**
-   * NYI: Convert local index of this module into global index.
+   * Convert local index of this module into global index.
    */
   int globalIndex(int index)
   {
-    return index;
+    if (PRECONDITIONS) require
+      (0 < index,
+       index < _data.limit());
+
+    var result = _globalBase + index;
+
+    if (POSTCONDITIONS) ensure
+      (_globalBase - FrontEnd.GLOBAL_INDEX_OFFSET <  result - FrontEnd.GLOBAL_INDEX_OFFSET,
+       result      - FrontEnd.GLOBAL_INDEX_OFFSET <= Integer.MAX_VALUE                    );
+
+    return result;
   }
 
 
