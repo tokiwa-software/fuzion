@@ -243,3 +243,19 @@ public fileio is
   private on_close(
                    # file descriptor
                    fd i64) i64 is intrinsic
+
+  # intrinsic to set the file-pointer offset, measured from the beginning of the file indicated by the file descriptor, at which the next read or write occurs.
+  # returns the new position in success and -1 in failure
+  #
+  private seek(
+               # file descriptor
+               fd i64,
+               # the offset to seek from the beginning of this file
+               offset i64) i64 is intrinsic
+
+  # returns the current file-pointer offset, measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and -1 in failure
+  #
+  private file_position(
+                        # file descriptor
+                        fd i64) i64 is intrinsic

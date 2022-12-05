@@ -413,6 +413,20 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
+    put("fuzion.std.fileio.seek", (interpreter, innerClazz) ->
+        {
+          return args ->
+            {
+              return new i64Value(0);
+            };
+        });
+    put("fuzion.std.fileio.file_position", (interpreter, innerClazz) ->
+        {
+          return args ->
+            {
+              return new i64Value(0);
+            };
+        });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
         {
           var s = System.err;
