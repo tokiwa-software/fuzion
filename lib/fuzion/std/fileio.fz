@@ -39,7 +39,6 @@ public fileio is
         match (open arr (i8 0)).values.0
           fd i64 =>
             read fd file.internalArray.data file.length // NYI: error handling for the read feature
-            say (close fd).values.0
             file
           nil => error "failed to open file: $path"
       error error =>
