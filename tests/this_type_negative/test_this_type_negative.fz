@@ -41,6 +41,6 @@ test_this_type_negative is
       bx1 b     := b.this
       bx2 ref b := b.this
 
-    b0       := b.this  // NYI: this currently causes an error
+    b0       := b.this
     b1 b     := b.this
     b2 ref b := b.this
