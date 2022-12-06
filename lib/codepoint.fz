@@ -34,17 +34,17 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  redef utf8 Sequence u8 is
-    if      utf8EncodedInOneByte   .contains val then [ val.low8bits ]
+  redef utf8 list u8 is
+    if      utf8EncodedInOneByte   .contains val then [ val.low8bits ].asList
     else if utf8EncodedInTwoBytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                        (u32 0x80 |  val        & 0x3f).low8bits ].asList
     else if utf8EncodedInThreeBytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
                                                         (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                        (u32 0x80 |  val        & 0x3f).low8bits ].asList
     else if utf8EncodedInFourBytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
                                                         (u32 0x80 | (val >> 12) & 0x3f).low8bits,
                                                         (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                        (u32 0x80 |  val        & 0x3f).low8bits ].asList
     else
       fuzion.std.panic "failed to encode code point {codepoint.this}"
 

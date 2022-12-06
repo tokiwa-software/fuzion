@@ -33,7 +33,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 Sequence u8 is abstract
+  utf8 list u8 is abstract
 
   # is this string empty?
   isEmpty => utf8.isEmpty
@@ -58,7 +58,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   pre
     n >= 0
   is
-    redef utf8 Sequence u8 is
+    redef utf8 list u8 is
       utf8 := string.this.utf8
       utf8.cycle.take (utf8.count * n)
 
@@ -190,7 +190,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
     pre base.one < base <= base.from_u32 36
 
   is
-    match utf8.asList
+    match utf8
       nil => parseError "empty string"
       c Cons =>
         negate := c.head = minusChar
@@ -271,7 +271,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   # found in the underlying utf8 bytes
   #
   codepointsAndErrors list (outcome codepoint) is
-    codepointsAndErrors utf8.asList
+    codepointsAndErrors utf8
 
 
   # the list instance returned by asCodepoints
@@ -545,7 +545,7 @@ strings is
   # concatenating their byte sequences.
   concat(a, b string) string is
     ref : string
-      utf8 Sequence u8 is a.utf8 ++ b.utf8
+      utf8 list u8 is a.utf8 ++ b.utf8
 
 
   # create string by concatenating the results of $a[a.indices].
@@ -566,7 +566,7 @@ strings is
     redef infix + (other Object) string is
       fromArray (a.add other)
 
-    redef utf8 Sequence u8 is
+    redef utf8 list u8 is
       a.flatMapSequence u8 ai->ai.asString.utf8
 
 
@@ -574,14 +574,14 @@ strings is
   #
   fromBytes(utf8Bytes Sequence u8) string is
     ref : string
-      redef utf8 => utf8Bytes
+      redef utf8 => utf8Bytes.asList
 
 
   # create string from the given codepoints
   #
   fromCodepoints(codePoints Sequence codepoint) string is
     ref : string
-      utf8 Sequence u8 is
+      utf8 list u8 is
         codePoints
           .flatMapSequence u8 (x -> x.utf8)
 

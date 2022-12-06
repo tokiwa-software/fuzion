@@ -101,31 +101,36 @@ integer(I (integer I).type) : numeric I is
   redef asString string is integer.this.asString 10
 
 
+  # for given base get list of utf-8 bytes
+  # starting at power then power-1,...,0
+  private get_bytes(base I, power I) list u8 : character_encodings is
+    if power.sign <= 0 then nil
+    else
+      d := (thiz / power % base).to_u32.as_u8
+      r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - ascii.lf)
+      ref : Cons u8 (list u8)
+        head => r
+        tail => get_bytes base power/base
+
+
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  asString(base u32) string : character_encodings
+  asString(base u32) string
     pre
       debug: u32 1 < base <= 36
   is
     ref : string
-      redef utf8 ref : Sequence u8 is
-        redef asStream stream u8 is
-          b := from_u32 base
-          if thiz.sign >= 0
-            ref : stream u8
-              p := thiz.highest b
-              redef hasNext => p.sign > 0
-              redef next =>
-                d := (thiz / p % b).to_u32.as_u8
-                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - ascii.lf)
-                set p := p / b
-                r
-          else
-            p := -? thiz
-            match p
-              v I   => ("-" + v .asString base).utf8.asStream
-              _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
+      utf8 list u8 is
+        b := from_u32 base
+        if thiz.sign >= 0
+          p := thiz.highest b
+          get_bytes b p
+        else
+          p := -? thiz
+          match p
+            v I   => ("-" + v .asString base).utf8
+            _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8
 
 
   # convert this to a number using the given base.  If negative, add "-" as

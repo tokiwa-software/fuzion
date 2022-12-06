@@ -142,7 +142,7 @@ test_equals_types is
     col color,
 
     # the string
-    utf8 Sequence u8)
+    utf8 list u8)
 
    : Has_color, string, has_equality is
 
