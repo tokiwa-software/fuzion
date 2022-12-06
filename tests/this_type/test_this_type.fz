@@ -1,0 +1,76 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_this_type
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# a simple test for 'this.type'
+#
+q is
+  x is
+    print
+    b1 := q.this
+    b2 := b1
+    b3 ref q := q.this
+    b4 ref q := b1
+    b5 ref q := b2
+
+  print => say "in q"
+
+r : q is
+  redef print => say "in r"
+
+q.x.b1.print
+q.x.b2.print
+# r.x.b1.print      # NYI: this does not work yet, should print 'in r'
+# r.x.b2.print      # NYI: this does not work yet, should print 'in r'
+
+
+/**  NYI: a.this.type syntax not supported yet:
+
+a is
+  op(v a.this.type) a.this.type is abstract
+
+
+
+b(val string) : a is
+  op(v b) b is if debug then b "debug" /* b.this */ else b "non-debug"
+  redef asString => "instance of {b.type.asString} with $val"
+
+b1 := b "1"
+b2 := b "2"
+say (b1.op b2)
+
+**/
+
+
+/* NYI: a.this.type redefinition to sub-class does not work yet
+
+c : b "from c" is
+  redef op(v c) c is if debug then c.this else c
+  redef asString => "instance of {c.type.asString}"
+
+c1 := c
+c2 := c
+say (c1.op c2)
+
+*/
