@@ -267,6 +267,22 @@ string ref : has_equality, hasHash string, ordered string, strings is
       )
 
 
+  # replaces runs of invalid UTF-8 byte sequences in this string with the Unicode
+  # replacement character (U+FFFD).
+  to_valid_utf8 string is
+    to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
+
+
+  # replaces runs of invalid UTF-8 byte sequences in this string with the given
+  # string.
+  to_valid_utf8(replacement string) string is
+    codepointsAndErrors
+      .reduce "" ((r, x) ->
+        match x
+          c codepoint => strings.concat r c
+          e error => strings.concat r replacement)
+
+
   # convert this string into a list of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
