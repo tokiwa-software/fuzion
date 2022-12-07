@@ -270,9 +270,9 @@ public class Type extends AbstractType
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     if (o instanceof Type ot && ot.isThisType())
       {
-        // NYI: CLEANUP: Undo the asThisType() calls done in This.java for outer
-        // types. Is it possible to not create asThisType() in This.java in the
-        // first place?
+        // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
+        // outer types. Is it possible to not create asThisType() in This.java
+        // in the first place?
         o = new Type(ot, RefOrVal.LikeUnderlyingFeature);
       }
     this._outer = o;
