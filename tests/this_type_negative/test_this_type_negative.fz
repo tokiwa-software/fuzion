@@ -31,7 +31,7 @@ test_this_type_negative is
       ax1 a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
       ax2 ref a := a.this
 
-    # a0       := a.this  // NYI: this currently causes an error
+    a0       := a.this
     a1 a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
     a2 ref a := a.this
 

@@ -35,23 +35,20 @@ fileiotests =>
 
   writer := f.write
   reader := f.read
-  stats := f.stat
 
-  say "$dir exists: {stats.exists dir}"
+  say "$dir exists: {(f.exists dir).val}"
   match writer.create_dir dir
     unit => say "$dir was created"
     error =>
-  say "$dir exists: {stats.exists dir}"
+  say "$dir exists: {(f.exists dir).val}"
 
-  say "$file exists: {stats.exists file}"
+  say "$file exists: {(f.exists file).val}"
   match writer.write_all file content.utf8.asArray
     unit => say "$file was created"
     error =>
-  say "$file exists: {stats.exists file}"
+  say "$file exists: {(f.exists file).val}"
 
-  match stats.size file
-    size i64 => say "$file size is $size"
-    error =>
+  say "$file size is {(f.stat file true).val.size}"
 
   match reader.read_all file
     bytes array u8 =>
@@ -63,17 +60,17 @@ fileiotests =>
   match f.delete file
     unit => say "$file was deleted"
     error =>
-  say "$file exists: {stats.exists file}"
+  say "$file exists: {(f.exists file).val}"
 
-  say "$dir exists: {stats.exists dir}"
-  say "$newdir exists: {stats.exists newdir}"
+  say "$dir exists: {(f.exists dir).val}"
+  say "$newdir exists: {(f.exists newdir).val}"
   match f.move dir newdir
     unit => say "$dir is now: $newdir"
     error =>
-  say "$newdir exists: {stats.exists newdir}"
-  say "$dir exists: {stats.exists dir}"
+  say "$newdir exists: {(f.exists newdir).val}"
+  say "$dir exists: {(f.exists dir).val}"
 
   match f.delete newdir
     unit => say "$newdir was deleted"
     error =>
-  say "$newdir exists: {stats.exists newdir}"
+  say "$newdir exists: {(f.exists newdir).val}"
