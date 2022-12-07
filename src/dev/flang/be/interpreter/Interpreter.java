@@ -226,19 +226,18 @@ public class Interpreter extends ANY
           {
             callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
           }
+        catch (FatalError e)
+          {
+            throw e;
+          }
+        catch (StackOverflowError e)
+          {
+            Errors.fatal("*** " + e + "\n" + callStack());
+          }
         catch (RuntimeException | Error e)
           {
-            if ((e instanceof FatalError))
-              {
-                throw e;
-              }
-            if (!(e instanceof StackOverflowError))
-              {
-                Errors.error("*** " + e + "\n" + callStack());
-                throw e;
-              }
-            // any unexpected error
-            Errors.fatal("*** " + e + "\n" + callStack());
+            Errors.error("*** " + e + "\n" + callStack());
+            throw e;
           }
         if (CHECKS) check
           (Errors.count() == 0);
