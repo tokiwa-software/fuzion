@@ -445,6 +445,7 @@ public class LibraryModule extends Module
             if (CHECKS) check
               (k >= 0);
             var feature = libraryFeature(typeFeature(at));
+            var makeThisType = typeIsThisType(at);
             var makeRef = typeIsRef(at);
             var generics = Type.NONE;
             if (k > 0)
@@ -460,7 +461,11 @@ public class LibraryModule extends Module
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
+            result = new NormalType(this, at, DUMMY_POS, feature,
+                                    makeThisType ? Type.RefOrVal.ThisType :
+                                    makeRef      ? Type.RefOrVal.Ref
+                                                 : Type.RefOrVal.LikeUnderlyingFeature,
+                                    generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -1185,7 +1190,7 @@ Type
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
 .4+| tk>=0    | 1      | int           | index of feature of type
-              | 1      | bool          | isRef
+              | 1      | byte          | 0: default, 1: isRef, 2: isThisType
               | tk     | Type          | actual generics
               | 1      | Type          | outer type
 |====
@@ -1208,7 +1213,7 @@ Type
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | isRef                                         |
+   *   |        | 1      | byte          | 0: default, 1: isRef, 2: isThisType           |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1288,7 +1293,14 @@ Type
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    return data().get(typeIsRefPos(at)) != 0;
+    return data().get(typeIsRefPos(at)) == 1;
+  }
+  boolean typeIsThisType(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    return data().get(typeIsRefPos(at)) == 2;
   }
   int typeActualGenericsPos(int at)
   {

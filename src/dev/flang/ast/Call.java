@@ -1988,7 +1988,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl))
+                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl.type()))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }

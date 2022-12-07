@@ -338,7 +338,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef tails list (list A) is
     ref : Cons (list A) (list (list A))
-      head => list.this
+      head list A is list.this
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
 
@@ -348,7 +348,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # it cannot be shared with threads or used in pure functions
   #
   redef asStream ref : stream A is
-    cur := list.this
+    cur list A := list.this
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>
