@@ -260,7 +260,7 @@ public class This extends ExprWithPos
                   .resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    // NYI: CLEANUP: We are satting all outer types to
+                    // NYI: CLEANUP: #737: We are satting all outer types to
                     // o.asThis(), while the constructor of Type undoes
                     // this. Maybe we could use .asThis only for the outermost
                     // type?
