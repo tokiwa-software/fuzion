@@ -506,9 +506,9 @@ string ref : has_equality, hasHash string, ordered string, strings is
 
 
   # return string of at least length l by
-  # padding s to start of string
+  # padding codepoint s to start of string
   #
-  pad_start(l i32, s string) string
+  pad_codepoint_start(l i32, s string) string
   pre s.codepointLength = 1
   is
     missing := l - codepointLength

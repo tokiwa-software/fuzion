@@ -314,7 +314,7 @@ is
     if q = zero
       (rem.data.first (u32 0)).asString
     else
-      q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
+      q.asString0 + (rem.data.first (u32 0)).asString.pad_codepoint_start 9 "0"
 
 
   redef asString string is
