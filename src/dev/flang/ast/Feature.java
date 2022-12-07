@@ -1430,13 +1430,26 @@ public class Feature extends AbstractFeature implements Stmnt
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
         af.visitStatements(s -> {
-            if (s instanceof AbstractCall c && c.calledFeature() == outerRef())
+            if (s instanceof AbstractCall c && dependsOnOuterRef(c))
               {
                 result.add(c);
               }
           });
       }
     return result;
+  }
+
+
+  /**
+   * Returns true if the call depends on an outer reference.
+   * @param c
+   * @return
+   */
+  private boolean dependsOnOuterRef(AbstractCall c)
+  {
+    return c.calledFeature() == outerRef() ||
+    // see issue #698 for an example where this applies.
+      c.calledFeature().inherits().stream().anyMatch(ihc -> ihc.target().isCallToOuterRef());
   }
 
 

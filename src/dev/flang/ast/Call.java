@@ -550,7 +550,6 @@ public class Call extends AbstractCall
 
     FeaturesAndOuter result;
     // are we searching for features called via thiz' inheritance calls?
-    SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (_target != null)
       {
         res.resolveDeclarations(targetFeature);
@@ -1988,7 +1987,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl))
+                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl.type()))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }

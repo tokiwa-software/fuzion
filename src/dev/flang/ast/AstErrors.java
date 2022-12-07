@@ -302,8 +302,7 @@ public class AstErrors extends ANY
     String remedy = null;
     var assignableToSB = new StringBuilder();
     var actlT = value.type();
-    var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
-    if (valueThisOrOuter)
+    if (actlT.isThisType())
       {
         assignableToSB
           .append("assignable to       : ref ")
@@ -326,7 +325,7 @@ public class AstErrors extends ANY
               .append(st(ts));
           }
       }
-    if (remedy == null && frmlT.asRef().isAssignableFrom(value))
+    if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
       {
         remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
       }
@@ -352,7 +351,7 @@ public class AstErrors extends ANY
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
+          "actual type found   : " + s(actlT) + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
           "for value assigned  : " + s(value) + "\n" +
           remedy);
@@ -1240,7 +1239,8 @@ public class AstErrors extends ANY
     error(pos,
           "Choice type must not access fields of surrounding scope.",
           "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-          accesses);
+          accesses + "\n" +
+          "To solve this, you might move the accessed fields outside of the common outer feature.");
   }
 
   static void choiceMustNotBeRef(SourcePosition pos)

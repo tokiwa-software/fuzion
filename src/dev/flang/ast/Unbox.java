@@ -57,7 +57,7 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * This this Unbox needed, i.e, not a NOP. This might be a NOP if this is
+   * Is this Unbox needed, i.e, not a NOP. This might be a NOP if this is
    * used as a reference.
    */
   public boolean _needed = false;
@@ -179,7 +179,13 @@ public abstract class Unbox extends Expr
            frmlT.isAssignableFrom(t.asValue())))))
       {
         this._needed = true;
-        this._type = frmlT;
+        if (!t.isThisType())   // NYI: CLEANUP: #738: when does this happen,
+                               // i.e., when is unbox needed, but type remains
+                               // the same since isThisType. Can this be
+                               // simplified?
+          {
+            this._type = frmlT;
+          }
       }
     return super.box(frmlT);
   }

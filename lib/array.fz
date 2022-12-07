@@ -93,7 +93,7 @@ array(redef T type,
     redef hasNext => x < array_this.length
     redef next => set x := x + 1; array_this[x-1]
 
-  redef forAll (f T -> unit) unit is
+  redef for_each (f T -> unit) unit is
     for i in indices do
       f index[](i)
 

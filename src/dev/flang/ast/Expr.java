@@ -324,7 +324,9 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
             result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(t)
+            && !t.isThisType() // NYI: CLEANUP: #736: Can this be removed if t.asThisType() == t for choice types?
+            )
           {
             result = tag(frmlT, result);
           }
