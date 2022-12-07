@@ -92,3 +92,13 @@ unit is
 
   # human readable string
   redef asString => "unit"
+
+  # Monoid that can be used whenever a monoid of the unit type is expected.
+  # This is the case for example in some calls to `fold`-like features.
+  #
+  # Since there is exactly one value of type unit, the operation, the equality
+  # and the identity element of this monoid are canonically defined.
+  type.monoid : Monoid unit is
+    redef infix ∙ (a, b unit) unit is unit
+    redef infix == (a, b unit) bool is true
+    redef e unit is unit

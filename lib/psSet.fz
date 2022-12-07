@@ -89,12 +89,12 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other ref psSet K) => psSet K (psm ⋃ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
+  infix ∪ (other ref psSet K) => psSet K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
 
 
   # intersection of two psSets
-  infix ⋂ (other ref psSet K) =>
-    s := (psSet.this ⋃ other).filter (x -> psSet.this.has x && other.has x)
+  infix ∩ (other ref psSet K) =>
+    s := (psSet.this ∪ other).filter (x -> psSet.this.has x && other.has x)
     (psSets K).empty.addAll s
 
 
@@ -124,11 +124,11 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   empty => (psSets K).empty
 
 
-  # monoid of psSet with infix ⋃ operation.
+  # monoid of psSet with infix ∪ operation.
   #
   union : Monoid (psSet K) is
-    redef infix ∙ (a, b psSet K) => a ⋃ b
-    redef infix == (a, b psSet K) => (a ⋃ b).size = a.size  # NYI: a bit expensive
+    redef infix ∙ (a, b psSet K) => a ∪ b
+    redef infix == (a, b psSet K) => (a ∪ b).size = a.size  # NYI: a bit expensive
     redef e => empty
 
 

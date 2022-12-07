@@ -908,7 +908,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Check if f might be called dynamically on an instance of this and if so,
-   * look up the actual feature that is called at mark it as used.
+   * look up the actual feature that is called and mark it as used.
    */
   private void lookupIfInstantiated(AbstractFeature f)
   {

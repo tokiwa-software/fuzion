@@ -93,9 +93,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # call f in order on all elements of this list
   #
-  redef forAll (f A -> unit) unit is
+  redef for_each (f A -> unit) unit is
     list.this ? nil    =>
-              | c Cons => f c.head; c.tail.forAll f
+              | c Cons => f c.head; c.tail.for_each f
 
 
   # get the head of this list, panic if list is empty
@@ -163,7 +163,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
       _ nil  => nil
       c Cons =>
         match (f c.head).asList
-          _ nil => nil
+          _ nil => c.tail.flatMap B f
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
@@ -338,7 +338,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef tails list (list A) is
     ref : Cons (list A) (list (list A))
-      head => list.this
+      head list A is list.this    # NYI: CLEANUP: #736: use type inference: head => list.this
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
 
@@ -348,7 +348,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # it cannot be shared with threads or used in pure functions
   #
   redef asStream ref : stream A is
-    cur := list.this
+    cur list A := list.this
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>

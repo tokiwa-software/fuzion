@@ -53,7 +53,7 @@ hasInterval(H (hasInterval H).type) : integer H is
     size H is if lower <= upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
-    redef forAll(f H -> unit) unit is
+    redef for_each(f H -> unit) unit is
       for
         x := lower, x + one
       while x <= upper
