@@ -202,21 +202,6 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.open_source"   , (c,cl,outer,in) ->
-        {
-          var filepointer = new CIdent("fp");
-          return CStmnt.seq(
-            CExpr.decl("FILE *", filepointer, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")), filepointer.castTo("fzT_1i64").ret()),
-            CExpr.int64const(-1).ret()
-            );
-        }
-        );
-    put("fuzion.std.fileio.read_source"   , (c,cl,outer,in) ->
-        {
-          return CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")));
-        }
-        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
