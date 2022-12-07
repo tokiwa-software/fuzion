@@ -195,3 +195,19 @@ public fileio is
                  path Object,
                  # dummy parameter to enable overload
                  _ unit) bool is intrinsic
+
+  # intrinsic that fills an array with some metadata of the file/dir provided by the path
+  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # in case the path refers to a symbolic link it resolves it and returns info about the actual file
+  #
+  stats(
+        # the internal array data representing the file/dir path in bytes
+        path Object,
+        # the iternal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+        meta_data Object) bool is intrinsic
+
+  # intrinsic that fills an array with some metadata of the file/dir provided by the path
+  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
+  #
+  lstats(path Object, meta_data Object) bool is intrinsic # NYI
