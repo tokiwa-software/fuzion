@@ -55,7 +55,7 @@ is
 
   # union of two bitsets
   #
-  infix ⋃ (other bitset) bitset is
+  infix ∪ (other bitset) bitset is
     match bitset.this
       _ nil   => other
       x u64   => other.put x
@@ -120,10 +120,10 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   empty bitset is nil
 
-  # monoid of bitset with infix ⋃ operation.
+  # monoid of bitset with infix ∪ operation.
   #
   union : Monoid bitset is
-    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix ∙ (a, b bitset) => a ∪ b
     redef infix == (a, b bitset) => a == b
     redef e bitset is empty
 
@@ -138,9 +138,9 @@ bitsets is
   empty bitset is nil
 
 
-  # monoid of bitset with infix ⋃ operation.
+  # monoid of bitset with infix ∪ operation.
   #
   union : Monoid bitset is
-    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix ∙ (a, b bitset) => a ∪ b
     redef infix == (a, b bitset) => a == b
     redef e bitset is empty

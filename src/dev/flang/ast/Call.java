@@ -550,7 +550,6 @@ public class Call extends AbstractCall
 
     FeaturesAndOuter result;
     // are we searching for features called via thiz' inheritance calls?
-    SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (_target != null)
       {
         res.resolveDeclarations(targetFeature);
@@ -1355,7 +1354,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the type result type of the called feature, might be open genenric.
+   * @param t the result type of the called feature, might be open genenric.
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
@@ -1519,7 +1518,7 @@ public class Call extends AbstractCall
           {
             missing.add(g);
             if (CHECKS) check
-              (Errors.count() > 0 || i < _generics.size());
+              (Errors.count() > 0 || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
                 _generics.set(i, Types.t_ERROR);
@@ -1988,7 +1987,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl))
+                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl.type()))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }
@@ -2025,7 +2024,10 @@ public class Call extends AbstractCall
             if (f != null && g != null &&
                 !f.constraint().constraintAssignableFrom(g))
               {
-                AstErrors.incompatibleActualGeneric(pos(), f, g);
+                if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+                  {
+                    AstErrors.incompatibleActualGeneric(pos(), f, g);
+                  }
               }
           }
       }

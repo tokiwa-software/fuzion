@@ -255,8 +255,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
           "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
-          "To solve this, if your intention was to return a result value, use " + ss("set " + FuzionConstants.RESULT_NAME + " := <value>") + ".\n"+
-          "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
+          "To solve this, choose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
 
@@ -303,8 +302,7 @@ public class AstErrors extends ANY
     String remedy = null;
     var assignableToSB = new StringBuilder();
     var actlT = value.type();
-    var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
-    if (valueThisOrOuter)
+    if (actlT.isThisType())
       {
         assignableToSB
           .append("assignable to       : ref ")
@@ -327,7 +325,7 @@ public class AstErrors extends ANY
               .append(st(ts));
           }
       }
-    if (remedy == null && frmlT.asRef().isAssignableFrom(value))
+    if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
       {
         remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
       }
@@ -353,7 +351,7 @@ public class AstErrors extends ANY
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
+          "actual type found   : " + s(actlT) + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
           "for value assigned  : " + s(value) + "\n" +
           remedy);
@@ -1241,7 +1239,8 @@ public class AstErrors extends ANY
     error(pos,
           "Choice type must not access fields of surrounding scope.",
           "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-          accesses);
+          accesses + "\n" +
+          "To solve this, you might move the accessed fields outside of the common outer feature.");
   }
 
   static void choiceMustNotBeRef(SourcePosition pos)
@@ -1308,24 +1307,6 @@ public class AstErrors extends ANY
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
           "Faulty generic argument: " + s(t) + " at " + t.pos().show());
-  }
-
-  static void fieldDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr initialValue)
-  {
-    error(pos,
-          "Field definition using " + ss(":=")+ " must not specify an explicit type",
-          "Definition of field: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(initialValue));
-  }
-
-  static void routineDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr code)
-  {
-    error(pos,
-          "Function definition using " + ss("=>") + " must not specify an explicit type",
-          "Definition of function: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(code));
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
@@ -1491,6 +1472,15 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
           "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
+          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Feature declared: " + s(f));
+  }
+
+  static void illegalResultTypeRefTypeRoutineDef(Feature f)
+  {
+    error(f.pos(),
+          "Illegal " + skw("ref") + " in feature definition using " + ss("=>"),
           "For function definition using " + ss("=>") + ", the type is determined automatically, " +
           "it must not be given explicitly.\n" +
           "Feature declared: " + s(f));

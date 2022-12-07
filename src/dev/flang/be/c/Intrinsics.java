@@ -162,7 +162,7 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
             // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), 
+            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")),
             CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
             // If errno is ENOENT, file/dir does not exist
             CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
@@ -527,14 +527,14 @@ public class Intrinsics extends ANY
     put("fuzion.sys.array.setel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return c._types.hasData(gc)
+          return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
     put("fuzion.sys.array.get" , (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return c._types.hasData(gc)
+          return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         });

@@ -90,10 +90,10 @@ stream(redef T type) ref : Sequence T is
 
   # apply f to all elements in this stream
   #
-  redef forAll(f T -> unit) unit is while hasNext do f(next)
+  redef for_each(f T -> unit) unit is while hasNext do f(next)
 
 
-  # apply f to all elements in this stream, infix operator synonym of forAll.
+  # apply f to all elements in this stream, infix operator synonym of for_each.
   #
   redef infix | (f T -> unit) unit is while hasNext do f(next)
 
@@ -162,7 +162,7 @@ stream(redef T type) ref : Sequence T is
   # print the elements of this stream
   #
   print unit is
-    forAll (x ->
+    for_each (x ->
       yak x
       if hasNext then yak ", ")
 

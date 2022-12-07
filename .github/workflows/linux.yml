@@ -40,11 +40,17 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev
+          sudo apt-get install libgc1 libgc-dev shellcheck
+
+      - name: check shell scripts
+        run: make shellcheck
+
       - name: build
         run: make
+
       - name: run tests
         run: make run_tests
