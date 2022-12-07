@@ -264,7 +264,7 @@ public class FUIR extends IR
         for (var cl : Clazzes.all())
           {
             if (CHECKS) check
-              (cl._type != Types.t_ERROR);
+              (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
             if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
