@@ -107,6 +107,15 @@ public class Intrinsics extends ANY
   private static Stack<Long> _availableFileDescriptors_ = new Stack<Long>();
 
 
+  /**
+   * This will represent the current largest available file descriptor number
+   * The value of this variable will be incremented when the current available file descriptors are not enough
+   * and needs to be increased
+   * This variable starts at 3 because 0, 1, 2 usually represents standard in, out and err
+   */
+  private static long _maxFileDescriptor_  = 3;
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -176,25 +185,24 @@ public class Intrinsics extends ANY
    *
    * @return the next available file descriptor.
    */
-  private static long getAvailableFileDescriptor()
+  private static synchronized long allocFileDescriptor()
   {
     if (_availableFileDescriptors_.empty())
       {
-        for(long i=10000;i<99999;i++)
-          {
-            _availableFileDescriptors_.push(i);
-          }
-      }
-    if (_availableFileDescriptors_.size()==1)
-      {
-        long lastFD = _availableFileDescriptors_.pop();
-        for(long i=lastFD+1;i<lastFD+89999;i++)
-          {
-            _availableFileDescriptors_.push(i);
-          }
-        _availableFileDescriptors_.push(lastFD);
+        _maxFileDescriptor_++;
+        return _maxFileDescriptor_-1;
       }
     return _availableFileDescriptors_.pop();
+  }
+
+  /**
+   * Checks the file descriptors stack and expands it as necessary.
+   *
+   * @param fileDescriptor the file descriptor to release.
+   */
+  private static synchronized void releaseFileDescriptor(long fileDescriptor)
+  {
+    _availableFileDescriptors_.push(fileDescriptor);
   }
 
   static
@@ -361,20 +369,20 @@ public class Intrinsics extends ANY
               switch (args.get(3).i8Value()) {
                 case 0:
                   RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
-                  fd = getAvailableFileDescriptor();
+                  fd = allocFileDescriptor();
                   _openStreams_.put(fd, fis);
                   open_results[0] = fd;
                   break;
                 case 1:
                   RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  fd = getAvailableFileDescriptor();
+                  fd = allocFileDescriptor();
                   _openStreams_.put(fd, fos);
                   open_results[0] = fd;
                   break;
                 case 2:
                   RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
                   fas.seek(fas.length());
-                  fd = getAvailableFileDescriptor();
+                  fd = allocFileDescriptor();
                   _openStreams_.put(fd, fas);
                   open_results[0] = fd;
                   break;
@@ -403,7 +411,7 @@ public class Intrinsics extends ANY
               if (_openStreams_.containsKey(fd))
                 {
                   _openStreams_.remove(fd).close();
-                  _availableFileDescriptors_.push(fd);
+                  releaseFileDescriptor(fd);
                   return new i64Value(0);
                 }
               return new i64Value(-1);
