@@ -400,12 +400,19 @@ string ref : has_equality, hasHash string, ordered string, strings is
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
   find_last(substring string) option i32 is
+    find_last substring nil
+
+
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  private find_last(substring string, found option i32) option i32 is
     match find substring
-      nil => nil
+      nil => found >>= (pos -> pos - substring.byteLength)
       idx i32 =>
-        match (strings.fromBytes (utf8.drop (idx + substring.byteLength))).find_last substring
-          nil => idx
-          jdx i32 => idx + substring.byteLength + jdx
+        skip := idx + substring.byteLength
+        s := strings.fromBytes (utf8.drop skip)
+
+        s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurances of f within l by r
