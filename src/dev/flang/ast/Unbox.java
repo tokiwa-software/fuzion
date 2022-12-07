@@ -179,9 +179,10 @@ public abstract class Unbox extends Expr
            frmlT.isAssignableFrom(t.asValue())))))
       {
         this._needed = true;
-        if (!t.isThisType())   // NYI: CLEANUP: when does this happen, i.e.,
-                               // when is unbox needed, but type remains the
-                               // same since isThisType. Can this be simplified?
+        if (!t.isThisType())   // NYI: CLEANUP: #738: when does this happen,
+                               // i.e., when is unbox needed, but type remains
+                               // the same since isThisType. Can this be
+                               // simplified?
           {
             this._type = frmlT;
           }
