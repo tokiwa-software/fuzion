@@ -338,7 +338,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef tails list (list A) is
     ref : Cons (list A) (list (list A))
-      head list A is list.this
+      head list A is list.this    # NYI: CLEANUP: #736: use type inference: head => list.this
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
 

@@ -297,7 +297,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       this  .compareTo(actual               ) == 0 ||
       actual.compareTo(Types.resolved.t_void) == 0 ||
 
-      // NYI: CLEANUP: This clumsy workaround could be avoided if t.asThisType() == t for choice types.
+      // NYI: CLEANUP: #736: This clumsy workaround could be avoided if t.asThisType() == t for choice types.
       actual.isThisType() && isChoice() && this.compareTo(actual.asRef().asValue()) == 0 ||
 
       this   == Types.t_ERROR                      ||
