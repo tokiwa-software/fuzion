@@ -7,4 +7,6 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
 [34m      ref : Node A (tree A) (tree A)
 [33m------^[0m
 
+To solve this, you might move the accessed fields outside of the common outer feature.
+
 one error.
