@@ -413,19 +413,40 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.std.fileio.seek", (interpreter, innerClazz) ->
+    put("fuzion.std.fileio.seek", (interpreter, innerClazz) -> args ->
         {
-          return args ->
+          if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              return new i64Value(0);
-            };
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          long fd = args.get(1).i64Value();
+          try
+            {
+              _openStreams_.get(fd).seek(args.get(2).i16Value());
+              return new i64Value(_openStreams_.get(fd).getFilePointer());
+            } 
+          catch (Exception e)
+            {
+              return new i64Value(-1);
+            }
         });
-    put("fuzion.std.fileio.file_position", (interpreter, innerClazz) ->
+    put("fuzion.std.fileio.file_position", (interpreter, innerClazz) -> args ->
         {
-          return args ->
+          if (!ENABLE_UNSAFE_INTRINSICS)
             {
-              return new i64Value(0);
-            };
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          long fd = args.get(1).i64Value();
+          try
+            {
+              return new i64Value(_openStreams_.get(fd).getFilePointer());
+            } 
+          catch (Exception e)
+            {
+              return new i64Value(-1);
+            }
         });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
         {
