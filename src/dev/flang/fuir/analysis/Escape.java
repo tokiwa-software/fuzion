@@ -200,7 +200,7 @@ public class Escape extends ANY
               var cc0 = _fuir.accessedClazz  (cl, c, i);
               var rt = _fuir.clazzResultClazz(cc0);
               // NYI: for dynamic all, check all called methods!
-              if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+              if (_fuir.hasPrecondition(cc0))
                 {
                   // NYI: check if current escapes via pre-condition
                   //

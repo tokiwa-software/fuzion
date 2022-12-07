@@ -208,7 +208,7 @@ public class DFA extends ANY
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var res = Value.UNIT;
-      if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+      if (_fuir.hasPrecondition(cc0))
         {
           res = call0(cl, tvalue, args, c, i, cc0, true);
         }
@@ -768,19 +768,25 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var callMainPre = newCall(_fuir.mainClazzId(),
-                              true,
-                              Value.UNIT,
-                              new List<>(),
-                              null /* env */,
-                              () -> { System.out.println("program entry point"); return "  "; });
+    var cl = _fuir.mainClazzId();
 
-    var callMain = newCall(_fuir.mainClazzId(),
-                           false,
-                           Value.UNIT,
-                           new List<>(),
-                           null /* env */,
-                           () -> { System.out.println("program entry point"); return "  "; });
+    if (_fuir.hasPrecondition(cl))
+      {
+        newCall(cl,
+                true,
+                Value.UNIT,
+                new List<>(),
+                null /* env */,
+                () -> { System.out.println("program entry point"); return "  "; });
+      }
+
+    newCall(_fuir.mainClazzId(),
+            false,
+            Value.UNIT,
+            new List<>(),
+            null /* env */,
+            () -> { System.out.println("program entry point"); return "  "; });
+
     findFixPoint();
     Errors.showAndExit();
   }
