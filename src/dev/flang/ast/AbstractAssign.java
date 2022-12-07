@@ -232,7 +232,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
         if (CHECKS) check
           (Errors.count() > 0 || frmlT != Types.t_ERROR);
 
-        if (!frmlT.isAssignableFrom(_value))
+        if (!frmlT.isAssignableFrom(_value.type()))
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value);
           }

@@ -35,10 +35,14 @@ setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs
 # This feature creates an instance of a Set.
 #
 # NYI name clash with feature above
-set_of(K (hasHash K).type, vs Sequence K) Set K is
+set_of(K (hasHash K).type, vs (CTrie K unit) | (Sequence K)) Set K is
 
   private map := CTrie K unit
-  vs.forAll (k -> map.add k unit)
+  match vs
+    vss (Sequence K) =>
+      vss.for_each (k -> map.add k unit)
+    vsc (CTrie K unit) =>
+      set map := vsc
 
   ref : Set K
 
@@ -57,5 +61,15 @@ set_of(K (hasHash K).type, vs Sequence K) Set K is
     # add new element k to this set.
     #
     add (k K) Set K is
-      set_of (vs++[k])
+      ss := map.snapshot false
+      ss.add k unit
+      set_of ss
 
+
+    # remove an element k from the set if it exists.
+    # return the same set if it does not exist.
+    #
+    remove (k K) Set K is
+      ss := map.snapshot false
+      ss.remove k
+      set_of ss

@@ -40,9 +40,9 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AbstractFeature is represents a Fuzion feature in the front end.  This
- * feature might either be part of the abstract syntax tree or part of a binary
- * module file.
+ * AbstractFeature represents a Fuzion feature in the front end.  This feature
+ * might either be part of the abstract syntax tree or part of a binary module
+ * file.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -71,6 +71,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
      */
     public static Kind from(int ordinal)
     {
+      if (PRECONDITIONS) require
+        (0 <= ordinal,
+         ordinal < values().length);
+
       if (CHECKS) check
         (values()[ordinal].ordinal() == ordinal);
 
@@ -486,18 +490,37 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   */
+  public boolean isTypeFeaturesThisType()
+  {
+    // NYI: CLEANUP: #706: Replace string operation by a flag marking this features as a 'THIS_TYPE' type parameter
+    return
+      isTypeParameter() &&
+      outer().isTypeFeature() &&
+      featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE);
+  }
+
+
+  /**
    * This type feature declared as
    *
    *    abc.type.xyz is ...
    *
    * will go to abc's static type unless this is true.
+   *
+   * Currently, this is true for abstract features and for those marked with the
+   * 'dyn' modifier.
+   *
+   * NYI: FUTURE ENHANCEMENT: 'dyn' type featurs: We might be more automatic
+   * here and, e.g., let all features that depend on generic parameter
+   * FuzionConstants.TYPE_FEATURE_THIS_TYPE go to the dynamic type.
    */
   public boolean belongsToNonStaticType()
   {
-    // currently, only abstract features go to the dynamic type.  We might be
-    // more flexible here and let all features that depend on generic parameter
-    // FuzionConstants.TYPE_FEATURE_THIS_TYPE go to the dynamic type.
-    return isAbstract();
+    return
+      isAbstract() ||
+      (this instanceof Feature f) && (f.modifiers() & Consts.MODIFIER_DYN) != 0;
   }
 
 
@@ -558,11 +581,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         else
           {
-            var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
+            var name = featureName().baseName() + ".";
             if (!isConstructor() && !isChoice())
               {
                 name = name + "_" + (_typeFeatureId_++);
               }
+            name = name + FuzionConstants.TYPE_NAME;
             var inh = new List<AbstractCall>();
             for (var pc: inherits())
               {
@@ -662,7 +686,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var typeArg = new Feature(p,
                                   visibility(),
                                   outer().isUniverse() && featureName().baseName().equals("Object") && !statc ? 0 : Consts.MODIFIER_REDEFINE,
-                                  new Type("Object"),
+                                  thisType(),
                                   FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                   Contract.EMPTY_CONTRACT,
                                   Impl.TYPE_PARAMETER);
@@ -1081,7 +1105,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * @param t a type used in this feature, must not be an open generic type
    * (which can be replaced by several types during inheritance).
    *
-   * @param heir a heir of this, might be equal to this.
+   * @param heir an heir of this, might be equal to this.
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
@@ -1172,7 +1196,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param parent a loaded feature
    *
-   * @return true iff this is a heir of parent.
+   * @return true iff this is an heir of parent.
    */
   public boolean inheritsFrom(AbstractFeature parent)
   {

@@ -84,6 +84,7 @@ public class NormalType extends LibraryType
    */
   AbstractType _asRef = null;
   AbstractType _asValue = null;
+  AbstractType _asThis = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -174,11 +175,25 @@ public class NormalType extends LibraryType
   {
     return switch (_refOrVal)
       {
-      case Ref -> true;
-      case Value -> false;
-      default -> _feature.isThisRef();
+      case Ref                   -> true;
+      case Value                 -> false;
+      case LikeUnderlyingFeature -> _feature.isThisRef();
+      case ThisType              -> false;
       };
   }
+
+  /**
+   * isThisType
+   */
+  public boolean isThisType()
+  {
+    return switch (this._refOrVal)
+      {
+      case Ref, Value, LikeUnderlyingFeature -> false;
+      case ThisType                          -> true;
+      };
+  }
+
 
   public AbstractType outer()
   {
@@ -204,6 +219,24 @@ public class NormalType extends LibraryType
       {
         result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer);
         _asValue = result;
+      }
+    return result;
+  }
+
+  public AbstractType asThis()
+  {
+    var result = _asThis;
+    if (result == null)
+      {
+        if (isThisType())
+          {
+            result = this;
+          }
+        else
+          {
+            result = new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.ThisType, _generics, _outer);
+          }
+        _asThis = result;
       }
     return result;
   }
