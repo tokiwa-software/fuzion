@@ -112,14 +112,14 @@ Sequence(T type) ref is
     array T count i->s.next
 
 
-  # create a stream and call 'forAll f' on it
+  # create a stream and call 'for_each f' on it
   #
-  forAll(f T -> unit) unit is asStream.forAll f
+  for_each(f T -> unit) unit is asStream.for_each f
 
 
-  # create a stream and have it consumed by f, infix operator synonym of forAll.
+  # create a stream and have it consumed by f, infix operator synonym of for_each.
   #
-  infix | (f T -> unit) => forAll f
+  infix | (f T -> unit) => for_each f
 
 
   # create a stream, postfix operator synonym for asStream

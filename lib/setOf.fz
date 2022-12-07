@@ -40,10 +40,9 @@ set_of(K (hasHash K).type, vs (CTrie K unit) | (Sequence K)) Set K is
   private map := CTrie K unit
   match vs
     vss (Sequence K) =>
-      vss.forAll (k -> map.add k unit)
+      vss.for_each (k -> map.add k unit)
     vsc (CTrie K unit) =>
       set map := vsc
-
 
   ref : Set K
 

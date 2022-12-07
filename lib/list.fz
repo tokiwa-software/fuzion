@@ -93,9 +93,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # call f in order on all elements of this list
   #
-  redef forAll (f A -> unit) unit is
+  redef for_each (f A -> unit) unit is
     list.this ? nil    =>
-              | c Cons => f c.head; c.tail.forAll f
+              | c Cons => f c.head; c.tail.for_each f
 
 
   # get the head of this list, panic if list is empty
