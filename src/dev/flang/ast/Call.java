@@ -2024,8 +2024,14 @@ public class Call extends AbstractCall
    *
    * Which must return a value of x's type.
    */
-  boolean isTailRecursive(AbstractFeature outer)
+  boolean isTailRecursive(Resolution res, AbstractFeature outer)
   {
+    if(res._options.verbose(1) &&
+       calledFeature() == outer &&
+       !returnsThis(outer.code()))
+      {
+        Errors.warning(calledFeature().pos() + " " + name() + " is recursive but not tail recursive.");
+      }
     return
       calledFeature() == outer &&
       returnsThis(outer.code());
@@ -2167,7 +2173,7 @@ public class Call extends AbstractCall
                                                                     "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;
-            var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
+            var t = isTailRecursive(res, outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                            : cf.resultTypeIfPresent(res, _generics);
 
             if (t != null)
@@ -2177,7 +2183,7 @@ public class Call extends AbstractCall
                 // arguments and returns a Function or Routine
                 result = resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
               }
-            if (t == null || isTailRecursive(outer))
+            if (t == null || isTailRecursive(res, outer))
               {
                 cf.whenResolvedTypes
                   (() -> setActualResultType(res, cf.resultTypeForTypeInference(pos(), res, _generics)));
