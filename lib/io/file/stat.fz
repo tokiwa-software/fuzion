@@ -103,6 +103,10 @@ stat =>
   stat.env
 
 # short-hand for accessing and using stats/lstats provided by the stat effect in current environment
+# in success it will return a meta_data outcome storing stats regarding the file/dir
+# in case of failure an error will be returned
+# resolve flag is used to indicate whether to resolve sym links or not
+# NYI: lstats behaves the same as stats in the interpreter
 #
 stat(
      # the (relative or absolute) file name, using platform specific path separators
@@ -116,8 +120,11 @@ stat(
     stat.env.lstats(path)
 
 # short-hand for accessing and using exists feature provided by the stat effect in current environment
+# tests whether the path passed is an existing file
 #
-exists(path string) =>
+exists(
+       # the (relative or absolute) file name, using platform specific path separators
+       path string) =>
   stats.installDefault
   stat.env.exists(path)
 
