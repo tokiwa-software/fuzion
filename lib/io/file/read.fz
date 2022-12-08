@@ -32,7 +32,7 @@ private read(
   ) : reads, effect r is
 
   # reads all bytes from the file in the path
-  # returns outcome u8, a byte array representing the content of the file if the operation was successful
+  # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
   read_all(
