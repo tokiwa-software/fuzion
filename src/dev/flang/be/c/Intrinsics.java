@@ -106,20 +106,17 @@ public class Intrinsics extends ANY
                  CExpr.exit(1));
     put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
         {
-          var fileIdent = new CIdent("f");
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            // Testing if fopen was successful
-            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
-            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            errno.assign(new CIdent("0")),
+            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
-            CExpr.call("fclose", new List<>(fileIdent)),
-            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
+            CExpr.iff(CExpr.notEq(readingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
+            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );
@@ -139,20 +136,18 @@ public class Intrinsics extends ANY
         );
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
-          var fileIdent = new CIdent("f");
           var writingIdent = new CIdent("writing");
           var resultIdent = new CIdent("result");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("w")))),
-            // Testing if fopen was successful
-            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
-            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
-            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            errno.assign(new CIdent("0")),
+            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.decl("bool", resultIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
+            CExpr.iff(resultIdent.not(), errno.castTo("fzT_1i8").ret()),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
-            CExpr.call("fclose", new List<>(fileIdent)),
-            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
+            CExpr.iff(CExpr.notEq(writingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
+            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );
@@ -162,10 +157,10 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
             // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")),
+            CExpr.iff(CExpr.notEq(fileIdent, new CIdent("NULL")),
             CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
             // If errno is ENOENT, file/dir does not exist
-            CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
+            CExpr.iff(CExpr.eq(new CIdent("errno"), new CIdent("ENOENT")), CExpr.int8const(0).ret()),
             // else return -1 to represent other errors
             CExpr.int8const(-1).ret()
             );
@@ -199,6 +194,114 @@ public class Intrinsics extends ANY
             CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.stats"   , (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var metadata = new CIdent("metadata");
+          return CStmnt.seq(
+            CExpr.decl("struct stat", statIdent),
+            CExpr.decl("long *", metadata),
+            metadata.assign(A1.castTo("long *")),
+            // write stats in metadata if stat was successful and return true
+            CExpr.iff(
+              CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CStmnt.seq(
+                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                c._names.FZ_TRUE.ret()
+                )
+              ),
+            // return false if stat failed
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
+        {
+          var statIdent = new CIdent("statbuf");
+          var metadata = new CIdent("metadata");
+          return CStmnt.seq(
+            CExpr.decl("struct stat", statIdent),
+            CExpr.decl("long *", metadata),
+            metadata.assign(A1.castTo("long *")),
+            // write stats in metadata if lstat was successful and return true
+            CExpr.iff(
+              CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CStmnt.seq(
+                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                c._names.FZ_TRUE.ret()
+                )
+              ),
+            // return false if lstat failed
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.open"   , (c,cl,outer,in) ->
+        {
+          var filepointer = new CIdent("fp");
+          var openresults = new CIdent("open_results");
+          var errno = new CIdent("errno");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", filepointer),
+            CExpr.decl("long *", openresults),
+            openresults.assign(A1.castTo("long *")),
+            errno.assign(new CIdent("0")),
+            CStmnt.suitch(
+              A2.castTo("int"),
+              new List<>(
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(0)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(1)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(2)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  )
+                ), 
+              CStmnt.seq(
+                CExpr.fprintfstderr("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\n"),
+                CExpr.exit(1)
+                )
+              ),
+            openresults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            );
+        }
+        );
+    put("fuzion.std.fileio.close"   , (c,cl,outer,in) ->
+        {
+          var errno = new CIdent("errno");
+          return CStmnt.seq(
+            errno.assign(new CIdent("0")),
+            CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );
