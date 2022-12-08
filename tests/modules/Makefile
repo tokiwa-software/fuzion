@@ -5,7 +5,7 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 FZ = ../../bin/fz
 
 .PHONY: all sources_only a ab b int c clean
-all: sources_only a ab b
+all: sources_only a ab b clean
                        # xy (shows problem related to #462)
 
 int: all

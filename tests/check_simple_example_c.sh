@@ -47,13 +47,12 @@ else
 
     rm -f testbin
 
-    (($1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
+    ( ($1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
     # (($1 -c $2 -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
-    cat tmp_err0.txt | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >tmp_err.txt
-    rm -rf tmp_err0.txt
+    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
 
     expout=$2.expected_out
     experr=$2.expected_err
@@ -64,10 +63,8 @@ else
         experr=$2.expected_err_c
     fi
     head -n 100 "$expout" >tmp_exp_out.txt
-    diff tmp_exp_out.txt tmp_out.txt
-    if [ $? -eq 0 ]; then
-        diff "$experr" tmp_err.txt >/dev/null
-        if [ $? -eq 0 ]; then
+    if diff tmp_exp_out.txt tmp_out.txt; then
+        if diff "$experr" tmp_err.txt >/dev/null; then
             echo -ne "\033[32;1mPASSED\033[0m."
         else
             if [ -s "$experr" ] && [ -s tmp_err.txt ]; then

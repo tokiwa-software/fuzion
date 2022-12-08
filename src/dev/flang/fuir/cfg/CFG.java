@@ -232,6 +232,12 @@ public class CFG extends ANY
     put("fuzion.std.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.move"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.create_dir"   , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.stats"        , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.lstats"       , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.open"         , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.close"        , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.seek"         , (cfg, cl) -> { } );
+    put("fuzion.std.fileio.file_position", (cfg, cl) -> { } );
     put("fuzion.std.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.std.err.flush"           , (cfg, cl) -> { } );
     put("fuzion.stdin.nextByte"          , (cfg, cl) -> { } );
@@ -284,6 +290,10 @@ public class CFG extends ANY
     put("i16.infix =="                   , (cfg, cl) -> { } );
     put("i32.infix =="                   , (cfg, cl) -> { } );
     put("i64.infix =="                   , (cfg, cl) -> { } );
+    put("i8.#type_STATIC.equality"       , (cfg, cl) -> { } );
+    put("i16.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("i32.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("i64.#type_STATIC.equality"      , (cfg, cl) -> { } );
     put("i8.infix !="                    , (cfg, cl) -> { } );
     put("i16.infix !="                   , (cfg, cl) -> { } );
     put("i32.infix !="                   , (cfg, cl) -> { } );
@@ -354,6 +364,10 @@ public class CFG extends ANY
     put("u16.infix =="                   , (cfg, cl) -> { } );
     put("u32.infix =="                   , (cfg, cl) -> { } );
     put("u64.infix =="                   , (cfg, cl) -> { } );
+    put("u8.#type_STATIC.equality"       , (cfg, cl) -> { } );
+    put("u16.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("u32.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("u64.#type_STATIC.equality"      , (cfg, cl) -> { } );
     put("u8.infix !="                    , (cfg, cl) -> { } );
     put("u16.infix !="                   , (cfg, cl) -> { } );
     put("u32.infix !="                   , (cfg, cl) -> { } );
@@ -418,6 +432,8 @@ public class CFG extends ANY
     put("f64.infix **"                   , (cfg, cl) -> { } );
     put("f32.infix =="                   , (cfg, cl) -> { } );
     put("f64.infix =="                   , (cfg, cl) -> { } );
+    put("f32.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("f64.#type_STATIC.equality"      , (cfg, cl) -> { } );
     put("f32.infix !="                   , (cfg, cl) -> { } );
     put("f64.infix !="                   , (cfg, cl) -> { } );
     put("f32.infix <"                    , (cfg, cl) -> { } );
@@ -482,6 +498,8 @@ public class CFG extends ANY
     put("fuzion.sys.array.get"           , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );

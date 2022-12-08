@@ -494,9 +494,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
        {
          var q = inner._qname;
          var n = q.get(at);
-         var o = n == FuzionConstants.TYPE_NAME
-           ? outer.typeFeature(_res)
-           : lookupFeatureForType(inner.pos(), n, outer);
+         var o =
+           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer) :
+           inner.belongsToNonStaticType() ? outer.nonStaticTypeFeature(_res)
+                                          : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -565,7 +566,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.visit(new FeatureVisitor()
       {
         public Call      action(Call      c, AbstractFeature outer) {
-          if (c.name == null)
+          if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
@@ -601,6 +602,64 @@ public class SourceModule extends Module implements SrcModule, MirModule
        inner.state() == Feature.State.LOADED);
   }
 
+
+  /**
+   * Add type new feature.
+   *
+   * This is somewhat ugly since it addes typeFeature to the declaredFeatures or
+   * decalredOrInheritedFeatures of the outer types even after those had been
+   * determined already.
+   *
+   * @param outerType the static outer type of universe.
+   *
+   * @param typeFeature the new (static or non-static) type feature declared
+   * within nonStaticOuterType.
+   */
+  public AbstractFeature addTypeFeature(AbstractFeature outerType,
+                                        Feature typeFeature)
+  {
+    var nonStaticOuterType = outerType.isUniverse() ? outerType : outerType.typeFeaturesNonStaticParent();
+    var result = typeFeature;
+    findDeclarations(typeFeature, nonStaticOuterType);
+    addDeclared(false, nonStaticOuterType, typeFeature);
+    addDeclared(true,  outerType, typeFeature);
+    typeFeature.scheduleForResolution(_res);
+    resolveDeclarations(typeFeature);
+    return result;
+  }
+
+
+  /**
+   * Add inner feature to the set of declared (or inherited) features of outer.
+   *
+   * NYI: CLEANUP: This is a little ugly since it is used to add type features
+   * while the sets of declared and inherited features had already been
+   * determined.
+   *
+   * @param inherited true to add inner to declaredOrInherited, false to add it
+   * to declare and declaredOrInherited.
+   *
+   * @param outer the outer feature
+   *
+   * @param inner the feature to be added.
+   */
+  private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
+  {
+    var d = data(outer);
+    var fn = inner.featureName();
+    if (!inherited && d._declaredFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
+        d._declaredFeatures.put(fn, inner);
+      }
+    if (d._declaredOrInheritedFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
+        d._declaredOrInheritedFeatures.put(fn, inner);
+      }
+  }
 
 
   /*-----------------------  attachng data to AST  ----------------------*/
@@ -721,7 +780,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else if (existing.outer() == outer)
       {
-        if (Errors.count() == 0)
+        if (existing.isTypeFeature())
+          {
+            // NYI: see #461: type features may currently be declared repeatedly in different modules
+          }
+        else if (Errors.count() == 0)
           { // This can happen only as the result of previous errors since this
             // case was already handled in addDeclaredInnerFeature:
             throw new Error();
@@ -1114,10 +1177,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
         var t2 = f.resultType();
-        if ((t1.isChoice()
-             ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
-             : !t1.isAssignableFrom(t2)) &&
-            t2 != Types.resolved.t_void)
+        if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
+          { // NYI: CLEANUP: #706: allow redefintion of THIS_TYPE in type features for now, these are created internally.
+          }
+        else if ((t1.isChoice()
+                  ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
+                  : !t1.isAssignableFrom(t2)) &&
+                 t2 != Types.resolved.t_void)
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }

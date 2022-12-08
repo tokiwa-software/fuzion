@@ -318,7 +318,7 @@ O(n log n).
   #
   union (other ref psMap PK V) ref psMap PK V is  # NYI: #167: 'ref' due to lack of 'like this'
     if other.size < size
-      other ⋃ psMap.this
+      other ∪ psMap.this
     else
 
       # helper to add 'psMap.this.data[l..r]' to 'a' and return the resulting map.
@@ -353,9 +353,9 @@ O(n log n).
       addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
 
 
-  # infix operator synonyme for union of two psMaps
+  # infix operator synonym for union of two psMaps
   #
-  infix ⋃ (other ref psMap PK V) => union other  # NYI: #167: 'ref' due to lack of 'like this'
+  infix ∪ (other ref psMap PK V) => union other  # NYI: #167: 'ref' due to lack of 'like this'
 
 
 # psMaps -- unit type feature declaring features related to psMap

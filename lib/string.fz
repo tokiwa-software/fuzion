@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash string, ordered string, strings is
+string ref : has_equality, hasHash string, ordered string, strings is
 
   redef orderedThis => string.this
 
@@ -70,6 +70,17 @@ string ref : hasHash string, ordered string, strings is
 
 
   infix == (other string) => string.this = other    # NYI: #498: replace by 'infix ='
+
+
+  # compare two strings byte-by-byte
+  #
+  # result is true iff the strings have the same number of utf8 bytes and those
+  # bytes are equal.
+  #
+  type.equality(a, b string) =>
+    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
+      & a.utf8.count ≟ b.utf8.count
+
 
   # does this come before other?
   #
@@ -585,4 +596,3 @@ strings is
   zChar     => "z".utf8.first
   capAChar  => "A".utf8.first
   capZChar  => "Z".utf8.first
-

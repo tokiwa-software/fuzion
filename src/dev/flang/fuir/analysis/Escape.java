@@ -157,13 +157,13 @@ public class Escape extends ANY
               if (_fuir.accessedClazz(cl, c, i) != -1)  // field we are assigning to may be unused, i.e., -1
                 {
                   var tc = _fuir.accessTargetClazz(cl, c, i);
-                  if (hasData(tc))
+                  if (_fuir.hasData(tc))
                     {
                       var target = stack.pop();
                     }
                   var cc0 = _fuir.accessedClazz  (cl, c, i);
                   var rt = _fuir.clazzResultClazz(cc0);
-                  if (hasData(rt))
+                  if (_fuir.hasData(rt))
                     {
                       var value  = stack.pop();
                       if (value)
@@ -179,11 +179,11 @@ public class Escape extends ANY
             {
               var vc = _fuir.boxValueClazz(cl, c, i);
               var rc = _fuir.boxResultClazz(cl, c, i);
-              if (hasData(vc))
+              if (_fuir.hasData(vc))
                 {
                   stack.pop();
                 }
-              if (hasData(rc))
+              if (_fuir.hasData(rc))
                 {
                   stack.push(false);
                 }
@@ -213,7 +213,7 @@ public class Escape extends ANY
                   while (argCount > 0)
                     {
                       var ac = _fuir.clazzArgClazz(cc0, argCount-1);
-                      if (hasData(ac))
+                      if (_fuir.hasData(ac))
                         {
                           if (stack.pop())
                             {
@@ -228,7 +228,7 @@ public class Escape extends ANY
                   if (tc != -1)
                     {
                       var or = _fuir.clazzOuterRef(cc0);
-                      if (hasData(tc))
+                      if (_fuir.hasData(tc))
                         {
                           if (stack.pop() && _fuir.clazzKind(cc0) != IR.FeatureKind.Field)
                             {
@@ -238,7 +238,7 @@ public class Escape extends ANY
                             }
                         }
                     }
-                  if (hasData(rt))
+                  if (_fuir.hasData(rt))
                     {
                       stack.push(false);
                     }
@@ -257,7 +257,7 @@ public class Escape extends ANY
           case Const:
             {
               var constCl = _fuir.constClazz(c, i);
-              if (hasData(constCl))
+              if (_fuir.hasData(constCl))
                 {
                   stack.push(false);
                 }
@@ -279,11 +279,11 @@ public class Escape extends ANY
               var vc = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
               var nc = _fuir.tagNewClazz  (cl, c, i);  // static clazz of result
               var isCurrent = false;
-              if (hasData(vc))
+              if (_fuir.hasData(vc))
                 {
                   isCurrent = stack.pop();
                 }
-              if (hasData(nc))
+              if (_fuir.hasData(nc))
                 {
                   stack.push(isCurrent);
                 }
@@ -312,18 +312,6 @@ public class Escape extends ANY
           }
       }
     return false;
-  }
-
-
-  /**
-   * Check if the given type contains data, i.e., has to be taken care of.
-   */
-  private boolean hasData(int t)
-  {
-    return
-      !_fuir.clazzIsUnitType(t) &&
-      !_fuir.clazzIsVoidType(t) &&
-      t != _fuir.clazzUniverse();
   }
 
 

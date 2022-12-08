@@ -1,0 +1,10 @@
+
+[32m--CURDIR--/issue662.fz:30:3:[39m [1;31merror 1[0m[1m: '[35mmatch[39m' expression requires at least one case[0m
+[34m  match a.b
+[33m--^[0m
+Match statement at [32m--CURDIR--/issue662.fz:30:3:[39m
+[34m  match a.b
+[33m--^[0m
+To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding '[35mmatch[39m' expression
+
+one error.

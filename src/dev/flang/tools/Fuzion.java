@@ -83,6 +83,8 @@ class Fuzion extends Tool
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = false;
   static boolean _xdfa_ = true;
+  static String _cCompiler_ = null;
+  static String _cFlags_ = null;
 
 
   /**
@@ -106,7 +108,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] ";
+        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -126,11 +128,21 @@ class Fuzion extends Tool
             _xdfa_ = parseOnOffArg(o);
             result = true;
           }
+        else if (o.startsWith("-CC="))
+          {
+            _cCompiler_ = o.substring(4);
+            result = true;
+          }
+        else if (o.startsWith("-CFlags="))
+          {
+            _cFlags_ = o.substring(8);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_), fuir).compile();
       }
     },
 
@@ -350,7 +362,7 @@ class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var mir = fe.createMIR();                                                       f.timer("createeMIR");
+      var mir = fe.createMIR();                                                       f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
       process(fe._options, fuir);

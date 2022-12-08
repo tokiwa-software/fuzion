@@ -313,7 +313,6 @@ public class Loop extends ANY
     initialArguments(formalArguments, initialActuals, nextActuals);
     var initialCall       = new Call(pos, loopName, initialActuals);
     var tailRecursiveCall = new Call(pos, loopName, nextActuals   );
-    tailRecursiveCall._isTailRecursive = true;
     if (_nextIteration == null)
       {
         _nextIteration = tailRecursiveCall;
@@ -338,7 +337,7 @@ public class Loop extends ANY
     var p = block.pos();
     Feature loop = new Feature(p,
                                Consts.VISIBILITY_INVISIBLE,
-                               Consts.MODIFIER_FINAL,
+                               0,
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
@@ -477,7 +476,7 @@ public class Loop extends ANY
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
                                     Consts.VISIBILITY_INVISIBLE,
-                                    Consts.MODIFIER_FINAL,
+                                    0,
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),

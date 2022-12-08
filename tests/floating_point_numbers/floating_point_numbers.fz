@@ -123,4 +123,4 @@ floating_point_numbers is
   chck (f64s.minPositive == 0x1P-1022)                                    "f64: minPositive is correct"
   chck (f64s.max == (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
-  fuzion.std.exit exitCode
+  exit exitCode

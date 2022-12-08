@@ -28,7 +28,7 @@
 # This is used as heir feature for effects such as io.out and io.err.
 #
 private printEffect (
-  p canPrint,
+  p Can_Print,
 
   # action to be taken: plain nomad, install or replace?
   redef r effectMode.val
@@ -54,7 +54,7 @@ is
     replace
 
 
-canPrint ref is
+Can_Print ref is
 
   println(s Object) =>
     print s

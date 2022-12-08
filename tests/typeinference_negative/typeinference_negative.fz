@@ -159,7 +159,7 @@ typeinference_negative is
     x => z; y => x;  z => y; // 36. r3.z should flag an error, cyclic result type inference
 
   result4 is
-    x => x // 37. r4. should flag an error, cannot infer result type from itself
+    x => x // this is fine, inferring result type from itself results in result type being void!
 
   result5 is
     x => y // 38. r5.x should flag an error, cyclic result type inference
