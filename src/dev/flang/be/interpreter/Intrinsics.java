@@ -421,14 +421,17 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           long fd = args.get(1).i64Value();
+          var seekResults = (long[])args.get(3).arrayData()._array; 
           try
             {
               _openStreams_.get(fd).seek(args.get(2).i16Value());
-              return new i64Value(_openStreams_.get(fd).getFilePointer());
+              seekResults[0] = _openStreams_.get(fd).getFilePointer();
+              return Value.EMPTY_VALUE;
             } 
           catch (Exception e)
             {
-              return new i64Value(-1);
+              seekResults[1] = -1;
+              return Value.EMPTY_VALUE;
             }
         });
     put("fuzion.std.fileio.file_position", (interpreter, innerClazz) -> args ->
@@ -439,13 +442,16 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           long fd = args.get(1).i64Value();
+          long[] arr = (long[])args.get(2).arrayData()._array;
           try
             {
-              return new i64Value(_openStreams_.get(fd).getFilePointer());
+              arr[0] = _openStreams_.get(fd).getFilePointer();
+              return Value.EMPTY_VALUE;
             } 
           catch (Exception e)
             {
-              return new i64Value(-1);
+              arr[1] = -1;
+              return Value.EMPTY_VALUE;
             }
         });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->

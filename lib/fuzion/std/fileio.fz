@@ -244,18 +244,54 @@ public fileio is
                    # file descriptor
                    fd i64) i64 is intrinsic
 
-  # intrinsic to set the file-pointer offset, measured from the beginning of the file indicated by the file descriptor, at which the next read or write occurs.
-  # returns the new position in success and -1 in failure
+  # seek offset in the stream represented by fd
+  # returns an outcome i64 that represents the new offset
+  # returns an error in case of failure
+  #
+  public seek(
+              # file descriptor
+              fd i64,
+              # the offset to seek from the beginning of this file
+              offset i64) outcome i64 is
+    arr := array 2 (i -> i64 0)
+    seek fd offset arr.internalArray.data
+    if arr[1]==0
+      arr[0]
+    else
+      error "error number: {arr[1]}"
+
+  # intrinsic to set the file-pointer offset at which the next read or write occurs
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # and fills a Fuzion object with the new offset
+  # and the error number from the C back-end/ -1 in the interpreter
   #
   private seek(
                # file descriptor
                fd i64,
                # the offset to seek from the beginning of this file
-               offset i64) i64 is intrinsic
+               offset i64,
+               # Array data [new file position, error number]
+               seek_results Object) unit is intrinsic
 
-  # returns the current file-pointer offset, measured from the beginning of the file indicated by the file descriptor
-  # returns the current offset in success and -1 in failure
+  # returns the current file-pointer offset as an outcome i64,
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and error in failure
+  #
+  public file_position(
+                       # file descriptor
+                       fd i64) outcome i64 is
+    arr := array 2 (i -> i64 0)
+    file_position fd arr.internalArray.data
+    if arr[1]==0
+      arr[0]
+    else
+      error "error number: {arr[1]}"
+
+  # intrinsic that fills a Fuzion object with the current file stream position
+  # and the error number from C back-end/ -1 in the interpreter
   #
   private file_position(
                         # file descriptor
-                        fd i64) i64 is intrinsic
+                        fd i64,
+                        # Array data [new file position, error number]
+                        position_results Object) unit is intrinsic

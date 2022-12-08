@@ -264,18 +264,27 @@ public class Intrinsics extends ANY
         );
     put("fuzion.std.fileio.seek"   , (c,cl,outer,in) ->
         {
-          var filePos = new CIdent("filepos");
+          var seekResults = new CIdent("seek_results");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
-            CExpr.decl("off_t", filePos, new CIdent("-1")),
+            errno.assign(new CIdent("0")),
+            CExpr.decl("long *", seekResults, A2.castTo("long *")),
             CStmnt.iff(CExpr.call("fseeko", new List<>(A0.castTo("FILE *"), A1.castTo("off_t"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
-            filePos.assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))))),
-            filePos.castTo("fzT_1i64").ret()
+            seekResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
+            seekResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
             );
         }
         );
     put("fuzion.std.fileio.file_position"   , (c,cl,outer,in) ->
         {
-          return CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64").ret();
+          var positionResults = new CIdent("position_results");
+          var errno = new CIdent("errno");
+          return CStmnt.seq(
+            errno.assign(new CIdent("0")),
+            CExpr.decl("long *", positionResults, A1.castTo("long *")),
+            positionResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
+            positionResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            );
         }
         );
     put("fuzion.std.out.flush" ,
