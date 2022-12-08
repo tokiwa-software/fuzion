@@ -356,7 +356,7 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.on_open", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.open", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -399,7 +399,7 @@ public class Intrinsics extends ANY
             }
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.std.fileio.on_close", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.close", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -413,13 +413,13 @@ public class Intrinsics extends ANY
                 {
                   _openStreams_.remove(fd).close();
                   releaseFileDescriptor(fd);
-                  return new i64Value(0);
+                  return new i8Value(0);
                 }
-              return new i64Value(-1);
+              return new i8Value(-1);
             } 
           catch (Exception e)
             {
-              return new i64Value(-1);
+              return new i8Value(-1);
             }
         });
     put("fuzion.std.fileio.stats",
