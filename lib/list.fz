@@ -231,6 +231,25 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     "{(map string x->x.asString).fold (strings.concat sep)}"
 
 
+  # add an element sep in front of every element of this list.
+  #
+  prepend_to_all(sep A) list A is
+    prepend_to_all sep nil
+
+
+  # add an element sep in front of every element of this list, helper to
+  # allow tail recursion.
+  #
+  # if this list is the empty list, return the given result list res, recursively
+  # call this feature on the tail of this list otherwise, feeding it with the
+  # same separator sep but appending sep and the current element to res.
+  #
+  private prepend_to_all(sep A, res list A) list A is
+    match head
+      nil => res
+      x A => tail.prepend_to_all sep (res ++ [sep, x])
+
+
   # List concatenation, O(count)
   #
   concatEagerly (t list A) list A is
