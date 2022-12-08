@@ -250,6 +250,14 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
       x A => tail.prepend_to_all sep (res ++ [sep, x])
 
 
+  # add an element sep between every element of this list.
+  #
+  intersperse(sep A) list A is
+    match head
+      nil => nil
+      x A => [x] ++ tail.prepend_to_all sep
+
+
   # List concatenation, O(count)
   #
   concatEagerly (t list A) list A is
