@@ -167,7 +167,7 @@ inheritance is
   (1..).before (x -> x > 100)
        .before (x -> x > 40)
        .before (x -> x > 20)
-       .forAll (x -> say x)
+       .for_each (x -> say x)
 
   // test for recursive inheritance/outer relation with refs
   strm.u.print

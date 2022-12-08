@@ -40,9 +40,9 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AbstractFeature is represents a Fuzion feature in the front end.  This
- * feature might either be part of the abstract syntax tree or part of a binary
- * module file.
+ * AbstractFeature represents a Fuzion feature in the front end.  This feature
+ * might either be part of the abstract syntax tree or part of a binary module
+ * file.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -71,6 +71,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
      */
     public static Kind from(int ordinal)
     {
+      if (PRECONDITIONS) require
+        (0 <= ordinal,
+         ordinal < values().length);
+
       if (CHECKS) check
         (values()[ordinal].ordinal() == ordinal);
 

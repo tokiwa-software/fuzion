@@ -193,7 +193,55 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.on_open"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.stats"   , (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var metadata = new CIdent("metadata");
+          return CStmnt.seq(
+            CExpr.decl("struct stat", statIdent),
+            CExpr.decl("long *", metadata),
+            metadata.assign(A1.castTo("long *")),
+            // write stats in metadata if stat was successful and return true
+            CExpr.iff(
+              CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CStmnt.seq(
+                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                c._names.FZ_TRUE.ret()
+                )
+              ),
+            // return false if stat failed
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
+        {
+          var statIdent = new CIdent("statbuf");
+          var metadata = new CIdent("metadata");
+          return CStmnt.seq(
+            CExpr.decl("struct stat", statIdent),
+            CExpr.decl("long *", metadata),
+            metadata.assign(A1.castTo("long *")),
+            // write stats in metadata if lstat was successful and return true
+            CExpr.iff(
+              CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CStmnt.seq(
+                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                c._names.FZ_TRUE.ret()
+                )
+              ),
+            // return false if lstat failed
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
+    put("fuzion.std.fileio.open"   , (c,cl,outer,in) ->
         {
           var filepointer = new CIdent("fp");
           var openresults = new CIdent("open_results");
@@ -243,13 +291,13 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.on_close"   , (c,cl,outer,in) ->
+    put("fuzion.std.fileio.close"   , (c,cl,outer,in) ->
         {
           var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), CExpr.int8const(0).ret()),
-            errno.castTo("fzT_1i64").ret()
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );

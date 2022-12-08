@@ -41,7 +41,7 @@ primes is
 
   primes2(n i32) is   // sieve using streams
     a := (marrays bool).new n+1 false
-    (2..n).forAll (i ->
+    (2..n).for_each (i ->
         if !a[i]
           yak "$i "
           (1..n).forWhile (j ->
@@ -55,9 +55,9 @@ primes is
     a := (marrays bool).new n+1 false
     (2..n)
       .filter (i -> !a[i])
-      .forAll (i ->
+      .for_each (i ->
           yak "$i "
-          (1..n/i).forAll (j -> a[i*j] := true)
+          (1..n/i).for_each (j -> a[i*j] := true)
         )
   say "Primes using streams and filters:"; primes3 1000; say
 

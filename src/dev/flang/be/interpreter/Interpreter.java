@@ -37,6 +37,7 @@ import java.util.Map;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
@@ -58,7 +59,6 @@ import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instea
 import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -226,14 +226,18 @@ public class Interpreter extends ANY
           {
             callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
           }
+        catch (FatalError e)
+          {
+            throw e;
+          }
+        catch (StackOverflowError e)
+          {
+            Errors.fatal("*** " + e + "\n" + callStack());
+          }
         catch (RuntimeException | Error e)
           {
-            if (!(e instanceof StackOverflowError))
-              {
-                Errors.error("*** " + e + "\n" + callStack());
-                throw e;
-              }
-            Errors.fatal("*** " + e + "\n" + callStack());
+            Errors.error("*** " + e + "\n" + callStack());
+            throw e;
           }
         if (CHECKS) check
           (Errors.count() == 0);
