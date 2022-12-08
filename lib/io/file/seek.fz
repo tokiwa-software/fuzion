@@ -31,7 +31,9 @@ private seek(
   _ unit
   ) : seeks, effect r is
 
-  # seek offset in the fd
+  # seek offset in the stream represented by fd
+  # returns an outcome i64 that represents the new offset
+  # returns an error in case of failure
   #
   seek(
        # the file descriptor
@@ -42,7 +44,9 @@ private seek(
     replace
     tmp
 
-  # return the current stream position
+  # returns the current file-pointer offset as an outcome i64,
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and error in failure
   #
   file_position(
                 # the file descriptor
@@ -53,8 +57,15 @@ private seek(
 
 # short-hand for accessing seek effect in current environment and performing the default seek operation using 
 # io.file.seek.seek fd offset
+# seek offset in the stream represented by fd
+# returns an outcome i64 that represents the new offset
+# returns an error in case of failure
 #
-seek(fd i64, offset i64) =>
+seek(
+     # the file descriptor
+     fd i64,
+     # the offset to seek from the beginning of the stream pointer
+     offset i64) =>
   seeks.installDefault
   seek.env.seek fd offset
 
