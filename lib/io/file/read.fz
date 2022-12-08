@@ -48,7 +48,7 @@ read_custom(f () -> unit) => read_custom default_read_operation f
 #
 read_custom(ro Read_Operation, f () -> unit) =>
   s := read ro effectMode.new unit
-  s.use0 f # NYI : FUZION/lib/effect.fz:98:7: error 1: Precondition does not hold
+  s.use0 f
   unit
 
 # short-hand for accessing read effect in current environment
