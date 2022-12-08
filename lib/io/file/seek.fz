@@ -75,11 +75,11 @@ seek =>
   seeks.installDefault
   seek.env
 
-# reference to the seeks that could be provided
+# reference to the seek operations that could be provided
 #
 Provided_Seek ref is
   seek(fd i64, offset i64) outcome i64 is abstract
-  file_position(fd i64) outcome bool is abstract
+  file_position(fd i64) outcome i64 is abstract
 
 # the default stream seeking
 #
