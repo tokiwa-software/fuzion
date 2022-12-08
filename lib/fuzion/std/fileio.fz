@@ -27,7 +27,8 @@
 #
 public fileio is
 
-  # reads a file and returns the content as an array of u8.
+  # reads a file and returns the content as an outcome array of u8 in case of success
+  # and an error in case of failure
   #
   public read(
               # the (relative or absolute) file name, using platform specific path separators
@@ -36,16 +37,18 @@ public fileio is
       num i64 =>
         file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
         arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
-        match (open arr (i8 0)).values.0
+        match open arr (i8 0)
           fd i64 =>
-            read fd file.internalArray.data file.length // NYI: error handling for the read feature
-            file
-          nil => error "failed to open file: $path"
-      error error =>
-        error
+            read_result := read fd file.internalArray.data file.length
+            if read_result == 0
+              file
+            else
+              error "error number: $read_result"
+          err_open error => err_open
+      err_size error => err_size
 
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
-  # returns true in case of success and false in case of failure
+  # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
   #
   private read(
                # the file descriptor
@@ -53,7 +56,7 @@ public fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array Object,
                # the length of the array that represents the file bytes
-               file_array_length i32) bool is intrinsic
+               file_array_length i32) i8 is intrinsic
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
@@ -86,17 +89,18 @@ public fileio is
                # the content of the file as an u8 array
                content array u8) outcome unit is
     arr := fuzion.sys.c_string path
-    match (open arr (i8 1)).values.0
+    match open arr (i8 1)
       fd i64 =>
-        if write fd content.internalArray.data content.length
+        write_results := write fd content.internalArray.data content.length
+        if write_results == 0
           unit
         else
-          error "an error occurred during writing the file: \"$path\""
-      nil =>
-        error "failed to open file: $path"
+          error "error number: $write_results"
+      open_error error => open_error
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
-  # returns TRUE in case of success and FALSE in case of failure
+  # returns i8 0 in case of success
+  # and the error number/ -1 in the interpreter in case of failure
   #
   private write(
                 # the file descriptor
@@ -104,7 +108,7 @@ public fileio is
                 # the internal array data representing the content bytes to insert in file
                 content Object,
                 # the length of the internal array representing the content
-                content_length i32) bool is intrinsic
+                content_length i32) i8 is intrinsic
 
   # checks if the file/directory in the path exists or not
   # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error

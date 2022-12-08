@@ -108,13 +108,15 @@ public class Intrinsics extends ANY
         {
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
+            errno.assign(new CIdent("0")),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
             CExpr.decl("bool", resultIdent, new CIdent("true")),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
+            CExpr.iff(CExpr.notEq(readingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
+            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );
@@ -136,14 +138,16 @@ public class Intrinsics extends ANY
         {
           var writingIdent = new CIdent("writing");
           var resultIdent = new CIdent("result");
+          var errno = new CIdent("errno");
           return CStmnt.seq(
-            CExpr.iff(A0.castTo("FILE *").eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
+            errno.assign(new CIdent("0")),
             CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
             CExpr.decl("bool", resultIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
+            CExpr.iff(resultIdent.not(), errno.castTo("fzT_1i8").ret()),
             // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(writingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
+            CExpr.iff(CExpr.notEq(writingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
+            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
             );
         }
         );

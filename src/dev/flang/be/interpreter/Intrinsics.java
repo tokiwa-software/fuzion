@@ -242,11 +242,11 @@ public class Intrinsics extends ANY
           try
             {
               int bytesRead = _openStreams_.get(args.get(1).i64Value()).read(byteArr);
-              return args.get(3).i32Value() == bytesRead ? new boolValue(true) : new boolValue(false);
+              return args.get(3).i32Value() == bytesRead ? new i8Value(0) : new i8Value(-1);
             }
           catch (Exception e)
             {
-              return new boolValue(false);
+              return new i8Value(-1);
             }
         });
     put("fuzion.std.fileio.get_file_size", (interpreter, innerClazz) -> args ->
@@ -276,11 +276,11 @@ public class Intrinsics extends ANY
           try
             {
               _openStreams_.get(args.get(1).i64Value()).write(fileContent);
-              return new boolValue(true);
+              return new i8Value(0);
             }
           catch (Exception e)
             {
-              return new boolValue(false);
+              return new i8Value(-1);
             }
         });
     put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
