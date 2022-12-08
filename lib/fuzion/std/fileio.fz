@@ -59,6 +59,8 @@ public fileio is
                # the length of the array that represents the file bytes
                file_array_length i32) i8 is intrinsic
 
+  # retrieves the file size in bytes and returns an outcome of error in case of an error
+  #
   public get_file_size(
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
@@ -77,7 +79,11 @@ public fileio is
                         # dummy parameter for overloading
                         _ unit) i64 is intrinsic
 
-
+  # creates a new file using an array of u8 as content and a string as the file path
+  # it overwrites the file, if it exists, or creates a new one if it does not exist
+  # if the director(y/ies) in the path d(oes/o) not exist, or an error happens during the writing operation an error will be returned
+  # in case of success a unit type will be the outcome
+  #
   public write(
                # the (relative or absolute) file name, using platform specific path separators
                path string,
