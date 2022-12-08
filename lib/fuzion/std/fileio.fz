@@ -213,49 +213,50 @@ public fileio is
   lstats(path Object, meta_data Object) bool is intrinsic # NYI
 
   # Opens an IO source using a Fuzion Object as path and an i8 flag to represent the opening method (Read: 0, Write: 1, Append: 2)
-  # returns tuple (option i64) i64
-  # the tuple's first parameter is the file descriptor (nil in failure) and the second is the error number (0 in success) or -1 in the interpreter
+  # returns outcome i64 representing the file descriptor in success
+  # returns an error in failure
   #
   public open(
               # a Fuzion Object represention the path for the source to be opened
               path Object,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
-              flag i8) tuple (option i64) i64 is
+              flag i8) outcome i64 is
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
-    on_open path open_results.internalArray.data flag
+    open path open_results.internalArray.data flag
     if open_results[1]==0
-      tuple (option i64 open_results[0]) open_results[1]
+      open_results[0]
     else
-      tuple (option i64 nil) open_results[1]
+      error "error number: {open_results[1]}"
 
   # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
   # after opening the source represented by the path parameter
   #
-  private on_open(
-                  # a Fuzion Object represention the path for the source to be opened
-                  path Object, 
-                  # open_results[file descriptor, error number] as a Fuzion Object
-                  open_results Object,
-                  # opening flag (Read: 0, Write: 1, Append: 2)
-                  flag i8) unit is intrinsic
+  private open(
+               # a Fuzion Object represention the path for the source to be opened
+               path Object, 
+               # open_results[file descriptor, error number] as a Fuzion Object
+               open_results Object,
+               # opening flag (Read: 0, Write: 1, Append: 2)
+               flag i8) unit is intrinsic
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
-  # returns tuple bool i8 where the bool parameter is the result of the operation and the i8 parameter is the error number which is 0 in case result is true
+  # returns outcome unit in case of success and an error in case of failure
   #
   public close(
                # file descriptor
-               fd i64) tuple bool i64 is
-    closing_result := on_close fd
+               fd i64) outcome unit is
+    closing_result := close fd unit
     if closing_result == 0
-      tuple true (i64 0)
+      unit
     else
-      tuple false closing_result
+      error "error number: $closing_result"
 
   # intrinsic that takes an i64 value that represents the file descriptor and closes the stream
-  # returns an i64 to represent the result of the operation
-  # 0 in case no errors occurred and the error number in case the operation failed
-  # NYI : the interpreter does not return an error number but rather -1 in case of failure
+  # returns an i8 to represent the result of the operation
+  # 0 in case no errors occurred and the error number in case the operation failed in the C back-end/ -1 in the interpreter
   #
-  private on_close(
-                   # file descriptor
-                   fd i64) i64 is intrinsic
+  private close(
+                # file descriptor
+                fd i64,
+                # dummy variable to enable overload
+                _ unit) i8 is intrinsic
