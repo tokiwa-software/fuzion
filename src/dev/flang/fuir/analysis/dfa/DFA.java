@@ -923,6 +923,8 @@ public class DFA extends ANY
     put("fuzion.std.fileio.delete"       , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.move"         , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.create_dir"   , cl -> cl._dfa._bool );
+    put("fuzion.std.fileio.open"         , cl -> Value.UNIT ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
+    put("fuzion.std.fileio.close"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.std.fileio.stats"        , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.std.fileio.lstats"       , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.std.out.flush"           , cl -> Value.UNIT );

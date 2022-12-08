@@ -42,16 +42,17 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
@@ -86,10 +87,34 @@ public class Intrinsics extends ANY
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
 
+  /**
+   * This will contain the current open streams
+   * The key represents a file descriptor
+   * The value represents the open stream
+   */
+  private static TreeMap<Long, RandomAccessFile> _openStreams_ = new TreeMap<Long, RandomAccessFile>();
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
   /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * This will represent the current available file descriptor number to be used as a key for the openstreams maps
+   * The value of this variable will be incremented each time a new stream is created
+   */
+  private static Stack<Long> _availableFileDescriptors_ = new Stack<Long>();
+
+
+  /**
+   * This will represent the current largest available file descriptor number
+   * The value of this variable will be incremented when the current available file descriptors are not enough
+   * and needs to be increased
+   * This variable starts at 3 because 0, 1, 2 usually represents standard in, out and err
+   */
+  private static long _maxFileDescriptor_  = 3;
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -156,6 +181,30 @@ public class Intrinsics extends ANY
     return result;
   }
 
+  /**
+   * Checks the file descriptors stack and expands it as necessary.
+   *
+   * @return the next available file descriptor.
+   */
+  private static synchronized long allocFileDescriptor()
+  {
+    if (_availableFileDescriptors_.empty())
+      {
+        _maxFileDescriptor_++;
+        return _maxFileDescriptor_-1;
+      }
+    return _availableFileDescriptors_.pop();
+  }
+
+  /**
+   * Checks the file descriptors stack and expands it as necessary.
+   *
+   * @param fileDescriptor the file descriptor to release.
+   */
+  private static synchronized void releaseFileDescriptor(long fileDescriptor)
+  {
+    _availableFileDescriptors_.push(fileDescriptor);
+  }
 
   static
   {
@@ -305,6 +354,72 @@ public class Intrinsics extends ANY
           catch (Exception e)
             {
               return new boolValue(false);
+            }
+        });
+    put("fuzion.std.fileio.open", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          var open_results = (long[])args.get(2).arrayData()._array; 
+          long fd;
+          try
+            {
+              switch (args.get(3).i8Value()) {
+                case 0:
+                  RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
+                  fd = allocFileDescriptor();
+                  _openStreams_.put(fd, fis);
+                  open_results[0] = fd;
+                  break;
+                case 1:
+                  RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
+                  fd = allocFileDescriptor();
+                  _openStreams_.put(fd, fos);
+                  open_results[0] = fd;
+                  break;
+                case 2:
+                  RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
+                  fas.seek(fas.length());
+                  fd = allocFileDescriptor();
+                  _openStreams_.put(fd, fas);
+                  open_results[0] = fd;
+                  break;
+                default:
+                  open_results[1] = -1;
+                  System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
+                  System.exit(1);
+              }
+            }
+          catch (Exception e)
+            {
+              open_results[1] = -1;
+            }
+          return Value.EMPTY_VALUE;
+        });
+    put("fuzion.std.fileio.close", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          long fd = args.get(1).i64Value();
+          try
+            {
+              if (_openStreams_.containsKey(fd))
+                {
+                  _openStreams_.remove(fd).close();
+                  releaseFileDescriptor(fd);
+                  return new i8Value(0);
+                }
+              return new i8Value(-1);
+            } 
+          catch (Exception e)
+            {
+              return new i8Value(-1);
             }
         });
     put("fuzion.std.fileio.stats",

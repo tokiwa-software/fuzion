@@ -250,6 +250,66 @@ public class Intrinsics extends ANY
             );
         }
         );
+    put("fuzion.std.fileio.open"   , (c,cl,outer,in) ->
+        {
+          var filepointer = new CIdent("fp");
+          var openresults = new CIdent("open_results");
+          var errno = new CIdent("errno");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", filepointer),
+            CExpr.decl("long *", openresults),
+            openresults.assign(A1.castTo("long *")),
+            errno.assign(new CIdent("0")),
+            CStmnt.suitch(
+              A2.castTo("int"),
+              new List<>(
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(0)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(1)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  ),
+                CStmnt.caze(
+                  new List<>(CExpr.int8const(2)),
+                  CStmnt.seq(
+                    filepointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
+                    CExpr.iff(CExpr.notEq(filepointer, new CIdent("NULL")),
+                      CStmnt.seq(openresults.index(CExpr.ident("0")).assign(filepointer.castTo("fzT_1i64")))),
+                    CStmnt.BREAK
+                    )
+                  )
+                ), 
+              CStmnt.seq(
+                CExpr.fprintfstderr("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\n"),
+                CExpr.exit(1)
+                )
+              ),
+            openresults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            );
+        }
+        );
+    put("fuzion.std.fileio.close"   , (c,cl,outer,in) ->
+        {
+          var errno = new CIdent("errno");
+          return CStmnt.seq(
+            errno.assign(new CIdent("0")),
+            CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), CExpr.int8const(0).ret()),
+            errno.castTo("fzT_1i8").ret()
+            );
+        }
+        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
