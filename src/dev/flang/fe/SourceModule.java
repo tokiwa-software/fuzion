@@ -244,13 +244,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _universe.setState(Feature.State.RESOLVED);
         var stdlib = _dependsOn[0];
         new Types.Resolved(this,
-                           (name, ref) -> new NormalType(stdlib,
-                                                         -1,
-                                                         SourcePosition.builtIn,
-                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe),
-                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
-                                                         Type.NONE,
-                                                         _universe.thisType()),
+                           (name, ref) ->
+                             {
+                               var f = lookupFeatureForType(SourcePosition.builtIn, name, _universe);
+                               return new NormalType(stdlib,
+                                                     -1,
+                                                     SourcePosition.builtIn,
+                                                     f,
+                                                     ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                                     Type.NONE,
+                                                     _universe.thisType());
+                             },
                            _universe);
       }
 

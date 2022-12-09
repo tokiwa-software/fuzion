@@ -223,6 +223,14 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * For a type, the value of the valRefOrThis byte:
+   */
+  public static final int MIR_FILE_TYPE_IS_VALUE = 0x00;
+  public static final int MIR_FILE_TYPE_IS_REF   = 0x01;
+  public static final int MIR_FILE_TYPE_IS_THIS  = 0x02;
+
+
+  /**
    * Fuzion home directory as used in module files instead of absolute or
    * relative path of build directory.
    */
