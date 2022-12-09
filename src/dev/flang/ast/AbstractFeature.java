@@ -1063,32 +1063,39 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (heir != Types.f_ERROR)
       {
-        for (AbstractCall c : heir.findInheritanceChain(outer()))
+        var inh = heir.findInheritanceChain(outer());
+        if (CHECKS) check
+          (Errors.count() >= 0 || inh != null);
+
+        if (inh != null)
           {
-            for (int i = 0; i < a.length; i++)
+            for (AbstractCall c : heir.findInheritanceChain(outer()))
               {
-                var ti = a[i];
-                if (ti.isOpenGeneric())
+                for (int i = 0; i < a.length; i++)
                   {
-                    var frmlTs = ti.genericArgument().replaceOpen(c.generics());
-                    a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                    for (var tg : frmlTs)
+                    var ti = a[i];
+                    if (ti.isOpenGeneric())
                       {
-                        if (CHECKS) check
-                          (tg == Types.intern(tg));
-                        a[i] = tg;
-                        i++;
+                        var frmlTs = ti.genericArgument().replaceOpen(c.generics());
+                        a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
+                        for (var tg : frmlTs)
+                          {
+                            if (CHECKS) check
+                              (tg == Types.intern(tg));
+                            a[i] = tg;
+                            i++;
+                          }
+                        i = i - 1;
                       }
-                    i = i - 1;
-                  }
-                else
-                  {
-                    if (res != null)
+                    else
                       {
-                        FormalGenerics.resolve(res, c.generics(), heir);
+                        if (res != null)
+                          {
+                            FormalGenerics.resolve(res, c.generics(), heir);
+                          }
+                        ti = ti.actualType(c.calledFeature(), c.generics());
+                        a[i] = Types.intern(ti);
                       }
-                    ti = ti.actualType(c.calledFeature(), c.generics());
-                    a[i] = Types.intern(ti);
                   }
               }
           }
