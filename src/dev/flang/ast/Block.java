@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.ListIterator;
 
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -239,13 +238,25 @@ public class Block extends AbstractBlock
    */
   public AbstractType type()
   {
-    AbstractType result = Types.resolved.t_unit;
     Expr resExpr = resultExpression();
-    if (resExpr != null)
-      {
-        result = resExpr.typeForFeatureResultTypeInferencing();
-      }
-    return result;
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.type();
+  }
+
+
+  /**
+   * typeForFeatureResultTypeInferencing returns the type of this expression or
+   * null if the type is still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  AbstractType typeForFeatureResultTypeInferencing()
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForFeatureResultTypeInferencing();
   }
 
 
