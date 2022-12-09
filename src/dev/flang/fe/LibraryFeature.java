@@ -426,7 +426,10 @@ public class LibraryFeature extends AbstractFeature
 
     var o = outer();
     var ot = o == null ? null : o.thisType();
-    AbstractType result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
+    AbstractType result = new NormalType(_libModule, -1, this, this,
+                                         isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
