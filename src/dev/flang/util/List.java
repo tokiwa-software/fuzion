@@ -28,6 +28,11 @@ package dev.flang.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 
 /**
@@ -253,6 +258,48 @@ public class List<T>
   public T getLast()
   {
     return get(size()-1);
+  }
+
+
+  /**
+   * A collector for this List to be used in Stream.collect(...)
+   * @param <U>
+   * @return
+   */
+  public static <U> Collector<U, List<U>, List<U>> collector()
+  {
+    return new Collector<U, List<U>, List<U>>() {
+
+      public Supplier<List<U>> supplier()
+      {
+        return List::new;
+      }
+
+      public BiConsumer<List<U>, U> accumulator()
+      {
+        return (list, type) -> list.add(type);
+      }
+
+      public BinaryOperator<List<U>> combiner()
+      {
+        return (list1, list2) -> {
+          list1.addAll(list2);
+          return list1;
+        };
+      }
+
+      @Override
+      public java.util.function.Function<List<U>, List<U>> finisher()
+      {
+        return (l) -> l;
+      }
+
+      @Override
+      public Set<Characteristics> characteristics()
+      {
+        return Set.of(Characteristics.UNORDERED);
+      }
+    };
   }
 
 }
