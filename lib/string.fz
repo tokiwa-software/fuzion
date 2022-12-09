@@ -411,6 +411,24 @@ string ref : has_equality, hasHash string, ordered string, strings is
     (searchableSequence utf8).find substring.utf8
 
 
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  find_last(substring string) option i32 is
+    find_last substring nil
+
+
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  private find_last(substring string, found option i32) option i32 is
+    match find substring
+      nil => found >>= (pos -> pos - substring.byteLength)
+      idx i32 =>
+        skip := idx + substring.byteLength
+        s := strings.fromBytes (utf8.drop skip)
+
+        s.find_last substring (skip + (found.get 0))
+
+
   # replace all occurances of f within l by r
   #
   replace (f, r string) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8)
