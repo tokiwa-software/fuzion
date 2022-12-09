@@ -172,18 +172,15 @@ public abstract class Unbox extends Expr
   Expr box(AbstractType frmlT)
   {
     var t = type();
-    if (t.compareTo(Types.resolved.t_void) != 0 &&
-        ((!frmlT.isRef() ||
-          (frmlT.isChoice() &&
-           !frmlT.isAssignableFrom(t) &&
-           frmlT.isAssignableFrom(t.asValue())))))
+    if (t.compareTo(Types.resolved.t_void) != 0 && !frmlT.isRef())
       {
-        this._needed = true;
-        if (!t.isThisType())   // NYI: CLEANUP: #738: when does this happen,
-                               // i.e., when is unbox needed, but type remains
-                               // the same since isThisType. Can this be
-                               // simplified?
+        if (t.isThisType())
+          { // we need this to unbox an outer ref even if the type does not change
+            this._needed = true;
+          }
+        else
           {
+            this._needed = true;
             this._type = frmlT;
           }
       }
