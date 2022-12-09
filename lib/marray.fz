@@ -92,9 +92,14 @@ is
   as_array =>
     array T length (i -> marray.this[i])
 
-  # create a stream from this marray
+
+  # create a list from this marray
   #
-  redef asStream => as_array.asStream
+  redef asList =>
+    # since marray is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.asList
 
 
   # map the array to a new array applying function f to all elements
