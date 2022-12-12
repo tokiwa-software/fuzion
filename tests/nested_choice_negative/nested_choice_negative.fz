@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test nested choice types
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+nested_choice_negative =>
+  my_choice : choice (choice nil string) (choice nil unit) is
+    redef asString =>
+      match my_choice.this
+        choice choice nil string =>
+          match choice
+            nil nil => "inner nil"
+            string string => string
+        choice choice nil unit =>
+          match choice
+            nil nil => "inner nil"
+            unit => "unit"
+
+  c my_choice := nil // 1. should flag an error: ambigous assignment
+
+  my_string : string is
+  my_choice2 : choice string my_string is
+  my_choice2 := "str" // 2. should flag an error: generics must be disjoint
+
+  my_i32 : i32 1 is
+  my_choice3 : choice i32 my_i32 is
+  my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
+
+  my_generic_choice(A,B type) : choice A B is
+  a my_generic_choice string my_string := "string" // 4. should flag an error: generics must be disjoint

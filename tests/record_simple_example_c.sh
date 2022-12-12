@@ -42,8 +42,8 @@ CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 if [ -f "$2".skip ]; then
     echo "SKIPPED $2"
 else
-    (($1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c0 | head -n 100) >"$2".expected_out_c || true # tail my result in 141
-    cat "$2".expected_err_c0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >"$2".expected_err_c
-    rm -rf "$2".expected_err_c0 testbin testbin.c
+    ( ($1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c | head -n 100) >"$2".expected_out_c || true # tail my result in 141
+    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err_c
+    rm -rf testbin testbin.c
     echo "RECORDED $2"
 fi

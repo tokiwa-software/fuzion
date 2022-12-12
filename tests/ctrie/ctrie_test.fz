@@ -50,7 +50,7 @@ ctrie_test is
 
   # NYI Set should have `except()` feature
   no  := removed.filter (x -> !(readded.contains x))
-  yes := (psSet (all.filter (x -> !(removed.contains x)))) ⋃ readded
+  yes := (psSet (all.filter (x -> !(removed.contains x)))) ∪ readded
 
   if no ∃  (k -> (ctrie.lookup k).exists)
     panic "value in slot that should be empty"

@@ -36,6 +36,7 @@ TESTS=$(echo "$BUILD_DIR"/tests/*/)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
+rm -rf "$BUILD_DIR"/run_tests.failures
 
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT

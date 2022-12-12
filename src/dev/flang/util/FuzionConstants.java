@@ -107,6 +107,13 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of type parameter for type features.  This type parameter will be set
+   * to the actual static type.
+   */
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   x := if a then 0 else 1
@@ -213,6 +220,14 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
    */
   public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
+
+
+  /**
+   * For a type, the value of the valRefOrThis byte:
+   */
+  public static final int MIR_FILE_TYPE_IS_VALUE = 0x00;
+  public static final int MIR_FILE_TYPE_IS_REF   = 0x01;
+  public static final int MIR_FILE_TYPE_IS_THIS  = 0x02;
 
 
   /**

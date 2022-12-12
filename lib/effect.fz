@@ -95,7 +95,7 @@ is
       code ()->unit
      )
     pre
-      match mode
+      match r
         effectMode.new => true
         * => false
   is

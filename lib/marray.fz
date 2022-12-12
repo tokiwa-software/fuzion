@@ -82,7 +82,7 @@ is
     marray T length+1 d
 
 
-  # infix operator synonyme for add
+  # infix operator synonym for add
   #
   infix + (o T) => add o
 
@@ -92,7 +92,14 @@ is
   as_array =>
     array T length (i -> marray.this[i])
 
-  redef asStream => as_array.asStream
+
+  # create a list from this marray
+  #
+  redef asList =>
+    # since marray is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.asList
 
 
   # map the array to a new array applying function f to all elements

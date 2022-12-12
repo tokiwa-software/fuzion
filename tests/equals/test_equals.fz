@@ -26,7 +26,7 @@
 # test_equals tests the equality relation for some standard types and the
 # definition of user-defined equality relations
 #
-test_equals is
+test_equals =>
 
   # compare two strings using string.type.equality directly
   #
@@ -55,9 +55,7 @@ test_equals is
   # compare two strings using infix ≟ with infix syntax and with type
   # inference for the type parameter
   #
-  # NYI: This does not compile yet:
-  #
-  #  eq6(a, b string) => a ≟ b
+  eq6(a, b string) => a ≟ b
 
   say "comparing A and B {eq1 "A" "B"}"
   say "comparing A and A {eq1 "A" "A"}"
@@ -69,9 +67,40 @@ test_equals is
   say "comparing A and A {eq4 "A" "A"}"
   say "comparing A and B {eq5 "A" "B"}"
   say "comparing A and A {eq5 "A" "A"}"
-#  say "comparing A and B {eq6 "A" "B"}"
-#  say "comparing A and A {(eq6 "A" "A"}"
+  say "comparing A and B {eq6 "A" "B"}"
+  say "comparing A and A {eq6 "A" "A"}"
 
+  # create some colored text:
+  #
+  red_cat  := test_equals_types.colored_text test_equals_types.red  "cat".utf8
+  blue_cat := test_equals_types.colored_text test_equals_types.blue "cat".utf8
+  red_dog  := test_equals_types.colored_text test_equals_types.red  "dog".utf8
+  blue_dog := test_equals_types.colored_text test_equals_types.blue "dog".utf8
+
+  say "comparing red cat and blue cat as strings: {eq3 red_cat blue_cat}"
+  say "comparing red cat and blue dog as strings: {eq3 red_cat blue_dog}"
+  say "comparing red cat and blue cat as Has_color: {test_equals_types.eq_color red_cat blue_cat}"
+  say "comparing blue cat and blue dog as Has_color: {test_equals_types.eq_color blue_cat blue_dog}"
+  say "comparing red cat and blue cat as colored_text: {equals red_cat blue_cat}"
+  say "comparing red cat and red cat as colored_text: {equals red_cat red_cat}"
+  say "comparing red cat and blue cat as colored_text: {infix ≟ red_cat blue_cat}"
+  say "comparing red cat and red cat as colored_text: {infix ≟ red_cat red_cat}"
+  say "comparing red cat and blue cat as colored_text: {red_cat ≟ blue_cat}"
+  say "comparing red cat and red cat as colored_text: {red_cat ≟ red_cat}"
+  say "comparing red cat, blue cat and blue dog as colored_text: {red_cat ≟ blue_cat ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue dog as colored_text: {blue_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing red dog, blue dog and blue dog as colored_text: {red_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue cat as colored_text: {blue_dog ≟ blue_dog ≟ blue_cat}"
+  say "comparing red dog, red dog, red dog and red dog as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red cat, red dog, red dog and red dog as colored_text: {red_cat ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red cat, red dog and red dog as colored_text: {red_dog ≟ red_cat ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red dog, red cat and red dog as colored_text: {red_dog ≟ red_dog ≟ red_cat ≟ red_dog}"
+  say "comparing red dog, red dog, red dog and red cat as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_cat}"
+
+
+test_equals
+
+test_equals_types is
 
   # define a color choice type:
   #
@@ -80,7 +109,7 @@ test_equals is
   # Has_color provides an equality relation for instances that provide
   # a 'col' feature
   #
-  Has_color ref is
+  Has_color ref : has_equality is
 
     # the color of this instance
     #
@@ -88,17 +117,17 @@ test_equals is
 
     # equality relation comparing the value produced by 'col'
     #
-    redef type.equality(a, b test_equals.Has_color) =>
+    type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
       #
       match a.col
-        test_equals.red  => match b.col
-                              test_equals.red  => true
-                              *                => false
-        test_equals.blue => match b.col
-                              test_equals.blue => true
+        test_equals_types.red  => match b.col
+                              test_equals_types.red  => true
+                              *                      => false
+        test_equals_types.blue => match b.col
+                              test_equals_types.blue => true
                               *                => false
 
   # compare two instances of Has_color
@@ -115,30 +144,10 @@ test_equals is
     # the string
     utf8 Sequence u8)
 
-   : Has_color, string is
+   : Has_color, string, has_equality is
 
     # equality relation comparing color and strings
     #
-    redef type.equality(a, b test_equals.colored_text) =>
-      (test_equals.eq_color a b &&
-       string.type.equality a b   )
-
-  # create some colored text:
-  #
-  red_cat  := colored_text red  "cat".utf8
-  blue_cat := colored_text blue "cat".utf8
-  blue_dog := colored_text blue "dog".utf8
-
-  say "comparing red cat and blue cat as strings: {eq3 red_cat blue_cat}"
-  say "comparing red cat and blue dog as strings: {eq3 red_cat blue_dog}"
-  say "comparing red cat and blue cat as Has_color: {eq_color red_cat blue_cat}"
-  say "comparing blue cat and blue dog as Has_color: {eq_color blue_cat blue_dog}"
-
-  # NYI: does not work yet:
-  #
-  # say "comparing red cat and blue cat as colored_text: {equals red_cat blue_cat}"
-  # say "comparing red cat and red cat as colored_text: {equals red_cat red_cat}"
-
-  # NYI: does not work yet:
-  #
-  #  say (infix ≟ red_cat blue_cat)
+    type.equality(a, b test_equals_types.colored_text) =>
+      (test_equals_types.eq_color a b &&
+       string.type.equality       a b   )

@@ -61,6 +61,10 @@ is
   redef infix == (b complex C) => a.real  = b.real && a.imag  = b.imag
   redef infix != (b complex C) => a.real != b.real || a.imag != b.imag
 
+  # NYI: #637:
+  # complex.type.equality(C (numeric C).type, a, b complex C)
+  #   a.real = b.real && a.imag = b.imag
+
   # NYI: total order ignoring imag
   redef infix <  (b complex C) => a.real <  b.real
   redef infix <= (b complex C) => a.real <= b.real

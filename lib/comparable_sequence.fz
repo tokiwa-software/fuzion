@@ -41,3 +41,12 @@ is
       false
     else
       (0..(from.count - 1)) ∀ (i -> fa[i] = oa[i])
+
+  # NYI: #637:
+  # comparable_sequence(A (hasEquals A).type, a, b comparable_sequence A) bool is
+  #   aa := a.asArray
+  #   ba := b.asArray
+  #   if aa.count ≟ ba.count
+  #     (0..(a.count - 1)) ∀ (i -> equals A aa[i] ba[i])
+  #   else
+  #     false

@@ -46,7 +46,7 @@ is
   # terminate immediately with the given error wrapped in 'outcome'.
   #
   raise(e error) =>
-    set err := e;
+    set err := e
     abort
 
 # convenience routine to create a new instance of 'try' and run 'f' in

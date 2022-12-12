@@ -94,8 +94,7 @@ public class Match extends AbstractMatch
   {
     if (PRECONDITIONS) require
       (e != null,
-       c != null,
-       !c.isEmpty());
+       c != null);
 
     _subject = e;
     _cases = c;

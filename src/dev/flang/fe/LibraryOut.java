@@ -531,7 +531,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | isRef                                         |
+   *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -566,13 +566,11 @@ class LibraryOut extends ANY
           }
         else
           {
-            boolean makeRef = t.isRef() && !t.featureOfType().isThisRef();
-            // there is no explicit value type at this phase:
-            if (CHECKS) check
-              (makeRef || t.isRef() == t.featureOfType().isThisRef());
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.featureOfType());
-            _data.writeBool(makeRef);
+            _data.write(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
+                        t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                       : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
               {
                 type(gt);
@@ -779,7 +777,7 @@ class LibraryOut extends ANY
       }
     else if (s instanceof Call c)
       {
-        lastPos = expressions(c.target, lastPos);
+        lastPos = expressions(c.target(), lastPos);
         for (var a : c._actuals)
           {
             lastPos = expressions(a, lastPos);

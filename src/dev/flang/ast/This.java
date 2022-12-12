@@ -260,7 +260,12 @@ public class This extends ExprWithPos
                   .resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    c = new Unbox(c, cur.outer().thisType(), cur.outer())
+                    var t = cur.outer().thisType();
+                    if (cur.outer() == f)
+                      {
+                        t = Types.intern(t).asThis();
+                      }
+                    c = new Unbox(c, t, cur.outer())
                       { public SourcePosition pos() { return This.this.pos(); } };
                   }
                 getOuter = c;

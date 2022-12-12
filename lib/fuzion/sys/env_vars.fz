@@ -42,6 +42,12 @@ private env_vars is
   private get0(s Object) string
   is intrinsic
 
+  # intrinsic to set env var
+  private set0(s Object, t Object) bool is intrinsic
+
+  # intrinsic to unset env var
+  private unset0(s Object) bool is intrinsic
+
 
   # check if env var with given name exists
   #
@@ -57,3 +63,25 @@ private env_vars is
       get0 a
     else
       nil
+
+  # set the value of the env var with given name to the given new value
+  # will overwrite the current value, if it is set
+  # NYI: #627: rename to set once set keyword is removed
+  set1(name string, val string) outcome unit is
+    k := c_string name
+    v := c_string val
+
+    if set0 k v
+      unit
+    else
+      error "failed to set env var"
+
+  # unset the env var with the given name
+  # note this returns success (unit) if the given env var did not exist
+  unset(name string) outcome unit is
+    k := c_string name
+
+    if unset0 k
+      unit
+    else
+      error "failed to unset env var"

@@ -126,10 +126,8 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   and (O type, o outcome O) outcome O is
-    if ok
-      o
-    else
-      outcome.this
+    outcome.this ? _ T     => o
+                 | e error => e
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
   or (o outcome T) outcome T is

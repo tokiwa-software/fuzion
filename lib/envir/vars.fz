@@ -47,6 +47,19 @@ is
   #
   get(v string, default string) => (get v).get default
 
+  # Set the environment variable corresponding to n to have the
+  # value v.
+  #
+  # This will overwrite the value of the environment variable, if
+  # it is set already.
+  set1(n string, v string) => p.set1 n v
+
+  # Unset the environment variable corresponding to n.
+  #
+  # This will also return success (unit) if the variable was not
+  # set anyway.
+  unset(n string) => p.unset n
+
 
 # short-hand for creating and installing vars effect using
 # given provider and running code rr
@@ -78,6 +91,8 @@ vars_type is
   #
   private defaultVarsProvider : Vars_Provider is
     get(v string) => fuzion.sys.env_vars.get v
+    set1(n string, v string) => fuzion.sys.env_vars.set1 n v
+    unset(n string) => fuzion.sys.env_vars.unset n
 
 
 # Vars_Provider -- abstract source of environment vars
@@ -90,3 +105,16 @@ Vars_Provider ref is
   # If set, get the environment variable corresponding to v
   #
   get(v string) option string is abstract
+
+  # Set the environment variable corresponding to n to have the
+  # value v.
+  #
+  # This will overwrite the value of the environment variable, if
+  # it is set already.
+  set1(n string, v string) outcome unit is abstract
+
+  # Unset the environment variable corresponding to n.
+  #
+  # This will also return success (unit) if the variable was not
+  # set anyway.
+  unset(n string) outcome unit is abstract

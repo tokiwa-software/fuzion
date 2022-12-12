@@ -72,9 +72,10 @@ public class Type extends AbstractType
    */
   public enum RefOrVal
   {
-    Ref,
-    Value,
-    LikeUnderlyingFeature,
+    Ref,                    // this is an explicit reference type
+    Value,                  // this is an explicit value type
+    LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
+    ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
   }
 
 
@@ -134,7 +135,7 @@ public class Type extends AbstractType
    * the _outer of "r" is "p.q", and the outer of "q" is "p".
    *
    * However, if p is declared in a, after type resolution, the outer type of
-   * "p" is "a" or maybe a heir of "a".
+   * "p" is "a" or maybe an heir of "a".
    */
   private AbstractType _outer;
 
@@ -267,6 +268,13 @@ public class Type extends AbstractType
     this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
+    if (o instanceof Type ot && ot.isThisType())
+      {
+        // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
+        // outer types. Is it possible to not create asThisType() in This.java
+        // in the first place?
+        o = new Type(ot, RefOrVal.LikeUnderlyingFeature);
+      }
     this._outer = o;
     this.feature = f;
     this.generic = null;
@@ -376,9 +384,7 @@ public class Type extends AbstractType
   public Type(Type original, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
-      (refOrVal == RefOrVal.Ref ||
-       refOrVal == RefOrVal.Value,
-       (refOrVal == RefOrVal.Ref) != original.isRef());
+      (refOrVal != original._refOrVal);
 
     this.pos                = original.pos;
     this._refOrVal          = refOrVal;
@@ -429,6 +435,30 @@ public class Type extends AbstractType
       {
         result = Types.intern(new Type(this, RefOrVal.Ref));
       }
+    return result;
+  }
+
+
+  /**
+   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * in case it is a this.type or a choice variant already.
+   */
+  public AbstractType asThis()
+  {
+    if (PRECONDITIONS) require
+      (this == Types.intern(this),
+       !isGenericArgument());
+
+    AbstractType result = this;
+    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
+      {
+        result = Types.intern(new Type(this, RefOrVal.ThisType));
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
+       !(isThisType() || isChoice()) || result == this);
+
     return result;
   }
 
@@ -492,13 +522,26 @@ public class Type extends AbstractType
    */
   public boolean isRef()
   {
-    switch (this._refOrVal)
+    return switch (this._refOrVal)
       {
-      case Ref                  : return true;
-      case Value                : return false;
-      case LikeUnderlyingFeature: return ((feature != null) && feature.isThisRef());
-      default: throw new Error("Unhandled switch case for RefOrVal");
-      }
+      case Ref                  -> true;
+      case Value                -> false;
+      case LikeUnderlyingFeature-> ((feature != null) && feature.isThisRef());
+      case ThisType             -> false;
+      };
+  }
+
+
+  /**
+   * isThisType
+   */
+  public boolean isThisType()
+  {
+    return switch (this._refOrVal)
+      {
+      case Ref, Value, LikeUnderlyingFeature -> false;
+      case ThisType                          -> true;
+      };
   }
 
 
@@ -547,9 +590,9 @@ public class Type extends AbstractType
           + (outer == "" ||
              outer == FuzionConstants.UNIVERSE_NAME ? ""
                                                     : outer + ".")
-          + ( isRef() && (feature == null || !feature.isThisRef()) ? "ref " :
-             !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
-                                                                   : "" )
+          + (_refOrVal == RefOrVal.Ref   && (feature == null || !feature.isThisRef()) ? "ref "   :
+             _refOrVal == RefOrVal.Value &&  feature != null &&  feature.isThisRef()  ? "value "
+                                                                                      : ""       )
           + (feature == null ? name
              : feature.featureName().baseName());
       }
@@ -560,6 +603,10 @@ public class Type extends AbstractType
     else
       {
         result = feature.qualifiedName();
+      }
+    if (isThisType())
+      {
+        result = result + ".this.type";
       }
     if (_generics != NONE)
       {

@@ -40,16 +40,22 @@ is
   # this feature works when the directories present in the path exist otherwise an error will be returned
   # in case of success a unit type will be the outcome otherwise an error will be the outcome
   #
-  write_all(path string, content array u8) =>
+  write_all(
+            # the (relative or absolute) file name, using platform specific path separators  
+            path string, 
+            # the content of the file as an array u8
+            content array u8) =>
     tmp := fwh.write path content
     replace
     tmp
-  
+
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
   # in case of successful creation a unit type will be the outcome
   #
-  create_dir(path string) =>
+  create_dir(
+             # the (relative or absolute) dir name, using platform specific path separators
+             path string) =>
     tmp := fwh.mkdir path
     replace
     tmp

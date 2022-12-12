@@ -275,8 +275,15 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            AstErrors.illegalResultTypeRoutineDef(f, rt);
-            rt = NoType.INSTANCE;
+            if (rt != RefType.INSTANCE)
+              {
+                AstErrors.illegalResultTypeRoutineDef(f, rt);
+                rt = NoType.INSTANCE;
+              }
+            else
+              {
+                AstErrors.illegalResultTypeRefTypeRoutineDef(f);
+              }
           }
         break;
 
