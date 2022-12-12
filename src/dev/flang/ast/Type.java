@@ -441,7 +441,7 @@ public class Type extends AbstractType
 
   /**
    * Create a Types.intern()ed this.type variant of this type.  Return this
-   * in case it is a this.type variant already.
+   * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
   {
@@ -450,13 +450,14 @@ public class Type extends AbstractType
        !isGenericArgument());
 
     AbstractType result = this;
-    if (!isThisType() && this != Types.t_ERROR)
+    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
       {
         result = Types.intern(new Type(this, RefOrVal.ThisType));
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result.isThisType());
+      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
+       !(isThisType() || isChoice()) || result == this);
 
     return result;
   }
