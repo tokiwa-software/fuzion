@@ -100,6 +100,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
 
 
   # create hash code from a string
+  #
   hash u64 is
     shL := u64 13
     shR := u64 51
@@ -554,6 +555,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   # list of strings. In case multiple, neighboring codepoints in the string are
   # evaluated to be true by p, this does not cause empty strings to be added to
   # the result list, rather this case is being treated as being one big separator.
+  #
   fields_func(p codepoint -> bool) list string is
     state_wrapper(l list string, in_run bool, start_pos, current_pos i32) is
 
@@ -581,6 +583,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   #
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
+  #
   cut(sep string) tuple string string bool is
     match find sep
       nil => (string.this, "", false)
@@ -618,6 +621,7 @@ strings is
 
   # concat strings a and b by
   # concatenating their byte sequences.
+  #
   concat(a, b string) string is
     ref : string
       utf8 Sequence u8 is a.utf8 ++ b.utf8
@@ -625,6 +629,7 @@ strings is
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
+  #
   join(elems Sequence string, sep string) string is
     if elems.isEmpty
       ""
