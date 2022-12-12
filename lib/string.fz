@@ -372,7 +372,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
           fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
   #
   substring(from, to i32) ref : string
     pre
@@ -382,13 +382,34 @@ string ref : has_equality, hasHash string, ordered string, strings is
       string.this.utf8.slice(from, to)
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. byteLength (exclusive).
   #
   substring(from i32) string
     pre
       debug: 0 <= from <= byteLength
   is
     substring from byteLength
+
+
+  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  #
+  private substring_codepoint(from, to i32) string
+    pre
+      debug: 0 <= from <= to <= string.this.codepointLength
+  is
+    codepointsArray
+      .slice(from, to)
+      .map string (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
+      .fold strings.concat
+
+
+  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  #
+  private substring_codepoint(from i32) string
+    pre
+      debug: 0 <= from <= codepointLength
+  is
+    substring from codepointLength
 
 
   # check if this string starts with given prefix
@@ -565,7 +586,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
         TRUE =>
           match r.in_run
             TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
-            FALSE => state_wrapper (r.l ++ [(substring r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
         FALSE =>
           match r.in_run
             TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
@@ -573,7 +594,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
 
     match last_state.in_run
       TRUE => last_state.l
-      FALSE => last_state.l ++ [(substring last_state.start_pos)]
+      FALSE => last_state.l ++ [(substring_codepoint last_state.start_pos)]
 
 
   # Cuts out the first appearance of the string sep from this string, in other words,
