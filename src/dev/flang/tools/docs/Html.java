@@ -28,6 +28,8 @@ package dev.flang.tools.docs;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.SortedSet;
@@ -171,10 +173,10 @@ public class Html
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
-          + "'><summary>$1</summary><p class='fd-comment'>$2</p></details>"
+          + "'><summary>$1</summary><div class='fd-comment'>$2</div></details>"
             .replace("$1",
               summary(af))
-            .replace("$2", htmlEncode(Util.commentOf(af), false));
+            .replace("$2", Util.commentOf(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -187,11 +189,11 @@ public class Html
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><p class='fd-comment'>$2</p>"
+    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>"
       .replace("$0", f.isUniverse() ? "API-Documentation": basename(f))
       .replace("$3", f.isUniverse() ? "": anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
-      .replace("$2", htmlEncode(Util.commentOf(f), false))
+      .replace("$2", Util.commentOf(f))
       .replace("$4", f.isUniverse() ? "": "<a class='mr-5' href='" + config.docsRoot() + "/'>🌌</a>")
       .replace("$5", f.isUniverse() ? "": "d-none");
   }
@@ -216,6 +218,52 @@ public class Html
   {
     return "<div class='pl-5'><a href='$1'>[src]</a></div>"
       .replace("$1", featureURL(feature));
+  }
+
+  static String processComment(String name, String s)
+  {
+    var codeNo = new ArrayList<Integer>();
+    var codeLines = new ArrayList<String>();
+    var codeParsedLines = new ArrayList<String>();
+    var resultLines = new ArrayList<String>();
+
+    s.lines().forEach(l ->
+      {
+        if (l.matches("^\\s\\s\\s\\s.*"))
+          {
+            /* code comment */
+            codeLines.add(l);
+          }
+        else if (l.matches("^$"))
+          {
+            /* avoid adding lots of line breaks after code comments */
+            if (codeLines.isEmpty()) {
+              resultLines.add(l);
+            }
+          }
+        else
+          {
+            if (!codeLines.isEmpty())
+              {
+                var id = "fzdocs." + name + codeNo.size();
+                /* dump codeLines into a <code></code> block */
+                codeParsedLines.add("<div class=\"runcode-wrapper\"><i class=\"far fa-spinner fa-spin\"></i><div class=\"mb-15 runcode\" style=\"display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;\"><div class=\"position-relative\"><form id=\"" + id + "\"><textarea class=\"codeinput\" required=\"required\" maxlength=\"4096\" id=\"" + id + ".code\" name=\"code\" rows=\"3\" spellcheck=\"false\">");
+                codeLines.forEach(cl -> { codeParsedLines.add(cl.replaceAll("^    ", "")); });
+                codeParsedLines.add("</textarea><div class=\"position-absolute runbuttons\"><input type=\"button\" onclick=\"runit('" + id + "')\" class=\"runbutton\" name=\"run\" value=\"Run!\" /><input type=\"button\" onclick=\"runiteff('" + id + "')\" class=\"runbutton\" name=\"run\" value=\"Effects!\" /><a href=\"/tutorial/effects.html\"><i>What are effects?</i></a></div></form></div><div class=\"computeroutput\" id=\"" + id + ".result\"></div></div></div>");
+                resultLines.add(codeParsedLines.stream().collect(Collectors.joining(System.lineSeparator())));
+                codeLines.clear();
+                codeParsedLines.clear();
+                codeNo.add(1);
+              }
+
+            /* treat as normal line */
+            var replacedLine = htmlEncode(l, false);
+
+            resultLines.add(replacedLine);
+          }
+      });
+
+    return resultLines.stream().collect(Collectors.joining("<br />"));
   }
 
   private static String htmlEncode(String s, boolean spacesNoneBreaking)
