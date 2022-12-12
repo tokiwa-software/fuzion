@@ -239,7 +239,7 @@ private RESTART is
 private OK is
 
 
-private RDCSS_Descriptor(CTK, CTV type, ov INode CTK CTV, exp MainNode CTK CTV, nv INode CTK CTV) is
+private RDCSS_Descriptor(CTK (hasHash CTK).type, CTV type, ov INode CTK CTV, exp MainNode CTK CTV, nv INode CTK CTV) is
 
 # the ctrie
 # NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
