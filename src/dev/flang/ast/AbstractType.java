@@ -999,6 +999,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if contraints of this type are satisfied.
    * Returns itself on success or t_ERROR if constraints are not met.
    */
+  // NYI Can this result in an infinite recursion?
   public AbstractType checkConstraints(SourcePosition pos)
   {
     // NYI caching?
