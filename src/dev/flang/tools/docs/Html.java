@@ -224,7 +224,6 @@ public class Html
   {
     var codeNo = new ArrayList<Integer>();
     var codeLines = new ArrayList<String>();
-    var codeParsedLines = new ArrayList<String>();
     var resultLines = new ArrayList<String>();
 
     s.lines().forEach(l ->
@@ -245,14 +244,31 @@ public class Html
           {
             if (!codeLines.isEmpty())
               {
+                /* dump codeLines into a flang.dev runcode box */
                 var id = "fzdocs." + name + codeNo.size();
-                /* dump codeLines into a <code></code> block */
-                codeParsedLines.add("<div class=\"runcode-wrapper\"><i class=\"far fa-spinner fa-spin\"></i><div class=\"mb-15 runcode\" style=\"display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;\"><div class=\"position-relative\"><form id=\"" + id + "\"><textarea class=\"codeinput\" required=\"required\" maxlength=\"4096\" id=\"" + id + ".code\" name=\"code\" rows=\"3\" spellcheck=\"false\">");
-                codeLines.forEach(cl -> { codeParsedLines.add(cl.replaceAll("^    ", "")); });
-                codeParsedLines.add("</textarea><div class=\"position-absolute runbuttons\"><input type=\"button\" onclick=\"runit('" + id + "')\" class=\"runbutton\" name=\"run\" value=\"Run!\" /><input type=\"button\" onclick=\"runiteff('" + id + "')\" class=\"runbutton\" name=\"run\" value=\"Effects!\" /><a href=\"/tutorial/effects.html\"><i>What are effects?</i></a></div></form></div><div class=\"computeroutput\" id=\"" + id + ".result\"></div></div></div>");
-                resultLines.add(codeParsedLines.stream().collect(Collectors.joining(System.lineSeparator())));
+                var code = codeLines
+                  .stream()
+                  .map(cl -> { return cl.replaceAll("^    ", ""); })
+                  .collect(Collectors.joining(System.lineSeparator()));
+                var runCodeWrapper = """
+                  <div class="runcode-wrapper">
+                    <i class="far fa-spinner fa-spin"></i>
+                    <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+                      <div class="position-relative">
+                        <form id="##ID##">
+                          <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
+                          <div class="position-absolute runbuttons">
+                            <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
+                            <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
+                            <a href="/tutorial/effects.html"><i>What are effects?</i></a>
+                          </div>
+                        </form>
+                      </div>
+                      <div class="computeroutput" id="##ID##.result"></div>
+                    </div>
+                  </div>""".replace("##ID##", id).replace("##CODE##", code);
+                resultLines.add(runCodeWrapper);
                 codeLines.clear();
-                codeParsedLines.clear();
                 codeNo.add(1);
               }
 
