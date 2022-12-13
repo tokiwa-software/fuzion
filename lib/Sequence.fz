@@ -77,7 +77,7 @@ Sequence(T type) ref is
   first
     pre
       debug: !isEmpty
-    => asList.forceHead
+    => asList.head.get
 
 
   # get the first element of this Sequence or default if sequence is empty
