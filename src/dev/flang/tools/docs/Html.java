@@ -228,12 +228,12 @@ public class Html
 
     s.lines().forEach(l ->
       {
-        if (l.matches("^\\s\\s\\s\\s.*"))
+        if (l.startsWith("    "))
           {
             /* code comment */
             codeLines.add(l);
           }
-        else if (l.matches("^$"))
+        else if (l == "")
           {
             /* avoid adding lots of line breaks after code comments */
             if (codeLines.isEmpty()) {
