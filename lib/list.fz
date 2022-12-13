@@ -119,6 +119,33 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     => head.get
 
 
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  init list A
+    pre
+      debug: !isEmpty
+  is
+    init nil
+
+
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  # helper feature for init to allow for tail recursion
+  #
+  private init(res list A) list A
+    pre
+      debug: !isEmpty
+  is
+    list.this ? nil => fuzion.std.panic "list.init called on empty list"
+              | c Cons =>
+                c.tail ? nil => res
+                       | _ Cons => c.tail.init (res ++ [c.head])
+
+
   # get the last element of this list
   #
   # list must not be empty, causes precondition failure if debug is enabled.
