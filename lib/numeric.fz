@@ -52,7 +52,7 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
       safety: thiz +! other
   is abstract
 
-  # basic operations: 'infix -' (substraction)
+  # basic operations: 'infix -' (subtraction)
   infix -  (other T) T
     pre
       safety: thiz -! other
