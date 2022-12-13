@@ -160,36 +160,32 @@ public class Html
       + "</div>";
   }
 
+
   /**
    * list of features that are redefined by feature af
    * @param af
    * @return list of redefined features, as HTML
    */
-  private String redefines(AbstractFeature af, boolean recurse)
+  private String redefines(AbstractFeature af)
   {
     if (af.redefines().isEmpty())
       {
         return "";
       }
-    else
-      {
-        var links = af
-          .redefines()
-          .stream()
-          .map(f -> """
-            <li><a href="$1">$2</a></li>$3
-          """.replace("$1", featureAbsoluteURL(f)).replace("$2", f.qualifiedName()).replace("$3", redefines(f, true)))
-          .collect(Collectors.joining(System.lineSeparator()));
 
-        if (recurse)
-          {
-            return links;
-          }
-        else
-          {
-            return "<div class=\"fd-redefines\"><br />redefines: <br /><ul>" + links + "</ul><br /></div>";
-          }
-      }
+    return "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af) + "</ul><br /></div>";
+  }
+
+
+  private String redefines0(AbstractFeature af)
+  {
+    return af
+      .redefines()
+      .stream()
+      .map(f -> """
+        <li><a href="$1">$2</a></li>$3
+      """.replace("$1", featureAbsoluteURL(f)).replace("$2", f.qualifiedName()).replace("$3", redefines0(f)))
+      .collect(Collectors.joining(System.lineSeparator()));
   }
 
 
@@ -230,7 +226,7 @@ public class Html
             .replace("$1",
               summary(af))
             .replace("$2", Util.commentOf(af))
-            .replace("$3", redefines(af, false));
+            .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -250,7 +246,7 @@ public class Html
       .replace("$2", Util.commentOf(f))
       .replace("$4", f.isUniverse() ? "": "<a class='mr-5' href='" + config.docsRoot() + "/'>🌌</a>")
       .replace("$5", f.isUniverse() ? "": "d-none")
-      .replace("$6", redefines(f, false));
+      .replace("$6", redefines(f));
   }
 
   /**
