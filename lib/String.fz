@@ -663,14 +663,7 @@ String ref : has_equality, hasHash String, ordered String is
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
   #
   type.join(elems Sequence String, sep String) String is
-    if elems.isEmpty
-      ""
-    else
-      for
-        elem in elems
-        res := elem, concat (concat res sep) elem
-      else
-        res
+    (elems.asList.intersperse sep).fold concat
 
 
   # create string by concatenating the results of $a[a.indices].
