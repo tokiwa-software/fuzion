@@ -84,6 +84,8 @@ u8(val u8) : wrappingInteger u8, hasInterval u8, u8s is
   redef infix >  (other u8) bool is intrinsic
   redef infix >= (other u8) bool is intrinsic
 
+  u8.type.equality(a, b u8) bool is intrinsic
+
   as_i8 i8
     pre
       debug: thiz <= i8.max.as_u8

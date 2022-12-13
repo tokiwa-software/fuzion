@@ -152,6 +152,19 @@ public class GenericType extends LibraryType
       case Ref -> true;
       case Value -> false;
       case LikeUnderlyingFeature -> false;
+      case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpeted ThisType for GenericType '"+this+"'");
+      };
+  }
+
+  /**
+   * isThisType
+   */
+  public boolean isThisType()
+  {
+    return switch (this._refOrVal)
+      {
+      case Ref, Value, LikeUnderlyingFeature -> false;
+      case ThisType                          -> throw new Error("Unexpected ThisType in GenericType");
       };
   }
 
@@ -174,6 +187,11 @@ public class GenericType extends LibraryType
   {
     throw new Error("GenericType.asValue() not defined");
   }
+  public AbstractType asThis()
+  {
+    throw new Error("GenericType.asThis() not defined");
+  }
+
 
   public String toString()
   {

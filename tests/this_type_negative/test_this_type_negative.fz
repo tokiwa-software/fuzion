@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_this_type_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+test_this_type_negative is
+
+  a is
+    x is
+      ax0       := a.this
+      ax1 a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+      ax2 ref a := a.this
+
+    a0       := a.this
+    a1 a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+    a2 ref a := a.this
+
+  b ref is
+    x is
+      bx0       := b.this
+      bx1 b     := b.this
+      bx2 ref b := b.this
+
+    b0       := b.this
+    b1 b     := b.this
+    b2 ref b := b.this

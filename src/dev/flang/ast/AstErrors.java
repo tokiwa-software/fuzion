@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
@@ -253,8 +255,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
           "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
-          "To solve this, if your intention was to return a result value, use " + ss("set " + FuzionConstants.RESULT_NAME + " := <value>") + ".\n"+
-          "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
+          "To solve this, choose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
 
@@ -301,8 +302,7 @@ public class AstErrors extends ANY
     String remedy = null;
     var assignableToSB = new StringBuilder();
     var actlT = value.type();
-    var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
-    if (valueThisOrOuter)
+    if (actlT.isThisType())
       {
         assignableToSB
           .append("assignable to       : ref ")
@@ -325,7 +325,7 @@ public class AstErrors extends ANY
               .append(st(ts));
           }
       }
-    if (remedy == null && frmlT.asRef().isAssignableFrom(value))
+    if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
       {
         remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
       }
@@ -351,7 +351,7 @@ public class AstErrors extends ANY
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
+          "actual type found   : " + s(actlT) + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
           "for value assigned  : " + s(value) + "\n" +
           remedy);
@@ -485,12 +485,12 @@ public class AstErrors extends ANY
 
   static void wrongNumberOfActualArguments(Call call)
   {
-    int fsz = call.resolvedFormalArgumentTypes.length;
+    int fsz = call._resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call.resolvedFormalArgumentTypes)
+    for (var t : call._resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
@@ -650,14 +650,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
-  {
-    error(pos,
-          "" + skw("match") + " expression requires at least one case",
-          "Match statement at " + mpos.show() + "\n" +
-          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
-  }
-
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
@@ -723,10 +715,20 @@ public class AstErrors extends ANY
 
   static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
-    error(pos,
-          "" + skw("match") + " statement does not cover all of the subject's types",
-          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
-          subjectTypes(choiceGenerics));
+    if (choiceGenerics.size() == missingMatches.size())
+      {
+        error(pos,
+              "" + skw("match") + " expression requires at least one case",
+              "Match statement at " + pos.show() + "\n" +
+              "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+      }
+    else
+      {
+        error(pos,
+              "" + skw("match") + " statement does not cover all of the subject's types",
+              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              subjectTypes(choiceGenerics));
+      }
   }
 
   /**
@@ -832,6 +834,18 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
+        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
+        // fact that type features can be defined repeatedly.
+        if (f.isTypeFeature())
+          {
+            warning(pos,
+                    "Duplicate feature declaration (ignored since these are type features, see #461)",
+                    "Feature that was declared repeatedly: " + s(f) + "\n" +
+                    "originally declared at " + existing.pos().show() + "\n" +
+                    "To solve this, consider renaming one of these two features or changing its number of arguments");
+            return;
+          }
+
         error(pos,
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(f) + "\n" +
@@ -1225,7 +1239,8 @@ public class AstErrors extends ANY
     error(pos,
           "Choice type must not access fields of surrounding scope.",
           "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-          accesses);
+          accesses + "\n" +
+          "To solve this, you might move the accessed fields outside of the common outer feature.");
   }
 
   static void choiceMustNotBeRef(SourcePosition pos)
@@ -1292,24 +1307,6 @@ public class AstErrors extends ANY
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
           "Faulty generic argument: " + s(t) + " at " + t.pos().show());
-  }
-
-  static void fieldDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr initialValue)
-  {
-    error(pos,
-          "Field definition using " + ss(":=")+ " must not specify an explicit type",
-          "Definition of field: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(initialValue));
-  }
-
-  static void routineDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr code)
-  {
-    error(pos,
-          "Function definition using " + ss("=>") + " must not specify an explicit type",
-          "Definition of function: " + s(f) + "\n" +
-          "Explicit type given: " + s(rt) + "\n" +
-          "Defining expression: " + s(code));
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
@@ -1480,6 +1477,15 @@ public class AstErrors extends ANY
           "Feature declared: " + s(f));
   }
 
+  static void illegalResultTypeRefTypeRoutineDef(Feature f)
+  {
+    error(f.pos(),
+          "Illegal " + skw("ref") + " in feature definition using " + ss("=>"),
+          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Feature declared: " + s(f));
+  }
+
   static void failedToInferType(Expr e)
   {
     error(e.pos(),
@@ -1512,6 +1518,29 @@ public class AstErrors extends ANY
     error(pos,
       "Loss of precision for: " + _originalString,
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
+  }
+
+  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  {
+    error(pos,
+      "Names of arguments used in this feature must be distinct.",
+          "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
+          + duplicateNames
+            .stream()
+            .map(n -> sbn(n))
+            .collect(Collectors.joining(", ")) + "\n"
+          + "To solve this, rename the arguments to have unique names."
+        );
+  }
+
+  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  {
+    error(value.pos(),
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(value.type()))
+          .map(cg -> s(cg))
+          .collect(Collectors.joining(", "))
+      );
   }
 }
 

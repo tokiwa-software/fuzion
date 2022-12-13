@@ -255,7 +255,7 @@ public abstract class Module extends ANY
           { // existing redefines f, so use existing
             f = existing;
           }
-        else if (existing == f && f.generics() != FormalGenerics.NONE ||
+        else if (existing == f && !existing.generics().equals(f.generics()) ||
                  existing != f && declaredFeatures(outer).get(fn) == null)
           { // NYI: Should be ok if existing or f is abstract.
             AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);

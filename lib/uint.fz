@@ -243,6 +243,10 @@ is
     data.count = other.data.count &
       ((data.zip other.data (a,b -> a = b)) ∀ (x->x))
 
+  type.equality(a, b uint) bool is
+    a.data.count ≟ b.data.count &&
+      ((a.data.zip b.data (c,d -> c ≟ d)) ∀ (x->x))
+
 
   # less or equal
   infix <= (other uint) =>
@@ -310,7 +314,7 @@ is
     if q = zero
       (rem.data.first (u32 0)).asString
     else
-      q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
+      q.asString0 + (rem.data.first (u32 0)).asString.pad_codepoint_start 9 "0"
 
 
   redef asString string is

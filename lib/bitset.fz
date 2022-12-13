@@ -28,6 +28,7 @@
 bitset : choice nil          # empty bitset
                 u64          # unit bitset
                 (array bool) # general
+       , has_equality
 is
 
   # test if the given bit is part of this bitset
@@ -54,7 +55,7 @@ is
 
   # union of two bitsets
   #
-  infix ⋃ (other bitset) bitset is
+  infix ∪ (other bitset) bitset is
     match bitset.this
       _ nil   => other
       x u64   => other.put x
@@ -78,10 +79,21 @@ is
   infix == (other bitset) bool is
      h := highest >>= i -> other.highest >>= j -> i.max j
      match h
-       _ nil => true
+       _ nil => highest!! && other.highest!!
        m u64 =>
          for
            r := true, r && ((has i) <=> other.has i)
+           i in u64 0 .. m
+         else
+           r
+
+  type.equality(a, b bitset) bool is
+     h := a.highest >>= i -> b.highest >>= j -> i.max j
+     match h
+       _ nil => a.highest!! && b.highest!!
+       m u64 =>
+         for
+           r := true, r && (a.has i <=> b.has i)
            i in u64 0 .. m
          else
            r
@@ -108,10 +120,10 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   empty bitset is nil
 
-  # monoid of bitset with infix ⋃ operation.
+  # monoid of bitset with infix ∪ operation.
   #
   union : Monoid bitset is
-    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix ∙ (a, b bitset) => a ∪ b
     redef infix == (a, b bitset) => a == b
     redef e bitset is empty
 
@@ -126,9 +138,9 @@ bitsets is
   empty bitset is nil
 
 
-  # monoid of bitset with infix ⋃ operation.
+  # monoid of bitset with infix ∪ operation.
   #
   union : Monoid bitset is
-    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix ∙ (a, b bitset) => a ∪ b
     redef infix == (a, b bitset) => a == b
     redef e bitset is empty

@@ -84,4 +84,8 @@ is
   redef infix >  (b fraction B) =>  (a - b).num.sign >  0
   redef infix >= (b fraction B) =>  (a - b).num.sign >= 0
 
+  # NYI: #637:
+  # fraction.type.equality(B (integer B).type, a, b fraction B) =>
+  #   (a - b).num.isZero
+
   redef asString => "" + num + "⁄" + den

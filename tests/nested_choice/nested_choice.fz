@@ -1,0 +1,205 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test nested choice types
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+nested_choice =>
+  issue492 =>
+
+    simple is
+      the_choice : choice i32 f64 is
+        redef asString =>
+          match the_choice.this
+            n i32 => $n
+            f f64 => $f
+
+      map_res : choice the_choice string is
+        redef asString =>
+          match map_res.this
+            t the_choice => $t
+            s string => s
+
+      map (n i32) map_res is
+        n
+
+      say (map 2)
+
+
+
+    assign_choice_to_nested_choice is
+      bool_or_u64 : choice u64 bool is
+
+      tripel_nested_choice : choice i32 bool_or_u64 is
+        redef asString =>
+          match tripel_nested_choice.this
+            i32 i32 => $i32
+            b1 bool_or_u64 =>
+              match b1
+                u64 u64 => $u64
+                b2 bool => $b2
+
+
+      bool_or_num_bool bool_or_u64 := false
+      bool_or_num_num bool_or_u64 := u64 9
+      b tripel_nested_choice := true
+      n4 tripel_nested_choice := i32 -1
+      n8 tripel_nested_choice := u64 1
+      c1 tripel_nested_choice := bool_or_num_bool
+      c2 tripel_nested_choice := bool_or_num_num
+
+      say b
+      say n4
+      say n8
+      say c1
+      say c2
+
+
+
+    only_references is
+      My_Ref1 ref is
+        redef asString => "ref1"
+      My_Ref2 ref is
+        redef asString => "ref2"
+      My_Ref3 ref is
+        redef asString => "ref3"
+
+      only_ref : choice My_Ref1 My_Ref2 is
+        redef asString =>
+          match only_ref.this
+            mr1 My_Ref1 => $mr1
+            mr2 My_Ref2 => $mr2
+      only_ref_nested : choice My_Ref3 only_ref is
+        redef asString =>
+          match only_ref_nested.this
+            mr3 My_Ref3 => $mr3
+            or only_ref => $or
+
+      # simple ref assignment
+      a only_ref := My_Ref1
+      # assign ref to outer choice
+      b only_ref_nested := My_Ref3
+      # assign choice to inner choice
+      c only_ref_nested := a
+      # assign ref to inner choice
+      d only_ref_nested := My_Ref2
+
+      say a
+      say b
+      say c
+      say d
+
+
+
+    mix_ref_and_non_ref is
+      choice_mixed : choice i32 (choice string u64) is
+        redef asString =>
+          match choice_mixed.this
+            n i32 => $n
+            c choice string u64 =>
+              match c
+                str string => $str
+                u u64 => $u
+
+      a choice_mixed := 1
+      b choice_mixed := "Hello"
+      c choice_mixed := u64 2
+
+      say a
+      say b
+      say c
+
+
+
+    simple
+    assign_choice_to_nested_choice
+    only_references
+    mix_ref_and_non_ref
+
+  issue492
+
+
+  issue556 =>
+    some_choice_including_nil : choice nil string is
+
+    a  some_choice_including_nil := nil
+    b  some_choice_including_nil := "string"
+
+    c := [a,b]
+
+    match (c.nth 0)
+      s some_choice_including_nil =>
+        match s
+          nil nil => say "n2"
+          string string => say "s"
+      nil nil => say "n1"
+
+    match (c.nth 1)
+      s some_choice_including_nil =>
+        match s
+          nil nil => say "n2"
+          string string => say "s"
+      nil nil => say "n1"
+
+
+
+
+  issue562 =>
+    my_choice : choice (choice nil string) nil is
+      redef asString =>
+        match my_choice.this
+          choice choice nil string =>
+            match choice
+              nil nil => "inner nil"
+              string string => string
+          nil nil => "outer nil"
+
+    a my_choice := nil
+    b my_choice := "string"
+
+    say a
+    say b
+
+    my_choice2 : choice (choice nil string) (choice nil unit) is
+      redef asString =>
+        match my_choice2.this
+          choice choice nil string =>
+            match choice
+              nil nil => "inner nil"
+              string string => string
+          choice choice nil unit =>
+            match choice
+              nil nil => "inner nil"
+              unit => "unit"
+
+    // NYI this should flag an error
+    # c my_choice2 := nil
+    d my_choice2 := "st"
+    e my_choice2 := unit
+
+    # say c
+    say d
+    say e
+
+
+  issue492
+  issue556
+  issue562

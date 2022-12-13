@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash string, ordered string, strings is
+string ref : has_equality, hasHash string, ordered string, strings is
 
   redef orderedThis => string.this
 
@@ -77,9 +77,9 @@ string ref : hasHash string, ordered string, strings is
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
   #
-  string.type.equality(a, b string) =>
-    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
-      & a.utf8.count = b.utf8.count
+  type.equality(a, b string) =>
+    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
+      & a.utf8.count ≟ b.utf8.count
 
 
   # does this come before other?
@@ -100,6 +100,7 @@ string ref : hasHash string, ordered string, strings is
 
 
   # create hash code from a string
+  #
   hash u64 is
     shL := u64 13
     shR := u64 51
@@ -267,6 +268,22 @@ string ref : hasHash string, ordered string, strings is
       )
 
 
+  # replaces runs of invalid UTF-8 byte sequences in this string with the Unicode
+  # replacement character (U+FFFD).
+  to_valid_utf8 string is
+    to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
+
+
+  # replaces runs of invalid UTF-8 byte sequences in this string with the given
+  # string.
+  to_valid_utf8(replacement string) string is
+    codepointsAndErrors
+      .reduce string (strings.fromArray ((marrays Object).new 0 "")) ((r, x) ->
+        match x
+          c codepoint => r + c
+          e error => r + replacement)
+
+
   # convert this string into a list of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
@@ -355,11 +372,43 @@ string ref : hasHash string, ordered string, strings is
           fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
   #
   substring(from, to i32) string
     pre
-      debug: 0 <= from <= to <= codepointLength
+      debug: 0 <= from <= to <= string.this.byteLength
+  is
+    # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
+    # ref : string
+    #   redef utf8 Sequence u8 is
+    #     string.this.utf8.slice(from, to)
+    substring0 from to
+
+
+  # create substring of the string consisting of bytes from (inclusive) .. to (exclusive).
+  #
+  private substring0(from, to i32) ref : string
+    pre
+      debug: 0 <= from <= to <= string.this.byteLength
+  is
+    redef utf8 Sequence u8 is
+      string.this.utf8.slice from to
+
+
+  # create substring of this string consisting of bytes from (inclusive) .. byteLength (exclusive).
+  #
+  substring(from i32) string
+    pre
+      debug: 0 <= from <= byteLength
+  is
+    substring from byteLength
+
+
+  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  #
+  private substring_codepoint(from, to i32) string
+    pre
+      debug: 0 <= from <= to <= string.this.codepointLength
   is
     codepointsArray
       .slice(from, to)
@@ -369,7 +418,7 @@ string ref : hasHash string, ordered string, strings is
 
   # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
   #
-  substring(from i32) string
+  private substring_codepoint(from i32) string
     pre
       debug: 0 <= from <= codepointLength
   is
@@ -395,6 +444,24 @@ string ref : hasHash string, ordered string, strings is
   #
   find(substring string) =>
     (searchableSequence utf8).find substring.utf8
+
+
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  find_last(substring string) option i32 is
+    find_last substring nil
+
+
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  private find_last(substring string, found option i32) option i32 is
+    match find substring
+      nil => found >>= (pos -> pos - substring.byteLength)
+      idx i32 =>
+        skip := idx + substring.byteLength
+        s := strings.fromBytes (utf8.drop skip)
+
+        s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurances of f within l by r
@@ -459,7 +526,7 @@ string ref : hasHash string, ordered string, strings is
       idx i32 => ref : Cons string (list string)
                    head => substring 0 idx
                    tail =>
-                     rest := substring (idx + s.codepointLength) string.this.codepointLength
+                     rest := substring (idx + s.byteLength) string.this.byteLength
                      rest.split s
 
 
@@ -506,9 +573,9 @@ string ref : hasHash string, ordered string, strings is
 
 
   # return string of at least length l by
-  # padding s to start of string
+  # padding codepoint s to start of string
   #
-  pad_start(l i32, s string) string
+  pad_codepoint_start(l i32, s string) string
   pre s.codepointLength = 1
   is
     missing := l - codepointLength
@@ -516,6 +583,51 @@ string ref : hasHash string, ordered string, strings is
       string.this
     else
       (s * missing) + string.this
+
+
+  # Splits this string at codepoints where p is true and returns the result as a
+  # list of strings. In case multiple, neighboring codepoints in the string are
+  # evaluated to be true by p, this does not cause empty strings to be added to
+  # the result list, rather this case is being treated as being one big separator.
+  #
+  fields_func(p codepoint -> bool) list string is
+    state_wrapper(l list string, in_run bool, start_pos, current_pos i32) is
+
+    i := state_wrapper (lists.empty string) false 0 0
+    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+      match p c
+        TRUE =>
+          match r.in_run
+            TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+        FALSE =>
+          match r.in_run
+            TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper r.l false r.start_pos (r.current_pos + 1))
+
+    match last_state.in_run
+      TRUE => last_state.l
+      FALSE => last_state.l ++ [(substring_codepoint last_state.start_pos)]
+
+
+  # Cuts out the first appearance of the string sep from this string, in other words,
+  # returns a tuple of two strings and a bool, the first string is the substring before
+  # the first appreance of sep, the second string is the substring after the first
+  # appearance of sep. The bool result is true iff sep appears in this string.
+  #
+  # If sep does not appear in this string at all, return this string as the first string,
+  # the empty string as the second, and false as the bool.
+  #
+  cut(sep string) tuple string string bool is
+    match find sep
+      nil => (string.this, "", false)
+      i i32 =>
+        l := byteLength
+        sepl := sep.byteLength
+
+        before := strings.fromBytes utf8.slice(0, i)
+        after := strings.fromBytes utf8.slice(i + sepl, l)
+        (before, after, true)
 
 
 # strings -- unit type defining features related to string but not
@@ -543,9 +655,24 @@ strings is
 
   # concat strings a and b by
   # concatenating their byte sequences.
+  #
   concat(a, b string) string is
     ref : string
       utf8 Sequence u8 is a.utf8 ++ b.utf8
+
+
+  # Takes a sequence of strings and concatenates its elements, while adding the separator
+  # sep in between its elements. In case an empty sequence is given, returns the empty string.
+  #
+  join(elems Sequence string, sep string) string is
+    if elems.isEmpty
+      ""
+    else
+      for
+        elem in elems
+        res := elem, concat (concat res sep) elem
+      else
+        res
 
 
   # create string by concatenating the results of $a[a.indices].

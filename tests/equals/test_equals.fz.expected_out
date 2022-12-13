@@ -20,3 +20,12 @@ comparing red cat and blue cat as colored_text: false
 comparing red cat and red cat as colored_text: true
 comparing red cat and blue cat as colored_text: false
 comparing red cat and red cat as colored_text: true
+comparing red cat, blue cat and blue dog as colored_text: false
+comparing blue dog, blue dog and blue dog as colored_text: true
+comparing red dog, blue dog and blue dog as colored_text: false
+comparing blue dog, blue dog and blue cat as colored_text: false
+comparing red dog, red dog, red dog and red dog as colored_text: true
+comparing red cat, red dog, red dog and red dog as colored_text: false
+comparing red dog, red cat, red dog and red dog as colored_text: false
+comparing red dog, red dog, red cat and red dog as colored_text: false
+comparing red dog, red dog, red dog and red cat as colored_text: false

@@ -244,13 +244,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _universe.setState(Feature.State.RESOLVED);
         var stdlib = _dependsOn[0];
         new Types.Resolved(this,
-                           (name, ref) -> new NormalType(stdlib,
-                                                         -1,
-                                                         SourcePosition.builtIn,
-                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe),
-                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
-                                                         Type.NONE,
-                                                         _universe.thisType()),
+                           (name, ref) ->
+                             {
+                               var f = lookupFeatureForType(SourcePosition.builtIn, name, _universe);
+                               return new NormalType(stdlib,
+                                                     -1,
+                                                     SourcePosition.builtIn,
+                                                     f,
+                                                     ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                                     Type.NONE,
+                                                     _universe.thisType());
+                             },
                            _universe);
       }
 
@@ -494,9 +498,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
        {
          var q = inner._qname;
          var n = q.get(at);
-         var o = n == FuzionConstants.TYPE_NAME
-           ? outer.typeFeature(_res)
-           : lookupFeatureForType(inner.pos(), n, outer);
+         var o =
+           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer) :
+           inner.belongsToNonStaticType() ? outer.nonStaticTypeFeature(_res)
+                                          : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -565,7 +570,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.visit(new FeatureVisitor()
       {
         public Call      action(Call      c, AbstractFeature outer) {
-          if (c.name == null)
+          if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
@@ -779,7 +784,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else if (existing.outer() == outer)
       {
-        if (Errors.count() == 0)
+        if (existing.isTypeFeature())
+          {
+            // NYI: see #461: type features may currently be declared repeatedly in different modules
+          }
+        else if (Errors.count() == 0)
           { // This can happen only as the result of previous errors since this
             // case was already handled in addDeclaredInnerFeature:
             throw new Error();
@@ -1172,10 +1181,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
         var t2 = f.resultType();
-        if ((t1.isChoice()
-             ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
-             : !t1.isAssignableFrom(t2)) &&
-            t2 != Types.resolved.t_void)
+        if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
+          { // NYI: CLEANUP: #706: allow redefintion of THIS_TYPE in type features for now, these are created internally.
+          }
+        else if ((t1.isChoice()
+                  ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
+                  : !t1.isAssignableFrom(t2)) &&
+                 t2 != Types.resolved.t_void)
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }

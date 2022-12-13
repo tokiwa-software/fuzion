@@ -53,6 +53,7 @@ import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -907,7 +908,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Check if f might be called dynamically on an instance of this and if so,
-   * look up the actual feature that is called at mark it as used.
+   * look up the actual feature that is called and mark it as used.
    */
   private void lookupIfInstantiated(AbstractFeature f)
   {
@@ -1186,10 +1187,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return true iff other can be assigned to a field of type this.
    */
+  @Deprecated(forRemoval = true) // NYI only isDirectlyAssignableFrom should be used after AST
   public boolean isAssignableFrom(Clazz other)
   {
     return this._type.isAssignableFrom(other._type);
   }
+
+
+  /**
+   * Check if a value of clazz other can be assigned to a field of this clazz
+   * without the need for tagging.
+   *
+   * @other the value to be assigned to a field of type this
+   *
+   * @return true iff other can be assigned to a field of type this.
+   */
+  public boolean isDirectlyAssignableFrom(Clazz other)
+  {
+    return this._type.isDirectlyAssignableFrom(other._type);
+  }
+
 
 
   /**
@@ -1531,7 +1548,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
           {
             if (CHECKS) check
               (result < 0);
@@ -1730,7 +1747,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Helper for isInstantiated to check if outer clazz this is a ref and there
    * are heir clazzes of this that are refs and that are instantiated.
    *
-   * @return true iff this is a ref and there exists a heir of this that is
+   * @return true iff this is a ref and there exists an heir of this that is
    * instantiated.
    */
   public boolean hasInstantiatedHeirs()
@@ -1946,20 +1963,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
-   * actually, a.type.b.type.c.type.
+   * actually, '((a.type a).b.type b).c.type c'.
    */
   Clazz typeClazz()
   {
-    var cf = _type.featureOfType();
-    if (cf.isUniverse())
-      {
-        return this;
-      }
-    else
-      {
-        var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType(), _outer.typeClazz());
-      }
+    return feature().isUniverse() ? this
+                                  : Clazzes.create(_type.typeType(),
+                                                   _outer.typeClazz());
   }
 
 
@@ -2241,7 +2251,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param ft the type that is an open generic
    *
-   * @param fouter the outer feature where ft is used. This might be a heir of
+   * @param fouter the outer feature where ft is used. This might be an heir of
    * _outer.feature() in case ft is the result type of an inherited feature.
    */
   List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)

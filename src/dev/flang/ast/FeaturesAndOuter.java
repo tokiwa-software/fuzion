@@ -27,12 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -88,18 +87,18 @@ public class FeaturesAndOuter extends ANY
    * @param isCandidate predicate to decide if a feature is a candidate even
    * if its name is not an exact match.
    */
-  AbstractFeature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<AbstractFeature> isCandidate)
+  AbstractFeature filter(SourcePosition pos, FeatureName name, Predicate<AbstractFeature> isCandidate)
   {
-    AbstractFeature foundChoice = null;
     var match = false;
     var found = new List<AbstractFeature>();
     for (var f : features.entrySet())
       {
         var ff = f.getValue();
         var fn = f.getKey();
-        if (ff.isChoice() && !ff.isBaseChoice() /* suppress call to choice type (e.g. bool : choice TRUE FALSE), expect for (inheritance) calls to 'choice'*/)
+        if (ff.isChoice() && !ff.isBaseChoice())
           {
-            foundChoice = ff;
+            /* suppress call to choice type (e.g. bool : choice TRUE FALSE),
+               expect for (inheritance) calls to 'choice' */
           }
         else if (fn.equalsExceptId(name))  /* an exact match, so use it: */
           {
@@ -119,7 +118,7 @@ public class FeaturesAndOuter extends ANY
       }
     return switch (found.size())
       {
-      case 0 -> foundChoice; // in case we found a matching choice, return it to create a proper error ('Cannot call choice feature').
+      case 0 -> null;
       case 1 -> found.get(0);
       default ->
       {

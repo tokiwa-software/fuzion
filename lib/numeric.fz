@@ -181,6 +181,30 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
   infix ∉ (s Set T) => numeric.this.notElementOf s
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  type.zero THIS_TYPE is abstract
+
+
+  # identity element for 'infix *'
+  #
+  type.one  THIS_TYPE is abstract
+
+
+  # the value corresponding to v in whatever integer implementation we have,
+  # maximum in case of overflow
+  #
+  # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
+  #
+  dyn type.from_u32(v u32) THIS_TYPE is
+    if v == 0 zero else one # NYI: #706: (from_u32 v-1) +^ one
+
+
 # numerics -- unit type defining features related to numeric but not
 # requiring an instance
 #
@@ -192,11 +216,11 @@ numerics(T (numeric T).type) is
 
   # identity element for 'infix +'
   #
-  zero T is abstract
+  zero T is abstract # NYI: #706: T.zero
 
   # identity element for 'infix *'
   #
-  one  T is abstract
+  one  T is abstract # NYI: #706: T.one
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
   two => from_u32(2)
@@ -205,8 +229,8 @@ numerics(T (numeric T).type) is
   ten => from_u32(10)
 
   # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) T is
-    if v == 0 zero else from_u32(v-1) +^ one
+  from_u32(v u32) T is # T.from_u32 v
+    if v == 0 zero else (from_u32 v-1) +^ one
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
