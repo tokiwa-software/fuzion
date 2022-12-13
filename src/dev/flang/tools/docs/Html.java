@@ -160,6 +160,38 @@ public class Html
       + "</div>";
   }
 
+  /**
+   * list of features that are redefined by feature af
+   * @param af
+   * @return list of redefined features, as HTML
+   */
+  private String redefines(AbstractFeature af, boolean recurse)
+  {
+    if (af.redefines().isEmpty())
+      {
+        return "";
+      }
+    else
+      {
+        var links = af
+          .redefines()
+          .stream()
+          .map(f -> """
+            <li><a href="$1">$2</a></li>$3
+          """.replace("$1", featureAbsoluteURL(f)).replace("$2", f.qualifiedName()).replace("$3", redefines(f, true)))
+          .collect(Collectors.joining(System.lineSeparator()));
+
+        if (recurse)
+          {
+            return links;
+          }
+        else
+          {
+            return "<div class=\"fd-redefines\"><br />redefines: <br /><ul>" + links + "</ul><br /></div>";
+          }
+      }
+  }
+
 
   /**
    * get directly and indirectly inherited features of af
@@ -194,10 +226,11 @@ public class Html
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
-          + "'><summary>$1</summary><div class='fd-comment'>$2</div></details>"
+          + "'><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             .replace("$1",
               summary(af))
-            .replace("$2", Util.commentOf(af));
+            .replace("$2", Util.commentOf(af))
+            .replace("$3", redefines(af, false));
       })
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -210,13 +243,14 @@ public class Html
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>"
+    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
       .replace("$0", f.isUniverse() ? "API-Documentation": basename(f))
       .replace("$3", f.isUniverse() ? "": anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
       .replace("$2", Util.commentOf(f))
       .replace("$4", f.isUniverse() ? "": "<a class='mr-5' href='" + config.docsRoot() + "/'>🌌</a>")
-      .replace("$5", f.isUniverse() ? "": "d-none");
+      .replace("$5", f.isUniverse() ? "": "d-none")
+      .replace("$6", redefines(f, false));
   }
 
   /**
