@@ -19,7 +19,7 @@
 
 ## Documentation
 
-Check [https://flang.dev](https://flang.dev) for language and implementation design.
+Check [flang.dev](https://flang.dev) for language and implementation design.
 
 
 ## Clone
@@ -33,7 +33,7 @@ Check [https://flang.dev](https://flang.dev) for language and implementation des
 >
 >     sudo apt-get install make clang libgc1 libgc-dev openjdk-17-jdk
 
-- OpenJDK 17, e.g., https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_linux_hotspot_17_35.tar.gz
+- OpenJDK 17, e.g. [Adoptium](https://github.com/adoptium/temurin17-binaries/releases/)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -41,7 +41,7 @@ Check [https://flang.dev](https://flang.dev) for language and implementation des
 ### Windows
 > Note that building from powershell/cmd does not work yet.
 
-1) Install chocolatey: https://chocolatey.org/install
+1) Install chocolatey: [chocolatey.org](https://chocolatey.org/install)
 2) In Powershell:
     1) choco install git openjdk make msys2 diffutils
     2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\mingw64\bin;" + $env:Path , "User")
