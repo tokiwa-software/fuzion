@@ -55,6 +55,27 @@ public class Html
   }
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+  static final String RUNCODE_BOX_HTML = """
+    <div class="runcode-wrapper">
+      <i class="far fa-spinner fa-spin"></i>
+      <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+        <div class="position-relative">
+          <form id="##ID##">
+            <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
+            <div class="position-absolute runbuttons">
+              <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
+              <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
+              <a href="/tutorial/effects.html"><i>What are effects?</i></a>
+            </div>
+          </form>
+        </div>
+        <div class="computeroutput" id="##ID##.result"></div>
+      </div>
+    </div>""";
+
+
   /*-----------------------------  private methods  -----------------------------*/
 
 
@@ -220,6 +241,16 @@ public class Html
       .replace("$1", featureURL(feature));
   }
 
+
+  /**
+   * process the comment of a feature, in particular detects lines indented
+   * five spaces relative to the # as code blocks and puts them into a runcode
+   * box.
+   *
+   * @param name the name of the feature whose comment is being processed
+   * @param s the comment that is being processed
+   * @return the comment wrapped in HTML
+   */
   static String processComment(String name, String s)
   {
     var codeNo = new ArrayList<Integer>();
@@ -233,12 +264,13 @@ public class Html
             /* code comment */
             codeLines.add(l);
           }
-        else if (l == "")
+        else if (l.length() == 0)
           {
             /* avoid adding lots of line breaks after code comments */
-            if (codeLines.isEmpty()) {
-              resultLines.add(l);
-            }
+            if (codeLines.isEmpty())
+              {
+                resultLines.add(l);
+              }
           }
         else
           {
@@ -250,24 +282,7 @@ public class Html
                   .stream()
                   .map(cl -> { return cl.replaceAll("^    ", ""); })
                   .collect(Collectors.joining(System.lineSeparator()));
-                var runCodeWrapper = """
-                  <div class="runcode-wrapper">
-                    <i class="far fa-spinner fa-spin"></i>
-                    <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
-                      <div class="position-relative">
-                        <form id="##ID##">
-                          <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
-                          <div class="position-absolute runbuttons">
-                            <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
-                            <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
-                            <a href="/tutorial/effects.html"><i>What are effects?</i></a>
-                          </div>
-                        </form>
-                      </div>
-                      <div class="computeroutput" id="##ID##.result"></div>
-                    </div>
-                  </div>""".replace("##ID##", id).replace("##CODE##", code);
-                resultLines.add(runCodeWrapper);
+                resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
                 codeLines.clear();
                 codeNo.add(1);
               }
@@ -281,6 +296,7 @@ public class Html
 
     return resultLines.stream().collect(Collectors.joining("<br />"));
   }
+
 
   private static String htmlEncode(String s, boolean spacesNoneBreaking)
   {
