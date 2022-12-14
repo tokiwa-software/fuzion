@@ -77,13 +77,13 @@ is
   # Same as non-generic >>=, but also maps to a different type B.
   #
   bind(B type, f T -> numOption B) numOption B is
-    numOption.this ? v T => f(v)
+    numOption.this ? v T => f v
                    | nil => nil
 
 
   # monadic operator for bool result, false for nil
   infix >>? (f T -> bool) =>
-    numOption.this ? v T => f(v)
+    numOption.this ? v T => f v
                    | nil => false
 
 

@@ -496,7 +496,7 @@ public class Call extends AbstractCall
    * instance.
    *
    * @param thiz the surrounding feature. For a call c in an inherits clause ("f
-   * : c { }"), thiz is the outer feature of f.  For a expression in the
+   * : c { }"), thiz is the outer feature of f.  For an expression in the
    * contracts or implementation of a feature f, thiz is f itself.
    *
    * @return the feature of the target of this call.
@@ -913,9 +913,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * Check if this call when the _calledFeature would be ff needs special
-   * handling of the argument count.  This is the case for open generics, "fun
-   * a.b.f" calls and implicit calls using f() for f returning Function value.
+   * Check if this call would need special handling of the argument count
+   * in case the _calledFeature would be ff. This is the case for open generics,
+   * "fun a.b.f" calls and implicit calls using f() for f returning Function value.
    *
    * @param ff the called feature candidate.
    *

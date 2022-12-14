@@ -284,7 +284,7 @@ public class Html
    */
   private static String fullHtml(Entry<AbstractFeature, SortedSet<AbstractFeature>> entry, String bareHtml)
   {
-    return """
+    return ("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -297,7 +297,7 @@ public class Html
       + """
         </body>
         </html>
-                    """
+                    """)
         .replace("$qualifiedName", entry.getKey().qualifiedName());
   }
 

@@ -98,15 +98,6 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => f c.head; c.tail.for_each f
 
 
-  # get the head of this list, panic if list is empty
-  #
-  forceHead
-    pre
-      debug: !isEmpty
-    => (list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
-                  | c Cons => c.head)
-
-
   # get the tail of this list, panic if list is empty
   #
   forceTail
@@ -121,7 +112,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   redef first
     pre
       debug: !isEmpty
-    => forceHead
+    => head.get
 
 
   # get the last element of this list, panic if list is empty
@@ -352,7 +343,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>
-      res := cur.forceHead
+      res := cur.head.get
       set cur := cur.forceTail
       res
 
