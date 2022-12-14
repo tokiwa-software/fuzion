@@ -411,7 +411,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
       debug: 0 <= from <= to <= string.this.codepointLength
   is
     codepointsArray
-      .slice(from, to)
+      .slice from to
       .map string (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
 
