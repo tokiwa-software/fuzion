@@ -221,6 +221,11 @@ public class FuzionConstants extends ANY
    */
   public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
 
+  /**
+   * Flag OR'ed to kind for features with modifier 'fixed'
+   */
+  public static final int MIR_FILE_KIND_IS_FIXED = 0x40;
+
 
   /**
    * For a type, the value of the valRefOrThis byte:

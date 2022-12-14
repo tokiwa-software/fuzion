@@ -260,11 +260,21 @@ public class This extends ExprWithPos
                   .resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    // NYI: CLEANUP: #737: We are satting all outer types to
-                    // o.asThis(), while the constructor of Type undoes
-                    // this. Maybe we could use .asThis only for the outermost
-                    // type?
-                    var t = Types.intern(cur.outer().thisType()).asThis();
+                    var t = cur.outer().thisType();
+                    if (cur.outer() == f &&
+
+                        /* in code like
+                         *
+                         * fixed x is ... x.this ...
+                         *
+                         * we are sure that x will not be inherited or
+                         * redefined, so the type of 'x.this' can be 'x' instead
+                         * of 'x.this.type' (which includes all heirs of 'x').
+                         */
+                        (outer.modifiers() & Consts.MODIFIER_FIXED) == 0)
+                      {
+                        t = Types.intern(t).asThis();
+                      }
                     c = new Unbox(c, t, cur.outer())
                       { public SourcePosition pos() { return This.this.pos(); } };
                   }

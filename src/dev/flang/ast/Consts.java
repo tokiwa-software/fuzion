@@ -26,13 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
+
 
 /**
- * Consts <description>
+ * Consts defines global constants used in the AST
+ *
+ * NYI: Consider moving these constants to def.flang.util.FuzionConstants.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Consts
+public class Consts extends ANY
 {
 
 
@@ -42,29 +46,33 @@ public class Consts
   /**
    *
    */
-  public static final int MODIFIER_LAZY         = 0x0002;
+  public static final String[] MODIFIER_STRINGS = {"lazy", "redef", "fixed", "dyn"};
+
 
   /**
    *
    */
-  public static final int MODIFIER_REDEFINE     = 0x0010;
+  public static final int MODIFIER_LAZY         = 0x01;
+  static { if (CHECKS) check(modifierToString(MODIFIER_LAZY).trim().equals("lazy")); }
+
+  /**
+   *
+   */
+  public static final int MODIFIER_REDEFINE     = 0x02;
+  static { if (CHECKS) check(modifierToString(MODIFIER_REDEFINE).trim().equals("redef")); }
 
   /**
    * 'fixed' modifier to force feature to be fixed, i.e., not inherited by
    * heirs.
    */
-  public static final int MODIFIER_FIXED        = 0x0100;
+  public static final int MODIFIER_FIXED        = 0x04;
+  static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
 
   /**
    * 'dyn' modifier to force feature within type feature to be dynamic.
    */
-  public static final int MODIFIER_DYN          = 0x0100;
-
-
-  /**
-   *
-   */
-  public static final String[] MODIFIER_STRINGS = {"once", "lazy","synchronized","value","redefine","const","leaf","final"};
+  public static final int MODIFIER_DYN          = 0x08;
+  static { if (CHECKS) check(modifierToString(MODIFIER_DYN).trim().equals("dyn")); }
 
 
   /**

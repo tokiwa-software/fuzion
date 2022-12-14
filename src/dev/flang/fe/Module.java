@@ -28,6 +28,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FormalGenerics;
@@ -214,8 +215,20 @@ public abstract class Module extends ANY
                 if (CHECKS) check
                   (cf != outer);
 
-                var newfn = cf.handDown(null, f, fn, p, outer);
-                addInheritedFeature(set, outer, p, newfn, f);
+                if ((f.modifiers() & Consts.MODIFIER_FIXED) == 0 ||
+                    outer.isTypeFeature())
+                  {
+                    var newfn = cf.handDown(null, f, fn, p, outer);
+                    addInheritedFeature(set, outer, p, newfn, f);
+                  }
+                else
+                  {
+                    for (var f2 : f.redefines())
+                      {
+                        var newfn = cf.handDown(null, f2, fn, p, outer);
+                        addInheritedFeature(set, outer, p, newfn, f2);
+                      }
+                  }
               }
           }
       }

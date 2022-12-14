@@ -3085,10 +3085,10 @@ callOrFeatOrThis  : anonymous
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()   ? anonymous()   : // starts with value/ref/:/fun/name
-      isQualThisPrefix()    ? qualThis()    : // starts with name
-      isPlainLambdaPrefix() ? plainLambda() : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()        ? call(null)      // starts with name
+      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
+      isQualThisPrefix()    ? qualThisAsThis() : // starts with name
+      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isNamePrefix()        ? call(null)         // starts with name
                             : null;
   }
 
@@ -3138,16 +3138,22 @@ anonymous   : returnType
   /**
    * Parse qualThis
    *
+   * @param asType select to parse this as a list of names or as a Type.
+   *
+   * @return List<String> or Type depending on asType being false or true
+   *
 qualThis    : name ( dot name )* dot "this"
             ;
    */
-  This qualThis()
+  Object qualThis(boolean asType /* should reqult be Type or This? */)
   {
     SourcePosition pos;
-    List<String> q = new List<>();
+    List<String> q = asType ? null : new List<>();
+    Type result = null;
+    var done = false;
     do
       {
-        q.add(name());
+        var n = name();
         if (!skipDot())
           {
             if (isFullStop())
@@ -3160,9 +3166,44 @@ qualThis    : name ( dot name )* dot "this"
               }
           }
         pos = posObject();
+        done = skip(Token.t_this);
+        if (asType)
+          {
+            result = new Type(pos,
+                              n,
+                              Call.NO_GENERICS,
+                              result,
+                              null,
+                              done ? Type.RefOrVal.ThisType
+                                   : Type.RefOrVal.LikeUnderlyingFeature);
+          }
+        else
+          {
+            q.add(n);
+          }
       }
-    while (!skip(Token.t_this));
-    return new This(pos, q);
+    while (!done);
+    return asType ? result : new This(pos, q);
+  }
+
+
+  /**
+   * Parse qualThis producing an instance of 'This'.  This is used withing the
+   * rule callOrFeatOrThis.
+   */
+  This qualThisAsThis()
+  {
+    return (This) qualThis(false);
+  }
+
+
+  /**
+   * Parse qualThis producing an instance of Type.  This is used withing the
+   * rule thistype.
+   */
+  Type qualThisAsType()
+  {
+    return (Type) qualThis(true);
   }
 
 
@@ -3605,10 +3646,10 @@ thistype    : qualThis dot "type"
    */
   AbstractType thistype()
   {
-    var q = qualThis();
+    Type result = qualThisAsType();
     matchOperator(".", "thistype");
     match(Token.t_type, "thistype");
-    return new Type("NYI: thistype");
+    return result;
   }
 
 
@@ -3624,7 +3665,7 @@ thistype    : qualThis dot "type"
     if (result)
       {
         var f = fork();
-        var ignore = f.qualThis();
+        var ignore = f.qualThisAsType();
         result = f.skipDot() && f.skip(Token.t_type);
       }
     return result;

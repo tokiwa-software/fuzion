@@ -1138,6 +1138,47 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Check if argument type 'tr' found in feature 'redefinition' may legally
+   * redefine original argument type 'to' found in feature 'original'.
+   *
+   * This is the case if original is
+   *
+   *    a.b.c.f(... arg#i a.b.c.this ...)
+   *
+   * and redefinition is
+   *
+   *    x.y.z.f(... arg#i x.y.z.this ...)
+   *
+   * or redefinition is
+   *
+   *    fixed x.y.z.f(... arg#i x.y.z ...)
+   *
+   * @param original the parent feature.
+   *
+   * @param redefinition the heir feature.
+   *
+   * @param to original argument type in 'original'.
+   *
+   * @param tr new argument type in 'redefinitiion'.
+   *
+   * @return true if 'to' may be replaced with 'tr'.
+   */
+  boolean isLegalCovariantThisType(AbstractFeature orignal,
+                                   Feature redefinition,
+                                   AbstractType to,
+                                   AbstractType tr)
+  {
+    return
+      ((to.isThisType()                                                  ) &&
+       ((tr.isThisType()                                             ) ||
+        (!tr.isGenericArgument()                                   &&
+         ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)   )    ) &&
+       (to.featureOfType() == orignal     .outer()                        ) &&
+       (tr.featureOfType() == redefinition.outer()                        )   );
+  }
+
+
+  /**
    * Check types of given Feature. This mainly checks that all redefinitions of
    * f are compatible with f.
    *
@@ -1162,7 +1203,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1.compareTo(t2) != 0 && !t1.containsError() && !t2.containsError())
+                if (t1.compareTo(t2) != 0 &&
+                    !isLegalCovariantThisType(o, f, t1, t2) &&
+                    !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1187,7 +1230,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
         else if ((t1.isChoice()
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
-                 t2 != Types.resolved.t_void)
+                 t2 != Types.resolved.t_void &&
+                 !isLegalCovariantThisType(o, f, t1, t2))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }
