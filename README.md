@@ -52,7 +52,7 @@ Check [https://flang.dev](https://flang.dev) for language and implementation des
 
 ## Build
 
-Make sure java/javac and clang are on your $PATH.
+> Make sure java/javac and clang are in your $PATH.
 
     cd fuzion
     make
