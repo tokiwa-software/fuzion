@@ -120,20 +120,6 @@ public class Intrinsics extends ANY
                 CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
             resultIdent.ret());
         });
-    put("fuzion.sys.fileio.get_file_size", (c,cl,outer,in) ->
-        {
-          var statIdent = new CIdent("statbuf");
-          var resultIdent = new CIdent("result");
-          return CStmnt.seq(
-            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
-            CExpr.decl("struct stat", statIdent),
-            // result = size if successful
-            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
-            // result = -1 if it failed
-            resultIdent.ret()
-            );
-        }
-        );
     put("fuzion.sys.fileio.write"        , (c,cl,outer,in) ->
         {
           var writingIdent = new CIdent("writing");

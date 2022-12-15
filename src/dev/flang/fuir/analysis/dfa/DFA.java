@@ -930,7 +930,6 @@ public class DFA extends ANY
     put("fuzion.sys.out.write"           , cl -> Value.UNIT );
     put("fuzion.sys.err.write"           , cl -> Value.UNIT );
     put("fuzion.sys.fileio.read"         , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
-    put("fuzion.sys.fileio.get_file_size", cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.write"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.delete"       , cl -> cl._dfa._bool );
     put("fuzion.sys.fileio.move"         , cl -> cl._dfa._bool );
@@ -944,7 +943,6 @@ public class DFA extends ANY
     put("fuzion.sys.out.flush"           , cl -> Value.UNIT );
     put("fuzion.sys.err.flush"           , cl -> Value.UNIT );
     put("fuzion.sys.stdin.next_byte"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
     put("i8.prefix -°"                   , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i16.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i32.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
