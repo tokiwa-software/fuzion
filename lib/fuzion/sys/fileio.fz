@@ -168,6 +168,9 @@ public fileio is
   # returns TRUE in case the operation was successful and FALSE in case of failure
   # in case the path refers to a symbolic link it resolves it and returns info about the actual file
   #
+  # in case an error is returned (the result of this feature is false), then the size field of
+  # the meta_data array will contain the errno for the stat call.
+  #
   stats(
         # the internal array data representing the file/dir path in bytes
         path Any,
@@ -177,6 +180,9 @@ public fileio is
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
   # returns TRUE in case the operation was successful and FALSE in case of failure
   # in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
+  #
+  # in case an error is returned (the result of this feature is false), then the size field of
+  # the meta_data array will contain the errno for the lstat call.
   #
   lstats(path Any, meta_data Any) bool is intrinsic # NYI behaves the same as stats in the interpreter
 

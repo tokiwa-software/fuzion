@@ -192,6 +192,10 @@ public class Intrinsics extends ANY
                 )
               ),
             // return false if stat failed
+            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
+            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }
@@ -216,6 +220,10 @@ public class Intrinsics extends ANY
                 )
               ),
             // return false if lstat failed
+            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
+            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }

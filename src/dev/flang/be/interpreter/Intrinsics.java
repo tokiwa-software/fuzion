@@ -75,6 +75,26 @@ public class Intrinsics extends ANY
   }
 
 
+  /*------------------------------  enums  ------------------------------*/
+
+
+  /**
+   * Contains possible error numbers emitted by intrisics when an error happens
+   * on the system side. This attempts to match C's errno.h names and numbers.
+   */
+  enum SystemErrNo
+  {
+    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95);
+
+    final int errno;
+
+    private SystemErrNo(final int errno)
+    {
+      this.errno = errno;
+    }
+  }
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -405,6 +425,7 @@ public class Intrinsics extends ANY
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           long[] stats = (long[])args.get(2).arrayData()._array;
+          var err = SystemErrNo.UNSPECIFIED;
           try
             {
               BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
@@ -414,10 +435,24 @@ public class Intrinsics extends ANY
               stats[3] = metadata.isDirectory()? 1:0;
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (UnsupportedOperationException e)
             {
-              return new boolValue(false);
+              err = SystemErrNo.ENOTSUP;
             }
+          catch (IOException e)
+            {
+              err = SystemErrNo.EIO;
+            }
+          catch (SecurityException e)
+            {
+              err = SystemErrNo.EACCES;
+            }
+
+          stats[0] = err.errno;
+          stats[1] = 0;
+          stats[2] = 0;
+          stats[3] = 0;
+          return new boolValue(false);
         });
     put("fuzion.sys.fileio.seek", (interpreter, innerClazz) -> args ->
         {
