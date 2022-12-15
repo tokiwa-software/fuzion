@@ -381,7 +381,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
     # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
     # ref : string
     #   redef utf8 Sequence u8 is
-    #     string.this.utf8.slice(from, to)
+    #     string.this.utf8.slice from to
     substring0 from to
 
 
@@ -625,8 +625,8 @@ string ref : has_equality, hasHash string, ordered string, strings is
         l := byteLength
         sepl := sep.byteLength
 
-        before := strings.fromBytes utf8.slice(0, i)
-        after := strings.fromBytes utf8.slice(i + sepl, l)
+        before := strings.fromBytes (utf8.slice 0 i)
+        after := strings.fromBytes (utf8.slice (i + sepl) l)
         (before, after, true)
 
 
