@@ -72,7 +72,9 @@ Sequence(T type) ref is
   count => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
-  # get the first element of this Sequence, panic if Sequence is empty
+  # get the first element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   first
     pre
@@ -87,7 +89,9 @@ Sequence(T type) ref is
       if isEmpty then default else first
 
 
-  # get the last element of this Sequence, panic if Sequence is empty
+  # get the last element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite Sequence.
