@@ -1323,6 +1323,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public abstract Visi visibility();
 
+  /**
+   * the modifiers of this feature
+   */
+  public abstract int modifiers();
+
   public abstract FeatureName featureName();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();

@@ -808,7 +808,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 00CYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor
+.6+| true  .6+| 1      | byte          | 0FCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -836,9 +836,10 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
+   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -922,6 +923,10 @@ Feature
   boolean featureHasTypeFeature(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0);
+  }
+  boolean featureIsFixed(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
   }
   int featureNamePos(int at)
   {
