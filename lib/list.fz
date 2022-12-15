@@ -98,7 +98,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => f c.head; c.tail.for_each f
 
 
-  # get the tail of this list, panic if list is empty
+  # get the tail of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   forceTail
     pre
@@ -107,7 +109,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
                   | c Cons => c.tail)
 
 
-  # get the head of this list, panic if list is empty
+  # get the head of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   redef first
     pre
@@ -115,7 +119,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     => head.get
 
 
-  # get the last element of this list, panic if list is empty
+  # get the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite list.
