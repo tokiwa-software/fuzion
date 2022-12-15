@@ -101,9 +101,6 @@ public class Intrinsics extends ANY
                                 outOrErr(in)
                               ));
         });
-    IntrinsicCode noFileIo = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
-                 CExpr.exit(1));
     put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
         {
           var readingIdent = new CIdent("reading");
