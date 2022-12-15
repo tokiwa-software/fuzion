@@ -34,19 +34,17 @@ public fileio is
   public read(
               # the (relative or absolute) file name, using platform specific path separators
               path string) outcome (array u8) is
-    match get_file_size path
-      num i64 =>
-        file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
-        arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
-        match open arr (i8 0)
-          fd i64 =>
-            read_result := read fd file.internalArray.data file.length
-            if read_result == 0
-              file
-            else
-              error "error number: $read_result"
-          err_open error => err_open
-      err_size error => err_size
+    (get_file_size path).bind (array u8) (num->
+      file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
+      arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
+
+      (open arr (i8 0)).bind (array u8) (fd->
+        read_result := read fd file.internalArray.data file.length
+        if read_result == 0
+          file
+        else
+          error "error number: $read_result"))
+
 
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
   # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
@@ -92,14 +90,12 @@ public fileio is
                # the content of the file as an u8 array
                content array u8) outcome unit is
     arr := fuzion.sys.c_string path
-    match open arr (i8 1)
-      fd i64 =>
-        write_results := write fd content.internalArray.data content.length
-        if write_results == 0
-          unit
-        else
-          error "error number: $write_results"
-      open_error error => open_error
+    (open arr (i8 1)).bind unit (fd->
+      write_results := write fd content.internalArray.data content.length
+      if write_results == 0
+        unit
+      else
+        error "error number: $write_results")
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
   # returns i8 0 in case of success
