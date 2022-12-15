@@ -168,15 +168,25 @@ public class Html
    */
   private String redefines(AbstractFeature af)
   {
-    if (af.redefines().isEmpty())
+    var result = "";
+
+    if (!af.redefines().isEmpty())
       {
-        return "";
+        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af) + "</ul><br /></div>";
       }
 
-    return "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af) + "</ul><br /></div>";
+    return result;
   }
 
 
+  /**
+   * helper for redefines. returns the list of features that are redefined by feature
+   * af. unlike redefine, which wraps the result of this in a <div></div> container, this
+   * just wraps the redefined features in <li><a></a></li> tags.
+   *
+   * @param af
+   * @return list of redefined features, wrapped in <li> and <a> HTML tags
+   */
   private String redefines0(AbstractFeature af)
   {
     return af
