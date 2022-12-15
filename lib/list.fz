@@ -261,7 +261,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a slice from this list that consists of the elements starting at index
   # 'from' (including) up to index 'to' (excluding).
   #
-  redef slice(from, to i32) => drop(from).take to-from
+  redef slice(from, to i32) => (drop from).take to-from
 
 
   # Lazily take the first elements of a list for which predicate 'p' holds.

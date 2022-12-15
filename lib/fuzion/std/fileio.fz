@@ -213,7 +213,7 @@ public fileio is
   stats(
         # the internal array data representing the file/dir path in bytes
         path Object,
-        # the iternal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+        # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
         meta_data Object) bool is intrinsic
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
