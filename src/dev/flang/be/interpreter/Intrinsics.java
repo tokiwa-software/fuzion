@@ -283,23 +283,6 @@ public class Intrinsics extends ANY
               return new i8Value(-1);
             }
         });
-    put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
-        {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          try
-            {
-              boolean b = Files.exists(path);
-              return b ? new i8Value(1) : new i8Value(0);
-            }
-          catch (Exception e)
-            {
-              return new i8Value(-1);
-            }
-        });
     put("fuzion.std.fileio.delete", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
