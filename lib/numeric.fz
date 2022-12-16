@@ -201,7 +201,7 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
   #
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
-  dyn type.from_u32(v u32) THIS_TYPE is
+  type.from_u32(v u32) THIS_TYPE is
     if v == 0 zero else one # NYI: #706: (from_u32 v-1) +^ one
 
 

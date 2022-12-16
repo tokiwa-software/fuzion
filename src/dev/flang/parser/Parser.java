@@ -802,7 +802,6 @@ modifier    : "lazy"
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
-          case t_dyn         : m = Consts.MODIFIER_DYN         ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
@@ -833,8 +832,7 @@ modifier    : "lazy"
       case t_lazy        :
       case t_redef       :
       case t_redefine    :
-      case t_fixed       :
-      case t_dyn         : return true;
+      case t_fixed       : return true;
       default            : return false;
       }
   }
