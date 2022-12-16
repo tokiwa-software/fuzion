@@ -46,7 +46,7 @@ public class Consts extends ANY
   /**
    *
    */
-  public static final String[] MODIFIER_STRINGS = {"lazy", "redef", "fixed", "dyn"};
+  public static final String[] MODIFIER_STRINGS = {"lazy", "redef", "fixed"};
 
 
   /**
@@ -67,12 +67,6 @@ public class Consts extends ANY
    */
   public static final int MODIFIER_FIXED        = 0x04;
   static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
-
-  /**
-   * 'dyn' modifier to force feature within type feature to be dynamic.
-   */
-  public static final int MODIFIER_DYN          = 0x08;
-  static { if (CHECKS) check(modifierToString(MODIFIER_DYN).trim().equals("dyn")); }
 
 
   /**
