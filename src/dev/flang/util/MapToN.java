@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -100,7 +99,7 @@ public class MapToN<A, B>
     Set<B> result = _map.get(a);
     if (result == null)
       {
-        result = Collections.EMPTY_SET;
+        result = new TreeSet<>();
       }
     return result;
   }

@@ -26,15 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import java.nio.ByteBuffer;
-
 import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
 
-import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
@@ -68,7 +65,7 @@ public class MIR extends IR
   /**
    * integer ids for features in this module
    */
-  final Map2Int<AbstractFeature> _featureIds = new MapComparable2Int(FEATURE_BASE);
+  final Map2Int<AbstractFeature> _featureIds = new MapComparable2Int<>(FEATURE_BASE);
 
 
   /*--------------------------  constructors  ---------------------------*/

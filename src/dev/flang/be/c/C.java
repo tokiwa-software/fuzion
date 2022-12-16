@@ -331,7 +331,7 @@ public class C extends ANY
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
     }
 
 
@@ -495,7 +495,7 @@ public class C extends ANY
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
-    _ai = new AbstractInterpreter(_fuir, new CodeGen());
+    _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
@@ -851,7 +851,7 @@ public class C extends ANY
            :  res;
       }
 
-    return new Pair(res, CStmnt.seq(ol));
+    return new Pair<>(res, CStmnt.seq(ol));
   }
 
 

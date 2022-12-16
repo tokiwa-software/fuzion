@@ -56,7 +56,7 @@ public class Value extends ANY
   /**
    * Comparator instance to compare two Values of arbitrary tyes.
    */
-  static Comparator COMPARATOR = new Comparator<Value>() {
+  static Comparator<Value> COMPARATOR = new Comparator<Value>() {
       /**
        * compare two values.
        */
