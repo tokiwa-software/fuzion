@@ -144,7 +144,7 @@ is
   infix == (other int) bool is
     ns = other.ns & n = other.n
 
-  type.equality(a, b int) bool is
+  fixed type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
 
   orderedThis int is int ns n
@@ -203,7 +203,7 @@ sign : choice plus minus, has_equality, hasEquals sign is
           plus => false
           minus => true
 
-  sign.type.equality(a, b sign) bool is
+  fixed type.equality(a, b sign) bool is
     match a
       plus =>
         match b

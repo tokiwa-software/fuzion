@@ -499,9 +499,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer) :
-           inner.belongsToNonStaticType() ? outer.nonStaticTypeFeature(_res)
-                                          : outer.typeFeature(_res);
+           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer)
+                                          : outer.nonStaticTypeFeature(_res);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -1163,18 +1162,42 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return true if 'to' may be replaced with 'tr'.
    */
-  boolean isLegalCovariantThisType(AbstractFeature orignal,
+  boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr)
   {
     return
-      ((to.isThisType()                                                  ) &&
-       ((tr.isThisType()                                             ) ||
-        (!tr.isGenericArgument()                                   &&
-         ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)   )    ) &&
-       (to.featureOfType() == orignal     .outer()                        ) &&
-       (tr.featureOfType() == redefinition.outer()                        )   );
+      /* to is original    .this.type  and
+       * tr is redefinition.this.type
+       */
+      ((to.isThisType()                                        ) &&
+       (tr.isThisType()                                        ) &&
+       (to.featureOfType() == original    .outer()             ) &&
+       (tr.featureOfType() == redefinition.outer()             )   ) ||
+
+      /* to is original.this.type  and
+       * redefinition is fixed and tr is redefinition.thisType.
+       */
+      ((to.isThisType()                                        ) &&
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
+       (to.featureOfType() == original    .outer()             ) &&
+       (tr.featureOfType() == redefinition.outer()             )   ) ||
+
+      /* original and redefinition are inner featurs of type features, to is
+       * THIS_TYPE and tr is the underlying non-type features thisType.
+       *
+       * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
+       * numeric.this.type)
+       */
+      (original    .outer().isTypeFeature()                                                                                            &&
+       redefinition.outer().isTypeFeature()                                                                                            &&
+       to.isGenericArgument()                                                                                                          &&
+       to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
+       original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
+       !tr.isGenericArgument()                                                                                                         &&
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)                                                                       &&
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisType()) == 0                                                             );
   }
 
 
