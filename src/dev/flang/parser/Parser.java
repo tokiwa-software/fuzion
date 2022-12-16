@@ -1641,7 +1641,6 @@ actual   : expr | type
    */
   Actual actual()
   {
-    Actual result;
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -2438,7 +2437,6 @@ block       : stmnts
       }
     else
       {
-        var startsAtNewLine = lineNum(lastPos()) < line();
         return brblock();
       }
   }
