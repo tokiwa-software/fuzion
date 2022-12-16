@@ -503,28 +503,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * This type feature declared as
-   *
-   *    abc.type.xyz is ...
-   *
-   * will go to abc's static type unless this is true.
-   *
-   * Currently, this is true for abstract features and for those marked with the
-   * 'dyn' modifier.
-   *
-   * NYI: FUTURE ENHANCEMENT: 'dyn' type featurs: We might be more automatic
-   * here and, e.g., let all features that depend on generic parameter
-   * FuzionConstants.TYPE_FEATURE_THIS_TYPE go to the dynamic type.
-   */
-  public boolean belongsToNonStaticType()
-  {
-    return
-      isAbstract() ||
-      (this instanceof Feature f) && (f.modifiers() & Consts.MODIFIER_DYN) != 0;
-  }
-
-
-  /**
    * For a type feature, create the inheritance call for a parent type feature.
    *
    * @param p the source position
@@ -694,10 +672,32 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                                       inh,
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
+        typeFeature._typeFeatureOrigin = this;
         result = res._module.addTypeFeature(outerType, typeFeature);
       }
     return result;
   }
+
+
+  /**
+   * For a type feature, this specifies the base feature the type feature was
+   * created for.
+   */
+  private AbstractFeature _typeFeatureOrigin;
+
+
+  /**
+   * For a type feature, this specifies the base feature the type feature was
+   * created for.
+   */
+  public AbstractFeature typeFeatureOrigin()
+  {
+    if (CHECKS) check
+      (_typeFeatureOrigin != null);
+
+    return _typeFeatureOrigin;
+  }
+
 
 
   /**
