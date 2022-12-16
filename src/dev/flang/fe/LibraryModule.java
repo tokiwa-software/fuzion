@@ -216,7 +216,7 @@ public class LibraryModule extends Module
 
   /**
    * Get the ModuleRef instance with given index.  ModuleRef instances refer to
-   * other modules that this module depennds on.
+   * other modules that this module depends on.
    */
   ModuleRef moduleRef(int offset)
   {

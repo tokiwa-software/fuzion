@@ -145,8 +145,8 @@ public class C extends ANY
 
 
     /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a refernce). See FUIR.acess*().
+     * Perform an assignment of a value to a field in tvalue. The type of tvalue
+     * might be dynamic (a reference). See FUIR.access*().
      */
     public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
     {
@@ -1102,9 +1102,6 @@ public class C extends ANY
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
           {
-            var target = _types.isScalar(vcl)
-              ? cur
-              : cur.field(_names.fieldName(_fuir.clazzArg(vcl, ai)));
             l.add(assign(CIdent.arg(ai), a.get(aii), at));
                           aii = aii + 1;
           }

@@ -465,7 +465,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalize(AbstractFeature f)
   {
     if (// an outer clazz of value type is not normalized (except for
-        // univers, which was done already).
+        // universe, which was done already).
         !isRef() ||
 
         // optimization: if feature() is already f, there is nothing to
