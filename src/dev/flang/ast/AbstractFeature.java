@@ -683,7 +683,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  private AbstractFeature _typeFeatureOrigin;
+  AbstractFeature _typeFeatureOrigin;
 
 
   /**

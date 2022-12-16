@@ -1176,8 +1176,7 @@ public class Call extends AbstractCall
     if (target() instanceof Call tc              &&
         tc.calledFeature().isTypeParameter()     &&
         heirF.isStaticTypeFeature()              &&
-        calledFeature().outer().isTypeFeature()  &&
-        calledFeature().belongsToNonStaticType()    )
+        calledFeature().outer().isTypeFeature()     )
       {  // divert calls T.f with a type parameter as target to the non-static type if needed.
         heirF = heirF.typeFeaturesNonStaticParent();
       }
