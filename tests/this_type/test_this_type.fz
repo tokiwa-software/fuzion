@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# a simle test using type inference for 'q.this' to declare fields for an outer
+# a simple test using type inference for 'q.this' to declare fields for an outer
 # ref type 'q'
 #
 simple_test_for_this_type_ref =>
@@ -59,7 +59,7 @@ simple_test_for_this_type_ref =>
 
 simple_test_for_this_type_ref
 
-# a simle test using type inference for 'q.this' to declare fields for an outer
+# a simple test using type inference for 'q.this' to declare fields for an outer
 # value type 'q'
 #
 simple_test_for_this_type_value =>
