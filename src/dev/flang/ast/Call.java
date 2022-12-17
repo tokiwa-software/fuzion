@@ -1173,13 +1173,6 @@ public class Call extends AbstractCall
 
     var declF = _calledFeature.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
-    if (target() instanceof Call tc              &&
-        tc.calledFeature().isTypeParameter()     &&
-        heirF.isStaticTypeFeature()              &&
-        calledFeature().outer().isTypeFeature()     )
-      {  // divert calls T.f with a type parameter as target to the non-static type if needed.
-        heirF = heirF.typeFeaturesNonStaticParent();
-      }
     if (declF != heirF)
       {
         var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heirF);
@@ -1426,17 +1419,14 @@ public class Call extends AbstractCall
         // result type depends on a generic that can be replaced by an actual
         // generic given in the call?
         var gt = _generics.get(0);
-        if (gt.isGenericArgument())
+        if (!gt.isGenericArgument())
           {
-            _type = t.resolve(res, tt.featureOfType());
+            gt = gt.typeType(res);
           }
-        else
+        _type = gt.resolve(res, tt.featureOfType());
+        if (_type == null)
           {
-            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, _generics);
-            if (_type == null)
-              {
-                throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
-              }
+            throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
           }
       }
     else

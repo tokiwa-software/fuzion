@@ -101,12 +101,6 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of static type features.
-   */
-  public static final String TYPE_STATIC_NAME = INTERNAL_NAME_PREFIX + "type_STATIC";
-
-
-  /**
    * Name of type parameter for type features.  This type parameter will be set
    * to the actual static type.
    */
