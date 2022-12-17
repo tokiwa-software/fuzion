@@ -500,7 +500,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var n = q.get(at);
          var o =
            n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer)
-                                          : outer.nonStaticTypeFeature(_res);
+                                          : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -615,20 +615,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outerType the static outer type of universe.
    *
-   * @param typeFeature the new (static or non-static) type feature declared
-   * within nonStaticOuterType.
+   * @param typeFeature the new type feature declared within outerType.
    */
-  public AbstractFeature addTypeFeature(AbstractFeature outerType,
-                                        Feature typeFeature)
+  public void addTypeFeature(AbstractFeature outerType,
+                             Feature typeFeature)
   {
-    var nonStaticOuterType = outerType.isUniverse() ? outerType : outerType.typeFeaturesNonStaticParent();
-    var result = typeFeature;
-    findDeclarations(typeFeature, nonStaticOuterType);
-    addDeclared(false, nonStaticOuterType, typeFeature);
+    findDeclarations(typeFeature, outerType);
     addDeclared(true,  outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
-    return result;
   }
 
 

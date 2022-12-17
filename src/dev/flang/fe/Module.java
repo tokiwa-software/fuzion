@@ -215,8 +215,7 @@ public abstract class Module extends ANY
                 if (CHECKS) check
                   (cf != outer);
 
-                if ((f.modifiers() & Consts.MODIFIER_FIXED) == 0 ||
-                    outer.isStaticTypeFeature())
+                if ((f.modifiers() & Consts.MODIFIER_FIXED) == 0)
                   {
                     var newfn = cf.handDown(null, f, fn, p, outer);
                     addInheritedFeature(set, outer, p, newfn, f);
