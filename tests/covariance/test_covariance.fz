@@ -42,8 +42,8 @@ test_covariance is
 
     # special values
     #
-    type.zero THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type, remove 'dyn'
-    type.one  THIS_TYPE is abstract   # NYI: THIS_TYPE -> num.this.type, remove 'dyn'
+    type.zero THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
+    type.one  THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
 
     # if num.this less than other?
     #
