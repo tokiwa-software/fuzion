@@ -3075,6 +3075,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
+                  | thistype
                   | qualThis
                   | plainLambda
                   | call
@@ -3084,6 +3085,7 @@ callOrFeatOrThis  : anonymous
   {
     return
       isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
+      isThistype()          ? thistypeAsExpr() : // starts with type followed by 'this.type'
       isQualThisPrefix()    ? qualThisAsThis() : // starts with name
       isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
       isNamePrefix()        ? call(null)         // starts with name
@@ -3143,7 +3145,7 @@ anonymous   : returnType
 qualThis    : name ( dot name )* dot "this"
             ;
    */
-  Object qualThis(boolean asType /* should reqult be Type or This? */)
+  Object qualThis(boolean asType /* should result be Type or This? */)
   {
     SourcePosition pos;
     List<String> q = asType ? null : new List<>();
@@ -3620,7 +3622,7 @@ type        : thistype
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    boolean result = allowTypeThatIsNotExpression && skipThistype();
+    boolean result = skipThistype();
     if (!result)
       {
         var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
@@ -3648,6 +3650,17 @@ thistype    : qualThis dot "type"
     matchOperator(".", "thistype");
     match(Token.t_type, "thistype");
     return result;
+  }
+
+
+  /**
+   * Parse thistype as Expr
+   *
+   */
+  Expr thistypeAsExpr()
+  {
+    var result = thistype();
+    return new DotType(result.pos(), result);
   }
 
 
