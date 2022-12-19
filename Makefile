@@ -947,6 +947,7 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
+	rm -rf $@
 	cp -rf $^ $@
 	chmod +x $@/*.sh
 
