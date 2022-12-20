@@ -464,9 +464,13 @@ string ref : has_equality, hasHash string, ordered string, strings is
         s.find_last substring (skip + (found.get 0))
 
 
-  # replace all occurances of f within l by r
+  # replace all occurrences of f by r
   #
   replace (f, r string) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8)
+
+
+  # replace the first n occurrences of f by r
+  replace(f, r string, n u64) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -474,7 +478,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   contains (substring string) => find(substring).exists
 
 
-  # count number of occurances of given 'substring' in this string
+  # count number of occurrences of given 'substring' in this string
   #
   count (substring string) =>
     (searchableSequence utf8).countMatches substring.utf8
