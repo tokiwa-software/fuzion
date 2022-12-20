@@ -168,7 +168,7 @@ public class Call extends AbstractCall
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n the field anme
+   * @param n the name of the called feature
    */
   public Call(SourcePosition pos, String n)
   {
@@ -192,7 +192,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor to call feature with name 'n' on target 't' with actual
+   * arguments 'la'.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -212,7 +213,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor to call feature with name 'n' on target 't' with actual
+   * arguments 'la' with the ability to select from an open generic field.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -231,8 +233,7 @@ public class Call extends AbstractCall
       (la != null,
        select >= -1);
 
-    List<Expr> a = null;
-    a = new List<Expr>();
+    var a = new List<Expr>();
     for (var aa : la)
       {
         a.add(aa._expr);
@@ -248,15 +249,17 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor to call field 'n' on target 't' and select an open generic
+   * variant.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param t
+   * @param t the target of the call, null if none.
    *
-   * @param n
+   * @param n the name of the called feature
    *
-   * @param select
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
    */
   public Call(SourcePosition pos, Expr t, String n, int select)
   {
@@ -265,15 +268,18 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor for a call whose called feature is already known, typically
+   * because this call is created artificially for some syntactic sugar and not
+   * by parsing source code.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param t
+   * @param t the target of the call, null if none.
    *
-   * @param n
+   * @param calledFeature the called feature, must not be null
    *
-   * @param select
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
@@ -283,7 +289,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * A call to an anonymous feature declared in an expression.
+   * Constructor for a call to an anonymous feature declared in an expression.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -301,13 +307,13 @@ public class Call extends AbstractCall
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param target the target, "a.b".
+   * @param target the target of the call, null if none.
    *
    * @param anonymous the anonymous feature, which is the wrapper created around
    * the call to "c".
    */
-  public Call(SourcePosition pos,
-              Expr    target,
+  public Call(SourcePosition  pos,
+              Expr            target,
               AbstractFeature anonymous)
   {
     this(pos, target, null, NO_PARENTHESES);
@@ -316,15 +322,16 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor to low-level initialize all the fields directly.  This is
+   * currently used to create calls to construct type features.
    *
    * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
    *
    * @param generics
    *
    * @param actuals
-   *
-   * @param target
    *
    * @param calledFeature
    *
@@ -351,26 +358,28 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor
+   * Constructor to low-level initialize all the fields directly.  This is
+   * currently used to create immediate calls 'f.call a' from 'f a'.
    *
    * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature
+   *
+   * @param actualsNew
    *
    * @param generics
    *
    * @param actuals
    *
-   * @param target
-   *
-   * @param calledFeature
-   *
-   * @param type
    */
   private Call(SourcePosition pos,
-       Expr target,
-       String name,
-       List<Actual> actualsNew,
-       List<AbstractType> generics,
-       List<Expr> actuals)
+               Expr target,
+               String name,
+               List<Actual> actualsNew,
+               List<AbstractType> generics,
+               List<Expr> actuals)
   {
     this._pos = pos;
     this._name = name;
