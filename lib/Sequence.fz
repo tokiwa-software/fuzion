@@ -389,8 +389,9 @@ Sequence(T type) ref is
 
 
 
-  # group the elements of
-  # this sequence by key K
+  # group the elements of this sequence by a key of type K
+  #
+  # f determines the key of an element
   #
   group_by(K (hasHash K).type, f T -> K) map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
