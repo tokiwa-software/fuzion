@@ -443,7 +443,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param genericsToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics to feat that shold replace the
+   * @param actualGenerics the actual generics to feat that should replace the
    * formal generics found in genericsToReplace.
    *
    * @return a new list of types with all formal generic arguments from this
