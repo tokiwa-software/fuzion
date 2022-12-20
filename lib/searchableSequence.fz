@@ -55,16 +55,16 @@ is
     (searchablelist asList).find l.asList
 
 
-  # replace all occurrences of f by r
+  # replace all occurrences of old by new
   #
-  replace (f, r Sequence A) =>
-    (searchablelist asList).replace f.asList r.asList
+  replace (old, new Sequence A) =>
+    (searchablelist asList).replace old.asList new.asList
 
 
-  # replace the first n occurrences of f by r
+  # replace the first n occurrences of old by new
   #
-  replace (f, r Sequence A, n u64) =>
-    (searchablelist asList).replace f.asList r.asList n
+  replace (old, new Sequence A, n u64) =>
+    (searchablelist asList).replace old.asList new.asList n
 
 
   # get the number of matches of l
