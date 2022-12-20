@@ -48,7 +48,7 @@ public class Actual extends ANY
 
 
   /**
-   * This actual parsed as a value, null if it can only be parsed as a type.
+   * This actual parsed as a value, Expr.NO_VALUE if it can only be parsed as a type.
    */
   public final Expr _expr;
 
@@ -59,12 +59,13 @@ public class Actual extends ANY
   /**
    * Constructor for an actual consisting of type t and expression e.
    *
-   * At least one of t and e must be non-null.
+   * t must be non-null or e must not be NO_VALUE.
    */
   public Actual(AbstractType t, Expr e)
   {
     if (PRECONDITIONS) require
-      (t != null || e != null);
+      (t != null || e != Expr.NO_VALUE,
+       e != null);
 
     _type = t;
     _expr = e;

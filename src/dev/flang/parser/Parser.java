@@ -1671,7 +1671,7 @@ actual   : expr | type
           (hasType);
 
         t = type();
-        e = null;
+        e = Expr.NO_VALUE;
       }
     return new Actual(t, e);
   }
