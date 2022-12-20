@@ -1978,11 +1978,12 @@ public class Call extends AbstractCall
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (frmlT != null /* NYI: make sure this is never null */)
                   {
-                    var an = _actualsNew;
-                    var i = _generics.size() + count;
                     if (actl == Expr.NO_VALUE)
                       {
-                        AstErrors.unexpectedTypeParameterInCall(_calledFeature, count, frmlT, an.get(i)._type);
+                        AstErrors.unexpectedTypeParameterInCall(_calledFeature,
+                                                                count,
+                                                                frmlT,
+                                                                _actualsNew.get(_generics.size() + count)._type);
                       }
                     else if (!frmlT.isAssignableFrom(actl.type()))
                       {
