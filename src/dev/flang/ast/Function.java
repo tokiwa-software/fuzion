@@ -315,7 +315,7 @@ public class Function extends ExprWithPos
             this._feature = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME, Call.NO_PARENTHESES_A);
+            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
             _inheritsCall._generics = gs; // NYI: hack to set infered result type, see below
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;

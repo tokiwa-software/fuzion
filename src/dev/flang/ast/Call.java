@@ -55,8 +55,7 @@ public class Call extends AbstractCall
    * parenthesis ("a.b") from a call with parenthesises and an empty actual
    * arguments list ("a.b()").
    */
-  public static final List<Expr> NO_PARENTHESES = new List<>();
-  public static final List<Actual> NO_PARENTHESES_A = new List<>();
+  public static final List<Actual> NO_PARENTHESES = new List<>();
 
 
   /**
@@ -188,7 +187,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, String n)
   {
-    this(pos, t, n, -1, NO_PARENTHESES_A);
+    this(pos, t, n, -1, NO_PARENTHESES);
   }
 
 
@@ -233,17 +232,10 @@ public class Call extends AbstractCall
        select >= -1);
 
     List<Expr> a = null;
-    if (la == NO_PARENTHESES_A)
+    a = new List<Expr>();
+    for (var aa : la)
       {
-        a = NO_PARENTHESES;
-      }
-    else
-      {
-        a = new List<Expr>();
-        for (var aa : la)
-          {
-            a.add(aa._expr);
-          }
+        a.add(aa._expr);
       }
     this._pos = pos;
     this._target = t;
@@ -268,7 +260,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, String n, int select)
   {
-    this(pos, t, n, select, NO_PARENTHESES_A);
+    this(pos, t, n, select, NO_PARENTHESES);
   }
 
 
@@ -285,7 +277,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
-    this(pos, t, calledFeature.featureName().baseName(), select, NO_PARENTHESES_A);
+    this(pos, t, calledFeature.featureName().baseName(), select, NO_PARENTHESES);
     this._calledFeature = calledFeature;
   }
 
@@ -318,7 +310,7 @@ public class Call extends AbstractCall
               Expr    target,
               AbstractFeature anonymous)
   {
-    this(pos, target, null, NO_PARENTHESES_A);
+    this(pos, target, null, NO_PARENTHESES);
     this._calledFeature = anonymous;
   }
 
@@ -412,7 +404,7 @@ public class Call extends AbstractCall
    */
   boolean hasParentheses()
   {
-    return _actuals != NO_PARENTHESES;
+    return _actualsNew != NO_PARENTHESES;
   }
 
 
@@ -1089,7 +1081,8 @@ public class Call extends AbstractCall
                           NO_GENERICS,
                           _actuals)
           .resolveTypes(res, outer);
-        _actuals = NO_PARENTHESES;
+        _actualsNew = NO_PARENTHESES;
+        _actuals = Expr.NO_EXPRS;
       }
     return result;
   }

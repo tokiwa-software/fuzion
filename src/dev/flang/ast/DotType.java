@@ -111,7 +111,7 @@ public class DotType extends Expr
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
     AbstractType t = _lhs;
-    var tc = new Call(pos(), new Universe(), "Types", Call.NO_PARENTHESES_A);
+    var tc = new Call(pos(), new Universe(), "Types");
     tc.resolveTypes(res, outer);
     return new Call(_pos, tc, "get", new List<>(new Actual(_lhs))).resolveTypes(res, outer);
   }

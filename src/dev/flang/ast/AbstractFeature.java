@@ -504,7 +504,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     oc,
                     args,
                     typeParameters,
-                    Call.NO_PARENTHESES,
+                    Expr.NO_EXPRS,
                     tf,
                     tf.thisType());
   }

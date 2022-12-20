@@ -1578,7 +1578,7 @@ actualsList : actualSp actualsList
    */
   List<Actual> actualsList()
   {
-    List<Actual> result = Call.NO_PARENTHESES_A;
+    List<Actual> result = Call.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
