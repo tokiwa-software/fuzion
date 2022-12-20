@@ -347,8 +347,9 @@ SHELL_SCRIPTS = \
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
-.PHONY: without-java-modules
-without-java-modules: $(FUZION_BASE) $(FUZION_FILES)
+# everything but the java modules
+.PHONY: no-java
+no-java: $(FUZION_BASE) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac
