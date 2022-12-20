@@ -256,8 +256,7 @@ public class This extends ExprWithPos
               (Errors.count() > 0 || (or != null));
             if (or != null)
               {
-                Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
-                  .resolveTypes(res, outer);
+                Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
                     var t = cur.outer().thisType();

@@ -317,7 +317,7 @@ public class MiddleEnd extends ANY
     if (cf != null)
       {
         markUsed(cf, c.isDynamic(), c);
-        for (var t : c.generics())
+        for (var t : c.actualTypeParameters())
           {
             if (!t.isGenericArgument())
               {

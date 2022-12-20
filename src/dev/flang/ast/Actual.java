@@ -71,6 +71,34 @@ public class Actual extends ANY
     _expr = e;
   }
 
+
+  /**
+   * Constructor for an actual consisting of type t.
+   *
+   * t must be non-null or e must not be NO_VALUE.
+   */
+  public Actual(AbstractType t)
+  {
+    this(t, Expr.NO_VALUE);
+
+    if (PRECONDITIONS) require
+      (t != null);
+  }
+
+
+  /**
+   * Constructor for an actual consisting of expression e.
+   *
+   */
+  public Actual(Expr e)
+  {
+    this(null, e);
+
+    if (PRECONDITIONS) require
+      (e != Expr.NO_VALUE,
+       e != null);
+  }
+
 }
 
 /* end of file */

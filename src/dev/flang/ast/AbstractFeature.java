@@ -348,7 +348,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
-                result = p.generics();
+                result = p.actualTypeParameters();
               }
           }
       }
@@ -495,11 +495,16 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       ? new Universe()
       : outer().typeCall(p, new List<>(outer().thisType()), res);
     var tf = typeFeature(res);
+    var args = new List<Actual>();
+    for (var tp : typeParameters)
+      {
+        args.add(new Actual(tp));
+      }
     return new Call(p,
-                    tf.featureName().baseName(),
+                    oc,
+                    args,
                     typeParameters,
                     Call.NO_PARENTHESES,
-                    oc,
                     tf,
                     tf.thisType());
   }
@@ -942,8 +947,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
       {
-        // NYI: This might be incorrect in case p.generics() is inferred but not set yet.
-        fn = f.effectiveName(p.generics());
+        // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
+        fn = f.effectiveName(p.actualTypeParameters());
       }
 
     return fn;
@@ -989,7 +994,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     var ti = a[i];
                     if (ti.isOpenGeneric())
                       {
-                        var frmlTs = ti.genericArgument().replaceOpen(c.generics());
+                        var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
                         a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
                         for (var tg : frmlTs)
                           {
@@ -1004,9 +1009,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                       {
                         if (res != null)
                           {
-                            FormalGenerics.resolve(res, c.generics(), heir);
+                            FormalGenerics.resolve(res, c.actualTypeParameters(), heir);
                           }
-                        ti = ti.actualType(c.calledFeature(), c.generics());
+                        ti = ti.actualType(c.calledFeature(), c.actualTypeParameters());
                         a[i] = Types.intern(ti);
                       }
                   }

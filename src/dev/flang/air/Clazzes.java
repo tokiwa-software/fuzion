@@ -859,7 +859,7 @@ public class Clazzes extends ANY
       }
     if (!cf.isChoice() && tclazz != c_void.get())
       {
-        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics()), c, c.isInheritanceCall());
+        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.actualTypeParameters()), c, c.isInheritanceCall());
         if (c._sid < 0)
           {
             c._sid = getRuntimeClazzIds(2);
@@ -1045,7 +1045,7 @@ public class Clazzes extends ANY
           {
             var inner = tclazz.lookup(c.calledFeature(),
                                       c.select(),
-                                      outerClazz.actualGenerics(c.generics()),
+                                      outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
             result = inner.resultClazz();
