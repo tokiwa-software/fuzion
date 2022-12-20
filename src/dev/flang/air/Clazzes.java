@@ -857,6 +857,23 @@ public class Clazzes extends ANY
       {
         calledDynamically(cf);
       }
+    if(cf.isChoice())
+    {
+      outerClazz
+        .actualGenerics(c.generics())
+        .stream()
+        .forEach(ag ->
+          {
+            if (!ag.isRef())
+              {
+                // Even though choice element ag
+                // might never actually be instantiated
+                // there might be tagging code being generated for ag.
+                // related: tests/issue459.fz
+                clazz(ag).instantiated(c.pos());
+              }
+          });
+    }
     if (!cf.isChoice() && tclazz != c_void.get())
       {
         var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics()), c, c.isInheritanceCall());
