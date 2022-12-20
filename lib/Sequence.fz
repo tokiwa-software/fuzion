@@ -389,8 +389,10 @@ Sequence(T type) ref is
 
 
 
-  # group sequence by K
-  groupBy(K (hasHash K).type, f T -> K) map K (Sequence T) is
+  # group the elements of
+  # this sequence by key K
+  #
+  group_by(K (hasHash K).type, f T -> K) map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
     res := CTrie K (Sequence T)
     for_each (x ->
