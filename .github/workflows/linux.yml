@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#
+# -----------------------------------------------------------------------
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request: {}
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgc1 libgc-dev shellcheck
+
+      - name: check shell scripts
+        run: make shellcheck
+
+      - name: build
+        run: make
+
+      - name: run tests
+        run: make run_tests

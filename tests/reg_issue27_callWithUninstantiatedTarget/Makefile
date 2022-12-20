@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = callWithUninstantiatedTarget
+override NAME = callWithUninstantiatedTarget
 include ../simple.mk

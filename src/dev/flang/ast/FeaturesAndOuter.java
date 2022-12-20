@@ -27,12 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -88,7 +87,7 @@ public class FeaturesAndOuter extends ANY
    * @param isCandidate predicate to decide if a feature is a candidate even
    * if its name is not an exact match.
    */
-  AbstractFeature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<AbstractFeature> isCandidate)
+  AbstractFeature filter(SourcePosition pos, FeatureName name, Predicate<AbstractFeature> isCandidate)
   {
     var match = false;
     var found = new List<AbstractFeature>();
@@ -96,7 +95,12 @@ public class FeaturesAndOuter extends ANY
       {
         var ff = f.getValue();
         var fn = f.getKey();
-        if (fn.equalsExceptId(name))  /* an exact match, so use it: */
+        if (ff.isChoice() && !ff.isBaseChoice())
+          {
+            /* suppress call to choice type (e.g. bool : choice TRUE FALSE),
+               expect for (inheritance) calls to 'choice' */
+          }
+        else if (fn.equalsExceptId(name))  /* an exact match, so use it: */
           {
             if (CHECKS) check
               (Errors.count() > 0 || !match || fn.argCount() == 0);

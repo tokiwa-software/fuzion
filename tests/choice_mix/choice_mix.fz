@@ -28,16 +28,15 @@ choice_mix is
   Nil is
   MyObj ref is
   MyRef(x,y,z i32) ref : MyObj is
-    a,b,c i32 := ?
-    set a := x+x
-    set b := y+y
-    set c := z+z
+    a i32 := x+x
+    b i32 := y+y
+    c i32 := z+z
 
-  Mix : choice<i32,
-               bool,
-               string,
-               Nil,
-               MyRef> is
+  Mix : choice i32
+               bool
+               string
+               Nil
+               MyRef is
 
   a Mix := 3
   b Mix := true
@@ -105,7 +104,7 @@ choice_mix is
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
-  v00 Mix := ?
+  v00 Mix := 42
 
   show00 =>
     yak "show00 "
@@ -184,23 +183,23 @@ choice_mix is
     is
       redefine rgb => alpha * 256*256*256
 
-    p, q, r, s, t choice<red,
-                         green,
-                         blue,
-                         yellow,
-                         magenta,
-                         black,
-                         white,
-                         transparent> := ?
+    p, q, r, s, t choice red
+                         green
+                         blue
+                         yellow
+                         magenta
+                         black
+                         white
+                         transparent := red
 
-    print(c choice<red,
-                   green,
-                   blue,
-                   yellow,
-                   magenta,
-                   black,
-                   white,
-                   transparent>) unit
+    print(c choice red
+                   green
+                   blue
+                   yellow
+                   magenta
+                   black
+                   white
+                   transparent) unit
     is
       match c
         r red         => say "red {r.rgb}"
@@ -245,7 +244,7 @@ choice_mix is
                 | magenta
                 | black
                 | white
-                | transparent := ?
+                | transparent := red
 
     print(c red
           | green
@@ -293,7 +292,8 @@ choice_mix is
       say
 
     // check that pipe also works as operator:
-    (1..10) | { fun (i i32) { yak i } }; say
+    (1..10) | i -> yak i
+    say
   alternatives1
 
   alternatives2 unit is // use pipe for choice argument type
@@ -314,24 +314,3 @@ choice_mix is
     test Nil
     test (MyRef 3 4 5)
   alternatives2
-
-
-/* NYI: possible syntactic sugar:
-
-  enum col
-  {
-    red,
-    green,
-    blue
-  }
-
-as sugar for
-
-  col : choice<red, green, blue> is
-  red is
-  green is
-  blue is
-
-?
-
-*/

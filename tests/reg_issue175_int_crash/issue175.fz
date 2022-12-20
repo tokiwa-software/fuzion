@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion issue 175
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# The error was:
+
+# error 1: *** java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "<local3>" is null
+# Call stack:
+
+# java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "<local3>" is null
+#   at dev.flang.be.interpreter.Layout.offset0(Layout.java:239)
+#   at dev.flang.be.interpreter.Interpreter.fieldSlot(Interpreter.java:1152)
+#   at dev.flang.be.interpreter.Interpreter.getField(Interpreter.java:1288)
+#   at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:526)
+#   at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:336)
+#   at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:372)
+#   at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:372)
+#   at dev.flang.be.interpreter.Interpreter.callOnInstance(Interpreter.java:900)
+#   at dev.flang.be.interpreter.Interpreter.lambda$callable$6(Interpreter.java:793)
+#   at dev.flang.be.interpreter.Interpreter.run(Interpreter.java:235)
+#   at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:549)
+#   at dev.flang.tools.Tool.run(Tool.java:168)
+#   at dev.flang.tools.Fuzion.main(Fuzion.java:244)
+
+
+issue175 is
+  m(K,V type, k K, v V) ref is
+    e tuple K V := (k,v)
+  om(redef K, V type, k1 K, v1 V) : m K V k1 v1 is
+  x m string i32 := om "one" 1

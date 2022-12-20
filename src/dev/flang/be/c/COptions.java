@@ -50,17 +50,45 @@ public class COptions extends FuzionOptions
   final String _binaryName;
 
 
+  /**
+   * Should the boehm garbage collector be used?
+   */
+  final boolean _useBoehmGC;
+
+
+  /**
+   * Should we use the DFA analysis to improve the generated code?
+   */
+  final boolean _Xdfa;
+
+
+  /**
+   * Name of the C compiler to use.
+   */
+  final String _cCompiler;
+
+
+  /**
+   * Flags to pass to the C compiler.
+   */
+  final String _cFlags;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public COptions(FuzionOptions fo, String binaryName)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags)
   {
     super(fo);
 
     _binaryName = binaryName;
+    _useBoehmGC = useBoehmGC;
+    _Xdfa = Xdfa;
+    _cCompiler = cCompiler;
+    _cFlags = cFlags;
   }
 
 

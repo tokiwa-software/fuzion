@@ -164,10 +164,10 @@ inheritance is
 
 
   // Inheritance from outer: stream.before inherits from stream:
-  (1..).before(fun (x i32) => x > 100)
-       .before(fun (x i32) => x > 40)
-       .before(fun (x i32) => x > 20)
-       .forAll(fun (x i32) is say x)
+  (1..).before (x -> x > 100)
+       .before (x -> x > 40)
+       .before (x -> x > 20)
+       .for_each (x -> say x)
 
   // test for recursive inheritance/outer relation with refs
   strm.u.print
@@ -205,7 +205,7 @@ inheritance is
     B ref : Z is
     if cnt < 10
       set cnt := cnt + 1
-      B
+      _ := B
 
   /* more complex inheritcane of outer feateature, with one more level of nesting: */
   tricky_Inheritance is
@@ -218,7 +218,7 @@ inheritance is
             say "tricky_Inheritance.Z.B.q: $cnt"
         if cnt < 10
           set cnt := cnt + 1
-          B.q
+          _ := B.q
     unit
   tricky_Inheritance
 
@@ -234,7 +234,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -249,11 +249,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D y is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
@@ -269,7 +268,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A ref is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -284,11 +283,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
@@ -316,7 +314,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -331,11 +329,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
@@ -403,4 +400,4 @@ inheritance is
         set exitCode := 1
   inheritOuter
 
-  fuzion.std.exit exitCode
+  exit exitCode

@@ -184,10 +184,9 @@ public class Destructure extends ANY implements Stmnt
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
                                        new List<String>(name),
-                                       FormalGenerics.NONE,
                                        new List<Feature>(),
                                        new List<>(),
-                                       new Contract(null, null, null),
+                                       Contract.EMPTY_CONTRACT,
                                        Impl.FIELD));
               }
           }

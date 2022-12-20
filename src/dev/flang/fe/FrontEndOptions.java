@@ -48,6 +48,12 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * Directories to load source files from.
+   */
+  final List<String> _sourceDirs;
+
+
+  /**
    * Read code from stdin?
    */
   final boolean _readStdin;
@@ -66,6 +72,18 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * Directories to load module files from.
+   */
+  final List<String> _moduleDirs;
+
+
+  /**
+   * List of modules to be dumped to stdout after loading
+   */
+  final List<String> _dumpModules;
+
+
+  /**
    * main feature name, null iff _readStdin
    */
   final String _main;
@@ -78,9 +96,9 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Path to save the base library module to, null if not saving the standard lib.
+   * true to load base library (false if we are creating it)
    */
-  final Path _saveBaseLib;
+  final boolean _loadBaseLib;
 
 
   /**
@@ -90,28 +108,47 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _eraseInternalNamesInLib;
 
 
+  /**
+   * Should we load any source files after we loaded the base library?
+   */
+  final boolean _loadSources;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, boolean eraseInternalNamesInLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
+  public FrontEndOptions(int verbose,
+                         Path fuzionHome,
+                         boolean loadBaseLib,
+                         boolean eraseInternalNamesInLib,
+                         List<String> modules,
+                         List<String> moduleDirs,
+                         List<String> dumpModules,
+                         int fuzionDebugLevel,
+                         boolean fuzionSafety,
+                         boolean enableUnsafeIntrinsics,
+                         List<String> sourceDirs,
+                         boolean readStdin,
+                         String main,
+                         boolean loadSources)
   {
     super(verbose,
           fuzionDebugLevel,
-          fuzionSafety);
+          fuzionSafety,
+          enableUnsafeIntrinsics);
 
     if (PRECONDITIONS) require
-                         (verbose >= 0,
-                          fuzionHome != null,
-                          readStdin || main != null || saveBaseLib != null,
-                          !readStdin || main == null,
-                          saveBaseLib == null || !readStdin && main == null,
-                          modules != null);
+      (verbose >= 0,
+       fuzionHome != null,
+       !readStdin || main == null,
+       modules != null,
+       moduleDirs != null);
 
     _fuzionHome = fuzionHome;
-    _saveBaseLib = saveBaseLib;
+    _loadBaseLib = loadBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
     _readStdin = readStdin;
     Path inputFile = null;
@@ -142,11 +179,29 @@ public class FrontEndOptions extends FuzionOptions
       }
     _inputFile = inputFile;
     _modules = modules;
+    _moduleDirs = moduleDirs;
+    _dumpModules = dumpModules;
     _main = main;
+    _loadSources = loadSources;
+    if (sourceDirs == null)
+      {
+        sourceDirs = inputFile != null || readStdin ? new List<>() : new List<>(".");
+      }
+    _sourceDirs = sourceDirs;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Get all the paths to use to read source code from
+   */
+  Path[] sourcePaths()
+  {
+    return _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new);
+  }
+
 
 }
 

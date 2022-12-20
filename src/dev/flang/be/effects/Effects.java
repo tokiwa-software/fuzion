@@ -121,6 +121,11 @@ public class Effects extends CFG
       {
         // cl installs its outer clazz as an effect, so the caller no longer depends on ecl.
       }
+    else if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
+             _fuir.clazzIntrinsicName(cl).equals("fuzion.sys.thread.spawn0"))
+      {
+        // cl spawns new thread, so caller does not depend on any effects
+      }
     else
       {
         // propagate ecl to callers of cl:

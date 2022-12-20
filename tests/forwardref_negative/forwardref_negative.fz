@@ -55,32 +55,31 @@ forwardref_negative is
   cyclic1
 
   cyclic2 is
-    a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z i32 := ?
-    set a := z // 2. should flag an error, forward reference to uninitialized field
-    set b := a
-    set c := b
-    set d := c
-    set e := d
-    set f := e
-    set g := f
-    set h := g
-    set i := h
-    set j := i
-    set k := j
-    set l := k
-    set m := l
-    set n := m
-    set o := n
-    set p := o
-    set q := p
-    set r := q
-    set s := r
-    set t := s
-    set u := t
-    set v := u
-    set w := v
-    set x := w
-    set y := x
-    set z := 1
+    a := z // 2. should flag an error, forward reference to uninitialized field
+    b := a
+    c := b
+    d := c
+    e := d
+    f := e
+    g := f
+    h := g
+    i := h
+    j := i
+    k := j
+    l := k
+    m := l
+    n := m
+    o := n
+    p := o
+    q := p
+    r := q
+    s := r
+    t := s
+    u := t
+    v := u
+    w := v
+    x := w
+    y := x
+    z := 1
   cyclic2
   unit

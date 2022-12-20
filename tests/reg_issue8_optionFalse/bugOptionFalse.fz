@@ -25,17 +25,17 @@
 
 # Regression test for issue #8: https://github.com/tokiwa-software/fuzion/issues/8
 #
-# A simple negative test returing 'false' as 'option<V>'
+# A simple negative test returing 'false' as 'optio V'
 #
 bugOptionFalse is
 
-  x<V>
+  x(V type)
   is
-    b(l i32) option<V> is
+    b(l i32) option V is
       if l > 0
         false  # SHOULD FLAG AN ERROR!
       else
         b l+1
 
-  x<unit>.b 0
+  (x unit).b 0
   unit

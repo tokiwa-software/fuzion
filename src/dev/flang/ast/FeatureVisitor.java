@@ -63,6 +63,7 @@ public abstract class FeatureVisitor extends ANY
   public void         actionAfter (Block          b, AbstractFeature outer) { }
   public void         action      (AbstractCall   c                       ) { }
   public Expr         action      (Call           c, AbstractFeature outer) { return c; }
+  public Expr         action      (DotType        d, AbstractFeature outer) { return d; }
   public void         actionBefore(AbstractCase   c                       ) { }
   public void         actionAfter (AbstractCase   c                       ) { }
   public void         action      (Cond           c, AbstractFeature outer) { }
@@ -80,10 +81,10 @@ public abstract class FeatureVisitor extends ANY
 
   /**
    * Visitors that want a different treatment for visiting actual arguments of a
-   * call can redefine this method.  This is used for type resolution to delay
-   * resolution or actual arguments until the outer feature's type was resolved.
+   * call can redefine this method to return false when visiting actuals is not
+   * desired, but, e.g., done later manually.
    */
-  void visitActuals(Runnable r, AbstractFeature outer) { r.run(); }
+  public boolean doVisitActuals() { return true; }
 
   /**
    * This can be redefined to suppress visiting Assigns that were created for

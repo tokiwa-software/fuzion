@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# onewayMonad -- hear feature of all one-way monads.
+# onewayMonad -- heir feature of all one-way monads.
 #
 # onewayMonad is the heir feature of all one-way monads. A one-way monad is
 # a monadic feature that can be accessed only throuh the environment and
@@ -33,13 +33,13 @@ onewayMonad(
 
   redef A type,
 
-  OMA onewayMonad<A, OMA>.type,
+  OMA (onewayMonad A OMA).type,
 
   # action to be performed, may include code to run while this effect is installed.
   #
-  redef r effectModes
-  ) : monad<A, OMA>, effect r
+  redef r effectMode.val
+  ) : monad A OMA, effect r
 is
 
 onewayMonads(redef A type,
-             OMA onewayMonad<A, OMA>.type) : monads<A, OMA> is
+             OMA (onewayMonad A OMA).type) : monads A OMA is

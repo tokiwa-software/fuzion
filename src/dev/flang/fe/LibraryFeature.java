@@ -46,6 +46,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -60,6 +61,7 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
+import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -87,7 +89,10 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Unique index of this feature.
+   * Index of this feature within _libModule._data.
+   *
+   * This index is unique for features within _libModule, i.e., not unique
+   * globally.
    */
   final int _index;
 
@@ -162,6 +167,10 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * Create LibraryFeature
+   *
+   * @param lib the module this was defined in
+   *
+   * @param index index within lib where this was defined.
    */
   LibraryFeature(LibraryModule lib, int index)
   {
@@ -172,6 +181,15 @@ public class LibraryFeature extends AbstractFeature
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Unique global index of this feature.
+   */
+  int globalIndex()
+  {
+    return _libModule.globalIndex(_index);
+  }
 
 
   /**
@@ -209,6 +227,23 @@ public class LibraryFeature extends AbstractFeature
   public boolean isIntrinsicConstructor()
   {
     return isIntrinsic() && _libModule.featureIsIntrinsicConstructor(_index);
+  }
+
+
+  /**
+   * Visibility of this feature
+   */
+  public Visi visibility()
+  {
+    return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
+  }
+
+  /**
+   * the modifiers of this feature
+   */
+  public int modifiers()
+  {
+    return _libModule.featureIsFixed(_index) ? Consts.MODIFIER_FIXED : 0;
   }
 
 
@@ -263,20 +298,9 @@ public class LibraryFeature extends AbstractFeature
         _arguments = new List<AbstractFeature>();
         var i = innerFeatures();
         var n = _libModule.featureArgCount(_index);
-        var j = 0;
-        while (j < i.size())
+        for (var j = 0; j < i.size() && j < n; j++)
           {
-            var a = i.get(j);
-            if (a.isTypeParameter())
-              {
-                _arguments.add(a);
-              }
-            else if (n > 0)
-              {
-                _arguments.add(a);
-                n--;
-              }
-            j++;
+            _arguments.add(i.get(j));
           }
       }
     return _arguments;
@@ -353,6 +377,16 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * If we have an existing type feature (store in a .fum library file), return that
+   * type feature. return null otherwise.
+   */
+  public AbstractFeature existingTypeFeature()
+  {
+    return _libModule.featureHasTypeFeature(_index) ? _libModule.featureTypeFeature(_index) : null;
+  }
+
+
+  /**
    * Get inner feature with given name, ignoring the argument count.
    *
    * @param name the name of the feature within this.
@@ -396,11 +430,14 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
+      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.thisType();
-    AbstractType result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
+    AbstractType result = new NormalType(_libModule, -1, this, this,
+                                         isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -437,46 +474,6 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  /**
-   * The formal generic arguments of this feature
-   */
-  public FormalGenerics generics()
-  {
-    var result = _generics;
-    if (result == null)
-      {
-        if ((_libModule.featureKind(_index) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) == 0)
-          {
-            result = FormalGenerics.NONE;
-          }
-        else
-          {
-            var tai = _libModule.featureTypeArgsPos(_index);
-            var n = _libModule.typeArgsCount(tai);
-            if (n > 0)
-              {
-                // Recreate FormalGenerics from typeParameters
-                var l = new List<Generic>();
-                var open = false;
-                for (var a0 : typeArguments())
-                  {
-                    var g =new Generic(a0, l.size());
-                    l.add(g);
-                    open = open || a0.isOpenTypeParameter();
-                  }
-                result = new FormalGenerics(l, open, this);
-              }
-            else
-              {
-                result = FormalGenerics.NONE;
-              }
-          }
-        _generics = result;
-      }
-    return result;
-  }
-
-
   public FeatureName featureName()
   {
     var result = _featureName;
@@ -487,7 +484,7 @@ public class LibraryFeature extends AbstractFeature
         var id = _libModule.featureId(_index);
         if (bytes.length == 0)
           {
-            var gi = _libModule.globalIndex(_index);
+            var gi = globalIndex();
             result = FeatureName.get(gi, ac, id);
           }
         else
@@ -793,16 +790,14 @@ public class LibraryFeature extends AbstractFeature
       {
         var pre_n  = _libModule.featurePreCondCount (_index);
         var post_n = _libModule.featurePostCondCount(_index);
-        var inv_n  = _libModule.featureInvCondCount (_index);
-        if (pre_n == 0 && post_n == 0 && inv_n == 0)
+        if (pre_n == 0 && post_n == 0)
           {
             _contract = Contract.EMPTY_CONTRACT;
           }
         else
           {
             _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
-                                     condList(post_n, _libModule.featurePostCondPos(_index)),
-                                     condList(inv_n , _libModule.featureInvCondPos (_index)));
+                                     condList(post_n, _libModule.featurePostCondPos(_index)));
           }
       }
     return _contract;
@@ -838,9 +833,20 @@ public class LibraryFeature extends AbstractFeature
    */
   public int compareTo(AbstractFeature other)
   {
-    return (other instanceof Feature)
-      ? -1
-      : _index - ((LibraryFeature) other)._index;  // there are only two subclasses: Feature and LibraryFeature.
+    int result;
+    if (other instanceof Feature)
+      {
+        result = -1;
+      }
+    else if (other instanceof LibraryFeature lf)
+      {
+        result = globalIndex() - lf.globalIndex();
+      }
+    else
+      {
+        throw new Error("LibraryFeature.compareTo expects that there are only two subclasses: Feature and LibraryFeature.");
+      }
+    return result;
   }
 
 

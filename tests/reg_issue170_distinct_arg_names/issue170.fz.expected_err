@@ -1,0 +1,15 @@
+
+[32m--CURDIR--/issue170.fz:1:16:[39m [1;31merror 1[0m[1m: Names of arguments used in this feature must be distinct.[0m
+[34msay (a 3 4 5); a(b,b,b i32) => b+b+b
+[33m---------------^[0m
+The duplicate name is '[35mb[39m'
+To solve this, rename the arguments to have unique names.
+
+
+[32m--CURDIR--/issue170.fz:2:18:[39m [1;31merror 2[0m[1m: Names of arguments used in this feature must be distinct.[0m
+[34msay (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+[33m-----------------^[0m
+The duplicate names are '[35md[39m', '[35me[39m'
+To solve this, rename the arguments to have unique names.
+
+2 errors.

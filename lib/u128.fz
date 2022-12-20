@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
+u128(hi, lo u64) : wrappingInteger u128, hasInterval u128, u128s is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   redef thiz => u128 hi lo
@@ -35,7 +35,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => !isZero
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u128) => max -° thiz < other
   redef underflowOnAdd(other u128) => false
 
@@ -148,6 +148,9 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
   redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
 
+  fixed type.equality(a, b u128) =>
+    a.hi ≟ b.hi && a.lo ≟ b.lo
+
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
   redef infix /= (other u128) bool is !(thiz = other)
 
@@ -246,7 +249,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
 #
-u128s : wrappingIntegers<u128> is
+u128s : wrappingIntegers u128 is
 
   redef name => "u128"
 
@@ -255,6 +258,9 @@ u128s : wrappingIntegers<u128> is
 
   redef min => u128 0 0
   redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
 # u128 -- returns value of unit type u128s

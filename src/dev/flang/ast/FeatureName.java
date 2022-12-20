@@ -40,7 +40,7 @@ import dev.flang.util.Errors;
  * string like "sort", "i32", "prefix -", "#result", etc., and the number of
  * formal arguments to that feature.
  *
- * The FeatureName may change when a feature is inherited by a heir class: If
+ * The FeatureName may change when a feature is inherited by an heir class: If
  * the feature has an argument of an open generic type, the actual number of
  * arguments may change by replacing that argument by the actual generic
  * arguments.
@@ -276,6 +276,16 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   public boolean equalsExceptId(FeatureName o)
   {
     return _baseName.equals(o._baseName) && _argCount == o._argCount;
+  }
+
+
+  /**
+   * Reset static fields
+   */
+  public static void reset()
+  {
+    _all_.clear();
+    _allBaseNames_.clear();
   }
 
 }

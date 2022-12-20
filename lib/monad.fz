@@ -34,7 +34,7 @@
 # applied to generic types.
 #
 #
-monad<A, MA: monad<A, MA>> is
+monad (A type, MA (monad A MA).type) is
 
 
   # monadic operator within the same monad
@@ -52,7 +52,7 @@ monad<A, MA: monad<A, MA>> is
   # allowed for features with generic arguments. Is there a way
   # we could allow this anyway?
   #
-  infix >>=~ <B, MB> (f A -> MB) MB is abstract
+  infix >>=~ (B, MB type, f A -> MB) MB is abstract
 
 
   # join operator
@@ -60,7 +60,7 @@ monad<A, MA: monad<A, MA>> is
   # NYI: useless since redefinition currently not supported for
   # feature with generics.
   #
-  join <MMA : monad<MA, monad<A, MA>>> (a MMA) MA is abstract
+  join(MMA (monad MA (monad A MA)).type, a MMA) MA is abstract
 
 
   # NYI: fmap:
@@ -70,7 +70,7 @@ monad<A, MA: monad<A, MA>> is
 
 # type related to monad declaring features not requiring an instance of monad
 #
-monads<A, MA: monad<A, MA>> is
+monads(A type, MA (monad A MA).type) is
 
 
   # return function

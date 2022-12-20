@@ -104,7 +104,7 @@ public class Impl extends ANY
   /**
    *
    */
-  public final Kind kind_;
+  public final Kind _kind;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -180,7 +180,7 @@ public class Impl extends ANY
       }
 
     this.pos = pos;
-    this.kind_ = kind;
+    this._kind = kind;
   }
 
 
@@ -192,7 +192,7 @@ public class Impl extends ANY
     this._code = null;
     this._initialValue = null;
     this.pos = null;
-    this.kind_ = kind;
+    this._kind = kind;
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -212,7 +212,7 @@ public class Impl extends ANY
 
     ReturnType rt = f.returnType();
 
-    switch (kind_)
+    switch (_kind)
       {
       case FieldInit:
         // Field initialization of the form
@@ -275,8 +275,15 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            AstErrors.illegalResultTypeRoutineDef(f, rt);
-            rt = NoType.INSTANCE;
+            if (rt != RefType.INSTANCE)
+              {
+                AstErrors.illegalResultTypeRoutineDef(f, rt);
+                rt = NoType.INSTANCE;
+              }
+            else
+              {
+                AstErrors.illegalResultTypeRefTypeRoutineDef(f);
+              }
           }
         break;
 
@@ -385,7 +392,7 @@ public class Impl extends ANY
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
-        var endPos = (this._code instanceof Block) ? ((Block) this._code).closingBracePos_ : this._code.pos();
+        var endPos = (this._code instanceof Block) ? ((Block) this._code)._closingBracePos : this._code.pos();
         Assign ass = new Assign(res,
                                 endPos,
                                 resultField,
@@ -410,18 +417,20 @@ public class Impl extends ANY
     if (_code != null) {
       result = _code.toString();
     } else {
-      switch (kind_)
+      switch (_kind)
         {
         case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";                break;
         case Field      : result = "";                                                      break;
+        case TypeParameter:     result = "type";                                            break;
+        case TypeParameterOpen: result = "type...";                                         break;
         case RoutineDef : result = " => " + _code.toString();                               break;
         case Routine    : result = " is " + _code.toString();                               break;
         case Abstract   : result = "is abstract";                                           break;
         case Intrinsic  : result = "is intrinsic";                                          break;
         case Of         : result = "of " + _code.toString();                                break;
-        default: throw new Error("Unexpected Kind: "+kind_);
+        default: throw new Error("Unexpected Kind: "+_kind);
         }
     }
     return result;

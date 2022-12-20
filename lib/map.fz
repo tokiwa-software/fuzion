@@ -25,7 +25,7 @@
 
 # map -- an abstract map from keys K to values V
 #
-map<K, V> ref is
+map(K, V type) ref is
 
   # number of entries in this map
   #
@@ -34,20 +34,18 @@ map<K, V> ref is
 
   # get the value k is mapped to, or nil if none.
   #
-  index [] (k K) option<V> is abstract
+  index [] (k K) option V is abstract
 
 
-  # get a stream of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
-  items Sequence<tuple<K,V>> is abstract
+  items Sequence (tuple K V) is abstract
 
 
-  # get a stream of all keys in this map
+  # get a sequence of all keys in this map
   #
-  keys Sequence<K> is
-    res : Sequence<K> is
-      redef asStream => items.asStream.map<K> (t -> (k,_) := t; k)
-    res
+  keys Sequence K is
+    items.mapSequence K (t -> (k,_) := t; k)
 
 
   # check if key k is present in the set of keys
@@ -55,12 +53,10 @@ map<K, V> ref is
   has (k K) => map.this[k]??
 
 
-  # get a stream of all values in this map
+  # get a sequence of all values in this map
   #
-  values Sequence<V> is
-    res : Sequence<V> is
-      redef asStream => items.asStream.map<V> (t -> (_,v) := t; v)
-    res
+  values Sequence V is
+    items.mapSequence V (t -> (_,v) := t; v)
 
 
   # create a string containing all mappings

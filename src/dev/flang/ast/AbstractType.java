@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -214,6 +215,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check if this or any of its generic arguments is Types.t_UNDEFINED.
+   *
+   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
+   * 'Function<R,X>' when 'R' is unknown and to be inferred.
+   */
+  public boolean containsUndefined(boolean exceptFirst)
+  {
+    return false;
+  }
+
+
+  /**
    * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.
@@ -223,6 +237,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isAssignableFrom(AbstractType actual)
   {
     return isAssignableFrom(actual, null);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isDirectlyAssignableFrom(AbstractType actual)
+  {
+    return (!isChoice() && isAssignableFrom(actual))
+         || (isChoice() && compareTo(actual) == 0);
   }
 
 
@@ -241,28 +269,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       containsError() || actual.containsError() || isAssignableFrom(actual);
-  }
-
-
-  /**
-   * Check if given value can be assigned to this static type.  In addition to
-   * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
-   * (Current or an outer ref) that might be a value type that is a heir of this
-   * type.
-   *
-   * @param expr the expression to be assigned to a variable of this type.
-   *
-   * @return true iff the assignment is ok.
-   */
-  public boolean isAssignableFrom(Expr expr)
-  {
-    var actlT = expr.type();
-
-    if (CHECKS) check
-      (actlT == Types.intern(actlT));
-
-    return isAssignableFromOrContainsError(actlT) &&
-      (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
   }
 
 
@@ -347,7 +353,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             for (var t : actualTypes(featureOfType(), g, generics()))
               {
-                if (Types.intern(t).isAssignableFrom(actual))
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null &&
+                    Types.intern(t).isAssignableFrom(actual))
                   {
                     result = true;
                   }
@@ -458,7 +467,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             boolean changes = false;
             for (var t: genericsToReplace)
               {
-                changes = changes || t.actualType(f, actualGenerics) != t;
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null)
+                  {
+                    changes = changes || t.actualType(f, actualGenerics) != t;
+                  }
               }
             if (changes)
               {
@@ -516,7 +530,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var t: generics())
                   {
-                    if (t.dependsOnGenerics())
+                    if (CHECKS) check
+                      (Errors.count() > 0 || t != null);
+                    if (t != null &&
+                        t.dependsOnGenerics())
                       {
                         result = YesNo.yes;
                       }
@@ -726,7 +743,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
-   * time errore in case this is not the case.
+   * time error in case this is not the case.
    */
   void checkChoice(SourcePosition pos)
   {
@@ -751,8 +768,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         (t1.isDirectlyAssignableFrom(t2) ||
+                          t2.isDirectlyAssignableFrom(t1) )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
@@ -777,7 +794,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff this is a fun type
    */
-  boolean isFunType()
+  public boolean isFunType()
   {
     return
       !isGenericArgument() &&
@@ -787,11 +804,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_unit.
+   * such type exists, return Types.t_UNDEFINED.
    *
    * @param that another type or null
    *
-   * @return a type that is assignable both from this and that, or null if none
+   * @return a type that is assignable both from this and that, or Types.t_UNDEFINED if none
    * exists.
    */
   AbstractType union(AbstractType that)
@@ -879,7 +896,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                       {
                         var tgt = tg.next();
                         var ogt = og.next();
-                        result = tgt.compareTo(ogt);
+
+                        if (CHECKS) check
+                          (Errors.count() > 0 || tgt != null && ogt != null);
+
+                        if (tgt != null && ogt != null)
+                          {
+                            result = tgt.compareTo(ogt);
+                          }
                       }
                   }
               }
@@ -895,6 +919,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 result = isRef() ? -1 : 1;
               }
           }
+        if (result == 0)
+          {
+            if (isThisType() ^ other.isThisType())
+              {
+                result = isThisType() ? -1 : 1;
+              }
+          }
         if (isGenericArgument())
           {
             if (result == 0)
@@ -902,7 +933,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 result = genericArgument().feature().compareTo(other.genericArgument().feature());
                 if (result == 0)
                   {
-                    result = genericArgument()._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
+                    result = genericArgument().name().compareTo(other.genericArgument().name()); // NYI: compare generic, not generic.name!
                   }
               }
           }
@@ -916,15 +947,169 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * For a given type t, get the type of t's type feature. E.g., for t==string,
+   * this will return the type of string.type.
+   *
+   * @param t the type whose type's type we want to get
+   *
+   * @return the type of t's type.
+   */
+  public AbstractType typeType()
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       featureOfType().state().atLeast(Feature.State.RESOLVED));
+
+    return typeType(null);
+  }
+
+
+  /**
+   * For a given type t, get the type of t's type feature. E.g., for t==string,
+   * this will return the type of string.type, which is 'string.#type string'
+   *
+   * @param res Resolution instance used to resolve the type feature that might
+   * need to be created.
+   *
+   * @param t the type whose type's type we want to get
+   *
+   * @return the type of t's type.
+   */
+  AbstractType typeType(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
+
+    var result = this;
+    if (!featureOfType().isUniverse())
+      {
+        var f = res == null ? featureOfType().typeFeature()
+                            : featureOfType().typeFeature(res);
+        result = Types.intern(new Type(f.pos(),
+                                       f.featureName().baseName(),
+                                       new List<>(this),
+                                       outer().typeType(res),
+                                       f,
+                                       Type.RefOrVal.Value));
+      }
+    return result;
+  }
+
+
+  /**
+   * In a call on 'target' with formal argument type this, if target is a type
+   * parameter and this depends on that type feature's THIS_TYPE, then replace
+   * THIS_TYPE by the type of target.
+   *
+   * @param target the target of the call
+   */
+  AbstractType replace_THIS_TYPE(Expr target)
+  {
+    var result = this;
+    var tt = target.type();
+    if (!tt.isGenericArgument())
+      {
+        var tf = tt.featureOfType();
+        if (dependsOnGenerics() &&
+            tf.isTypeFeature() &&
+            target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
+          {
+            if (isGenericArgument())
+              {
+                if (genericArgument().typeParameter() == tf.arguments().get(0))
+                  { // a call of the form 'T.f x' where 'f' is declared as 'abc.type.f(arg THIS_TYPE)', so replace 'THIS_TYPE' by 'T'.
+                    // NYI: replace THIS_TYPE recursively in frmlT, e.g., in case formT is 'Option THIS_TYPE'.
+                    result = new Type(tc.pos(), new Generic(tc.calledFeature()));
+                  }
+              }
+            else
+              {
+                var g = generics();
+                var ng = g;
+                for (int i = 0; i < g.size(); i++)
+                  {
+                    var gi = g.get(i);
+                    var gi2 = gi.replace_THIS_TYPE(target);
+                    if (gi != gi2)
+                      {
+                        if (ng != g)
+                          {
+                            ng = new List<>();
+                            ng.addAll(g);
+                          }
+                        ng.set(i, gi2);
+                      }
+                  }
+                var o = outer();
+                var no = o != null ? o.replace_THIS_TYPE(target) : null;
+                if (ng != g || no != o)
+                  {
+                    result = new Type(this, ng, no);
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
+  public abstract AbstractType asThis();
+  public abstract boolean isThisType();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract Generic genericArgument();
+
+
+  /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    String result;
+
+    if (isGenericArgument())
+      {
+        var ga = genericArgument();
+        result = ga.feature().qualifiedName() + "." + ga.name() + (this.isRef() ? " (boxed)" : "");
+      }
+    else
+      {
+        var o = outer();
+        String outer = o != null && !o.featureOfType().isUniverse() ? o.asString() + "." : "";
+        result = outer
+              + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
+              + featureOfType().featureName().baseName();
+        for (var g : generics())
+          {
+            var gs = g.asString();
+            if (gs.indexOf(" ") >= 0)
+              {
+                gs = "(" + gs + ")";
+              }
+            result = result + " " + gs;
+          }
+        if (isThisType())
+          {
+            result = result + ".this.type";
+          }
+      }
+    return result;
+  }
 
 }
 

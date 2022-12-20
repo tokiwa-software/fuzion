@@ -67,7 +67,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
   boolean _indexVarAllowed = false;
 
 
-  public int tid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int _tid = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -189,7 +189,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
-    if (_assignedField != Types.f_ERROR)
+    if (_assignedField != Types.f_ERROR && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES))
       {
         _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
       }
@@ -232,7 +232,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
         if (CHECKS) check
           (Errors.count() > 0 || frmlT != Types.t_ERROR);
 
-        if (!frmlT.isAssignableFrom(_value))
+        if (!frmlT.isAssignableFrom(_value.type()))
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value);
           }

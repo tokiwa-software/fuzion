@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ex292
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #292: https://github.com/tokiwa-software/fuzion/issues/292
+#
+# A simple negative test for inheriting from open generic feature
+#
+# The test should be run and its output should be compared to the expected
+# output.
+#
+ex292 is
+  fn(TAcc,T type) ref : Function TAcc TAcc T is
+
+  a fn(i32, i32) is
+    ref : fn i32 i32
+      redef call(r, v i32) => 42
+
+  say (a.call 1 2)

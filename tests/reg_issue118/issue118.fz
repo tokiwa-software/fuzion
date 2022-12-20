@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion issue118
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# The error was the following:
+
+# error 1: *** java.lang.ClassCastException: class dev.flang.be.interpreter.LValue cannot be cast to class dev.flang.be.interpreter.Instance (dev.flang.be.interpreter.LValue and dev.flang.be.interpreter.Instance are in unnamed module of loader 'app')
+# Call stack:
+# ri.ref a.thiz: /home/fridi/fuzion/work/build/bin/../lib/i32.fz:30:26:
+#   redef thiz => i32.this.val
+# -------------------------^
+# ri.ref a.asString.ref #anonymous0.ref utf8.asStream: /home/fridi/fuzion/work/build/bin/../lib/integer.fz:138:16:
+#             if thiz.sign >= 0
+# ---------------^
+# fuzion.std.out.println: /home/fridi/fuzion/work/build/bin/../lib/fuzion/std/out.fz:34:9:
+#     for c in s.asString.utf8 do
+# --------^
+# say: /home/fridi/fuzion/work/build/bin/../lib/say.fz:29:29:
+# say(s ref Object) => stdout.println s
+# ----------------------------^
+# ri: ./ri.fz:3:3:
+#   say a
+# --^
+#
+#
+# java.lang.ClassCastException: class dev.flang.be.interpreter.LValue cannot be cast to class dev.flang.be.interpreter.Instance (dev.flang.be.interpreter.LValue and dev.flang.be.interpreter.Instance are in unnamed module of loader 'app')
+# 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:310)
+# 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:357)
+# 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:324)
+# [..]
+
+
+issue118 is
+  a : i32 3 is
+  say a

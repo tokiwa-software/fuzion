@@ -1,0 +1,15 @@
+a is
+  x => "a.x defined in module A"
+
+  # make sure a.fum references type features derived from types from base.fum
+  #
+  q =>
+    say (Types.get fuzion.java)
+    say (Types.get fuzion.java.JavaVoid)
+    say (Types.get fuzion.java.JavaObject)
+
+# NYI: see #461: following lines, when uncommented, show problems related to #461
+#
+#    say (Types.get fuzion.java.JavaString)
+#    say (Types.get (fuzion.java.Array bool))
+#    say (Types.get (fuzion.java.Array i32))

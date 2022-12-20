@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = testOnesCount
+override NAME = testOnesCount
 include ../simple.mk

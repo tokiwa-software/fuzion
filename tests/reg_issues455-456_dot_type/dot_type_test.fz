@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test string
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# simple regression test for issues #455, #456 and #457 using '.type'
+# expressions
+#
+
+# example from issue #455
+testType0 is
+  t is
+  say testType0.t.type
+
+# example from issue #457
+testType1 is
+  t is
+  say (testType1.t.type)
+
+# example from issue #456
+testTypes is
+  t is
+  say (testTypes.t.type)     # works
+  x := testTypes.t.type
+  say x                      # crashes
+
+testType0
+testType1
+testTypes
+unit

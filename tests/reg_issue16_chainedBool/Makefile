@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = chainedBool
+override NAME = chainedBool
 include ../simple.mk

@@ -25,21 +25,19 @@
 
 # fuzion.std.out -- unit type grouping routines to print to stdout
 #
-public fuzion.std.out is
+public fuzion.std.out : character_encodings is
 
   public print(s ref Object) =>
-    for c in s.asString.utf8 do
-      write c
-    flush
+    write s.asString.utf8.asArray
 
   public println(s ref Object) =>
-    for c in s.asString.utf8 do
-      write c
-    println
+    write (s.asString.utf8 ++ [ascii.lf]).asArray
 
   public println =>
-    write 10
-    flush
+    write [ascii.lf]
 
-  public write(b u8) unit is intrinsic
-  public flush unit is intrinsic
+  private write(arr array u8) =>
+    write arr.internalArray.data arr.length
+
+  private write(arrayData Object, length i32) unit is intrinsic
+  private flush unit is intrinsic

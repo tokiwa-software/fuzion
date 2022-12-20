@@ -1,0 +1,384 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test indentation
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# indentation tests the Fuzion parser's handling of indentation in different
+# contexts.
+#
+indentation is
+
+  # -----------------------------------------------------------------------
+  #
+  # feature code blocks:
+  #
+  # -----------------------------------------------------------------------
+
+  # standard indentation
+  #
+  feature1 is
+    say "1a"
+    say "1b"
+    say "1c"
+
+  # first line of code starts without LF
+  #
+  feature2 is say "2a"
+              say "2b"
+              say "2c"
+
+  # first line of code starts without LF and contains several stmnts
+  #
+  feature3 is say "3a"; say "3b"
+              say "3c"
+
+  _ := feature1
+  _ := feature2
+  _ := feature3
+
+  # -----------------------------------------------------------------------
+  #
+  # call with actual arguments:
+  #
+  # -----------------------------------------------------------------------
+
+  # helper feature used as target for testing indentation of actual args
+  #
+  called(a,b,c,d i32) =>
+    say "called $a $b $c $d"
+
+  # helper feature used a actual arg
+  #
+  arg => 42
+
+  # ------  variant 1  ------
+
+  # standard call using single line
+  #
+  called arg arg arg arg
+
+  # first three args passed in same line, one in following lines
+  #
+  called arg arg arg
+         arg
+
+  # first two and two
+  #
+  called arg arg
+         arg arg
+
+  # first one and three
+  #
+  called arg
+         arg arg arg
+
+  # first two and one and one
+  #
+  called arg arg
+         arg
+         arg
+
+  # first one and two and one
+  #
+  called arg
+         arg arg
+         arg
+
+  # first one and one and two
+  #
+  called arg
+         arg
+         arg arg
+
+  # first arg passed in same line, others in following lines
+  #
+  called arg
+         arg
+         arg
+         arg
+
+  # ------  variant 2  ------
+
+  # first none and 4 x one
+  #
+  called
+    arg arg arg arg
+
+  # first none and three and one
+  #
+  called
+    arg arg arg
+    arg
+
+  # first none and two and two
+  #
+  called
+    arg arg
+    arg arg
+
+  # first none and one and three
+  #
+  called
+    arg
+    arg arg arg
+
+  # first none and two and one and one
+  #
+  called
+    arg arg
+    arg
+    arg
+
+  # first none and one and two and one
+  #
+  called
+    arg
+    arg arg
+    arg
+
+  # first none and one and and one two
+  #
+  called
+    arg
+    arg
+    arg arg
+
+  # first none and 4 x one requires extra parentheses:
+  #
+  called
+    arg
+    arg
+    arg
+    arg
+
+  # ------  variant 3 with parentheses  ------
+
+  # first none and 4 x one with parentheses
+  #
+  (called
+    arg arg arg arg)
+
+  # first none and three and one with parentheses
+  #
+  (called
+    arg arg arg
+    arg)
+
+  # first none and two and two with parentheses
+  #
+  (called
+    arg arg
+    arg arg)
+
+  # first none and one and three with parentheses
+  #
+  (called
+    arg
+    arg arg arg)
+
+  # first none and two and one and one with parentheses
+  #
+  (called
+    arg arg
+    arg
+    arg)
+
+  # first none and one and two and one with parentheses
+  #
+  (called
+    arg
+    arg arg
+    arg)
+
+  # first none and one and and one two with parentheses
+  #
+  (called
+    arg
+    arg
+    arg arg)
+
+  # first none and 4 x one requires extra parentheses:
+  #
+  (called
+    arg
+    arg
+    arg
+    arg)
+
+  # ------  variant 4 with parentheses  ------
+
+  # first four with parentheses:
+  #
+  (called arg arg arg arg)
+
+  # first three then one with parentheses:
+  #
+  (called arg arg arg
+          arg)
+
+  # first two and two with parentheses:
+  #
+  (called arg arg
+          arg arg)
+
+  # first one then three with parentheses:
+  #
+  (called arg
+          arg arg arg)
+
+  # first two then one and one with parentheses:
+  #
+  (called arg arg
+          arg
+          arg)
+
+  # first one then two then one with parentheses:
+  #
+  (called arg
+          arg arg
+          arg)
+
+  # first one then one then two with parentheses:
+  #
+  (called arg
+          arg
+          arg arg)
+
+  # -----------------------------------------------------------------------
+  #
+  # 'if' with nested call
+  #
+  # -----------------------------------------------------------------------
+
+  # helper feature for a call with zero/one/two arguments
+  #
+  callWith0Args(a i32)   => panic "expected no arg!"; false
+  callWith0Args          => say "ok"; true
+  callWith1Arg (a i32)   => say "$a"; true
+  callWith1Arg           => panic "expected one arg!"; false
+  callWith2Args(a,b i32) => say "$a $b"; true
+  callWith2Args(a i32)   => panic "expected two args!"; false
+  callWith2Arg           => panic "expected two args!"; false
+
+  # 'if' requires the condition to be in a single line: args in next line are ignored
+  #
+  if callWith0Args
+    arg
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if' requires the condition to be in a single line
+  #
+  if callWith1Arg arg
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be followed by code
+  #
+  if (callWith0Args) arg
+                     say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be followed by code
+  #
+  if (callWith0Args) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith1Arg
+    arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith1Arg
+                   arg)
+                   say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith1Arg
+    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith2Args
+    arg
+    arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith2Args
+    arg arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args
+    arg
+    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args arg
+                    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args arg arg
+    ) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be single line and be followed by code
+  #
+  if (callWith2Args arg arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be single line
+  #
+  if (callWith2Args arg arg)
+    say "ok"
+  else
+    panic "expected true"

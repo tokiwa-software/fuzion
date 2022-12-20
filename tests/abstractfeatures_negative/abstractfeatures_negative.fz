@@ -26,30 +26,30 @@
 abstractfeatures_negative is
 
   opengenerics12 is
-    F<A...> ref is
+    F(A type...) ref is
       f(a A) is abstract                         //  1. should flag an error: abstract feature not implemented
       g(a A) is abstract                         // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                     //  2. should flag an error: abstract feature f not implemented
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f 3 true 5
 
   opengenerics12
 
   opengenerics12a is
-    F<A...> ref is
+    F(A type...) ref is
       f1(a A) is abstract                          //  3. should flag an error: abstract feature not implemented
       f2(a A) is abstract                          //  4. should flag an error: abstract feature not implemented
       f3(a A) is abstract                          //  5. should flag an error: abstract feature not implemented
       f4(a A) is abstract                          // ok, not called.
       f5(a A) is abstract                          // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       //  6. should flag an error: abstract features f1, f2, f3 not implemented
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f1 3 true 5
     y.f2 3 true 5
     y.f3 3 true 5
@@ -57,11 +57,11 @@ abstractfeatures_negative is
   opengenerics12a
 
   opengenerics12b is
-    F<A...> ref is
+    F(A type...) ref is
       f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
       g(a A) is abstract                           // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       //  8. should flag an error: abstract feature f not implemented
     x.f 3 true 5
@@ -69,14 +69,14 @@ abstractfeatures_negative is
   opengenerics12b
 
   opengenerics12c is
-    F<A...> ref is
+    F(A type...) ref is
       f1(a A) is abstract                          //  9. should flag an error: abstract feature not implemented
       f2(a A) is abstract                          // 10. should flag an error: abstract feature not implemented
       f3(a A) is abstract                          // 11. should flag an error: abstract feature not implemented
       f4(a A) is abstract                          // ok, not called.
       f5(a A) is abstract                          // ok, not called.
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
 
     x G := G                                       // 12. should flag an error: abstract features f1, f2, f3 not implemented
     x.f1 3 true 5

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = iftest_negative
+override NAME = iftest_negative
 include ../negative.mk

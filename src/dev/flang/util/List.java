@@ -26,18 +26,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 
 /**
- * List provides a simple generic linked listed used throughout Fuzion, in
+ * List provides a simple generic linked list used throughout Fuzion, in
  * particular in the AST.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class List<T>
-  extends LinkedList<T>
+  extends ArrayList<T>
 {
 
   /*--------------------------  constructors  ---------------------------*/
@@ -211,32 +216,6 @@ public class List<T>
 
 
   /**
-   * addH
-   *
-   * @param o
-   */
-  public void addH(T o)
-  {
-    addFirst(o);
-  }
-
-
-  /**
-   * addAllH
-   *
-   * @param l
-   */
-  public <X extends T> void addAllH(List<X> l)
-  {
-    Object o;
-    while (!l.isEmpty())
-      {
-        addH(l.removeLast());
-      }
-  }
-
-
-  /**
    * addAll adds all elements produced by the given Iterator.
    *
    * @param i an iterator
@@ -261,6 +240,66 @@ public class List<T>
       {
         add(x);
       }
+  }
+
+
+  /**
+   * Get first element of the list.
+   */
+  public T getFirst()
+  {
+    return get(0);
+  }
+
+
+  /**
+   * Get last element of the list.
+   */
+  public T getLast()
+  {
+    return get(size()-1);
+  }
+
+
+  /**
+   * A collector for this List to be used in Stream.collect(...)
+   * @param <U>
+   * @return
+   */
+  public static <U> Collector<U, List<U>, List<U>> collector()
+  {
+    return new Collector<U, List<U>, List<U>>() {
+
+      public Supplier<List<U>> supplier()
+      {
+        return List::new;
+      }
+
+      public BiConsumer<List<U>, U> accumulator()
+      {
+        return (list, type) -> list.add(type);
+      }
+
+      public BinaryOperator<List<U>> combiner()
+      {
+        return (list1, list2) -> {
+          list1.addAll(list2);
+          return list1;
+        };
+      }
+
+      @Override
+      public java.util.function.Function<List<U>, List<U>> finisher()
+      {
+        return (l) -> l;
+      }
+
+      @Override
+      public Set<Characteristics> characteristics()
+      {
+        return Set.of(Characteristics.UNORDERED);
+      }
+    };
   }
 
 }

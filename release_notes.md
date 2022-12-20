@@ -1,3 +1,551 @@
+## 202*-**-**: V0.080dev
+
+
+## 2022-12-08: V0.079
+
+- Fuzion language
+
+  - An implicit (empty) else-branch in an if-statement now results in 'unit'.
+
+  - Inheritance for type features:
+
+    Abstract type features using arguments or results of the corresponding type
+    can now be redefined using the actual type. For now (until better syntax is
+    supported) the implicit generic type 'THIS_TYPE' is used in the abstract
+    feature.
+
+  - conflicting argument names as in
+
+      f(i, i i32) is
+
+    now result in an error.
+
+  - prefix, postfix and infix operators can now be declared with type parameters
+    and one (prefix, postfix) or two (infix) value arguments:
+
+      prefix $$(X type, a X) => "type:{X.name} val:$a"
+
+    permits a call '$$x1' if the operator is declared in the current (or outer)
+    feature.  Type parameters in this case are inferred from the actual
+    arguments.
+
+  - A 'match' statement now may have an empty list of cases
+
+  - Syntax improvements in '.type' and '.env' expressions.
+
+  - Updated to support Unicode 15.
+
+  - Disallow declaration of uninitialized fields as in 'f i32 := ?'.
+
+  - tuple types now can use '(A,B,C)' syntax, e.g.,
+
+      triple(T type, v T) (T,T,T) is
+        (v,v,v)
+
+    is equivalent to
+
+      triple(T type, v T) tuple T T T is
+        (v,v,v)
+
+  - function types and lambda expressions can no longer be declared using the
+    'fun' keyword. Instead, syntax like '(i32, bool) -> string' or '(x,y) -> x +
+    y*3' has to be used.
+
+  - Fuzion grammar cleanup: new rule 'actual' for actual arguments, which could
+    be an expression for a value argument or a type for a type argument
+
+  - cleanup and simplification in indentation rules for actual arguments and
+    cases in a match-expression.
+
+  - ASCII control codes 'HT', 'VT', 'FF' and stray 'CR' are now rejected in the
+    source code.
+
+- base library
+
+  - added effect to new feature 'io.file': 'exists', 'delete', 'move',
+    'create_dir', 'stat.exists', etc.
+
+  - fixed spelling errors, updated syntax for type parameters (comments still used '<'/'>')
+
+  - removed 'java' feature and all inner features 'java...', these were unused.
+
+  - Fuzion modules now exist for most standard Java modules:
+
+      'java.base' 'java.compiler' 'java.datatransfer' 'java.desktop'
+      'java.instrument' 'java.logging' 'java.management' 'java.management.rmi'
+      'java.naming' 'java.net.http' 'java.prefs' 'java.rmi' 'java.scripting'
+      'java.security.jgss' 'java.security.sasl' 'java.se' 'java.smartcardio'
+      'java.sql' 'java.sql.rowset' 'java.transaction.xa' 'java.xml.crypto'
+      'java.xml' 'jdk.accessibility' 'jdk.attach' 'jdk.charsets' 'jdk.compiler'
+      'jdk.crypto.cryptoki' 'jdk.crypto.ec' 'jdk.dynalink' 'jdk.editpad'
+      'jdk.httpserver' 'jdk.jartool' 'jdk.javadoc' 'jdk.jconsole' 'jdk.jdeps'
+      'jdk.jdi' 'jdk.jdwp.agent' 'jdk.jfr' 'jdk.jlink' 'jdk.jpackage'
+      'jdk.jshell' 'jdk.jsobject' 'jdk.jstatd' 'jdk.localedata'
+      'jdk.management.agent' 'jdk.management' 'jdk.management.jfr'
+      'jdk.naming.dns' 'jdk.naming.rmi' 'jdk.net' 'jdk.nio.mapmode' 'jdk.sctp'
+      'jdk.security.auth' 'jdk.security.jgss' 'jdk.xml.dom' 'jdk.zipfs'
+
+  - renamed several features from 'camelCase' to 'snake_case' or
+    'Capitalized_snake_case' for 'ref' types.
+
+  - abstract equality (see https://flang.dev/design/equality") as explained by
+    Noble et al in The Left Hand of Equals
+    (http://web.cecs.pdx.edu/~black/publications/egal.pdf) is now supported:
+
+    base library feature 'has_equality' defines an abstract feature
+    'has_equality.type.equality' that can be redefined for heir features such as
+    'string'.  Note that the equality operation is bound to the type, so
+    different types along an inheritance hierarchy may define different equality
+    operations.  This is in strong contrast to object-oriented approaches like
+    Java that inherit 'Object.equals'.
+
+    For now, features 'equals' and 'infix ≟' can be used to compare
+    according to abstract equality as defined by the operand's type. Eventually,
+    'infix =' will be used for this.
+
+    'type.equality' was defined for base library features without type
+    parameters (type features are not yet supported for features with type
+    parameters)
+
+  - Added features to set env variables.
+
+  - In some library features, 'forAll' was renamed as 'for_each' to avoid
+    confusion with 'infix ∀'.
+
+  - Improved documentation of many features
+
+  - added bit-wise-not operation 'prefix ~' to 'wrappingInteger'.
+
+  - support for big integers via Fuzion features 'int' and 'uint'.
+
+  - 'numericSequence' now inherits from 'hasEquals'
+
+  - removed uses of 'stream' from 'string' in favor of 'list'.
+
+  - added new module 'terminal.fum' providing ANSI escape codes. The main
+    purpose of this module at this time is to provide a simple test for modules.
+
+  - added 'ctrie' hash tries.
+
+  - added 'ascii' for ASCII control codes.
+
+  - generally replaced generics using '<'/'>' by type parameters.
+
+  - improved syntax of type-expressions: Now using '(list i32).type' instead of
+    the awkward 'list i32 .type'. Same for '.env'.
+
+  - added 'cache' effect to allow a simple caching of results.
+
+- fz tool
+
+  - C back-end now provides options '-CC=' and '-CFlags=' to specify C compiler
+    and options to be used.
+
+  - arguments following main feature are now passed to Fuzion code via the
+    'envir.args' effect.
+
+  - new option '-moduleDir' to specify where to load modules from.
+
+  - added option '-sourceDirs={<path>,..}' to specify where to search for sources. If this option is not provided, the current
+    directory is used to search for source files.  Otherwise, the (possibly empty) list of paths provided via this option is used.
+
+  - Added option '-saveLib=<path>' to create a module file.
+
+  - Removed option '-XsaveBaseLib' and added '-XloadBaseLib=(on|off)' to disable
+    loading of 'base.fum' module which is needed when creating 'base.fum'.
+
+  - new option '-XdumpModules={<name>,..}' to print the contents of a loaded
+    module as a colored hex dump with comments.
+
+  - Support for several module files.  Except for the base module 'base.fum'
+    that does not depend on another module, module support is still incomplete,
+    e.g., modules may not use type features with types from other modules.
+
+- fzjava tool
+
+  - Now accepts '-modules' and '-moduleDirs' arguments to specify Fuzion modules
+    already generated that a Java module depends on.  This avoids repeated
+    declaration of unit-value features for Java packages.  </ul>
+
+- fzdocs tool
+
+  - has been added to the main Fuzion repository.
+
+- C back-end
+
+  - Fixed use of thread locals on Windows
+
+- tests
+
+  - added 'tests/indentation/indentation' and
+    'tests/indentation_negative/indentation_negative' to illustrate and check
+    Fuzion's indentation rules for code blocks and arguments.
+
+  - added several regression tests for bug fixes
+
+- Build infrastructure
+
+  - Some changes to allow building on NixOS
+
+
+## 2022-08-15: V0.078
+
+- parser
+
+  - unified handling of indentation for blocks of statements, actual arguments,
+    match and .. ? .. | .. expressions, etc.
+
+  - actual arguments may now be indented and broken into several lines as
+    follows
+
+      call_with_four_args arg1 arg2 arg3 arg4
+
+      call_with_four_args arg1 arg2
+                          arg3 arg4
+
+      call_with_four_args arg1
+                          arg2
+                          arg3
+                          arg4
+
+      call_with_four_args
+        arg1 arg2 arg3 arg4
+
+      call_with_four_args
+        arg1 arg2
+        arg3 arg4
+
+      call_with_four_args
+        arg1
+        arg2
+        arg3
+        arg4
+
+  - fixed several corner cases related to indentation
+
+  - Exceptions to single-line expression as in
+
+      if expr ? a => true
+              | b => false
+        say "true"
+
+    have been removed, now requires parentheses
+
+      if (expr ? a => true
+               | b => false)
+        say "true"
+
+  - 't.env' and 't.type' expression now permit the type 't' to be in parentheses
+    '(t).env' and '(t).type' such that type parameters can be provided '(list
+    i32).type' or '(cache myType).env'.
+
+  - remove support for function types using 'fun' keyword, must use lambda
+    notation such as '(i32, bool) -> string' instead.
+
+- base lib
+
+  - started adding support for file I/O
+
+  - new feature 'ascii' defining ASCII control codes
+
+  - removed use of '<'/'>' for generics in favor of new type parameter syntax.
+
+  - added 'cache' effect to allow a simple caching of results.
+
+- tests
+
+  - added positive and negative tests for indentation: 'indentation' and
+    'indentation_negative', contain many examples of good and bad
+    indentation.
+
+
+## 2022-08-03: V0.077
+
+- Fuzion language
+
+  - added syntax sugar for tuple types like '(i32, list bool)'.
+
+  - allowed types to be put in parentheses, i.e., '(stack i32)' is the same as
+    'stack i32'.  Syntax of '.env' and '.type' will require parentheses, i.e.,
+    instead of 'stack i32 .type' one will have to write '(stack i32).type' and
+    similarly for '.env'.
+
+  - changed parser to allow actual arguments passed to type parameters to be any
+    type, including function types '(i32)->bool' or tuples '(i32, string)'.
+
+  - removed support for lambdas using 'fun' keyword, i.e., instead of 'fun (x
+    i32) -> x+x', you have to write 'x -> x+x'.  Type inference from a lambda is
+    not possible, though.
+
+  - features with empty argument list and a result type that is put in
+    parentheses (usually a tuple) now require an empty argument list '()' since
+    the result type would otherwise be parsed as an argument list.
+
+- C backend
+
+  - use DFA to remove fields and calls to read (removed) unit type fields
+
+  - do not create code for intrinsics that are found to be unreachable during
+    DFA.
+
+- DFA
+
+  - cleanup and minor enhancements
+
+
+## 2022-07-27: V0.076
+
+- C backend
+
+  - GC support using the Boehm–Demers–Weiser garbage collector. Use '-useGC'
+    option for the 'fz' command.
+
+  - result of application-wide data-flow analysis is now used to control code
+    generation resulting in smaller binaries and (usually) faster build
+    time. This can be controlled using 'fz' with option '-Xdfa=(on|off)'.
+
+- FUIR
+
+  - Added generic abstract interpreter that provides the basic infrastructure
+    for abstract interpretation.  This abstract interpreter is used for the C
+    backend and will be used for other backend and static analysis such as
+    data-flow analysis.
+
+  - added application-wide data-flow analysis
+
+  - 'fz' command has new option '-dfa' that runs DFA analysis as backend. Should
+    be used with '-verbose=<n>' for 'n>0' to get ouput other than just errors.
+
+- base lib
+
+  - started adding support for file I/O.
+
+  - 'mapOf' now can be used with an array of '(key, value)' tuples
+
+  - 'asString' on mutable value now calls asString on the value.
+
+## 2022-07-04: V0.075
+
+- C backend
+
+  - tail recursive calls are now optimized using a goto to the beginning of the
+    feature's code.
+
+- FUIR
+
+  - added analysis to detect tail calls and escape analysis for 'this' instance.
+    The analysis results are used for tail recursion optimization in the C
+    backend.
+
+- fzjava
+
+  - fixed passing of arrays of references when calling Java code from Fuzion
+    features.
+
+- throughout
+
+  - many bug fixes
+
+
+## 2022-05-31: V0.074
+
+- Fuzion language
+
+  - Overloading with type parameters now works as follows: A feature f with
+    m type parameters and n value parameters can be called with m+n actual
+    arguments (m types and n values) or, if the types can be inferred from the
+    value parameters, with just n actual value arguments.
+
+    If an overloaded f with n formal arguments (type or value) exists, a call
+    with n actual arguments will always call this f with n formal arguments.
+
+- fz command
+
+  - bug fixes for #113, #297, #300
+
+- base lib
+
+  - some changes towards using type parameter arguments instead of generics
+    using '<' / '>'
+
+## 2022-05-18: V0.073
+
+- Fuzion language
+
+  - add support for calling type parameters, i.e., in a feature `f(X type)`, it
+    is now possible to call `X` as in `say X`.  The result is an instance of
+    feature `Type`.
+
+  - add support to declare inner feature in type feature, e.g.
+    ```
+      i32.type.blabla is say "this is blabla in i32.type"
+    ```
+  - type features now inherit from the type features corresponding to the
+    plain features their corresponding plain feature inherits from.
+
+- stdlib
+
+  - added `fract`, `floor`, `ceil` to `float`.
+
+  - fixed `stream.asList` to work if called repeatedly.
+
+  - fixed `print` and `println` to stdout/stderr to print the whole string
+    atomically at once, i.e., no longer split it up into single characters.
+
+  - added `io.stdin`.
+
+  - added `Functions.compose`.
+
+  - added effect `mutate`. A mutable field `f` with initial value `v` can now be
+    created using `f := mut v`
+
+- fum/fuir:
+
+  - add support for type parameters in .fum file
+
+## 2022-04-23: V0.072
+
+- Front End
+
+  - improved type inference for results of lambdas: Code like
+    ```
+      l.map<T> (x -> f x)
+    ```
+    no longer need '<T>', i.e.,
+    ```
+      l.map (x -> f x)
+    ```
+    suffices.
+
+- Fuzion language
+
+  - Added new expression `xyz.type` to get access to a unit type value corresponding to
+    type `xyz`. This is planned to work for type parameters allowing features to be defined
+    for types that can be used in generic code without to have an instance of that type (e.g.,
+    to call a constructor for a value).
+
+  - type parameters can now be declared with the normal parameters, i.e., instead of
+    ```
+      f<A : xyz, B>(v A, w B) is ...
+    ```
+    one can write
+    ```
+      f(A xyz.type, B type, v A, w B) is ...
+    ```
+    also, calls of the form `f<T1,T2> a b` can now be written `f T1 T2 a b`.
+
+    Type of the form
+    ```
+      list<map<string, i32>>
+    ```
+    can now be written as
+    ```
+      list(map string i32)
+    ```
+    The old syntax will eventually be removed.
+
+  - match statement now supports matching `*`, which creates a default branch.
+
+  - calls of the form `f a,b,c` are no longer supported, has be be either `f a b
+    c` or `f(a,b,c)`.
+
+  - full stop can now be used for empty constructors, e.g.
+    ```
+      red is
+      green is
+      blue is
+    ```
+    can now be written as
+    ```
+      red.
+      green.
+      blue.
+    ```
+    or even
+    ```
+      red, green, blue.
+    ```
+  - syntax sugar for choice: a declaration of a choice had the form
+    ```
+      red is
+      green is
+      blue is
+      point(x,y i32) is
+
+      colorOrPoint : choice<red, green, blue, point> is
+    ```
+    Now, this can be done using `of` as follows
+    ```
+      colorOrPoint : choice of
+        red is
+        green is
+        blue is
+        point(x,y i32) is
+    ```
+    or even
+    ```
+      colorOrPoint : choice of
+        red, green, blue.
+        point(x,y i32).
+    ```
+
+- stdlib
+
+  - result of `list T h t`is now `list<T>` which is convenient in declaring lazy
+    lists as in
+    ```
+      ones => list 1 ()->ones
+    ```
+    for an endless list of `1`s.
+
+  - added `numericSequence` and `floatSequence` with operations like `average`,
+    `std_dev`, etc.
+
+  - added `float.round`
+
+  - added `ctrie` data structure
+
+  - added `Type` as parent feature for types.
+
+  - added `list.flatMap` and `Sequence.flatMapSequence`
+
+  - added `Sequence.first` with default value argument, `Sequence.nth` to get
+    n-th element. Sequence is not used more often for iteration, replaces
+    'stream'.
+
+  - added `string.trimStart` and `string.trimEnd`
+
+  - default random provider can now be seeded with an u64 given in env var
+    `FUZION_RANDOM_SEED`.
+
+  - added effects
+
+    - `panic`
+    - `exit`
+    - `envi.vars` to access environment variables.
+    - `envi.args` to access command line arguments.
+    - `concur.thread` to spawn threads
+
+  - joined floats/bitsets/codepoints/matrices.fz into
+    float/bitset/codepoint/matrix.fz. These will eventually be defined in
+    float/bitset/codepoint/matrix.type.
+
+  - move `sys` to `fuzion/sys`, this is the location for low-level intrinsics
+
+  - removed InitArray, no longer needed since we have array syntax sugar
+    `[1,2,3]`.
+
+  - rename `searchableList` as `searchableSequence` since it is a `Sequence`.
+
+  - added `time.nano` for short delays and high-res timer, `time.duration` for
+    time spans
+
+- fum/fuir:
+
+  - generics are no longer part of the Fuzion module file or the Fuzion
+    intermediate representation. Instead, these are argument features.
+
+
 ## 2022-04-01: V0.071
 
 - Social media

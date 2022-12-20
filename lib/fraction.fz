@@ -35,9 +35,10 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-fraction<B : integer<B>> (num,    # numerator
-                          den B   # denominatior
-                          ) : numeric<fraction<B>>
+fraction(B (integer B).type,
+         num,    # numerator
+         den B   # denominatior
+        ) : numeric (fraction B)
   pre
     safety: den.sign > 0 # denominator must be positive
 is
@@ -67,34 +68,24 @@ is
   # basic operations
   redef prefix + => a
   redef prefix - => fraction -a.num a.den
-  redef infix +  (b fraction<B>) => fraction(num * b.den + b.num * den, den * b.den).reduce
-  redef infix -  (b fraction<B>) => fraction(num * b.den - b.num * den, den * b.den).reduce
-  redef infix *  (b fraction<B>) => fraction(num * b.num              , den * b.den).reduce
-  redef infix /  (b fraction<B>) fraction<B>
+  redef infix +  (b fraction B) => fraction(num * b.den + b.num * den, den * b.den).reduce
+  redef infix -  (b fraction B) => fraction(num * b.den - b.num * den, den * b.den).reduce
+  redef infix *  (b fraction B) => fraction(num * b.num              , den * b.den).reduce
+  redef infix /  (b fraction B) fraction B
     pre
       safety: b != zero
   is fraction(num * b.den                  , den * b.num).reduce
 
   # comparison
-  redef infix == (b fraction<B>) =>  (a - b).num.isZero
-  redef infix != (b fraction<B>) => !(a - b).num.isZero
-  redef infix <  (b fraction<B>) =>  (a - b).num.sign <  0
-  redef infix <= (b fraction<B>) =>  (a - b).num.sign <= 0
-  redef infix >  (b fraction<B>) =>  (a - b).num.sign >  0
-  redef infix >= (b fraction<B>) =>  (a - b).num.sign >= 0
+  redef infix == (b fraction B) =>  (a - b).num.isZero
+  redef infix != (b fraction B) => !(a - b).num.isZero
+  redef infix <  (b fraction B) =>  (a - b).num.sign <  0
+  redef infix <= (b fraction B) =>  (a - b).num.sign <= 0
+  redef infix >  (b fraction B) =>  (a - b).num.sign >  0
+  redef infix >= (b fraction B) =>  (a - b).num.sign >= 0
+
+  # NYI: #637:
+  # fixed fraction.type.equality(B (integer B).type, a, b fraction B) =>
+  #   (a - b).num.isZero
 
   redef asString => "" + num + "⁄" + den
-
-
-# fraction -- a convenience routine to create a fraction with den = one
-#
-#
-# To create a fraction that represents a whole number such as
-#
-#   two := fraction 2 1
-#
-# you can use this routine with one argument and write
-#
-#   two := fraction 2
-#
-fraction<B : integer<B>> (num B) => num ⁄ num.one

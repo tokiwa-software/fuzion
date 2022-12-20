@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 export FUZION_JAVA_STACK_SIZE = 16m # required since tail recursion is not optimized yet
-NAME = factors
+override NAME = factors
 include ../positive.mk

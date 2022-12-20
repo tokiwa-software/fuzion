@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash<string>, ordered<string>, strings is
+string ref : has_equality, hasHash string, ordered string, strings is
 
   redef orderedThis => string.this
 
@@ -33,10 +33,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 Sequence<u8> is abstract
+  utf8 Sequence u8 is abstract
 
   # is this string empty?
-  isEmpty => !utf8.asStream.hasNext
+  isEmpty => utf8.isEmpty
 
   # returns true if string is empty or contains whitespace only
   isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
@@ -49,66 +49,58 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # concatenate string with string representation of another object
   infix + (other Object) string is
-    ma := marray<Object> 2 string.this
-    ma[1] := other
-    strings.fromArray ma
+    strings.concat string.this other.asString
+
+
 
   # repeat string given number of times
   infix * (n i32) ref : string
   pre
     n >= 0
   is
-    redef utf8 ref : Sequence<u8> is
-      redef asStream ref : stream<u8> is
-        i := 0
-        bytes := string.this.utf8.asStream
-
-        redef hasNext => i < n && bytes.hasNext
-        redef next u8 is
-          res := bytes.next
-          if !bytes.hasNext
-            set i := i + 1
-            if i < n
-              set bytes := string.this.utf8.asStream
-          res
+    redef utf8 Sequence u8 is
+      utf8 := string.this.utf8
+      utf8.cycle.take (utf8.count * n)
 
 
   # compare string byte-by-byte with other string
   redef infix = (other string) =>
-    s1 :=       utf8.asStream
-    s2 := other.utf8.asStream
-    while s1.hasNext && s2.hasNext
-    until s1.next    != s2.next
-      false
-    else
-      !s1.hasNext && !s2.hasNext
+    ((utf8.zip other.utf8 a,b->a=b) ∀ x->x)
+      & utf8.count = other.utf8.count
 
-    /* NYI: when lazy evaluation works, this should be possible:
 
-    s1 :=       utf8.asStream
-    s2 := other.utf8.asStream
-    while s1.hasNext == s2.hasNext && (!s1.hasNext || s1.next == s2.next)
-    until !s1.hasNext
+  infix == (other string) => string.this = other    # NYI: #498: replace by 'infix ='
 
-    */
 
-  infix == (other string) => string.this = other    # NYI: replace by 'infix ='
+  # compare two strings byte-by-byte
+  #
+  # result is true iff the strings have the same number of utf8 bytes and those
+  # bytes are equal.
+  #
+  fixed type.equality(a, b string) =>
+    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
+      & a.utf8.count ≟ b.utf8.count
+
 
   # does this come before other?
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   infix <= (other string) =>
-    s1 :=       utf8.asStream     # NYI: can this be made more beautiful using lists?
-    s2 := other.utf8.asStream
-    for
-      b1 := if (s1.hasNext) s1.next.as_i32 else -1
-      b2 := if (s2.hasNext) s2.next.as_i32 else -1
-    until b1 != b2 || b1 < 0
-      b1 <= b2
+    utf8
+      .zip other.utf8 (a,b)->(a,b)
+      .filter (x ->
+        (a, b) := x
+        a != b)
+      .mapSequence (x ->
+        (a, b) := x
+        a <= b)
+      # if all bytes are equal lengths of strings might still differ
+      .first utf8.count<=other.utf8.count
 
 
   # create hash code from a string
+  #
   hash u64 is
     shL := u64 13
     shR := u64 51
@@ -127,89 +119,91 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as a signed 32-bit integer value
   #
-  parseI32       => parseI32 10
-  parseI32Binary => parseI32 2
-  parseI32Octal  => parseI32 8
-  parseI32Hex    => parseI32 16
-  parseI32 (base i32) outcome<i32>
+  parse_i32        => parse_i32 10
+  parse_i32_binary => parse_i32 2
+  parse_i32_octal  => parse_i32 8
+  parse_i32_hex    => parse_i32 16
+  parse_i32 (base i32) outcome i32
     pre 1 < base <= 36
   is
-    parseInteger<i32> base
+    parse_integer i32 base
 
 
   # parse this string as an unsigned 32-bit integer value
   #
-  parseU32       => parseU32 10
-  parseU32Binary => parseU32 2
-  parseU32Octal  => parseU32 8
-  parseU32Hex    => parseU32 16
-  parseU32 (base u32) outcome<u32>
+  parse_u32        => parse_u32 10
+  parse_u32_binary => parse_u32 2
+  parse_u32_octal  => parse_u32 8
+  parse_u32_hex    => parse_u32 16
+  parse_u32 (base u32) outcome u32
     pre u32 1 < base <= 36
   is
-    parseInteger<u32> base
+    parse_integer u32 base
 
 
   # parse this string as a signed 64-bit integer value
   #
-  parseI64       => parseI64 10
-  parseI64Binary => parseI64 2
-  parseI64Octal  => parseI64 8
-  parseI64Hex    => parseI64 16
-  parseI64 (base i64) outcome<i64>
+  parse_i64        => parse_i64 10
+  parse_i64_binary => parse_i64 2
+  parse_i64_octal  => parse_i64 8
+  parse_i64_hex    => parse_i64 16
+  parse_i64 (base i64) outcome i64
     pre i64 1 < base <= 36
   is
-    parseInteger<i64> base
+    parse_integer i64 base
 
 
   # parse this string as an unsigned 64-bit integer value
   #
-  parseU64       => parseU64 10
-  parseU64Binary => parseU64 2
-  parseU64Octal  => parseU64 8
-  parseU64Hex    => parseU64 16
-  parseU64 (base u64) outcome<u64>
+  parse_u64        => parse_u64 10
+  parse_u64_binary => parse_u64 2
+  parse_u64_octal  => parse_u64 8
+  parse_u64_hex    => parse_u64 16
+  parse_u64 (base u64) outcome u64
     pre u64 1 < base <= 36
   is
-    parseInteger<u64> base
+    parse_integer u64 base
 
 
   # parse this string as an int value of arbitrary size
   #
-  parseInt       => parseInt int(10)
-  parseIntBinary => parseInt int(2)
-  parseIntOctal  => parseInt int(8)
-  parseIntHex    => parseInt int(16)
-  parseInt (base int) outcome<int>
+  parse_int        => parse_int int(10)
+  parse_int_binary => parse_int int(2)
+  parse_int_octal  => parse_int int(8)
+  parse_int_hex    => parse_int int(16)
+  parse_int (base int) outcome int
     pre (int 1) < base <= int 36
   is
-    parseInteger<int> base
+    parse_integer int base
 
 
   # parse this string as a integer value given as type parameter
   #
-  parseInteger<T: integer<T>> (
+  parse_integer(
+    # the integer type
+    T (integer T).type,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
 
-    ) outcome<T>
+    ) outcome T
 
     pre base.one < base <= base.from_u32 36
 
   is
-    s := utf8.asStream
-    if s.hasNext
-      c := s.next
-      negate := c = minusChar
-      d := if (negate || c = plusChar) zeroChar else c
-      parseInteger<T> base negate base.zero d s
-    else
-      parseError "empty string"
+    match utf8.asList
+      nil => parseError "empty string"
+      c Cons =>
+        negate := c.head = minusChar
+        d := if (negate || c.head = plusChar) zeroChar else c.head
+        parse_integer T base negate base.zero d c.tail
 
 
-  # recursive helper for parseInteger<T>(T)
+  # recursive helper for parse_integer T
   #
-  private parseInteger<T: integer<T>>(
+  private parse_integer(
+    # the integer type
+    T (integer T).type,
 
     # base gives the base, between 2 and 36
     base T,
@@ -218,15 +212,15 @@ string ref : hasHash<string>, ordered<string>, strings is
     neg bool,
 
     # the value of the highest digits already parsed
-    hi numOption<T>,
+    hi numOption T,
 
     # the current character to be parsed
     c u8,
 
     # the remaining characters to be parsed
-    s stream<u8>
+    s list u8
 
-    ) outcome<T>
+    ) outcome T
 
   is
 
@@ -249,11 +243,12 @@ string ref : hasHash<string>, ordered<string>, strings is
           hi := hi *? base;
           v := if (neg) hi -? t
                else     hi +? t
-          if s.hasNext
-            parseInteger<T> base neg v s.next s
-          else
-            v ? nil => parseError "numerical overflow"
-              | u T => u
+          match s
+            c Cons =>
+              parse_integer T base neg v c.head c.tail
+            nil =>
+              v ? nil => parseError "numerical overflow"
+                | u T => u
 
 
   # convert this string into an array of codepoints.
@@ -264,111 +259,166 @@ string ref : hasHash<string>, ordered<string>, strings is
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  asCodepoints : Sequence<codepoint> is
-    redef asStream ref : stream<codepoint> is
-      s := codepointsAndErrors
-      n option<codepoint> := nil
+  asCodepoints Sequence codepoint is
+    codepointsAndErrors
+      .map (x ->
+        match x
+          c codepoint => c
+          e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
+      )
 
-      redef hasNext => s.hasNext
-      redef next =>
-        s.next ? c codepoint => c
-               | e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
 
-  # convert this string into a stream of codepoint and errors for encoding problems
+  # replaces runs of invalid UTF-8 byte sequences in this string with the Unicode
+  # replacement character (U+FFFD).
+  to_valid_utf8 string is
+    to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
+
+
+  # replaces runs of invalid UTF-8 byte sequences in this string with the given
+  # string.
+  to_valid_utf8(replacement string) string is
+    codepointsAndErrors
+      .reduce string (strings.fromArray ((marrays Object).new 0 "")) ((r, x) ->
+        match x
+          c codepoint => r + c
+          e error => r + replacement)
+
+
+  # convert this string into a list of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codepointsAndErrors stream<outcome<codepoint>> is codepointStream
+  codepointsAndErrors list (outcome codepoint) is
+    codepointsAndErrors utf8.asList
 
 
-  # the stream instance returned by asCodepoints
+  # the list instance returned by asCodepoints
   #
-  private codepointStream : stream<outcome<codepoint>> is  # NYI: better list than stream!
-    s := utf8.asStream
-    hasNext => s.hasNext
-    next outcome<codepoint> is
-      p := codepoints
-      e(msg string) => error "Bad UTF8 encoding found: cannot decode $msg"
+  private codepointsAndErrors(l list u8) list (outcome codepoint) is
+    match l
+      nil => nil
+      c1 Cons =>
+        # return list of c and rest
+        ret(c outcome codepoint, rest list u8) list (outcome codepoint) is
+          ref : Cons (outcome codepoint) (list (outcome codepoint))
+            head => c
+            tail => codepointsAndErrors rest
 
-      b1 := s.next
-      e1(msg string) => e "$b1: $msg"
-      # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
-      if b1.as_u32 ∈ p.utf8EncodedInOneByte           # ASCII
-        codepoint b1.as_u32
-      else if u8 0xc0 <= b1 <= 0xf4
-        if !s.hasNext
-          e1 "end of string, expected continuation byte"
+        p := codepoints
+        e(msg string) => error "Bad UTF8 encoding found: cannot decode $msg"
+
+        b1 := c1.head
+        e1(msg string) => ret (e "$b1: $msg") c1.tail
+        # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
+        if b1.as_u32 ∈ p.utf8EncodedInOneByte           # ASCII
+          ret (codepoint b1.as_u32) c1.tail
+        else if u8 0xc0 <= b1 <= 0xf4
+          match c1.tail
+            nil => e1 "end of string, expected continuation byte"
+            c2 Cons =>
+              b2 := c2.head
+              e2(msg string) => ret (e "$b1, $b2: $msg") c2.tail
+              if (b2 & 0xc0) != 0x80
+                e2 "expected continuation byte in the range 0x80..0xbf."
+              else if u8 0xc0 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
+                res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
+                if res ∉ p.utf8EncodedInTwoBytes
+                  e2 "codepoint $res uses overlong 2-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
+                else
+                  ret (codepoint res) c2.tail
+              else if u8 0xe0 <= b1
+                match c2.tail
+                  nil => e2 "end of string, expected continuation byte"
+                  c3 Cons =>
+                    b3 := c3.head
+                    e3(msg string) => ret (e "$b1, $b2, $b3: $msg") c3.tail
+                    if (b3 & 0xc0) != 0x80
+                      e3 "expected two continuation bytes in the range 0x80..0xbf."
+                    else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
+                      res := (((b1.as_u32 & 0x0f) << 12) |
+                              ((b2.as_u32 & 0x3f) <<  6) |
+                              ((b3.as_u32 & 0x3f)      )   )
+                      if res ∉ p.utf8EncodedInThreeBytes
+                        e3 "codepoint $res uses overlong 3-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
+                      else if res ∈ p.utf16Surrogate
+                        e3 "codepoint $res is invalid, values in the range {p.utf16Surrogate} are reserved for UTF-16 surrogate halves."
+                      else if res ∈ p.notACharacter
+                        e3 "codepoint $res is not a valid unicode character {p.notACharacter}."
+                      else
+                        ret (codepoint res) c3.tail
+                    else                     # 0x010000..0x10ffff encoded in 4 bytes
+                      match c3.tail
+                        nil => e3 "end of string, expected continuation byte"
+                        c4 Cons =>
+                          b4 := c4.head
+                          e4(msg string) => ret (e "$b1, $b2, $b3, $b4: $msg") c4.tail
+                          if (b4 & 0xc0) != 0x80
+                            e4 "expected three continuation bytes in the range 0x80..0xbf."
+                          else
+                            res := (((b1.as_u32 & 0x07) << 18) |
+                                    ((b2.as_u32 & 0x3f) << 12) |
+                                    ((b3.as_u32 & 0x3f) <<  6) |
+                                    ((b4.as_u32 & 0x3f)      )   )
+                            if res ∉ p.utf8EncodedInFourBytes
+                              e4 "codepoint $res uses overlong 4-byte encoding."
+                            else if res > 0x10ffff
+                              e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
+                            else
+                              ret (codepoint res) c4.tail
+              else fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
+        else if u8 0x80 <= b1 <= 0xbf then e1 "stray continuation byte without preceding leading byte."
+        else if u8 0xf5 <= b1 <= 0xfd then e1 "codes 0xf5..0xfd are undefined."
+        else if u8 0xfe <= b1 <= 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
         else
-          b2 := s.next
-          e2(msg string) => e "$b1, $b2: $msg"
-          if (b2 & 0xc0) != 0x80
-            e2 "expected continuation byte in the range 0x80..0xbf."
-          else if u8 0xc0 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
-            res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
-            if res ∉ p.utf8EncodedInTwoBytes
-              e2 "codepoint $res uses overlong 2-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
-            else
-              codepoint res
-          else if u8 0xe0 <= b1
-            if !s.hasNext
-              e2 "end of string, expected continuation byte"
-            else
-              b3 := s.next
-              e3(msg string) => e "$b1, $b2, $b3: $msg"
-              if (b3 & 0xc0) != 0x80
-                e3 "expected two continuation bytes in the range 0x80..0xbf."
-              else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
-                res := (((b1.as_u32 & 0x0f) << 12) |
-                        ((b2.as_u32 & 0x3f) <<  6) |
-                        ((b3.as_u32 & 0x3f)      )   )
-                if res ∉ p.utf8EncodedInThreeBytes
-                  e3 "codepoint $res uses overlong 3-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
-                else if res ∈ p.utf16Surrogate
-                  e3 "codepoint $res is invalid, values in the range {p.utf16Surrogate} are reserved for UTF-16 surrogate halves."
-                else if res ∈ p.notACharacter
-                  e3 "codepoint $res is not a valid unicode character {p.notACharacter}."
-                else
-                  codepoint res
-              else                     # 0x010000..0x10ffff encoded in 4 bytes
-                if !s.hasNext
-                  e3 "end of string, expected continuation byte"
-                else
-                  b4 := s.next
-                  e4(msg string) => e "$b1, $b2, $b3, $b4: $msg"
-                  if (b4 & 0xc0) != 0x80
-                    e4 "expected three continuation bytes in the range 0x80..0xbf."
-                  else
-                    res := (((b1.as_u32 & 0x07) << 18) |
-                            ((b2.as_u32 & 0x3f) << 12) |
-                            ((b3.as_u32 & 0x3f) <<  6) |
-                            ((b4.as_u32 & 0x3f)      )   )
-                    if res ∉ p.utf8EncodedInFourBytes
-                      e4 "codepoint $res uses overlong 4-byte encoding."
-                    else if res > 0x10ffff
-                      e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
-                    else
-                      codepoint res
-      else if u8 0x80 <= b1 <= 0xbf then e1 "stray continuation byte without preceding leading byte."
-      else if u8 0xf5 <= b1 <= 0xfd then e1 "codes 0xf5..0xfd are undefined."
-      else if u8 0xfe <= b1 <= 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
-      else
-        fuzion.std.panic "string.codepointStream: missing case for $b1"
+          fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
+
+
+  # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
+  #
+  substring(from, to i32) string
+    pre
+      debug: 0 <= from <= to <= string.this.byteLength
+  is
+    # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
+    # ref : string
+    #   redef utf8 Sequence u8 is
+    #     string.this.utf8.slice from to
+    substring0 from to
+
+
+  # create substring of the string consisting of bytes from (inclusive) .. to (exclusive).
+  #
+  private substring0(from, to i32) ref : string
+    pre
+      debug: 0 <= from <= to <= string.this.byteLength
+  is
+    redef utf8 Sequence u8 is
+      string.this.utf8.slice from to
+
+
+  # create substring of this string consisting of bytes from (inclusive) .. byteLength (exclusive).
+  #
+  substring(from i32) string
+    pre
+      debug: 0 <= from <= byteLength
+  is
+    substring from byteLength
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
-  substring(from, to i32) string
+  private substring_codepoint(from, to i32) string
     pre
-      debug: 0 <= from <= to <= codepointLength
+      debug: 0 <= from <= to <= string.this.codepointLength
   is
     codepointsArray
-      .slice(from, to)
-      .map<string> (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
+      .slice from to
+      .map string (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepontLength (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
   #
-  substring(from i32) string
+  private substring_codepoint(from i32) string
     pre
       debug: 0 <= from <= codepointLength
   is
@@ -396,6 +446,24 @@ string ref : hasHash<string>, ordered<string>, strings is
     (searchableSequence utf8).find substring.utf8
 
 
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  find_last(substring string) option i32 is
+    find_last substring nil
+
+
+  # find (utf8-byte-) index of last occurrence of 'substring'
+  # within this string.
+  private find_last(substring string, found option i32) option i32 is
+    match find substring
+      nil => found >>= (pos -> pos - substring.byteLength)
+      idx i32 =>
+        skip := idx + substring.byteLength
+        s := strings.fromBytes (utf8.drop skip)
+
+        s.find_last substring (skip + (found.get 0))
+
+
   # replace all occurances of f within l by r
   #
   replace (f, r string) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8)
@@ -412,7 +480,7 @@ string ref : hasHash<string>, ordered<string>, strings is
     (searchableSequence utf8).countMatches substring.utf8
 
 
-  # is c an ASCII white-space character?  Used by split.
+  # is c an ASCII white-space character?
   #
   private isAsciiWhiteSpace(c u8) =>
     (c =  9 ||  // HT
@@ -431,12 +499,12 @@ string ref : hasHash<string>, ordered<string>, strings is
   #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  split list<string> is
+  split list string is
     l := utf8.asList.dropWhile (c -> isAsciiWhiteSpace c)
     if l.isEmpty
       nil
     else
-      ref : Cons<string, list<string>>
+      ref : Cons string (list string)
         head =>  strings.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
         tail => (strings.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
@@ -449,16 +517,16 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # split string at s
   #
-  split(s string) list<string>
+  split(s string) list string
     pre
       !s.isEmpty
     is
     match (find s)
       nil => [string.this].asList
-      idx i32 => ref : Cons<string, list<string>>
+      idx i32 => ref : Cons string (list string)
                    head => substring 0 idx
                    tail =>
-                     rest := substring (idx + s.codepointLength) string.this.codepointLength
+                     rest := substring (idx + s.byteLength) string.this.byteLength
                      rest.split s
 
 
@@ -476,16 +544,90 @@ string ref : hasHash<string>, ordered<string>, strings is
     strings.fromBytes s2
 
 
+  # remove leading white space from this string
+  #
+  trimStart =>
+# NYI: This causes fz to crash:
+#   fromBytes ...
+    strings.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
+
+
+  # remove trailing white space from this string
+  #
+  trimEnd =>
+# NYI: This causes fz to crash:
+#   fromBytes ...
+    strings.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
+
+
   # is this part of given set
   #
-  elementOf(s Set<string>) => s.contains string.this
-  infix ∈ (s Set<string>) => string.this.elementOf s
+  elementOf(s Set string) => s.contains string.this
+  infix ∈ (s Set string) => string.this.elementOf s
 
 
   # is this not part of given set
   #
-  notElementOf(s Set<string>) => !elementOf s
-  infix ∉ (s Set<string>) => string.this.notElementOf s
+  notElementOf(s Set string) => !elementOf s
+  infix ∉ (s Set string) => string.this.notElementOf s
+
+
+  # return string of at least length l by
+  # padding codepoint s to start of string
+  #
+  pad_codepoint_start(l i32, s string) string
+  pre s.codepointLength = 1
+  is
+    missing := l - codepointLength
+    if missing <= 0
+      string.this
+    else
+      (s * missing) + string.this
+
+
+  # Splits this string at codepoints where p is true and returns the result as a
+  # list of strings. In case multiple, neighboring codepoints in the string are
+  # evaluated to be true by p, this does not cause empty strings to be added to
+  # the result list, rather this case is being treated as being one big separator.
+  #
+  fields_func(p codepoint -> bool) list string is
+    state_wrapper(l list string, in_run bool, start_pos, current_pos i32) is
+
+    i := state_wrapper (lists.empty string) false 0 0
+    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+      match p c
+        TRUE =>
+          match r.in_run
+            TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+        FALSE =>
+          match r.in_run
+            TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper r.l false r.start_pos (r.current_pos + 1))
+
+    match last_state.in_run
+      TRUE => last_state.l
+      FALSE => last_state.l ++ [(substring_codepoint last_state.start_pos)]
+
+
+  # Cuts out the first appearance of the string sep from this string, in other words,
+  # returns a tuple of two strings and a bool, the first string is the substring before
+  # the first appreance of sep, the second string is the substring after the first
+  # appearance of sep. The bool result is true iff sep appears in this string.
+  #
+  # If sep does not appear in this string at all, return this string as the first string,
+  # the empty string as the second, and false as the bool.
+  #
+  cut(sep string) tuple string string bool is
+    match find sep
+      nil => (string.this, "", false)
+      i i32 =>
+        l := byteLength
+        sepl := sep.byteLength
+
+        before := strings.fromBytes (utf8.slice 0 i)
+        after := strings.fromBytes (utf8.slice (i + sepl) l)
+        (before, after, true)
 
 
 # strings -- unit type defining features related to string but not
@@ -496,7 +638,7 @@ strings is
 
   # monoid of strings with infix + operation.
   #
-  concat : Monoid<string> is
+  concat : Monoid string is
     redef infix ∙ (a, b string) => a + b
     redef infix == (a, b string) => a == b
     redef e => ""
@@ -505,10 +647,32 @@ strings is
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
   # given separator
   #
-  concat(sep string) : Monoid<string> is
+  concat(sep string) : Monoid string is
     redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
     redef infix == (a, b string) => a == b
     redef e => ""
+
+
+  # concat strings a and b by
+  # concatenating their byte sequences.
+  #
+  concat(a, b string) string is
+    ref : string
+      utf8 Sequence u8 is a.utf8 ++ b.utf8
+
+
+  # Takes a sequence of strings and concatenates its elements, while adding the separator
+  # sep in between its elements. In case an empty sequence is given, returns the empty string.
+  #
+  join(elems Sequence string, sep string) string is
+    if elems.isEmpty
+      ""
+    else
+      for
+        elem in elems
+        res := elem, concat (concat res sep) elem
+      else
+        res
 
 
   # create string by concatenating the results of $a[a.indices].
@@ -525,55 +689,37 @@ strings is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  fromArray(a marray<Object>) ref : string is
+  fromArray(a marray Object) ref : string is
     redef infix + (other Object) string is
       fromArray (a.add other)
 
-    redef utf8 ref : Sequence<u8> is
-      redef asStream ref : stream<u8> is
-        i := 0
-        s := a[i].asString.utf8.asStream
-        gotNext := false
-
-        findNext bool is
-          set gotNext := gotNext || (
-            for hs := s.hasNext
-            while !hs && i+1 < a.length
-              set i := i + 1
-              set s := a[i].asString.utf8.asStream
-            else
-              hs)
-          gotNext
-
-        redef hasNext => findNext
-        redef next    => findNext; set gotNext := false; s.next
+    redef utf8 Sequence u8 is
+      a.flatMapSequence u8 ai->ai.asString.utf8
 
 
   # create string from the given utf8 bytes
   #
-  fromBytes(utf8Bytes Sequence<u8>) string is
+  fromBytes(utf8Bytes Sequence u8) string is
     ref : string
       redef utf8 => utf8Bytes
 
 
   # create string from the given codepoints
   #
-  fromCodepoints(codePoints Sequence<codepoint>) string is
-    # NYI: would be nicer if result was created lazily
-    for
-      res := "", res + cp
-      cp in codePoints
-    else
-      res
+  fromCodepoints(codePoints Sequence codepoint) string is
+    ref : string
+      utf8 Sequence u8 is
+        codePoints
+          .flatMapSequence u8 (x -> x.utf8)
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  minusChar => "-".utf8.asStream.next
-  plusChar  => "+".utf8.asStream.next
-  zeroChar  => "0".utf8.asStream.next
-  nineChar  => "9".utf8.asStream.next
-  aChar     => "a".utf8.asStream.next
-  zChar     => "z".utf8.asStream.next
-  capAChar  => "A".utf8.asStream.next
-  capZChar  => "Z".utf8.asStream.next
+  minusChar => "-".utf8.first
+  plusChar  => "+".utf8.first
+  zeroChar  => "0".utf8.first
+  nineChar  => "9".utf8.first
+  aChar     => "a".utf8.first
+  zChar     => "z".utf8.first
+  capAChar  => "A".utf8.first
+  capZChar  => "Z".utf8.first

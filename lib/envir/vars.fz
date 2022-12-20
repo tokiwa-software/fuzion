@@ -28,24 +28,43 @@
 private vars (
 
   # the provider this effect uses to read env vars
-  p varsProvider,
+  p Vars_Provider,
 
   # action to be taken: plain, install or replace?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : effect r
 is
 
-  # If set, get the environment variable corresponding to v
+  # If set, get the environment variable corresponding to v.
   #
   get(v string) => p.get v
+
+
+  # If set, get the environment variable corresponding to v.
+  # Otherwise, return default
+  #
+  get(v string, default string) => (get v).get default
+
+  # Set the environment variable corresponding to n to have the
+  # value v.
+  #
+  # This will overwrite the value of the environment variable, if
+  # it is set already.
+  set1(n string, v string) => p.set1 n v
+
+  # Unset the environment variable corresponding to n.
+  #
+  # This will also return success (unit) if the variable was not
+  # set anyway.
+  unset(n string) => p.unset n
 
 
 # short-hand for creating and installing vars effect using
 # given provider and running code rr
 #
-vars(p varsProvider, rr ()->unit) =>
+vars(p Vars_Provider, rr ()->unit) =>
   _ := vars p (effectMode.inst rr) unit
 
 
@@ -64,23 +83,38 @@ vars_type is
   # install default effect using fuzion.sys.env_vars
   #
   installDefault unit is
-    if !(effects.exists<envir.vars>)
+    if !(effects.exists envir.vars)
       _ := vars defaultVarsProvider effectMode.default unit
 
 
   # default provider using fuzion.sys.env_vars
   #
-  private defaultVarsProvider : varsProvider is
+  private defaultVarsProvider : Vars_Provider is
     get(v string) => fuzion.sys.env_vars.get v
+    set1(n string, v string) => fuzion.sys.env_vars.set1 n v
+    unset(n string) => fuzion.sys.env_vars.unset n
 
 
-# varsProvider -- abstract source of environment vars
+# Vars_Provider -- abstract source of environment vars
 #
 # Different heirs of this feature may provided different sources for environemnt
 # variables
 #
-varsProvider ref is
+Vars_Provider ref is
 
   # If set, get the environment variable corresponding to v
   #
-  get(v string) option<string> is abstract
+  get(v string) option string is abstract
+
+  # Set the environment variable corresponding to n to have the
+  # value v.
+  #
+  # This will overwrite the value of the environment variable, if
+  # it is set already.
+  set1(n string, v string) outcome unit is abstract
+
+  # Unset the environment variable corresponding to n.
+  #
+  # This will also return success (unit) if the variable was not
+  # set anyway.
+  unset(n string) outcome unit is abstract

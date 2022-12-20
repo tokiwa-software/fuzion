@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
+u64(val u64) : wrappingInteger u64, hasInterval u64, u64s is
 
   redef thiz => u64.this.val
   redef orderedThis => u64.this.val
@@ -35,7 +35,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
   # would negation -thiz cause an overflow?
   redef wrappedOnNeg => !isZero
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u64) => max -° thiz < other
   redef underflowOnAdd(other u64) => false
 
@@ -83,6 +83,8 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
   redef infix <= (other u64) bool is intrinsic
   redef infix >  (other u64) bool is intrinsic
   redef infix >= (other u64) bool is intrinsic
+
+  fixed type.equality(a, b u64) bool is intrinsic
 
   as_i8 i8
     pre
@@ -133,6 +135,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 #      analysis: result.as_u64 == thiz
     is
       u128 0 thiz
+  as_int  => ints.from_u64 val
 
   low8bits   u8  is intrinsic
   low16bits  u16 is intrinsic
@@ -142,6 +145,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 
   # conversion to float
   as_f64 f64 is intrinsic
+  as_f32 => as_f64.as_f32
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
@@ -197,7 +201,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrappingIntegers<u64> is
+u64s : wrappingIntegers u64 is
 
   redef name => "u64"
 
@@ -206,6 +210,9 @@ u64s : wrappingIntegers<u64> is
 
   redef min => u64 0
   redef max => u64 0x_ffff_ffff_ffff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
 # u64 -- returns value of unit type u64s

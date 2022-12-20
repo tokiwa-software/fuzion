@@ -28,14 +28,14 @@
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<W> is
+wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers W is
 
   # overflow checking
 
   # would negation -thiz cause an overflow?
   wrappedOnNeg bool is abstract
 
-  # would addtion thiz + other cause an overflow or underflow?
+  # would addition thiz + other cause an overflow or underflow?
   overflowOnAdd(other W) bool is abstract
   underflowOnAdd(other W) bool is abstract
   wrappedOnAdd(other W) => overflowOnAdd(other) || underflowOnAdd(other)
@@ -69,6 +69,12 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
   isMin => thiz == min
   isMax => thiz == max
 
+  # check if this type of wrappingInteger is bounded
+  #
+  # wrappingIntegers are assumed to be a bound set by default, so
+  # this returns true unless redefined by an implementation
+  redef is_bounded => true
+
   # basic operations with runtime error on overflow
 
   # negation, with check for overflow
@@ -84,7 +90,7 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
       debug: !underflowOnAdd(other)
   is thiz +° other
 
-  # substraction, with check for overflow
+  # subtraction, with check for overflow
   redef infix -  (other W) W
     pre
       debug: !overflowOnSub(other),
@@ -99,10 +105,10 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          numOption<W> is if wrappedOnNeg        then nil else -thiz
-  redef infix +? (other W) numOption<W> is if wrappedOnAdd(other) then nil else thiz + other
-  redef infix -? (other W) numOption<W> is if wrappedOnSub(other) then nil else thiz - other
-  redef infix *? (other W) numOption<W> is if wrappedOnMul(other) then nil else thiz * other
+  redef prefix -?          numOption W is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other W) numOption W is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other W) numOption W is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other W) numOption W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
   redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
@@ -145,7 +151,7 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  infix **? (other W) numOption<W>
+  infix **? (other W) numOption W
     pre
       safety: other >= zero
   is
@@ -180,11 +186,21 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
     else
       thiz ** other
 
+  # bitwise NOT
+  redef prefix ~ W
+    pre
+      is_bounded
+  is
+    thiz ^ all_bits_set
+
 
 # wrappingIntegers -- unit type defining features related to wrappingInteger
 # but not requiring an instance
 #
-wrappingIntegers(W wrappingInteger<W>.type) : numerics<W> is
+wrappingIntegers(W (wrappingInteger W).type) : numerics W is
 
   min W is abstract
   max W is abstract
+
+  # returns the number in whose bit representation all bits are ones
+  all_bits_set W is abstract

@@ -473,7 +473,7 @@ class ForClass extends ANY
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
                             "  " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.callVirtual<" + fr + "> " +
+                            "    " + ("fuzion.java.callVirtual (" + fr + ") " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -487,7 +487,7 @@ class ForClass extends ANY
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
                             "  " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.callStatic<" + fr + "> " +
+                            "    " + ("fuzion.java.callStatic (" + fr + ") " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -518,8 +518,8 @@ class ForClass extends ANY
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  " + fn + fp + " " + fr + " is\n" +
-                       "    " + ("fuzion.java.callConstructor<" + fr + "> " +
-                                 fuzionString(co.getDeclaringClass().getName()) +
+                       "    " + ("fuzion.java.callConstructor (" + fr + ") " +
+                                 fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
                                  parametersArray(pa) + "\n")
                        );
@@ -549,7 +549,7 @@ class ForClass extends ANY
     data.append("\n" +
                 "  # short-hand to call Java method '" + me + "':\n" +
                 "  #\n" +
-                "  " + fn0 + fp + " " + fr + " is\n" +
+                "  " + fn0 + fp + " (" + fr + ") is\n" +
                 "    " + fn + parametersList(pa) + "\n");
   }
 
@@ -576,7 +576,7 @@ class ForClass extends ANY
     data_static.append("\n" +
                        "  # short-hand to call Java consctructor '" + co + "':\n" +
                        "  #\n" +
-                       "  " + fn0 + fp + " " + fr + " is\n" +
+                       "  " + fn0 + fp + " (" + fr + ") is\n" +
                        "    " + fn + parametersList(pa) + "\n");
   }
 
@@ -720,7 +720,7 @@ class ForClass extends ANY
         if (t.isArray())
           {
             var et = plainResultType(t.getComponentType());
-            mt = (et == null) ? null : "Sequence<" + et + ">";
+            mt = (et == null) ? null : "Sequence (" + et + ")";
           }
         else if (t == String.class)
           {
@@ -824,7 +824,8 @@ class ForClass extends ANY
         var t = p.getType();
         res.append(res.length() == 1 ? "" : "; ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
-        if      (t.isArray()        ) { res.append("fuzion.java.arrayToJavaObject<" + plainResultType(t.getComponentType()) + "> "); }
+        res.append("(");
+        if      (t.isArray()        ) { res.append("fuzion.java.arrayToJavaObject (" + plainResultType(t.getComponentType()) + ") "); }
         else if (t == Byte     .TYPE) { res.append("fuzion.java.i8ToJavaObject "    ); }
         else if (t == Character.TYPE) { res.append("fuzion.java.u16ToJavaObject "   ); }
         else if (t == Short    .TYPE) { res.append("fuzion.java.i16ToJavaObject "   ); }
@@ -835,6 +836,7 @@ class ForClass extends ANY
         else if (t == Boolean  .TYPE) { res.append("fuzion.java.boolToJavaObject "  ); }
         else if (t == String.class  ) { res.append("fuzion.java.stringToJavaObject "); }
         res.append(mp);
+        res.append(")");
       }
     res.append("]");
     return res.toString();
@@ -895,7 +897,7 @@ class ForClass extends ANY
         var e = me.getExceptionTypes();
         if (e != null && e.length > 0)
           {
-            res = "outcome<" + res + ">";
+            res = "outcome (" + res + ")";
           }
       }
     return res;
@@ -935,7 +937,7 @@ class ForClass extends ANY
         var et = plainResultType(t.getComponentType());
         if (et != null)
           {
-            return "fuzion.java.Array<" + et + ">";
+            return "fuzion.java.Array (" + et + ")";
           }
       }
     return null;
@@ -994,7 +996,7 @@ class ForClass extends ANY
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
                                "  " + fn + " " + rt + " is\n" +
-                               "    " + ("fuzion.java.getStaticField<" + rt + "> " +
+                               "    " + ("fuzion.java.getStaticField (" + rt + ") " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + "\n"));
           }
@@ -1004,7 +1006,7 @@ class ForClass extends ANY
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
                                 "  " + fn + " " + rt + " is\n" +
-                                "    " + ("fuzion.java.getField<" + rt + "> " +
+                                "    " + ("fuzion.java.getField (" + rt + ") " +
                                           fcn + ".this " +
                                           fuzionString(jn) + "\n"
                                           ));

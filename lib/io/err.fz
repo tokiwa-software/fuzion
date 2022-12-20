@@ -26,10 +26,10 @@
 # err -- effect providing an output stream
 #
 private err (
-  redef p canPrint,
+  redef p Can_Print,
 
   # action to be taken: install or default?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : printEffect p r
@@ -43,7 +43,7 @@ err(rr ()->unit) => err defaultPrintToErr rr
 
 # short-hand for creating and installing err effect
 #
-err(p canPrint, rr ()->unit) =>
+err(p Can_Print, rr ()->unit) =>
   err p (effectMode.inst rr) unit
   unit
 
@@ -55,7 +55,7 @@ err =>
   io.err.env
 
 
-defaultPrintToErr : canPrint is
+defaultPrintToErr : Can_Print is
 
   print(s Object) => fuzion.std.err.print s
 
@@ -67,5 +67,5 @@ errs is
 
   # install default effect err using defaultPrint
   installDefault unit is
-    if !(effects.exists<io.err>)
+    if !effects.exists io.err
       _ := err defaultPrintToErr effectMode.default unit

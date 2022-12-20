@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.util;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -554,29 +552,20 @@ public class SourceFile extends ANY
   public boolean isNewLine(int lastCodePoint, int curCodePoint)
   {
     // line break, taken from https://en.wikipedia.org/wiki/Newline#Unicode
-    boolean result = false;
-
-    switch (lastCodePoint)
+    return switch (lastCodePoint)
       {
-      case CR:
-        if (curCodePoint == LF)
-          {
-            break;
-          }
-        // fall through
-      case LF:
-      case VT:
-      case FF:
-      case NEL:
-      case LS:
-      case PF:
-      case BEGINNING_OF_FILE:
-        result = curCodePoint != END_OF_FILE;
-        break;
-      default:
-        break;
-      }
-    return result;
+      case
+        CR -> curCodePoint == LF;
+      case
+        LF,
+        VT,
+        FF,
+        NEL,
+        LS,
+        PF,
+        BEGINNING_OF_FILE -> true;
+      default -> false;
+      };
   }
 
 
@@ -807,7 +796,15 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos, int line)
   {
-    return pos - lineStartPos(line) + 1;
+    if (PRECONDITIONS) require
+      (line > 0);
+
+    int c = 1;
+    for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
+      {
+        c++;
+      }
+    return c;
   }
 
 
@@ -817,18 +814,27 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos)
   {
-    return codePointInLine(pos, lineNum(pos));
+    int line = lineNum(pos);
+    if (line == 0)
+      {
+        return BEGINNING_OF_FILE;
+      }
+    return codePointInLine(pos, line);
   }
 
 
   /**
    * Obtain the given position as a SourcePosition object.
    *
-   * @param pos a byte position wihtin this file.
+   * @param pos a byte position within this file.
    */
   public SourcePosition sourcePos(int pos)
   {
     int line = lineNum(pos);
+    if (line == 0)
+      {
+        return new SourcePosition(this, 1, 1);
+      }
     return new SourcePosition(this, line, codePointInLine(pos, line));
   }
 

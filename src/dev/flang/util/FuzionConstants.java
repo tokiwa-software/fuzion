@@ -95,6 +95,19 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of (dynamic) type features.
+   */
+  public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+
+
+  /**
+   * Name of type parameter for type features.  This type parameter will be set
+   * to the actual static type.
+   */
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   x := if a then 0 else 1
@@ -163,6 +176,12 @@ public class FuzionConstants extends ANY
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
 
+  /**
+   * Suffix added to module files.
+   */
+  public static final String MODULE_FILE_SUFFIX = ".fum";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
 
@@ -186,9 +205,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind for routines with generic type parameters.
+   * Flag OR'ed to kind, true if feature for type 'f.type' was added.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 0x10;
+  public static final int MIR_FILE_KIND_HAS_TYPE_FEATURE = 0x10;
 
 
   /**
@@ -196,12 +215,32 @@ public class FuzionConstants extends ANY
    */
   public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
 
+  /**
+   * Flag OR'ed to kind for features with modifier 'fixed'
+   */
+  public static final int MIR_FILE_KIND_IS_FIXED = 0x40;
+
+
+  /**
+   * For a type, the value of the valRefOrThis byte:
+   */
+  public static final int MIR_FILE_TYPE_IS_VALUE = 0x00;
+  public static final int MIR_FILE_TYPE_IS_REF   = 0x01;
+  public static final int MIR_FILE_TYPE_IS_THIS  = 0x02;
+
 
   /**
    * Fuzion home directory as used in module files instead of absolute or
    * relative path of build directory.
    */
   public static final Path SYMBOLIC_FUZION_HOME = Path.of("$FUZION");
+
+
+  /**
+   * Directory to be used for sources in module files
+   */
+  public static final Path SYMBOLIC_FUZION_HOME_LIB_SOURCE = SYMBOLIC_FUZION_HOME.resolve("lib");
+
 
   /*-----------------  special values used in AIR file  -----------------*/
 

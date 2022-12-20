@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = testUnitArray
+override NAME = testUnitArray
 include ../simple.mk

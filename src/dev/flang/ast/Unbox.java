@@ -47,17 +47,17 @@ public abstract class Unbox extends Expr
   /**
    * The address of the value type
    */
-  public Expr adr_;
+  public Expr _adr;
 
 
   /**
    * The type of this, set during creation.
    */
-  private AbstractType type_;
+  private AbstractType _type;
 
 
   /**
-   * This this Unbox needed, i.e, not a NOP. This might be a NOP if this is
+   * Is this Unbox needed, i.e, not a NOP. This might be a NOP if this is
    * used as a reference.
    */
   public boolean _needed = false;
@@ -89,8 +89,8 @@ public abstract class Unbox extends Expr
        !type.featureOfType().isThisRef()
        );
 
-    this.adr_ = adr;
-    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
+    this._adr = adr;
+    this._type = Types.intern(type); // outer.thisType().resolve(outer);
   }
 
 
@@ -126,7 +126,7 @@ public abstract class Unbox extends Expr
    */
   public AbstractType type()
   {
-    return type_;
+    return _type;
   }
 
 
@@ -142,7 +142,7 @@ public abstract class Unbox extends Expr
    */
   public Unbox visit(FeatureVisitor v, AbstractFeature outer)
   {
-    adr_ = adr_.visit(v, outer);
+    _adr = _adr.visit(v, outer);
     v.action(this, outer);
     return this;
   }
@@ -156,7 +156,7 @@ public abstract class Unbox extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
-    adr_.visitStatements(v);
+    _adr.visitStatements(v);
     super.visitStatements(v);
   }
 
@@ -172,14 +172,17 @@ public abstract class Unbox extends Expr
   Expr box(AbstractType frmlT)
   {
     var t = type();
-    if (t.compareTo(Types.resolved.t_void) != 0 &&
-        ((!frmlT.isRef() ||
-          (frmlT.isChoice() &&
-           !frmlT.isAssignableFrom(t) &&
-           frmlT.isAssignableFrom(t.asValue())))))
+    if (t.compareTo(Types.resolved.t_void) != 0 && !frmlT.isRef())
       {
-        this._needed = true;
-        this.type_ = frmlT;
+        if (t.isThisType())
+          { // we need this to unbox an outer ref even if the type does not change
+            this._needed = true;
+          }
+        else
+          {
+            this._needed = true;
+            this._type = frmlT;
+          }
       }
     return super.box(frmlT);
   }
@@ -190,7 +193,7 @@ public abstract class Unbox extends Expr
    */
   public boolean isCallToOuterRef()
   {
-    return adr_.isCallToOuterRef();
+    return _adr.isCallToOuterRef();
   }
 
 
@@ -201,7 +204,7 @@ public abstract class Unbox extends Expr
    */
   public String toString()
   {
-    return "deref(" + adr_ + ")";
+    return "deref(" + _adr + ")";
   }
 
 }
