@@ -329,23 +329,17 @@ field       : returnType
   {
     if (p._kind == Impl.Kind.Of)
       {
-        var ng = new List<AbstractType>();
-        addFeaturesFromBlock(first, l, p._code, ng, p);
         if (inh.isEmpty())
           {
             AstErrors.featureOfMustInherit(pos, p.pos);
           }
         else
           {
-            var ic = inh.getLast();
-            if (!ic.generics().isEmpty())
-              {
-                ic.generics().addAll(ng);
-              }
-            else
-              {
-                ((Call)ic)._generics = ng;
-              }
+            var c = (Call) inh.getLast();
+            var ng = new List<AbstractType>();
+            ng.addAll(c.actualTypeParameters());
+            addFeaturesFromBlock(first, l, p._code, ng, p);
+            c._generics = ng;
           }
         p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
       }
@@ -1315,7 +1309,19 @@ actuals     : actualArgs
       {
         if (current() == Token.t_numliteral)
           {
-            result = new Call(pos, target, n, skipNumLiteral().plainInteger());
+            var select = skipNumLiteral().plainInteger();
+            int s = -1;
+            try
+              {
+                s = Integer.parseInt(select);
+                if (CHECKS) check
+                  (s >= 0); // parser should not allow negative value
+              }
+            catch (NumberFormatException e)
+              {
+                AstErrors.illegalSelect(pos, select, e);
+              }
+            result = new Call(pos, target, n, s);
           }
         else
           {
@@ -1326,7 +1332,7 @@ actuals     : actualArgs
     else
       {
         var l = actualArgs();
-        result = new Call(pos, target, n, Call.NO_GENERICS, l, null);
+        result = new Call(pos, target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1353,11 +1359,11 @@ indexCall   : ( LBRACKET actualList RBRACKET
         if (skip(":="))
           {
             l.add(new Actual(null, exprInLine()));
-            result = new Call(pos, target, "index [ ] =", null, l, null);
+            result = new Call(pos, target, "index [ ] =", l);
           }
         else
           {
-            result = new Call(pos, target, "index [ ]"  , null, l, null);
+            result = new Call(pos, target, "index [ ]"  , l);
           }
         target = result;
       }
@@ -1572,7 +1578,7 @@ actualsList : actualSp actualsList
    */
   List<Actual> actualsList()
   {
-    List<Actual> result = Call.NO_PARENTHESES_A;
+    List<Actual> result = Call.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
@@ -1752,7 +1758,8 @@ expr        : opExpr
         Expr f = expr();
         matchOperator(":", "expr of the form >>a ? b : c<<");
         Expr g = expr();
-        result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
+        result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
+                                                                 new Actual(null, g)));
       }
     return result;
   }
@@ -1829,12 +1836,12 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
   {
     SourcePosition pos = posObject();
     var f = fork();
-    var tupleElements = new List<Expr>();
+    var tupleElements = new List<Actual>();
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
                          do
                            {
-                             tupleElements.add(expr());
+                             tupleElements.add(new Actual(null, expr()));
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -1843,7 +1850,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
     return
       isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0) // a klammerexpr, not a tuple
+      tupleElements.size() == 1 ? tupleElements.get(0)._expr // a klammerexpr, not a tuple
                                 : new Call(pos, null, "tuple", tupleElements);
   }
 
@@ -2126,7 +2133,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(string2));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(null, string2)));
   }
 
 

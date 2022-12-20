@@ -1374,7 +1374,7 @@ public class AstErrors extends ANY
           "Referenced feature: " + s(f) + " at " + at.show());
   }
 
-  static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
   {
     error(pos,
           "Illegal select clause",

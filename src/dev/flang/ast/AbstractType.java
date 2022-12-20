@@ -688,7 +688,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
-                                       i.generics());
+                                       i.actualTypeParameters());
           }
       }
     if (result.isGenericArgument())

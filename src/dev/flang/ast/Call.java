@@ -55,8 +55,7 @@ public class Call extends AbstractCall
    * parenthesis ("a.b") from a call with parenthesises and an empty actual
    * arguments list ("a.b()").
    */
-  public static final List<Expr> NO_PARENTHESES = new List<>();
-  public static final List<Actual> NO_PARENTHESES_A = new List<>();
+  public static final List<Actual> NO_PARENTHESES = new List<>();
 
 
   /**
@@ -102,7 +101,7 @@ public class Call extends AbstractCall
    * actual generic arguments, set by parser
    */
   public /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
-  public List<AbstractType> generics() { return _generics; }
+  public List<AbstractType> actualTypeParameters() { return _generics; }
 
 
   /**
@@ -169,209 +168,128 @@ public class Call extends AbstractCall
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param n the name of the called feature
    */
   public Call(SourcePosition pos, String n)
   {
-    this(pos, null,n,null, null, NO_PARENTHESES);
+    this(pos, null, n);
   }
 
 
   /**
-   * Constructor
+   * Constructor to read a field in target t
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param t the target of the call, null if none.
    *
-   * @param a
+   * @param n the name of the called feature
    */
-  public Call(SourcePosition pos, String n, List<Expr> a)
+  public Call(SourcePosition pos, Expr t, String n)
   {
-    this(pos, null,n,null, null, a);
+    this(pos, t, n, -1, NO_PARENTHESES);
   }
 
 
   /**
-   * Constructor
+   * Constructor to call feature with name 'n' on target 't' with actual
+   * arguments 'la'.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param t the target of the call, null if none.
    *
-   * @param g
-   *
-   * @param a
-   */
-  public Call(SourcePosition pos, String n, List<AbstractType> g, List<Expr> a)
-  {
-    this(pos, null,n,g,null,a);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t
-   *
-   * @param n
-   *
-   * @param g
+   * @param n the name of the called feature
    *
    * @param la list of actual arguments
-   *
-   * @param a
    */
-  public Call(SourcePosition pos,
-              Expr t, String n, List<AbstractType> g /* NYI: remove! */, List<Actual> la, List<Expr> a /* NYI: remove! */)
+  public Call(SourcePosition pos, Expr t, String n, List<Actual> la)
   {
-    if (la == NO_PARENTHESES_A)
+    this(pos, t, n, -1, la);
+
+    if (PRECONDITIONS) require
+      (la != null);
+  }
+
+
+  /**
+   * Constructor to call feature with name 'n' on target 't' with actual
+   * arguments 'la' with the ability to select from an open generic field.
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param t the target of the call, null if none.
+   *
+   * @param n the name of the called feature
+   *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
+   *
+   * @param la list of actual arguments
+   */
+  public Call(SourcePosition pos, Expr t, String n, int select, List<Actual> la)
+  {
+    if (PRECONDITIONS) require
+      (la != null,
+       select >= -1);
+
+    var a = new List<Expr>();
+    for (var aa : la)
       {
-        a = NO_PARENTHESES;
-      }
-    if (a == null)
-      {
-        a = new List<Expr>();
-        for (var aa : la)
-          {
-            a.add(aa._expr);
-          }
-      }
-    else if (la == null)
-      {
-        la = new List<>();
-        for (var ae : a)
-          {
-            la.add(new Actual(null, ae));
-          }
+        a.add(aa._expr);
       }
     this._pos = pos;
     this._target = t;
     this._name = n;
-    this._select = -1;
-    this._generics = (g == null) ? NO_GENERICS : g;
+    this._select = select;
+    this._generics = NO_GENERICS;
     this._actualsNew = la;
     this._actuals = a;
   }
 
 
   /**
-   * Constructor
+   * Constructor to call field 'n' on target 't' and select an open generic
+   * variant.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param t
+   * @param t the target of the call, null if none.
    *
-   * @param n
+   * @param n the name of the called feature
    *
-   * @param a
-   */
-  public Call(SourcePosition pos,
-              Expr t, String n, List<Expr> a)
-  {
-    this(pos, t, n, null, null, a);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t
-   *
-   * @param n
-   */
-  public Call(SourcePosition pos, Expr t, String n)
-  {
-    this(pos, t, n, -1);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t
-   *
-   * @param n
-   *
-   * @param select
-   */
-  public Call(SourcePosition pos,
-              Expr t, String n, String select)
-  {
-    this._pos = pos;
-    this._target = t;
-    this._name = n;
-    int s = -1;
-    try
-      {
-        s = Integer.parseInt(select);
-        if (CHECKS) check
-          (s >= 0); // parser should not allow negative value
-      }
-    catch (NumberFormatException e)
-      {
-        AstErrors.illegalSelect(pos, select, e);
-      }
-    this._select = s;
-    this._generics = NO_GENERICS;
-    this._actuals = NO_PARENTHESES;
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t
-   *
-   * @param n
-   *
-   * @param select
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
    */
   public Call(SourcePosition pos, Expr t, String n, int select)
   {
-    this._pos = pos;
-    this._target = t;
-    this._name = n;
-    this._select = select;
-    this._generics = NO_GENERICS;
-    this._actuals = NO_PARENTHESES;
+    this(pos, t, n, select, NO_PARENTHESES);
   }
 
 
   /**
-   * Constructor
+   * Constructor for a call whose called feature is already known, typically
+   * because this call is created artificially for some syntactic sugar and not
+   * by parsing source code.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param t
+   * @param t the target of the call, null if none.
    *
-   * @param n
+   * @param calledFeature the called feature, must not be null
    *
-   * @param select
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
-    this._pos = pos;
-    this._name = calledFeature.featureName().baseName();
-    this._select = select;
-    this._generics = NO_GENERICS;
-    this._actuals = NO_PARENTHESES;
-    this._target = t;
+    this(pos, t, calledFeature.featureName().baseName(), select, NO_PARENTHESES);
     this._calledFeature = calledFeature;
-    this._type = null;
   }
 
 
   /**
-   * A call to an anonymous feature declared in an expression.
+   * Constructor for a call to an anonymous feature declared in an expression.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -389,53 +307,87 @@ public class Call extends AbstractCall
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param target the target, "a.b".
+   * @param target the target of the call, null if none.
    *
    * @param anonymous the anonymous feature, which is the wrapper created around
    * the call to "c".
    */
-  public Call(SourcePosition pos,
-              Expr    target,
+  public Call(SourcePosition  pos,
+              Expr            target,
               AbstractFeature anonymous)
   {
-    this._pos = pos;
-    this._target         = target;
-    this._name           = null;
-    this._select        = -1;
-    this._generics       = NO_GENERICS;
-    this._actuals       = Expr.NO_EXPRS;
+    this(pos, target, null, NO_PARENTHESES);
     this._calledFeature = anonymous;
   }
 
 
   /**
-   * Constructor
+   * Constructor to low-level initialize all the fields directly.  This is
+   * currently used to create calls to construct type features.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param name
+   * @param target the target of the call, null if none.
    *
    * @param generics
    *
    * @param actuals
    *
-   * @param target
-   *
    * @param calledFeature
    *
    * @param type
    */
-  public Call(SourcePosition pos,
-              String name, List<AbstractType> generics, List<Expr> actuals, Expr target, AbstractFeature calledFeature, AbstractType type)
+  Call(SourcePosition pos,
+       Expr target,
+       List<Actual> actualsNew,
+       List<AbstractType> generics,
+       List<Expr> actuals,
+       AbstractFeature calledFeature,
+       AbstractType type)
+  {
+    this._pos = pos;
+    this._name = calledFeature.featureName().baseName();
+    this._select = -1;
+    this._generics = generics;
+    this._actualsNew = actualsNew;
+    this._actuals = actuals;
+    this._target = target;
+    this._calledFeature = calledFeature;
+    this._type = type;
+  }
+
+
+  /**
+   * Constructor to low-level initialize all the fields directly.  This is
+   * currently used to create immediate calls 'f.call a' from 'f a'.
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature
+   *
+   * @param actualsNew
+   *
+   * @param generics
+   *
+   * @param actuals
+   *
+   */
+  private Call(SourcePosition pos,
+               Expr target,
+               String name,
+               List<Actual> actualsNew,
+               List<AbstractType> generics,
+               List<Expr> actuals)
   {
     this._pos = pos;
     this._name = name;
     this._select = -1;
     this._generics = generics;
+    this._actualsNew = actualsNew;
     this._actuals = actuals;
     this._target = target;
-    this._calledFeature = calledFeature;
-    this._type = type;
   }
 
 
@@ -461,7 +413,7 @@ public class Call extends AbstractCall
    */
   boolean hasParentheses()
   {
-    return _actuals != NO_PARENTHESES;
+    return _actualsNew != NO_PARENTHESES;
   }
 
 
@@ -598,7 +550,7 @@ public class Call extends AbstractCall
                               thiz);
         Expr t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
         Expr t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
-        Expr result = new Call(pos(), t2, _name, _actuals)
+        Expr result = new Call(pos(), t2, _name, _actualsNew)
           {
             boolean isChainedBoolRHS() { return true; }
           };
@@ -1131,18 +1083,15 @@ public class Call extends AbstractCall
         _calledFeature.arguments().size() == 0 &&
         hasParentheses())
       {
-        // a Function: the result is the first generic argument
-        var funResultType = _type.generics().isEmpty() ? Types.t_ERROR : _type.generics().getFirst();
-        var numFormalArgs = _type.generics().size() - 1;
         result = new Call(pos(),
-                          "call",
-                          NO_GENERICS,
-                          _actuals,
                           this /* this becomes target of "call" */,
-                          res._module.lookupFeature(_type.featureOfType(), FeatureName.get("call", _actuals.size())),
-                          funResultType)
+                          "call",
+                          _actualsNew,
+                          NO_GENERICS,
+                          _actuals)
           .resolveTypes(res, outer);
-        _actuals = NO_PARENTHESES;
+        _actualsNew = NO_PARENTHESES;
+        _actuals = Expr.NO_EXPRS;
       }
     return result;
   }
