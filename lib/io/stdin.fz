@@ -35,73 +35,136 @@ private stdin(
   ) : stdins, effect r is
 
 
-  # for a stdin instance installed in the current environment,
-  # install next instance of Byte_Input_Handler,
-  # 'stdin.env' will provide the new instance.
+  # read a single byte from stdin
   #
-  private next => stdin ip.next mode unit
-
-  nextByte =>
-    next.ip.get
+  byte =>
+    (stdin ip.next mode unit).ip.get
 
 
-  # read n codepoints from stdin
-  # may return less than n bytes if end of file is reached
-  # or error if stdin can not be read right now
-  read(n i32) outcome string
-  pre n >= 0
-  is
-    read_codepoint =>
-      read_codepoint(read_bytes list u8) choice error end_of_file codepoint is
-        match nextByte
-          byte u8 =>
-            bytes := read_bytes ++ [byte]
-            match (strings.fromBytes bytes).codepointsAndErrors.first
-              c codepoint => c
-              e error => if bytes.count >= 4 then e else read_codepoint bytes
-          end_of_file => end_of_file
-          e error => e
+  # an infinite list of either a byte, an end_of_file or an error
+  # Caution!: this list is not immutable since it is constructed lazily by reading from stdin!
+  # you may iterate only once.
+  # Additionally there may be read more from stdin than what is consumed
+  # via this list.
+  # NYI: How can we lessen these imperfections?
+  bytes list (choice u8 end_of_file error) is
+    list byte ()->bytes
 
-      read_codepoint (lists.empty u8)
 
-    if n = 0
-      ""
-    else
-      match read_codepoint
-        error error => error
-        end_of_file => ""
-        c codepoint =>
-          match read n-1
-            str string => c + str
-            error error => error
+  # read one codepoint from stdin
+  # returns end_of_file if stdin is depleted or
+  # error in case of an error while reading the codepoint
+  #
+  codepoint => codepoint0
+
+
+  # a - possibly infinite - list of codepoints read from stdin
+  # Caution!: this list is not immutable since it is constructed lazily by reading from stdin!
+  # you may iterate only once.
+  # Additionally there may be read more from stdin than what is consumed
+  # via this list.
+  # NYI: How can we lessen these imperfections?
+  codepoints list (choice codepoint end_of_file error) is
+    list codepoint0 ()->codepoints
+
+
+  # read n codepoints from stdin or
+  # less if an end_of_file is encountered
+  # while reading
+  #
+  read (n i32) => read0 n
 
 
   # read from stdin until end of line or end of file
-  # returns an error if stdin is already depleted = end of file
-  # NYI read_line should probably filter carriage returns
-  read_line outcome string : character_encodings is
-    any_error := mut (choice error nil) nil
-    got_end_of_file := mut false
+  #
+  read_line => read_line0
 
-    bytes := streams.generate u8 (() ->
-      match nextByte
-        b u8 => if b != ascii.lf then b else nil
-        end_of_file end_of_file => got_end_of_file <- true; nil
-        error error => any_error <- error; nil)
-    #  asArray, since we don't want this to be lazy
-      .asArray
 
-    match any_error.get
-      error error => error
-      * =>
-        if got_end_of_file.get & bytes.length = 0
-          error "end of file"
-        else
-          strings.fromBytes bytes
+
+private read_line0 outcome string : character_encodings is
+  stdin.codepoints
+    .reduce_or_error "" (r, t ->
+      match t
+        c codepoint =>
+          if c.val = ascii.lf.as_u32 || c.val = ascii.cr.as_u32
+            if r.isEmpty # we read nothing yet, so we just skip the lf/cr
+              r
+            else
+              # NYI explicit tagging should not be necessary #671
+              tmp outcome string := r
+              abort tmp
+          else
+            r + c
+        end_of_file =>
+          # NYI explicit tagging should not be necessary #671
+          tmp outcome string := r
+          abort tmp
+        e error =>
+          # NYI explicit tagging should not be necessary #671
+          tmp outcome string := e
+          abort tmp
+    )
+
+
+# read n codepoints from stdin
+# may return less than n bytes if end of file is reached
+# or error if stdin can not be read right now
+private read0(n i32) outcome string
+pre n >= 0
+is
+  (1..n)
+    .reduce_or_error "" (r, t ->
+      match codepoint0
+        c codepoint =>
+          r + c
+        end_of_file =>
+          # NYI explicit tagging should not be necessary #671
+          tmp outcome string := r
+          abort tmp // return what we read so far
+        e error =>
+          # NYI explicit tagging should not be necessary #671
+          o outcome string := e
+          abort o   // return only the error, discarding what we read so far
+      )
+
+
+# try reading a codepoint from stdin
+private codepoint0 choice codepoint end_of_file error is
+  match stdin.byte
+    b u8 =>
+      match codepoints.num_utf8_bytes b
+        n i32 =>
+          rest := (2..n)
+            # NYI use reduce_or_error once outcome is open generic
+            .reduce (choice (Sequence u8) end_of_file error) [b] (r,t ->
+              match r
+                seq Sequence u8 =>
+                  match stdin.byte
+                    b u8 => seq ++ [b]
+                    end_of_file =>
+                      # NYI explicit tagging should not be necessary #671
+                      tmp choice (Sequence u8) end_of_file error := end_of_file
+                      abort tmp
+                    e error =>
+                      # NYI explicit tagging should not be necessary #671
+                      tmp choice (Sequence u8) end_of_file error := e
+                      abort tmp
+                * => fuzion.std.panic "should not be possible"
+              )
+          match rest
+            l Sequence u8 => strings.fromBytes l
+                                    .asCodepoints
+                                    .first
+            end_of_file => end_of_file
+            e error => e // error occurred while reading the rest of utf8 bytes
+        e error => e     // first byte is not the start of a utf8 codepoint
+    end_of_file => end_of_file
+    e error => e         // not even single byte could be read from stdin
+
 
 
 # type to indicate an `end of file`
-private end_of_file is
+end_of_file is
 
 
 # short-hand for creating and installing stdin effect
@@ -114,6 +177,7 @@ stdin(h Byte_Input_Handler, f () -> unit) =>
 stdin =>
   stdins.installDefault
   stdin.env
+
 
 # unit feature providing static helpers
 stdins is
