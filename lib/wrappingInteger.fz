@@ -90,7 +90,7 @@ wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers 
       debug: !underflowOnAdd(other)
   is thiz +° other
 
-  # substraction, with check for overflow
+  # subtraction, with check for overflow
   redef infix -  (other W) W
     pre
       debug: !overflowOnSub(other),

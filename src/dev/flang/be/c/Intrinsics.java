@@ -101,9 +101,6 @@ public class Intrinsics extends ANY
                                 outOrErr(in)
                               ));
         });
-    IntrinsicCode noFileIo = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
-                 CExpr.exit(1));
     put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
         {
           var readingIdent = new CIdent("reading");
@@ -148,21 +145,6 @@ public class Intrinsics extends ANY
             CExpr.iff(CExpr.notEq(writingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
             CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
             errno.castTo("fzT_1i8").ret()
-            );
-        }
-        );
-    put("fuzion.std.fileio.exists"       ,  (c,cl,outer,in) ->
-        {
-          var fileIdent = new CIdent("f");
-          return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent, new CIdent("NULL")),
-            CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
-            // If errno is ENOENT, file/dir does not exist
-            CExpr.iff(CExpr.eq(new CIdent("errno"), new CIdent("ENOENT")), CExpr.int8const(0).ret()),
-            // else return -1 to represent other errors
-            CExpr.int8const(-1).ret()
             );
         }
         );
@@ -401,10 +383,10 @@ public class Intrinsics extends ANY
         "i16.infix =="         ,
         "i32.infix =="         ,
         "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.#type_STATIC.equality",
-        "i16.#type_STATIC.equality",
-        "i32.#type_STATIC.equality",
-        "i64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.#type.equality",
+        "i16.#type.equality",
+        "i32.#type.equality",
+        "i64.#type.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.infix !="          ,
         "i16.infix !="         ,
         "i32.infix !="         ,
@@ -475,10 +457,10 @@ public class Intrinsics extends ANY
         "u16.infix =="         ,
         "u32.infix =="         ,
         "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.#type_STATIC.equality",
-        "u16.#type_STATIC.equality",
-        "u32.#type_STATIC.equality",
-        "u64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.#type.equality",
+        "u16.#type.equality",
+        "u32.#type.equality",
+        "u64.#type.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.infix !="          ,
         "u16.infix !="         ,
         "u32.infix !="         ,
@@ -543,8 +525,8 @@ public class Intrinsics extends ANY
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.infix =="         ,
         "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.#type_STATIC.equality",
-        "f64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.#type.equality",
+        "f64.#type.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix !="         ,
         "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <"          ,

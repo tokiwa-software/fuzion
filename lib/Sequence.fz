@@ -72,12 +72,14 @@ Sequence(T type) ref is
   count => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
-  # get the first element of this Sequence, panic if Sequence is empty
+  # get the first element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   first
     pre
       debug: !isEmpty
-    => asList.forceHead
+    => asList.head.get
 
 
   # get the first element of this Sequence or default if sequence is empty
@@ -87,7 +89,9 @@ Sequence(T type) ref is
       if isEmpty then default else first
 
 
-  # get the last element of this Sequence, panic if Sequence is empty
+  # get the last element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite Sequence.
@@ -387,6 +391,22 @@ Sequence(T type) ref is
   indexed(I (hasInterval I).type, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
+
+
+  # group the elements of this sequence by a key of type K
+  #
+  # f determines the key of an element
+  #
+  group_by(K (hasHash K).type, f T -> K) map K (Sequence T) is
+    # NYI It should be possible to choose the map implementation that is used.
+    res := CTrie K (Sequence T)
+    for_each (x ->
+      key := f x
+      match res[key]
+        nil => res.add key [x]
+        s Sequence T => res.add key (s ++ [x])
+      )
+    res
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring

@@ -145,8 +145,8 @@ public class C extends ANY
 
 
     /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a refernce). See FUIR.acess*().
+     * Perform an assignment of a value to a field in tvalue. The type of tvalue
+     * might be dynamic (a reference). See FUIR.access*().
      */
     public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
     {
@@ -331,7 +331,7 @@ public class C extends ANY
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
     }
 
 
@@ -495,7 +495,7 @@ public class C extends ANY
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
-    _ai = new AbstractInterpreter(_fuir, new CodeGen());
+    _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
@@ -851,7 +851,7 @@ public class C extends ANY
            :  res;
       }
 
-    return new Pair(res, CStmnt.seq(ol));
+    return new Pair<>(res, CStmnt.seq(ol));
   }
 
 
@@ -1102,9 +1102,6 @@ public class C extends ANY
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
           {
-            var target = _types.isScalar(vcl)
-              ? cur
-              : cur.field(_names.fieldName(_fuir.clazzArg(vcl, ai)));
             l.add(assign(CIdent.arg(ai), a.get(aii), at));
                           aii = aii + 1;
           }

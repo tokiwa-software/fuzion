@@ -465,7 +465,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalize(AbstractFeature f)
   {
     if (// an outer clazz of value type is not normalized (except for
-        // univers, which was done already).
+        // universe, which was done already).
         !isRef() ||
 
         // optimization: if feature() is already f, there is nothing to
@@ -1177,20 +1177,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public String toString2()
   {
     return "CLAZZ:" + this._type + (this._outer != null ? " in " + this._outer : "");
-  }
-
-
-  /**
-   * Check if a value of clazz other can be assigned to a field of this clazz.
-   *
-   * @other the value to be assigned to a field of type this
-   *
-   * @return true iff other can be assigned to a field of type this.
-   */
-  @Deprecated(forRemoval = true) // NYI only isDirectlyAssignableFrom should be used after AST
-  public boolean isAssignableFrom(Clazz other)
-  {
-    return this._type.isAssignableFrom(other._type);
   }
 
 

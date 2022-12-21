@@ -77,7 +77,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
   #
-  type.equality(a, b string) =>
+  fixed type.equality(a, b string) =>
     ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
       & a.utf8.count ≟ b.utf8.count
 
@@ -100,6 +100,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
 
 
   # create hash code from a string
+  #
   hash u64 is
     shL := u64 13
     shR := u64 51
@@ -371,23 +372,57 @@ string ref : has_equality, hasHash string, ordered string, strings is
           fuzion.std.panic "string.codepointsAndErrors: missing case for $b1"
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
   #
-  substring(from, to i32) ref : string
+  substring(from, to i32) string
+    pre
+      debug: 0 <= from <= to <= string.this.byteLength
+  is
+    # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
+    # ref : string
+    #   redef utf8 Sequence u8 is
+    #     string.this.utf8.slice from to
+    substring0 from to
+
+
+  # create substring of the string consisting of bytes from (inclusive) .. to (exclusive).
+  #
+  private substring0(from, to i32) ref : string
     pre
       debug: 0 <= from <= to <= string.this.byteLength
   is
     redef utf8 Sequence u8 is
-      string.this.utf8.slice(from, to)
+      string.this.utf8.slice from to
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. byteLength (exclusive).
   #
   substring(from i32) string
     pre
       debug: 0 <= from <= byteLength
   is
     substring from byteLength
+
+
+  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
+  #
+  private substring_codepoint(from, to i32) string
+    pre
+      debug: 0 <= from <= to <= string.this.codepointLength
+  is
+    codepointsArray
+      .slice from to
+      .map string (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
+      .fold strings.concat
+
+
+  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  #
+  private substring_codepoint(from i32) string
+    pre
+      debug: 0 <= from <= codepointLength
+  is
+    substring from codepointLength
 
 
   # check if this string starts with given prefix
@@ -429,9 +464,13 @@ string ref : has_equality, hasHash string, ordered string, strings is
         s.find_last substring (skip + (found.get 0))
 
 
-  # replace all occurances of f within l by r
+  # replace all occurrences of old by new
   #
-  replace (f, r string) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8)
+  replace (old, new string) => strings.fromBytes ((searchableSequence utf8).replace old.utf8 new.utf8)
+
+
+  # replace the first n occurrences of old by new
+  replace(old, new string, n u64) => strings.fromBytes ((searchableSequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -439,7 +478,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   contains (substring string) => find(substring).exists
 
 
-  # count number of occurances of given 'substring' in this string
+  # count number of occurrences of given 'substring' in this string
   #
   count (substring string) =>
     (searchableSequence utf8).countMatches substring.utf8
@@ -550,6 +589,51 @@ string ref : has_equality, hasHash string, ordered string, strings is
       (s * missing) + string.this
 
 
+  # Splits this string at codepoints where p is true and returns the result as a
+  # list of strings. In case multiple, neighboring codepoints in the string are
+  # evaluated to be true by p, this does not cause empty strings to be added to
+  # the result list, rather this case is being treated as being one big separator.
+  #
+  fields_func(p codepoint -> bool) list string is
+    state_wrapper(l list string, in_run bool, start_pos, current_pos i32) is
+
+    i := state_wrapper (lists.empty string) false 0 0
+    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+      match p c
+        TRUE =>
+          match r.in_run
+            TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+        FALSE =>
+          match r.in_run
+            TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper r.l false r.start_pos (r.current_pos + 1))
+
+    match last_state.in_run
+      TRUE => last_state.l
+      FALSE => last_state.l ++ [(substring_codepoint last_state.start_pos)]
+
+
+  # Cuts out the first appearance of the string sep from this string, in other words,
+  # returns a tuple of two strings and a bool, the first string is the substring before
+  # the first appreance of sep, the second string is the substring after the first
+  # appearance of sep. The bool result is true iff sep appears in this string.
+  #
+  # If sep does not appear in this string at all, return this string as the first string,
+  # the empty string as the second, and false as the bool.
+  #
+  cut(sep string) tuple string string bool is
+    match find sep
+      nil => (string.this, "", false)
+      i i32 =>
+        l := byteLength
+        sepl := sep.byteLength
+
+        before := strings.fromBytes (utf8.slice 0 i)
+        after := strings.fromBytes (utf8.slice (i + sepl) l)
+        (before, after, true)
+
+
 # strings -- unit type defining features related to string but not
 # requiring an instance
 #
@@ -575,9 +659,24 @@ strings is
 
   # concat strings a and b by
   # concatenating their byte sequences.
+  #
   concat(a, b string) string is
     ref : string
       utf8 Sequence u8 is a.utf8 ++ b.utf8
+
+
+  # Takes a sequence of strings and concatenates its elements, while adding the separator
+  # sep in between its elements. In case an empty sequence is given, returns the empty string.
+  #
+  join(elems Sequence string, sep string) string is
+    if elems.isEmpty
+      ""
+    else
+      for
+        elem in elems
+        res := elem, concat (concat res sep) elem
+      else
+        res
 
 
   # create string by concatenating the results of $a[a.indices].

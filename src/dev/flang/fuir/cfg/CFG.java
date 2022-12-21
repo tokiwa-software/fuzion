@@ -228,7 +228,6 @@ public class CFG extends ANY
     put("fuzion.std.fileio.read"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.get_file_size", (cfg, cl) -> { } );
     put("fuzion.std.fileio.write"        , (cfg, cl) -> { } );
-    put("fuzion.std.fileio.exists"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.move"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.create_dir"   , (cfg, cl) -> { } );
@@ -290,10 +289,10 @@ public class CFG extends ANY
     put("i16.infix =="                   , (cfg, cl) -> { } );
     put("i32.infix =="                   , (cfg, cl) -> { } );
     put("i64.infix =="                   , (cfg, cl) -> { } );
-    put("i8.#type_STATIC.equality"       , (cfg, cl) -> { } );
-    put("i16.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("i32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("i64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("i8.#type.equality"       , (cfg, cl) -> { } );
+    put("i16.#type.equality"      , (cfg, cl) -> { } );
+    put("i32.#type.equality"      , (cfg, cl) -> { } );
+    put("i64.#type.equality"      , (cfg, cl) -> { } );
     put("i8.infix !="                    , (cfg, cl) -> { } );
     put("i16.infix !="                   , (cfg, cl) -> { } );
     put("i32.infix !="                   , (cfg, cl) -> { } );
@@ -364,10 +363,10 @@ public class CFG extends ANY
     put("u16.infix =="                   , (cfg, cl) -> { } );
     put("u32.infix =="                   , (cfg, cl) -> { } );
     put("u64.infix =="                   , (cfg, cl) -> { } );
-    put("u8.#type_STATIC.equality"       , (cfg, cl) -> { } );
-    put("u16.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("u32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("u64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("u8.#type.equality"       , (cfg, cl) -> { } );
+    put("u16.#type.equality"      , (cfg, cl) -> { } );
+    put("u32.#type.equality"      , (cfg, cl) -> { } );
+    put("u64.#type.equality"      , (cfg, cl) -> { } );
     put("u8.infix !="                    , (cfg, cl) -> { } );
     put("u16.infix !="                   , (cfg, cl) -> { } );
     put("u32.infix !="                   , (cfg, cl) -> { } );
@@ -432,8 +431,8 @@ public class CFG extends ANY
     put("f64.infix **"                   , (cfg, cl) -> { } );
     put("f32.infix =="                   , (cfg, cl) -> { } );
     put("f64.infix =="                   , (cfg, cl) -> { } );
-    put("f32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("f64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("f32.#type.equality"      , (cfg, cl) -> { } );
+    put("f64.#type.equality"      , (cfg, cl) -> { } );
     put("f32.infix !="                   , (cfg, cl) -> { } );
     put("f64.infix !="                   , (cfg, cl) -> { } );
     put("f32.infix <"                    , (cfg, cl) -> { } );

@@ -34,19 +34,17 @@ public fileio is
   public read(
               # the (relative or absolute) file name, using platform specific path separators
               path string) outcome (array u8) is
-    match get_file_size path
-      num i64 =>
-        file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
-        arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
-        match open arr (i8 0)
-          fd i64 =>
-            read_result := read fd file.internalArray.data file.length
-            if read_result == 0
-              file
-            else
-              error "error number: $read_result"
-          err_open error => err_open
-      err_size error => err_size
+    (get_file_size path).bind (array u8) (num->
+      file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
+      arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
+
+      (open arr (i8 0)).bind (array u8) (fd->
+        read_result := read fd file.internalArray.data file.length
+        if read_result == 0
+          file
+        else
+          error "error number: $read_result"))
+
 
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
   # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
@@ -92,14 +90,12 @@ public fileio is
                # the content of the file as an u8 array
                content array u8) outcome unit is
     arr := fuzion.sys.c_string path
-    match open arr (i8 1)
-      fd i64 =>
-        write_results := write fd content.internalArray.data content.length
-        if write_results == 0
-          unit
-        else
-          error "error number: $write_results"
-      open_error error => open_error
+    (open arr (i8 1)).bind unit (fd->
+      write_results := write fd content.internalArray.data content.length
+      if write_results == 0
+        unit
+      else
+        error "error number: $write_results")
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
   # returns i8 0 in case of success
@@ -112,31 +108,6 @@ public fileio is
                 content Object,
                 # the length of the internal array representing the content
                 content_length i32) i8 is intrinsic
-
-
-  # checks if the file/directory in the path exists or not
-  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
-  #
-  public exists(
-                # the (relative or absolute) file/directory name, using platform specific path separators
-                path string) outcome bool is
-    arr := fuzion.sys.c_string path
-    rslt := exists arr unit
-    if rslt = 1
-      true
-    else if rslt = 0
-      false
-    else
-      error "an error occurred while performing exists operation on the following file/dir: \"$path\""
-
-  # intrinsic that checks the existence of the file/directory in the path
-  # it returns 1 in case the file/dir exists, 0 in case it does not exist and -1 in case of an error
-  #
-  private exists(
-                 # the internal array data representing the file/directory path in bytes
-                 path Object,
-                 # dummy parameter for overloading
-                 _ unit) i8 is intrinsic
 
 
   # deletes the file/dir found in the path
@@ -217,7 +188,7 @@ public fileio is
   stats(
         # the internal array data representing the file/dir path in bytes
         path Object,
-        # the iternal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+        # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
         meta_data Object) bool is intrinsic
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path

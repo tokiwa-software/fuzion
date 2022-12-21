@@ -238,6 +238,14 @@ public class LibraryFeature extends AbstractFeature
     return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
   }
 
+  /**
+   * the modifiers of this feature
+   */
+  public int modifiers()
+  {
+    return _libModule.featureIsFixed(_index) ? Consts.MODIFIER_FIXED : 0;
+  }
+
 
   /**
    * Find the outer feature of this festure.

@@ -443,7 +443,7 @@ public class Interpreter extends ANY
                 for (int i = 0; !matches && i < nt; i++)
                   {
                     Clazz caseClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId + i);
-                    matches = caseClazz.isAssignableFrom(subjectClazz);
+                    matches = caseClazz.isDirectlyAssignableFrom(subjectClazz);
                   }
               }
             if (matches)

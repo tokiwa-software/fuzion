@@ -446,14 +446,14 @@ public class DFA extends ANY
           yield null;
         }
         };
-      return new Pair(r, o);
+      return new Pair<>(r, o);
     }
 
 
     /**
      * Perform a match on value subv.
      */
-    public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
+    public Pair<Value, Unit> match(AbstractInterpreter<Value,Unit> ai, int cl, int c, int i, Value subv)
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
@@ -500,7 +500,7 @@ public class DFA extends ANY
                 }
             }
         }
-      return new Pair(r, _unit_);
+      return new Pair<>(r, _unit_);
     }
 
 
@@ -819,7 +819,7 @@ public class DFA extends ANY
     do
       {
         var s = vs.toArray(new Call[vs.size()]);
-        _newCalls = new TreeSet();
+        _newCalls = new TreeSet<>();
         for (var c : s)
           {
             if (_reportResults && _options.verbose(4))
@@ -863,7 +863,7 @@ public class DFA extends ANY
             i.setField(this, or, c._target);
           }
 
-        var ai = new AbstractInterpreter(_fuir, new Analyze(c));
+        var ai = new AbstractInterpreter<Value,Unit>(_fuir, new Analyze(c));
         var r = ai.process(c._cc, c._pre);
         if (r._v0 != null)
           {
@@ -919,7 +919,6 @@ public class DFA extends ANY
     put("fuzion.std.fileio.read"         , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.std.fileio.get_file_size", cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.std.fileio.write"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.std.fileio.exists"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.std.fileio.delete"       , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.move"         , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.create_dir"   , cl -> cl._dfa._bool );
@@ -982,10 +981,10 @@ public class DFA extends ANY
     put("i16.infix =="                   , cl -> cl._dfa._bool );
     put("i32.infix =="                   , cl -> cl._dfa._bool );
     put("i64.infix =="                   , cl -> cl._dfa._bool );
-    put("i8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
-    put("i16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
-    put("i32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
-    put("i64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("i8.#type.equality"       , cl -> cl._dfa._bool );
+    put("i16.#type.equality"      , cl -> cl._dfa._bool );
+    put("i32.#type.equality"      , cl -> cl._dfa._bool );
+    put("i64.#type.equality"      , cl -> cl._dfa._bool );
     put("i8.infix !="                    , cl -> cl._dfa._bool );
     put("i16.infix !="                   , cl -> cl._dfa._bool );
     put("i32.infix !="                   , cl -> cl._dfa._bool );
@@ -1056,10 +1055,10 @@ public class DFA extends ANY
     put("u16.infix =="                   , cl -> cl._dfa._bool );
     put("u32.infix =="                   , cl -> cl._dfa._bool );
     put("u64.infix =="                   , cl -> cl._dfa._bool );
-    put("u8.#type_STATIC.equality"       , cl -> cl._dfa._bool );
-    put("u16.#type_STATIC.equality"      , cl -> cl._dfa._bool );
-    put("u32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
-    put("u64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("u8.#type.equality"       , cl -> cl._dfa._bool );
+    put("u16.#type.equality"      , cl -> cl._dfa._bool );
+    put("u32.#type.equality"      , cl -> cl._dfa._bool );
+    put("u64.#type.equality"      , cl -> cl._dfa._bool );
     put("u8.infix !="                    , cl -> cl._dfa._bool );
     put("u16.infix !="                   , cl -> cl._dfa._bool );
     put("u32.infix !="                   , cl -> cl._dfa._bool );
@@ -1124,8 +1123,8 @@ public class DFA extends ANY
     put("f64.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.infix =="                   , cl -> cl._dfa._bool );
     put("f64.infix =="                   , cl -> cl._dfa._bool );
-    put("f32.#type_STATIC.equality"      , cl -> cl._dfa._bool );
-    put("f64.#type_STATIC.equality"      , cl -> cl._dfa._bool );
+    put("f32.#type.equality"      , cl -> cl._dfa._bool );
+    put("f64.#type.equality"      , cl -> cl._dfa._bool );
     put("f32.infix !="                   , cl -> cl._dfa._bool );
     put("f64.infix !="                   , cl -> cl._dfa._bool );
     put("f32.infix <"                    , cl -> cl._dfa._bool );

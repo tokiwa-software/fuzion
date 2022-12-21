@@ -190,7 +190,7 @@ public class FUIR extends IR
   public FUIR(Clazz main)
   {
     _main = main;
-    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
@@ -1437,7 +1437,7 @@ hw25 is
    *
    * @param c code block containing the access
    *
-   * @param ix index of the acces
+   * @param ix index of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.

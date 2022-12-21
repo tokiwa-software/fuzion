@@ -72,21 +72,35 @@ is
         c1 Cons => ((searchablelist c1.tail).find l) >>= n -> n + 1
 
 
-  # replace all occurances of f by r
+  # replace all occurrences of old by new
   #
-  replace (f, r list A) =>
+  replace (old, new list A) => replace old new nil from nil
 
-    # tail recursive helper
-    #
-    repl (h,       # the head part of from with f already replaced by r
-          t list A # the tail that still needs to be searched for f
-         ) list A
-    is
-      match (searchablelist t).find f
-        nil   => h ++ t
-        n i32 => repl h++(t.take n)++r (t.drop n+f.count)
 
-    repl nil from
+  # replace the first n occurrences of old by new
+  #
+  replace (old, new list A, n u64) => replace old new nil from n
+
+
+  # tail recursive helper for the replace features
+  #
+  private replace (old, new,
+                   already_replaced,        # the head part with old already replaced by new
+                   to_be_replaced list A,   # the tail that still needs to be searched for old
+                   limit option u64) list A
+  is
+    match (searchablelist to_be_replaced).find old
+      nil   => already_replaced ++ to_be_replaced
+      n i32 =>
+        # NYI: #637: perhaps make it possible to do
+        #     if limit ≟ option 0
+        # here.
+        if (limit.map (v -> v ≟ (u64 0))).get false
+          already_replaced ++ to_be_replaced
+        else
+          a := already_replaced ++ (to_be_replaced.take n) ++ new
+          b := to_be_replaced.drop (n + old.count)
+          replace old new a b (limit >>= (l -> l - 1))
 
 
   # get the number of matches of l

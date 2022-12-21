@@ -117,7 +117,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    type.equality(a, b test_equals_types.Has_color) =>
+    fixed type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -148,6 +148,6 @@ test_equals_types is
 
     # equality relation comparing color and strings
     #
-    type.equality(a, b test_equals_types.colored_text) =>
+    fixed type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
        string.type.equality       a b   )

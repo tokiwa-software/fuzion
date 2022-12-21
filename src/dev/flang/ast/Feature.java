@@ -680,7 +680,7 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p._kind != Impl.Kind.Field      ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
+      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME))
       : i;
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
@@ -1150,7 +1150,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS));
+    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME));
   }
 
 
@@ -1766,10 +1766,11 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call  action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
-            public void  action(If             i, AbstractFeature outer) { i.checkTypes();                }
-            public Expr  action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);                   }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c;       }
+            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                      }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i;       }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return ((Type)t).checkConstraints(pos()); }
           });
         checkTypes(res);
 

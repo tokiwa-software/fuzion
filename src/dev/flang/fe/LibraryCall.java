@@ -139,7 +139,7 @@ public abstract class LibraryCall extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    var i = generics().listIterator();
+    var i = actualTypeParameters().listIterator();
     while (i.hasNext())
       {
         i.set(i.next().visit(v, outer));
@@ -161,7 +161,7 @@ public abstract class LibraryCall extends AbstractCall
 
 
 
-  public List<AbstractType> generics() { return _generics; }
+  public List<AbstractType> actualTypeParameters() { return _generics; }
   public AbstractFeature calledFeature() { return _calledFeature; }
   public Expr target() { return _target; }
   public List<Expr> actuals() { return _actuals; }
@@ -190,7 +190,7 @@ public abstract class LibraryCall extends AbstractCall
             ? ""
             : t.toString() + ".")
       + calledFeature().featureName().baseName()
-      + (generics().isEmpty() ? "" : "<" + generics() + ">")
+      + (actualTypeParameters().isEmpty() ? "" : "<" + actualTypeParameters() + ">")
       + (actuals().isEmpty() ? "" : "(" + actuals() +")")
       //+ (select() < 0        ? "" : "." + select())
       ;

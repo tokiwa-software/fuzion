@@ -347,8 +347,9 @@ SHELL_SCRIPTS = \
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
-.PHONY: without-java-modules
-without-java-modules: $(FUZION_BASE) $(FUZION_FILES)
+# everything but the java modules
+.PHONY: no-java
+no-java: $(FUZION_BASE) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -947,6 +948,7 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
+	rm -rf $@
 	cp -rf $^ $@
 	chmod +x $@/*.sh
 

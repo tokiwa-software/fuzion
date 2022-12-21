@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -296,10 +295,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result =
       this  .compareTo(actual               ) == 0 ||
       actual.compareTo(Types.resolved.t_void) == 0 ||
-
-      // NYI: CLEANUP: #736: This clumsy workaround could be avoided if t.asThisType() == t for choice types.
-      actual.isThisType() && isChoice() && this.compareTo(actual.asRef().asValue()) == 0 ||
-
       this   == Types.t_ERROR                      ||
       actual == Types.t_ERROR;
     if (!result && !isGenericArgument() && isRef() && actual.isRef())
@@ -447,7 +442,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param genericsToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics to feat that shold replace the
+   * @param actualGenerics the actual generics to feat that should replace the
    * formal generics found in genericsToReplace.
    *
    * @return a new list of types with all formal generic arguments from this
@@ -692,7 +687,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
-                                       i.generics());
+                                       i.actualTypeParameters());
           }
       }
     if (result.isGenericArgument())
@@ -971,8 +966,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a given type t, get the type of t's type feature. E.g., for t==string,
-   * this will return the type of string.type, which is 'string.#type_STATIC
-   * string'
+   * this will return the type of string.type, which is 'string.#type string'
    *
    * @param res Resolution instance used to resolve the type feature that might
    * need to be created.
@@ -1018,12 +1012,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var tf = tt.featureOfType();
         if (dependsOnGenerics() &&
-            tf.isStaticTypeFeature() &&
+            tf.isTypeFeature() &&
             target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
           {
             if (isGenericArgument())
               {
-                if (genericArgument().typeParameter() == tf.typeFeaturesNonStaticParent().arguments().get(0))
+                if (genericArgument().typeParameter() == tf.arguments().get(0))
                   { // a call of the form 'T.f x' where 'f' is declared as 'abc.type.f(arg THIS_TYPE)', so replace 'THIS_TYPE' by 'T'.
                     // NYI: replace THIS_TYPE recursively in frmlT, e.g., in case formT is 'Option THIS_TYPE'.
                     result = new Type(tc.pos(), new Generic(tc.calledFeature()));
@@ -1115,6 +1109,48 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
+
+
+  /**
+   * Check if contraints of this type are satisfied.
+   * Returns itself on success or t_ERROR if constraints are not met.
+   */
+  // NYI Can this result in an infinite recursion?
+  public AbstractType checkConstraints(SourcePosition pos)
+  {
+    // NYI caching?
+    var result = this;
+    if (!isGenericArgument())
+      {
+        // NYI deduplicate this code?: also in Call.checkTypes()
+
+        // Check that generics match formal generic constraints
+        var fi = featureOfType().generics().list.iterator();
+        var gi = generics().iterator();
+        while (fi.hasNext() &&
+              gi.hasNext()    ) // NYI: handling of open generic arguments
+          {
+            var f = fi.next();
+            var g = gi.next();
+            g.checkConstraints(pos);
+            if (compareTo(f.constraint()) != 0)
+              {
+                f.constraint().checkConstraints(pos);
+              }
+
+            if (CHECKS) check
+              (Errors.count() > 0 || f != null && g != null);
+            if (f != null && g != null &&
+                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
+              {
+                AstErrors.incompatibleActualGeneric(pos, f, g);
+                result = Types.t_ERROR;
+              }
+          }
+      }
+    return result;
+  }
+
 
 }
 
