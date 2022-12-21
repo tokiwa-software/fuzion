@@ -242,11 +242,21 @@ public class Intrinsics extends ANY
           try
             {
               int bytesRead = _openStreams_.get(args.get(1).i64Value()).read(byteArr);
-              return args.get(3).i32Value() == bytesRead ? new i8Value(0) : new i8Value(-1);
+
+              if (args.get(3).i32Value() != bytesRead)
+                {
+                  if (bytesRead == -1)
+                    {
+                      // no more data to read due to end of file
+                      return new i64Value(0);
+                    }
+                }
+
+              return new i64Value(bytesRead);
             }
           catch (Exception e)
             {
-              return new i8Value(-1);
+              return new i64Value(-1);
             }
         });
     put("fuzion.std.fileio.get_file_size", (interpreter, innerClazz) -> args ->

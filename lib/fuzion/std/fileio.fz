@@ -45,6 +45,23 @@ public fileio is
           error "error number: $read_result"))
 
 
+  # reads n bytes of a file opened as fd
+  #
+  # in case the outcome is an array, it may be shorter than n. this means the end of file
+  # has been reached.
+  #
+  read(fd i64, n u64) outcome (array u8) is
+    buf := array n.as_i32 i->(u8 0)
+    res := read fd buf.internalArray.data buf.length
+
+    if res < 0
+      error "unspecified read error: {res}"
+    else if res < n.as_i64 || res = n.as_i64
+      (buf.slice 0 res.as_i32).asArray
+    else
+      error "read more than expected"
+
+
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
   # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
   #
@@ -54,7 +71,7 @@ public fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array Object,
                # the length of the array that represents the file bytes
-               file_array_length i32) i8 is intrinsic
+               file_array_length i32) i64 is intrinsic
 
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
