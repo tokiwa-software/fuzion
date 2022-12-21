@@ -32,18 +32,13 @@ import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
@@ -55,7 +50,6 @@ import dev.flang.mir.MIR;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
-import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -94,6 +88,13 @@ public class LibraryModule extends Module
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * The base index of this module. When converting local indices to global
+   * indices, the _globalBase will be added.
+   */
+  final int _globalBase;
 
 
   /**
@@ -166,10 +167,11 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
   {
     super(dependsOn);
 
+    _globalBase = globalBase;
     _fe = fe;
     _mir = null;
     _data = data;
@@ -208,7 +210,7 @@ public class LibraryModule extends Module
 
   /**
    * Get the ModuleRef instance with given index.  ModuleRef instances refer to
-   * other modules that this module depennds on.
+   * other modules that this module depends on.
    */
   ModuleRef moduleRef(int offset)
   {
@@ -222,11 +224,21 @@ public class LibraryModule extends Module
 
 
   /**
-   * NYI: Convert local index of this module into global index.
+   * Convert local index of this module into global index.
    */
   int globalIndex(int index)
   {
-    return index;
+    if (PRECONDITIONS) require
+      (0 < index,
+       index < _data.limit());
+
+    var result = _globalBase + index;
+
+    if (POSTCONDITIONS) ensure
+      (_globalBase - FrontEnd.GLOBAL_INDEX_OFFSET <  result - FrontEnd.GLOBAL_INDEX_OFFSET,
+       result      - FrontEnd.GLOBAL_INDEX_OFFSET <= Integer.MAX_VALUE                    );
+
+    return result;
   }
 
 
@@ -282,9 +294,9 @@ public class LibraryModule extends Module
    *
    * @param offset the offset in data()
    *
-   * @return the LibraryFeature declared at offset in this module.
+   * @return the feature declared at offset in this module.
    */
-  LibraryFeature libraryFeature(int offset)
+  AbstractFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -302,7 +314,9 @@ public class LibraryModule extends Module
         if (CHECKS) check
           (mr != null);
 
-        return mr._module.libraryFeature(offset - mr._offset);
+        return mr._module != null
+                ? mr._module.libraryFeature(offset - mr._offset)
+                : Types.f_ERROR;
       }
   }
 
@@ -427,7 +441,6 @@ public class LibraryModule extends Module
             if (CHECKS) check
               (k >= 0);
             var feature = libraryFeature(typeFeature(at));
-            var makeRef = typeIsRef(at);
             var generics = Type.NONE;
             if (k > 0)
               {
@@ -442,7 +455,9 @@ public class LibraryModule extends Module
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
+            result = new NormalType(this, at, DUMMY_POS, feature,
+                                    typeValRefOrThis(at),
+                                    generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -789,7 +804,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 00CYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor
+.6+| true  .6+| 1      | byte          | 0FCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -817,9 +832,10 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
+   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -903,6 +919,10 @@ Feature
   boolean featureHasTypeFeature(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0);
+  }
+  boolean featureIsFixed(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
   }
   int featureNamePos(int at)
   {
@@ -1167,7 +1187,7 @@ Type
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
 .4+| tk>=0    | 1      | int           | index of feature of type
-              | 1      | bool          | isRef
+              | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType
               | tk     | Type          | actual generics
               | 1      | Type          | outer type
 |====
@@ -1190,7 +1210,7 @@ Type
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | isRef                                         |
+   *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1258,26 +1278,26 @@ Type
 
     return data().getInt(typeFeaturePos(at));
   }
-  int typeIsRefPos(int at)
+  int typeValRefOrThisPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
     return typeFeaturePos(at) + 4;
   }
-  boolean typeIsRef(int at)
+  int typeValRefOrThis(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    return data().get(typeIsRefPos(at)) != 0;
+    return data().get(typeValRefOrThisPos(at));
   }
   int typeActualGenericsPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    return typeIsRefPos(at) + 1;
+    return typeValRefOrThisPos(at) + 1;
   }
   int typeOuterPos(int at)
   {

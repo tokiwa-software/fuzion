@@ -1,0 +1,26 @@
+
+q.x.b1.print: (expecting qq) qq
+q.x.b2.print: (expecting qq) qq
+q.x.b3.print: (expecting qq) qq
+q.x.b4.print: (expecting qq) qq
+q.x.b5.print: (expecting qq) qq
+r.x.b1.print: (expecting rr) rr
+r.x.b2.print: (expecting rr) rr
+r.x.b3.print: (expecting rr) rr
+r.x.b4.print: (expecting rr) rr
+r.x.b5.print: (expecting rr) rr
+
+q.x.b1.print: (expecting qq) qq
+q.x.b2.print: (expecting qq) qq
+q.x.b3.print: (expecting qq) qq
+q.x.b4.print: (expecting qq) qq
+q.x.b5.print: (expecting qq) qq
+r.x.b3.print: (expecting rr) rr
+instance of Type of 'test_redef_using_fixed.b' with debug
+expecting 'a': instance of 'a'
+expecting 'a': instance of 'a'
+expecting 'b with 2': instance of Type of 'test_redef_using_fixed.b' with 2
+instance of Type of 'test_redef_using_fixed.c'
+expecting 'a.op_implemented: a.op_implemented
+expecting 'b.op_implemented: b.op_implemented
+expecting 'a.op_implemented: a.op_implemented

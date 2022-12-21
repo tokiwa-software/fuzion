@@ -80,7 +80,7 @@ public abstract class AbstractCall extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public abstract List<AbstractType> generics();
+  public abstract List<AbstractType> actualTypeParameters();
   public abstract AbstractFeature calledFeature();
   public abstract Expr target();
   public abstract List<Expr> actuals();

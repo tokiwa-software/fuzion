@@ -190,7 +190,7 @@ public class FUIR extends IR
   public FUIR(Clazz main)
   {
     _main = main;
-    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
@@ -264,7 +264,7 @@ public class FUIR extends IR
         for (var cl : Clazzes.all())
           {
             if (CHECKS) check
-              (cl._type != Types.t_ERROR);
+              (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
             if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
@@ -1435,7 +1435,7 @@ hw25 is
    *
    * @param c code block containing the access
    *
-   * @param ix index of the acces
+   * @param ix index of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
@@ -1486,7 +1486,6 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var outerClazz = clazz(cl);
     var call = (AbstractCall) _codeIds.get(c).get(ix);
     return call.isInheritanceCall();
   }
@@ -1736,11 +1735,11 @@ hw25 is
 
 
   /**
-   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.
    *
-   * @param cl index of a clazz that is a heir of 'Function'.
+   * @param cl index of a clazz that is an heir of 'Function'.
    */
   public int lookupCall(int cl)
   {
@@ -2039,6 +2038,22 @@ hw25 is
 
     var or = clazzOuterRef(cl);
     return clazzResultClazz(or);
+  }
+
+
+  /**
+   * Test is a given clazz is not -1 and stores data.
+   *
+   * @param cl the clazz defining a type, may be -1
+   *
+   * @return true if cl != -1 and not unit or void type.
+   */
+  public boolean hasData(int cl)
+  {
+    return cl != -1 &&
+      !clazzIsUnitType(cl) &&
+      !clazzIsVoidType(cl) &&
+      cl != clazzUniverse();
   }
 
 

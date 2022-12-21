@@ -465,7 +465,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalize(AbstractFeature f)
   {
     if (// an outer clazz of value type is not normalized (except for
-        // univers, which was done already).
+        // universe, which was done already).
         !isRef() ||
 
         // optimization: if feature() is already f, there is nothing to
@@ -908,7 +908,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Check if f might be called dynamically on an instance of this and if so,
-   * look up the actual feature that is called at mark it as used.
+   * look up the actual feature that is called and mark it as used.
    */
   private void lookupIfInstantiated(AbstractFeature f)
   {
@@ -1178,20 +1178,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public String toString2()
   {
     return "CLAZZ:" + this._type + (this._outer != null ? " in " + this._outer : "");
-  }
-
-
-  /**
-   * Check if a value of clazz other can be assigned to a field of this clazz.
-   *
-   * @other the value to be assigned to a field of type this
-   *
-   * @return true iff other can be assigned to a field of type this.
-   */
-  @Deprecated(forRemoval = true) // NYI only isDirectlyAssignableFrom should be used after AST
-  public boolean isAssignableFrom(Clazz other)
-  {
-    return this._type.isAssignableFrom(other._type);
   }
 
 
@@ -1748,7 +1734,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Helper for isInstantiated to check if outer clazz this is a ref and there
    * are heir clazzes of this that are refs and that are instantiated.
    *
-   * @return true iff this is a ref and there exists a heir of this that is
+   * @return true iff this is a ref and there exists an heir of this that is
    * instantiated.
    */
   public boolean hasInstantiatedHeirs()
@@ -2241,7 +2227,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param ft the type that is an open generic
    *
-   * @param fouter the outer feature where ft is used. This might be a heir of
+   * @param fouter the outer feature where ft is used. This might be an heir of
    * _outer.feature() in case ft is the result type of an inherited feature.
    */
   List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)

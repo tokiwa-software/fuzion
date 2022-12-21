@@ -89,17 +89,17 @@ public class Util
     var commentsOfRedefinedFeatures = af
       .redefines()
       .stream()
-      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator()
+      .map(f -> "<br />" + "redefines " + f.qualifiedName() + ":" + "<br />"
         + commentOf(f))
       .collect(Collectors.joining(System.lineSeparator()));
 
-    var result = commentLines
+    var result = Html.processComment(af.qualifiedName(), commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l
         .replaceAll("^#", "")
-        .trim())
-      .collect(Collectors.joining(System.lineSeparator()))
+        .replaceAll("^ ", ""))
+      .collect(Collectors.joining(System.lineSeparator())))
       + commentsOfRedefinedFeatures;
     return result;
   }

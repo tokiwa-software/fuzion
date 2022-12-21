@@ -42,12 +42,17 @@ orderedMap(OK ordered OK .type,
 is
 
   # entry is an index in ks/vs
-
+  #
   entry(i i32) : ordered entry is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
+
+
+  # a sorted array of entries of this map
+  #
   sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence (i -> entry i)).asArray
+
 
   # number of entries in this map
   #

@@ -32,13 +32,26 @@ private read(
   ) : reads, effect r is
 
   # reads all bytes from the file in the path
-  # returns a byte array representing the content of the file if it exists
-  # returns an error in case the file in the path does not exist
+  # returns outcome array u8, a byte array representing the content of the file if the operation was successful
+  # returns an error in case the operation fails
   #
-  read_all(path string) =>
+  read_all(
+          # the (relative or absolute) file name, using platform specific path separators
+          path string) =>
     content := ro.read path
     replace
     content
+
+# short-hand for installing and creating effects
+#
+read_custom(f () -> unit) => read_custom default_read_operation f
+
+# short-hand for installing and creating effects
+#
+read_custom(ro Read_Operation, f () -> unit) =>
+  s := read ro effectMode.new unit
+  s.use0 f
+  unit
 
 # short-hand for accessing read effect in current environment
 #

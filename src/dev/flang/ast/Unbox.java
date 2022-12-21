@@ -57,7 +57,7 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * This this Unbox needed, i.e, not a NOP. This might be a NOP if this is
+   * Is this Unbox needed, i.e, not a NOP. This might be a NOP if this is
    * used as a reference.
    */
   public boolean _needed = false;
@@ -172,14 +172,17 @@ public abstract class Unbox extends Expr
   Expr box(AbstractType frmlT)
   {
     var t = type();
-    if (t.compareTo(Types.resolved.t_void) != 0 &&
-        ((!frmlT.isRef() ||
-          (frmlT.isChoice() &&
-           !frmlT.isAssignableFrom(t) &&
-           frmlT.isAssignableFrom(t.asValue())))))
+    if (t.compareTo(Types.resolved.t_void) != 0 && !frmlT.isRef())
       {
-        this._needed = true;
-        this._type = frmlT;
+        if (t.isThisType())
+          { // we need this to unbox an outer ref even if the type does not change
+            this._needed = true;
+          }
+        else
+          {
+            this._needed = true;
+            this._type = frmlT;
+          }
       }
     return super.box(frmlT);
   }

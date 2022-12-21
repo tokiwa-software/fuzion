@@ -79,7 +79,7 @@ is
                 | nil => nil
 
 
-  # synonyme for infix >>=
+  # synonym for infix >>=
   andThen (f T -> option T) => option.this >>= f
 
 

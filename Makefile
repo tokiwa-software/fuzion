@@ -347,8 +347,9 @@ SHELL_SCRIPTS = \
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
-.PHONY: without-java-modules
-without-java-modules: $(FUZION_BASE) $(FUZION_FILES)
+# everything but the java modules
+.PHONY: no-java
+no-java: $(FUZION_BASE) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -947,6 +948,7 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
+	rm -rf $@
 	cp -rf $^ $@
 	chmod +x $@/*.sh
 
@@ -977,6 +979,7 @@ $(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
 # NYI integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(CLASS_FILES_TOOLS_DOCS)
+	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
 	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 # NYI replace with jwebserver?
@@ -1007,7 +1010,7 @@ run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) 
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
@@ -1023,7 +1026,7 @@ run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JA
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 

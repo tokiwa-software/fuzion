@@ -272,25 +272,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if given value can be assigned to this static type.  In addition to
-   * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
-   * (Current or an outer ref) that might be a value type that is a heir of this
-   * type.
-   *
-   * @param expr the expression to be assigned to a variable of this type.
-   *
-   * @return true iff the assignment is ok.
-   */
-  public boolean isAssignableFrom(Expr expr)
-  {
-    var actlT = expr.type();
-
-    return isAssignableFromOrContainsError(actlT) &&
-      (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
-  }
-
-
-  /**
    * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.
@@ -461,7 +442,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param genericsToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics to feat that shold replace the
+   * @param actualGenerics the actual generics to feat that should replace the
    * formal generics found in genericsToReplace.
    *
    * @return a new list of types with all formal generic arguments from this
@@ -706,7 +687,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
-                                       i.generics());
+                                       i.actualTypeParameters());
           }
       }
     if (result.isGenericArgument())
@@ -937,6 +918,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 result = isRef() ? -1 : 1;
               }
           }
+        if (result == 0)
+          {
+            if (isThisType() ^ other.isThisType())
+              {
+                result = isThisType() ? -1 : 1;
+              }
+          }
         if (isGenericArgument())
           {
             if (result == 0)
@@ -978,8 +966,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a given type t, get the type of t's type feature. E.g., for t==string,
-   * this will return the type of string.type, which is 'string.#type_STATIC
-   * string'
+   * this will return the type of string.type, which is 'string.#type string'
    *
    * @param res Resolution instance used to resolve the type feature that might
    * need to be created.
@@ -1025,12 +1012,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var tf = tt.featureOfType();
         if (dependsOnGenerics() &&
-            tf.isStaticTypeFeature() &&
+            tf.isTypeFeature() &&
             target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
           {
             if (isGenericArgument())
               {
-                if (genericArgument().typeParameter() == tf.typeFeaturesNonStaticParent().arguments().get(0))
+                if (genericArgument().typeParameter() == tf.arguments().get(0))
                   { // a call of the form 'T.f x' where 'f' is declared as 'abc.type.f(arg THIS_TYPE)', so replace 'THIS_TYPE' by 'T'.
                     // NYI: replace THIS_TYPE recursively in frmlT, e.g., in case formT is 'Option THIS_TYPE'.
                     result = new Type(tc.pos(), new Generic(tc.calledFeature()));
@@ -1071,6 +1058,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
+  public abstract AbstractType asThis();
+  public abstract boolean isThisType();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
@@ -1112,6 +1101,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 gs = "(" + gs + ")";
               }
             result = result + " " + gs;
+          }
+        if (isThisType())
+          {
+            result = result + ".this.type";
           }
       }
     return result;

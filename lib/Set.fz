@@ -48,6 +48,12 @@ Set(E (hasEquals E).type) ref : Sequence E is
   add (k E) Set E is abstract
 
 
+  # remove an element k from the set if it exists.
+  # return the same set if it does not exist.
+  #
+  remove (k E) Set E is abstract
+
+
   redef asString =>
     if isEmpty
       "∅"

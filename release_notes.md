@@ -1,4 +1,191 @@
-## 2022-??-??: V0.079dev
+## 202*-**-**: V0.080dev
+
+
+## 2022-12-08: V0.079
+
+- Fuzion language
+
+  - An implicit (empty) else-branch in an if-statement now results in 'unit'.
+
+  - Inheritance for type features:
+
+    Abstract type features using arguments or results of the corresponding type
+    can now be redefined using the actual type. For now (until better syntax is
+    supported) the implicit generic type 'THIS_TYPE' is used in the abstract
+    feature.
+
+  - conflicting argument names as in
+
+      f(i, i i32) is
+
+    now result in an error.
+
+  - prefix, postfix and infix operators can now be declared with type parameters
+    and one (prefix, postfix) or two (infix) value arguments:
+
+      prefix $$(X type, a X) => "type:{X.name} val:$a"
+
+    permits a call '$$x1' if the operator is declared in the current (or outer)
+    feature.  Type parameters in this case are inferred from the actual
+    arguments.
+
+  - A 'match' statement now may have an empty list of cases
+
+  - Syntax improvements in '.type' and '.env' expressions.
+
+  - Updated to support Unicode 15.
+
+  - Disallow declaration of uninitialized fields as in 'f i32 := ?'.
+
+  - tuple types now can use '(A,B,C)' syntax, e.g.,
+
+      triple(T type, v T) (T,T,T) is
+        (v,v,v)
+
+    is equivalent to
+
+      triple(T type, v T) tuple T T T is
+        (v,v,v)
+
+  - function types and lambda expressions can no longer be declared using the
+    'fun' keyword. Instead, syntax like '(i32, bool) -> string' or '(x,y) -> x +
+    y*3' has to be used.
+
+  - Fuzion grammar cleanup: new rule 'actual' for actual arguments, which could
+    be an expression for a value argument or a type for a type argument
+
+  - cleanup and simplification in indentation rules for actual arguments and
+    cases in a match-expression.
+
+  - ASCII control codes 'HT', 'VT', 'FF' and stray 'CR' are now rejected in the
+    source code.
+
+- base library
+
+  - added effect to new feature 'io.file': 'exists', 'delete', 'move',
+    'create_dir', 'stat.exists', etc.
+
+  - fixed spelling errors, updated syntax for type parameters (comments still used '<'/'>')
+
+  - removed 'java' feature and all inner features 'java...', these were unused.
+
+  - Fuzion modules now exist for most standard Java modules:
+
+      'java.base' 'java.compiler' 'java.datatransfer' 'java.desktop'
+      'java.instrument' 'java.logging' 'java.management' 'java.management.rmi'
+      'java.naming' 'java.net.http' 'java.prefs' 'java.rmi' 'java.scripting'
+      'java.security.jgss' 'java.security.sasl' 'java.se' 'java.smartcardio'
+      'java.sql' 'java.sql.rowset' 'java.transaction.xa' 'java.xml.crypto'
+      'java.xml' 'jdk.accessibility' 'jdk.attach' 'jdk.charsets' 'jdk.compiler'
+      'jdk.crypto.cryptoki' 'jdk.crypto.ec' 'jdk.dynalink' 'jdk.editpad'
+      'jdk.httpserver' 'jdk.jartool' 'jdk.javadoc' 'jdk.jconsole' 'jdk.jdeps'
+      'jdk.jdi' 'jdk.jdwp.agent' 'jdk.jfr' 'jdk.jlink' 'jdk.jpackage'
+      'jdk.jshell' 'jdk.jsobject' 'jdk.jstatd' 'jdk.localedata'
+      'jdk.management.agent' 'jdk.management' 'jdk.management.jfr'
+      'jdk.naming.dns' 'jdk.naming.rmi' 'jdk.net' 'jdk.nio.mapmode' 'jdk.sctp'
+      'jdk.security.auth' 'jdk.security.jgss' 'jdk.xml.dom' 'jdk.zipfs'
+
+  - renamed several features from 'camelCase' to 'snake_case' or
+    'Capitalized_snake_case' for 'ref' types.
+
+  - abstract equality (see https://flang.dev/design/equality") as explained by
+    Noble et al in The Left Hand of Equals
+    (http://web.cecs.pdx.edu/~black/publications/egal.pdf) is now supported:
+
+    base library feature 'has_equality' defines an abstract feature
+    'has_equality.type.equality' that can be redefined for heir features such as
+    'string'.  Note that the equality operation is bound to the type, so
+    different types along an inheritance hierarchy may define different equality
+    operations.  This is in strong contrast to object-oriented approaches like
+    Java that inherit 'Object.equals'.
+
+    For now, features 'equals' and 'infix ≟' can be used to compare
+    according to abstract equality as defined by the operand's type. Eventually,
+    'infix =' will be used for this.
+
+    'type.equality' was defined for base library features without type
+    parameters (type features are not yet supported for features with type
+    parameters)
+
+  - Added features to set env variables.
+
+  - In some library features, 'forAll' was renamed as 'for_each' to avoid
+    confusion with 'infix ∀'.
+
+  - Improved documentation of many features
+
+  - added bit-wise-not operation 'prefix ~' to 'wrappingInteger'.
+
+  - support for big integers via Fuzion features 'int' and 'uint'.
+
+  - 'numericSequence' now inherits from 'hasEquals'
+
+  - removed uses of 'stream' from 'string' in favor of 'list'.
+
+  - added new module 'terminal.fum' providing ANSI escape codes. The main
+    purpose of this module at this time is to provide a simple test for modules.
+
+  - added 'ctrie' hash tries.
+
+  - added 'ascii' for ASCII control codes.
+
+  - generally replaced generics using '<'/'>' by type parameters.
+
+  - improved syntax of type-expressions: Now using '(list i32).type' instead of
+    the awkward 'list i32 .type'. Same for '.env'.
+
+  - added 'cache' effect to allow a simple caching of results.
+
+- fz tool
+
+  - C back-end now provides options '-CC=' and '-CFlags=' to specify C compiler
+    and options to be used.
+
+  - arguments following main feature are now passed to Fuzion code via the
+    'envir.args' effect.
+
+  - new option '-moduleDir' to specify where to load modules from.
+
+  - added option '-sourceDirs={<path>,..}' to specify where to search for sources. If this option is not provided, the current
+    directory is used to search for source files.  Otherwise, the (possibly empty) list of paths provided via this option is used.
+
+  - Added option '-saveLib=<path>' to create a module file.
+
+  - Removed option '-XsaveBaseLib' and added '-XloadBaseLib=(on|off)' to disable
+    loading of 'base.fum' module which is needed when creating 'base.fum'.
+
+  - new option '-XdumpModules={<name>,..}' to print the contents of a loaded
+    module as a colored hex dump with comments.
+
+  - Support for several module files.  Except for the base module 'base.fum'
+    that does not depend on another module, module support is still incomplete,
+    e.g., modules may not use type features with types from other modules.
+
+- fzjava tool
+
+  - Now accepts '-modules' and '-moduleDirs' arguments to specify Fuzion modules
+    already generated that a Java module depends on.  This avoids repeated
+    declaration of unit-value features for Java packages.  </ul>
+
+- fzdocs tool
+
+  - has been added to the main Fuzion repository.
+
+- C back-end
+
+  - Fixed use of thread locals on Windows
+
+- tests
+
+  - added 'tests/indentation/indentation' and
+    'tests/indentation_negative/indentation_negative' to illustrate and check
+    Fuzion's indentation rules for code blocks and arguments.
+
+  - added several regression tests for bug fixes
+
+- Build infrastructure
+
+  - Some changes to allow building on NixOS
 
 
 ## 2022-08-15: V0.078

@@ -28,16 +28,16 @@ jobs:
 
       - name: install choco packages
         shell: powershell
-        run: choco install openjdk --version 18.0.0
+        run: choco install openjdk --version 17.0.0
 
       - uses: actions/checkout@v2
 
 # NYI how can we set PATH???
       - name: echo PATH
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && echo "$PATH"
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && echo "$PATH"
 
       - name: echo versions
-        run:  export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && clang --version && javac --version
+        run:  export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
 
       - name: run tests
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && make run_tests
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && make run_tests
