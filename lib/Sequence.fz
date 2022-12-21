@@ -393,6 +393,22 @@ Sequence(T type) ref is
 
 
 
+  # group the elements of this sequence by a key of type K
+  #
+  # f determines the key of an element
+  #
+  group_by(K (hasHash K).type, f T -> K) map K (Sequence T) is
+    # NYI It should be possible to choose the map implementation that is used.
+    res := CTrie K (Sequence T)
+    for_each (x ->
+      key := f x
+      match res[key]
+        nil => res.add key [x]
+        s Sequence T => res.add key (s ++ [x])
+      )
+    res
+
+
 # Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
 #
