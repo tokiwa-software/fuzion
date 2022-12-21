@@ -860,7 +860,7 @@ public class Clazzes extends ANY
     if(cf.isChoice())
     {
       outerClazz
-        .actualGenerics(c.generics())
+        .actualGenerics(c.actualTypeParameters())
         .stream()
         .forEach(ag ->
           {
