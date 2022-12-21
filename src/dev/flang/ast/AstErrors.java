@@ -290,70 +290,85 @@ public class AstErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param value the value to be assigned.
+   * @param value the value to be assigned, null in case a type was assigned
+   *
+   * @param typeValue the type that was assigned, must be non-null iff value==null.
    */
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
                                String target,
                                AbstractType frmlT,
-                               Expr value)
+                               Expr value,
+                               AbstractType typeValue)
   {
     String remedy = null;
+    String actlFound;
+    var valAssigned = "";
     var assignableToSB = new StringBuilder();
-    var actlT = value.type();
-    if (actlT.isThisType())
+    if (value == null)
       {
-        assignableToSB
-          .append("assignable to       : ref ")
-          .append(st(actlT.asRef().toString()));
-        if (frmlT.isAssignableFromOrContainsError(actlT))
-          {
-            remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
-          }
+        actlFound   = "actual type found   : " + s(typeValue);
+        remedy = "To solve this, replace the type "+s(typeValue)+" by a value of type compatible to "+s(frmlT)+".";
       }
     else
       {
-        var assignableTo = new TreeSet<String>();
-        frmlT.isAssignableFrom(actlT, assignableTo);
-        for (var ts : assignableTo)
+        var actlT = value.type();
+        if (actlT.isThisType())
           {
             assignableToSB
-              .append(assignableToSB.length() == 0
-                      ?    "assignable to       : "
-                      : ",\n                      ")
-              .append(st(ts));
+              .append("assignable to       : ref ")
+              .append(st(actlT.asRef().toString()));
+            if (frmlT.isAssignableFromOrContainsError(actlT))
+              {
+                remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
+              }
           }
-      }
-    if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
-      {
-        remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
-      }
-    else if (integerType(frmlT) && integerType(actlT))
-      {
-        var fs =
-          frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? "i8"   :
-          frmlT.compareTo(Types.resolved.t_i16) == 0  ? "i16"  :
-          frmlT.compareTo(Types.resolved.t_i32) == 0  ? "i32 " :
-          frmlT.compareTo(Types.resolved.t_i64) == 0  ? "i64"  :
-          frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
-          frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
-          frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
-          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
-        remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
-      }
-    else
-      {
-        remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+        else
+          {
+            var assignableTo = new TreeSet<String>();
+            frmlT.isAssignableFrom(actlT, assignableTo);
+            for (var ts : assignableTo)
+              {
+                assignableToSB
+                  .append(assignableToSB.length() == 0
+                          ?    "assignable to       : "
+                          : ",\n                      ")
+                  .append(st(ts));
+              }
+          }
+        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
+          {
+            remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
+          }
+        else if (integerType(frmlT) && integerType(actlT))
+          {
+            var fs =
+              frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? "i8"   :
+              frmlT.compareTo(Types.resolved.t_i16) == 0  ? "i16"  :
+              frmlT.compareTo(Types.resolved.t_i32) == 0  ? "i32 " :
+              frmlT.compareTo(Types.resolved.t_i64) == 0  ? "i64"  :
+              frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
+              frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
+              frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
+              frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
+            remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
+          }
+        else
+          {
+            remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+          }
+        actlFound   = "actual type found   : " + s(actlT);
+        valAssigned = "for value assigned  : " + s(value) + "\n";
       }
 
     error(pos,
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + "\n" +
+          actlFound + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
-          "for value assigned  : " + s(value) + "\n" +
+          valAssigned +
           remedy);
   }
 
@@ -380,7 +395,45 @@ public class AstErrors extends ANY
                      "assignment to field : " + s(field) + "\n",
                      field.qualifiedName(),
                      frmlT,
-                     value);
+                     value,
+                     null);
+  }
+
+
+  /**
+   * Create an error message for incompatible types when passing an argument to
+   * a call.
+   *
+   * @param calledFeature the feature that is called
+   *
+   * @param count the number of the actual argument (0 == first argument, 1 ==
+   * second argument, etc.)
+   *
+   * @param frmlT the expected formal type
+   *
+   * @param value the value to be assigned.
+   */
+  static void unexpectedTypeParameterInCall(AbstractFeature calledFeature,
+                                            int count,
+                                            AbstractType frmlT,
+                                            AbstractType typePar)
+  {
+    var frmls = calledFeature.valueArguments().iterator();
+    AbstractFeature frml = null;
+    int c;
+    for (c = 0; c <= count && frmls.hasNext(); c++)
+      {
+        frml = frmls.next();
+      }
+    var f = ((c == count+1) && (frml != null)) ? frml : null;
+    incompatibleType(typePar.pos(),
+                     "when passing argument in a call",
+                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
+                     "In call to          : " + s(calledFeature) + "\n",
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
+                     frmlT,
+                     null,
+                     typePar);
   }
 
 
@@ -416,7 +469,8 @@ public class AstErrors extends ANY
                      "In call to          : " + s(calledFeature) + "\n",
                      (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
-                     value);
+                     value,
+                     null);
   }
 
 
@@ -442,7 +496,8 @@ public class AstErrors extends ANY
                      "array type          : " + s(arrayType) + "\n",
                      "array element",
                      frmlT,
-                     value);
+                     value,
+                     null);
   }
 
   public static void arrayInitCommaAndSemiMixed(SourcePosition pos, SourcePosition p1, SourcePosition p2)
@@ -1319,7 +1374,7 @@ public class AstErrors extends ANY
           "Referenced feature: " + s(f) + " at " + at.show());
   }
 
-  static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
   {
     error(pos,
           "Illegal select clause",

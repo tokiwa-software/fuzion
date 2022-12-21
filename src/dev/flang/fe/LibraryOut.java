@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -393,9 +394,10 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
+   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -455,6 +457,10 @@ class LibraryOut extends ANY
     if (f.hasTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
+      }
+    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
     var n = f.featureName();
     _data.write(k);
@@ -531,7 +537,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | byte          | 0: default, 1: isRef, 2: isThisType           |
+   *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -566,22 +572,11 @@ class LibraryOut extends ANY
           }
         else
           {
-            var refOrThisType = 0;
-            if (t.isThisType())
-              {
-                refOrThisType = 2;
-              }
-            else
-              {
-                boolean makeRef = t.isRef() && !t.featureOfType().isThisRef();
-                // there is no explicit value type at this phase:
-                if (CHECKS) check
-                  (makeRef || t.isRef() == t.featureOfType().isThisRef());
-                refOrThisType = makeRef ? 1 : 0;
-              }
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.featureOfType());
-            _data.write(refOrThisType);
+            _data.write(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
+                        t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                       : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
               {
                 type(gt);

@@ -1,0 +1,156 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_covariance
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# a test for defining abstract data type using covariance argument and result types
+# in children
+#
+test_covariance is
+
+  # a simple, numeric type providing special elements zero and one and operations
+  # lessThan, plus, minus and to_u32
+  #
+  num is
+
+    # special values
+    #
+    # NYI: remove these, should be type.zero/type.one
+    #
+    z num.this.type is abstract
+    o num.this.type is abstract
+
+    # special values
+    #
+    type.zero THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
+    type.one  THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
+
+    # if num.this less than other?
+    #
+    lessThan(other num.this.type) bool is abstract
+
+    plus (other num.this.type) num.this.type is abstract
+    minus(other num.this.type) num.this.type is abstract
+
+    to_u32_loop =>
+      555555
+/* NYI: crashes:
+      if num.type.zero.lessThan num.this
+        (minus num.type.one).to_u32_loop + 1
+      else
+        0
+
+*/
+
+    # convert this to corresponding values as an 'u32'
+    #
+    to_u32 u32 is
+      if z.lessThan num.this
+        (minus o).to_u32 + 1
+      else
+        0
+
+    # create string representation consiting of type, to_u32
+    # and valueString
+    #
+    redef asString => "num.this.type {to_u32} {to_u32_loop} '$valueString'"
+
+    # string representation of this value, to be implemented by
+    # children.
+    #
+    valueString string is abstract
+
+
+  # integer mod 2 implementation of num
+  #
+  intM2(isZero bool) : num is
+    fixed z => intM2 true
+    fixed o => intM2 false
+    fixed type.zero => test_covariance.intM2 true
+    fixed type.one => test_covariance.intM2 false
+    fixed lessThan(other intM2) => isZero && !other.isZero
+    fixed plus(other intM2) => if isZero then other else intM2 !other.isZero
+    fixed minus(other intM2) => plus other
+    redef valueString => if isZero then "0 mod 2" else "1 mod 2"
+
+  # integer mod 5 implementation of num
+  #
+  intM5(v u8) : num is
+    fixed z => intM5 0
+    fixed o => intM5 1
+    fixed type.zero => test_covariance.intM5 0
+    fixed type.one => test_covariance.intM5 1
+    fixed lessThan(other intM5) => v < other.v
+    fixed plus(other intM5) => intM5 (v + other.v)%5
+    fixed minus(other intM5) => intM5 (v - other.v)%5
+    redef valueString => "$v mod 5"
+
+run =>
+
+  test(N test_covariance.num.type, x, y N) =>
+    say x
+    say y
+    # NYI: all of the following do not work yet:
+    #
+    # say (x.plus y)
+    # say (x.plus x)
+    # say (y.plus y)
+    # z := y.plus y
+    # say z
+    # z := z.plus z
+    # say z
+    # z := z.plus z
+    # say z
+
+  x := test_covariance.intM2 true
+  y := test_covariance.intM2 false
+  say x
+  say y
+  say (x.plus y)
+  say (x.plus x)
+  say (y.plus y)
+  z := y.plus y
+  say z
+  z := z.plus z
+  say z
+  z := z.plus z
+  say z
+  test x y
+
+
+  x := test_covariance.intM5 0
+  y := test_covariance.intM5 1
+  say x
+  say y
+  say (x.plus y)
+  say (x.plus x)
+  say (y.plus y)
+  z := y.plus y
+  say z
+  z := z.plus z
+  say z
+  z := z.plus z
+  say z
+  test x y
+
+run

@@ -54,6 +54,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   public static final List<Expr> NO_EXPRS = new List<Expr>();
 
 
+  /**
+   * Dummy Expr value. Used in 'Actual' to represent non-existing value version
+   * of the acual.
+   */
+  public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    {
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
+    };
+
+
   /*-------------------------  static variables -------------------------*/
 
 
@@ -324,9 +337,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
             result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t)
-            && !t.isThisType() // NYI: CLEANUP: #736: Can this be removed if t.asThisType() == t for choice types?
-            )
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
             result = tag(frmlT, result);
           }

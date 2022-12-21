@@ -244,13 +244,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _universe.setState(Feature.State.RESOLVED);
         var stdlib = _dependsOn[0];
         new Types.Resolved(this,
-                           (name, ref) -> new NormalType(stdlib,
-                                                         -1,
-                                                         SourcePosition.builtIn,
-                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe),
-                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
-                                                         Type.NONE,
-                                                         _universe.thisType()),
+                           (name, ref) ->
+                             {
+                               var f = lookupFeatureForType(SourcePosition.builtIn, name, _universe);
+                               return new NormalType(stdlib,
+                                                     -1,
+                                                     SourcePosition.builtIn,
+                                                     f,
+                                                     ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                                     Type.NONE,
+                                                     _universe.thisType());
+                             },
                            _universe);
       }
 
@@ -495,8 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer) :
-           inner.belongsToNonStaticType() ? outer.nonStaticTypeFeature(_res)
+           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer)
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -612,20 +615,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outerType the static outer type of universe.
    *
-   * @param typeFeature the new (static or non-static) type feature declared
-   * within nonStaticOuterType.
+   * @param typeFeature the new type feature declared within outerType.
    */
-  public AbstractFeature addTypeFeature(AbstractFeature outerType,
-                                        Feature typeFeature)
+  public void addTypeFeature(AbstractFeature outerType,
+                             Feature typeFeature)
   {
-    var nonStaticOuterType = outerType.isUniverse() ? outerType : outerType.typeFeaturesNonStaticParent();
-    var result = typeFeature;
-    findDeclarations(typeFeature, nonStaticOuterType);
-    addDeclared(false, nonStaticOuterType, typeFeature);
+    findDeclarations(typeFeature, outerType);
     addDeclared(true,  outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
-    return result;
   }
 
 
@@ -1134,6 +1132,71 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Check if argument type 'tr' found in feature 'redefinition' may legally
+   * redefine original argument type 'to' found in feature 'original'.
+   *
+   * This is the case if original is
+   *
+   *    a.b.c.f(... arg#i a.b.c.this ...)
+   *
+   * and redefinition is
+   *
+   *    x.y.z.f(... arg#i x.y.z.this ...)
+   *
+   * or redefinition is
+   *
+   *    fixed x.y.z.f(... arg#i x.y.z ...)
+   *
+   * @param original the parent feature.
+   *
+   * @param redefinition the heir feature.
+   *
+   * @param to original argument type in 'original'.
+   *
+   * @param tr new argument type in 'redefinitiion'.
+   *
+   * @return true if 'to' may be replaced with 'tr'.
+   */
+  boolean isLegalCovariantThisType(AbstractFeature original,
+                                   Feature redefinition,
+                                   AbstractType to,
+                                   AbstractType tr)
+  {
+    return
+      /* to is original    .this.type  and
+       * tr is redefinition.this.type
+       */
+      ((to.isThisType()                                        ) &&
+       (tr.isThisType()                                        ) &&
+       (to.featureOfType() == original    .outer()             ) &&
+       (tr.featureOfType() == redefinition.outer()             )   ) ||
+
+      /* to is original.this.type  and
+       * redefinition is fixed and tr is redefinition.thisType.
+       */
+      ((to.isThisType()                                        ) &&
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
+       (to.featureOfType() == original    .outer()             ) &&
+       (tr.featureOfType() == redefinition.outer()             )   ) ||
+
+      /* original and redefinition are inner featurs of type features, to is
+       * THIS_TYPE and tr is the underlying non-type features thisType.
+       *
+       * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
+       * numeric.this.type)
+       */
+      (original    .outer().isTypeFeature()                                                                                            &&
+       redefinition.outer().isTypeFeature()                                                                                            &&
+       to.isGenericArgument()                                                                                                          &&
+       to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
+       original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
+       !tr.isGenericArgument()                                                                                                         &&
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)                                                                       &&
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisType()) == 0                                                             );
+  }
+
+
+  /**
    * Check types of given Feature. This mainly checks that all redefinitions of
    * f are compatible with f.
    *
@@ -1158,7 +1221,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1.compareTo(t2) != 0 && !t1.containsError() && !t2.containsError())
+                if (t1.compareTo(t2) != 0 &&
+                    !isLegalCovariantThisType(o, f, t1, t2) &&
+                    !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1183,7 +1248,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
         else if ((t1.isChoice()
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
-                 t2 != Types.resolved.t_void)
+                 t2 != Types.resolved.t_void &&
+                 !isLegalCovariantThisType(o, f, t1, t2))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }

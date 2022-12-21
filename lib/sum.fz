@@ -41,7 +41,7 @@ sum(T (numeric T).type, l Sequence T)
   #
   #  l.fold T.sum
   #
-  n := l.asList.forceHead
+  n := l.asList.head.get
   sum0 n l
 
 

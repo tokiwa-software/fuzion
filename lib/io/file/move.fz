@@ -31,18 +31,41 @@ private move(
     _ unit
   ) : moves, effect r is
 
-    # moves the file/dir from old_path to new_path
-    # returns an outcome of unit in case of success or error in case of failure
+    # moves file/dir from an old path to a the new path
+    # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+    # returns a unit type as outcome in case of success and error in case of failure
     #
-    move(old_path string, new_path string) =>
+    move(
+         # the old (relative or absolute) file name, using platform specific path separators
+         old_path string,
+         # the new (relative or absolute) file name, using platform specific path separators
+         new_path string) =>
         tmp := mop.move old_path new_path
         replace
         tmp
 
+# short-hand for creating and installing effects
+#
+move_custom(f () -> unit) => move_custom default_move_operation f
+
+# short-hand for creating and installing effects
+#
+move_custom(mop Move_Operation, f () -> unit) =>
+    s := move mop effectMode.new unit
+    s.use0 f
+    unit
+
 # short-hand for accessing move effect in current environment and performing the default move operation using 
 # io.file.move.move old_path new_path
+# moves file/dir from an old path to a the new path
+# can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+# returns a unit type as outcome in case of success and error in case of failure
 #
-move(old_path string, new_path string) =>
+move(
+     # the old (relative or absolute) file name, using platform specific path separators
+     old_path string,
+     # the new (relative or absolute) file name, using platform specific path separators
+     new_path string) =>
   moves.installDefault
   move.env.move old_path new_path
 

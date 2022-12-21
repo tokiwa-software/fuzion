@@ -329,23 +329,17 @@ field       : returnType
   {
     if (p._kind == Impl.Kind.Of)
       {
-        var ng = new List<AbstractType>();
-        addFeaturesFromBlock(first, l, p._code, ng, p);
         if (inh.isEmpty())
           {
             AstErrors.featureOfMustInherit(pos, p.pos);
           }
         else
           {
-            var ic = inh.getLast();
-            if (!ic.generics().isEmpty())
-              {
-                ic.generics().addAll(ng);
-              }
-            else
-              {
-                ((Call)ic)._generics = ng;
-              }
+            var c = (Call) inh.getLast();
+            var ng = new List<AbstractType>();
+            ng.addAll(c.actualTypeParameters());
+            addFeaturesFromBlock(first, l, p._code, ng, p);
+            c._generics = ng;
           }
         p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
       }
@@ -802,7 +796,6 @@ modifier    : "lazy"
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
-          case t_dyn         : m = Consts.MODIFIER_DYN         ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
@@ -833,8 +826,7 @@ modifier    : "lazy"
       case t_lazy        :
       case t_redef       :
       case t_redefine    :
-      case t_fixed       :
-      case t_dyn         : return true;
+      case t_fixed       : return true;
       default            : return false;
       }
   }
@@ -1317,7 +1309,19 @@ actuals     : actualArgs
       {
         if (current() == Token.t_numliteral)
           {
-            result = new Call(pos, target, n, skipNumLiteral().plainInteger());
+            var select = skipNumLiteral().plainInteger();
+            int s = -1;
+            try
+              {
+                s = Integer.parseInt(select);
+                if (CHECKS) check
+                  (s >= 0); // parser should not allow negative value
+              }
+            catch (NumberFormatException e)
+              {
+                AstErrors.illegalSelect(pos, select, e);
+              }
+            result = new Call(pos, target, n, s);
           }
         else
           {
@@ -1328,7 +1332,7 @@ actuals     : actualArgs
     else
       {
         var l = actualArgs();
-        result = new Call(pos, target, n, Call.NO_GENERICS, l, null);
+        result = new Call(pos, target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1355,11 +1359,11 @@ indexCall   : ( LBRACKET actualList RBRACKET
         if (skip(":="))
           {
             l.add(new Actual(null, exprInLine()));
-            result = new Call(pos, target, "index [ ] =", null, l, null);
+            result = new Call(pos, target, "index [ ] =", l);
           }
         else
           {
-            result = new Call(pos, target, "index [ ]"  , null, l, null);
+            result = new Call(pos, target, "index [ ]"  , l);
           }
         target = result;
       }
@@ -1574,7 +1578,7 @@ actualsList : actualSp actualsList
    */
   List<Actual> actualsList()
   {
-    List<Actual> result = Call.NO_PARENTHESES_A;
+    List<Actual> result = Call.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
@@ -1673,7 +1677,7 @@ actual   : expr | type
           (hasType);
 
         t = type();
-        e = null;
+        e = Expr.NO_VALUE;
       }
     return new Actual(t, e);
   }
@@ -1754,7 +1758,8 @@ expr        : opExpr
         Expr f = expr();
         matchOperator(":", "expr of the form >>a ? b : c<<");
         Expr g = expr();
-        result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
+        result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
+                                                                 new Actual(null, g)));
       }
     return result;
   }
@@ -1831,12 +1836,12 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
   {
     SourcePosition pos = posObject();
     var f = fork();
-    var tupleElements = new List<Expr>();
+    var tupleElements = new List<Actual>();
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
                          do
                            {
-                             tupleElements.add(expr());
+                             tupleElements.add(new Actual(null, expr()));
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -1845,7 +1850,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
     return
       isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0) // a klammerexpr, not a tuple
+      tupleElements.size() == 1 ? tupleElements.get(0)._expr // a klammerexpr, not a tuple
                                 : new Call(pos, null, "tuple", tupleElements);
   }
 
@@ -2128,7 +2133,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(string2));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(null, string2)));
   }
 
 
@@ -3077,6 +3082,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
+                  | thistype
                   | qualThis
                   | plainLambda
                   | call
@@ -3085,10 +3091,11 @@ callOrFeatOrThis  : anonymous
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()   ? anonymous()   : // starts with value/ref/:/fun/name
-      isQualThisPrefix()    ? qualThis()    : // starts with name
-      isPlainLambdaPrefix() ? plainLambda() : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()        ? call(null)      // starts with name
+      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
+      isThistype()          ? thistypeAsExpr() : // starts with type followed by 'this.type'
+      isQualThisPrefix()    ? qualThisAsThis() : // starts with name
+      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isNamePrefix()        ? call(null)         // starts with name
                             : null;
   }
 
@@ -3138,16 +3145,22 @@ anonymous   : returnType
   /**
    * Parse qualThis
    *
+   * @param asType select to parse this as a list of names or as a Type.
+   *
+   * @return List<String> or Type depending on asType being false or true
+   *
 qualThis    : name ( dot name )* dot "this"
             ;
    */
-  This qualThis()
+  Object qualThis(boolean asType /* should result be Type or This? */)
   {
     SourcePosition pos;
-    List<String> q = new List<>();
+    List<String> q = asType ? null : new List<>();
+    Type result = null;
+    var done = false;
     do
       {
-        q.add(name());
+        var n = name();
         if (!skipDot())
           {
             if (isFullStop())
@@ -3160,9 +3173,44 @@ qualThis    : name ( dot name )* dot "this"
               }
           }
         pos = posObject();
+        done = skip(Token.t_this);
+        if (asType)
+          {
+            result = new Type(pos,
+                              n,
+                              Call.NO_GENERICS,
+                              result,
+                              null,
+                              done ? Type.RefOrVal.ThisType
+                                   : Type.RefOrVal.LikeUnderlyingFeature);
+          }
+        else
+          {
+            q.add(n);
+          }
       }
-    while (!skip(Token.t_this));
-    return new This(pos, q);
+    while (!done);
+    return asType ? result : new This(pos, q);
+  }
+
+
+  /**
+   * Parse qualThis producing an instance of 'This'.  This is used withing the
+   * rule callOrFeatOrThis.
+   */
+  This qualThisAsThis()
+  {
+    return (This) qualThis(false);
+  }
+
+
+  /**
+   * Parse qualThis producing an instance of Type.  This is used withing the
+   * rule thistype.
+   */
+  Type qualThisAsType()
+  {
+    return (Type) qualThis(true);
   }
 
 
@@ -3581,7 +3629,7 @@ type        : thistype
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    boolean result = allowTypeThatIsNotExpression && skipThistype();
+    boolean result = skipThistype();
     if (!result)
       {
         var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
@@ -3605,10 +3653,21 @@ thistype    : qualThis dot "type"
    */
   AbstractType thistype()
   {
-    var q = qualThis();
+    Type result = qualThisAsType();
     matchOperator(".", "thistype");
     match(Token.t_type, "thistype");
-    return new Type("NYI: thistype");
+    return result;
+  }
+
+
+  /**
+   * Parse thistype as Expr
+   *
+   */
+  Expr thistypeAsExpr()
+  {
+    var result = thistype();
+    return new DotType(result.pos(), result);
   }
 
 
@@ -3624,7 +3683,7 @@ thistype    : qualThis dot "type"
     if (result)
       {
         var f = fork();
-        var ignore = f.qualThis();
+        var ignore = f.qualThisAsType();
         result = f.skipDot() && f.skip(Token.t_type);
       }
     return result;

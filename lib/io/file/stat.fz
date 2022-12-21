@@ -23,22 +23,25 @@
 #
 # -----------------------------------------------------------------------
 
-# stat -- effect providing operations to retrieve file stats 
+# meta_data will be a feature storing the metadata of file/dir
+#
+meta_data(
+          # the size of the file/dir
+          size i64,
+          # the time of last modification of the file/dir
+          time i64,
+          # boolean to check if the pathname is a regular file
+          is_regular bool,
+          # boolean to check if the pathname is a directory
+          is_dir bool) is
+
+# stat -- effect providing operations to retrieve file stats
 #
 private stat(
   ps Provided_Stat,
   redef r effectMode.val,
   _ unit
   ) : stats, effect r is
-
-  # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
-  #
-  size(
-       # the (relative or absolute) file name, using platform specific path separators
-       path string) =>
-    tmp := ps.size path
-    replace
-    tmp
 
   # checks if the file/directory in the path exists or not
   # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
@@ -50,31 +53,97 @@ private stat(
     replace
     tmp
 
-#short-hand for creating and installing effect
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  # this feature resolves symbolic links
+  #
+  stats(
+        # the (relative or absolute) file name, using platform specific path separators
+        path string) outcome meta_data is
+    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
+      replace
+      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+    else
+      replace
+      error "error while retrieving meta_data for the following file/dir: $path"
+
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  # this feature does not resolve symbolic links and returns stats of the link itself
+  #
+  lstats(
+         # the (relative or absolute) file name, using platform specific path separators
+         path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
+      replace
+      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+    else
+      replace
+      error "error while retrieving meta_data for the following file/dir: $path"
+
+# short-hand for installing the default stat effect to the provided code
 #
-stat(ps Provided_Stat, f () -> unit) =>
+stat(f () -> unit) => stat_custom default_provided_stat f
+
+# short-hand for creating and installing a customized stat effect
+#
+stat_custom(ps Provided_Stat, f () -> unit) =>
   s := stat ps effectMode.new unit
   s.use0 f
   unit
 
-# short-hand for accessing stat effect in current environment
+# short-hand for accessing the stat effect in current environment
 #
 stat => 
   stats.installDefault
   stat.env
 
+# short-hand for accessing and using stats/lstats provided by the stat effect in current environment
+# in success it will return a meta_data outcome storing stats regarding the file/dir
+# in case of failure an error will be returned
+# resolve flag is used to indicate whether to resolve sym links or not
+# NYI: lstats behaves the same as stats in the interpreter
+#
+stat(
+     # the (relative or absolute) file name, using platform specific path separators
+     path string,
+     # a boolean resolve flag to resolve symbolic links or not
+     resolve bool) => 
+  stats.installDefault
+  if resolve
+    stat.env.stats(path)
+  else
+    stat.env.lstats(path)
+
+# short-hand for accessing and using exists feature provided by the stat effect in current environment
+# tests whether the path passed is an existing file
+#
+exists(
+       # the (relative or absolute) file name, using platform specific path separators
+       path string) =>
+  stats.installDefault
+  stat.env.exists(path)
+
 # reference to the stats that could be provided
 #
 Provided_Stat ref is
-  size(path string) outcome i64 is abstract
+  stats(path Object, meta_data_arr Object) bool is abstract
+  lstats(path Object, meta_data_arr Object) bool is abstract
   exists(path string) outcome bool is abstract
 
-# the default file stat provided which is the file size via fuzion.std.fileio.get_file_size
+# the default file stat provided
 #
 default_provided_stat : Provided_Stat is
-  size(path string) =>
-    fuzion.std.fileio.get_file_size path
-  
+  stats(path Object, meta_data_arr Object) =>
+    fuzion.std.fileio.stats path meta_data_arr
+
+  lstats(path Object, meta_data_arr Object) =>
+    fuzion.std.fileio.lstats path meta_data_arr
+
   exists(path string) =>
     fuzion.std.fileio.exists path
 

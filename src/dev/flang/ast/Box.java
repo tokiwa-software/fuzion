@@ -81,7 +81,7 @@ public class Box extends Expr
        frmlT.isGenericArgument() || !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
-    var t = value.type();
+    var t = Types.intern(value.type());
     this._type = frmlT.isGenericArgument() ? t : t.asRef();
   }
 

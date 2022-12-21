@@ -1437,7 +1437,7 @@ hw25 is
    *
    * @param c code block containing the access
    *
-   * @param ix index of the acces
+   * @param ix index of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.

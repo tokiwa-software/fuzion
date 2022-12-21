@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -545,7 +543,15 @@ public class C extends ANY
       }
     else
       {
-        command.addAll("-O3");
+        command.addAll(
+          "-Wall",
+          "-Werror",
+          "-Wno-gnu-empty-struct",
+          "-Wno-unused-variable",
+          "-Wno-unused-label",
+          "-Wno-unused-but-set-variable",
+          "-Wno-unused-function",
+          "-O3");
       }
     if(_options._useBoehmGC)
       {

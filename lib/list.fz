@@ -51,7 +51,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # This is a helper function that needs to be defined because list is an heir
   # of Sequence.
   #
-  redef asList list A is list.this
+  redef asList => list.this
 
 
   # is this list empty?
@@ -98,15 +98,6 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => f c.head; c.tail.for_each f
 
 
-  # get the head of this list, panic if list is empty
-  #
-  forceHead
-    pre
-      debug: !isEmpty
-    => (list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
-                  | c Cons => c.head)
-
-
   # get the tail of this list, panic if list is empty
   #
   forceTail
@@ -121,7 +112,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   redef first
     pre
       debug: !isEmpty
-    => forceHead
+    => head.get
 
 
   # get the last element of this list, panic if list is empty
@@ -270,7 +261,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a slice from this list that consists of the elements starting at index
   # 'from' (including) up to index 'to' (excluding).
   #
-  redef slice(from, to i32) => drop(from).take to-from
+  redef slice(from, to i32) => (drop from).take to-from
 
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
@@ -338,7 +329,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef tails list (list A) is
     ref : Cons (list A) (list (list A))
-      head list A is list.this    # NYI: CLEANUP: #736: use type inference: head => list.this
+      head => list.this
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
 
@@ -348,11 +339,11 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # it cannot be shared with threads or used in pure functions
   #
   redef asStream ref : stream A is
-    cur list A := list.this
+    cur := list.this
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>
-      res := cur.forceHead
+      res := cur.head.get
       set cur := cur.forceTail
       res
 
