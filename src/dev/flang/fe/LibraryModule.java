@@ -32,18 +32,13 @@ import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
@@ -55,7 +50,6 @@ import dev.flang.mir.MIR;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
-import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -300,9 +294,9 @@ public class LibraryModule extends Module
    *
    * @param offset the offset in data()
    *
-   * @return the LibraryFeature declared at offset in this module.
+   * @return the feature declared at offset in this module.
    */
-  LibraryFeature libraryFeature(int offset)
+  AbstractFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -320,7 +314,9 @@ public class LibraryModule extends Module
         if (CHECKS) check
           (mr != null);
 
-        return mr._module.libraryFeature(offset - mr._offset);
+        return mr._module != null
+                ? mr._module.libraryFeature(offset - mr._offset)
+                : Types.f_ERROR;
       }
   }
 
