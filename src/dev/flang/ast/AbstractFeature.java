@@ -525,7 +525,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
-       res != null);
+       res != null,
+       !isUniverse());
 
     if (_typeFeature == null)
       {
@@ -574,7 +575,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractCall> inh)
   {
-    var outerType = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
+    if (PRECONDITIONS) require
+      (!isUniverse());
+    var outerType = outer().isUniverse() ? universe() : outer().typeFeature(res);
     var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
     if (result == null)
       {
