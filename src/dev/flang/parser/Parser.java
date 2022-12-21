@@ -2847,14 +2847,17 @@ ifstmnt      : "if" exprInLine thenPart elseBlockOpt
           {
             result.setElse(i);
           }
-        else if (els instanceof Block blk)
+        else if (els instanceof Block blk
+                // do no set empty blocks as else blocks since the source position
+                // of those block might be somewhere unexpected.
+                 && !blk._statements.isEmpty())
           {
             result.setElse(blk);
           }
         else
           {
             if (CHECKS) check
-              (els == null);
+              (els == null || (els instanceof Block blk && blk._statements.isEmpty()));
           }
         return result;
       });
