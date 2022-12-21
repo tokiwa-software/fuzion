@@ -1766,10 +1766,11 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call  action(Call        c, AbstractFeature outer) { c.checkTypes(outer); return c; }
-            public void  action(If          i, AbstractFeature outer) { i.checkTypes();                }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);                   }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c;       }
+            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                      }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i;       }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return ((Type)t).checkConstraints(pos()); }
           });
         checkTypes(res);
 

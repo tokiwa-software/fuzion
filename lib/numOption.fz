@@ -76,7 +76,7 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind(B type, f T -> numOption B) numOption B is
+  bind(B (numeric T).type, f T -> numOption B) numOption B is
     numOption.this ? v T => f v
                    | nil => nil
 
