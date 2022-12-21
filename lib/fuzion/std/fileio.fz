@@ -110,31 +110,6 @@ public fileio is
                 content_length i32) i8 is intrinsic
 
 
-  # checks if the file/directory in the path exists or not
-  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
-  #
-  public exists(
-                # the (relative or absolute) file/directory name, using platform specific path separators
-                path string) outcome bool is
-    arr := fuzion.sys.c_string path
-    rslt := exists arr unit
-    if rslt = 1
-      true
-    else if rslt = 0
-      false
-    else
-      error "an error occurred while performing exists operation on the following file/dir: \"$path\""
-
-  # intrinsic that checks the existence of the file/directory in the path
-  # it returns 1 in case the file/dir exists, 0 in case it does not exist and -1 in case of an error
-  #
-  private exists(
-                 # the internal array data representing the file/directory path in bytes
-                 path Object,
-                 # dummy parameter for overloading
-                 _ unit) i8 is intrinsic
-
-
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
