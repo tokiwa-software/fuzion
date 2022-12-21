@@ -446,14 +446,14 @@ public class DFA extends ANY
           yield null;
         }
         };
-      return new Pair(r, o);
+      return new Pair<>(r, o);
     }
 
 
     /**
      * Perform a match on value subv.
      */
-    public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
+    public Pair<Value, Unit> match(AbstractInterpreter<Value,Unit> ai, int cl, int c, int i, Value subv)
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
@@ -500,7 +500,7 @@ public class DFA extends ANY
                 }
             }
         }
-      return new Pair(r, _unit_);
+      return new Pair<>(r, _unit_);
     }
 
 
@@ -819,7 +819,7 @@ public class DFA extends ANY
     do
       {
         var s = vs.toArray(new Call[vs.size()]);
-        _newCalls = new TreeSet();
+        _newCalls = new TreeSet<>();
         for (var c : s)
           {
             if (_reportResults && _options.verbose(4))
@@ -863,7 +863,7 @@ public class DFA extends ANY
             i.setField(this, or, c._target);
           }
 
-        var ai = new AbstractInterpreter(_fuir, new Analyze(c));
+        var ai = new AbstractInterpreter<Value,Unit>(_fuir, new Analyze(c));
         var r = ai.process(c._cc, c._pre);
         if (r._v0 != null)
           {

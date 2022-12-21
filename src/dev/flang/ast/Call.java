@@ -765,7 +765,7 @@ public class Call extends AbstractCall
         if (_calledFeature != null)
           {
             var oldActuals = _actuals;
-            _actuals = new List(oldTarget);
+            _actuals = new List<>(oldTarget);
             _actuals.addAll(oldActuals);
           }
         else
@@ -982,16 +982,6 @@ public class Call extends AbstractCall
       {
         this._target = t;
       }
-  }
-
-
-  /**
-   * setBlock
-   *
-   * @param l
-   */
-  public void setBlock(List l)
-  {
   }
 
 
