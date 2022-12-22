@@ -857,24 +857,24 @@ public class Clazzes extends ANY
       {
         calledDynamically(cf);
       }
-    if(cf.isChoice())
-    {
-      outerClazz
-        .actualGenerics(c.actualTypeParameters())
-        .stream()
-        .forEach(ag ->
-          {
-            if (!ag.isRef())
-              {
-                // Even though choice element ag
-                // might never actually be instantiated
-                // there might be tagging code being generated for ag.
-                // related: tests/issue459.fz
-                clazz(ag).instantiated(c.pos());
-              }
-          });
-    }
-    if (!cf.isChoice() && tclazz != c_void.get())
+    if (cf.isChoice())
+      {
+        outerClazz
+          .actualGenerics(c.actualTypeParameters())
+          .stream()
+          .forEach(ag ->
+            {
+              if (!ag.isRef())
+                {
+                  // Even though choice element ag
+                  // might never actually be instantiated
+                  // there might be tagging code being generated for ag.
+                  // related: tests/issue459.fz
+                  clazz(ag).instantiated(c.pos());
+                }
+            });
+      }
+    else if (tclazz != c_void.get())
       {
         var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.actualTypeParameters()), c, c.isInheritanceCall());
         if (c._sid < 0)
