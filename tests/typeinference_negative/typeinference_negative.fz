@@ -109,7 +109,7 @@ typeinference_negative is
      z := y
 
   funct1 is
-     a := fun () i32 { 3 }
+     a () -> i32 := () -> 3
      b := a
      c := b
      d := c
@@ -118,7 +118,7 @@ typeinference_negative is
 
   funct2 is
      a := d  // 35. f2. should flag an error, illegal forward reference
-     b := fun () i32 { 3 }
+     b () -> i32 := () -> 3
      c := b
      d := c
 
