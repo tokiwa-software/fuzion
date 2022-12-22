@@ -187,7 +187,7 @@ public class DFA extends ANY
 
     /**
      * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a refernce). See FUIR.access*().
+     * might be dynamic (a reference). See FUIR.access*().
      */
     public Unit assign(int cl, int c, int i, Value tvalue, Value avalue)
     {
@@ -198,7 +198,7 @@ public class DFA extends ANY
 
     /**
      * Perform a call of a feature with target instance tvalue with given
-     * arguments.. The type of tvalue might be dynamic (a refernce). See
+     * arguments.. The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
