@@ -94,7 +94,7 @@ public class Html
         var f = c.calledFeature();
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
           + htmlEncodeNbsp(basename(f) + " ")
-          + c.generics().stream().map(at -> at.asString()).collect(Collectors.joining(htmlEncodeNbsp(", "))) + "</a>";
+          + c.actualTypeParameters().stream().map(at -> at.asString()).collect(Collectors.joining(htmlEncodeNbsp(", "))) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
