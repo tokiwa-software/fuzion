@@ -114,7 +114,7 @@ public class DotType extends Expr
     tc.resolveTypes(res, outer);
     return new Call(_pos,
                     tc,
-                    _lhs.isThisType() ? "getOuterType" : "get",
+                    "get",
                     new List<>(new Actual(_lhs))).resolveTypes(res, outer);
   }
 

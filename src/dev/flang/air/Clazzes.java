@@ -1065,7 +1065,8 @@ public class Clazzes extends ANY
                                       outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
-            if (c.calledFeature() == Types.resolved.f_Types_getOuterType)
+            if (c.calledFeature() == Types.resolved.f_Types_get &&
+                c.actualTypeParameters().get(0).isThisType())
               {
                 /* starting with outerClazz.feature(), follow outer references
                  * until we find the call's type parameter. The type of that outer ref's result
