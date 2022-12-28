@@ -266,7 +266,18 @@ public class FUIR extends IR
             if (CHECKS) check
               (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
-            if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type == Types.t_ERROR)
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0);
+
+                if (Errors.count() == 0)
+                  {
+                    Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
+                                 "were reported.  This can only be the result of a severe bug.");
+                  }
+              }
+            else if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
                 add(cl);
               }
