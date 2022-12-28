@@ -166,7 +166,6 @@ public class Types extends ANY
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
-    public final AbstractFeature f_Types_getOuterType;
     public static interface CreateType
     {
       AbstractType type(String name, boolean isRef);
@@ -225,7 +224,6 @@ public class Types extends ANY
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
-      f_Types_getOuterType         = f_Types.get(mod, "getOuterType");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
       t_UNDEFINED.resolveArtificialType(universe);

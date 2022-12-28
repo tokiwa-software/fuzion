@@ -1352,8 +1352,7 @@ public class Call extends AbstractCall
           }
         _type = tptype;
       }
-    else if (_calledFeature == Types.resolved.f_Types_get          ||
-             _calledFeature == Types.resolved.f_Types_getOuterType    )
+    else if (_calledFeature == Types.resolved.f_Types_get)
       { // NYI (see #282): special handling could maybe be avoided? Maybe make
         // this special handling the normal handlng for all features whose
         // result type depends on a generic that can be replaced by an actual
