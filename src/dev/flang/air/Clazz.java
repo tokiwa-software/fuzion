@@ -1959,10 +1959,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz typeClazz()
   {
-    return feature().isUniverse() ? this
-                                  : Clazzes.create(_type.typeType(),
-                                                   _outer.typeClazz());
+    if (_typeClazz == null)
+      {
+        _typeClazz = feature().isUniverse() ? this
+                                            : Clazzes.create(_type.typeType(),
+                                                             _outer.typeClazz());
+      }
+    return _typeClazz;
   }
+
+
+  /**
+   * cached result of typeClazz()
+   */
+  private Clazz _typeClazz = null;
 
 
   /**
