@@ -989,8 +989,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(AbstractFeature f,
-               HasSourcePosition p)
+  public Clazz lookup(AbstractFeature f,
+                      HasSourcePosition p)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -2170,7 +2170,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var r = f.resultField();
     return r == null
       ? null
-      : lookup(r);
+      : lookup(r, f);
   }
 
 

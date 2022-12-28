@@ -520,7 +520,7 @@ public class Interpreter extends ANY
                 if (vc.actualType(f.resultType()).compareTo(Types.resolved.t_unit) != 0)
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
-                    f = vc.lookup(f).feature();
+                    f = vc.lookup(f, b).feature();
                     if (Clazzes.isUsed(f, vc))
                       {
                         Value v = getField(f, vc, val, true /* allow for uninitialized ref field */);
