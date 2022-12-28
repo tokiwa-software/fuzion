@@ -1758,7 +1758,7 @@ hw25 is
   {
     var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    var ic = cc.lookup(call);
     return id(ic);
   }
 
