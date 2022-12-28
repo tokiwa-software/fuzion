@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Consts;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -78,16 +79,30 @@ public class AirErrors extends AstErrors
   {
     var abs = new StringBuilder();
     var abstracts = new StringBuilder();
+    var foundAbstract = false;
+    var foundFixed = false;
+    for (var af : abstractFeature)
+      {
+        foundAbstract |= af.isAbstract();
+        foundFixed    |= (af.modifiers() & Consts.MODIFIER_FIXED) != 0;
+      }
+    if (CHECKS) check
+      (foundAbstract || foundFixed);
+    var kind =
+      foundAbstract && foundFixed ? "abstract or fixed" :
+      foundAbstract               ? "abstract"          :
+      foundFixed                  ? "fixed"             : Errors.ERROR_STRING;
     for (var af : abstractFeature)
       {
         abs.append(abs.length() == 0 ? "" : ", ").append(af.featureName().baseName());
-        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
+        var afKind = af.isAbstract() ? "abstract" : "fixed";
+        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
                          "which is called at " + Clazzes.isUsedAt(af).pos().show() + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),
-          "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
+          "Used " + kind + " " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
           "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
           "instantiated at " + instantiatedAt.pos().show() + "\n" +
           abstracts);

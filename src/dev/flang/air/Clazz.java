@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
+import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -1055,24 +1056,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         AbstractFeature af = findRedefinition(f);
         if (CHECKS) check
-          (Errors.count() > 0 || af != null);
+          (Errors.count() > 0 || af != null || isEffectivelyAbstract(f));
 
-        if (f == Types.f_ERROR || af == null)
+        if (f == Types.f_ERROR || af == null && !isEffectivelyAbstract(f))
           {
             innerClazz = Clazzes.error.get();
           }
         else
           {
-            if (af.kind() == AbstractFeature.Kind.Abstract)
+            var aaf = af != null ? af : f;
+            if (isEffectivelyAbstract(aaf))
               {
                 if (_abstractCalled == null)
                   {
                     _abstractCalled = new TreeSet<>();
                   }
-                _abstractCalled.add(af);
+                _abstractCalled.add(aaf);
               }
 
-            AbstractType t = af.thisType().actualType(af, actualGenerics);
+            AbstractType t = aaf.thisType().actualType(aaf, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
             if (actualGenerics.isEmpty())
@@ -1091,7 +1093,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   }
               }
             if (CHECKS) check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == aaf);
           }
       }
     if (innerClazz != null && p != null && !isInheritanceCall)
@@ -1108,6 +1110,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
        innerClazz != null);
 
     return innerClazz;
+  }
+
+
+  /**
+   * When seen from this Clazz, is feature f effectively abstract? This is the
+   * case if f is abstract and if f is fixed to another outher feature than
+   * this.feature(), i.e. this clazz inherits f but not its implementation.
+   */
+  boolean isEffectivelyAbstract(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (f != null);
+
+    return f.isAbstract() ||
+      (f.modifiers() & Consts.MODIFIER_FIXED) != 0 && f.outer() != this.feature();
   }
 
 
