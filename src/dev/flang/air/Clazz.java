@@ -962,7 +962,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(AbstractFeature f)
+  public Clazz lookup(AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (f != null,
