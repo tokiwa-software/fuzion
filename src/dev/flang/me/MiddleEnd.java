@@ -256,7 +256,7 @@ public class MiddleEnd extends ANY
           { // NYI: This might mark too many type features. It shold be
             // sufficient to mark all type features of types passed as type
             // parameters and of all features that whose ancestors use this.type
-            // (i.e., Types.getOuterType) to access the current type instance.
+            // (i.e., Types.get) to access the current type instance.
             markUsed(f.typeFeature(), false, usedAt);
           }
       }

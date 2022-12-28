@@ -58,20 +58,3 @@ Types is
   # 'Types.get x'.
   #
   get(T type) => T
-
-
-  # Get the Type instance corresponding to a given outer type.
-  #
-  # This is used for expressions like 'numeric.this.type' where the actual type
-  # depends on what specialized child for numeric we are currently in.
-  #
-  # Internally, Fuzion's front end implements 'x.this.type' within feature
-  # 'x.y.z' using 'Types.getOuterType x x.y.z'.
-  #
-  # This feature is treated specially the Fuzion IR which replaces a call by
-  # a no-op and specializing the subsequent code for the actual outer clazz.
-  #
-  # The parameters O and I could be replaced by an integer indicating the
-  # number of levels to go
-  #
-  private getOuterType(O type) => O
