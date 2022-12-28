@@ -433,11 +433,11 @@ public class Clazzes extends ANY
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, SourcePosition.builtIn);
     fuzionSysArray_u8 = constStringInternalArray.resultClazz();
     fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
-    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
-    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
+    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -738,7 +738,7 @@ public class Clazzes extends ANY
         Clazz sClazz = clazz(a._target, outerClazz);
         outerClazz.setRuntimeClazz(a._tid, sClazz);
         var vc = sClazz.asValue();
-        var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a);
+        var fc = vc.lookup(a._assignedField, a);
         propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
         if (isUsed(a._assignedField, sClazz))
           {
@@ -943,7 +943,7 @@ public class Clazzes extends ANY
     if (f != null)
       {
         var fOrFc = isUsed(f, outerClazz)
-          ? outerClazz.lookup(f, AbstractCall.NO_GENERICS, isUsedAt(f))
+          ? outerClazz.lookup(f)
           : outerClazz.actualClazz(f.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
@@ -1002,7 +1002,7 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i).resultClazz();
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, i).resultClazz();
     sa.instantiated(i);
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
@@ -1077,7 +1077,7 @@ public class Clazzes extends ANY
                 var i = outerClazz.feature();
                 while (i != o)
                   {
-                    res = res.lookup(i.outerRef(), AbstractCall.NO_GENERICS, c).resultClazz();
+                    res = res.lookup(i.outerRef(), c).resultClazz();
                     i = i.outer();
                   }
                 result = res.typeClazz();

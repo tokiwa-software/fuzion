@@ -920,7 +920,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         (isRef() || isDynamicOuterRef()) &&
         isInstantiated())
       {
-        var innerClazz = lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f));
+        var innerClazz = lookup(f);
       }
   }
 
@@ -948,6 +948,55 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
       }
     return _module.lookupFeature(feature(), fn);
+  }
+
+
+  /**
+   * Lookup the code to call the feature f from this clazz without type
+   * parameters using dynamic binding if needed.
+   *
+   * This is not intended for use at runtime, but during analysis of static
+   * types or to fill the virtual call table.
+   *
+   * @param f the feature that is called
+   *
+   * @return the inner clazz of the target in the call.
+   */
+  public Clazz lookup(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       !this.isVoidType(),
+       Clazzes.isUsedAt(f) != null);
+
+    return lookup(f, Clazzes.isUsedAt(f));
+  }
+
+
+  /**
+   * Lookup the code to call the feature f from this clazz without type
+   * parameters using dynamic binding if needed.
+   *
+   * This is not intended for use at runtime, but during analysis of static
+   * types or to fill the virtual call table.
+   *
+   * @param f the feature that is called
+   *
+   * @param p if this lookup would result in the returned feature to be called,
+   * p gives the position in the source code that causes this call.  p must be
+   * null if the lookup does not causes a call, but it just done to determine
+   * the type.
+   *
+   * @return the inner clazz of the target in the call.
+   */
+  public Clazz lookup(AbstractFeature f,
+                      HasSourcePosition p)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       !this.isVoidType());
+
+    return lookup(f, Call.NO_GENERICS, p);
   }
 
 
@@ -1297,7 +1346,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             else
               {
                 var cfa = cf.valueArguments().get(i);
-                var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
+                var ccc = lookup(cfa, Clazzes.isUsedAt(f));
                 if (c._parentCallArgFieldIds < 0)
                   {
                     c._parentCallArgFieldIds = Clazzes.getRuntimeClazzIds(n);
@@ -1654,10 +1703,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     switch (feature().qualifiedName())
       {
       case "effect.abortable":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
         break;
       case "fuzion.sys.thread.spawn0":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
         break;
       default: break;
       }
@@ -2121,7 +2170,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var r = f.resultField();
     return r == null
       ? null
-      : lookup(r, Call.NO_GENERICS, Clazzes.isUsedAt(r));
+      : lookup(r, f);
   }
 
 
@@ -2222,7 +2271,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           var or = f.outerRef();
           if (or != null && Clazzes.isUsedAtAll(or))
             {
-              result = lookup(or, Call.NO_GENERICS, Clazzes.isUsedAt(or));
+              result = lookup(or);
             }
           break;
         }
@@ -2254,7 +2303,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice() && !isChoiceOfOnlyRefs())
       {
         var f = feature();
-        result = lookup(f.choiceTag(), Call.NO_GENERICS, f);
+        result = lookup(f.choiceTag(), f);
       }
     return result;
   }
@@ -2353,7 +2402,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             else
               {
-                fields.add(lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)));
+                fields.add(lookup(field));
               }
           }
       }

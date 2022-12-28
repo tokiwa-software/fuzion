@@ -342,7 +342,7 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          var open_results = (long[])args.get(2).arrayData()._array; 
+          var open_results = (long[])args.get(2).arrayData()._array;
           long fd;
           try
             {
@@ -395,7 +395,7 @@ public class Intrinsics extends ANY
                   return new i8Value(0);
                 }
               return new i8Value(-1);
-            } 
+            }
           catch (Exception e)
             {
               return new i8Value(-1);
@@ -434,13 +434,13 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           long fd = args.get(1).i64Value();
-          var seekResults = (long[])args.get(3).arrayData()._array; 
+          var seekResults = (long[])args.get(3).arrayData()._array;
           try
             {
               _openStreams_.get(fd).seek(args.get(2).i16Value());
               seekResults[0] = _openStreams_.get(fd).getFilePointer();
               return Value.EMPTY_VALUE;
-            } 
+            }
           catch (Exception e)
             {
               seekResults[1] = -1;
@@ -460,7 +460,7 @@ public class Intrinsics extends ANY
             {
               arr[0] = _openStreams_.get(fd).getFilePointer();
               return Value.EMPTY_VALUE;
-            } 
+            }
           catch (Exception e)
             {
               arr[1] = -1;
@@ -742,7 +742,7 @@ public class Intrinsics extends ANY
         {
           var call = Types.resolved.f_function_call;
           var oc = innerClazz.argumentFields()[0].resultClazz();
-          var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+          var ic = oc.lookup(call);
           var al = new ArrayList<Value>();
           al.add(args.get(1));
           var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
@@ -1059,7 +1059,7 @@ public class Intrinsics extends ANY
               FuzionThread.current()._effects.put(cl, m);
               var call = Types.resolved.f_function_call;
               var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
-              var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+              var ic = oc.lookup(call);
               var al = new ArrayList<Value>();
               al.add(args.get(1));
               try {
