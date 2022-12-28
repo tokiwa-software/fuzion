@@ -1048,7 +1048,7 @@ hw25 is
           {
           case Abstract, Choice -> false;
           case Intrinsic, Routine, Field ->
-            (cc.isInstantiated() || cc.feature().isOuterRef())
+            (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.conststring.getIfCreated()
             && !cc.isAbsurd()
             // NYI: this should not depend on string comparison!

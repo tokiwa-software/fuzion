@@ -35,13 +35,6 @@ test_covariance is
 
     # special values
     #
-    # NYI: remove these, should be type.zero/type.one
-    #
-    z num.this.type is abstract
-    o num.this.type is abstract
-
-    # special values
-    #
     type.zero THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
     type.one  THIS_TYPE is abstract  # NYI: THIS_TYPE -> num.this.type
 
@@ -55,18 +48,21 @@ test_covariance is
     to_u32_loop =>
       555555
 /* NYI: crashes:
-      if num.type.zero.lessThan num.this
-        (minus num.type.one).to_u32_loop + 1
+   to_u32_loop =>
+      for
+        x := num.this, x.minus num.this.type.one
+        u := u32 0, u+1
+      while num.this.type.zero.lessThan num.this
       else
-        0
-
+        u
 */
 
     # convert this to corresponding values as an 'u32'
     #
     to_u32 u32 is
-      if z.lessThan num.this
-        (minus o).to_u32 + 1
+      t := num.this.type
+      if t.zero.lessThan num.this
+        (minus t.one).to_u32 + 1
       else
         0
 
@@ -105,7 +101,7 @@ test_covariance is
     fixed minus(other intM5) => intM5 (v - other.v)%5
     redef valueString => "$v mod 5"
 
-run =>
+run_test_covariance =>
 
   test(N test_covariance.num.type, x, y N) =>
     say x
@@ -153,4 +149,80 @@ run =>
   say z
   test x y
 
-run
+
+# This test creates nested features with accesses to the outer features' this.type
+# values.  Then, it creates new features by inheriting from the outer features and
+# redefining type features.
+#
+# It will then be tested that the corresponding type features respect the nesting
+# and inheritance relation.
+#
+test_this_type =>
+
+  a is
+    type.s => "a"
+    redef asString => "{a.this.type.s}"
+    b is
+      type.s => "b"
+      redef asString => "{a.this.type.s}{b.this.type.s}"
+      c is
+        type.s => "c"
+        d is
+          type.s => "d"
+          redef asString => "{a.this.type.s}{b.this.type.s}{c.this.type.s}{d.this.type.s}"
+
+  k : a is
+    redef type.s => "k"
+
+  l : a.b is
+    redef type.s => "l"
+
+  p : a is
+    redef type.s => "p"
+  q : a is
+    redef type.s => "q"
+    r : b is
+      redef type.s => "r"
+  s : a is
+    redef type.s => "s"
+    t : b is
+      redef type.s => "t"
+      u : c is
+        redef type.s => "u"
+  v : a is
+    redef type.s => "v"
+    w : b is
+      redef type.s => "w"
+      x : c is
+        redef type.s => "x"
+        y : d is
+          redef type.s => "y"
+
+  z : a.b.c.d is
+    redef type.s => "z"
+
+  Z : v.w.x.y is
+    redef type.s => "Z"
+
+  chck $a       "a"
+  chck $k       "k"
+  chck $a.b     "ab"
+  chck $l       "al"
+  chck $a.b.c.d "abcd"
+  chck $p.b.c.d "pbcd"
+  chck $q.r.c.d "qrcd"
+  chck $s.b.c.d "sbcd"
+  chck $s.t.c.d "stcd"
+  chck $s.t.u.d "stud"
+  chck $v.b.c.d "vbcd"
+  chck $v.w.c.d "vwcd"
+  chck $v.w.x.d "vwxd"
+  chck $v.w.x.y "vwxy"
+  chck $z       "abcz"
+  chck $Z       "vwxZ"
+
+  chck(s, t string) =>
+    say (if s = t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
+
+run_test_covariance
+test_this_type

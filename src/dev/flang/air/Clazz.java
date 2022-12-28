@@ -1775,7 +1775,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     return this == Clazzes.fuzionSysArray_u8 ||
       this == Clazzes.conststring.get() ||
-      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs()) && _isInstantiated;
+      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
   }
 
 
@@ -1997,13 +1997,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return typeParameterActualType().typeClazz();
       }
-    else if (f  == Types.resolved.f_Types_get ||
-             of == Types.resolved.f_Types_get && f == of.resultField())
+    else if (f  == Types.resolved.f_Types_get                                   ||
+             of == Types.resolved.f_Types_get          && f == of.resultField() ||
+             f  == Types.resolved.f_Types_getOuterType                          ||
+             of == Types.resolved.f_Types_getOuterType && f == of.resultField()    )
       // NYI (see #282): Would be nice if this would not need special handlng but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {
-        var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
+        var ag = ((f == Types.resolved.f_Types_get          ||
+                   f == Types.resolved.f_Types_getOuterType    ) ? this : _outer).actualGenerics();
         return ag[0].typeClazz();
       }
     else
@@ -2175,7 +2178,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
         result = new Clazz[gs.size()];
         for (int i = 0; i < gs.size(); i++)
           {
-            result[i] = actualClazz(gs.get(i));
+            var gi = gs.get(i);
+            if (gi.isThisType())
+              {
+                // Only calls to Types.getOuterType may have generic parameters
+                // gi with gi.isThisType().  Calls to Types.getOuterType will
+                // essentially become NOPs anyway. Here we replace the
+                // this.types by their underlying type to avoid problems
+                // creating clazzes form this.types.
+                if (CHECKS) check
+                  (feature() == Types.resolved.f_Types_getOuterType);
+
+                gi = Types.intern(new Type((Type) gi, Type.RefOrVal.LikeUnderlyingFeature));
+              }
+            result[i] = actualClazz(gi);
           }
       }
     return result;

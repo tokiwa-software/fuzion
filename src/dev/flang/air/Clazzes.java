@@ -1065,7 +1065,26 @@ public class Clazzes extends ANY
                                       outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
-            result = inner.resultClazz();
+            if (c.calledFeature() == Types.resolved.f_Types_getOuterType)
+              {
+                /* starting with outerClazz.feature(), follow outer references
+                 * until we find the call's type parameter. The type of that outer ref's result
+                 * is the type whose type clazz is our result.
+                 */
+                var res = outerClazz;
+                var o = c.actualTypeParameters().get(0).featureOfType();
+                var i = outerClazz.feature();
+                while (i != o)
+                  {
+                    res = res.lookup(i.outerRef(), AbstractCall.NO_GENERICS, c).resultClazz();
+                    i = i.outer();
+                  }
+                result = res.typeClazz();
+              }
+            else
+              {
+                result = inner.resultClazz();
+              }
           }
         else
           {
@@ -1149,7 +1168,8 @@ public class Clazzes extends ANY
   public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !thiz.dependsOnGenerics());
+      (Errors.count() > 0 || !thiz.dependsOnGenerics(),
+       !thiz.isThisType());
 
     Clazz outerClazz;
     if (thiz.outer() != null)
