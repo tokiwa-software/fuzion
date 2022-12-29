@@ -28,7 +28,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-hasHash(redef HE (hasEquals HE).type) : hasEquals HE
+hasHash(redef HE type : hasEquals HE) : hasEquals HE
 
 /* NYI: quantor intrinsics not supported yet:
 

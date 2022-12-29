@@ -25,7 +25,7 @@
 
 # numericSequence -- a Sequence whose elements inherit from numeric
 #
-numericSequence(N (numeric N).type, from Sequence N) : Sequence N, hasEquals (numericSequence N)  is
+numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numericSequence N)  is
 
   # create a list from this Sequence.
   #

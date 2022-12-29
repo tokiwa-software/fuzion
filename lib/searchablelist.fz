@@ -29,7 +29,7 @@
 # type 'Sequence', so it is more efficient.
 #
 #
-searchablelist(A (hasEquals A).type, from list A) : Sequence A
+searchablelist(A type : hasEquals A, from list A) : Sequence A
 /* : list A -- NYI: we might allow inherting from a choice to get a choice
                     with more restrictions on the type arguments
 

@@ -29,7 +29,7 @@
 # type 'list', so it is more flexible.
 #
 #
-searchableSequence(A (hasEquals A).type, from Sequence A) : Sequence A
+searchableSequence(A type : hasEquals A, from Sequence A) : Sequence A
 is
 
   # create a list from this Sequence.

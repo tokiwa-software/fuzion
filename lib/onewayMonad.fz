@@ -33,7 +33,7 @@ onewayMonad(
 
   redef A type,
 
-  OMA (onewayMonad A OMA).type,
+  OMA type : onewayMonad A OMA,
 
   # action to be performed, may include code to run while this effect is installed.
   #
@@ -42,4 +42,4 @@ onewayMonad(
 is
 
 onewayMonads(redef A type,
-             OMA (onewayMonad A OMA).type) : monads A OMA is
+             OMA type : onewayMonad A OMA) : monads A OMA is

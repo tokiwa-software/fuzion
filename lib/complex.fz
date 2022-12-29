@@ -28,7 +28,7 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex (C (numeric C).type,
+complex (C type : numeric C,
          real,    # real part
          imag C   # imaginary part
          ) : numeric (complex C), complexes C
@@ -62,7 +62,7 @@ is
   redef infix != (b complex C) => a.real != b.real || a.imag != b.imag
 
   # NYI: #637:
-  # fixed type.equality(C (numeric C).type, a, b complex C)
+  # fixed type.equality(C type : numeric C, a, b complex C)
   #   a.real = b.real && a.imag = b.imag
 
   # NYI: total order ignoring imag
@@ -98,7 +98,7 @@ is
 # to https://www.wordhippo.com/what-is/the-plural-of/complex.html, so we
 # use complexes.
 #
-complexes(E (numeric E).type) : numerics (complex E) is
+complexes(E type : numeric E) : numerics (complex E) is
 
   redef name => "complex"
 
@@ -123,4 +123,4 @@ complexes(E (numeric E).type) : numerics (complex E) is
 # does not define a type (which would cause a name clash with complex with two
 # arguments).
 #
-complex(E (numeric E).type) => complexes E
+complex(E type : numeric E) => complexes E

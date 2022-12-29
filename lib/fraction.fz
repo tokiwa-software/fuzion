@@ -35,7 +35,7 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-fraction(B (integer B).type,
+fraction(B type : integer B,
          num,    # numerator
          den B   # denominatior
         ) : numeric (fraction B)
@@ -85,7 +85,7 @@ is
   redef infix >= (b fraction B) =>  (a - b).num.sign >= 0
 
   # NYI: #637:
-  # fixed fraction.type.equality(B (integer B).type, a, b fraction B) =>
+  # fixed fraction.type.equality(B type : integer B, a, b fraction B) =>
   #   (a - b).num.isZero
 
   redef asString => "" + num + "⁄" + den

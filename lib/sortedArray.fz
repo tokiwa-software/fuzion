@@ -193,7 +193,7 @@ is
 #
 sortedArrayOf
   (
-  T (ordered T).type,
+  T type : ordered T,
   # orginal, unsorted Sequence
   from Sequence T
   ) sortedArray T

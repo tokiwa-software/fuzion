@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 psSet
-  (K (ordered K).type,
+  (K type : ordered K,
    psm ref psMap K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine psSet(vs Sequence K)
   )
@@ -136,7 +136,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 #
 # NYI: move to psSet.type
 #
-psSets(K (ordered K).type) is
+psSets(K type : ordered K) is
 
   # psSet -- a partially sorted set based on psMap
   #
@@ -149,4 +149,4 @@ psSets(K (ordered K).type) is
 #
 # This feature creates a pre-initialized instance of psSet.
 #
-psSet(K (ordered K).type, vs Sequence K) => (psSets K).empty.addAll vs
+psSet(K type : ordered K, vs Sequence K) => (psSets K).empty.addAll vs

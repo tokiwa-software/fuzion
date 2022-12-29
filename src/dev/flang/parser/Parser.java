@@ -898,9 +898,9 @@ argument    : visibility
               argType
               contract
             ;
-argType     : typeType
-            | type
-            | type dot typeType
+argType     : type
+            | typeType
+            | typeType COLON type
             ;
    */
   List<Feature> formArgs()
@@ -918,14 +918,14 @@ argType     : typeType
                                     Impl i;
                                     if (current() == Token.t_type)
                                       {
-                                        t = new Type("Object");
-                                        i =  typeType();
+                                        i = typeType();
+                                        t = skipColon() ? type()
+                                                        : new Type("Object");
                                       }
                                     else
                                       {
+                                        i = Impl.FIELD;
                                         t = type();
-                                        i = skipDot() ? typeType()
-                                                      : Impl.FIELD;
                                       }
                                     Contract c = contract();
                                     for (String s : n)
@@ -979,14 +979,14 @@ typeType    : "type"
                     if (skip(Token.t_type))
                       {
                         splitSkip("...");
+                        if (skipColon())
+                          {
+                            result = skipType();
+                          }
                       }
                     else
                       {
                         result = skipType();
-                        if (result && skipDot() && skip(Token.t_type))
-                          {
-                            splitSkip("...");
-                          }
                       }
                   }
                 if (result)
@@ -1040,10 +1040,11 @@ typeType    : "type"
                 if (skip(Token.t_type))
                   {
                     splitSkip("...");
-                  }
-                else if (fork().skipDotType())
-                  {
-                    skipDotType();
+                    if (skipColon())
+                      {
+                        skipType();
+                      }
+                    result[0] = FormalOrActual.formal;
                   }
                 else if (!skipType())
                   {
