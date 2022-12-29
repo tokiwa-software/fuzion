@@ -224,6 +224,11 @@ test_this_type =>
   chck(s, t string) =>
     say (if s = t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
 
+# This test creates nested features with inner type features that use outer features'
+# this.type in their signature.
+#
+test_this_type_in_type_feature =>
+
   abc is
     def(s string) is
       ghi is
@@ -291,3 +296,4 @@ test_this_type =>
 
 run_test_covariance
 test_this_type
+test_this_type_in_type_feature
