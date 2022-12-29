@@ -188,12 +188,12 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
 
   # identity element for 'infix +'
   #
-  type.zero THIS_TYPE is abstract
+  type.zero numeric.this.type is abstract
 
 
   # identity element for 'infix *'
   #
-  type.one  THIS_TYPE is abstract
+  type.one  numeric.this.type is abstract
 
 
   # the value corresponding to v in whatever integer implementation we have,
@@ -201,7 +201,7 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
   #
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
-  type.from_u32(v u32) THIS_TYPE is
+  type.from_u32(v u32) numeric.this.type is
     if v == 0 zero else one # NYI: #706: (from_u32 v-1) +^ one
 
 
