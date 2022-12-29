@@ -94,8 +94,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * resolve 'abc.this.type' within a type feature.  This is only needed for
+   * ast.Type, for fe.LibraryType this is a NOP.
+   *
+   * @param feat the outer feature that this type is declared in.
+   */
+  AbstractType resolveThisType(AbstractFeature outerfeat)
+  {
+    return this;
+  }
+
+
+  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
    *
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.

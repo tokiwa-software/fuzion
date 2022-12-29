@@ -622,9 +622,26 @@ public class Type extends AbstractType
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
    *
-   * @param outer the feature surrounding this expression.
+   * @param outerfeat the feature surrounding this expression.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return v
+      .actionBefore(this, outerfeat)
+      .visit2(v, outerfeat);
+  }
+
+
+  /**
+   * Helper method for visit() that is used on the result of v.actionBefore() to
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outerfeat the feature surrounding this expression.
+   */
+  private AbstractType visit2(FeatureVisitor v, AbstractFeature outerfeat)
   {
     if ((feature == null) && (generic == null))
       {
@@ -719,7 +736,69 @@ public class Type extends AbstractType
 
 
   /**
+   * resolve 'abc.this.type' within a type feature. If this designates a
+   * 'this.type' withing a type feature, then return the type parameter of the
+   * corresponding outer type.
+   *
+   * Example: if this is
+   *
+   *   b.this.type
+   *
+   * within a type feature
+   *
+   *   a.type.b.type.c.d
+   *
+   * then we replace 'b.this.type' by the type parameter of a.b.type.
+   *
+   * @param outerfeat the outer feature that this type is declared in.
+   */
+  Type resolveThisType(AbstractFeature outerfeat)
+  {
+    if (PRECONDITIONS) require
+      (outerfeat != null,
+       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       checkedForGeneric);
+
+    Type result = this;
+    var o = outerfeat;
+    while (isThisType() && o != null)
+      {
+        if (isMatchingTypeFeature(o))
+          {
+            result = new Type(pos(), new Generic(o.typeArguments().get(0)));
+            o = null;
+          }
+        else
+          {
+            o = o.outer();
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Recursive helper for resolveThisType to check if outerfeat is a type
+   * feature with the same name as this.
+   *
+   * @param outerfeat the outer feature that should be compared to this.
+   */
+  private boolean isMatchingTypeFeature(AbstractFeature outerfeat)
+  {
+    return outerfeat.isTypeFeature() &&
+      (name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.featureName().baseName()) &&
+      (_outer == null                                   ||
+       (_outer instanceof Type ot                   &&
+        !ot.isThisType()                            &&
+        ot.isMatchingTypeFeature(outerfeat.outer())   )    );
+  }
+
+
+  /**
    * resolve this type
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
    *
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
