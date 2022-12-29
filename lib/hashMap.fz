@@ -25,7 +25,7 @@
 
 # hashMap -- an immutable hash map from keys HK to values V
 #
-hashMap(HK (hasHash HK).type,
+hashMap(HK type : hasHash HK,
         redef V type,
         ks array HK,
         vs array V) : map HK V
@@ -125,7 +125,7 @@ is
 #
 # NYI: move to hashMap.type
 #
-hashMaps(HK (hasHash HK).type, V type) is
+hashMaps(HK type : hasHash HK, V type) is
 
 
   # empty -- convenience routine to create an empty instance of hashMap

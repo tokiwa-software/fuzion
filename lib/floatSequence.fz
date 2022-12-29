@@ -31,7 +31,7 @@
 
 # floatSequence -- a Sequence whose elements inherit from float
 #
-floatSequence(F (float F).type, redef from Sequence F) : numericSequence F from is
+floatSequence(F type : float F, redef from Sequence F) : numericSequence F from is
 
   # create a list from this Sequence.
   #
@@ -53,4 +53,3 @@ floatSequence(F (float F).type, redef from Sequence F) : numericSequence F from 
   euclidean_norm F is
     # NYI #500: sqrt,two and sum should be accessed via type
     first.sqrt ((mapSequence (x)->x**first.two).fold first.sum)
-

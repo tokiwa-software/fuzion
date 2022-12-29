@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
+numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs
@@ -208,7 +208,7 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
 # numerics -- unit type defining features related to numeric but not
 # requiring an instance
 #
-numerics(T (numeric T).type) is
+numerics(T type : numeric T) is
 
   # name of this numeric type, e.g., "u64"
   #

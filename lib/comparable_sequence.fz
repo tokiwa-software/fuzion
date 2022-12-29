@@ -25,7 +25,7 @@
 
 # comparable_sequence -- a Sequence that inherits from hasEquals
 #
-comparable_sequence(A (hasEquals A).type, from Sequence A) : Sequence A, hasEquals (comparable_sequence A)
+comparable_sequence(A type : hasEquals A, from Sequence A) : Sequence A, hasEquals (comparable_sequence A)
 is
 
   # create a list from this Sequence.
@@ -43,7 +43,7 @@ is
       (0..(from.count - 1)) ∀ (i -> fa[i] = oa[i])
 
   # NYI: #637:
-  # comparable_sequence(A (hasEquals A).type, a, b comparable_sequence A) bool is
+  # comparable_sequence(A type : hasEquals A, a, b comparable_sequence A) bool is
   #   aa := a.asArray
   #   ba := b.asArray
   #   if aa.count ≟ ba.count

@@ -320,7 +320,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sortBy(O (ordered O).type, f T->O) => sort (a, b -> f a <= f b)
+  sortBy(O type : ordered O, f T->O) => sort (a, b -> f a <= f b)
 
 
   # create a new list from the result of applying 'f' to the
@@ -388,7 +388,7 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I (hasInterval I).type, start_idx I) list (tuple I T) is
+  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
 
@@ -397,7 +397,7 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K (hasHash K).type, f T -> K) map K (Sequence T) is
+  group_by(K type : hasHash K, f T -> K) map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
     res := CTrie K (Sequence T)
     for_each (x ->
@@ -443,9 +443,9 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn(A (hasEquals A).type, l Sequence A, x A) => (searchableSequence A l).indexOf x
+  indexIn(A type : hasEquals A, l Sequence A, x A) => (searchableSequence A l).indexOf x
 
 
   # get the index of x within this Sequence or nil if it does not exist
   #
-  find(A (hasEquals A).type, l Sequence A, x Sequence A) => (searchableSequence A l).find x
+  find(A type : hasEquals A, l Sequence A, x Sequence A) => (searchableSequence A l).find x

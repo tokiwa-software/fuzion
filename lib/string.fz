@@ -181,7 +181,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   #
   parse_integer(
     # the integer type
-    T (integer T).type,
+    T type : integer T,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -203,7 +203,7 @@ string ref : has_equality, hasHash string, ordered string, strings is
   #
   private parse_integer(
     # the integer type
-    T (integer T).type,
+    T type : integer T,
 
     # base gives the base, between 2 and 36
     base T,

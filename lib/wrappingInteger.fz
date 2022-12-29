@@ -28,7 +28,7 @@
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers W is
+wrappingInteger(redef W type : wrappingInteger W) : integer W, wrappingIntegers W is
 
   # overflow checking
 
@@ -197,7 +197,7 @@ wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers 
 # wrappingIntegers -- unit type defining features related to wrappingInteger
 # but not requiring an instance
 #
-wrappingIntegers(W (wrappingInteger W).type) : numerics W is
+wrappingIntegers(W type : wrappingInteger W) : numerics W is
 
   min W is abstract
   max W is abstract

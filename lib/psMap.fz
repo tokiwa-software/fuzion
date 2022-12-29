@@ -48,7 +48,7 @@
 psMap
   (
    # key type
-   PK (ordered PK).type,
+   PK type : ordered PK,
 
    # value type
    redef V type,
@@ -362,7 +362,7 @@ O(n log n).
 #
 # NYI: move to psMap.type
 #
-psMaps(PK (ordered PK).type, V type) is
+psMaps(PK type : ordered PK, V type) is
 
   # empty -- an empty partially sorted map
   #
@@ -376,7 +376,7 @@ psMaps(PK (ordered PK).type, V type) is
 # This feature creates a pre-initialized instance of psMap.
 #
 psMap(
-    PK (ordered PK).type,
+    PK type : ordered PK,
     V type,
     # list of keys in the map
     ks Sequence PK,

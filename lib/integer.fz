@@ -29,7 +29,7 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer(I (integer I).type) : numeric I is
+integer(I type : integer I) : numeric I is
 
   # division remainder
   redef infix % (other I) I
