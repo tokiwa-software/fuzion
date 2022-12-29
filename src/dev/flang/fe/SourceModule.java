@@ -479,7 +479,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Helper for setOuterAndAddInnerForQualifiedRec() above to iterate over outer features except the
+   * Helper for setOuterAndAddInnerForQualified() above to iterate over outer features except the
    * outermost feature.
    *
    * This might register a callback in case the outer did not go through
