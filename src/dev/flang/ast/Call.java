@@ -1794,7 +1794,7 @@ public class Call extends AbstractCall
                        });
                   }
 
-                // Convert a call "f.g(a,b)" into "f.g.call(f,g)" in case f.g takes no
+                // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
               }

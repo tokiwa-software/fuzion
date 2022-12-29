@@ -456,7 +456,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * For a feature declared with a qualified name, find the actual outer
    * feature, which might be different to the surrounding outer feature.
    *
-   * Then, call setOUterAndAddInner with the outer that was found.  This call
+   * Then, call setOuterAndAddInner with the outer that was found.  This call
    * might be delayed until outer's declarations have been resolved, i.e., after
    * the return of this call.
    *
