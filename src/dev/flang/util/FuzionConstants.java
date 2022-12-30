@@ -102,9 +102,14 @@ public class FuzionConstants extends ANY
 
   /**
    * Name of type parameter for type features.  This type parameter will be set
-   * to the actual static type.
+   * to the actual corresponding type, i.e., including the type's type
+   * parameters.
+   *
+   * NOTE: Here, the INTERNAL_NAME_PREFIX is not used as a prefix since feature
+   * names with this prefix will be removed from .fum files which results in
+   * this not being found in redefinitions.
    */
-  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
 
 
   /**
