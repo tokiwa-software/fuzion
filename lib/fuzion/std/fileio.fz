@@ -28,23 +28,6 @@
 
 public fileio is
 
-  # reads a file and returns the content as an outcome array of u8 in case of success
-  # and an error in case of failure
-  #
-  public read(
-              # the (relative or absolute) file name, using platform specific path separators
-              path string) outcome (array u8) is
-    (get_file_size path).bind (array u8) (num->
-      file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
-
-      (open path (i8 0)).bind (array u8) (fd->
-        read_result := read fd file.internalArray.data file.length
-        if read_result == 0
-          file
-        else
-          error "error number: $read_result"))
-
-
   # reads n bytes of a file opened as fd
   #
   # in case the outcome is an array, it may be shorter than n. this means the end of file
