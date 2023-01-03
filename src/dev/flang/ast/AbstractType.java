@@ -997,13 +997,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
 
     var result = this;
-    if (!featureOfType().isUniverse())
+    if (!featureOfType().isUniverse() && this != Types.t_ERROR)
       {
         var f = res == null ? featureOfType().typeFeature()
                             : featureOfType().typeFeature(res);
+        var g = new List<AbstractType>(this);
+        g.addAll(generics());
         result = Types.intern(new Type(f.pos(),
                                        f.featureName().baseName(),
-                                       new List<>(this),
+                                       g,
                                        outer().typeType(res),
                                        f,
                                        Type.RefOrVal.Value));

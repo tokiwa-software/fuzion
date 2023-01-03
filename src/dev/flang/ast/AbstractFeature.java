@@ -459,7 +459,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean isTypeFeature()
   {
-    // NYI: CLEANUP: Replace string operation by a flag marking this features as a dynamic type feature
+    // NYI: CLEANUP: Replace string operation by a flag marking this features as a type feature
     return featureName().baseName().endsWith(FuzionConstants.TYPE_NAME) && !isOuterRef();
   }
 
@@ -488,25 +488,77 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return instance of Call to be used for the parent call in typeFeature().
    */
-  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res)
+  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
-      : outer().typeCall(p, new List<>(outer().thisType()), res);
+      : outer().typeCall(p, new List<>(outer().thisType()), res, that);
     var tf = typeFeature(res);
     var args = new List<Actual>();
+    var typeParameters2 = new List<AbstractType>();
     for (var tp : typeParameters)
       {
-        args.add(new Actual(tp));
+        var tpa = that.rebaseTypeForTypeFeature(tp);
+        args.add(new Actual(tpa));
+        typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
       }
     return new Call(p,
                     oc,
                     args,
-                    typeParameters,
+                    typeParameters2,
                     Expr.NO_EXPRS,
                     tf,
                     tf.thisType());
+  }
+
+
+  /**
+   * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
+   * i.e., within 'a's type feature.  The difference between thisType() and
+   * thisTypeInTypeFeature() is that the type parameters in the former are the
+   * type parameters of 'a', while in the latter they are the type parameter of
+   * 'a.this' (who use the same name)..
+   */
+  public AbstractType thisTypeInTypeFeature()
+  {
+    var t0 = thisType();
+    var tl = new List<AbstractType>();
+    boolean first = true;
+    for (var ta : typeFeature().typeArguments())
+      {
+        if (!first)
+          {
+            tl.add(new Type(pos(), new Generic(ta)));
+          }
+        first = false;
+      }
+    return t0.actualType(this, tl);
+  }
+
+
+  /**
+   * For a given type t that was declared in the context of a non-type feature
+   * 'this', rebase this type to be used in 'this.typeFeature()'.  This means
+   * that generics used in t that are generics from 'this' have to be replaced
+   * by generics from 'this.typeFeature()'. Furthermore, resolution of
+   * non-generic types used in 't' has to be performed relative to 'this' even
+   * when the outer feature is 'this.typeFeature()'.
+   */
+  public AbstractType rebaseTypeForTypeFeature(AbstractType t)
+  {
+    if (t.checkedForGeneric())
+      {
+        var tl = new List<AbstractType>();
+        for (var ta0 : typeArguments())
+          {
+            var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
+            tl.add(ta);
+            }
+        t = t.actualType(this, tl);
+      }
+    t = t instanceof Type tt ? tt.clone(this) : t;
+    return t;
   }
 
 
@@ -542,21 +594,70 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                 name = name + "_" + (_typeFeatureId_++);
               }
             name = name + FuzionConstants.TYPE_NAME;
+
+            var p = pos();
+            var typeArg = new Feature(p,
+                                      visibility(),
+                                      outer().isUniverse() && featureName().baseName().equals("Object") ? 0 : Consts.MODIFIER_REDEFINE,
+                                      thisType(),
+                                      FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                      Contract.EMPTY_CONTRACT,
+                                      Impl.TYPE_PARAMETER);
+            var typeArgs = new List<>(typeArg);
+            for (var t : typeArguments())
+              {
+                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
+                                                : Impl.TYPE_PARAMETER;
+                var constraint0 = t instanceof Feature tf ? tf._returnType.functionReturnType() : t.resultType();
+                var constraint = rebaseTypeForTypeFeature(constraint0);
+                var ta = new Feature(p, visibility(), t.modifiers() & Consts.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                                     Contract.EMPTY_CONTRACT,
+                                     i);
+                typeArgs.add(ta);
+              }
+
             var inh = new List<AbstractCall>();
+            int ii = 0;
             for (var pc: inherits())
               {
+                var iif = ii;
                 var thisType = new Type(pos(),
                                         FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                         new List<>(),
                                         null);
-                inh.add(pc.calledFeature().typeCall(pos(), new List<>(thisType),
-                                                    res));
+                var tp = new List<AbstractType>(thisType);
+                if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
+                  {
+                    for (var atp : pc.calledFeature().typeArguments())
+                      {
+                        tp.add(Types.t_UNDEFINED);
+                      }
+                    cpc.whenInferredTypeParameters(() ->
+                      {
+                        int i = 0;
+                        for (var atp : pc.actualTypeParameters())
+                          {
+                            tp.set(i+1, atp);
+                            ((Call)inh.get(iif))._generics.set(i+1, atp);
+                            i++;
+                          }
+                      });
+                  }
+                else
+                  {
+                    for (var atp : pc.actualTypeParameters())
+                      {
+                        tp.add(atp);
+                      }
+                  }
+                inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
+                ii++;
               }
             if (inh.isEmpty())
               {
                 inh.add(new Call(pos(), "Type"));
               }
-            _typeFeature = existingOrNewTypeFeature(res, name, inh);
+            _typeFeature = existingOrNewTypeFeature(res, name, typeArgs, inh);
           }
       }
     return _typeFeature;
@@ -573,7 +674,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param inh the inheritance clause of the new type feature.
    */
-  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractCall> inh)
+  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<Feature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (!isUniverse());
@@ -582,14 +683,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (result == null)
       {
         var p = pos();
-        var typeArg = new Feature(p,
-                                  visibility(),
-                                  outer().isUniverse() && featureName().baseName().equals("Object") ? 0 : Consts.MODIFIER_REDEFINE,
-                                  thisType(),
-                                  FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                  Contract.EMPTY_CONTRACT,
-                                  Impl.TYPE_PARAMETER);
-        var typeFeature = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(typeArg),
+        var typeFeature = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
                                       inh,
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
@@ -615,7 +709,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public AbstractFeature typeFeatureOrigin()
   {
     if (CHECKS) check
-      (_typeFeatureOrigin != null);
+      (isTypeFeature());
 
     return _typeFeatureOrigin;
   }
