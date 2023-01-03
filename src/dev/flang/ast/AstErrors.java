@@ -616,7 +616,7 @@ public class AstErrors extends ANY
   }
 
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
-                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg)
+                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg, boolean suggestAddingFixed)
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
@@ -624,11 +624,13 @@ public class AstErrors extends ANY
           "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " +
           // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
           typeWithFrom(originalArgType, originalArg.resultType()) + ".  " +
-          "Original argument declared at " + originalArg.pos().show());
+          "Original argument declared at " + originalArg.pos().show() + "\n" +
+          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                              : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
   }
 
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
-                                                      AbstractFeature redefinedFeature)
+                                                      AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
     error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
@@ -636,7 +638,9 @@ public class AstErrors extends ANY
           "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
           // originalFeature.resultType() might be a type parameter that has been replaced by originalType:
           typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
-          "Original feature declared at " + originalFeature.pos().show());
+          "Original feature declared at " + originalFeature.pos().show() + "\n" +
+          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                              : "To solve this, change type of result to " + s(originalType)));
   }
 
   public static void constructorResultMustBeUnit(Expr res)
