@@ -1160,7 +1160,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
   boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
-                                   AbstractType tr)
+                                   AbstractType tr,
+                                   boolean ignoreFixedModifier)
   {
     return
       /* to is original    .this.type  and
@@ -1191,7 +1192,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        !tr.isGenericArgument()                                                                                                         &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)                                                                       &&
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
        tr.compareTo(redefinition.outer().typeFeatureOrigin().thisTypeInTypeFeature()) == 0                                               );
   }
 
@@ -1222,7 +1223,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 var t1 = ta[i];
                 var t2 = ra[i];
                 if (t1.compareTo(t2) != 0 &&
-                    !isLegalCovariantThisType(o, f, t1, t2) &&
+                    !isLegalCovariantThisType(o, f, t1, t2, false) &&
                     !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
@@ -1235,7 +1236,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
                     var originalArg = o.arguments().get(i);
                     var actualArg   =   args       .get(ai);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
-                                                                 f, actualArg);
+                                                                 f, actualArg,
+                                                                 isLegalCovariantThisType(o, f, t1, t2, true));
                   }
               }
           }
@@ -1249,9 +1251,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
                  t2 != Types.resolved.t_void &&
-                 !isLegalCovariantThisType(o, f, t1, t2))
+                 !isLegalCovariantThisType(o, f, t1, t2, false))
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
+            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }
       }
 
