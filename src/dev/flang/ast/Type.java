@@ -263,7 +263,8 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (pos != null,
-       n.length() > 0);
+       n.length() > 0,
+       Errors.count() > 0 || f == null || f.generics().sizeMatches(g == null ? NONE : g));
 
     this.pos = pos;
     this.name  = n;
@@ -397,7 +398,70 @@ public class Type extends AbstractType
   }
 
 
+  /**
+   * Create a ref or value type from a given value / ref type.
+   *
+   * @param original the original value type
+   *
+   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   */
+  private Type(Type original, AbstractFeature originalOuterFeature)
+  {
+    this.pos                = original.pos;
+    this._refOrVal          = original._refOrVal;
+    this.name               = original.name;
+    if (original._generics.isEmpty())
+      {
+        this._generics          = original._generics;
+      }
+    else
+      {
+        this._generics = new List<>();
+        for (var g : original._generics)
+          {
+            this._generics.add(((Type)g).clone(originalOuterFeature));
+          }
+      }
+    this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
+    this.feature            = original.feature;
+    this.generic            = original.generic;
+    this.checkedForGeneric  = original.checkedForGeneric;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * This method usually just returns currentOuter. Only for clone()d types that
+   * are used in a different outer context, this permits to look up features the
+   * type is based on in the original context.
+   */
+  AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
+  {
+    return currentOuter;
+  }
+
+
+  /**
+   * Create a clone of this Type that uses orignalOuterFeature as context to
+   * look up features the type is built from.  Generics will be looked up in the
+   * current context.
+   *
+   * This is used for type features that use types from the original feature,
+   * but needs to replace generics by the type feature's generics.
+   */
+  Type clone(AbstractFeature originalOuterFeature)
+  {
+    return
+      new Type(this, originalOuterFeature)
+      {
+        AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
+        {
+          return originalOuterFeature;
+        }
+      };
+  }
 
 
   /**
@@ -855,10 +919,10 @@ public class Type extends AbstractType
       }
     if (!isGenericArgument())
       {
-        var of = outerfeat;
+        var of = originalOuterFeature(outerfeat);
         if (_outer != null)
           {
-            _outer = _outer.resolve(res, outerfeat);
+            _outer = _outer.resolve(res, of);
             var ot = _outer.isGenericArgument() ?_outer.genericArgument().constraint() : _outer;
             of = ot.featureOfType();
           }

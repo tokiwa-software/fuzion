@@ -101,7 +101,22 @@ public class Call extends AbstractCall
    * actual generic arguments, set by parser
    */
   public /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
-  public List<AbstractType> actualTypeParameters() { return _generics; }
+  public List<AbstractType> actualTypeParameters()
+  {
+    var res = _generics;
+    if (needsToInferTypeParametersFromArgs())
+      {
+        res = new List<>();
+        for (Generic g : _calledFeature.generics().list)
+          {
+            if (!g.isOpen())
+              {
+                res.add(Types.t_UNDEFINED);
+              }
+          }
+      }
+    return res;
+  }
 
 
   /**
@@ -1276,6 +1291,35 @@ public class Call extends AbstractCall
 
 
   /**
+   * list filled by whenInferredTypeParameters.
+   */
+  private List<Runnable> _whenInferredTypeParameters = NO_RUNNABLE;
+
+
+  /**
+   * pre-allocated empty list for _whenInferredTypeParameters.
+   */
+  private static List<Runnable> NO_RUNNABLE = new List<>();
+
+
+  /**
+   * While type parameters are still unkown because they need to be inferred
+   * from the actual arguments, this can be used to register actions to be
+   * performed as soon as the type parameters are known.
+   */
+  void whenInferredTypeParameters(Runnable r)
+  {
+    if (PRECONDITIONS) require
+      (needsToInferTypeParametersFromArgs());
+
+    if (_whenInferredTypeParameters == NO_RUNNABLE)
+      {
+        _whenInferredTypeParameters = new List<>();
+      }
+    _whenInferredTypeParameters.add(r);
+  }
+
+  /**
    * Helper function for resolveTypes to determine the static result type of
    * this call.
    *
@@ -1413,15 +1457,7 @@ public class Call extends AbstractCall
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
     String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
 
-    _generics = new List<>();
-    for (Generic g : cf.generics().list)
-      {
-        if (!g.isOpen())
-          {
-            _generics.add(Types.t_UNDEFINED);
-          }
-      }
-
+    _generics = actualTypeParameters();
     var va = cf.valueArguments();
     var checked = new boolean[va.size()];
     int last, next = 0;
@@ -1738,6 +1774,18 @@ public class Call extends AbstractCall
     return e == this;
   }
 
+
+  /**
+   * true before types are resolved and typeParameters() is just a list of
+   * Types.t_UNDEFINED since the actual types still need to be inferred from
+   * actual arguments.
+   */
+  boolean needsToInferTypeParametersFromArgs()
+  {
+    return _calledFeature != null && _generics == NO_GENERICS && _calledFeature.generics() != FormalGenerics.NONE;
+  }
+
+
   /**
    * determine the static type of all expressions and declared features in this feature
    *
@@ -1760,9 +1808,13 @@ public class Call extends AbstractCall
       }
     else
       {
-        if (_generics == NO_GENERICS && _calledFeature.generics() != FormalGenerics.NONE)
+        if (needsToInferTypeParametersFromArgs())
           {
             inferGenericsFromArgs(res, outer);
+            for (var r : _whenInferredTypeParameters)
+              {
+                r.run();
+              }
           }
         if (_calledFeature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                     pos(),
@@ -1771,7 +1823,7 @@ public class Call extends AbstractCall
           {
             var cf = _calledFeature;
             var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
-                                     : cf.resultTypeIfPresent(res, _generics);
+                                           : cf.resultTypeIfPresent(res, _generics);
             if (t == null)
               {
                 cf.whenResolvedTypes

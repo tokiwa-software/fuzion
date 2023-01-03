@@ -1192,7 +1192,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        !tr.isGenericArgument()                                                                                                         &&
        ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)                                                                       &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisType()) == 0                                                             );
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisTypeInTypeFeature()) == 0                                               );
   }
 
 
