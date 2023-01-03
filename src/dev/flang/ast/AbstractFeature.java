@@ -486,6 +486,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param res Resolution instance used to resolve types in this call.
    *
+   * @param that the original feature that is used to lookup types.
+   *
    * @return instance of Call to be used for the parent call in typeFeature().
    */
   private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
@@ -544,6 +546,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * by generics from 'this.typeFeature()'. Furthermore, resolution of
    * non-generic types used in 't' has to be performed relative to 'this' even
    * when the outer feature is 'this.typeFeature()'.
+   *
+   * @param t the type to be moved to the type feature.
    */
   public AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
