@@ -183,7 +183,15 @@ public class Clazzes extends ANY
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
-  public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
+  public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
+    {
+      public Clazz get()
+      {
+        if (CHECKS) check
+          (Errors.count() > 0);
+        return super.get();
+      }
+    };
   public static Clazz constStringInternalArray;  // field conststring.internalArray
   public static Clazz fuzionSysArray_u8;         // result clazz of conststring.internalArray
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data

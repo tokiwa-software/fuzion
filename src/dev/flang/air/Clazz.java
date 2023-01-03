@@ -1998,7 +1998,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
             return Clazzes.error.get();
           }
       }
-    return _outer.actualGenerics()[f.typeParameterIndex()];
+
+    var ix = f.typeParameterIndex();
+    var oag = _outer.actualGenerics();
+    if (CHECKS) check
+      (ix >= 0 && ix < oag.length || Errors.count() > 0);
+
+    return ix < 0 || ix >= oag.length ? Clazzes.error.get() : oag[ix];
   }
 
 
