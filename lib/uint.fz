@@ -307,7 +307,7 @@ is
 
   # this uint as a string, may contain leading zeros
   #
-  private asString0 string is
+  private asString0 String is
     mrd := uint 1_000_000_000
     (q, rem) := uint.this.divide_with_remainder mrd
 
@@ -317,7 +317,7 @@ is
       q.asString0 + (rem.data.first (u32 0)).asString.pad_codepoint_start 9 "0"
 
 
-  redef asString string is
+  redef asString String is
     if uint.this = zero
       "0"
     else

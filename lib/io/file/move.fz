@@ -37,9 +37,9 @@ private move(
     #
     move(
          # the old (relative or absolute) file name, using platform specific path separators
-         old_path string,
+         old_path String,
          # the new (relative or absolute) file name, using platform specific path separators
-         new_path string) =>
+         new_path String) =>
         tmp := mop.move old_path new_path
         replace
         tmp
@@ -63,21 +63,21 @@ move_custom(mop Move_Operation, f () -> unit) =>
 #
 move(
      # the old (relative or absolute) file name, using platform specific path separators
-     old_path string,
+     old_path String,
      # the new (relative or absolute) file name, using platform specific path separators
-     new_path string) =>
+     new_path String) =>
   moves.installDefault
   move.env.move old_path new_path
 
 # reference to the move operations that could take place
 #
 Move_Operation ref is
-    move(old_path string, new_path string) outcome unit is abstract
+    move(old_path String, new_path String) outcome unit is abstract
 
 # the default file/dir move operation via fuzion.std.fileio.move
 #
 default_move_operation : Move_Operation is
-    move(old_path string, new_path string) =>
+    move(old_path String, new_path String) =>
         fuzion.std.fileio.move old_path new_path
 
 # unit type feature defining features related to move effect but not requiring an

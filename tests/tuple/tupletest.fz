@@ -27,7 +27,7 @@ tupletest is
 
   exitCode := 0
 
-  chck (b bool, msg string) unit is
+  chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
@@ -38,20 +38,20 @@ tupletest is
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1(A type, a A) is
-  g1 "Hello" // should infer string
+  g1 "Hello" // should infer String
   g1 123 // should infer i32
 # chck g1("Hello").a.length=5, "g1 A infer A==string"   // NYI: string.length
   chck g1(123).a=123 "g1 A infer A==i32"
 
   g1a(A type, a A) A is a
-  itaa := g1a "string"  // should infer string
+  itaa := g1a "String"  // should infer String
   itab := g1a 123  // should infer i32
 # chck itaa.length=6, "g1a A infer A==string"   // NYI: string.length
   chck itab=123 "g1a A infer A==i32"
 
   g1b(AAAA type, a,b,c AAAA) is
   g1bv1 := g1b true true false  // should infer bool
-  g1bv2 := g1b "string" "A" "test"  // should infer string
+  g1bv2 := g1b "String" "A" "test"  // should infer String
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"
 # chck (g1bv2.a.length + g1bv2.b.length + g1bv2.c.length)=11) "g1b AAAA infer AAAA==string"   // NYI: string.length
 

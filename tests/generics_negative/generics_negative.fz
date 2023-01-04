@@ -155,9 +155,9 @@ generics_negative is
         p is
           say "y is $y"
     x0 (A i32 bool  ) := A i32 bool
-    x1 ((A i32 bool  ).B string bool) := (A i32 bool).B string bool true
-    x2 ((A i32 i32   ).B string bool) := (A i64 bool).B string bool true  // 45. should flag an error: incompatible types
-    x3 ((A i32 string).B string bool) := x1                               // 46. should flag an error: incompatible types
+    x1 ((A i32 bool  ).B String bool) := (A i32 bool).B String bool true
+    x2 ((A i32 i32   ).B String bool) := (A i64 bool).B String bool true  // 45. should flag an error: incompatible types
+    x3 ((A i32 String).B String bool) := x1                               // 46. should flag an error: incompatible types
     x1.p
     x2.p
     x3.p
@@ -173,12 +173,12 @@ generics_negative is
 
     x G := G
     x.f 3 true 5
-    x.f "string" false 7  // 47. should flag an error: incompatilbe argument #1
+    x.f "String" false 7  // 47. should flag an error: incompatilbe argument #1
     x.f 4 3 7             // 48. should flag an error: incompatilbe argument #2
     x.f 4 false "false"   // 49. should flag an error: incompatilbe argument #3
     y F i32 bool i32 := x
     y.f 3 true 5
-    y.f "string" false 8  // 49. should flag an error: incompatilbe argument #1
+    y.f "String" false 8  // 49. should flag an error: incompatilbe argument #1
     y.f 9 10 8            // 50. should flag an error: incompatilbe argument #2
     y.f 9 false "8"       // 51. should flag an error: incompatilbe argument #3
   opengenerics12

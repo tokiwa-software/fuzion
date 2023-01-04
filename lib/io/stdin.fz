@@ -81,7 +81,7 @@ private stdin(
 
 
 
-private read_line0 outcome string : character_encodings is
+private read_line0 outcome String : character_encodings is
   stdin.codepoints
     .reduce_or_error "" (r, t ->
       match t
@@ -91,17 +91,17 @@ private read_line0 outcome string : character_encodings is
               r
             else
               # NYI explicit tagging should not be necessary #671
-              tmp outcome string := r
+              tmp outcome String := r
               abort tmp
           else
             r + c
         end_of_file =>
           # NYI explicit tagging should not be necessary #671
-          tmp outcome string := r
+          tmp outcome String := r
           abort tmp
         e error =>
           # NYI explicit tagging should not be necessary #671
-          tmp outcome string := e
+          tmp outcome String := e
           abort tmp
     )
 
@@ -109,7 +109,7 @@ private read_line0 outcome string : character_encodings is
 # read n codepoints from stdin
 # may return less than n bytes if end of file is reached
 # or error if stdin can not be read right now
-private read0(n i32) outcome string
+private read0(n i32) outcome String
 pre n >= 0
 is
   (1..n)
@@ -119,11 +119,11 @@ is
           r + c
         end_of_file =>
           # NYI explicit tagging should not be necessary #671
-          tmp outcome string := r
+          tmp outcome String := r
           abort tmp // return what we read so far
         e error =>
           # NYI explicit tagging should not be necessary #671
-          o outcome string := e
+          o outcome String := e
           abort o   // return only the error, discarding what we read so far
       )
 
@@ -152,7 +152,7 @@ private codepoint0 choice codepoint end_of_file error is
                 * => fuzion.std.panic "should not be possible"
               )
           match rest
-            l Sequence u8 => strings.fromBytes l
+            l Sequence u8 => Strings.fromBytes l
                                     .asCodepoints
                                     .first
             end_of_file => end_of_file

@@ -31,7 +31,7 @@ valWithDynOuter is
 
   exitCode := 0
 
-  chck(s, expected string) =>
+  chck(s, expected String) =>
     if s = expected
       say "PASSED: $s"
     else
@@ -44,16 +44,16 @@ valWithDynOuter is
   # a value type. Neverthelesse, the outer type 'v' will be replaced
   # by different other outer types producing
   #
-  test(e v.e, expected string) =>
+  test(e v.e, expected String) =>
     s := e.y
     chck s expected
 
-  test_mut(e v.e, expected string) =>
+  test_mut(e v.e, expected String) =>
     e.mut
     s := e.y
     chck s expected
 
-  v (f string) is
+  v (f String) is
     a => "v"
     x => "$f-$a:v.x"
     e is

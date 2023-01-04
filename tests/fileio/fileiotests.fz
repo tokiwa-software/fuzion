@@ -36,7 +36,7 @@ fileiotests =>
   writer := f.write
   reader := f.read
 
-  exists(path string) bool is
+  exists(path String) bool is
     match f.stat path true
       io.file.meta_data => true
       error => false
@@ -62,7 +62,7 @@ fileiotests =>
       fuzion.std.fileio.close fd
       res)
     bytes array u8 =>
-      filecontent := strings.fromBytes bytes
+      filecontent := Strings.fromBytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

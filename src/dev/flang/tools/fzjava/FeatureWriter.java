@@ -143,7 +143,7 @@ class FeatureWriter extends ANY
           }
         else if (s.equals("Sequence") ||
                  s.equals("hashCode") ||
-                 s.equals("string"  ) ||
+                 s.equals("String"  ) ||
                  s.equals("array"   ) ||
                  s.equals("isBlank" ) ||
                  s.equals("split"   )    )

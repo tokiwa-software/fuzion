@@ -28,5 +28,5 @@
 Object ref is
 
   hashCode i32 is intrinsic
-  asString string is intrinsic
+  asString String is intrinsic
   prefix $ => Object.this.asString

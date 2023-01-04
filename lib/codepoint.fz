@@ -25,7 +25,7 @@
 
 # codepoint -- represents a unicode codepoint
 #
-codepoint(val u32) : string, codepoints
+codepoint(val u32) : String, codepoints
   pre
     debug: range.contains(val),
     debug: !utf16Surrogate.contains val

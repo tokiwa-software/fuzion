@@ -42,7 +42,7 @@ is
   #
   write_all(
             # the (relative or absolute) file name, using platform specific path separators  
-            path string, 
+            path String,
             # the content of the file as an array u8
             content array u8) =>
     tmp := fwh.write path content
@@ -55,7 +55,7 @@ is
   #
   create_dir(
              # the (relative or absolute) dir name, using platform specific path separators
-             path string) =>
+             path String) =>
     tmp := fwh.mkdir path
     replace
     tmp
@@ -80,17 +80,17 @@ write =>
 # reference to the writing operations that could take place
 #
 File_Write_Handler ref is
-  write(path string, content array u8) outcome unit is abstract
+  write(path String, content array u8) outcome unit is abstract
   
-  mkdir(path string) outcome unit is abstract
+  mkdir(path String) outcome unit is abstract
 
 # the default file writing handler writing bytes into files via fuzion.std.fileio.write
 #
 default_file_write_handler : File_Write_Handler is
-  write(path string, content array u8) =>
+  write(path String, content array u8) =>
     fuzion.std.fileio.write path content
   
-  mkdir(path string) =>
+  mkdir(path String) =>
     fuzion.std.fileio.create_dir path
 
 # unit type feature defining features related to write effect but not requiring an

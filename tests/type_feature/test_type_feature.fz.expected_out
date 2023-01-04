@@ -1,5 +1,5 @@
 T:Type of 'i32' U:Type of 'bool'
-T:Type of 'array string' U:Type of 'array (array bool)'
+T:Type of 'array String' U:Type of 'array (array bool)'
 T:Type of 'bool' U:Type of 'list f64'
 false
 true

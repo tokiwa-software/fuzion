@@ -724,7 +724,7 @@ class ForClass extends ANY
           }
         else if (t == String.class)
           {
-            mt = "string";
+            mt = "String";
           }
         else
           {

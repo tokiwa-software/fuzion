@@ -37,7 +37,7 @@ is
 
   redef thiz => int ns n
 
-  name string is
+  name String is
     "int"
 
   redef zero int is
@@ -161,7 +161,7 @@ is
           plus => true
           minus => other.n <= n
 
-  redef asString string is
+  redef asString String is
     s.asString + n.asString
 
 
@@ -230,7 +230,7 @@ sign : choice plus minus, has_equality, hasEquals sign is
           plus => false
           minus => true
 
-  redef asString string is
+  redef asString String is
     match sign.this
       plus => ""
       minus => "-"

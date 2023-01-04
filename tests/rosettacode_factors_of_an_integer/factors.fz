@@ -58,7 +58,7 @@ factors is
   (1..n) & (x -> n %% x) | fun print
   say
 
-  say "factors embedded in string: {(1..n) &  (x -> n %% x)}"
+  say "factors embedded in String: {(1..n) &  (x -> n %% x)}"
 
   (1..n) | m ->
     say("factors of $m: " +
