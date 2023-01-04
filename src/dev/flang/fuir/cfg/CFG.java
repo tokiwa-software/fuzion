@@ -35,7 +35,6 @@ import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.Graph;
-import dev.flang.util.MapToN;
 
 
 /**
@@ -150,7 +149,7 @@ public class CFG extends ANY
           case Routine  : createCallGraphForRoutine(cl, false); break;
           case Intrinsic: createCallGraphForIntrinsic(cl); break;
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             createCallGraphForRoutine(cl, true);
           }
@@ -578,7 +577,7 @@ public class CFG extends ANY
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
-          if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+          if (_fuir.hasPrecondition(cc0))
             {
               call(cl, cc0, true);
             }

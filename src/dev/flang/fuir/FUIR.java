@@ -2070,6 +2070,15 @@ hw25 is
   }
 
 
+  /**
+   * Does this clazzes contract include any preconditions?
+   */
+  public boolean hasPrecondition(int cl)
+  {
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+  }
+
+
 }
 
 /* end of file */

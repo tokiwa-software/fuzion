@@ -1,0 +1,4 @@
+issue270
+  pre false # 1. should flag an error: Precondition does not hold
+  =>
+  say "hello"

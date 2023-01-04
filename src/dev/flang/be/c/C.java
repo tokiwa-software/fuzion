@@ -166,7 +166,7 @@ public class C extends ANY
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ol = new List<CStmnt>();
-      if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+      if (_fuir.hasPrecondition(cc0))
         {
           var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
           ol.add(callpair._v1);
@@ -680,9 +680,13 @@ public class C extends ANY
 
     cf.print(initializeEffectsEnvironment());
 
+    var cl = _fuir.mainClazzId();
+
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+                        _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
+                        CExpr.call(_names.function(cl, false), new List<>())
+                        ));
     cf.println("}");
   }
 
@@ -1216,7 +1220,7 @@ public class C extends ANY
           case Routine  :
           case Intrinsic: l.add(cFunctionDecl(cl, false, null));
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(cFunctionDecl(cl, true, null));
           }
@@ -1249,7 +1253,7 @@ public class C extends ANY
               l.add(cFunctionDecl(cl, false, o));
             }
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
             l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
