@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 hasTypeArg is
-  type.showTypeArgs string is abstract
+  type.showTypeArgs String is abstract
 
 ex(T, U type) : hasTypeArg, has_equality is
   type.showTypeArgs => "T:$T U:$U"
@@ -37,10 +37,10 @@ ex2(T, U type: has_equality, a, b T, c U) : hasTypeArg, has_equality is
      a.b ≟ b.b &&
      a.c ≟ b.c   )
 
-prefix !(X type: hasTypeArg, v X) string is X.showTypeArgs
+prefix !(X type: hasTypeArg, v X) String is X.showTypeArgs
 
 say !(ex i32 bool)
-say !(ex (array string) (array (array bool)))
+say !(ex (array String) (array (array bool)))
 say !(ex bool (list f64))
 a := ex i32 bool
 b := ex i32 bool

@@ -61,7 +61,7 @@ public fileio is
   #
   public get_file_size(
                        # the (relative or absolute) file name, using platform specific path separators
-                       path string) outcome i64 is
+                       path String) outcome i64 is
     arr := fuzion.sys.c_string path
     size := get_file_size arr unit
     if size != -1
@@ -85,7 +85,7 @@ public fileio is
   #
   public write(
                # the (relative or absolute) file name, using platform specific path separators
-               path string,
+               path String,
                # the content of the file as an u8 array
                content array u8) outcome unit is
     (open path (i8 1)).bind unit (fd->
@@ -114,7 +114,7 @@ public fileio is
   #
   public delete(
                 # the (relative or absolute) file name, using platform specific path separators
-                path string) outcome unit is
+                path String) outcome unit is
     arr := fuzion.sys.c_string path
     if delete arr unit
       unit
@@ -137,9 +137,9 @@ public fileio is
   #
   public move(
               # the old (relative or absolute) file name, using platform specific path separators
-              old_path string,
+              old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
-              new_path string) outcome unit is
+              new_path String) outcome unit is
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
     if move arr0 arr1 unit
@@ -163,7 +163,7 @@ public fileio is
   #
   public create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
-                    path string) outcome unit is
+                    path String) outcome unit is
     arr := fuzion.sys.c_string path
     if create_dir arr unit
       unit
@@ -202,7 +202,7 @@ public fileio is
   #
   public open(
               # a Fuzion Object represention the path for the source to be opened
-              path string,
+              path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 is
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]

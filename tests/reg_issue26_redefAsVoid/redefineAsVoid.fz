@@ -33,7 +33,7 @@
 redefineAsVoid is
 
  p is
-  f string is abstract
+  f String is abstract
   res := f
   say "FAILED: $res!"
 

@@ -27,7 +27,7 @@ redef_args is
 
   exitCode := 0
 
-  chck(b bool, msg string) =>
+  chck(b bool, msg String) =>
     s := if (b)
       "PASSED: "
     else

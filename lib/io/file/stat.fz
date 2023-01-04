@@ -50,7 +50,7 @@ private stat(
   #
   stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path string) outcome meta_data is
+        path String) outcome meta_data is
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
@@ -66,7 +66,7 @@ private stat(
   #
   lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path String) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
@@ -100,7 +100,7 @@ stat =>
 #
 stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path string,
+     path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) => 
   stats.installDefault

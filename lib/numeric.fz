@@ -212,7 +212,7 @@ numerics(T type : numeric T) is
 
   # name of this numeric type, e.g., "u64"
   #
-  name string is abstract
+  name String is abstract
 
   # identity element for 'infix +'
   #

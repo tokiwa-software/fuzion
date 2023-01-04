@@ -110,8 +110,8 @@ private CNode(CTK type : hasHash CTK, CTV type, bmp u32, array array (Branch CTK
     CNode bmp copy
 
 
-  redef asString => "CNode($bmp, [{array.map string x->x.asString
-                                        .fold (strings.concat ", ")}])"
+  redef asString => "CNode($bmp, [{array.map String x->x.asString
+                                        .fold (Strings.concat ", ")}])"
 
   asList => array.flatMapSequence (tuple CTK CTV) (b -> b.asList)
                  .asList

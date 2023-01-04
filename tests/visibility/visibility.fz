@@ -27,14 +27,14 @@ visibility is
 
   exitCode := 0
 
-  chck (b bool, msg string) unit is
+  chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
       set exitCode := 1
 
-  chck (a,b i32, msg string) unit is
+  chck (a,b i32, msg String) unit is
     if a == b
       say "PASSED: $msg"
     else
@@ -266,10 +266,10 @@ visibility is
   visi6
 
   visi7 is
-    x := 2;          f () -> string := () -> "x is "+x+""
-    x := x*x*x*x;    g () -> string := () -> "x is "+x+""
-    x := x.asString; h () -> string := () -> "x is "+x+""
-    x := x * 5;      i () -> string := () -> "x is "+x+""
+    x := 2;          f () -> String := () -> "x is "+x+""
+    x := x*x*x*x;    g () -> String := () -> "x is "+x+""
+    x := x.asString; h () -> String := () -> "x is "+x+""
+    x := x * 5;      i () -> String := () -> "x is "+x+""
     chck (f.call() == "x is 2") "x is 2"
     chck (g.call() == "x is 16") "x is 16"
     chck (h.call() == "x is 16") "x is 16"

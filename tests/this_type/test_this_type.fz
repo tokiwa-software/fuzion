@@ -117,13 +117,13 @@ test_redef_using_fixed =>
 
     # An implemented feature that will be redefined only by b, not by c
     #
-    op_implemented string is "a.op_implemented"
+    op_implemented String is "a.op_implemented"
 
     me1 a.this.type is a.this
     me2 a.this.type is a.this
 
 
-  b(val string) : a is
+  b(val String) : a is
 
     redef asString => "instance of {b.type.asString} with $val"
 
@@ -140,7 +140,7 @@ test_redef_using_fixed =>
 
     # An implemented feature that will be redefined only by b, not by c
     #
-    redef fixed op_implemented string is "b.op_implemented"
+    redef fixed op_implemented String is "b.op_implemented"
 
 
   c : b "from c" is

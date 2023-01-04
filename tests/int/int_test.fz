@@ -27,7 +27,7 @@ int_test is
 
   exitCode := 0
 
-  chck (b bool, msg string) unit is
+  chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else

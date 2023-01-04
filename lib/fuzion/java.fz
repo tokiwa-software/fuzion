@@ -31,7 +31,7 @@ public fuzion.java is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public getStaticField(T type, clazz string, field string) =>
+  public getStaticField(T type, clazz String, field String) =>
     c := stringToJavaObject clazz
     f := stringToJavaObject field
     getStaticField0 T c f
@@ -40,7 +40,7 @@ public fuzion.java is
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public getField(T type, thiz JavaObject, field string) =>
+  public getField(T type, thiz JavaObject, field String) =>
     f := stringToJavaObject field
     getField0 T thiz f
 
@@ -97,7 +97,7 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public JavaString(private redef javaRef Object) ref : string, JavaObject javaRef
+  public JavaString(private redef javaRef Object) ref : String, JavaObject javaRef
   is
     utf8 => (javaStringToString JavaString.this).utf8
 
@@ -112,9 +112,9 @@ public fuzion.java is
   # on instance thiz with given arguments
   #
   public callVirtual(T type,
-                     className string,
-                     name string,
-                     signature string,
+                     className String,
+                     name String,
+                     signature String,
                      thiz JavaObject,
                      args array JavaObject) T
   pre
@@ -131,9 +131,9 @@ public fuzion.java is
   # arguments
   #
   public callStatic(T type,
-                    className string,
-                    name string,
-                    signature string,
+                    className String,
+                    name String,
+                    signature String,
                     args array JavaObject) T
   is
     c := stringToJavaObject className
@@ -147,8 +147,8 @@ public fuzion.java is
   # with given arguments
   #
   public callConstructor(T type,
-                         className string,
-                         signature string,
+                         className String,
+                         signature String,
                          args array JavaObject) T
   is
     c := stringToJavaObject className
@@ -206,7 +206,7 @@ public fuzion.java is
 
   # convert a string to a Java String object
   #
-  public stringToJavaObject(s string) JavaObject is
+  public stringToJavaObject(s String) JavaObject is
     stringToJavaObject0 s.utf8.asArray.internalArray.data
 
 
@@ -215,9 +215,9 @@ public fuzion.java is
   private stringToJavaObject0(s Object) JavaObject is intrinsic_constructor
 
 
-  # convert a Java String to a stirng
+  # convert a Java String to a string
   #
-  private javaStringToString(js JavaString) string is intrinsic
+  private javaStringToString(js JavaString) String is intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object

@@ -34,7 +34,7 @@ choice_mix is
 
   Mix : choice i32
                bool
-               string
+               String
                Nil
                MyRef is
 
@@ -49,7 +49,7 @@ choice_mix is
     match a
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -58,14 +58,14 @@ choice_mix is
     match a
       i i32    => say "i32:    $i"
       b bool   => say "bool:   $b"
-      s string => say "string: $s"
+      s String => say "string: $s"
       n Nil    => say "Nil:    $n"
       m MyRef  => say "MyRef:  $m"
 
   show_i =>
     yak "show_a "
     match a
-      i32, string, Nil => say "has 'i'"
+      i32, String, Nil => say "has 'i'"
       bool, MyRef      => say "has no 'i'"
 
   show_b =>
@@ -73,7 +73,7 @@ choice_mix is
     match b
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -82,7 +82,7 @@ choice_mix is
     match c
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -91,7 +91,7 @@ choice_mix is
     match d
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -100,7 +100,7 @@ choice_mix is
     match e
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -111,7 +111,7 @@ choice_mix is
     match v00
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -120,7 +120,7 @@ choice_mix is
     match v
       i32    => say "i32:    "
       bool   => say "bool:   "
-      string => say "string: "
+      String => say "string: "
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
@@ -129,7 +129,7 @@ choice_mix is
     match v
       i i32    => say "i32:    $i"
       b bool   => say "bool:   $b"
-      s string => say "string: $s"
+      s String => say "string: $s"
       n Nil    => say "Nil:    $n"
       m MyRef  => say "MyRef:  $m"
 
@@ -277,7 +277,7 @@ choice_mix is
   colors2
 
   alternatives1 unit is // use pipe for choice result type
-    f(i i32) i32 | bool | string is
+    f(i i32) i32 | bool | String is
       if i < 10 { i }
       else if i < 20 { i > 15 }
       else { "Large" }
@@ -288,7 +288,7 @@ choice_mix is
       match f(i)
         x i32 => yak x
         b bool => { if b { yak  "true" } else { yak "false" } }
-        s string => yak s
+        s String => yak s
       say
 
     // check that pipe also works as operator:
@@ -300,11 +300,11 @@ choice_mix is
     Nil is
     MyRef (a,b,c i32) ref is
 
-    test(p i32 | bool | string | Nil | MyRef) unit is
+    test(p i32 | bool | String | Nil | MyRef) unit is
       match p
         i i32    => say "i32:    $i"
         b bool   => say "bool:   $b"
-        s string => say "string: $s"
+        s String => say "string: $s"
         n Nil    => say "Nil:    $n"
         m MyRef  => say "MyRef:  $m"
 
