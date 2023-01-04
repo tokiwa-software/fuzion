@@ -23,21 +23,47 @@
 #
 # -----------------------------------------------------------------------
 
-# (globally) cache result of f for cache key T
+# cache result of f for cache key T
 #
-# example:
+# This is best explained by the following example:
 #
+#     ex_cache is
+#       # here we define the cache keys by which the results of the function will
+#       # be cached in the global cache
+#       cache_key(val sortedArray i32) is
+#       #             ^-------- the actual type we want to cache
+#       # ^------- a feature declaring a type which we use as a cache key
+#       #            wrapping the actual data we want to cache
+#       cache_kex(val i32) is
+#       # similarly, here, i32 is the actual type we want to cache and cache_kex
+#       # is the wrapping cache key
+#     
+#       # suppose now, that we have two functions fn and fm, which take no arguments but
+#       # which need a very long time for their calculations.
+#     
+#       fn Function cache_key := (() ->
+#         time.nano.sleep (time.durations.seconds 2)
+#         cache_key (sortedArrayOf [6,4,1,9]))
+#     
+#       fm Function cache_kex := (() ->
+#         time.nano.sleep (time.durations.seconds 3)
+#         cache_kex 42)
+#     
+#       # we define two more wrappers, which will actually call the functions if
+#       # their value is not in the cache, or return the stored value if already
+#       # computed
+#       from_cache => (cache cache_key fn).val
+#       #                              ^--- will only be computed the first time we run from_cache
+#       from_cachf => (cache cache_kex fm).val
+#     
+#       say from_cache # will take two seconds
+#       say from_cache # will take virtually no time
+#       say from_cachf # will take three seconds
+#       say from_cache # will take virtually no time
+#       say from_cachf # will take virtually no time
+#       say from_cachf # will take virtually no time
 #
-# cache_key(val sortedArray i32) is
-#               ^-------- the actual type we want to cache
-# ^------- a feature declaring a type which we use as a cache key
-#            wrapping the actual data we want to cache
-#
-# we can now use this key:
-#
-# fn () -> cache_key := () -> cache_key (sortedArrayOf [6,4,1,9])
-# from_cache => (cache cache_key fn).val
-#                                ^--- will only be computed the first time we run from_cache
+# The cache implemented works on a global level.
 #
 cache(T type, f () -> T) T is
 
