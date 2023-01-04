@@ -626,7 +626,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var p = pos();
             var typeArg = new Feature(p,
                                       visibility(),
-                                      outer().isUniverse() && featureName().baseName().equals("Object") ? 0 : Consts.MODIFIER_REDEFINE,
+                                      outer().isUniverse() && featureName().baseName().equals(FuzionConstants.OBJECT_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
                                       thisType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,

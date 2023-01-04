@@ -920,7 +920,7 @@ argType     : type
                                       {
                                         i = typeType();
                                         t = skipColon() ? type()
-                                                        : new Type("Object");
+                                                        : new Type(FuzionConstants.OBJECT_NAME);
                                       }
                                     else
                                       {
