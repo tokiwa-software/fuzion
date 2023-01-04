@@ -189,8 +189,24 @@ ints is
     from_i64 val.as_i64
 
 
+# positive sign of a number
+#
+# note that this value is of unit type plus, not of type sign
+#
 plus is
+
+
+# negative sign of a number
+#
+# note that this value is of unit type minus, not of type sign
+#
 minus is
+
+
+# the sign of a number
+#
+# this can be plus or minus
+#
 sign : choice plus minus, has_equality, hasEquals sign is
   infix = (o sign) bool is
     match sign.this
