@@ -645,7 +645,19 @@ public class Type extends AbstractType
       }
     else if (generic != null)
       {
-        result = generic.feature().qualifiedName() + "." + name + (this.isRef() ? " (boxed)" : "");
+        var f = generic.feature();
+        var n = name;
+        if (f != null)
+          {
+            var qn = f.qualifiedName();
+            if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
+              {
+                qn = qn.substring(0, qn.lastIndexOf(".type"));
+                n = "this.type";
+              }
+            n = qn + "." + n;
+          }
+        result = n + (this.isRef() ? " (boxed)" : "");
       }
     else if (_outer != null)
       {

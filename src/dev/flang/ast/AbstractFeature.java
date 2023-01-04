@@ -234,18 +234,42 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * qualifiedName returns the qualified name of this feature
+   * qualifiedName0 returns the qualified name of this feature without any special handling for type featurs.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println"
+   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
-  public String qualifiedName()
+  private String qualifiedName0()
   {
     var n = featureName().baseName();
     return
       isUniverse()         ||
       outer() == null      ||
-      outer().isUniverse()    ? n
-                              : outer().qualifiedName() + "." + n;
+      outer().isUniverse()                        ? n
+                                                  : outer().qualifiedName() + "." + n;
+  }
+
+
+  /**
+   * qualifiedName returns the qualified name of this feature
+   *
+   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   */
+  public String qualifiedName()
+  {
+    var n = featureName().baseName();
+    return
+      /* special type parameter used for this.type in type features */
+      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? outer().typeFeatureOrigin().qualifiedName() + ".this.type" :
+
+      /* type feature: use original name and add ".type": */
+      isTypeFeature()             &&
+      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type" :
+
+      /* NYI: remove when possible: typeFeatureOrigin() is currently null when loaded from library, so we treat these manually: */
+      isTypeFeature()                             ? qualifiedName0().replaceAll("." + FuzionConstants.TYPE_NAME, "") + ".type"
+
+      /* a normal feature name */
+                                                  : qualifiedName0();
   }
 
 
