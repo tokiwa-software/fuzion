@@ -489,8 +489,8 @@ public class CFG extends ANY
     put("f32s.tanh"                      , (cfg, cl) -> { } );
     put("f64s.tanh"                      , (cfg, cl) -> { } );
 
-    put("Object.hashCode"                , (cfg, cl) -> { } );
-    put("Object.asString"                , (cfg, cl) -> { } );
+    put("Any.hashCode"                   , (cfg, cl) -> { } );
+    put("Any.asString"                   , (cfg, cl) -> { } );
     put("fuzion.sys.array.alloc"         , (cfg, cl) -> { } );
     put("fuzion.sys.array.setel"         , (cfg, cl) -> { } );
     put("fuzion.sys.array.get"           , (cfg, cl) -> { } );

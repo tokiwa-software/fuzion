@@ -28,7 +28,7 @@
 # type features 'f.type' are declared implicitly for every feature f.
 # Type features do not contain state, they are unit types.
 #
-# All type features inherit directly (Object.type) or indirectly (all
+# All type features inherit directly (Any.type) or indirectly (all
 # others type features) from this feature.
 #
 Type ref is

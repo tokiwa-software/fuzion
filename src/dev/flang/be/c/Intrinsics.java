@@ -612,7 +612,7 @@ public class Intrinsics extends ANY
     put("f32s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Object.hashCode"      , (c,cl,outer,in) ->
+    put("Any.hashCode"         , (c,cl,outer,in) ->
         {
           var or = c._fuir.clazzOuterRef(cl);
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
@@ -620,7 +620,7 @@ public class Intrinsics extends ANY
             : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
           return hc.ret();
         });
-    put("Object.asString"      , (c,cl,outer,in) ->
+    put("Any.asString"         , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
           var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));

@@ -48,7 +48,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   codepointLength => asCodepoints.count
 
   # concatenate string with string representation of another object
-  infix + (other Object) String is
+  infix + (other Any) String is
     Strings.concat String.this other.asString
 
 
@@ -278,7 +278,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   # string.
   to_valid_utf8(replacement String) String is
     codepointsAndErrors
-      .reduce String (Strings.fromArray ((marrays Object).new 0 "")) ((r, x) ->
+      .reduce String (Strings.fromArray ((marrays Any).new 0 "")) ((r, x) ->
         match x
           c codepoint => r + c
           e error => r + replacement)
@@ -693,8 +693,8 @@ Strings is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  fromArray(a marray Object) ref : String is
-    redef infix + (other Object) String is
+  fromArray(a marray Any) ref : String is
+    redef infix + (other Any) String is
       fromArray (a.add other)
 
     redef utf8 Sequence u8 is

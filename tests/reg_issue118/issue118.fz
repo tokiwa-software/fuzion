@@ -37,7 +37,7 @@
 #     for c in s.asString.utf8 do
 # --------^
 # say: /home/fridi/fuzion/work/build/bin/../lib/say.fz:29:29:
-# say(s ref Object) => stdout.println s
+# say(s ref Any) => stdout.println s
 # ----------------------------^
 # ri: ./ri.fz:3:3:
 #   say a
