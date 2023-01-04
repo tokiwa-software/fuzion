@@ -460,7 +460,7 @@ public class Html
   {
     if (f.resultType().dependsOnGenerics())
       {
-        return "(" + f.resultType().asString() + ")." + "<div class='fd-keyword'>type</div>";
+        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + f.resultType().asString();
       }
     return "<div class='fd-keyword'>type</div>";
   }
