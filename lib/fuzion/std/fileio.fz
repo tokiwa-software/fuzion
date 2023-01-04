@@ -28,22 +28,21 @@
 
 public fileio is
 
-  # reads a file and returns the content as an outcome array of u8 in case of success
-  # and an error in case of failure
+  # reads n bytes of a file opened as fd
   #
-  public read(
-              # the (relative or absolute) file name, using platform specific path separators
-              path string) outcome (array u8) is
-    (get_file_size path).bind (array u8) (num->
-      file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
-      arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
+  # in case the outcome is an array, it may be shorter than n. this means the end of file
+  # has been reached.
+  #
+  read(fd i64, n u64) outcome (array u8) is
+    buf := array n.as_i32 i->(u8 0)
+    res := read fd buf.internalArray.data buf.length
 
-      (open arr (i8 0)).bind (array u8) (fd->
-        read_result := read fd file.internalArray.data file.length
-        if read_result == 0
-          file
-        else
-          error "error number: $read_result"))
+    if res < 0
+      error "unspecified read error: {res}"
+    else if res < n.as_i64 || res = n.as_i64
+      (buf.slice 0 res.as_i32).asArray
+    else
+      error "read more than expected"
 
 
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
@@ -55,7 +54,7 @@ public fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array Object,
                # the length of the array that represents the file bytes
-               file_array_length i32) i8 is intrinsic
+               file_array_length i32) i64 is intrinsic
 
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
@@ -89,8 +88,7 @@ public fileio is
                path string,
                # the content of the file as an u8 array
                content array u8) outcome unit is
-    arr := fuzion.sys.c_string path
-    (open arr (i8 1)).bind unit (fd->
+    (open path (i8 1)).bind unit (fd->
       write_results := write fd content.internalArray.data content.length
       if write_results == 0
         unit
@@ -204,11 +202,11 @@ public fileio is
   #
   public open(
               # a Fuzion Object represention the path for the source to be opened
-              path Object,
+              path string,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 is
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
-    open path open_results.internalArray.data flag
+    open (fuzion.sys.c_string path) open_results.internalArray.data flag
     if open_results[1]==0
       open_results[0]
     else

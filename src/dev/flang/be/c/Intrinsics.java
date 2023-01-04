@@ -105,18 +105,21 @@ public class Intrinsics extends ANY
         {
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
-          var errno = new CIdent("errno");
+          var zero = new CIdent("0");
           return CStmnt.seq(
-            errno.assign(new CIdent("0")),
+            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("bool", resultIdent, new CIdent("true")),
-            // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(readingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
-            errno.castTo("fzT_1i8").ret()
-            );
-        }
-        );
+            CExpr.decl("fzT_1i64", resultIdent, readingIdent.castTo("fzT_1i64")),
+            CExpr.iff(
+              CExpr.notEq(readingIdent, A2.castTo("size_t")),
+              CStmnt.seq(
+                CExpr.iff(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(readingIdent.castTo("fzT_1i64"))),
+                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(CExpr.int64const(-1))),
+                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
+            resultIdent.ret());
+        });
     put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
         {
           var statIdent = new CIdent("statbuf");
