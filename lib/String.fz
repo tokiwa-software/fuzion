@@ -192,7 +192,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
 
   is
     match utf8.asList
-      nil => parseError "empty String"
+      nil => parseError "empty string"
       c Cons =>
         negate := c.head = minusChar
         d := if (negate || c.head = plusChar) zeroChar else c.head
