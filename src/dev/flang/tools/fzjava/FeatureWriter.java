@@ -144,7 +144,7 @@ class FeatureWriter extends ANY
           }
         else if (s.equals("Sequence") ||
                  s.equals("hashCode") ||
-                 s.equals("String"  ) ||
+                 s.equals(FuzionConstants.STRING_NAME) ||
                  s.equals("array"   ) ||
                  s.equals("isBlank" ) ||
                  s.equals("split"   )    )

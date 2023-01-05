@@ -196,7 +196,7 @@ public class Types extends ANY
       t_ref_f64       = ct.type("f64"         , true );
       t_bool          = ct.type("bool"        , false);
       t_fuzion        = ct.type("fuzion"      , false);
-      t_string        = ct.type("String"      , false);
+      t_string        = ct.type(FuzionConstants.STRING_NAME, false);
       t_conststring   = ct.type("conststring" , false);
       t_object        = ct.type(FuzionConstants.OBJECT_NAME, false);
       t_unit          = ct.type("unit"        , false);

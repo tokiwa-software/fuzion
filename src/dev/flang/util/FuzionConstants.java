@@ -68,6 +68,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of String feature.
+   */
+  public static final String STRING_NAME          = "String";
+
+
+  /**
    * Name of implicitly declared result field in case this field is used as the
    * target of an assignment.
    */
