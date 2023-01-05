@@ -1195,8 +1195,8 @@ public class DFA extends ANY
     put("f32s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("Object.hashCode"                , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("Object.asString"                , cl -> cl._dfa.newConstString(null, cl) );
+    put("Any.hashCode"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("Any.asString"                   , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.array.alloc"         , cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.array.setel"         , cl ->
         {

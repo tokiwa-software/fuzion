@@ -64,7 +64,7 @@ public class FuzionConstants extends ANY
    * Name of Object feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String OBJECT_NAME          = "Object";
+  public static final String OBJECT_NAME          = "Any";
 
 
   /**

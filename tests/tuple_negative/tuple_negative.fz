@@ -34,7 +34,7 @@ tuple_negative {
       say "FAILED: $msg"
       set exitCode := 1
 
-  p(s Object) is say s
+  p(s Any) is say s
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1(A type, a A) is

@@ -27,8 +27,8 @@
 #
 sys is
   out is
-    print  (s Object) => stdout.print   s
-    println(s Object) => stdout.println s
+    print  (s Any) => stdout.print   s
+    println(s Any) => stdout.println s
 
 
   # Create a 0-terminated internal array of bytes from

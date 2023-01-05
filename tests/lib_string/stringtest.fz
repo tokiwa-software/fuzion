@@ -44,4 +44,4 @@ stringtest is
 
   say (Strings.fromCodepoints "hell😀".asCodepoints)
 
-  say (Strings.fromArray ((marrays Object).new 1 nil))
+  say (Strings.fromArray ((marrays Any).new 1 nil))

@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 /*---------------------------------------------------------------------*/
 
@@ -197,7 +198,7 @@ public class Types extends ANY
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type("String"      , false);
       t_conststring   = ct.type("conststring" , false);
-      t_object        = ct.type("Object"      , false);
+      t_object        = ct.type(FuzionConstants.OBJECT_NAME, false);
       t_unit          = ct.type("unit"        , false);
       t_void          = ct.type("void"        , false);
       f_void          = universe.get(mod, "void");
@@ -225,7 +226,7 @@ public class Types extends ANY
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
+      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }

@@ -30,6 +30,7 @@ import dev.flang.parser.Lexer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 import java.io.IOException;
 
@@ -129,11 +130,11 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals("Object"))
+        else if (s.equals(FuzionConstants.OBJECT_NAME))
           {
             // NYI: Due to #40, we cannot declare an inner feature with name 'Object',
             // so we replace it by '_jObject'.
-            s = "_jObject";
+            s = "_j" + FuzionConstants.OBJECT_NAME;
           }
         else if (s.equals("List"))
           {

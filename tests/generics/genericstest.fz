@@ -38,7 +38,7 @@ genericstest is
   List(T type) is
     public Node(
       public el T,
-      public n, p OptNode) ref : Object is
+      public n, p OptNode) ref : Any is
 
     public Nil is
     OptNode : choice Node Nil is

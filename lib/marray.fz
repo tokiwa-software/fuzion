@@ -59,7 +59,7 @@ is
   set [ ] (i i32, o T) unit
     pre
       safety: 0 <= i < length
-  # post   NYI: no '==' for Object yet
+  # post   NYI: no '==' for Any yet
   #   marray.this[i] == o
   is
     data[i] := o
