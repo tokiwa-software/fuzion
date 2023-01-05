@@ -30,6 +30,7 @@ import dev.flang.parser.Lexer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 import java.io.IOException;
 
@@ -143,7 +144,7 @@ class FeatureWriter extends ANY
           }
         else if (s.equals("Sequence") ||
                  s.equals("hashCode") ||
-                 s.equals("String"  ) ||
+                 s.equals(FuzionConstants.STRING_NAME) ||
                  s.equals("array"   ) ||
                  s.equals("isBlank" ) ||
                  s.equals("split"   )    )
