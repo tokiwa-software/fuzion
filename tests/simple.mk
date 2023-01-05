@@ -35,16 +35,20 @@ FUZION_OPTIONS ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz
+ENV = \
+  $(if $(FUZION_HOME)           , FUZION_HOME=$(FUZION_HOME)                      ,) \
+  $(if $(FUZION_JAVA)           , FUZION_JAVA=$(FUZION_JAVA)                      ,) \
+  $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
+  $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
 int:
-	../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 c:
-	../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	echo $(FUZION_RUN)
-	../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
 
 record_c:
-	../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
