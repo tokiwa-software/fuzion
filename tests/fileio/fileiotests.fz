@@ -48,7 +48,10 @@ fileiotests =>
   say "$dir exists: {exists dir}"
 
   say "$file exists: {exists file}"
-  match writer.write_all file content.utf8.asArray
+  match (fuzion.std.fileio.open file (i8 1)).bind unit (fd->
+      res := writer.write fd content.utf8.asArray
+      fuzion.std.fileio.close fd
+      res)
     unit => say "$file was created"
     error =>
   say "$file exists: {exists file}"
