@@ -2031,6 +2031,31 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Find outer clazz of this corresponding to feature `o`.
+   *
+   * @param o the outer feature whose clazz we are searching for.
+   *
+   * @param pos a position for error messages.
+   *
+   * @return the outer clazz of this corresponding feature `o`.
+   */
+  Clazz findOuter(AbstractFeature o, HasSourcePosition pos)
+  {
+    /* starting with feature(), follow outer references
+     * until we find o.
+     */
+    var res = this;
+    var i = feature();
+    while (i != o)
+      {
+        res = res.lookup(i.outerRef(), pos).resultClazz();
+        i = i.outer();
+      }
+    return res;
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -2065,7 +2090,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var ft = f.resultType();
         var t = _outer.actualType(ft, _select);
-        if (!t.dependsOnGenerics())
+
+        if (ft.isThisType())
+          {
+            // Find outer feature corresponding to ft:
+            return _outer.findOuter(ft.featureOfType(), feature());
+          }
+        else if (!t.dependsOnGenerics())
           {
             /* We have this situation:
 

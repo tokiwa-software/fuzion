@@ -1076,19 +1076,8 @@ public class Clazzes extends ANY
             if (c.calledFeature() == Types.resolved.f_Types_get &&
                 c.actualTypeParameters().get(0).isThisType())
               {
-                /* starting with outerClazz.feature(), follow outer references
-                 * until we find the call's type parameter. The type of that outer ref's result
-                 * is the type whose type clazz is our result.
-                 */
-                var res = outerClazz;
-                var o = c.actualTypeParameters().get(0).featureOfType();
-                var i = outerClazz.feature();
-                while (i != o)
-                  {
-                    res = res.lookup(i.outerRef(), c).resultClazz();
-                    i = i.outer();
-                  }
-                result = res.typeClazz();
+                // NYI: Check if this special handling could be done in inner.resultClazz() instead
+                result = outerClazz.findOuter(c.actualTypeParameters().get(0).featureOfType(), c).typeClazz();
               }
             else
               {
