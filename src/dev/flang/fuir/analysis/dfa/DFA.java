@@ -221,7 +221,7 @@ public class DFA extends ANY
 
 
     /**
-     * Analyze an access (call or write) a feature.
+     * Analyze an access (call or write) of a feature.
      *
      * @param cl clazz id
      *
