@@ -1409,8 +1409,8 @@ public class AstErrors extends ANY
           "" +
           (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual type parameters" :
            sz == 1 ? "Selector must be 0 for one actual type parameter"
-           : "Selector not permitted since no actual genenric arguments are")+
-          " given for the open type paremeter type",
+           : "Selector not permitted since no actual type parameters are")+
+          " given for the open type parameter type",
           "In call to " + s(f) + "\n" +
           "Selected variant " + ss(name + "." + select) + "\n" +
           "Number of actual type parameters: " + types.size() + "\n" +
