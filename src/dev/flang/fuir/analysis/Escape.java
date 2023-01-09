@@ -191,7 +191,17 @@ public class Escape extends ANY
             }
           case Unbox:
             {
-              stack.push(stack.pop());
+              var refc = _fuir.unboxOuterRefClazz(cl, c, i);
+              var resc = _fuir.unboxResultClazz(cl, c, i);
+              var v = false;
+              if (_fuir.hasData(refc))
+                {
+                  v = stack.pop();
+                }
+              if (_fuir.hasData(resc))
+                {
+                  stack.push(v);
+                }
               break;
             }
           case Call:
