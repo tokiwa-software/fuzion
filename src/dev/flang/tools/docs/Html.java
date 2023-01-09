@@ -197,26 +197,6 @@ public class Html
   }
 
 
-  /**
-   * get directly and indirectly inherited features of af
-   */
-  private static Stream<AbstractFeature> inheritedRecursive(AbstractFeature af)
-  {
-    return Stream.concat(af.inherits().stream().map(x -> x.calledFeature()),
-      af.inherits().stream().flatMap(c -> inheritedRecursive(c.calledFeature())));
-  }
-
-
-  /**
-   * is the feature inherting from effect?
-   * @param af
-   * @return
-   */
-  private boolean isEffect(AbstractFeature af)
-  {
-    return inheritedRecursive(af).anyMatch(x -> x.qualifiedName().equals("effect"));
-  }
-
 
   /**
    * the summaries and the comments of the features
