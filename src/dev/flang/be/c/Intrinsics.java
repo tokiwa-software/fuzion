@@ -137,20 +137,24 @@ public class Intrinsics extends ANY
     put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
         {
           var writingIdent = new CIdent("writing");
+          var flushingIdent = new CIdent("flushing");
           var resultIdent = new CIdent("result");
           var errno = new CIdent("errno");
+          var zero = new CIdent("0");
           return CStmnt.seq(
-            errno.assign(new CIdent("0")),
+            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
             CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("bool", resultIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
-            CExpr.iff(resultIdent.not(), errno.castTo("fzT_1i8").ret()),
-            // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(writingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
-            errno.castTo("fzT_1i8").ret()
-            );
-        }
-        );
+            CExpr.decl("fzT_1i8", resultIdent, CExpr.int8const(0)),
+            CExpr.iff(
+              CExpr.notEq(writingIdent, A2.castTo("size_t")),
+              CStmnt.seq(
+                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(CExpr.int8const(-1))),
+                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
+            CExpr.decl("bool", flushingIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
+            CExpr.iff(flushingIdent.not(), resultIdent.assign(errno.castTo("fzT_1i8"))),
+            resultIdent.ret());
+        });
     put("fuzion.std.fileio.delete"       ,  (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");

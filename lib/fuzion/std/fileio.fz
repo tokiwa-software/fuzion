@@ -78,22 +78,17 @@ public fileio is
                         _ unit) i64 is intrinsic
 
 
-  # creates a new file using an array of u8 as content and a string as the file path
-  # it overwrites the file, if it exists, or creates a new one if it does not exist
-  # if the director(y/ies) in the path d(oes/o) not exist, or an error happens during the writing operation an error will be returned
-  # in case of success a unit type will be the outcome
+  # writes the content of an array of bytes to a file opened as fd
   #
-  public write(
-               # the (relative or absolute) file name, using platform specific path separators
-               path String,
-               # the content of the file as an u8 array
-               content array u8) outcome unit is
-    (open path (i8 1)).bind unit (fd->
-      write_results := write fd content.internalArray.data content.length
-      if write_results == 0
-        unit
-      else
-        error "error number: $write_results")
+  # this might overwrite parts or all of an existing file.
+  #
+  public write(fd i64, content array u8) outcome unit is
+    res := write fd content.internalArray.data content.length
+
+    if res == 0
+      unit
+    else
+      error "write error: {res}"
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
   # returns i8 0 in case of success
