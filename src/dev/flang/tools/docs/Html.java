@@ -29,7 +29,6 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.SortedSet;
@@ -149,7 +148,6 @@ public class Html
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
       + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
-      + (isEffect(af) ? "<span title='effect'>🎆&nbsp;</span>": "&nbsp;&nbsp;")
       + htmlEncodeNbsp(basename(af))
       + "</a>"
       + arguments + "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>"
@@ -199,26 +197,6 @@ public class Html
   }
 
 
-  /**
-   * get directly and indirectly inherited features of af
-   */
-  private static Stream<AbstractFeature> inheritedRecursive(AbstractFeature af)
-  {
-    return Stream.concat(af.inherits().stream().map(x -> x.calledFeature()),
-      af.inherits().stream().flatMap(c -> inheritedRecursive(c.calledFeature())));
-  }
-
-
-  /**
-   * is the feature inherting from effect?
-   * @param af
-   * @return
-   */
-  private boolean isEffect(AbstractFeature af)
-  {
-    return inheritedRecursive(af).anyMatch(x -> x.qualifiedName().equals("effect"));
-  }
-
 
   /**
    * the summaries and the comments of the features
@@ -249,12 +227,11 @@ public class Html
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
+    return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
       .replace("$0", f.isUniverse() ? "API-Documentation": basename(f))
-      .replace("$3", f.isUniverse() ? "": anchorTags(f))
+      .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
       .replace("$2", Util.commentOf(f))
-      .replace("$4", f.isUniverse() ? "": "<a class='mr-5' href='" + config.docsRoot() + "/'>🌌</a>")
       .replace("$5", f.isUniverse() ? "": "d-none")
       .replace("$6", redefines(f));
   }
