@@ -234,9 +234,6 @@ public class FZJava extends Tool
                                             /* loadSources */ true);
         _fe = new FrontEnd(feOptions);
 
-        recurseDeclaredFeatures(_fe, _fe._universe);
-
-
         for (var m : _options._modules)
           {
             if (!m.endsWith(".jmod"))
@@ -250,27 +247,31 @@ public class FZJava extends Tool
 
 
   /**
-   * Add the qualified name of all features declared by all the loaded modules
-   * and that are children of a given feature to _existingFeatures.
+   * Given a qualified name, add this qualified name and the qualified name of
+   * its outer features declared by the given feature in any of the loaded
+   * modules to _existingFeatures.
    *
    * This is usually called with the universe as given feature in the first
-   * iteration. Then the qualified names of all features declared by the loaded
-   * library modules end up in _existingFeatures.
+   * iteration. Then the qualified names of the given feature itself, and all of
+   * its parents end up in _existingFeatures.
    *
    * The recursion here ends because no feature can be both an outer and an inner
    * feature of some other feature, i.e. the outer-inner relationship defines a
    * tree of features.
    */
-  private void recurseDeclaredFeatures(FrontEnd fe, AbstractFeature f)
+  private void recurseDeclaredFeature(String name, AbstractFeature f)
   {
-    for (var m : fe.getModules())
+    for (var m : _fe.getModules())
       {
         var df = m.declaredFeatures(f);
 
         for (var fn : df.values())
           {
-            _existingFeatures.add(fn.qualifiedName());
-            recurseDeclaredFeatures(fe, fn);
+            if (name.startsWith(fn.qualifiedName()))
+              {
+                _existingFeatures.add(fn.qualifiedName());
+                recurseDeclaredFeature(name, fn);
+              }
           }
       }
   }
@@ -502,6 +503,8 @@ public class FZJava extends Tool
    */
   void createOuter(String jfn)
   {
+    recurseDeclaredFeature(jfn.replace("/", "."), _fe._universe);
+
     var pkg = jfn.substring(0, jfn.lastIndexOf("/"));
     if (pkg.indexOf("/") >= 0)
       {
