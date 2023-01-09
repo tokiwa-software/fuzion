@@ -1292,9 +1292,7 @@ callList    : call ( COMMA callList
   /**
    * Parse call
    *
-call        : nameOrType actuals callTail
-            ;
-nameOrType  : name
+call        : name actuals callTail
             ;
 actuals     : actualArgs
             | dot NUM_LITERAL
