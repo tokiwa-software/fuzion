@@ -267,7 +267,7 @@ public class InlineArray extends ExprWithPos
   public void checkTypes()
   {
     if (PRECONDITIONS) require
-      (_type != null);
+      (Errors.count() > 0 || _type != null);
 
     var elementType = elementType();
 
