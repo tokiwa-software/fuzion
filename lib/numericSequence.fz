@@ -25,7 +25,7 @@
 
 # numericSequence -- a Sequence whose elements inherit from numeric
 #
-numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numericSequence N)  is
+numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numericSequence N) is
 
   # create a list from this Sequence.
   #
@@ -89,7 +89,7 @@ numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (nu
     ((zip o a,b->a=b) ∀ x->x)
       & count = o.count
 
-  # NYI: #637:
-  # fixed numericSequence.type.equality(N (numeric N).type, a, b numericSequence N) bool is
-  #   ((a.zip b c,d->equals N c d) ∀ x->x)
-  #     & a.count ≟ b.count
+
+  fixed type.equality(a, b numericSequence N) bool is
+    ((a.zip b (c,d->equals N c d)) ∀ x->x)
+      & a.count ≟ b.count

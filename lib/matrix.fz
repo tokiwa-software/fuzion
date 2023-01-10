@@ -71,15 +71,14 @@ is
     else
       true
 
-  # NYI: #637:
-  # fixed matrix.type.equality(M type : numeric M, a, b matrix M) =>
-  #   for
-  #     x in a.e
-  #     y in a.e
-  #   until x /= y
-  #     false
-  #   else
-  #     true
+  fixed type.equality(a, b matrix M) =>
+    for
+      x in a.e
+      y in a.e
+    until !(x ≟ y)
+      false
+    else
+      true
 
   redef infix != (b matrix M) => !(a = b)
 
