@@ -27,7 +27,7 @@ iftest_negative is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
@@ -52,12 +52,12 @@ iftest_negative is
   testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
   testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
 
-  routine_positive (b bool) choice unit string is
+  routine_positive (b bool) choice unit String is
     if b // ok
       "Hello"
 
   # NYI improve error message
-  routine_negative (b bool) string is
+  routine_negative (b bool) String is
     if b // 5. should flag an error: Incompatible types in assignment
       "Hello"
 

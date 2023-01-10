@@ -227,7 +227,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param fuir the intermediate code.
    */
-  public AbstractInterpreter(FUIR fuir, ProcessStatement processor)
+  public AbstractInterpreter(FUIR fuir, ProcessStatement<VALUE, RESULT> processor)
   {
     if (PRECONDITIONS) require
       (fuir != null,
@@ -417,7 +417,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             res = null;
           }
       }
-    return new Pair(res, _processor.sequence(l));
+    return new Pair<>(res, _processor.sequence(l));
   }
 
 

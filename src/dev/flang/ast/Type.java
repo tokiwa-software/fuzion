@@ -72,9 +72,10 @@ public class Type extends AbstractType
    */
   public enum RefOrVal
   {
-    Ref,
-    Value,
-    LikeUnderlyingFeature,
+    Ref,                    // this is an explicit reference type
+    Value,                  // this is an explicit value type
+    LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
+    ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
   }
 
 
@@ -134,7 +135,7 @@ public class Type extends AbstractType
    * the _outer of "r" is "p.q", and the outer of "q" is "p".
    *
    * However, if p is declared in a, after type resolution, the outer type of
-   * "p" is "a" or maybe a heir of "a".
+   * "p" is "a" or maybe an heir of "a".
    */
   private AbstractType _outer;
 
@@ -262,11 +263,19 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (pos != null,
-       n.length() > 0);
+       n.length() > 0,
+       Errors.count() > 0 || f == null || f.generics().sizeMatches(g == null ? NONE : g));
 
     this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
+    if (o instanceof Type ot && ot.isThisType())
+      {
+        // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
+        // outer types. Is it possible to not create asThisType() in This.java
+        // in the first place?
+        o = new Type(ot, RefOrVal.LikeUnderlyingFeature);
+      }
     this._outer = o;
     this.feature = f;
     this.generic = null;
@@ -376,9 +385,7 @@ public class Type extends AbstractType
   public Type(Type original, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
-      (refOrVal == RefOrVal.Ref ||
-       refOrVal == RefOrVal.Value,
-       (refOrVal == RefOrVal.Ref) != original.isRef());
+      (refOrVal != original._refOrVal);
 
     this.pos                = original.pos;
     this._refOrVal          = refOrVal;
@@ -391,7 +398,70 @@ public class Type extends AbstractType
   }
 
 
+  /**
+   * Create a ref or value type from a given value / ref type.
+   *
+   * @param original the original value type
+   *
+   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   */
+  private Type(Type original, AbstractFeature originalOuterFeature)
+  {
+    this.pos                = original.pos;
+    this._refOrVal          = original._refOrVal;
+    this.name               = original.name;
+    if (original._generics.isEmpty())
+      {
+        this._generics          = original._generics;
+      }
+    else
+      {
+        this._generics = new List<>();
+        for (var g : original._generics)
+          {
+            this._generics.add(((Type)g).clone(originalOuterFeature));
+          }
+      }
+    this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
+    this.feature            = original.feature;
+    this.generic            = original.generic;
+    this.checkedForGeneric  = original.checkedForGeneric;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * This method usually just returns currentOuter. Only for clone()d types that
+   * are used in a different outer context, this permits to look up features the
+   * type is based on in the original context.
+   */
+  AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
+  {
+    return currentOuter;
+  }
+
+
+  /**
+   * Create a clone of this Type that uses orignalOuterFeature as context to
+   * look up features the type is built from.  Generics will be looked up in the
+   * current context.
+   *
+   * This is used for type features that use types from the original feature,
+   * but needs to replace generics by the type feature's generics.
+   */
+  Type clone(AbstractFeature originalOuterFeature)
+  {
+    return
+      new Type(this, originalOuterFeature)
+      {
+        AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
+        {
+          return originalOuterFeature;
+        }
+      };
+  }
 
 
   /**
@@ -429,6 +499,30 @@ public class Type extends AbstractType
       {
         result = Types.intern(new Type(this, RefOrVal.Ref));
       }
+    return result;
+  }
+
+
+  /**
+   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * in case it is a this.type or a choice variant already.
+   */
+  public AbstractType asThis()
+  {
+    if (PRECONDITIONS) require
+      (this == Types.intern(this),
+       !isGenericArgument());
+
+    AbstractType result = this;
+    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
+      {
+        result = Types.intern(new Type(this, RefOrVal.ThisType));
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
+       !(isThisType() || isChoice()) || result == this);
+
     return result;
   }
 
@@ -492,13 +586,26 @@ public class Type extends AbstractType
    */
   public boolean isRef()
   {
-    switch (this._refOrVal)
+    return switch (this._refOrVal)
       {
-      case Ref                  : return true;
-      case Value                : return false;
-      case LikeUnderlyingFeature: return ((feature != null) && feature.isThisRef());
-      default: throw new Error("Unhandled switch case for RefOrVal");
-      }
+      case Ref                  -> true;
+      case Value                -> false;
+      case LikeUnderlyingFeature-> ((feature != null) && feature.isThisRef());
+      case ThisType             -> false;
+      };
+  }
+
+
+  /**
+   * isThisType
+   */
+  public boolean isThisType()
+  {
+    return switch (this._refOrVal)
+      {
+      case Ref, Value, LikeUnderlyingFeature -> false;
+      case ThisType                          -> true;
+      };
   }
 
 
@@ -538,7 +645,19 @@ public class Type extends AbstractType
       }
     else if (generic != null)
       {
-        result = generic.feature().qualifiedName() + "." + name + (this.isRef() ? " (boxed)" : "");
+        var f = generic.feature();
+        var n = name;
+        if (f != null)
+          {
+            var qn = f.qualifiedName();
+            if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
+              {
+                qn = qn.substring(0, qn.lastIndexOf(".type"));
+                n = "this.type";
+              }
+            n = qn + "." + n;
+          }
+        result = n + (this.isRef() ? " (boxed)" : "");
       }
     else if (_outer != null)
       {
@@ -547,9 +666,9 @@ public class Type extends AbstractType
           + (outer == "" ||
              outer == FuzionConstants.UNIVERSE_NAME ? ""
                                                     : outer + ".")
-          + ( isRef() && (feature == null || !feature.isThisRef()) ? "ref " :
-             !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
-                                                                   : "" )
+          + (_refOrVal == RefOrVal.Ref   && (feature == null || !feature.isThisRef()) ? "ref "   :
+             _refOrVal == RefOrVal.Value &&  feature != null &&  feature.isThisRef()  ? "value "
+                                                                                      : ""       )
           + (feature == null ? name
              : feature.featureName().baseName());
       }
@@ -560,6 +679,10 @@ public class Type extends AbstractType
     else
       {
         result = feature.qualifiedName();
+      }
+    if (isThisType())
+      {
+        result = result + ".this.type";
       }
     if (_generics != NONE)
       {
@@ -575,9 +698,26 @@ public class Type extends AbstractType
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
    *
-   * @param outer the feature surrounding this expression.
+   * @param outerfeat the feature surrounding this expression.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return v
+      .actionBefore(this, outerfeat)
+      .visit2(v, outerfeat);
+  }
+
+
+  /**
+   * Helper method for visit() that is used on the result of v.actionBefore() to
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outerfeat the feature surrounding this expression.
+   */
+  private AbstractType visit2(FeatureVisitor v, AbstractFeature outerfeat)
   {
     if ((feature == null) && (generic == null))
       {
@@ -672,7 +812,69 @@ public class Type extends AbstractType
 
 
   /**
+   * resolve 'abc.this.type' within a type feature. If this designates a
+   * 'this.type' withing a type feature, then return the type parameter of the
+   * corresponding outer type.
+   *
+   * Example: if this is
+   *
+   *   b.this.type
+   *
+   * within a type feature
+   *
+   *   a.type.b.type.c.d
+   *
+   * then we replace 'b.this.type' by the type parameter of a.b.type.
+   *
+   * @param outerfeat the outer feature that this type is declared in.
+   */
+  Type resolveThisType(AbstractFeature outerfeat)
+  {
+    if (PRECONDITIONS) require
+      (outerfeat != null,
+       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       checkedForGeneric);
+
+    Type result = this;
+    var o = outerfeat;
+    while (isThisType() && o != null)
+      {
+        if (isMatchingTypeFeature(o))
+          {
+            result = new Type(pos(), new Generic(o.typeArguments().get(0)));
+            o = null;
+          }
+        else
+          {
+            o = o.outer();
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Recursive helper for resolveThisType to check if outerfeat is a type
+   * feature with the same name as this.
+   *
+   * @param outerfeat the outer feature that should be compared to this.
+   */
+  private boolean isMatchingTypeFeature(AbstractFeature outerfeat)
+  {
+    return outerfeat.isTypeFeature() &&
+      (name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.featureName().baseName()) &&
+      (_outer == null                                   ||
+       (_outer instanceof Type ot                   &&
+        !ot.isThisType()                            &&
+        ot.isMatchingTypeFeature(outerfeat.outer())   )    );
+  }
+
+
+  /**
    * resolve this type
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
    *
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
@@ -729,10 +931,10 @@ public class Type extends AbstractType
       }
     if (!isGenericArgument())
       {
-        var of = outerfeat;
+        var of = originalOuterFeature(outerfeat);
         if (_outer != null)
           {
-            _outer = _outer.resolve(res, outerfeat);
+            _outer = _outer.resolve(res, of);
             var ot = _outer.isGenericArgument() ?_outer.genericArgument().constraint() : _outer;
             of = ot.featureOfType();
           }

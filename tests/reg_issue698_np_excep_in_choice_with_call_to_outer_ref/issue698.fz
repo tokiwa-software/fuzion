@@ -1,0 +1,26 @@
+ex_tree is
+  Node(A, B, C type) ref is
+    datum A is abstract
+    count i32 is abstract
+    left B is abstract
+    right C is abstract
+
+  tree(A type : ordered A) : choice nil (Node A (tree A) (tree A)) is
+
+    size i32 is
+      tree.this ? nil    => 0
+                | n Node => n.count
+
+    private smart (datum A, left, right tree A) tree A is
+      ref : Node A (tree A) (tree A)
+        datum A is datum
+        count i32 is (1 + left.size + right.size)
+        left tree A is left
+        right tree A is right
+
+  trees is
+    empty(A type : ordered A) tree A is
+      nil
+
+  x := (trees.empty i32).smart 42 nil nil
+  say x

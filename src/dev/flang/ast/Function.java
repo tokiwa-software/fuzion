@@ -315,12 +315,13 @@ public class Function extends ExprWithPos
             this._feature = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
+            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
+            _inheritsCall._generics = gs; // NYI: hack to set infered result type, see below
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Consts.VISIBILITY_INVISIBLE,
-                                   Consts.MODIFIER_FINAL,
+                                   0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
@@ -333,7 +334,7 @@ public class Function extends ExprWithPos
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(f);
                 result = f.resultType();
-                gs.set(0, result);
+                gs.set(0, result);   // NYI: hack to set infered result type
               }
 
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
@@ -548,13 +549,13 @@ public class Function extends ExprWithPos
              *  - calling a single feature
              *  - calling a feature in a different module
              */
-            List<Expr> actual_args = new List<Expr>();
-            List<Feature> formal_args = new List<Feature>();
+            var actual_args = new List<Actual>();
+            var formal_args = new List<Feature>();
             int argnum = 1;
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Call(pos(), null, name));
+                actual_args.add(new Actual(null, new Call(pos(), null, name)));
                 formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
@@ -570,14 +571,19 @@ public class Function extends ExprWithPos
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<AbstractCall> inherits = new List<>(new Call(pos(), fr.featureName().baseName(), _type.generics(), Expr.NO_EXPRS));
+            var args = new List<Actual>();
+            for (var g : _type.generics())
+              {
+                args.add(new Actual(g));
+              }
+            List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
                                            Consts.VISIBILITY_INVISIBLE,
-                                           Consts.MODIFIER_FINAL,
+                                           0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),
                                            NO_FEATURES,

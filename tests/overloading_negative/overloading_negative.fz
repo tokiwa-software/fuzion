@@ -27,7 +27,7 @@ overloading_negative is
 
   exitCode := 0
 
-  chck (msg string, b bool) unit is
+  chck (msg String, b bool) unit is
     if b
       say "PASSED: $msg"
     else
@@ -54,7 +54,7 @@ overloading_negative is
   test2 is
     a() unit is
     a(i i32) i32 is 13
-    a(i, j i32) string is "foo"
+    a(i, j i32) String is "foo"
 
     x := a
     y := a 42

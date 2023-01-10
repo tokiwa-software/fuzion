@@ -49,7 +49,10 @@
 # compatible to  'outcome data IOError PermissionError', so everything
 # is fine.
 #
-outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
+outcome(T type) :
+  choice T error, /* ...  NYI: this should be open generic! */
+  monad T (outcome T)
+is
 
   # Does this outcome contain a value of type T?
   #
@@ -126,10 +129,8 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   and (O type, o outcome O) outcome O is
-    if ok
-      o
-    else
-      outcome.this
+    outcome.this ? _ T     => o
+                 | e error => e
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
   or (o outcome T) outcome T is
@@ -137,6 +138,41 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
       o
     else
       outcome.this
+
+
+  # monadic operator
+  #
+  redef infix >>= (f T -> outcome T) => outcome.this.bind f
+
+
+  # monadic operator
+  #
+  # This enables a very idiomatic way of error handling: assume you are trying
+  # to read 42 bytes from a file into a string. Let open be a feature that takes
+  # a file name and returns an outcome of some abstract file descriptor, let read
+  # be a feature that takes an abstract file descriptor and a number of bytes to
+  # read and returns an outcome of a byte (u8) array. We want to read 42 bytes
+  # from a file called "example.txt" into a string, and we wrap this into an outcome,
+  # for handling the case that an error occurs when opening the file (i.e. it does
+  # not exist) or when reading the file (i.e. example.txt is not actually a file but
+  # a directory). Using match statements, this is very cumbersome:
+  #
+  #     # open example file
+  #     match open "example.txt"
+  #       fd i64 =>
+  #         # read 42 bytes from example file
+  #         match read fd 42
+  #           content array u8 => strings.fromBytes content
+  #           re error => re
+  #       oe error => oe
+  #
+  # The monadic operator turns this into:
+  #
+  #     (open "example.txt").bind (array u8) (fd->read fd 42)
+  #
+  bind(B type, f T -> outcome B) outcome B is
+    outcome.this ? v T => f v
+                 | e error => e
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a
@@ -151,3 +187,13 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
 #   o outcome TypeOfX := x
 #
 outcome(T type, o outcome T) => o
+
+
+# type related to outcome declaring features not requiring an instance of outcome
+#
+outcomes(redef A type) : monads A (outcome A) is
+
+
+  # return function
+  #
+  return (a A) => outcome a

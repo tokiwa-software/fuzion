@@ -1,9 +1,26 @@
+# <img src="assets/logo.svg" alt="fuzion logo" width="25" /> Fuzion
 
-# <img src="assets/logo.svg" alt="fuzion logo" width="25" /> The Fuzion language implementation
+## A language with a focus on simplicity, safety and correctness.
 
-This is work under development, documentation is mostly not existing.
+> Please note that this language is work in progress.
 
-Please check [https://flang.dev](https://flang.dev) for language and implementation design.
+---
+
+<!--ts-->
+   * [Documentation](#documentation)
+   * [Clone](#clone)
+   * [Requirements](#requirements)
+     * [Windows](#windows)
+   * [Build](#build)
+   * [Run](#run)
+<!--te-->
+
+---
+
+## Documentation
+
+Check [flang.dev](https://flang.dev) for language and implementation design.
+
 
 ## Clone
 > Note that the current directory must not contain any spaces.
@@ -12,15 +29,19 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 
 ## Requirements
 
-- OpenJDK 17, e.g., https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_linux_hotspot_17_35.tar.gz
-- clang-10 LLVM C compiler (on ubuntu: sudo apt-get install clang-10)
-- GNU make
-- libgc (on debian: sudo apt-get install libgc1 libgc-dev)
+> For Debian based systems this command should install all requirements:
+>
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-17-jdk
 
-## Windows
+- OpenJDK 17, e.g. [Adoptium](https://github.com/adoptium/temurin17-binaries/releases/)
+- clang LLVM C compiler
+- GNU make
+- libgc
+
+### Windows
 > Note that building from powershell/cmd does not work yet.
 
-1) Install chocolatey: https://chocolatey.org/install
+1) Install chocolatey: [chocolatey.org](https://chocolatey.org/install)
 2) In Powershell:
     1) choco install git openjdk make msys2 diffutils
     2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\mingw64\bin;" + $env:Path , "User")
@@ -31,14 +52,12 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 
 ## Build
 
-> Make sure java/javac commands from OpenJDK and clang binary are in $PATH.
+> Make sure java/javac and clang are in your $PATH.
 
     cd fuzion
     make
 
-alternatively, you can build in another directory and use
-
-    make -f <fuzion-dir>/fuzion/Makefile
+You should have a folder called **build** now.
 
 ## Run
 

@@ -1,0 +1,9 @@
+
+[32m--CURDIR--/issue356.fz:27:7:[39m [1;31merror 1[0m[1m: Failed to infer actual type parameters[0m
+[34m  a : choice is
+[33m------^[0m
+In call to '[35mchoice[39m', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: '[33mCHOICE_ELEMENT_TYPE...[39m'
+Type inference failed for one type parameter '[33mCHOICE_ELEMENT_TYPE[39m'
+
+one error.

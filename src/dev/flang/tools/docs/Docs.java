@@ -41,6 +41,7 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,10 +107,7 @@ public class Docs
         return;
       }
     var head = queue.remove();
-    if (!head.isUniverse())
-      {
-        c.accept(head);
-      }
+    c.accept(head);
     queue.addAll(declaredFeatures(head).collect(Collectors.toList()));
     breadthFirstTraverse0(c, queue);
   }
@@ -272,44 +270,36 @@ public class Docs
 
   private void run(DocsOptions config)
   {
+    // declared features are sorted by feature name
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, SortedSet<AbstractFeature>>();
 
     breadthFirstTraverse(feature -> {
-      var outerFeature = feature.outer();
-      if (ignoreFeature(outerFeature))
+      if (ignoreFeature(feature))
         {
           return;
         }
-
-      mapOfDeclaredFeatures.compute(outerFeature, (k, v) -> {
-        if (v == null)
-          {
-            v = new TreeSet<AbstractFeature>(byFeatureName);
-          }
-        if (!ignoreFeature(feature))
-          {
-            v.add(feature);
-          }
-        return v;
-      });
+      var s = declaredFeatures(feature)
+        .filter(af -> !ignoreFeature(af))
+        .collect(Collectors.toCollection(
+          () -> new TreeSet<>(byFeatureName)));
+      mapOfDeclaredFeatures.put(feature, s);
     }, universe);
 
-    var htmlTool = new Html(config);
+    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe);
 
     mapOfDeclaredFeatures
-      .entrySet()
+      .keySet()
       .stream()
-      .forEach(entry -> {
-        var key = entry.getKey();
-        var path = key.isUniverse()
+      .forEach(af -> {
+        var path = af.isUniverse()
                                     ? config.destination()
-                                    : config.destination().resolve(featurePath(key));
+                                    : config.destination().resolve(featurePath(af));
         path.toFile().mkdirs();
 
         try
           {
             FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-            var output = htmlTool.content(entry, universe, mapOfDeclaredFeatures);
+            var output = htmlTool.content(af);
             writer.write(output);
             writer.close();
           }

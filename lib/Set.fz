@@ -25,7 +25,7 @@
 
 # Set -- an abstract set of values V
 #
-Set(E (hasEquals E).type) ref : Sequence E is
+Set(E type : hasEquals E) ref : Sequence E is
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
@@ -48,10 +48,16 @@ Set(E (hasEquals E).type) ref : Sequence E is
   add (k E) Set E is abstract
 
 
+  # remove an element k from the set if it exists.
+  # return the same set if it does not exist.
+  #
+  remove (k E) Set E is abstract
+
+
   redef asString =>
     if isEmpty
       "∅"
     else
       ("\{"
-       + (asList.map string (x -> x.asString)).fold(strings.concat ";")
+       + (asList.map String (x -> x.asString)).fold(Strings.concat ";")
        + "\}")

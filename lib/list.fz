@@ -36,6 +36,9 @@
 # Lists can typically be traversed using only immutable data. This makes them
 # more flexible than streams that require to store and update their state.
 #
+# A list is immutable, so it can be reused and shared between threads.
+# Compared to a stream, a list may require more (heap) allocation.
+#
 #
 #
 list(A type) : choice nil (Cons A (list A)), Sequence A is
@@ -43,12 +46,12 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 # list(A type) : nil | Cons A (list A), Sequence A is
 
 
-  # create a list from this Sequence.
+  # Return this list as a list.
   #
-  # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
+  # This is a helper function that needs to be defined because list is an heir
+  # of Sequence.
   #
-  redef asList list A is list.this
+  redef asList => list.this
 
 
   # is this list empty?
@@ -70,7 +73,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => c.tail.count n+1
 
 
-  # get the head of this list if it exists
+  # get the head of this list if it exists, nil if it does
+  # not exist
   #
   head option A
   is
@@ -89,21 +93,14 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # call f in order on all elements of this list
   #
-  redef forAll (f A -> unit) unit is
+  redef for_each (f A -> unit) unit is
     list.this ? nil    =>
-              | c Cons => f c.head; c.tail.forAll f
+              | c Cons => f c.head; c.tail.for_each f
 
 
-  # get the head of this list, panic if list is empty
+  # get the tail of this list
   #
-  forceHead
-    pre
-      debug: !isEmpty
-    => (list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
-                  | c Cons => c.head)
-
-
-  # get the tail of this list, panic if list is empty
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   forceTail
     pre
@@ -112,15 +109,46 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
                   | c Cons => c.tail)
 
 
-  # get the head of this list, panic if list is empty
+  # get the head of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   redef first
     pre
       debug: !isEmpty
-    => forceHead
+    => head.get
 
 
-  # get the last element of this list, panic if list is empty
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  init list A
+    pre
+      debug: !isEmpty
+  is
+    init nil
+
+
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  # helper feature for init to allow for tail recursion
+  #
+  private init(res list A) list A
+    pre
+      debug: !isEmpty
+  is
+    list.this ? nil => fuzion.std.panic "list.init called on empty list"
+              | c Cons =>
+                c.tail ? nil => res
+                       | _ Cons => c.tail.init (res ++ [c.head])
+
+
+  # get the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite list.
@@ -159,7 +187,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
       _ nil  => nil
       c Cons =>
         match (f c.head).asList
-          _ nil => nil
+          _ nil => c.tail.flatMap B f
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
@@ -223,8 +251,35 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep string) =>
-    "{(map string x->x.asString).fold (strings.concat sep)}"
+  redef asString (sep String) =>
+    "{(map String x->x.asString).fold (Strings.concat sep)}"
+
+
+  # add an element sep in front of every element of this list.
+  #
+  prepend_to_all(sep A) list A is
+    prepend_to_all sep nil
+
+
+  # add an element sep in front of every element of this list, helper to
+  # allow tail recursion.
+  #
+  # if this list is the empty list, return the given result list res, recursively
+  # call this feature on the tail of this list otherwise, feeding it with the
+  # same separator sep but appending sep and the current element to res.
+  #
+  private prepend_to_all(sep A, res list A) list A is
+    match head
+      nil => res
+      x A => tail.prepend_to_all sep (res ++ [sep, x])
+
+
+  # add an element sep between every element of this list.
+  #
+  intersperse(sep A) list A is
+    match head
+      nil => nil
+      x A => [x] ++ tail.prepend_to_all sep
 
 
   # List concatenation, O(count)
@@ -247,7 +302,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               head => c.head
               tail => c.tail.concat t
 
-  # infix operand synonyme for concat
+  # infix operand synonym for concat
   #
   redef infix ++ (t Sequence A) => concat t.asList
 
@@ -266,7 +321,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a slice from this list that consists of the elements starting at index
   # 'from' (including) up to index 'to' (excluding).
   #
-  redef slice(from, to i32) => drop(from).take to-from
+  redef slice(from, to i32) => (drop from).take to-from
 
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
@@ -298,6 +353,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   # Lazily filter the elements of a list.
+  #
+  # The result contains exactly those elements for which p
+  # is true.
   #
   redef filter (p A -> bool) Sequence A is
     filter0 p
@@ -345,7 +403,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>
-      res := cur.forceHead
+      res := cur.head.get
       set cur := cur.forceTail
       res
 

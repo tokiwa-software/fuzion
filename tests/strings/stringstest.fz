@@ -29,7 +29,7 @@ stringstest is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
         "PASSED: "
       else

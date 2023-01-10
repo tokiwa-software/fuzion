@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
+numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs
@@ -52,7 +52,7 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
       safety: thiz +! other
   is abstract
 
-  # basic operations: 'infix -' (substraction)
+  # basic operations: 'infix -' (subtraction)
   infix -  (other T) T
     pre
       safety: thiz -! other
@@ -181,22 +181,46 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
   infix ∉ (s Set T) => numeric.this.notElementOf s
 
 
-# numerics -- unit type defining features related to numeric but not
-# requiring an instance
-#
-numerics(T (numeric T).type) is
-
-  # name of this numeric type, e.g., "u64"
+  # -----------------------------------------------------------------------
   #
-  name string is abstract
+  # type features:
+
 
   # identity element for 'infix +'
   #
-  zero T is abstract
+  type.zero numeric.this.type is abstract
+
 
   # identity element for 'infix *'
   #
-  one  T is abstract
+  type.one  numeric.this.type is abstract
+
+
+  # the value corresponding to v in whatever integer implementation we have,
+  # maximum in case of overflow
+  #
+  # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
+  #
+  type.from_u32(v u32) numeric.this.type is
+    if v == 0 zero else one # NYI: #706: (from_u32 v-1) +^ one
+
+
+# numerics -- unit type defining features related to numeric but not
+# requiring an instance
+#
+numerics(T type : numeric T) is
+
+  # name of this numeric type, e.g., "u64"
+  #
+  name String is abstract
+
+  # identity element for 'infix +'
+  #
+  zero T is abstract # NYI: #706: T.zero
+
+  # identity element for 'infix *'
+  #
+  one  T is abstract # NYI: #706: T.one
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
   two => from_u32(2)
@@ -205,8 +229,8 @@ numerics(T (numeric T).type) is
   ten => from_u32(10)
 
   # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) T is
-    if v == 0 zero else from_u32(v-1) +^ one
+  from_u32(v u32) T is # T.from_u32 v
+    if v == 0 zero else (from_u32 v-1) +^ one
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.

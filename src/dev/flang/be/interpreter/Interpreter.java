@@ -37,6 +37,7 @@ import java.util.Map;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
@@ -58,7 +59,6 @@ import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instea
 import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -226,14 +226,18 @@ public class Interpreter extends ANY
           {
             callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
           }
+        catch (FatalError e)
+          {
+            throw e;
+          }
+        catch (StackOverflowError e)
+          {
+            Errors.fatal("*** " + e + "\n" + callStack());
+          }
         catch (RuntimeException | Error e)
           {
-            if (!(e instanceof StackOverflowError))
-              {
-                Errors.error("*** " + e + "\n" + callStack());
-                throw e;
-              }
-            Errors.fatal("*** " + e + "\n" + callStack());
+            Errors.error("*** " + e + "\n" + callStack());
+            throw e;
           }
         if (CHECKS) check
           (Errors.count() == 0);
@@ -439,7 +443,7 @@ public class Interpreter extends ANY
                 for (int i = 0; !matches && i < nt; i++)
                   {
                     Clazz caseClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId + i);
-                    matches = caseClazz.isAssignableFrom(subjectClazz);
+                    matches = caseClazz.isDirectlyAssignableFrom(subjectClazz);
                   }
               }
             if (matches)
@@ -516,7 +520,7 @@ public class Interpreter extends ANY
                 if (vc.actualType(f.resultType()).compareTo(Types.resolved.t_unit) != 0)
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
-                    f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
+                    f = vc.lookup(f, b).feature();
                     if (Clazzes.isUsed(f, vc))
                       {
                         Value v = getField(f, vc, val, true /* allow for uninitialized ref field */);
@@ -862,7 +866,7 @@ public class Interpreter extends ANY
         else
           {
             // field might have been redefined, see https://github.com/tokiwa-software/fuzion/issues/165
-            a = staticClazz.lookup(a, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(a)).feature();
+            a = staticClazz.lookup(a).feature();
             setField(a,
                      -1,
                      staticClazz,

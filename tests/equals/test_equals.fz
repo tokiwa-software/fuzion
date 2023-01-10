@@ -30,32 +30,32 @@ test_equals =>
 
   # compare two strings using string.type.equality directly
   #
-  eq1(a, b string) => string.type.equality a b
+  eq1(a, b String) => String.type.equality a b
 
   # compare two strings using equals without type inference for the type
   # parameter
   #
-  eq2(a, b string) => equals string a b
+  eq2(a, b String) => equals String a b
 
   # compare two strings using equals with type inference for the type
   # parameter
   #
-  eq3(a, b string) => equals a b
+  eq3(a, b String) => equals a b
 
   # compare two strings using infix ≟ without infix syntax and without
   # type inference for the type parameter
   #
-  eq4(a, b string) => infix ≟ string a b
+  eq4(a, b String) => infix ≟ String a b
 
   # compare two strings using infix ≟ without infix syntax and with type
   # inference for the type parameter
   #
-  eq5(a, b string) => infix ≟ a b
+  eq5(a, b String) => infix ≟ a b
 
   # compare two strings using infix ≟ with infix syntax and with type
   # inference for the type parameter
   #
-  eq6(a, b string) => a ≟ b
+  eq6(a, b String) => a ≟ b
 
   say "comparing A and B {eq1 "A" "B"}"
   say "comparing A and A {eq1 "A" "A"}"
@@ -117,7 +117,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    type.equality(a, b test_equals_types.Has_color) =>
+    fixed type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -144,10 +144,10 @@ test_equals_types is
     # the string
     utf8 Sequence u8)
 
-   : Has_color, string, has_equality is
+   : Has_color, String, has_equality is
 
     # equality relation comparing color and strings
     #
-    type.equality(a, b test_equals_types.colored_text) =>
+    fixed type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
-       string.type.equality       a b   )
+       String.type.equality       a b   )

@@ -167,7 +167,7 @@ inheritance is
   (1..).before (x -> x > 100)
        .before (x -> x > 40)
        .before (x -> x > 20)
-       .forAll (x -> say x)
+       .for_each (x -> say x)
 
   // test for recursive inheritance/outer relation with refs
   strm.u.print
@@ -224,7 +224,7 @@ inheritance is
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
   call_inherited_from_parent_args is
-    chck (b bool, msg string) unit is
+    chck (b bool, msg String) unit is
       if b
         say "PASSED: $msg"
       else
@@ -258,7 +258,7 @@ inheritance is
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
   call_inherited_from_parent_args2 is
-    chck (b bool, msg string) unit is
+    chck (b bool, msg String) unit is
       if b
         say "PASSED: $msg"
       else
@@ -304,7 +304,7 @@ inheritance is
 
   /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
   call_inherited_from_parent_args3 is
-    chck (b bool, msg string) unit is
+    chck (b bool, msg String) unit is
       if b
         say "PASSED: $msg"
       else
@@ -392,7 +392,7 @@ inheritance is
     chck "test Dcnt" Dcnt 9
     chck "test Ecnt" Ecnt 6
     chck "test Fcnt" Fcnt 3
-    chck(msg string, v, expected i32) =>
+    chck(msg String, v, expected i32) =>
       if v == expected
         say "$msg: PASSED."
       else

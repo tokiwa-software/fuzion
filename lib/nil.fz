@@ -34,4 +34,4 @@ nil is
 
   # convert this to a string.
   #
-  redef asString string is "--nil--"
+  redef asString String is "--nil--"

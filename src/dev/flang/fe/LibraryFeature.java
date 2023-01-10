@@ -184,6 +184,15 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * Unique global index of this feature.
+   */
+  int globalIndex()
+  {
+    return _libModule.globalIndex(_index);
+  }
+
+
+  /**
    * What is this Feature's kind?
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
@@ -227,6 +236,17 @@ public class LibraryFeature extends AbstractFeature
   public Visi visibility()
   {
     return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
+  }
+
+  /**
+   * the modifiers of this feature
+   */
+  public int modifiers()
+  {
+    return
+      (_libModule.featureIsFixed       (_index)     ? Consts.MODIFIER_FIXED    : 0) |
+      (_libModule.featureRedefinesCount(_index) > 0 ? Consts.MODIFIER_REDEFINE : 0);
+
   }
 
 
@@ -417,7 +437,10 @@ public class LibraryFeature extends AbstractFeature
 
     var o = outer();
     var ot = o == null ? null : o.thisType();
-    AbstractType result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
+    AbstractType result = new NormalType(_libModule, -1, this, this,
+                                         isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -464,7 +487,7 @@ public class LibraryFeature extends AbstractFeature
         var id = _libModule.featureId(_index);
         if (bytes.length == 0)
           {
-            var gi = _libModule.globalIndex(_index);
+            var gi = globalIndex();
             result = FeatureName.get(gi, ac, id);
           }
         else
@@ -813,9 +836,20 @@ public class LibraryFeature extends AbstractFeature
    */
   public int compareTo(AbstractFeature other)
   {
-    return (other instanceof Feature)
-      ? -1
-      : _index - ((LibraryFeature) other)._index;  // there are only two subclasses: Feature and LibraryFeature.
+    int result;
+    if (other instanceof Feature)
+      {
+        result = -1;
+      }
+    else if (other instanceof LibraryFeature lf)
+      {
+        result = globalIndex() - lf.globalIndex();
+      }
+    else
+      {
+        throw new Error("LibraryFeature.compareTo expects that there are only two subclasses: Feature and LibraryFeature.");
+      }
+    return result;
   }
 
 

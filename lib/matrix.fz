@@ -27,7 +27,7 @@
 #
 # matrix provides matrix operations based on an arbitray numeric type
 #
-matrix(redef M (numeric M).type, e array2 M) : numeric (matrix M), matrices M
+matrix(redef M type : numeric M, e array2 M) : numeric (matrix M), matrices M
 is
 
 # private:
@@ -71,15 +71,14 @@ is
     else
       true
 
-  # NYI: #637:
-  # matrix.type.equality(M (numeric M).type, a, b matrix M) =>
-  #   for
-  #     x in a.e
-  #     y in a.e
-  #   until x /= y
-  #     false
-  #   else
-  #     true
+  fixed type.equality(a, b matrix M) =>
+    for
+      x in a.e
+      y in a.e
+    until !(x ≟ y)
+      false
+    else
+      true
 
   redef infix != (b matrix M) => !(a = b)
 
@@ -107,7 +106,7 @@ is
 # matrices is a unit type defining features related to matrix but not
 # requiring an instance.
 #
-matrices(M numeric M.type) : numerics (matrix M) is
+matrices(M type : numeric M) : numerics (matrix M) is
 
   redef name => "matrix"
 

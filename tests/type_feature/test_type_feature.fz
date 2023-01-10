@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_type_feature
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+hasTypeArg is
+  type.showTypeArgs String is abstract
+
+ex(T, U type) : hasTypeArg, has_equality is
+  type.showTypeArgs => "T:$T U:$U"
+  fixed type.equality(a, b ex T U) bool is false
+
+ex2(T, U type: has_equality, a, b T, c U) : hasTypeArg, has_equality is
+  type.showTypeArgs => "T:$T U:$U"
+  fixed type.equality(a, b ex2 T U) bool is
+    (a.a ≟ b.a &&
+     a.b ≟ b.b &&
+     a.c ≟ b.c   )
+
+prefix !(X type: hasTypeArg, v X) String is X.showTypeArgs
+
+say !(ex i32 bool)
+say !(ex (array String) (array (array bool)))
+say !(ex bool (list f64))
+a := ex i32 bool
+b := ex i32 bool
+say (a ≟ b)
+c := ex2 12 34 true
+d := ex2 47 11 false
+e := ex2 12 34 true
+f := ex2 47 11 true
+say (c ≟ c)
+say (c ≟ d)
+say (c ≟ e)
+say (c ≟ f)
+say (d ≟ c)
+say (d ≟ d)
+say (d ≟ e)
+say (d ≟ f)
+say (e ≟ c)
+say (e ≟ d)
+say (e ≟ e)
+say (e ≟ f)
+say (f ≟ c)
+say (f ≟ d)
+say (f ≟ e)
+say (f ≟ f)

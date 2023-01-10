@@ -59,7 +59,7 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  private abortable(T (Function unit).type, f T) unit is intrinsic
+  private abortable(T type : Function unit, f T) unit is intrinsic
 
   # replace effect in the current context by this and abort current execution
   private abort void is intrinsic
@@ -95,7 +95,7 @@ is
       code ()->unit
      )
     pre
-      match mode
+      match r
         effectMode.new => true
         * => false
   is

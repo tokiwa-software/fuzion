@@ -30,4 +30,4 @@ some(T type, val T) is
 
   # convert this to a string.
   #
-  redef asString string is "some $val"
+  redef asString String is "some $val"

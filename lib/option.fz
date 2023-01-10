@@ -79,7 +79,7 @@ is
                 | nil => nil
 
 
-  # synonyme for infix >>=
+  # synonym for infix >>=
   andThen (f T -> option T) => option.this >>= f
 
 
@@ -95,7 +95,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef asString string is
+  redef asString String is
     option.this ? v T => $v
                 | nil => $nil
 

@@ -83,12 +83,12 @@ choicetest is
 
   yak "summing array using iterator: "
   sum := 0;
-  a.forAll (c -> set sum := sum + value_in_cents c)
+  a.for_each (c -> set sum := sum + value_in_cents c)
   say sum
 
   yak "summing array using iterator and inner feature: "
   sum := 0;
-  a.forAll (c -> set sum := sum + c.value_in_cents)
+  a.for_each (c -> set sum := sum + c.value_in_cents)
   say sum
 
   say "summing array using monoid: {a.map  (c -> c.value_in_cents)

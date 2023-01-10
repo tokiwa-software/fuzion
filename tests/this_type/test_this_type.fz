@@ -1,0 +1,175 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_this_type
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# a simple test using type inference for 'q.this' to declare fields for an outer
+# ref type 'q'
+#
+simple_test_for_this_type_ref =>
+
+  # a simple test for 'this.type'
+  #
+  q ref is
+    x is
+      print
+      b1 := q.this
+      b2 := b1
+      b3 ref q := q.this
+      b4 ref q := b1
+      b5 ref q := b2
+
+    print => yak "q"
+
+  r : q is
+    redef print => yak "r"
+
+  say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
+  say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
+  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+
+  say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
+  say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
+  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
+  say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
+  say
+
+simple_test_for_this_type_ref
+
+# a simple test using type inference for 'q.this' to declare fields for an outer
+# value type 'q'
+#
+simple_test_for_this_type_value =>
+
+  # a simple test for 'this.type'
+  #
+  q is
+    x is
+      print
+      b1 := q.this
+      b2 := b1
+      b3 ref q := q.this
+      b4 ref q := b1
+      b5 ref q := b2
+
+    print => yak "q"
+
+  r : q is
+    redef print => yak "r"
+
+  say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
+  say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
+  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+
+  # say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
+  # say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
+  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  # say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
+  # say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
+  say
+
+simple_test_for_this_type_value
+
+# test redefinition of a feature using 'fixed' keyword, i.e.., provide an
+# implementation that will not be inherited to heirs.
+#
+test_redef_using_fixed =>
+
+  # the parent defining op_abstract (which heirs will redefine as abstract) and op
+  # (which heirs will redefine using 'fixed'):
+  #
+  a is
+
+    redef asString => "instance of 'a'"
+
+    # abstract feature that will be redefined as abstract
+    #
+    op_abstract(v a.this.type) a.this.type is abstract
+
+    # abstract that will be implemented with fixed features
+    #
+    op(v a.this.type) a.this.type is abstract
+
+    # An implemented feature that will be redefined only by b, not by c
+    #
+    op_implemented String is "a.op_implemented"
+
+    me1 a.this.type is a.this
+    me2 a.this.type is a.this
+
+
+  b(val String) : a is
+
+    redef asString => "instance of {b.type.asString} with $val"
+
+    redef me2 b.this.type is b.this
+
+    # redefine abstract feature with co-variant argument and result
+    #
+    op_abstract(v b.this.type) b.this.type is abstract
+
+    # redefine abstract with concrete type, must be fixed since this is
+    # not a legal redefinition in a sub-type
+    #
+    fixed op(v b) b is if debug then b "debug" /* b.this */ else b "non-debug"
+
+    # An implemented feature that will be redefined only by b, not by c
+    #
+    redef fixed op_implemented String is "b.op_implemented"
+
+
+  c : b "from c" is
+
+    redef asString => "instance of {c.type.asString}"
+
+    # redefine abstract feature with co-variant argument and result
+    #
+    op_abstract(v c.this.type) c.this.type is abstract
+
+    # redefine abstract that was implemented as fixed by parent b:
+    #
+    fixed op(v c) c is if debug then c.this else c
+
+  b1 := b "1"
+  b2 := b "2"
+  say (b1.op b2)
+
+  say "expecting 'a': {a.me1}"
+  say "expecting 'a': {a.me2}"
+#  say "expecting 'b with 1': {b1.me1}"   # NYI: should return b.this, currently returns a.this
+  say "expecting 'b with 2': {b2.me2}"
+
+  c1 := c
+  c2 := c
+  say (c1.op c2)
+
+  say "expecting 'a.op_implemented: {a.op_implemented}"
+  say "expecting 'b.op_implemented: {b1.op_implemented}"
+  say "expecting 'a.op_implemented: {c1.op_implemented}"
+
+test_redef_using_fixed

@@ -46,7 +46,7 @@
 # or of any of the actual generic type arguments provided to the choice
 # feature.
 #
-# Two choice types choice<A,B> and choice<B,A> that differ only in the order
+# Two choice types choice A B and choice B A that differ only in the order
 # of their actual generic arguments are treated as different types.
 #
 # Named choice types can be constructed through inheritance, i.e.,
@@ -65,7 +65,7 @@
 # of their outer features.
 #
 # Note that all types provided must be distinct, it is not possible to
-# repeat the same type as in choice<i32,i32> or float | float.  If a sum
+# repeat the same type as in choice i32 i32 or float | float.  If a sum
 # type of two or more equal types is desired, these types must first be
 # wrapped into a new type as illustrated in the following example:
 #

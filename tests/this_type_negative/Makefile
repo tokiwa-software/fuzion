@@ -17,25 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature mapOf
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# mapOf -- routine to initialize a map from arrays of ordered elements
-# and values
-#
-# This feature creates an instance of a map.
-#
-mapOf(K (ordered K).type, V type, ks array K, vs array V) map K V is orderedMap ks vs
-
-
-# mapOf -- routine to initialize a map from an array of key value tuples
-#
-# This feature creates an instance of a map.
-#
-# example: mapOf [(key1, value1), (key2, value2)]
-#
-mapOf(K (ordered K).type, V type, kvs array (tuple K V)) map K V is
-  orderedMap (kvs.map (kv -> kv.values.0)) (kvs.map (kv -> kv.values.1))
+override NAME = test_this_type_negative
+include ../negative.mk

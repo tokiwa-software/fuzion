@@ -79,7 +79,7 @@ is
       ("  [" + ascii.lf_str
         + indices1
             .map(j -> dim_2 i j)
-            .fold strings.concat("," + ascii.lf_str)
+            .fold Strings.concat("," + ascii.lf_str)
         + ascii.lf_str + "  ]")
 
     dim_2(i i32, j i32) =>
@@ -90,7 +90,7 @@ is
     ("[" + ascii.lf_str
       + indices0
           .map(i -> dim_1 i)
-          .fold strings.concat("," + ascii.lf_str)
+          .fold Strings.concat("," + ascii.lf_str)
       + ascii.lf_str + "]")
 
 

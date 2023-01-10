@@ -57,7 +57,7 @@ out =>
 
 defaultPrintToOut : Can_Print is
 
-  print(s Object) => stdout.print s
+  print(s Any) => stdout.print s
 
 
 # unit type feature defining features related to out but not requiring an

@@ -27,8 +27,8 @@
 #
 sys is
   out is
-    print  (s Object) => stdout.print   s
-    println(s Object) => stdout.println s
+    print  (s Any) => stdout.print   s
+    println(s Any) => stdout.println s
 
 
   # Create a 0-terminated internal array of bytes from
@@ -36,5 +36,5 @@ sys is
   #
   # This is used to pass strings down to instrinsics
   #
-  private c_string (s string) =>
+  private c_string (s String) =>
     (s + codepoint 0).utf8.asArray.internalArray.data
