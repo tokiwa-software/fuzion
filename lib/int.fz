@@ -130,7 +130,7 @@ is
   infix **!(other int) bool is
     other >= zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  infix **?(other int) numOption int is
+  infix **?(other int) num_option int is
     match other.ns
       plus => thiz ** other
       minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless

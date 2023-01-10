@@ -277,7 +277,7 @@ is
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  infix **?(other uint) numOption uint is thiz ** other
+  infix **?(other uint) num_option uint is thiz ** other
   infix **^(other uint) uint is thiz ** other
 
   orderedThis uint is thiz

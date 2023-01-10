@@ -212,7 +212,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
     neg bool,
 
     # the value of the highest digits already parsed
-    hi numOption T,
+    hi num_option T,
 
     # the current character to be parsed
     c u8,

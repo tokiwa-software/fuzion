@@ -103,11 +103,11 @@ numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
 
 
   # overflow checking operations
-  prefix -? numOption T is - thiz
-  infix +? (other T) numOption T is thiz + other
-  infix -? (other T) numOption T is thiz - other
-  infix *? (other T) numOption T is thiz * other
-  infix **?(other T) numOption T is abstract
+  prefix -? num_option T is - thiz
+  infix +? (other T) num_option T is thiz + other
+  infix -? (other T) num_option T is thiz - other
+  infix *? (other T) num_option T is thiz * other
+  infix **?(other T) num_option T is abstract
 
   # saturating  operations
   prefix -^  T is - thiz
