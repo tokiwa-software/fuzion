@@ -132,7 +132,7 @@ is
 private codepoint0 choice codepoint end_of_file error is
   match stdin.byte
     b u8 =>
-      match codepoints.num_utf8_bytes b
+      match codepoint.type.num_utf8_bytes b
         n i32 =>
           rest := (2..n)
             # NYI use reduce_or_error once outcome is open generic
