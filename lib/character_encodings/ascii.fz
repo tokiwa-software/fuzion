@@ -102,68 +102,68 @@ ascii is
   ##
 
   # Null
-  nul_str => Strings.fromBytes [nul]
+  nul_str => String.type.fromBytes [nul]
   # Start of Heading
-  soh_str => Strings.fromBytes [soh]
+  soh_str => String.type.fromBytes [soh]
   # Start of Text
-  stx_str => Strings.fromBytes [stx]
+  stx_str => String.type.fromBytes [stx]
   # End of Text
-  etx_str => Strings.fromBytes [etx]
+  etx_str => String.type.fromBytes [etx]
   # End of Transmission
-  eot_str => Strings.fromBytes [eot]
+  eot_str => String.type.fromBytes [eot]
   # Enquiry
-  enq_str => Strings.fromBytes [enq]
+  enq_str => String.type.fromBytes [enq]
   # Acknowledgement
-  ack_str => Strings.fromBytes [ack]
+  ack_str => String.type.fromBytes [ack]
   # Bell
-  bel_str => Strings.fromBytes [bel]
+  bel_str => String.type.fromBytes [bel]
   # Backspace
-  bs_str  => Strings.fromBytes [bs]
+  bs_str  => String.type.fromBytes [bs]
   # Horizontal Tab
-  ht_str  => Strings.fromBytes [ht]
+  ht_str  => String.type.fromBytes [ht]
   # Line Feed
-  lf_str  => Strings.fromBytes [lf]
+  lf_str  => String.type.fromBytes [lf]
   # Vertical Tab
-  vt_str  => Strings.fromBytes [vt]
+  vt_str  => String.type.fromBytes [vt]
   # Form Feed
-  ff_str  => Strings.fromBytes [ff]
+  ff_str  => String.type.fromBytes [ff]
   # Carriage Return
-  cr_str  => Strings.fromBytes [cr]
+  cr_str  => String.type.fromBytes [cr]
   # Shift Out
-  so_str  => Strings.fromBytes [so]
+  so_str  => String.type.fromBytes [so]
   # Shift In
-  si_str  => Strings.fromBytes [si]
+  si_str  => String.type.fromBytes [si]
   # Data Link Escape
-  dle_str => Strings.fromBytes [dle]
+  dle_str => String.type.fromBytes [dle]
   # Device Control 1 (often XON)
-  dc1_str => Strings.fromBytes [dc1]
+  dc1_str => String.type.fromBytes [dc1]
   # Device Control 2
-  dc2_str => Strings.fromBytes [dc2]
+  dc2_str => String.type.fromBytes [dc2]
   # Device Control 3 (often XOFF)
-  dc3_str => Strings.fromBytes [dc3]
+  dc3_str => String.type.fromBytes [dc3]
   # Device Control 4
-  dc4_str => Strings.fromBytes [dc4]
+  dc4_str => String.type.fromBytes [dc4]
   # Negative Acknowledgement
-  nak_str => Strings.fromBytes [nak]
+  nak_str => String.type.fromBytes [nak]
   # Synchronous Idle
-  syn_str => Strings.fromBytes [syn]
+  syn_str => String.type.fromBytes [syn]
   # End of Transmission Block
-  etb_str => Strings.fromBytes [etb]
+  etb_str => String.type.fromBytes [etb]
   # Cancel
-  can_str => Strings.fromBytes [can]
+  can_str => String.type.fromBytes [can]
   # End of Medium
-  em_str  => Strings.fromBytes [em]
+  em_str  => String.type.fromBytes [em]
   # SUB  Substitute
-  ss_str  => Strings.fromBytes [ss]
+  ss_str  => String.type.fromBytes [ss]
   # Escape
-  esc_str => Strings.fromBytes [esc]
+  esc_str => String.type.fromBytes [esc]
   # File Separator
-  fs_str  => Strings.fromBytes [fs]
+  fs_str  => String.type.fromBytes [fs]
   # Group Separator
-  gs_str  => Strings.fromBytes [gs]
+  gs_str  => String.type.fromBytes [gs]
   # Record Separator
-  rs_str  => Strings.fromBytes [rs]
+  rs_str  => String.type.fromBytes [rs]
   # Unit Separator
-  us_str  => Strings.fromBytes [us]
+  us_str  => String.type.fromBytes [us]
   # Delete
-  del_str => Strings.fromBytes [del]
+  del_str => String.type.fromBytes [del]
