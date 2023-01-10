@@ -2046,7 +2046,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o)
+    while (i != o && i.outerRef() != null)
       {
         res = res.lookup(i.outerRef(), pos).resultClazz();
         i = i.outer();
