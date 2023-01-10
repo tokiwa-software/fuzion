@@ -303,7 +303,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
             head => c
             tail => codepointsAndErrors rest
 
-        p := codepoints
+        p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
 
         b1 := c1.head
