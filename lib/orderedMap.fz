@@ -108,5 +108,5 @@ orderedMaps (OK type : ordered OK, V type) is
   # create an empty instance of orderedMap
   #
   empty => (orderedMap
-            (Sequences.empty OK).asArray
-            (Sequences.empty V ).asArray)
+            ((Sequence OK).type.empty).asArray
+            ((Sequence V).type.empty).asArray)
