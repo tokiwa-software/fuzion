@@ -2234,6 +2234,10 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = _returnType.functionReturnType();
       }
+    if (isOuterRef())
+      {
+        result = result.asThis();
+      }
 
     return result;
   }

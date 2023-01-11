@@ -85,7 +85,7 @@ public abstract class Unbox extends Expr
   {
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isRef() || adr instanceof AbstractCall c && c.calledFeature().isOuterRef(),
+       adr.type().isThisType() || adr.type().isRef(),
        !type.featureOfType().isThisRef()
        );
 
@@ -108,7 +108,7 @@ public abstract class Unbox extends Expr
 
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isRef(),
+       adr.type().isThisType() || adr.type().isRef(),
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
