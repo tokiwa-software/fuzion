@@ -316,7 +316,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using the total order defined by lessOrEqual
-  sort(lessOrEqual (T, T) -> bool) => sortedArray Sequence.this lessOrEqual
+  sort(lessOrEqual (T, T) -> bool) => sorted_array Sequence.this lessOrEqual
 
 
   # sort this Sequence using total order defined for 'f a[i]'

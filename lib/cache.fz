@@ -30,7 +30,7 @@
 #     ex_cache is
 #       # here we define the cache keys by which the results of the function will
 #       # be cached in the global cache
-#       cache_key(val sortedArray i32) is
+#       cache_key(val sorted_array i32) is
 #       #             ^-------- the actual type we want to cache
 #       # ^------- a feature declaring a type which we use as a cache key
 #       #            wrapping the actual data we want to cache
@@ -43,7 +43,7 @@
 #     
 #       fn Function cache_key := (() ->
 #         time.nano.sleep (time.durations.seconds 2)
-#         cache_key (sortedArrayOf [6,4,1,9]))
+#         cache_key (sorted_array_of [6,4,1,9]))
 #     
 #       fm Function cache_kex := (() ->
 #         time.nano.sleep (time.durations.seconds 3)

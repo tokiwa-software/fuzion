@@ -51,7 +51,7 @@ is
 
   # a sorted array of entries of this map
   #
-  sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence (i -> entry i)).asArray
+  sortedEntries := sorted_array_of ((0..ks.length-1).mapSequence (i -> entry i)).asArray
 
 
   # number of entries in this map
