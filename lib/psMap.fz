@@ -62,7 +62,7 @@ psMap
    # the first index in data that is unused
    fill i32)
 
-   : map PK V
+   : Map PK V
 
 is
 

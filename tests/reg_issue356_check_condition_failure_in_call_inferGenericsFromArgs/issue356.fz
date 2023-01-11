@@ -25,4 +25,4 @@
 
 issue356 =>
   a : choice is
-  b : map String a is
+  b : Map String a is

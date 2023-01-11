@@ -28,7 +28,7 @@
 hashMap(HK type : hasHash HK,
         redef V type,
         ks array HK,
-        vs array V) : map HK V
+        vs array V) : Map HK V
   pre
     ks.length == vs.length
 

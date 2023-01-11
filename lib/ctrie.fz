@@ -250,7 +250,7 @@ private rdcss_descriptor(CTK type : hasHash CTK, CTV type, ov Indirection_Node C
 
 # the ctrie
 # NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
-private CTrie(CTK type : hasHash CTK, CTV type, root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), read_only bool) ref : map CTK CTV
+private CTrie(CTK type : hasHash CTK, CTV type, root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), read_only bool) ref : Map CTK CTV
 is
 
   # compare and swap root of the ctrie

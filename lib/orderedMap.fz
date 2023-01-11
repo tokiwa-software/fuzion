@@ -35,7 +35,7 @@
 orderedMap(OK type : ordered OK,
            redef V type,
            ks array OK,
-           vs array V) : map OK V
+           vs array V) : Map OK V
   pre
     ks.length == vs.length
 
