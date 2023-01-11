@@ -17,23 +17,23 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature onewayMonad
+#  Source code of Fuzion standard library feature oneway_monad
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# onewayMonad -- heir feature of all one-way monads.
+# oneway_monad -- heir feature of all one-way monads.
 #
-# onewayMonad is the heir feature of all one-way monads. A one-way monad is
+# oneway_monad is the heir feature of all one-way monads. A one-way monad is
 # a monadic feature that can be accessed only throuh the environment and
 # that will be replaced in the environment whenever a new instance is created.
 #
-onewayMonad(
+oneway_monad(
 
   redef A type,
 
-  OMA type : onewayMonad A OMA,
+  OMA type : oneway_monad A OMA,
 
   # action to be performed, may include code to run while this effect is installed.
   #
@@ -41,5 +41,5 @@ onewayMonad(
   ) : monad A OMA, effect r
 is
 
-onewayMonads(redef A type,
-             OMA type : onewayMonad A OMA) : monads A OMA is
+oneway_monads(redef A type,
+             OMA type : oneway_monad A OMA) : monads A OMA is

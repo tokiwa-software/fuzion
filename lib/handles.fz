@@ -45,7 +45,7 @@ private handles(
 
   # action to be taken: plain monad, install or replace?
   redef r effectMode.val
-  ) : onewayMonad X (handles T X) r
+  ) : oneway_monad X (handles T X) r
 is
 
   # number of handles created
