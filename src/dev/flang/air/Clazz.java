@@ -2095,8 +2095,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
         if (ft.isThisType())
           {
-            // Find outer feature corresponding to ft:
-            return _outer.findOuter(ft.featureOfType(), feature());
+            // find outer clazz corresponding to ft:
+            var res = _outer.findOuter(ft.featureOfType(), feature());
+            // even if outer changed from ref to value or vice versa, keep it as it was:
+            return ft.featureOfType().thisType().isRef() ? res.asRef()
+                                                         : res.asValue();
           }
         else if (!t.dependsOnGenerics())
           {
