@@ -81,12 +81,14 @@ public class Env extends ExprWithPos
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr, but it is usually not called directly. To obtain
+   * the type for type inference, inferredType() must be used.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeIfKnown()
   {
     return _type;
   }
