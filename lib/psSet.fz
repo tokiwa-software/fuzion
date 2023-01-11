@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# psSet -- a partially sorted set based on psMap
+# psSet -- a partially sorted set based on ps_map
 #
 # psSet is a persistent set of ordered values.  This set is generally
 # well-behaved with respect to cumulative and average performance.
@@ -36,7 +36,7 @@
 #
 psSet
   (K type : ordered K,
-   psm ref psMap K unit,  # NYI: #167: 'ref' due to lack of 'like this'
+   psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine psSet(vs Sequence K)
   )
   : Set K
@@ -138,11 +138,11 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 #
 psSets(K type : ordered K) is
 
-  # psSet -- a partially sorted set based on psMap
+  # psSet -- a partially sorted set based on ps_map
   #
   # This feature creates an empty instance of psSet.
   #
-  empty => psSet K (psMaps K unit).empty unit
+  empty => psSet K (ps_maps K unit).empty unit
 
 
 # psSet -- routine to initialize a partially sorted set from one Sequence
