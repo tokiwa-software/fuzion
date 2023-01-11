@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature orderedMap
+#  Source code of Fuzion standard library feature ordered_map
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# orderedMap -- an immutable map from ordered keys OK to values V
+# ordered_map -- an immutable map from ordered keys OK to values V
 #
 # Lookup performance is O(log size) since it uses binary search in a
 # sorted array.  When deterministic performance is desired, an ordered map
@@ -32,7 +32,7 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-orderedMap(OK type : ordered OK,
+ordered_map(OK type : ordered OK,
            redef V type,
            ks array OK,
            vs array V) : Map OK V
@@ -75,15 +75,15 @@ is
 
   # add mapping from k to v
   #
-  add(k OK, v V) orderedMap OK V is
+  add(k OK, v V) ordered_map OK V is
     match index[](k)
       nil =>
-        (orderedMap
+        (ordered_map
           (ks++[k]).asArray
           (vs++[v]).asArray)
       V =>
         va := array size (i -> if ks[i]=k then v else vs[i])
-        (orderedMap ks va)
+        (ordered_map ks va)
 
 
   # create a string containing all mappings
@@ -98,15 +98,15 @@ is
       r
 
 
-# orderedMaps -- unit type feature declaring features related to orderedMap
+# ordered_maps -- unit type feature declaring features related to ordered_map
 #
-# NYI: move to orderedMap.type
+# NYI: move to ordered_map.type
 #
-orderedMaps (OK type : ordered OK, V type) is
+ordered_maps (OK type : ordered OK, V type) is
 
 
-  # create an empty instance of orderedMap
+  # create an empty instance of ordered_map
   #
-  empty => (orderedMap
+  empty => (ordered_map
             ((Sequence OK).type.empty).asArray
             ((Sequence V).type.empty).asArray)
