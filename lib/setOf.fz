@@ -27,7 +27,7 @@
 #
 # This feature creates an instance of a Set.
 #
-setOf(K type : ordered K, vs Sequence K) Set K is psSet vs
+setOf(K type : ordered K, vs Sequence K) Set K is ps_set vs
 
 
 # set_of -- routine to initialize a set from a Sequence of hashable elements
