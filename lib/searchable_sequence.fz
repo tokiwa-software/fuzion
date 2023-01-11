@@ -17,19 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature searchableSequence
+#  Source code of Fuzion standard library feature searchable_sequence
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# searchableSequence -- a Sequence whose elements inherit from hasEquals
+# searchable_sequence -- a Sequence whose elements inherit from hasEquals
 #
 # In contrast to searchablelist, this uses ref type 'Sequence' and not choice
 # type 'list', so it is more flexible.
 #
 #
-searchableSequence(A type : hasEquals A, from Sequence A) : Sequence A
+searchable_sequence(A type : hasEquals A, from Sequence A) : Sequence A
 is
 
   # create a list from this Sequence.
