@@ -17,15 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hashMap
+#  Source code of Fuzion standard library feature hash_map
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# hashMap -- an immutable hash map from keys HK to values V
+# hash_map -- an immutable hash map from keys HK to values V
 #
-hashMap(HK type : hasHash HK,
+hash_map(HK type : hasHash HK,
         redef V type,
         ks array HK,
         vs array V) : Map HK V
@@ -121,15 +121,15 @@ is
                             t tuple => t)
 
 
-# hashMaps -- unit type feature declaring features related to haspMap
+# hash_maps -- unit type feature declaring features related to haspMap
 #
-# NYI: move to hashMap.type
+# NYI: move to hash_map.type
 #
-hashMaps(HK type : hasHash HK, V type) is
+hash_maps(HK type : hasHash HK, V type) is
 
 
-  # empty -- convenience routine to create an empty instance of hashMap
+  # empty -- convenience routine to create an empty instance of hash_map
   #
-  empty => (hashMap
+  empty => (hash_map
             ((Sequence HK).type.empty).asArray
             ((Sequence V).type.empty).asArray)
