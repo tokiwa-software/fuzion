@@ -154,6 +154,10 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   final AbstractType inferredType()
   {
     var result = typeIfKnown();
+    if (result instanceof Type rt && rt.isThisType() && rt.featureOfType().isThisRef())
+      {
+        result = new Type(rt, Type.RefOrVal.LikeUnderlyingFeature);
+      }
     return result;
   }
 
