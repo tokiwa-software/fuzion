@@ -34,15 +34,15 @@ nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence, nom.branch, no
 
   hex_parser_test is
     hex_color(r,g,b u8) is
-      redef asString string is
+      redef asString String is
         "r: $r, g: $g, b: $b"
 
     is_valid(c codepoint) bool is
-      codepoints.ascii_digit.contains c.val
+      codepoint.type.ascii_digit.contains c.val
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (take_while_m_n 2 2 (fun is_valid)).map u8 (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (take_while_m_n 2 2 (fun is_valid)).map u8 (o1 -> (Strings.fromCodepoints o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := preceded (tag "#") (tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
