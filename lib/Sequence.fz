@@ -443,7 +443,7 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn(A type : hasEquals A, l Sequence A, x A) => (searchable_sequence A l).indexOf x
+  indexIn(A type : hasEquals A, l Sequence A, x A) => (searchable_sequence A l).index_of x
 
 
   # get the index of x within this Sequence or nil if it does not exist

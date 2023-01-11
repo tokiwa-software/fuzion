@@ -427,8 +427,8 @@ String ref : has_equality, hasHash String, ordered String, Strings is
 
   # check if this string starts with given prefix
   #
-  startsWith(prefx String) =>
-    (searchable_sequence utf8).startsWith prefx.utf8
+  starts_with(prefx String) =>
+    (searchable_sequence utf8).starts_with prefx.utf8
 
 
   # check if this string ends with given suffix
@@ -437,7 +437,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
     l  := byteLength
     sl := suffix.byteLength
     end := utf8.drop l-sl
-    (searchable_sequence end).startsWith suffix.utf8
+    (searchable_sequence end).starts_with suffix.utf8
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
@@ -481,7 +481,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   # count number of occurrences of given 'substring' in this string
   #
   count (substring String) =>
-    (searchable_sequence utf8).countMatches substring.utf8
+    (searchable_sequence utf8).count_matches substring.utf8
 
 
   # is c an ASCII white-space character?

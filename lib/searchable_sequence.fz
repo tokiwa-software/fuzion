@@ -39,15 +39,15 @@ is
 
   # does this list start with l?
   #
-  startsWith (l Sequence A) =>
-    (searchablelist asList).startsWith l.asList
+  starts_with (l Sequence A) =>
+    (searchablelist asList).starts_with l.asList
 
 
   # determine the index of element x within this list.  0 if x is at the
   # head of the list, 1 if it comes directly after head, etc. nil if x is
   # not in the list.
   #
-  indexOf (x A) => find [x]
+  index_of (x A) => find [x]
 
   # get the index of l within this list or nil if it does not exist
   #
@@ -69,11 +69,11 @@ is
 
   # get the number of matches of l
   #
-  countMatchesOverlapping (l Sequence A) =>
-    (searchablelist asList).countMatchesOverlapping l.asList
+  count_matches_overlapping (l Sequence A) =>
+    (searchablelist asList).count_matches_overlapping l.asList
 
 
   # get the number of non-overlapping matches of l within this
   #
-  countMatches (l Sequence A) =>
-    (searchablelist asList).countMatches l.asList
+  count_matches (l Sequence A) =>
+    (searchablelist asList).count_matches l.asList
