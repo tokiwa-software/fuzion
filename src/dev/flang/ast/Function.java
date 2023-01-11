@@ -490,13 +490,14 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeForGenericsTypeInfereing returns the type of this expression or null if
-   * the type is still unknown, i.e., before or during type resolution for
-   * generic type arguments.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr, but it is usually not called directly. To obtain
+   * the type for type inference, inferredType() must be used.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForGenericsTypeInfereing()
+  AbstractType typeIfKnown()
   {
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.

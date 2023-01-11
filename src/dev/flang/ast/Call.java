@@ -1001,12 +1001,14 @@ public class Call extends AbstractCall
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr, but it is usually not called directly. To obtain
+   * the type for type inference, inferredType() must be used.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeIfKnown()
   {
     return _type;
   }
@@ -1544,7 +1546,7 @@ public class Call extends AbstractCall
                   {
                     count++;
                     Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                    var actualType = actual.typeForFeatureResultTypeInferencing();
+                    var actualType = actual.inferredType();
                     if (actualType == null)
                       {
                         actualType = Types.t_ERROR;
@@ -1557,7 +1559,7 @@ public class Call extends AbstractCall
               {
                 count++;
                 Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                var actualType = actual.typeForGenericsTypeInfereing();
+                var actualType = actual.inferredType();
                 if (actualType != null)
                   {
                     inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
@@ -1636,7 +1638,7 @@ public class Call extends AbstractCall
           {
             for (var p: aft.inherits())
               {
-                var pt = p.typeForFeatureResultTypeInferencing();
+                var pt = p.inferredType();
                 if (pt != null)
                   {
                     var apt = actualType.actualType(pt);
@@ -1897,7 +1899,7 @@ public class Call extends AbstractCall
             // NYI: Need to check why this is needed, it does not make sense to
             // propagate the target's type to target. But if removed,
             // tests/reg_issue16_chainedBool/ fails with C backend:
-            _target = _target.propagateExpectedType(res, outer, _target.typeForFeatureResultTypeInferencing());
+            _target = _target.propagateExpectedType(res, outer, _target.inferredType());
           }
       }
   }

@@ -131,15 +131,15 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Helper routine for typeForFeatureResultTypeInferencing to determine the type of this match statement
-   * on demand, i.e., as late as possible.
+   * Helper routine for typeIfKnown to determine the type of this match
+   * statement on demand, i.e., as late as possible.
    */
   private AbstractType typeFromCases()
   {
     AbstractType result = Types.resolved.t_void;
     for (var c: cases())
       {
-        var t = c.code().typeForFeatureResultTypeInferencing();
+        var t = c.code().inferredType();
         result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
@@ -159,12 +159,14 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr, but it is usually not called directly. To obtain
+   * the type for type inference, inferredType() must be used.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or null if not known.
    */
-  public AbstractType type()
+  AbstractType typeIfKnown()
   {
     if (_type == null)
       {
