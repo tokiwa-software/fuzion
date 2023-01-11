@@ -82,7 +82,7 @@ public class Box extends Expr
 
     this._value = value;
     var t = Types.intern(value.type());
-    this._type = frmlT.isGenericArgument() ? t : t.asRef();
+    this._type = needsBoxingForGenericOrThis(frmlT) ? t : t.asRef();
   }
 
 
