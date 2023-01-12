@@ -17,15 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature numericSequence
+#  Source code of Fuzion standard library feature numeric_sequence
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# numericSequence -- a Sequence whose elements inherit from numeric
+# numeric_sequence -- a Sequence whose elements inherit from numeric
 #
-numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numericSequence N) is
+numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numeric_sequence N) is
 
   # create a list from this Sequence.
   #
@@ -76,7 +76,7 @@ numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (nu
     if isEmpty
       nil
     else
-      arr := sortedArrayOf numericSequence.this
+      arr := sortedArrayOf numeric_sequence.this
       if arr.length % 2 == 1
         arr[arr.length / 2]
       else
@@ -85,11 +85,11 @@ numericSequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (nu
 
   # are these numeric sequences equal?
   # i.e. do they only contain equal numbers
-  infix = (o numericSequence N) bool is
+  infix = (o numeric_sequence N) bool is
     ((zip o a,b->a=b) ∀ x->x)
       & count = o.count
 
 
-  fixed type.equality(a, b numericSequence N) bool is
+  fixed type.equality(a, b numeric_sequence N) bool is
     ((a.zip b (c,d->equals N c d)) ∀ x->x)
       & a.count ≟ b.count

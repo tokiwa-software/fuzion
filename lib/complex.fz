@@ -79,7 +79,7 @@ is
         "($imag)"
       else
         $imag
-    p := if (si.startsWith "-") then "" else "+"
+    p := if (si.starts_with "-") then "" else "+"
     "{real}$p{si}i"
 
   # NYI: these three should be implemented in complexes, not here:

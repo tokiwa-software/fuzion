@@ -119,10 +119,10 @@ Provided_Stat ref is
 #
 default_provided_stat : Provided_Stat is
   stats(path Any, meta_data_arr Any) =>
-    fuzion.std.fileio.stats path meta_data_arr
+    fuzion.sys.fileio.stats path meta_data_arr
 
   lstats(path Any, meta_data_arr Any) =>
-    fuzion.std.fileio.lstats path meta_data_arr
+    fuzion.sys.fileio.lstats path meta_data_arr
 
 # unit type feature defining features related to stat effect but not requiring an
 # instance.

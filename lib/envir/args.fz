@@ -38,7 +38,7 @@ is
 
 # short-hand for creating and installing args effect and run rr
 #
-args(rr ()->unit) => args fuzion.std.args rr
+args(rr ()->unit) => args fuzion.sys.args rr
 
 
 # short-hand for creating and installing args effect
@@ -59,7 +59,7 @@ args =>
 #
 argses is
 
-  # install default effect args using fuzion.std.args
+  # install default effect args using fuzion.sys.args
   installDefault unit is
     if !(effects.exists envir.args)
-      _ := args fuzion.std.args effectMode.default unit
+      _ := args fuzion.sys.args effectMode.default unit

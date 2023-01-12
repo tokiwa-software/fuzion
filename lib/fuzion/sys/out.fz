@@ -17,29 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature onewayMonad
+#  Source code of Fuzion standard library feature fuzion.sys.out
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# onewayMonad -- heir feature of all one-way monads.
+# fuzion.sys.out -- unit type grouping routines to print to stdout
 #
-# onewayMonad is the heir feature of all one-way monads. A one-way monad is
-# a monadic feature that can be accessed only throuh the environment and
-# that will be replaced in the environment whenever a new instance is created.
-#
-onewayMonad(
+public out : character_encodings is
 
-  redef A type,
+  public print(s ref Any) =>
+    write s.asString.utf8.asArray
 
-  OMA type : onewayMonad A OMA,
+  public println(s ref Any) =>
+    write (s.asString.utf8 ++ [ascii.lf]).asArray
 
-  # action to be performed, may include code to run while this effect is installed.
-  #
-  redef r effectMode.val
-  ) : monad A OMA, effect r
-is
+  public println =>
+    write [ascii.lf]
 
-onewayMonads(redef A type,
-             OMA type : onewayMonad A OMA) : monads A OMA is
+  private write(arr array u8) =>
+    write arr.internalArray.data arr.length
+
+  private write(arrayData Any, length i32) unit is intrinsic
+  private flush unit is intrinsic

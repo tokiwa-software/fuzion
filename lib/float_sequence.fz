@@ -17,27 +17,39 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.std.err
+#  Source code of Fuzion standard library feature float_sequence
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.std.err -- unit type grouping routines to print to stderr
+# NYI
+# mode
+# Mean (geometric harmonic)
+# quartile
+# ...
+
+# float_sequence -- a Sequence whose elements inherit from float
 #
-public fuzion.std.err: character_encodings is
+float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F from is
 
-  public print(s ref Any) =>
-    write s.asString.utf8.asArray
+  # create a list from this Sequence.
+  #
+  redef asList => from.asList
 
-  public println(s ref Any) =>
-    write (s.asString.utf8 ++ [ascii.lf]).asArray
 
-  public println =>
-    write [ascii.lf]
+  # the standard deviation of the sequence
+  # https://en.wikipedia.org/wiki/Standard_deviation
+  std_dev option F is
+    match variance
+      nil => nil
+      variance F =>
+        first.sqrt variance
 
-  private write(arr array u8) =>
-    write arr.internalArray.data arr.length
 
-  private write(arrayData Any, length i32) unit is intrinsic
-  private flush unit is intrinsic
+  # the euclidean norm of this sequence
+  # i.e. the square of the sum of squares of this sequence
+  #
+  euclidean_norm F is
+    # NYI #500: sqrt,two and sum should be accessed via type
+    first.sqrt ((mapSequence (x)->x**first.two).fold first.sum)
