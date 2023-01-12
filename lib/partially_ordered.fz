@@ -17,22 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature partiallyOrdered
+#  Source code of Fuzion standard library feature partially_ordered
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# partiallyOrdered -- feature for immutable values that have an infix <=
+# partially_ordered -- feature for immutable values that have an infix <=
 # predicate that defines a partial order
 #
-# features inheriting from partiallyOrdered define a partial order of their
+# features inheriting from partially_ordered define a partial order of their
 # values
 #
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-partiallyOrdered(P type : partiallyOrdered P) : has_equality, hasEquals P
+partially_ordered(P type : partially_ordered P) : has_equality, hasEquals P
 
 /* NYI: quantor intrinsics not supported yet:
 
