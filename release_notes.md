@@ -1,4 +1,70 @@
-## 202*-**-**: V0.080dev
+## 2023-01-12: V0.080
+
+- Fuzion language
+
+  - type features can now access the type parameters of the underlying feature.
+
+  - Support for covariant feature redefinition:
+
+    `a.this.type` can now be used to refer to the type of an outer feature
+    `a`. This can be used, e.g., to ensure that an argument or result of a
+    feature has the same type as the target. E.g., `numeric.infix +` can require
+    the argument and result to be of type `numeric.this.type` such that in a
+    redefinition `i32.infix +` requires an argument of pf type `i32` and
+    produces a result of the same type.
+
+  - Modifiers `synchronized`, `const` and `leaf` or no longer supported (but are
+    still reserved keywords).
+
+  - Added modifier `fixed` for features that should not be inherited by children
+    of the outer feature.
+
+  - A type parameter `T` with constraint `c` is now declared using `T type : c`
+    which is in sync with the syntax for feature inheritance `x : c is ...`.
+
+
+- base library
+
+  - moved many features from plural-form unit type features to type features,
+    e.g. `Sequences.empty` is now `Sequence.type.empty`.
+
+  - lots of renaming from camelCase to snake_case as in ` mapOf` -> `map_of`.
+
+  - renamed `Object` as `Any`.
+
+  - renamed `string` as `String` (`ref` features should start with a capital).
+
+  - added `type.equality` to several features.
+
+  - `infix ⋃` and `infix ⋂` are now used for union and intersection instead of
+    `∪` and `∩`.
+
+  - `unit.type.monoid` was added.
+
+  - `file.io` now supports `seek` and `file_position`. `exists` was replaced
+    by `stats`/`lstats`.
+
+  - `String` now supports `find_last`, `to_valid_utf8`, `fields_func`, `cut`.
+
+  - Indices in strings are now usually byte indices in the uft8-encoding, e.g.,
+    `String.substring` and `String.split` now use utf8-byte indices as
+    arguments.  Features working on codepoints were renamed for clarity:
+    `pad_start` as `pad_codepoint_start` and `substring_codepoint`.
+
+   - `list` now has features `prepend_to_all` and `intersperse`, no longer
+     supports `forceHead`.
+
+   - `outcome` now is a monad such that verbose match-statements can
+     be replaced by concise calls to `bind`.
+
+- fz tool
+
+  - back-end now uses `-Wall -Werror` by default.</li>
+
+- fzjava tool
+
+  - improved performance by lazily accessing data from dependent .fum files.
+
 
 
 ## 2022-12-08: V0.079
