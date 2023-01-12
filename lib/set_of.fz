@@ -17,25 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature setOf
+#  Source code of Fuzion standard library feature set_of
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# setOf -- routine to initialize a set from a Sequence of ordered elements
+# set_of_ordered -- routine to initialize a set from a Sequence of ordered elements
 #
 # This feature creates an instance of a Set.
 #
-setOf(K type : ordered K, vs Sequence K) Set K is psSet vs
+set_of_ordered(K type : ordered K, vs Sequence K) Set K is ps_set vs
 
 
-# set_of -- routine to initialize a set from a Sequence of hashable elements
+# set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
 #
 # This feature creates an instance of a Set.
 #
-# NYI name clash with feature above
-set_of(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
+set_of_hashable(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
 
   private map := CTrie K unit
   match vs
@@ -63,7 +62,7 @@ set_of(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
     add (k K) Set K is
       ss := map.snapshot false
       ss.add k unit
-      set_of ss
+      set_of_hashable ss
 
 
     # remove an element k from the set if it exists.
@@ -72,4 +71,4 @@ set_of(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
     remove (k K) Set K is
       ss := map.snapshot false
       ss.remove k
-      set_of ss
+      set_of_hashable ss
