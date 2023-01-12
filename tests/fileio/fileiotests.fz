@@ -48,9 +48,9 @@ fileiotests =>
   say "$dir exists: {exists dir}"
 
   say "$file exists: {exists file}"
-  match (fuzion.std.fileio.open file (i8 1)).bind unit (fd->
+  match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
       res := writer.write fd content.utf8.asArray
-      fuzion.std.fileio.close fd
+      fuzion.sys.fileio.close fd
       res)
     unit => say "$file was created"
     error =>
@@ -58,11 +58,11 @@ fileiotests =>
 
   say "$file size is {(f.stat file true).val.size}"
 
-  # NYI: we need to use fuzion.std.fileio directly until we have a
+  # NYI: we need to use fuzion.sys.fileio directly until we have a
   # closeable effect.
-  match (fuzion.std.fileio.open file (i8 0)).bind (array u8) (fd->
+  match (fuzion.sys.fileio.open file (i8 0)).bind (array u8) (fd->
       res := reader.read_file fd
-      fuzion.std.fileio.close fd
+      fuzion.sys.fileio.close fd
       res)
     bytes array u8 =>
       filecontent := Strings.fromBytes bytes

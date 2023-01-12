@@ -96,10 +96,10 @@ Provided_Seek ref is
 #
 default_provided_seek : Provided_Seek is
   seek(fd i64, offset i64) =>
-    fuzion.std.fileio.seek fd offset
+    fuzion.sys.fileio.seek fd offset
 
   file_position(fd i64) =>
-    fuzion.std.fileio.file_position fd
+    fuzion.sys.fileio.file_position fd
 
 # unit type feature defining features related to seek effect but not requiring an
 # instance.

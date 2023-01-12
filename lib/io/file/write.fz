@@ -78,15 +78,15 @@ File_Write_Handler ref is
 
   mkdir(path String) outcome unit is abstract
 
-# the default file writing handler writing bytes into files via fuzion.std.fileio.write
+# the default file writing handler writing bytes into files via fuzion.sys.fileio.write
 #
 default_file_write_handler : File_Write_Handler is
   # dummy parameter for overloading
   write(fd i64, content array u8, _ unit) =>
-    fuzion.std.fileio.write fd content
+    fuzion.sys.fileio.write fd content
   
   mkdir(path String) =>
-    fuzion.std.fileio.create_dir path
+    fuzion.sys.fileio.create_dir path
 
 # unit type feature defining features related to write effect but not requiring an
 # instance.

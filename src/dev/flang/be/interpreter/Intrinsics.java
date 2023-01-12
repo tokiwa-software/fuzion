@@ -209,8 +209,8 @@ public class Intrinsics extends ANY
   static
   {
     put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
-    put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
-    put("fuzion.std.args.get"  , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
+    put("fuzion.sys.args.get"  , (interpreter, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
           var fuir = interpreter._fuir;
@@ -223,7 +223,7 @@ public class Intrinsics extends ANY
               return  Interpreter.value(Interpreter._options_.getBackendArgs().get(i - 1));
             }
         });
-    put("fuzion.std.out.write", (interpreter, innerClazz) ->
+    put("fuzion.sys.out.write", (interpreter, innerClazz) ->
         {
           var s = System.out;
           return args ->
@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.std.fileio.read", (interpreter, innerClazz)-> args ->
+    put("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -259,7 +259,7 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.std.fileio.get_file_size", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.get_file_size", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -276,7 +276,7 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.std.fileio.write", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -293,7 +293,7 @@ public class Intrinsics extends ANY
               return new i8Value(-1);
             }
         });
-    put("fuzion.std.fileio.delete", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.delete", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -310,7 +310,7 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.move", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.move", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -328,7 +328,7 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.create_dir", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.create_dir", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -345,7 +345,7 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.open", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.open", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -388,7 +388,7 @@ public class Intrinsics extends ANY
             }
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.std.fileio.close", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.close", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -411,8 +411,8 @@ public class Intrinsics extends ANY
               return new i8Value(-1);
             }
         });
-    put("fuzion.std.fileio.stats",
-        "fuzion.std.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
+    put("fuzion.sys.fileio.stats",
+        "fuzion.sys.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
         (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
@@ -436,7 +436,7 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.std.fileio.seek", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.seek", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -457,7 +457,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             }
         });
-    put("fuzion.std.fileio.file_position", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.file_position", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -477,7 +477,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             }
         });
-    put("fuzion.std.err.write", (interpreter, innerClazz) ->
+    put("fuzion.sys.err.write", (interpreter, innerClazz) ->
         {
           var s = System.err;
           return args ->
@@ -486,7 +486,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.stdin.nextByte", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.stdin.nextByte", (interpreter, innerClazz) -> args ->
         {
           try
             {
@@ -498,7 +498,7 @@ public class Intrinsics extends ANY
                 return new i32Value(-2);
               }
         });
-    put("fuzion.std.out.flush", (interpreter, innerClazz) ->
+    put("fuzion.sys.out.flush", (interpreter, innerClazz) ->
         {
           var s = System.out;
           return args ->
@@ -507,7 +507,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.std.err.flush", (interpreter, innerClazz) ->
+    put("fuzion.sys.err.flush", (interpreter, innerClazz) ->
         {
           var s = System.err;
           return args ->
