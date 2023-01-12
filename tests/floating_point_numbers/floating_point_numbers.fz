@@ -53,11 +53,11 @@ floating_point_numbers is
     chck ("{a.positiveInfinity}"
       .replace("I", "i")
       .substring(0, 3) ==  "inf")                                          "{a.name}: pos inf serializes correctly"
-    chck ("{zero}".startsWith "0")                                         "{a.name}: 0 serializes to string"
-    chck ("{-zero}".startsWith "-0")                                       "{a.name}: -0 serializes to string"
-    chck ("{one}".startsWith "1")                                          "{a.name}: 1 serializes to string"
+    chck ("{zero}".starts_with "0")                                        "{a.name}: 0 serializes to string"
+    chck ("{-zero}".starts_with "-0")                                      "{a.name}: -0 serializes to string"
+    chck ("{one}".starts_with "1")                                         "{a.name}: 1 serializes to string"
     chck ("{one / two}" == "0.5")                                          "{a.name}: 0.5 serializes to string"
-    chck ("{one / three}".startsWith "0.3333333")                          "{a.name}: 1/3 serializes to string"
+    chck ("{one / three}".starts_with "0.3333333")                         "{a.name}: 1/3 serializes to string"
 
     # comparision operators
     chck (
