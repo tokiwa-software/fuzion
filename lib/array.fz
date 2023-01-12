@@ -34,7 +34,7 @@
 # moved to 'array.type.new' or 'arrays.new'
 #
 array(redef T type,
-      internalArray fuzion.sys.array T,
+      internalArray fuzion.sys.internal_array T,
       _ unit,
       _ unit,
       _ unit) : Sequence T is
@@ -234,7 +234,7 @@ is
 # private:
   indices => 0..length-1
 
-  internal := fuzion.sys.array T length
+  internal := fuzion.sys.internal_array T length
   for x in indices do
     internal[x] := init x
 

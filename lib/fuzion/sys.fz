@@ -26,9 +26,6 @@
 # fuzion.sys -- unit type to group low-level system APIs APIs
 #
 sys is
-  out is
-    print  (s Any) => stdout.print   s
-    println(s Any) => stdout.println s
 
 
   # Create a 0-terminated internal array of bytes from

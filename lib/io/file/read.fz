@@ -98,11 +98,11 @@ read =>
 Read_Operation ref is
   read(fd i64, n u64) outcome (array u8) is abstract
 
-# the default file reading operation reading bytes from files via fuzion.std.fileio.read
+# the default file reading operation reading bytes from files via fuzion.sys.fileio.read
 #
 default_read_operation : Read_Operation is
   read(fd i64, n u64) =>
-    fuzion.std.fileio.read fd n
+    fuzion.sys.fileio.read fd n
 
 # unit type feature defining features related to read effect but not requiring an
 # instance.

@@ -17,38 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys.array
+#  Source code of Fuzion standard library feature fuzion.sys.stdin
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.array -- one-dimensional low-level array
-#
-array(T type, length i32) is
+# fuzion.sys.stdin
+# NYI name in does not work right now since in is reserved keyword
+public stdin is
 
-# private:
-
-  data := alloc T length
-
-  alloc(X type, l i32) Any is intrinsic
-  get  (X type, d Any, i i32) X is intrinsic
-  setel(X type, d Any, i i32, o X) unit is intrinsic
-
-# public:
-
-  indices => 0..length-1
-
-  index [ ] (i i32) T
-    pre
-      safety: 0 <= i < length
-  is
-    get T data i
-
-  set [ ] (i i32, o T) unit
-    pre
-      safety: 0 <= i < length
-  # post   NYI
-    #array.this[i] == o
-  is
-    setel T data i o
+  # read next byte from stdin
+  #
+  # returns:
+  # 0 or greater on success
+  # -1 at end of file
+  # -2 for any other error
+  #
+  private next_byte i32 is intrinsic
