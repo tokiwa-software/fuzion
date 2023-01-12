@@ -41,7 +41,7 @@ state(
   get S,
 
   redef r effectMode.val
-  ) ref : onewayMonad T (state T S) r
+  ) ref : oneway_monad T (state T S) r
 is
 
   # monadic operator
