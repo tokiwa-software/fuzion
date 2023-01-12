@@ -105,10 +105,10 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          numOption W is if wrappedOnNeg        then nil else -thiz
-  redef infix +? (other W) numOption W is if wrappedOnAdd(other) then nil else thiz + other
-  redef infix -? (other W) numOption W is if wrappedOnSub(other) then nil else thiz - other
-  redef infix *? (other W) numOption W is if wrappedOnMul(other) then nil else thiz * other
+  redef prefix -?          num_option W is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other W) num_option W is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other W) num_option W is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
   redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
@@ -151,7 +151,7 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  infix **? (other W) numOption W
+  infix **? (other W) num_option W
     pre
       safety: other >= zero
   is
