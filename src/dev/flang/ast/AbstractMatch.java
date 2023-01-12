@@ -139,7 +139,7 @@ public abstract class AbstractMatch extends Expr
     AbstractType result = Types.resolved.t_void;
     for (var c: cases())
       {
-        var t = c.code().inferredType();
+        var t = c.code().typeIfKnown();
         result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
@@ -161,8 +161,7 @@ public abstract class AbstractMatch extends Expr
   /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr, but it is usually not called directly. To obtain
-   * the type for type inference, inferredType() must be used.
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */

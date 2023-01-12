@@ -190,7 +190,7 @@ public class If extends ExprWithPos
     Iterator<Expr> it = branches();
     while (it.hasNext())
       {
-        var t = it.next().inferredType();
+        var t = it.next().typeIfKnown();
         result = t == null ? Types.t_UNDEFINED : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
@@ -207,8 +207,7 @@ public class If extends ExprWithPos
   /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr, but it is usually not called directly. To obtain
-   * the type for type inference, inferredType() must be used.
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */

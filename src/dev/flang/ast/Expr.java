@@ -132,33 +132,13 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr, but it is usually not called directly. To obtain
-   * the type for type inference, inferredType() must be used.
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
   AbstractType typeIfKnown()
   {
     return type();
-  }
-
-
-  /**
-   * The type that is inferred from this Expr or null if unknown.
-   *
-   * This is the value returned by typeIfKnown, but post-processed to
-   * replace `a.this.type` by `a` in case `a` is a ref feature.
-   *
-   * @return this Expr's inferred and post-processed type or null if not known.
-   */
-  final AbstractType inferredType()
-  {
-    var result = typeIfKnown();
-    if (result instanceof Type rt && rt.isThisType() && rt.featureOfType().isThisRef())
-      {
-        result = new Type(rt, Type.RefOrVal.LikeUnderlyingFeature);
-      }
-    return result;
   }
 
 

@@ -1345,7 +1345,7 @@ public class Feature extends AbstractFeature implements Stmnt
             _thisType = tt.resolve(res, this);
           }
 
-        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.inferredType() == null))
+        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeIfKnown() == null))
           {
             _impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
@@ -2214,13 +2214,13 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._initialValue.inferredType();
+        result = _impl._initialValue.typeIfKnown();
       }
     else if (_impl._kind == Impl.Kind.RoutineDef)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._code.inferredType();
+        result = _impl._code.typeIfKnown();
       }
     else if (_returnType.isConstructorType())
       {
