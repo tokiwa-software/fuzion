@@ -486,7 +486,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.sys.stdin.nextByte", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.stdin.next_byte", (interpreter, innerClazz) -> args ->
         {
           try
             {

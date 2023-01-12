@@ -238,7 +238,7 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
     put("fuzion.sys.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.sys.err.flush"           , (cfg, cl) -> { } );
-    put("fuzion.sys.stdin.nextByte"      , (cfg, cl) -> { } );
+    put("fuzion.sys.stdin.next_byte"     , (cfg, cl) -> { } );
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
     put("i32.prefix -°"                  , (cfg, cl) -> { } );

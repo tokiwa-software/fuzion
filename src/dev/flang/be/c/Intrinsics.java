@@ -319,9 +319,9 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.sys.out.flush"     ,
-        "fuzion.sys.err.flush"     , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
-    put("fuzion.sys.stdin.nextByte", (c,cl,outer,in) ->
+    put("fuzion.sys.out.flush"      ,
+        "fuzion.sys.err.flush"      , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
+    put("fuzion.sys.stdin.next_byte", (c,cl,outer,in) ->
         {
           var cIdent = new CIdent("c");
           return CStmnt.seq(

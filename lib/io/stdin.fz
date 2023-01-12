@@ -199,7 +199,7 @@ Byte_Input_Handler ref is
 defaultInputHandler(r choice u8 end_of_file error) : Byte_Input_Handler is
 
   next Byte_Input_Handler is
-    v := fuzion.sys.stdin.nextByte
+    v := fuzion.sys.stdin.next_byte
     if v = -1
       defaultInputHandler end_of_file
     else if v < -1
