@@ -183,47 +183,6 @@ public class If extends ExprWithPos
    * Helper routine for typeIfKnown to determine the
    * type of this if statement on demand, i.e., as late as possible.
    */
-  private AbstractType typeForFeatureResultTypeInferencingFromIfOrElse()
-  {
-    AbstractType result = Types.resolved.t_void;
-
-    Iterator<Expr> it = branches();
-    while (it.hasNext())
-      {
-        var t = it.next().typeForFeatureResultTypeInferencing();
-        if (t == null)
-          {
-            return null;
-          }
-        result = result.union(t);
-      }
-    return result;
-  }
-
-
-  /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  AbstractType typeForFeatureResultTypeInferencing()
-  {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
-    if (_type == null)
-      {
-        _type = typeForFeatureResultTypeInferencingFromIfOrElse();
-      }
-    return _type;
-  }
-
-
-  /**
-   * Helper routine for type to determine the
-   * type of this if statement.
-   */
   private AbstractType typeFromIfOrElse()
   {
     AbstractType result = Types.resolved.t_void;
@@ -232,14 +191,11 @@ public class If extends ExprWithPos
     while (it.hasNext())
       {
         var t = it.next().typeIfKnown();
-        result = t == null ? Types.t_UNDEFINED : result.union(t);
-      }
-    if (result == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in branches of if statement",
-                                          branches());
-        result = Types.t_ERROR;
+        if (t == null)
+          {
+            return null;
+          }
+        result = result.union(t);
       }
     return result;
   }
