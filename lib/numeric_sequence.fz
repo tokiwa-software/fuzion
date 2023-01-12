@@ -76,7 +76,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
     if isEmpty
       nil
     else
-      arr := sortedArrayOf numeric_sequence.this
+      arr := sorted_array_of numeric_sequence.this
       if arr.length % 2 == 1
         arr[arr.length / 2]
       else

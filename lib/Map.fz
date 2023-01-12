@@ -17,15 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature map
+#  Source code of Fuzion standard library feature Map
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# map -- an abstract map from keys K to values V
+# Map -- an abstract map from keys K to values V
 #
-map(K, V type) ref is
+Map(K, V type) ref is
 
   # number of entries in this map
   #
@@ -50,7 +50,7 @@ map(K, V type) ref is
 
   # check if key k is present in the set of keys
   #
-  has (k K) => map.this[k]??
+  has (k K) => Map.this[k]??
 
 
   # get a sequence of all values in this map
