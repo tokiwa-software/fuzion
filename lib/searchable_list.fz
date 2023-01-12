@@ -17,19 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature searchablelist
+#  Source code of Fuzion standard library feature searchable_list
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# searchablelist -- a list whose elements inherit from hasEquals
+# searchable_list -- a list whose elements inherit from hasEquals
 #
 # In contrast to searchable_sequence, this uses choice type 'list' and not ref
 # type 'Sequence', so it is more efficient.
 #
 #
-searchablelist(A type : hasEquals A, from list A) : Sequence A
+searchable_list(A type : hasEquals A, from list A) : Sequence A
 /* : list A -- NYI: we might allow inherting from a choice to get a choice
                     with more restrictions on the type arguments
 
@@ -45,7 +45,7 @@ searchablelist(A type : hasEquals A, from list A) : Sequence A
 
 is
 
-  # create a list from this searchablelist.
+  # create a list from this searchable_list.
   #
   redef asList => from
 
@@ -58,7 +58,7 @@ is
       c2 Cons =>
         match from
           nil     => false
-          c1 Cons => c1.head = c2.head && (searchablelist c1.tail).starts_with c2.tail # tail recursion
+          c1 Cons => c1.head = c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
 
 
   # get the index of l within this list or nil if it does not exist
@@ -69,7 +69,7 @@ is
     else
       match from
         nil     => nil
-        c1 Cons => ((searchablelist c1.tail).find l) >>= n -> n + 1
+        c1 Cons => ((searchable_list c1.tail).find l) >>= n -> n + 1
 
 
   # replace all occurrences of old by new
@@ -89,7 +89,7 @@ is
                    to_be_replaced list A,   # the tail that still needs to be searched for old
                    limit option u64) list A
   is
-    match (searchablelist to_be_replaced).find old
+    match (searchable_list to_be_replaced).find old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
         # NYI: #637: perhaps make it possible to do
@@ -106,7 +106,7 @@ is
   # get the number of matches of l
   #
   count_matches_overlapping (l list A) i32 is
-    (tails & (t -> (searchablelist t).starts_with l)).count
+    (tails & (t -> (searchable_list t).starts_with l)).count
 
 
   # get the number of non-overlapping matches of l within this
@@ -114,5 +114,5 @@ is
   count_matches (l list A) i32 is
     match from
       nil     => 0
-      c1 Cons => (if (starts_with l) 1 + (searchablelist (drop l.count)).count_matches l
-                  else                   (searchablelist c1.tail       ).count_matches l)
+      c1 Cons => (if (starts_with l) 1 + (searchable_list (drop l.count)).count_matches l
+                  else                   (searchable_list c1.tail       ).count_matches l)
