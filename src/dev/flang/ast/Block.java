@@ -233,8 +233,7 @@ public class Block extends AbstractBlock
   /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr, but it is usually not called directly. To obtain
-   * the type for type inference, inferredType() must be used.
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
@@ -243,7 +242,7 @@ public class Block extends AbstractBlock
     Expr resExpr = resultExpression();
     return resExpr == null
       ? Types.resolved.t_unit
-      : resExpr.inferredType();
+      : resExpr.typeIfKnown();
   }
 
 

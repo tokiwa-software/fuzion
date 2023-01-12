@@ -27,10 +27,10 @@
 #
 String ref : has_equality, hasHash String, ordered String, Strings is
 
-  redef orderedThis => String.this
+  redef orderedThis String is String.this
 
   # converting a string to a string is just returning string.this
-  redef asString => String.this
+  redef asString String is String.this
 
   # any concrete string must implement utf8
   utf8 Sequence u8 is abstract
@@ -526,7 +526,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
       !s.isEmpty
     is
     match (find s)
-      nil => [String.this].asList
+      nil => [asString].asList
       idx i32 => ref : Cons String (list String)
                    head => substring 0 idx
                    tail =>
@@ -624,7 +624,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   #
   cut(sep String) tuple String String bool is
     match find sep
-      nil => (String.this, "", false)
+      nil => (asString, "", false)
       i i32 =>
         l := byteLength
         sepl := sep.byteLength
