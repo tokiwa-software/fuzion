@@ -46,16 +46,12 @@ test_covariance is
     minus(other num.this.type) num.this.type is abstract
 
     to_u32_loop =>
-      555555
-/* NYI: crashes:
-   to_u32_loop =>
       for
         x := num.this, x.minus num.this.type.one
         u := u32 0, u+1
-      while num.this.type.zero.lessThan num.this
+      while num.this.type.zero.lessThan x
       else
         u
-*/
 
     # convert this to corresponding values as an 'u32'
     #

@@ -351,7 +351,7 @@ Sequence(T type) ref is
   into(TA type, xf Transducer(Sequence(TA),TA,T)) Sequence(TA) is
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res := Sequences.empty(TA) , red.call res el
+      res := (Sequence TA).type.empty , red.call res el
       el in Sequence.this do
     else
       res
@@ -409,21 +409,15 @@ Sequence(T type) ref is
     res
 
 
-# Sequences -- unit type defining features related to Sequence but not requiring
-# an instance
-#
-Sequences is
-
-
   # create an empty list and return it as a Sequence
   #
-  empty(T type) Sequence T is
+  type.empty Sequence T is
     lists.empty T
 
 
   # monoid of Sequences with infix concatentation operation.
   #
-  concatMonoid(redef T type) : Monoid (Sequence T) is
+  type.concatMonoid : Monoid (Sequence T) is
 
     # associative operation
     #
@@ -436,7 +430,13 @@ Sequences is
 
     # identity element
     #
-    e => empty T
+    e => (Sequence T).type.empty
+
+
+# Sequences -- unit type defining features related to Sequence but not requiring
+# an instance
+#
+Sequences is
 
 
   # determine the index of element x within Sequence l.  0 if x is at the head

@@ -25,7 +25,7 @@
 
 # i32 -- 32-bit signed integer values
 #
-i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
+i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
   redef thiz => i32.this.val
   redef orderedThis => i32.this.val
@@ -191,7 +191,7 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
-i32s : wrappingIntegers i32 is
+i32s : wrapping_integers i32 is
 
   redef name => "i32"
 

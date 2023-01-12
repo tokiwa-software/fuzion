@@ -85,7 +85,7 @@ public abstract class Unbox extends Expr
   {
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isRef() || adr instanceof AbstractCall c && c.calledFeature().isOuterRef(),
+       adr.type().isThisType() || adr.type().isRef(),
        !type.featureOfType().isThisRef()
        );
 
@@ -108,7 +108,7 @@ public abstract class Unbox extends Expr
 
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isRef(),
+       adr.type().isThisType() || adr.type().isRef(),
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
@@ -119,12 +119,13 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or null if not known.
    */
-  public AbstractType type()
+  AbstractType typeIfKnown()
   {
     return _type;
   }

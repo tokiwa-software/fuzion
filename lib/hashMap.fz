@@ -131,5 +131,5 @@ hashMaps(HK type : hasHash HK, V type) is
   # empty -- convenience routine to create an empty instance of hashMap
   #
   empty => (hashMap
-            (Sequences.empty HK).asArray
-            (Sequences.empty V).asArray)
+            ((Sequence HK).type.empty).asArray
+            ((Sequence V).type.empty).asArray)

@@ -17,18 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature wrappingInteger
+#  Source code of Fuzion standard library feature wrapping_integer
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# wrappingInteger -- abstract ancestor of wrap-around integer numbers
+# wrapping_integer -- abstract ancestor of wrap-around integer numbers
 #
-# wrappingInteger is the abstract ancestor of integer numbers that have min and
+# wrapping_integer is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrappingInteger(redef W type : wrappingInteger W) : integer W, wrappingIntegers W is
+wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_integers W is
 
   # overflow checking
 
@@ -69,9 +69,9 @@ wrappingInteger(redef W type : wrappingInteger W) : integer W, wrappingIntegers 
   isMin => thiz == min
   isMax => thiz == max
 
-  # check if this type of wrappingInteger is bounded
+  # check if this type of wrapping_integer is bounded
   #
-  # wrappingIntegers are assumed to be a bound set by default, so
+  # wrapping_integers are assumed to be a bound set by default, so
   # this returns true unless redefined by an implementation
   redef is_bounded => true
 
@@ -194,10 +194,10 @@ wrappingInteger(redef W type : wrappingInteger W) : integer W, wrappingIntegers 
     thiz ^ all_bits_set
 
 
-# wrappingIntegers -- unit type defining features related to wrappingInteger
+# wrapping_integers -- unit type defining features related to wrapping_integer
 # but not requiring an instance
 #
-wrappingIntegers(W type : wrappingInteger W) : numerics W is
+wrapping_integers(W type : wrapping_integer W) : numerics W is
 
   min W is abstract
   max W is abstract

@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
@@ -1378,14 +1379,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             public void action (Stmnt s)
             {
-              if      (s instanceof Unbox          u) { Clazzes.findClazzes(u, Clazz.this); }
-              else if (s instanceof AbstractAssign a) { Clazzes.findClazzes(a, Clazz.this); }
-              else if (s instanceof AbstractCall   c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (s instanceof If             i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof InlineArray    i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof Env            b) { Clazzes.findClazzes(b, Clazz.this); }
-              else if (s instanceof AbstractMatch  m) { Clazzes.findClazzes(m, Clazz.this); }
-              else if (s instanceof Tag            t) { Clazzes.findClazzes(t, Clazz.this); }
+              if      (s instanceof Unbox            u) { Clazzes.findClazzes(u, Clazz.this); }
+              else if (s instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
+              else if (s instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (s instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (s instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (s instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (s instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
+              else if (s instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
+              else if (s instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
             }
             public void action(AbstractCase c)
             {
@@ -2046,7 +2048,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o)
+    while (i != o && i.outerRef() != null)
       {
         res = res.lookup(i.outerRef(), pos).resultClazz();
         i = i.outer();
@@ -2093,8 +2095,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
         if (ft.isThisType())
           {
-            // Find outer feature corresponding to ft:
-            return _outer.findOuter(ft.featureOfType(), feature());
+            // find outer clazz corresponding to ft:
+            var res = _outer.findOuter(ft.featureOfType(), feature());
+            // even if outer changed from ref to value or vice versa, keep it as it was:
+            return ft.featureOfType().thisType().isRef() ? res.asRef()
+                                                         : res.asValue();
           }
         else if (!t.dependsOnGenerics())
           {

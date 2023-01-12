@@ -920,6 +920,22 @@ public class Clazzes extends ANY
 
 
   /**
+   * Find actual clazzes used by a constant expression
+   *
+   * @param c the constant
+   *
+   * @param outerClazz the surrounding clazz
+   */
+  public static void findClazzes(AbstractConstant c, Clazz outerClazz)
+  {
+    if (PRECONDITIONS) require
+      (c != null, outerClazz != null);
+
+    clazz(c, outerClazz).instantiated(c.pos());
+  }
+
+
+  /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
   public static void findClazzes(If i, Clazz outerClazz)
