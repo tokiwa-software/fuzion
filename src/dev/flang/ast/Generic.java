@@ -114,7 +114,7 @@ public class Generic extends ANY
     if (PRECONDITIONS) require
       (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    AbstractType result =_typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES)
+    AbstractType result = _typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES)
       ? _typeParameter.resultType()
       : ((Feature) _typeParameter).returnType().functionReturnType();
 

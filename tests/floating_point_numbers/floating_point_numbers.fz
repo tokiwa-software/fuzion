@@ -28,7 +28,7 @@ floating_point_numbers is
 
   exitCode := 0
 
-  chck(b bool, msg string) =>
+  chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
@@ -36,7 +36,7 @@ floating_point_numbers is
       "FAILED: "
     say (s + msg)
 
-  generic_tests(T (float T).type, a T) is
+  generic_tests(T type: float T, a T) is
 
     zero := a.zero
     one := a.one

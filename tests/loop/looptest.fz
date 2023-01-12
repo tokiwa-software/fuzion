@@ -27,7 +27,7 @@ looptest is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
@@ -159,7 +159,7 @@ looptest is
   yak "searching first larger  10000: "; testLoop5 a (i -> i >  10000)
   yak "searching first larger 100000: "; testLoop5 a (i -> i > 100000)
 
-  say "testLoop6: loop which returns a string"
+  say "testLoop6: loop which returns a String"
   testLoop6(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     variant data.length - ix

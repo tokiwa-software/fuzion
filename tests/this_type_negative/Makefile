@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = visibility_negative
+override NAME = test_this_type_negative
 include ../negative.mk

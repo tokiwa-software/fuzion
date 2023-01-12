@@ -289,7 +289,7 @@ public class Instance extends ValueWithClazz
   {
     if (expected.isRef())
       {
-        if (!expected.isAssignableFrom(clazz()))
+        if (!expected.isDirectlyAssignableFrom(clazz()))
           {
             throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
           }

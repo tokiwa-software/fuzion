@@ -27,67 +27,67 @@ choice_negative is
 
   cyclic7 is
     A is
-      x A | i32 | string := "Hello"  // 4. should flag an error: cyclic choice
+      x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
       s is
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic7.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic8 is
     A is
-      x ref A | i32 | string := "Hello"
+      x ref A | i32 | String := "Hello"
       s is
         match x
           a ref A  => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic8.A.s
 
   cyclic9 is
     A is
-      x i32 | A | string := "Hello"  // 5. should flag an error: cyclic choice
+      x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
       s is
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic9.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic10 is
     A is
-      x i32 | ref A | string := "Hello"
+      x i32 | ref A | String := "Hello"
       s is
         match x
           a ref A  => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic10.A.s
 
   cyclic11 is
     A is
-      x i32 | string | A := "Hello"  // 6. should flag an error: cyclic choice
+      x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
       s is
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic11.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic12 is
     A is
-      x i32 | string | ref A := "Hello"
+      x i32 | String | ref A := "Hello"
       s is
         match x
           a ref A  => say "A.x is A"
           i i32    => say "A.x is i32"
-          s string => say "A.x is string"
+          s String => say "A.x is String"
 
   cyclic12.A.s
   unit

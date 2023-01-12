@@ -27,7 +27,7 @@
 #
 # This feature creates an instance of a Set.
 #
-setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs
+setOf(K type : ordered K, vs Sequence K) Set K is psSet vs
 
 
 # set_of -- routine to initialize a set from a Sequence of hashable elements
@@ -35,7 +35,7 @@ setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs
 # This feature creates an instance of a Set.
 #
 # NYI name clash with feature above
-set_of(K (hasHash K).type, vs (CTrie K unit) | (Sequence K)) Set K is
+set_of(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
 
   private map := CTrie K unit
   match vs

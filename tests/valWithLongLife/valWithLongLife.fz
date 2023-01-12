@@ -31,7 +31,7 @@ valWithLongLife is
 
   exitCode := 0
 
-  chck(s, expected string) =>
+  chck(s, expected String) =>
     if s = expected
       say "PASSED: $s"
     else
@@ -39,12 +39,12 @@ valWithLongLife is
       set exitCode := 1
 
 
-  v (f string, id i32) is
+  v (f String, id i32) is
     e (eid u8) is
       redef asString => "{v.this.asString}-$eid"
     redef asString => f+id
 
-  g(f string, id i32, eid u8) => (v f id).e eid
+  g(f String, id i32, eid u8) => (v f id).e eid
 
   a := g "a" 1 11
   b := g "b" 2 22

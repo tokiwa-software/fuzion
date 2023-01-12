@@ -27,7 +27,7 @@ typeinference is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
@@ -36,23 +36,23 @@ typeinference is
     say (s + msg)
 
   typeInferencingFromIf1(b bool) is
-    f choice i32 string bool :=
+    f choice i32 String bool :=
       if      ( b) 3
       else if (!b) false
-      else         "string"
+      else         "String"
 
-  chck (match (typeInferencingFromIf1 true ).f { i1 i32  => { i1==3        }; string, bool => false }) "typeinference from if 1"
-  chck (match (typeInferencingFromIf1 false).f { b1 bool => { b1 <=> false }; i32, string  => false }) "typeinference from if 1"
+  chck (match (typeInferencingFromIf1 true ).f { i1 i32  => { i1==3        }; String, bool => false }) "typeinference from if 1"
+  chck (match (typeInferencingFromIf1 false).f { b1 bool => { b1 <=> false }; i32, String  => false }) "typeinference from if 1"
 
   typeInferencingFromIf2(b bool) =>
-    f(x choice i32 string bool) => x;
+    f(x choice i32 String bool) => x;
     f (if      ( b) 3
        else if (!b) false
-       else         "string"
+       else         "String"
       )
 
-  chck (match (typeInferencingFromIf2 true ) { i2 i32  => { i2 == 3      }; string, bool => false }) "typeinference from if 2"
-  chck (match (typeInferencingFromIf2 false) { b2 bool => { b2 <=> false }; i32, string  => false }) "typeinference from if 2"
+  chck (match (typeInferencingFromIf2 true ) { i2 i32  => { i2 == 3      }; String, bool => false }) "typeinference from if 2"
+  chck (match (typeInferencingFromIf2 false) { b2 bool => { b2 <=> false }; i32, String  => false }) "typeinference from if 2"
   // chck (typeInferencingFromIf2(true ) == 3    ) "typeinference from if 2" // NYI: should cause a compile-time error
   // chck (typeInferencingFromIf2(false) == false) "typeinference from if 2" // NYI: should cause a compile-time error
 
@@ -64,20 +64,20 @@ typeinference is
     E is
     abcde : choice A B C D E is
 
-    f(x abcde) choice i32 string bool E is
+    f(x abcde) choice i32 String bool E is
       match x
         a A => 3
-        B,C => "string"
+        B,C => "String"
         d D => false
         e E => e
 
   r := typeInferencingFromMatch1.f typeInferencingFromMatch1.A
 //  r2 := r ? i i32 => i==3 * => false  // NYI: does not work yet
-  r2 := match r { i i32 => { i==3 }; string,bool,typeInferencingFromMatch1.E => false }
+  r2 := match r { i i32 => { i==3 }; String,bool,typeInferencingFromMatch1.E => false }
   chck r2 "typeInferencingFromMatch1 A"
 //  chck ((typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i==3, * => false),"typeInferencingFromMatch1 A")  // NYI: does not work yet
   set r := typeInferencingFromMatch1.f typeInferencingFromMatch1.D
-  set r2 := match r { b bool => { b <=> false }; i32, string,typeInferencingFromMatch1.E => false }
+  set r2 := match r { b bool => { b <=> false }; i32, String,typeInferencingFromMatch1.E => false }
   chck r2 "typeInferencingFromMatch1 D"
   //  chck((typeInferencingFromMatch1.f(typeInferencingFromMatch1.D) ? b bool => b==false, * => false),"typeInferencingFromMatch1 D");  // NYI: does not work yet
 
@@ -90,10 +90,10 @@ typeinference is
     abcde : choice A B C D E is
 
     test(x abcde) is
-      f(a choice i32 string bool E) unit is
+      f(a choice i32 String bool E) unit is
       f (match x
             a A => 3
-            B,C => "string"
+            B,C => "String"
             d D => false
             e E => e
         )

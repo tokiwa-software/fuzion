@@ -153,12 +153,13 @@ public class This extends ExprWithPos
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeIfKnown()
   {
     return null;  // After type resolution, This is no longer part of the code.
   }
@@ -256,15 +257,24 @@ public class This extends ExprWithPos
               (Errors.count() > 0 || (or != null));
             if (or != null)
               {
-                Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
-                  .resolveTypes(res, outer);
+                Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    // NYI: CLEANUP: #737: We are satting all outer types to
-                    // o.asThis(), while the constructor of Type undoes
-                    // this. Maybe we could use .asThis only for the outermost
-                    // type?
-                    var t = Types.intern(cur.outer().thisType()).asThis();
+                    var t = cur.outer().thisType();
+                    if (cur.outer() == f &&
+
+                        /* in code like
+                         *
+                         * fixed x is ... x.this ...
+                         *
+                         * we are sure that x will not be inherited or
+                         * redefined, so the type of 'x.this' can be 'x' instead
+                         * of 'x.this.type' (which includes all heirs of 'x').
+                         */
+                        (outer.modifiers() & Consts.MODIFIER_FIXED) == 0)
+                      {
+                        t = Types.intern(t).asThis();
+                      }
                     c = new Unbox(c, t, cur.outer())
                       { public SourcePosition pos() { return This.this.pos(); } };
                   }

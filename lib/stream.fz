@@ -196,15 +196,15 @@ stream(redef T type) ref : Sequence T is
 
   # create a string from the elements of this stream
   #
-  redef asString ref string is
-    (map string (x -> x.asString))
-      .fold (strings.concat ", ")
+  redef asString ref String is
+    (map String (x -> x.asString))
+      .fold (Strings.concat ", ")
 
 
   # create a string representation of this stream including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep string) => asList.asString sep
+  redef asString (sep String) => asList.asString sep
 
 
   # map the stream to a new stream applying function f to all elements

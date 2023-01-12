@@ -46,7 +46,7 @@ outerNormalization is
   # string.asCodepoints is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
-  testCodepointsStream(s string) is
+  testCodepointsStream(s String) is
       l := s.asCodepoints
 
   say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
@@ -100,7 +100,7 @@ outerNormalization is
   # simpler features j/n
   #
   testNormalize is
-    n(T (n T).type) is
+    n(T type : n T) is
       a T is abstract
       b T is a
 

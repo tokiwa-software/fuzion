@@ -37,13 +37,13 @@ is
 
   # print the given string followed be new line
   #
-  println (s Object) =>
+  println (s Any) =>
     p.println s
     replace
 
   # print the given string
   #
-  print (s Object) =>
+  print (s Any) =>
     p.print s
     replace
 
@@ -56,11 +56,11 @@ is
 
 Can_Print ref is
 
-  println(s Object) =>
+  println(s Any) =>
     print s
     println
 
   println =>
     print (codepoint 10)
 
-  print(s Object) unit is abstract
+  print(s Any) unit is abstract

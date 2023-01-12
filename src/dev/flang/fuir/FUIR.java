@@ -190,7 +190,7 @@ public class FUIR extends IR
   public FUIR(Clazz main)
   {
     _main = main;
-    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
@@ -266,7 +266,18 @@ public class FUIR extends IR
             if (CHECKS) check
               (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
-            if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type == Types.t_ERROR)
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0);
+
+                if (Errors.count() == 0)
+                  {
+                    Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
+                                 "were reported.  This can only be the result of a severe bug.");
+                  }
+              }
+            else if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
                 add(cl);
               }
@@ -1037,7 +1048,7 @@ hw25 is
           {
           case Abstract, Choice -> false;
           case Intrinsic, Routine, Field ->
-            (cc.isInstantiated() || cc.feature().isOuterRef())
+            (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.conststring.getIfCreated()
             && !cc.isAbsurd()
             // NYI: this should not depend on string comparison!
@@ -1437,7 +1448,7 @@ hw25 is
    *
    * @param c code block containing the access
    *
-   * @param ix index of the acces
+   * @param ix index of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
@@ -1747,7 +1758,7 @@ hw25 is
   {
     var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    var ic = cc.lookup(call);
     return id(ic);
   }
 
@@ -2056,6 +2067,15 @@ hw25 is
       !clazzIsUnitType(cl) &&
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
+  }
+
+
+  /**
+   * Does this clazzes contract include any preconditions?
+   */
+  public boolean hasPrecondition(int cl)
+  {
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
   }
 
 

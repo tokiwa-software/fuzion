@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -393,9 +394,10 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
+   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -455,6 +457,10 @@ class LibraryOut extends ANY
     if (f.hasTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
+      }
+    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
     var n = f.featureName();
     _data.write(k);

@@ -25,86 +25,99 @@
 
 # codepoint -- represents a unicode codepoint
 #
-codepoint(val u32) : string, codepoints
+codepoint(val u32) : String
   pre
-    debug: range.contains(val),
-    debug: !utf16Surrogate.contains val
+    debug: codepoint.type.range.contains val,
+    debug: !codepoint.type.utf16Surrogate.contains val
 is
 
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
   redef utf8 Sequence u8 is
-    if      utf8EncodedInOneByte   .contains val then [ val.low8bits ]
-    else if utf8EncodedInTwoBytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
-    else if utf8EncodedInThreeBytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
-                                                        (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
-    else if utf8EncodedInFourBytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
-                                                        (u32 0x80 | (val >> 12) & 0x3f).low8bits,
-                                                        (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                        (u32 0x80 |  val        & 0x3f).low8bits ]
+    if      codepoint.type.utf8EncodedInOneByte   .contains val then [ val.low8bits ]
+    else if codepoint.type.utf8EncodedInTwoBytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
+                                                                       (u32 0x80 |  val        & 0x3f).low8bits ]
+    else if codepoint.type.utf8EncodedInThreeBytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
+                                                                       (u32 0x80 | (val >>  6) & 0x3f).low8bits,
+                                                                       (u32 0x80 |  val        & 0x3f).low8bits ]
+    else if codepoint.type.utf8EncodedInFourBytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
+                                                                       (u32 0x80 | (val >> 12) & 0x3f).low8bits,
+                                                                       (u32 0x80 | (val >>  6) & 0x3f).low8bits,
+                                                                       (u32 0x80 |  val        & 0x3f).low8bits ]
     else
       fuzion.std.panic "failed to encode code point {codepoint.this}"
 
 
   # is this an ASCII code encoded in one byte
   #
-  isAscii => ascii.contains val
+  isAscii => codepoint.type.ascii.contains val
 
-
-# codepoints -- unit type defining helper features to work with codepoint
-#
-codepoints is
 
   # range of permitted value for a codepoint
   #
-  range => u32 0 .. 0x10ffff
+  type.range => u32 0 .. 0x10ffff
 
 
   # range of values encoded in one byte
   #
-  ascii => u32 0 .. 0x7f
+  type.ascii => u32 0 .. 0x7f
 
   # 0 to 9
-  ascii_digit => u32 0x30 .. 0x39
+  type.ascii_digit => u32 0x30 .. 0x39
 
   # A to Z (uppercase only)
-  A_to_Z => u32 0x41 .. 0x5A
+  type.A_to_Z => u32 0x41 .. 0x5A
 
   # a to z (lowercase only)
-  a_to_z => u32 0x61 .. 0x7A
+  type.a_to_z => u32 0x61 .. 0x7A
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  latin_alphabet => A_to_Z.concatSequences a_to_z # NYI It would be better to use union of those two sets
+  type.latin_alphabet => codepoint.type.A_to_Z.concatSequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #
-  utf8EncodedInOneByte => ascii
+  type.utf8EncodedInOneByte => ascii
 
 
   # range of values encoded in two bytes
   #
-  utf8EncodedInTwoBytes => u32 0x80 .. 0x7ff
+  type.utf8EncodedInTwoBytes => u32 0x80 .. 0x7ff
 
 
   # range of values encoded in three bytes
   #
-  utf8EncodedInThreeBytes => u32 0x800 .. 0xffff
+  type.utf8EncodedInThreeBytes => u32 0x800 .. 0xffff
 
 
   # range of values encoded in four bytes
   #
-  utf8EncodedInFourBytes => u32 0x10000 .. 0x10ffff
+  type.utf8EncodedInFourBytes => u32 0x10000 .. 0x10ffff
 
 
   # range reserved for utf16 surrogate pairs
   #
-  utf16Surrogate => u32 0xd800 .. 0xdfff
+  type.utf16Surrogate => u32 0xd800 .. 0xdfff
 
 
   # values guaranteed never to be a legal unicode character
   #
-  notACharacter => u32 0xfffe .. 0xffff
+  type.notACharacter => u32 0xfffe .. 0xffff
+
+
+  # return the number of bytes of this utf-8 character
+  # by examining the first byte
+  #
+  # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leadingZeroes+1.
+  type.num_utf8_bytes (first_byte u8) outcome i32 is
+    if ((u8 0)..0x7F).contains first_byte
+      1
+    else if ((u8 0xC2)..0xDF).contains first_byte
+      2
+    else if ((u8 0xE0)..0xEF).contains first_byte
+      3
+    else if ((u8 0xF0)..0xF4).contains first_byte
+      4
+    else
+      error "first byte is not the start of utf-8 character."

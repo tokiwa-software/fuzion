@@ -31,7 +31,7 @@
 #   say (sum l)     # '6'
 #
 #
-sum(T (numeric T).type, l Sequence T)
+sum(T type : numeric T, l Sequence T)
   pre
     debug: !l.isEmpty   # sum does not work (yet) for empty Sequence
   =>
@@ -41,7 +41,7 @@ sum(T (numeric T).type, l Sequence T)
   #
   #  l.fold T.sum
   #
-  n := l.asList.forceHead
+  n := l.asList.head.get
   sum0 n l
 
 
@@ -56,8 +56,8 @@ sum(T (numeric T).type, l Sequence T)
 #
 sum0(
   # the numeric type we are summing, unit value
-  U (numerics T).type,
-  T (numeric T).type,
+  U type : numerics T,
+  T type : numeric T,
   n U,
   l Sequence T
   )

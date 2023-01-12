@@ -145,8 +145,8 @@ public class C extends ANY
 
 
     /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a refernce). See FUIR.acess*().
+     * Perform an assignment of a value to a field in tvalue. The type of tvalue
+     * might be dynamic (a reference). See FUIR.access*().
      */
     public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
     {
@@ -166,7 +166,7 @@ public class C extends ANY
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ol = new List<CStmnt>();
-      if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+      if (_fuir.hasPrecondition(cc0))
         {
           var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
           ol.add(callpair._v1);
@@ -331,7 +331,7 @@ public class C extends ANY
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
     }
 
 
@@ -495,7 +495,7 @@ public class C extends ANY
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
-    _ai = new AbstractInterpreter(_fuir, new CodeGen());
+    _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
@@ -680,9 +680,13 @@ public class C extends ANY
 
     cf.print(initializeEffectsEnvironment());
 
+    var cl = _fuir.mainClazzId();
+
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+                        _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
+                        CExpr.call(_names.function(cl, false), new List<>())
+                        ));
     cf.println("}");
   }
 
@@ -851,7 +855,7 @@ public class C extends ANY
            :  res;
       }
 
-    return new Pair(res, CStmnt.seq(ol));
+    return new Pair<>(res, CStmnt.seq(ol));
   }
 
 
@@ -1102,9 +1106,6 @@ public class C extends ANY
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
           {
-            var target = _types.isScalar(vcl)
-              ? cur
-              : cur.field(_names.fieldName(_fuir.clazzArg(vcl, ai)));
             l.add(assign(CIdent.arg(ai), a.get(aii), at));
                           aii = aii + 1;
           }
@@ -1219,7 +1220,7 @@ public class C extends ANY
           case Routine  :
           case Intrinsic: l.add(cFunctionDecl(cl, false, null));
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(cFunctionDecl(cl, true, null));
           }
@@ -1252,7 +1253,7 @@ public class C extends ANY
               l.add(cFunctionDecl(cl, false, o));
             }
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
             l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));

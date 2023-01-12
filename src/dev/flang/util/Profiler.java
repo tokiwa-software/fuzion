@@ -157,13 +157,14 @@ public class Profiler extends ANY
               _running_ = false;
             }
           StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
-          Arrays.sort(s,new Comparator()
+          var c = new Comparator<>()
+          {
+            public int compare(Object o1, Object o2)
             {
-              public int compare(Object o1, Object o2)
-              {
-                return _results_.get(o1) - _results_.get(o2);
-              }
-            });
+              return _results_.get(o1) - _results_.get(o2);
+            }
+          };
+          Arrays.sort(s,c);
           if (s.length > 0)
             {
               System.out.println("Fuzion sample-based Java profiling results:");

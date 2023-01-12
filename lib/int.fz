@@ -37,7 +37,7 @@ is
 
   redef thiz => int ns n
 
-  name string is
+  name String is
     "int"
 
   redef zero int is
@@ -144,7 +144,7 @@ is
   infix == (other int) bool is
     ns = other.ns & n = other.n
 
-  type.equality(a, b int) bool is
+  fixed type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
 
   orderedThis int is int ns n
@@ -161,7 +161,7 @@ is
           plus => true
           minus => other.n <= n
 
-  redef asString string is
+  redef asString String is
     s.asString + n.asString
 
 
@@ -189,8 +189,24 @@ ints is
     from_i64 val.as_i64
 
 
+# positive sign of a number
+#
+# note that this value is of unit type plus, not of type sign
+#
 plus is
+
+
+# negative sign of a number
+#
+# note that this value is of unit type minus, not of type sign
+#
 minus is
+
+
+# the sign of a number
+#
+# this can be plus or minus
+#
 sign : choice plus minus, has_equality, hasEquals sign is
   infix = (o sign) bool is
     match sign.this
@@ -203,7 +219,7 @@ sign : choice plus minus, has_equality, hasEquals sign is
           plus => false
           minus => true
 
-  sign.type.equality(a, b sign) bool is
+  fixed type.equality(a, b sign) bool is
     match a
       plus =>
         match b
@@ -214,7 +230,7 @@ sign : choice plus minus, has_equality, hasEquals sign is
           plus => false
           minus => true
 
-  redef asString string is
+  redef asString String is
     match sign.this
       plus => ""
       minus => "-"

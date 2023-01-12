@@ -28,6 +28,7 @@ package dev.flang.tools.fzjava;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 import java.lang.reflect.Constructor;
@@ -724,7 +725,7 @@ class ForClass extends ANY
           }
         else if (t == String.class)
           {
-            mt = "string";
+            mt = FuzionConstants.STRING_NAME;
           }
         else
           {

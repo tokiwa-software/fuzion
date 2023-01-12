@@ -44,3 +44,23 @@ test_this_type_negative is
     b0       := b.this
     b1 b     := b.this
     b2 ref b := b.this
+
+
+  xa is
+    op0(v xa.this.type) xa.this.type is abstract
+
+
+  xb(val String) : xa is
+    op0(v xb.this.type) xb.this.type is xb.this
+
+  xb1 := xb "1"
+  xb2 := xb "2"
+
+  # even though xb1 and xb2 are both of type xb and xb is not a ref type, it is
+  # currently not permitted to pass anything that is not of type xb.this.type as
+  # an argument of that type:
+  #
+  _ := xb1.op0 xb2  # 3. should flag an error: incompatible type
+
+  # well, void is allowed:
+  _ := xb1.op0 (panic "creating void result")

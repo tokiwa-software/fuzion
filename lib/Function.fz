@@ -25,6 +25,8 @@
 
 # Function -- generic function with arbitrary number of arguments and result
 #
+# R is the result type of the function, A are the argument types of the function
+#
 Function(R type, A type...) ref is
 
   # call this function on given arguments A...

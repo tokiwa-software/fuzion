@@ -32,7 +32,7 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-orderedMap(OK ordered OK .type,
+orderedMap(OK type : ordered OK,
            redef V type,
            ks array OK,
            vs array V) : map OK V
@@ -42,12 +42,17 @@ orderedMap(OK ordered OK .type,
 is
 
   # entry is an index in ks/vs
-
+  #
   entry(i i32) : ordered entry is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
+
+
+  # a sorted array of entries of this map
+  #
   sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence (i -> entry i)).asArray
+
 
   # number of entries in this map
   #
@@ -97,7 +102,7 @@ is
 #
 # NYI: move to orderedMap.type
 #
-orderedMaps (OK ordered OK .type, V type) is
+orderedMaps (OK type : ordered OK, V type) is
 
 
   # create an empty instance of orderedMap

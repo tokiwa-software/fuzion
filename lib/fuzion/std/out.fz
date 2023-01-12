@@ -27,10 +27,10 @@
 #
 public fuzion.std.out : character_encodings is
 
-  public print(s ref Object) =>
+  public print(s ref Any) =>
     write s.asString.utf8.asArray
 
-  public println(s ref Object) =>
+  public println(s ref Any) =>
     write (s.asString.utf8 ++ [ascii.lf]).asArray
 
   public println =>
@@ -39,5 +39,5 @@ public fuzion.std.out : character_encodings is
   private write(arr array u8) =>
     write arr.internalArray.data arr.length
 
-  private write(arrayData Object, length i32) unit is intrinsic
+  private write(arrayData Any, length i32) unit is intrinsic
   private flush unit is intrinsic

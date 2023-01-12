@@ -53,7 +53,7 @@ f64(val f64) : float f64, f64s is
   redef infix >  (other f64) bool is intrinsic
   redef infix >= (other f64) bool is intrinsic
 
-  type.equality(a, b f64) bool is intrinsic
+  fixed type.equality(a, b f64) bool is intrinsic
 
 
   # conversion
@@ -109,7 +109,7 @@ f64(val f64) : float f64, f64s is
 
   # convert this to a string.
   #
-  redef asString string is intrinsic
+  redef asString String is intrinsic
 
 
 # f64s -- unit type defining features related to f64 but not requiring an

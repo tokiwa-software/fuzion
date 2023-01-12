@@ -43,7 +43,7 @@ public terminal is
 
   # control sequence introducer
   #
-  public csi => (strings.fromBytes [u8 0o033]) + "[";
+  public csi => (Strings.fromBytes [u8 0o033]) + "[";
 
   # raw codes not surrounded by 'csi' and "m"
   #
@@ -226,93 +226,93 @@ public terminal is
   public background_bright_cyan            => csi + raw.background_bright_cyan + "m"
   public background_bright_white           => csi + raw.background_bright_white + "m"
 
-public string.bold                              => terminal.bold + string.this + terminal.reset
-public string.dime                              => terminal.dime + string.this + terminal.reset
-public string.italic                            => terminal.italic + string.this + terminal.reset
-public string.underline                         => terminal.underline + string.this + terminal.reset
-public string.slow_blink                        => terminal.slow_blink + string.this + terminal.reset
-public string.rapid_blink                       => terminal.rapid_blink + string.this + terminal.reset
+public String.bold                              => terminal.bold + String.this + terminal.reset
+public String.dime                              => terminal.dime + String.this + terminal.reset
+public String.italic                            => terminal.italic + String.this + terminal.reset
+public String.underline                         => terminal.underline + String.this + terminal.reset
+public String.slow_blink                        => terminal.slow_blink + String.this + terminal.reset
+public String.rapid_blink                       => terminal.rapid_blink + String.this + terminal.reset
 # NYI: string.reverse causes a conflict with conststring.reverse since visibility is not supported
 # public string.reverse                           => terminal.reverse + string.this + terminal.reset
-public string.crossed_out                       => terminal.crossed_out + string.this + terminal.reset
-public string.font_0                            => terminal.font_0 + string.this + terminal.reset
-public string.font_1                            => terminal.font_1 + string.this + terminal.reset
-public string.font_2                            => terminal.font_2 + string.this + terminal.reset
-public string.font_3                            => terminal.font_3 + string.this + terminal.reset
-public string.font_4                            => terminal.font_4 + string.this + terminal.reset
-public string.font_5                            => terminal.font_5 + string.this + terminal.reset
-public string.font_6                            => terminal.font_6 + string.this + terminal.reset
-public string.font_7                            => terminal.font_7 + string.this + terminal.reset
-public string.font_8                            => terminal.font_8 + string.this + terminal.reset
-public string.font_9                            => terminal.font_9 + string.this + terminal.reset
-public string.fraktur                           => terminal.fraktur + string.this + terminal.reset
-public string.double_underline                  => terminal.double_underline + string.this + terminal.reset
-public string.normal_intensity                  => terminal.normal_intensity + string.this + terminal.reset
-public string.neither_italic_nor_blackletter    => terminal.neither_italic_nor_blackletter + string.this + terminal.reset
-public string.not_underlined                    => terminal.not_underlined + string.this + terminal.reset
-public string.not_blinking                      => terminal.not_blinking + string.this + terminal.reset
-public string.proportional_spacing              => terminal.proportional_spacing + string.this + terminal.reset
-public string.not_reversed                      => terminal.not_reversed + string.this + terminal.reset
-public string.reveal                            => terminal.reveal + string.this + terminal.reset
-public string.not_crossed_out                   => terminal.not_crossed_out + string.this + terminal.reset
-public string.black                             => terminal.black + string.this + terminal.reset
-public string.red                               => terminal.red + string.this + terminal.reset
-public string.green                             => terminal.green + string.this + terminal.reset
-public string.yellow                            => terminal.yellow + string.this + terminal.reset
-public string.blue                              => terminal.blue + string.this + terminal.reset
-public string.purple                            => terminal.purple + string.this + terminal.reset
-public string.cyan                              => terminal.cyan + string.this + terminal.reset
-public string.white                             => terminal.white + string.this + terminal.reset
-public string.set_forground_color               => terminal.set_forground_color + string.this + terminal.reset
-public string.regular_color                     => terminal.regular_color + string.this + terminal.reset
-public string.background_black                  => terminal.background_black + string.this + terminal.reset
-public string.background_red                    => terminal.background_red + string.this + terminal.reset
-public string.background_green                  => terminal.background_green + string.this + terminal.reset
-public string.background_yellow                 => terminal.background_yellow + string.this + terminal.reset
-public string.background_blue                   => terminal.background_blue + string.this + terminal.reset
-public string.background_purple                 => terminal.background_purple + string.this + terminal.reset
-public string.background_cyan                   => terminal.background_cyan + string.this + terminal.reset
-public string.background_white                  => terminal.background_white + string.this + terminal.reset
-public string.set_background_set_color          => terminal.set_background_set_color + string.this + terminal.reset
-public string.background_regular_color          => terminal.background_regular_color + string.this + terminal.reset
-public string.disable_proprotional_spacing      => terminal.disable_proprotional_spacing + string.this + terminal.reset
-public string.framed                            => terminal.framed + string.this + terminal.reset
-public string.encircled                         => terminal.encircled + string.this + terminal.reset
-public string.overlined                         => terminal.overlined + string.this + terminal.reset
-public string.neither_framed_nor_encircled      => terminal.neither_framed_nor_encircled + string.this + terminal.reset
-public string.not_overlined                     => terminal.not_overlined + string.this + terminal.reset
+public String.crossed_out                       => terminal.crossed_out + String.this + terminal.reset
+public String.font_0                            => terminal.font_0 + String.this + terminal.reset
+public String.font_1                            => terminal.font_1 + String.this + terminal.reset
+public String.font_2                            => terminal.font_2 + String.this + terminal.reset
+public String.font_3                            => terminal.font_3 + String.this + terminal.reset
+public String.font_4                            => terminal.font_4 + String.this + terminal.reset
+public String.font_5                            => terminal.font_5 + String.this + terminal.reset
+public String.font_6                            => terminal.font_6 + String.this + terminal.reset
+public String.font_7                            => terminal.font_7 + String.this + terminal.reset
+public String.font_8                            => terminal.font_8 + String.this + terminal.reset
+public String.font_9                            => terminal.font_9 + String.this + terminal.reset
+public String.fraktur                           => terminal.fraktur + String.this + terminal.reset
+public String.double_underline                  => terminal.double_underline + String.this + terminal.reset
+public String.normal_intensity                  => terminal.normal_intensity + String.this + terminal.reset
+public String.neither_italic_nor_blackletter    => terminal.neither_italic_nor_blackletter + String.this + terminal.reset
+public String.not_underlined                    => terminal.not_underlined + String.this + terminal.reset
+public String.not_blinking                      => terminal.not_blinking + String.this + terminal.reset
+public String.proportional_spacing              => terminal.proportional_spacing + String.this + terminal.reset
+public String.not_reversed                      => terminal.not_reversed + String.this + terminal.reset
+public String.reveal                            => terminal.reveal + String.this + terminal.reset
+public String.not_crossed_out                   => terminal.not_crossed_out + String.this + terminal.reset
+public String.black                             => terminal.black + String.this + terminal.reset
+public String.red                               => terminal.red + String.this + terminal.reset
+public String.green                             => terminal.green + String.this + terminal.reset
+public String.yellow                            => terminal.yellow + String.this + terminal.reset
+public String.blue                              => terminal.blue + String.this + terminal.reset
+public String.purple                            => terminal.purple + String.this + terminal.reset
+public String.cyan                              => terminal.cyan + String.this + terminal.reset
+public String.white                             => terminal.white + String.this + terminal.reset
+public String.set_forground_color               => terminal.set_forground_color + String.this + terminal.reset
+public String.regular_color                     => terminal.regular_color + String.this + terminal.reset
+public String.background_black                  => terminal.background_black + String.this + terminal.reset
+public String.background_red                    => terminal.background_red + String.this + terminal.reset
+public String.background_green                  => terminal.background_green + String.this + terminal.reset
+public String.background_yellow                 => terminal.background_yellow + String.this + terminal.reset
+public String.background_blue                   => terminal.background_blue + String.this + terminal.reset
+public String.background_purple                 => terminal.background_purple + String.this + terminal.reset
+public String.background_cyan                   => terminal.background_cyan + String.this + terminal.reset
+public String.background_white                  => terminal.background_white + String.this + terminal.reset
+public String.set_background_set_color          => terminal.set_background_set_color + String.this + terminal.reset
+public String.background_regular_color          => terminal.background_regular_color + String.this + terminal.reset
+public String.disable_proprotional_spacing      => terminal.disable_proprotional_spacing + String.this + terminal.reset
+public String.framed                            => terminal.framed + String.this + terminal.reset
+public String.encircled                         => terminal.encircled + String.this + terminal.reset
+public String.overlined                         => terminal.overlined + String.this + terminal.reset
+public String.neither_framed_nor_encircled      => terminal.neither_framed_nor_encircled + String.this + terminal.reset
+public String.not_overlined                     => terminal.not_overlined + String.this + terminal.reset
 # 57
 # 56
-public string.set_underline_color               => terminal.set_underline_color + string.this + terminal.reset
-public string.default_underline_color           => terminal.default_underline_color + string.this + terminal.reset
-public string.ideogram_underline                => terminal.ideogram_underline + string.this + terminal.reset
-public string.ideogram_double_underline         => terminal.ideogram_double_underline + string.this + terminal.reset
-public string.ideogram_overline                 => terminal.ideogram_overline + string.this + terminal.reset
-public string.ideogram_double_overline          => terminal.ideogram_double_overline + string.this + terminal.reset
-public string.ideogram_stress_marking           => terminal.ideogram_stress_marking + string.this + terminal.reset
-public string.no_ideogram_attributes            => terminal.no_ideogram_attributes + string.this + terminal.reset
+public String.set_underline_color               => terminal.set_underline_color + String.this + terminal.reset
+public String.default_underline_color           => terminal.default_underline_color + String.this + terminal.reset
+public String.ideogram_underline                => terminal.ideogram_underline + String.this + terminal.reset
+public String.ideogram_double_underline         => terminal.ideogram_double_underline + String.this + terminal.reset
+public String.ideogram_overline                 => terminal.ideogram_overline + String.this + terminal.reset
+public String.ideogram_double_overline          => terminal.ideogram_double_overline + String.this + terminal.reset
+public String.ideogram_stress_marking           => terminal.ideogram_stress_marking + String.this + terminal.reset
+public String.no_ideogram_attributes            => terminal.no_ideogram_attributes + String.this + terminal.reset
 # 66..72
-public string.superscript                       => terminal.superscript + string.this + terminal.reset
-public string.subscript                         => terminal.subscript + string.this + terminal.reset
-public string.neither_superscript_nor_subscript => terminal.neither_superscript_nor_subscript + string.this + terminal.reset
+public String.superscript                       => terminal.superscript + String.this + terminal.reset
+public String.subscript                         => terminal.subscript + String.this + terminal.reset
+public String.neither_superscript_nor_subscript => terminal.neither_superscript_nor_subscript + String.this + terminal.reset
   # 76..89
-public string.bright_black                      => terminal.bright_black + string.this + terminal.reset
-public string.bright_red                        => terminal.bright_red + string.this + terminal.reset
-public string.bright_green                      => terminal.bright_green + string.this + terminal.reset
-public string.bright_yellow                     => terminal.bright_yellow + string.this + terminal.reset
-public string.bright_blue                       => terminal.bright_blue + string.this + terminal.reset
-public string.bright_purple                     => terminal.bright_purple + string.this + terminal.reset
-public string.bright_cyan                       => terminal.bright_cyan + string.this + terminal.reset
-public string.bright_white                      => terminal.bright_white + string.this + terminal.reset
+public String.bright_black                      => terminal.bright_black + String.this + terminal.reset
+public String.bright_red                        => terminal.bright_red + String.this + terminal.reset
+public String.bright_green                      => terminal.bright_green + String.this + terminal.reset
+public String.bright_yellow                     => terminal.bright_yellow + String.this + terminal.reset
+public String.bright_blue                       => terminal.bright_blue + String.this + terminal.reset
+public String.bright_purple                     => terminal.bright_purple + String.this + terminal.reset
+public String.bright_cyan                       => terminal.bright_cyan + String.this + terminal.reset
+public String.bright_white                      => terminal.bright_white + String.this + terminal.reset
   # 98
   # 99
-public string.background_bright_black           => terminal.background_bright_black + string.this + terminal.reset
-public string.background_bright_red             => terminal.background_bright_red + string.this + terminal.reset
-public string.background_bright_green           => terminal.background_bright_green + string.this + terminal.reset
-public string.background_bright_yellow          => terminal.background_bright_yellow + string.this + terminal.reset
-public string.background_bright_blue            => terminal.background_bright_blue + string.this + terminal.reset
-public string.background_bright_purple          => terminal.background_bright_purple + string.this + terminal.reset
-public string.background_bright_cyan            => terminal.background_bright_cyan + string.this + terminal.reset
-public string.background_bright_white           => terminal.background_bright_white + string.this + terminal.reset
+public String.background_bright_black           => terminal.background_bright_black + String.this + terminal.reset
+public String.background_bright_red             => terminal.background_bright_red + String.this + terminal.reset
+public String.background_bright_green           => terminal.background_bright_green + String.this + terminal.reset
+public String.background_bright_yellow          => terminal.background_bright_yellow + String.this + terminal.reset
+public String.background_bright_blue            => terminal.background_bright_blue + String.this + terminal.reset
+public String.background_bright_purple          => terminal.background_bright_purple + String.this + terminal.reset
+public String.background_bright_cyan            => terminal.background_bright_cyan + String.this + terminal.reset
+public String.background_bright_white           => terminal.background_bright_white + String.this + terminal.reset
 
 # end of file

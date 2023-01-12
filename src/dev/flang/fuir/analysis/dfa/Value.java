@@ -56,7 +56,7 @@ public class Value extends ANY
   /**
    * Comparator instance to compare two Values of arbitrary tyes.
    */
-  static Comparator COMPARATOR = new Comparator<Value>() {
+  static Comparator<Value> COMPARATOR = new Comparator<>() {
       /**
        * compare two values.
        */
@@ -317,7 +317,7 @@ public class Value extends ANY
 
 
   /**
-   * Perform c.accept on this and, if this is a set, o all values contained in
+   * Perform c.accept on this and, if this is a set, on all values contained in
    * the set.
    *
    * @param c a consumer to apply to the values.

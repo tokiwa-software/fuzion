@@ -54,6 +54,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   public static final List<Expr> NO_EXPRS = new List<Expr>();
 
 
+  /**
+   * Dummy Expr value. Used in 'Actual' to represent non-existing value version
+   * of the acual.
+   */
+  public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    {
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
+    };
+
+
   /*-------------------------  static variables -------------------------*/
 
 
@@ -104,7 +117,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   public AbstractType type()
   {
-    var result = typeForFeatureResultTypeInferencing();
+    var result = typeIfKnown();
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -117,27 +130,15 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeIfKnown()
   {
     return type();
-  }
-
-
-  /**
-   * typeForGenericsTypeInfereing returns the type of this expression or null if
-   * the type is still unknown, i.e., before or during type resolution for
-   * generic type arguments.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  public AbstractType typeForGenericsTypeInfereing()
-  {
-    return typeForFeatureResultTypeInferencing();
   }
 
 
@@ -324,9 +325,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
             result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t)
-            && !t.isThisType() // NYI: CLEANUP: #736: Can this be removed if t.asThisType() == t for choice types?
-            )
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
             result = tag(frmlT, result);
           }
@@ -385,13 +384,28 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * Is boxing needed when we assign to frmlT since frmlT is generic (so it
+   * could be a ref) or frmlT is this type and the underlying feature is by
+   * default a ref?
+   *
+   * @param frmlT the formal type we are assigning to.
+   */
+  boolean needsBoxingForGenericOrThis(AbstractType frmlT)
+  {
+    return
+      frmlT.isGenericArgument() ||
+      frmlT.isThisType() && frmlT.featureOfType().isThisRef();
+  }
+
+
+  /**
    * Is boxing needed when we assign to frmlT?
    * @param frmlT the formal type we are assigning to.
    */
   private boolean needsBoxing(AbstractType frmlT)
   {
     var t = type();
-    if (frmlT.isGenericArgument())
+    if (needsBoxingForGenericOrThis(frmlT))
       {
         return true;
       }

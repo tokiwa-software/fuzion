@@ -1,0 +1,295 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_covariance
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# a test for defining abstract data type using covariance argument and result types
+# in children
+#
+test_covariance is
+
+  # a simple, numeric type providing special elements zero and one and operations
+  # lessThan, plus, minus and to_u32
+  #
+  num is
+
+    # special values
+    #
+    type.zero num.this.type is abstract
+    type.one  num.this.type is abstract
+
+    # if num.this less than other?
+    #
+    lessThan(other num.this.type) bool is abstract
+
+    plus (other num.this.type) num.this.type is abstract
+    minus(other num.this.type) num.this.type is abstract
+
+    to_u32_loop =>
+      for
+        x := num.this, x.minus num.this.type.one
+        u := u32 0, u+1
+      while num.this.type.zero.lessThan x
+      else
+        u
+
+    # convert this to corresponding values as an 'u32'
+    #
+    to_u32 u32 is
+      t := num.this.type
+      if t.zero.lessThan num.this
+        (minus t.one).to_u32 + 1
+      else
+        0
+
+    # create string representation consiting of type, to_u32
+    # and valueString
+    #
+    redef asString => "num.this.type {to_u32} {to_u32_loop} '$valueString'"
+
+    # string representation of this value, to be implemented by
+    # children.
+    #
+    valueString String is abstract
+
+
+  # integer mod 2 implementation of num
+  #
+  intM2(isZero bool) : num is
+    fixed z => intM2 true
+    fixed o => intM2 false
+    fixed type.zero => test_covariance.intM2 true
+    fixed type.one => test_covariance.intM2 false
+    fixed lessThan(other intM2) => isZero && !other.isZero
+    fixed plus(other intM2) => if isZero then other else intM2 !other.isZero
+    fixed minus(other intM2) => plus other
+    redef valueString => if isZero then "0 mod 2" else "1 mod 2"
+
+  # integer mod 5 implementation of num
+  #
+  intM5(v u8) : num is
+    fixed z => intM5 0
+    fixed o => intM5 1
+    fixed type.zero => test_covariance.intM5 0
+    fixed type.one => test_covariance.intM5 1
+    fixed lessThan(other intM5) => v < other.v
+    fixed plus(other intM5) => intM5 (v + other.v)%5
+    fixed minus(other intM5) => intM5 (v - other.v)%5
+    redef valueString => "$v mod 5"
+
+run_test_covariance =>
+
+  test(N type : test_covariance.num, x, y N) =>
+    say x
+    say y
+    # NYI: all of the following do not work yet:
+    #
+    # say (x.plus y)
+    # say (x.plus x)
+    # say (y.plus y)
+    # z := y.plus y
+    # say z
+    # z := z.plus z
+    # say z
+    # z := z.plus z
+    # say z
+
+  x := test_covariance.intM2 true
+  y := test_covariance.intM2 false
+  say x
+  say y
+  say (x.plus y)
+  say (x.plus x)
+  say (y.plus y)
+  z := y.plus y
+  say z
+  z := z.plus z
+  say z
+  z := z.plus z
+  say z
+  test x y
+
+
+  x := test_covariance.intM5 0
+  y := test_covariance.intM5 1
+  say x
+  say y
+  say (x.plus y)
+  say (x.plus x)
+  say (y.plus y)
+  z := y.plus y
+  say z
+  z := z.plus z
+  say z
+  z := z.plus z
+  say z
+  test x y
+
+
+# This test creates nested features with accesses to the outer features' this.type
+# values.  Then, it creates new features by inheriting from the outer features and
+# redefining type features.
+#
+# It will then be tested that the corresponding type features respect the nesting
+# and inheritance relation.
+#
+test_this_type =>
+
+  a is
+    type.s => "a"
+    redef asString => "{a.this.type.s}"
+    b is
+      type.s => "b"
+      redef asString => "{a.this.type.s}{b.this.type.s}"
+      c is
+        type.s => "c"
+        d is
+          type.s => "d"
+          redef asString => "{a.this.type.s}{b.this.type.s}{c.this.type.s}{d.this.type.s}"
+
+  k : a is
+    redef type.s => "k"
+
+  l : a.b is
+    redef type.s => "l"
+
+  p : a is
+    redef type.s => "p"
+  q : a is
+    redef type.s => "q"
+    r : b is
+      redef type.s => "r"
+  s : a is
+    redef type.s => "s"
+    t : b is
+      redef type.s => "t"
+      u : c is
+        redef type.s => "u"
+  v : a is
+    redef type.s => "v"
+    w : b is
+      redef type.s => "w"
+      x : c is
+        redef type.s => "x"
+        y : d is
+          redef type.s => "y"
+
+  z : a.b.c.d is
+    redef type.s => "z"
+
+  Z : v.w.x.y is
+    redef type.s => "Z"
+
+  chck $a       "a"
+  chck $k       "k"
+  chck $a.b     "ab"
+  chck $l       "al"
+  chck $a.b.c.d "abcd"
+  chck $p.b.c.d "pbcd"
+  chck $q.r.c.d "qrcd"
+  chck $s.b.c.d "sbcd"
+  chck $s.t.c.d "stcd"
+  chck $s.t.u.d "stud"
+  chck $v.b.c.d "vbcd"
+  chck $v.w.c.d "vwcd"
+  chck $v.w.x.d "vwxd"
+  chck $v.w.x.y "vwxy"
+  chck $z       "abcz"
+  chck $Z       "vwxZ"
+
+  chck(s, t String) =>
+    say (if s = t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
+
+# This test creates nested features with inner type features that use outer features'
+# this.type in their signature.
+#
+test_this_type_in_type_feature =>
+
+  abc is
+    def(s String) is
+      ghi is
+        jkl(val i32, msg String) is
+          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+
+          type.choose1L(a, b     def.this.type)     def.this.type is a
+          type.choose1R(a, b     def.this.type)     def.this.type is b
+          type.choose2L(a, b abc.def.this.type) abc.def.this.type is a
+          type.choose2R(a, b abc.def.this.type) abc.def.this.type is b
+          type.choose3L(a, b abc.def.this.type)     def.this.type is a
+          type.choose3R(a, b abc.def.this.type)     def.this.type is b
+          type.choose4L(a, b     def.this.type) abc.def.this.type is a
+          type.choose4R(a, b     def.this.type) abc.def.this.type is b
+
+          redef asString => "abc.def.ghi.jkl $val $msg"
+
+      redef asString => s
+
+  v1 := (abc.def "ignore").ghi.jkl 1 "PASS"
+  v2 := (abc.def "ignore").ghi.jkl 2 "*** FAIL ***"
+
+  say (abc.def.ghi.jkl.type.choose1 v1 v2)
+  say (abc.def.ghi.jkl.type.choose2 v1 v2)
+  say (abc.def.ghi.jkl.type.choose3 v1 v2)
+  say (abc.def.ghi.jkl.type.choose4 v1 v2)
+  say (abc.def.ghi.jkl.type.choose5 v1 v2)
+  say (abc.def.ghi.jkl.type.choose6 v1 v2)
+  say (abc.def.ghi.jkl.type.choose7 v1 v2)
+  say (abc.def.ghi.jkl.type.choose8 v1 v2)
+  say (abc.def.ghi.jkl.type.choose9 v1 v2)
+  say (abc.def.ghi.jkl.type.chooseA v1 v2)
+
+  say (abc.def.ghi.jkl.type.choose1 v2 v1)
+  say (abc.def.ghi.jkl.type.choose2 v2 v1)
+  say (abc.def.ghi.jkl.type.choose3 v2 v1)
+  say (abc.def.ghi.jkl.type.choose4 v2 v1)
+  say (abc.def.ghi.jkl.type.choose5 v2 v1)
+  say (abc.def.ghi.jkl.type.choose6 v2 v1)
+  say (abc.def.ghi.jkl.type.choose7 v2 v1)
+  say (abc.def.ghi.jkl.type.choose8 v2 v1)
+  say (abc.def.ghi.jkl.type.choose9 v2 v1)
+  say (abc.def.ghi.jkl.type.chooseA v2 v1)
+
+  w1 := abc.def "PASS"
+  w2 := abc.def "*** FAIL ***"
+
+  say (abc.def.ghi.jkl.type.choose1L w1 w2)
+  say (abc.def.ghi.jkl.type.choose1R w2 w1)
+  say (abc.def.ghi.jkl.type.choose2L w1 w2)
+  say (abc.def.ghi.jkl.type.choose2R w2 w1)
+  say (abc.def.ghi.jkl.type.choose3L w1 w2)
+  say (abc.def.ghi.jkl.type.choose3R w2 w1)
+  say (abc.def.ghi.jkl.type.choose4L w1 w2)
+  say (abc.def.ghi.jkl.type.choose4R w2 w1)
+
+run_test_covariance
+test_this_type
+test_this_type_in_type_feature

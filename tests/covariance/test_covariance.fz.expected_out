@@ -1,0 +1,64 @@
+num.this.type 0 0 '0 mod 2'
+num.this.type 1 1 '1 mod 2'
+num.this.type 1 1 '1 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 0 0 '0 mod 2'
+num.this.type 1 1 '1 mod 2'
+num.this.type 0 0 '0 mod 5'
+num.this.type 1 1 '1 mod 5'
+num.this.type 1 1 '1 mod 5'
+num.this.type 0 0 '0 mod 5'
+num.this.type 2 2 '2 mod 5'
+num.this.type 2 2 '2 mod 5'
+num.this.type 4 4 '4 mod 5'
+num.this.type 3 3 '3 mod 5'
+num.this.type 0 0 '0 mod 5'
+num.this.type 1 1 '1 mod 5'
+PASS: a = a
+PASS: k = k
+PASS: ab = ab
+PASS: al = al
+PASS: abcd = abcd
+PASS: pbcd = pbcd
+PASS: qrcd = qrcd
+PASS: sbcd = sbcd
+PASS: stcd = stcd
+PASS: stud = stud
+PASS: vbcd = vbcd
+PASS: vwcd = vwcd
+PASS: vwxd = vwxd
+PASS: vwxy = vwxy
+PASS: abcz = abcz
+PASS: vwxZ = vwxZ
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+abc.def.ghi.jkl 1 PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS

@@ -64,7 +64,13 @@ public class FuzionConstants extends ANY
    * Name of Object feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String OBJECT_NAME          = "Object";
+  public static final String OBJECT_NAME          = "Any";
+
+
+  /**
+   * Name of String feature.
+   */
+  public static final String STRING_NAME          = "String";
 
 
   /**
@@ -95,22 +101,21 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of (dynamic) type features.
+   * Name of type features.
    */
   public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
 
 
   /**
-   * Name of static type features.
-   */
-  public static final String TYPE_STATIC_NAME = INTERNAL_NAME_PREFIX + "type_STATIC";
-
-
-  /**
    * Name of type parameter for type features.  This type parameter will be set
-   * to the actual static type.
+   * to the actual corresponding type, i.e., including the type's type
+   * parameters.
+   *
+   * NOTE: Here, the INTERNAL_NAME_PREFIX is not used as a prefix since feature
+   * names with this prefix will be removed from .fum files which results in
+   * this not being found in redefinitions.
    */
-  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
 
 
   /**
@@ -220,6 +225,11 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
    */
   public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
+
+  /**
+   * Flag OR'ed to kind for features with modifier 'fixed'
+   */
+  public static final int MIR_FILE_KIND_IS_FIXED = 0x40;
 
 
   /**

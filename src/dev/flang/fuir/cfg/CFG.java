@@ -35,7 +35,6 @@ import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.Graph;
-import dev.flang.util.MapToN;
 
 
 /**
@@ -150,7 +149,7 @@ public class CFG extends ANY
           case Routine  : createCallGraphForRoutine(cl, false); break;
           case Intrinsic: createCallGraphForIntrinsic(cl); break;
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             createCallGraphForRoutine(cl, true);
           }
@@ -228,7 +227,6 @@ public class CFG extends ANY
     put("fuzion.std.fileio.read"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.get_file_size", (cfg, cl) -> { } );
     put("fuzion.std.fileio.write"        , (cfg, cl) -> { } );
-    put("fuzion.std.fileio.exists"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.std.fileio.move"         , (cfg, cl) -> { } );
     put("fuzion.std.fileio.create_dir"   , (cfg, cl) -> { } );
@@ -290,10 +288,10 @@ public class CFG extends ANY
     put("i16.infix =="                   , (cfg, cl) -> { } );
     put("i32.infix =="                   , (cfg, cl) -> { } );
     put("i64.infix =="                   , (cfg, cl) -> { } );
-    put("i8.#type_STATIC.equality"       , (cfg, cl) -> { } );
-    put("i16.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("i32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("i64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("i8.type.equality"               , (cfg, cl) -> { } );
+    put("i16.type.equality"              , (cfg, cl) -> { } );
+    put("i32.type.equality"              , (cfg, cl) -> { } );
+    put("i64.type.equality"              , (cfg, cl) -> { } );
     put("i8.infix !="                    , (cfg, cl) -> { } );
     put("i16.infix !="                   , (cfg, cl) -> { } );
     put("i32.infix !="                   , (cfg, cl) -> { } );
@@ -364,10 +362,10 @@ public class CFG extends ANY
     put("u16.infix =="                   , (cfg, cl) -> { } );
     put("u32.infix =="                   , (cfg, cl) -> { } );
     put("u64.infix =="                   , (cfg, cl) -> { } );
-    put("u8.#type_STATIC.equality"       , (cfg, cl) -> { } );
-    put("u16.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("u32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("u64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("u8.type.equality"               , (cfg, cl) -> { } );
+    put("u16.type.equality"              , (cfg, cl) -> { } );
+    put("u32.type.equality"              , (cfg, cl) -> { } );
+    put("u64.type.equality"              , (cfg, cl) -> { } );
     put("u8.infix !="                    , (cfg, cl) -> { } );
     put("u16.infix !="                   , (cfg, cl) -> { } );
     put("u32.infix !="                   , (cfg, cl) -> { } );
@@ -432,8 +430,8 @@ public class CFG extends ANY
     put("f64.infix **"                   , (cfg, cl) -> { } );
     put("f32.infix =="                   , (cfg, cl) -> { } );
     put("f64.infix =="                   , (cfg, cl) -> { } );
-    put("f32.#type_STATIC.equality"      , (cfg, cl) -> { } );
-    put("f64.#type_STATIC.equality"      , (cfg, cl) -> { } );
+    put("f32.type.equality"              , (cfg, cl) -> { } );
+    put("f64.type.equality"              , (cfg, cl) -> { } );
     put("f32.infix !="                   , (cfg, cl) -> { } );
     put("f64.infix !="                   , (cfg, cl) -> { } );
     put("f32.infix <"                    , (cfg, cl) -> { } );
@@ -491,8 +489,8 @@ public class CFG extends ANY
     put("f32s.tanh"                      , (cfg, cl) -> { } );
     put("f64s.tanh"                      , (cfg, cl) -> { } );
 
-    put("Object.hashCode"                , (cfg, cl) -> { } );
-    put("Object.asString"                , (cfg, cl) -> { } );
+    put("Any.hashCode"                   , (cfg, cl) -> { } );
+    put("Any.asString"                   , (cfg, cl) -> { } );
     put("fuzion.sys.array.alloc"         , (cfg, cl) -> { } );
     put("fuzion.sys.array.setel"         , (cfg, cl) -> { } );
     put("fuzion.sys.array.get"           , (cfg, cl) -> { } );
@@ -579,7 +577,7 @@ public class CFG extends ANY
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
-          if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+          if (_fuir.hasPrecondition(cc0))
             {
               call(cl, cc0, true);
             }

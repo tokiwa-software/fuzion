@@ -28,6 +28,7 @@ package dev.flang.parser;
 
 import java.util.ArrayList;
 
+import dev.flang.ast.Actual;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
@@ -194,7 +195,7 @@ public class OpExpr extends ANY
           {             // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new Call(op.pos, e1, "infix "+op.text, null, null, new List<Expr>(e2));
+            Expr e = new Call(op.pos, e1, "infix "+op.text, new List<>(new Actual(null, e2)));
             els.remove(max+1);
             els.remove(max);
             els.set(max-1, e);
@@ -204,14 +205,14 @@ public class OpExpr extends ANY
             Expr e2 = expr(max+1);
             Expr e =
               (op.text.equals("+") && (e2 instanceof NumLiteral i2)) ? i2             :
-              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new Call(op.pos, e2, "prefix "+op.text, null, null, Expr.NO_EXPRS);
+              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new Call(op.pos, e2, "prefix "+op.text);
             els.remove(max+1);
             els.set(max, e);
           }
         else
           {                                          // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new Call(op.pos, e1, "postfix "+op.text, null, null, Expr.NO_EXPRS);
+            Expr e = new Call(op.pos, e1, "postfix "+op.text);
             els.remove(max);
             els.set(max-1, e);
           }
