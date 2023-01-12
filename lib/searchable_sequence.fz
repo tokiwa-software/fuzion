@@ -25,7 +25,7 @@
 
 # searchable_sequence -- a Sequence whose elements inherit from hasEquals
 #
-# In contrast to searchablelist, this uses ref type 'Sequence' and not choice
+# In contrast to searchable_list, this uses ref type 'Sequence' and not choice
 # type 'list', so it is more flexible.
 #
 #
@@ -40,7 +40,7 @@ is
   # does this list start with l?
   #
   starts_with (l Sequence A) =>
-    (searchablelist asList).starts_with l.asList
+    (searchable_list asList).starts_with l.asList
 
 
   # determine the index of element x within this list.  0 if x is at the
@@ -52,28 +52,28 @@ is
   # get the index of l within this list or nil if it does not exist
   #
   find (l Sequence A) =>
-    (searchablelist asList).find l.asList
+    (searchable_list asList).find l.asList
 
 
   # replace all occurrences of old by new
   #
   replace (old, new Sequence A) =>
-    (searchablelist asList).replace old.asList new.asList
+    (searchable_list asList).replace old.asList new.asList
 
 
   # replace the first n occurrences of old by new
   #
   replace (old, new Sequence A, n u64) =>
-    (searchablelist asList).replace old.asList new.asList n
+    (searchable_list asList).replace old.asList new.asList n
 
 
   # get the number of matches of l
   #
   count_matches_overlapping (l Sequence A) =>
-    (searchablelist asList).count_matches_overlapping l.asList
+    (searchable_list asList).count_matches_overlapping l.asList
 
 
   # get the number of non-overlapping matches of l within this
   #
   count_matches (l Sequence A) =>
-    (searchablelist asList).count_matches l.asList
+    (searchable_list asList).count_matches l.asList
