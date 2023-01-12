@@ -575,7 +575,7 @@ public class Intrinsics extends ANY
               var sigI    =                      (Instance) args.get(a++);
               var thizI   = !virtual    ? null : (Instance) args.get(a++);
 
-              var argz = args.get(a); // of type fuzion.sys.array<JavaObject>, we need to get field argz.data
+              var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var argfields = innerClazz.argumentFields();
               var argsArray = argfields[argfields.length - 1];
               var sac = argsArray.resultClazz();
@@ -727,18 +727,18 @@ public class Intrinsics extends ANY
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.sys.array.alloc", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.alloc", (interpreter, innerClazz) -> args ->
         {
           return fuzionSysArrayAlloc(/* size */ args.get(1).i32Value(),
                                      /* type */ innerClazz._outer);
         });
-    put("fuzion.sys.array.get", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.get", (interpreter, innerClazz) -> args ->
         {
           return fuzionSysArrayGet(/* data  */ ((ArrayData)args.get(1)),
                                    /* index */ args.get(2).i32Value(),
                                    /* type  */ innerClazz._outer);
         });
-    put("fuzion.sys.array.setel", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.setel", (interpreter, innerClazz) -> args ->
         {
           fuzionSysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
                               /* index */ args.get(2).i32Value(),
