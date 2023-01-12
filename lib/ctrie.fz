@@ -111,7 +111,7 @@ private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (b
 
 
   redef asString => "container_node($bmp, [{array.map x->x.asString
-                                                 .fold (Strings.type.concat ", ")}])"
+                                                 .fold (String.type.concat ", ")}])"
 
   asList => array.flatMapSequence (tuple CTK CTV) (b -> b.asList)
                  .asList
