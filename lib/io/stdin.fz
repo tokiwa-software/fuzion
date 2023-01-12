@@ -152,7 +152,7 @@ private codepoint0 choice codepoint end_of_file error is
                 * => fuzion.std.panic "should not be possible"
               )
           match rest
-            l Sequence u8 => Strings.fromBytes l
+            l Sequence u8 => String.type.fromBytes l
                                     .asCodepoints
                                     .first
             end_of_file => end_of_file

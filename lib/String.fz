@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : has_equality, hasHash String, ordered String, Strings is
+String ref : has_equality, hasHash String, ordered String is
 
   redef orderedThis String is String.this
 
@@ -49,7 +49,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
 
   # concatenate string with string representation of another object
   infix + (other Any) String is
-    Strings.concat String.this other.asString
+    String.type.concat String.this other.asString
 
 
 
@@ -194,8 +194,8 @@ String ref : has_equality, hasHash String, ordered String, Strings is
     match utf8.asList
       nil => parseError "empty string"
       c Cons =>
-        negate := c.head = minusChar
-        d := if (negate || c.head = plusChar) zeroChar else c.head
+        negate := c.head = String.type.minusChar
+        d := if (negate || c.head = String.type.plusChar) String.type.zeroChar else c.head
         parse_integer T base negate base.zero d c.tail
 
 
@@ -224,9 +224,9 @@ String ref : has_equality, hasHash String, ordered String, Strings is
 
   is
 
-    d u8 | error := if      (zeroChar <= c <= nineChar) c - zeroChar
-                    else if (aChar    <= c <= zChar   ) c - aChar    + 10
-                    else if (capAChar <= c <= capZChar) c - capAChar + 10
+    d u8 | error := if      (String.type.zeroChar <= c <= String.type.nineChar) c - String.type.zeroChar
+                    else if (String.type.aChar    <= c <= String.type.zChar   ) c - String.type.aChar    + 10
+                    else if (String.type.capAChar <= c <= String.type.capZChar) c - String.type.capAChar + 10
                     else parseError "non-digit found"
 
     # NYI: with more syntactic sugar, the following 3 lines could become
@@ -278,7 +278,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   # string.
   to_valid_utf8(replacement String) String is
     codepointsAndErrors
-      .reduce String (Strings.fromArray ((marrays Any).new 0 "")) ((r, x) ->
+      .reduce String (String.type.fromArray ((marrays Any).new 0 "")) ((r, x) ->
         match x
           c codepoint => r + c
           e error => r + replacement)
@@ -413,7 +413,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
     codepointsArray
       .slice from to
       .map String (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
-      .fold Strings.concat
+      .fold String.type.concat
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
@@ -459,18 +459,18 @@ String ref : has_equality, hasHash String, ordered String, Strings is
       nil => found >>= (pos -> pos - substring.byteLength)
       idx i32 =>
         skip := idx + substring.byteLength
-        s := Strings.fromBytes (utf8.drop skip)
+        s := String.type.fromBytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurrences of old by new
   #
-  replace (old, new String) => Strings.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
+  replace (old, new String) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  replace(old, new String, n u64) => Strings.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  replace(old, new String, n u64) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -509,8 +509,8 @@ String ref : has_equality, hasHash String, ordered String, Strings is
       nil
     else
       ref : Cons String (list String)
-        head =>  Strings.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
-        tail => (Strings.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
+        head =>  String.type.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
+        tail => (String.type.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
         #
         #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
@@ -545,7 +545,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
 # NYI: This causes fz to crash:
 #   fromBytes s2
 
-    Strings.fromBytes s2
+    String.type.fromBytes s2
 
 
   # remove leading white space from this string
@@ -553,7 +553,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   trimStart =>
 # NYI: This causes fz to crash:
 #   fromBytes ...
-    Strings.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
+    String.type.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
 
 
   # remove trailing white space from this string
@@ -561,7 +561,7 @@ String ref : has_equality, hasHash String, ordered String, Strings is
   trimEnd =>
 # NYI: This causes fz to crash:
 #   fromBytes ...
-    Strings.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
+    String.type.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
 
 
   # is this part of given set
@@ -629,20 +629,14 @@ String ref : has_equality, hasHash String, ordered String, Strings is
         l := byteLength
         sepl := sep.byteLength
 
-        before := Strings.fromBytes (utf8.slice 0 i)
-        after := Strings.fromBytes (utf8.slice (i + sepl) l)
+        before := String.type.fromBytes (utf8.slice 0 i)
+        after := String.type.fromBytes (utf8.slice (i + sepl) l)
         (before, after, true)
-
-
-# strings -- unit type defining features related to string but not
-# requiring an instance
-#
-Strings is
 
 
   # monoid of strings with infix + operation.
   #
-  concat : Monoid String is
+  type.concat : Monoid String is
     redef infix ∙ (a, b String) => a + b
     redef infix == (a, b String) => a == b
     redef e => ""
@@ -651,7 +645,7 @@ Strings is
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
   # given separator
   #
-  concat(sep String) : Monoid String is
+  type.concat(sep String) : Monoid String is
     redef infix ∙ (a, b String) String is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
     redef infix == (a, b String) => a == b
     redef e => ""
@@ -660,7 +654,7 @@ Strings is
   # concat strings a and b by
   # concatenating their byte sequences.
   #
-  concat(a, b String) String is
+  type.concat(a, b String) String is
     ref : String
       utf8 Sequence u8 is a.utf8 ++ b.utf8
 
@@ -668,7 +662,7 @@ Strings is
   # Takes a sequence of strings and concatenates its elements, while adding the separator
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
   #
-  join(elems Sequence String, sep String) String is
+  type.join(elems Sequence String, sep String) String is
     if elems.isEmpty
       ""
     else
@@ -693,7 +687,7 @@ Strings is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  fromArray(a marray Any) ref : String is
+  type.fromArray(a marray Any) ref : String is
     redef infix + (other Any) String is
       fromArray (a.add other)
 
@@ -703,14 +697,14 @@ Strings is
 
   # create string from the given utf8 bytes
   #
-  fromBytes(utf8Bytes Sequence u8) String is
+  type.fromBytes(utf8Bytes Sequence u8) String is
     ref : String
       redef utf8 => utf8Bytes
 
 
   # create string from the given codepoints
   #
-  fromCodepoints(codePoints Sequence codepoint) String is
+  type.fromCodepoints(codePoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
         codePoints
@@ -719,11 +713,11 @@ Strings is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  minusChar => "-".utf8.first
-  plusChar  => "+".utf8.first
-  zeroChar  => "0".utf8.first
-  nineChar  => "9".utf8.first
-  aChar     => "a".utf8.first
-  zChar     => "z".utf8.first
-  capAChar  => "A".utf8.first
-  capZChar  => "Z".utf8.first
+  type.minusChar => "-".utf8.first
+  type.plusChar  => "+".utf8.first
+  type.zeroChar  => "0".utf8.first
+  type.nineChar  => "9".utf8.first
+  type.aChar     => "a".utf8.first
+  type.zChar     => "z".utf8.first
+  type.capAChar  => "A".utf8.first
+  type.capZChar  => "Z".utf8.first

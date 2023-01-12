@@ -76,7 +76,7 @@ is
       + ascii.lf_str
       + indices0
           .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(Strings.concat("," + ascii.lf_str))
+          .fold(String.type.concat("," + ascii.lf_str))
       + ascii.lf_str + "]")
 
 
