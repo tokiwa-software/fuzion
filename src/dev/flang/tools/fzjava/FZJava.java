@@ -329,7 +329,7 @@ public class FZJava extends Tool
     String url = "file:jar://" + p.toUri().getPath();
     try
       {
-        var cl = new java.net.URLClassLoader​(new URL[] { new URL(url) });
+        var cl = new java.net.URLClassLoader(new URL[] { new URL(url) });
         try
           {
             var zip = new ZipFile(p.toFile());
