@@ -266,3 +266,102 @@ test_cov4a is
   _ := b
 
 _ := test_cov4a
+
+
+# example from #923
+#
+test_return_this is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "a"
+
+  b : a is
+    redef asString => "b"
+
+  say a.x
+  say b.x
+
+test_return_this
+
+
+# second example from #923
+#
+a is
+  x a.this.type is
+    a.this
+  redef asString => "a"
+
+b : a is
+  redef asString => "b"
+
+say a.x
+say b.x
+
+
+# extended second example from #923, using nested child and nested parent
+#
+q is
+  b : a is
+    redef asString => "q.b"
+
+r is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "r.a"
+
+c : r.a is
+  redef asString => "c"
+
+say q.b.x
+say r.a.x
+say c.x
+
+
+# more complex nesting that causes error clazz to be created
+#
+d is
+  y => 3
+  x d.this.type is
+    d.this
+    redef asString => "d"
+
+t is
+  e : d is
+    redef y := 4
+    redef asString => "s.e"
+
+_ := t.e.x.y
+
+
+# example that creates C code that uses a unit value, resulting in C compilation failure
+#
+ua is
+  x ua.this.type is
+    ua.this
+  redef asString => "a"
+
+ub : ua is
+  redef asString => "b"
+
+uq is
+  v := "v"
+  say v
+  b : ua is
+    redef asString => "q.b"
+
+ur is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "r.a"
+
+uc : ur.a is
+  redef asString => "c"
+
+say ua.x
+say ub.x
+say uq.b.x
+say ur.a.x
+say uc.x
