@@ -294,7 +294,7 @@ public class Function extends ExprWithPos
         for (var n : _names)
           {
             var arg = new Feature(pos() /* better n.pos() */,
-                                  Consts.VISIBILITY_LOCAL,
+                                  Visi.LOCAL,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
                                   n,
@@ -320,7 +320,7 @@ public class Function extends ExprWithPos
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
-                                   Consts.VISIBILITY_INVISIBLE,
+                                   Visi.INVISIBLE,
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
@@ -556,11 +556,11 @@ public class Function extends ExprWithPos
               {
                 String name = "a"+argnum;
                 actual_args.add(new Actual(null, new Call(pos(), null, name)));
-                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
+                formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
-            Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
+            Feature fcall = new Feature(pos(), Visi.PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
@@ -582,7 +582,7 @@ public class Function extends ExprWithPos
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
-                                           Consts.VISIBILITY_INVISIBLE,
+                                           Visi.INVISIBLE,
                                            0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),
