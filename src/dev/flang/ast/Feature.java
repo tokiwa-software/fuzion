@@ -340,7 +340,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature()
   {
     this(SourcePosition.builtIn,
-         Consts.VISIBILITY_PUBLIC,
+         Visi.PUBLIC,
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
@@ -386,7 +386,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Consts.VISIBILITY_INVISIBLE,
+                       Visi.INVISIBLE,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
@@ -594,7 +594,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Impl     p)
   {
     this(pos,
-         Consts.VISIBILITY_INVISIBLE,
+         Visi.INVISIBLE,
          0,
          r,
          qname,
@@ -910,7 +910,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (_resultField == null);
         _resultField = new Feature(res,
                                    _pos,
-                                   Consts.VISIBILITY_PRIVATE,
+                                   Visi.PRIVATE,
                                    t,
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
@@ -1600,7 +1600,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     _choiceTag = new Feature(res,
                              _pos,
-                             Consts.VISIBILITY_PRIVATE,
+                             Visi.PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
                              this);
@@ -2392,7 +2392,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                   : this._outer.thisType();
         _outerRef = new Feature(res,
                                 _pos,
-                                Consts.VISIBILITY_PRIVATE,
+                                Visi.PRIVATE,
                                 outerRefType,
                                 outerRefName(),
                                 this);

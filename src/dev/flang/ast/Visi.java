@@ -26,36 +26,57 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
-import dev.flang.util.List;
-
-
 /**
  * Visi store the visibility of a Feature
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Visi extends ANY
+public enum Visi
 {
 
-  final List<List<String>> _exportTo;
-  final String _kind;
+  /**
+   * visibility for anonymous features
+   */
+  INVISIBLE("invisible"),
 
-  Visi(String kind)
-  {
-    this._kind = kind;
-    this._exportTo = null;
-  }
 
-  Visi(List<List<String>> l)
+  /**
+   * default visibility: visible to all inner classes of outer class
+   * of declaring class
+   */
+  LOCAL("local"),
+
+
+  /**
+   * private visibility: visible to declaring class and all its inner
+   * classes
+   */
+  PRIVATE("private"),
+
+
+  /**
+   * protected visibility: visible to all heirs of declaring class
+   */
+  CHILDREN("children"),
+
+
+  /**
+   * public visibility: visible to all classes
+   */
+  PUBLIC("public");
+
+
+
+  private final String _kind;
+
+  private Visi(String s)
   {
-    this._kind = "export";
-    this._exportTo = l;
+    _kind = s;
   }
 
   public String toString()
   {
-    return _kind + (_exportTo != null ? " "+_exportTo : "");
+    return this._kind;
   }
 
 }
