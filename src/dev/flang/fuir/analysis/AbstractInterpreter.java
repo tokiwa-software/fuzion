@@ -195,6 +195,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
   /**
    * property-controlled flag to enable debug output.
+   *
+   * To enable debugging, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
    */
   static final boolean DEBUG =
     System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG",
