@@ -652,6 +652,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * This is experimental: actualGenerics() could replace `a.this.type` by the
+   * actual outer type. This would avoid special handling in Clazzes.clazz(Expr
+   * e, Clazz outerClazz). However, this is currently disabled since it has the
+   * side-effect of marking some clazzes as instantiated that are actually not
+   * (in tests/reg_issues874ff), need to check why.
+   */
+  static final boolean NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE = false;
+
+
+  /**
    * Convert the given generics to the actual generics of this class.
    *
    * @param generics a list of generic arguments that might itself consist of
@@ -662,6 +672,29 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
+    if (NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE)
+      {
+        /**
+         * Replace any `a.this.type` actual generics by the actual outer clazz:
+         */
+        if (generics.stream().anyMatch(x->x.isThisType()))
+          {
+            var ng = new List<AbstractType>();
+            for (var g : generics)
+              {
+                if (g.isThisType())
+                  {
+                    var nc = findOuter(g.featureOfType(), SourcePosition.builtIn).typeClazz();
+                    System.out.println("replace "+g+" with "+nc+" in "+this);
+                    ng.add(nc._type);
+                  }
+                else
+                  {
+                    ng.add(g);
+                  }
+              }
+          }
+      }
     generics = this._type.replaceGenerics(generics);
     if (this._outer != null)
       {
