@@ -365,3 +365,34 @@ say ub.x
 say uq.b.x
 say ur.a.x
 say uc.x
+
+
+# exmple from #930
+#
+test_generic_this_type is
+
+  g(T type) is
+    f(o g.this.type) =>
+      say g.this
+      say o
+
+    call_f =>
+      f g.this
+
+    redef asString => "g $T"
+
+  h : g bool is
+    redef asString => "h"
+
+  a := g i32
+  b := g i32
+  ha := h
+  hb := h
+
+  a.call_f
+  b.call_f
+  ha.call_f
+  hb.call_f
+
+  # a.f b      // NYI: b is currently incompatible to g.this.type
+  # ha.f hb    // NYI: hb is currently incompatible to h.this.type
