@@ -113,7 +113,7 @@ public class Type extends AbstractType
   /**
    *
    */
-  public final List<AbstractType> _generics;
+  List<AbstractType> _generics;
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -890,23 +890,31 @@ public class Type extends AbstractType
       {
         ensureNotOpen();
       }
+    var result = this;
     if (!isGenericArgument())
       {
         resolveFeature(res, outerfeat);
         if (feature == Types.f_ERROR)
           {
-            return Types.t_ERROR;
+            result = Types.t_ERROR;
           }
-        FormalGenerics.resolve(res, _generics, outerfeat);
-        if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                              this,
-                                                              "type",
-                                                              "Type: " + toString() + "\n"))
+        else
           {
-            return Types.t_ERROR;
+            if (isThisType() && _generics.isEmpty())
+              {
+                _generics = feature.generics().asActuals();
+              }
+            FormalGenerics.resolve(res, _generics, outerfeat);
+            if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+                                                                  this,
+                                                                  "type",
+                                                                  "Type: " + toString() + "\n"))
+              {
+                result = Types.t_ERROR;
+              }
           }
       }
-    return (Type) Types.intern(this);
+    return (Type) Types.intern(result);
   }
 
 
