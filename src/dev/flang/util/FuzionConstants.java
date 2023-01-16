@@ -74,6 +74,25 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of feature `index []`.
+   */
+  public static final String FEATURE_NAME_INDEX = "index [ ]";
+
+
+  /**
+   * Name of feature `index [..]`.
+   */
+  public static final String FEATURE_NAME_INDEX_DOTDOT = "index [..]";
+
+
+  /**
+   * Name of feature `index [] :=`.
+   */
+  public static final String FEATURE_NAME_INDEX_ASSIGN = "index [ ] := ";
+
+
+
+  /**
    * Name of implicitly declared result field in case this field is used as the
    * target of an assignment.
    */
