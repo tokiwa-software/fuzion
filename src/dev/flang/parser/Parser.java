@@ -1359,6 +1359,11 @@ indexTail   : ":=" exprInLine
             l.add(new Actual(null, exprInLine()));
             n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
+        if (l.isEmpty())
+          { // In case result is Function, avoid automatic conversion `a[i]`
+            // into `a[i].call`
+            l = Call.NO_PARENTHESES;
+          }
         result = new Call(pos, target, n, l);
         target = result;
       }
