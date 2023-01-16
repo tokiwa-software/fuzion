@@ -270,7 +270,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         var pos = pos();
         Feature r = new Feature(res,
                                 pos,
-                                Consts.VISIBILITY_INVISIBLE,
+                                Visi.INVISIBLE,
                                 t,
                                 FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
                                 outer);
