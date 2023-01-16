@@ -601,12 +601,10 @@ qual        : name
 name        : IDENT                            // all parts of name must be in same line
             | opName
             | "ternary" QUESTION COLON
-            | "index" LBRACKET ( ".." RBRACKET
-                               | RBRACKET
-                               )
-            | "set" ( LBRACKET RBRACKET
-                    | IDENT
-                    )
+            | "index" LBRACKET ".." RBRACKET
+            | "index" LBRACKET RBRACKET
+            | "set" LBRACKET RBRACKET
+            | "set" IDENT
             ;
    *
    * @return the parsed name, Errors.ERROR_STRING if current location could not be identified as a name.
@@ -658,7 +656,8 @@ name        : IDENT                            // all parts of name must be in s
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
                       match(Token.t_rcrochet, "name: index");
-                      result = dotdot ? "index [..]" : "index [ ]";
+                      result = dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
+                                      : FuzionConstants.FEATURE_NAME_INDEX;
                     }
                 }
               break;
@@ -672,7 +671,7 @@ name        : IDENT                            // all parts of name must be in s
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
                       match(Token.t_rcrochet, "name: set");
-                      result = "index [ ] =";
+                      result = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
                     }
                 }
               else if (current() == Token.t_ident)
@@ -1341,11 +1340,10 @@ actuals     : actualArgs
   /**
    * Parse indexcall
    *
-indexCall   : ( LBRACKET actualList RBRACKET
-                ( ":=" exprInLine
-                |
-                )
-              )
+indexCall   : LBRACKET actualList RBRACKET indexTail
+            ;
+indexTail   : ":=" exprInLine
+            |
             ;
    */
   Call indexCall(Expr target)
@@ -1355,15 +1353,13 @@ indexCall   : ( LBRACKET actualList RBRACKET
       {
         SourcePosition pos = posObject();
         var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualList());
+        String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
             l.add(new Actual(null, exprInLine()));
-            result = new Call(pos, target, "index [ ] =", l);
+            n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
-        else
-          {
-            result = new Call(pos, target, "index [ ]"  , l);
-          }
+        result = new Call(pos, target, n, l);
         target = result;
       }
     while (!ignoredTokenBefore() && current() == Token.t_lcrochet);

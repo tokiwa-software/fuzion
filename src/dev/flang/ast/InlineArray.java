@@ -321,8 +321,10 @@ public class InlineArray extends ExprWithPos
             var e = _elements.get(i);
             var setArgs         = new List<Actual>(new Actual(null, new NumLiteral(i)),
                                                    new Actual(null, e));
-            var readSysArrayVar = new Call(e.pos(), null           , sysArrayName          ).resolveTypes(res, outer);
-            var setElement      = new Call(e.pos(), readSysArrayVar, "index [ ] =", setArgs).resolveTypes(res, outer);
+            var readSysArrayVar = new Call(e.pos(), null           , sysArrayName     ).resolveTypes(res, outer);
+            var setElement      = new Call(e.pos(), readSysArrayVar,
+                                           FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
+                                           setArgs                                    ).resolveTypes(res, outer);
             stmnts.add(setElement);
           }
         var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
