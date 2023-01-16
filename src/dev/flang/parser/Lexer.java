@@ -195,6 +195,8 @@ public class Lexer extends SourceFile
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
     t_spaceLimit,        // token follows white space while endAtSpace is enabled
+    t_colonLimit,        // token is operator ":" while endAtColon is enabled
+    t_barLimit,          // token is operator "|" while endAtBar is enabled
     t_undefined;         // current token before first call to next()
 
     /**
@@ -471,6 +473,20 @@ public class Lexer extends SourceFile
 
 
   /**
+   * ':' operator restriction for current()/currentAtMinIndent(): if set,
+   * operator ":" will be replaced by t_colonLimit.
+   */
+  private boolean _endAtColon = false;
+
+
+  /**
+   * '|' operator restriction for current()/currentAtMinIndent(): if set,
+   * operator "|" will be replaced by t_barLimit.
+   */
+  private boolean _endAtBar = false;
+
+
+  /**
    * Has the raw token before current() been skipped because ignore(t) resulted
    * in true?
    */
@@ -509,6 +525,8 @@ public class Lexer extends SourceFile
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
     _endAtSpace = original._endAtSpace;
+    _endAtColon = original._endAtColon;
+    _endAtBar = original._endAtBar;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
   }
@@ -648,6 +666,40 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Restrict parsing until the next occurence of operator ":".  Operator ":"
+   * will be replaced by t_colonLimit.
+   *
+   * @param endAtColon true to enable, false to disable
+   *
+   * @return the previous endAtColon-restriction.
+   */
+  boolean endAtColon(boolean endAtColon)
+  {
+    var result = _endAtColon;
+    _endAtColon = endAtColon;
+
+    return result;
+  }
+
+
+  /**
+   * Restrict parsing until the next occurence of operator "|".  Operator "|"
+   * will be replaced by t_barLimit.
+   *
+   * @param endAtBar true to enable, false to disable
+   *
+   * @return the previous endAtBar-restriction
+   */
+  boolean endAtBar(boolean endAtBar)
+  {
+    var result = _endAtBar;
+    _endAtBar = endAtBar;
+
+    return result;
+  }
+
+
+  /**
    * Convenience method to temporarily reset limits set via sameLine() or
    * endAtSpace() while parsing.
    *
@@ -660,9 +712,13 @@ public class Lexer extends SourceFile
   {
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpace(Integer.MAX_VALUE);
+    var oldEAC = endAtColon(false);
+    var oldEAB = endAtBar(false);
     V result = c.call();
     sameLine(oldLine);
     endAtSpace(oldEAS);
+    endAtColon(oldEAC);
+    endAtBar(oldEAB);
     return result;
   }
 
@@ -785,8 +841,12 @@ public class Lexer extends SourceFile
    *
    * @param spaceLimit the white space restriction (Integer.MAX_VALUE if none):
    * Any token after this position will be replaced by t_spaceLimit.
+   *
+   * @param endAtColon true to replace opeartor ":" by t_colonLimit.
+   *
+   * @param endAtBar true to replace opeartor "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpace)
+  Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
     int l = _curLine;
@@ -796,7 +856,13 @@ public class Lexer extends SourceFile
       sameLine  >= 0 && l != sameLine                      ? Token.t_lineLimit        :
       p > endAtSpace && ignoredTokenBefore()               ? Token.t_spaceLimit       :
       p == _minIndentStartPos                              ? t                        :
-      minIndent >= 0 && codePointInLine(p, l) <= minIndent ? Token.t_indentationLimit
+      minIndent >= 0 && codePointInLine(p, l) <= minIndent ? Token.t_indentationLimit :
+      endAtColon                  &&
+      _curToken == Token.t_op     &&
+      tokenAsString().equals(":")                          ? Token.t_colonLimit       :
+      endAtBar                    &&
+      _curToken == Token.t_op     &&
+      tokenAsString().equals("|")                          ? Token.t_barLimit
                                                            : _curToken;
   }
 
@@ -807,7 +873,7 @@ public class Lexer extends SourceFile
    */
   public Token current()
   {
-    return current(_minIndent, _sameLine, _endAtSpace);
+    return current(_minIndent, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
   }
 
 
@@ -817,7 +883,7 @@ public class Lexer extends SourceFile
    */
   Token currentAtMinIndent()
   {
-    return current(_minIndent - 1, _sameLine, _endAtSpace);
+    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
   }
 
 
@@ -837,7 +903,7 @@ public class Lexer extends SourceFile
    */
   Token currentNoLimit()
   {
-    return current(-1, -1, Integer.MAX_VALUE);
+    return current(-1, -1, Integer.MAX_VALUE, false, false);
   }
 
 
@@ -1906,23 +1972,16 @@ HEX_TAIL    : "." HEX_DIGITS
   void syntaxError(int pos, String expected, String currentRule)
   {
     String detail = Parser.parserDetail(currentRule);
-    if (current() == Token.t_indentationLimit)
+    switch (current())
       {
-        Errors.indentationProblemEncountered(sourcePos(pos),
-                                             sourcePos(_minIndentStartPos),
-                                             detail);
-      }
-    else if (current() == Token.t_lineLimit)
-      {
-        Errors.lineBreakNotAllowedHere(sourcePos(lineEndPos(_sameLine)), detail);
-      }
-    else if (current() == Token.t_spaceLimit)
-      {
-        Errors.whiteSpaceNotAllowedHere(sourcePos(pos()), detail);
-      }
-    else
-      {
-        Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
+      case t_indentationLimit -> Errors.indentationProblemEncountered(sourcePos(pos),
+                                                                      sourcePos(_minIndentStartPos),
+                                                                      detail);
+      case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
+      case t_spaceLimit       -> Errors.whiteSpaceNotAllowedHere(sourcePos(pos()), detail);
+      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(pos()), detail);
+      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(pos()), detail);
+      default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
   }
 
@@ -2676,7 +2735,7 @@ PIPE        : "|"
   private String tokenAsString()
   {
     if (PRECONDITIONS) require
-      (current() != Token.t_eof);
+      (currentNoLimit() != Token.t_eof);
 
     return asString(pos(), endPos());
   }
