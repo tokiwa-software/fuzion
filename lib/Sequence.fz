@@ -69,7 +69,10 @@ Sequence(T type) ref is
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => (mapSequence i32 (_ -> 1)).fold i32.sum
+  count
+    pre
+      analysis: finite  # in practice, we do not always have this information
+    => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
   # get the first element of this Sequence
@@ -182,6 +185,11 @@ Sequence(T type) ref is
   # n elements
   #
   drop (n i32) => asList.drop n
+
+
+  # get a function that, given an index, returns the element at that index
+  #
+  index [] () i32 -> T is n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
@@ -369,11 +377,19 @@ Sequence(T type) ref is
       c Cons => c.head
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  finite => false
+
+
   # the nth element in the sequence, must exist
   #
   index [] (i i32) T
     pre
-      safety: 0 <= i < count
+      debug: 0 <= i,
+      debug: finite: i < count,
+      debug: !finite: !(drop i-1).isEmpty
   is
     (nth i).get
 

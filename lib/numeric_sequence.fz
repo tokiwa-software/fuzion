@@ -32,6 +32,12 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
   redef asList => from.asList
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => from.finite
+
+
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
   average option N is

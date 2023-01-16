@@ -110,6 +110,7 @@ integer(I type : integer I) : numeric I is
   is
     ref : String
       redef utf8 ref : Sequence u8 is
+        redef finite => true
         redef asStream stream u8 is
           b := from_u32 base
           if thiz.sign >= 0

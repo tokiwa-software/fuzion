@@ -43,6 +43,13 @@ array(redef T type,
 
   length => internalArray.length
 
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => true
+
+
   indices => 0..length-1
 
   redef index [ ] (i i32) T

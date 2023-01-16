@@ -46,6 +46,13 @@ is
 
   indices => 0..length-1
 
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => true
+
+
   # get element at given index i
   #
   redef index [ ] (i i32) T

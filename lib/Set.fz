@@ -27,6 +27,13 @@
 #
 Set(E type : hasEquals E) ref : Sequence E is
 
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => sizeOption??
+
+
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
