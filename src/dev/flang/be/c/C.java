@@ -673,6 +673,11 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
+    cf.println("#if _WIN32");
+    cf.println(" _setmode( _fileno( stdout ), _O_BINARY );");
+    cf.println(" _setmode( _fileno( stderr ), _O_BINARY );");
+    cf.println("#endif");
+
     if (_options._useBoehmGC)
       {
         cf.println("GC_INIT(); /* Optional on Linux/X86 */");
