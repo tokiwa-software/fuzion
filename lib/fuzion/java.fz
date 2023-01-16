@@ -72,6 +72,7 @@ public fuzion.java is
   public Array(redef T type, private redef javaRef Any) ref : Sequence T, JavaObject javaRef
   is
     length                  => arrayLength T Array.this
+    redef finite            => true
     redef index [ ] (i i32) => arrayGet    T Array.this i
     redef asList => asList 0
 

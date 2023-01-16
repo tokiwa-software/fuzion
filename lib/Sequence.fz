@@ -71,7 +71,7 @@ Sequence(T type) ref is
   #
   count
     pre
-      debug: finite
+      analysis: finite  # in practice, we do not always have this information
     => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 

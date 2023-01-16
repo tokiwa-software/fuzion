@@ -29,7 +29,7 @@
 # type 'Sequence', so it is more efficient.
 #
 #
-searchable_list(A type : hasEquals A, from list A) : Sequence A
+searchable_list(A type : hasEquals A, from Sequence A) : Sequence A
 /* : list A -- NYI: we might allow inherting from a choice to get a choice
                     with more restrictions on the type arguments
 
@@ -47,7 +47,7 @@ is
 
   # create a list from this searchable_list.
   #
-  redef asList => from
+  redef asList => from.asList
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -62,7 +62,7 @@ is
     match l
       nil    => true
       c2 Cons =>
-        match from
+        match from.asList
           nil     => false
           c1 Cons => c1.head = c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
 
@@ -73,19 +73,19 @@ is
     if starts_with l
       0
     else
-      match from
+      match from.asList
         nil     => nil
         c1 Cons => ((searchable_list c1.tail).find l) >>= n -> n + 1
 
 
   # replace all occurrences of old by new
   #
-  replace (old, new list A) => replace old new nil from nil
+  replace (old, new list A) => replace old new nil from.asList nil
 
 
   # replace the first n occurrences of old by new
   #
-  replace (old, new list A, n u64) => replace old new nil from n
+  replace (old, new list A, n u64) => replace old new nil from.asList n
 
 
   # tail recursive helper for the replace features
@@ -118,7 +118,7 @@ is
   # get the number of non-overlapping matches of l within this
   #
   count_matches (l list A) i32 is
-    match from
+    match from.asList
       nil     => 0
       c1 Cons => (if (starts_with l) 1 + (searchable_list (drop l.count)).count_matches l
                   else                   (searchable_list c1.tail       ).count_matches l)
