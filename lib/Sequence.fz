@@ -184,6 +184,11 @@ Sequence(T type) ref is
   drop (n i32) => asList.drop n
 
 
+  # get a function that, given an index, returns the element at that index
+  #
+  index [] () i32 -> T is n -> Sequence.this[n]
+
+
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
@@ -369,11 +374,19 @@ Sequence(T type) ref is
       c Cons => c.head
 
 
+  # is this sequence known to be finite?  For infinite sets, features like count
+  # diverge.
+  #
+  finite => false
+
+
   # the nth element in the sequence, must exist
   #
   index [] (i i32) T
     pre
-      safety: 0 <= i < count
+      debug: 0 <= i,
+      debug: finite: i < count,
+      debug: !finite: !(drop i-1).isEmpty
   is
     (nth i).get
 
