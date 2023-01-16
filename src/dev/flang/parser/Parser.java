@@ -1523,6 +1523,8 @@ actualArgs  : actualsList
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceLimit      ,
+           t_colonLimit      ,
+           t_barLimit        ,
            t_eof             -> true;
 
       // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
@@ -1747,19 +1749,28 @@ expr        : opExpr
     Expr result = opExpr();
     SourcePosition pos = posObject();
     var f0 = fork();
-    if (f0.skip(Token.t_question) && f0.isCasesAndNotExpr())
+    if (f0.skip(Token.t_question))
       {
         var i = new Indentation();
         skip(Token.t_question);
-        result = new Match(pos, result, casesBars(i));
-      }
-    else if (skip(Token.t_question))
-      {
-        Expr f = expr();
-        matchOperator(":", "expr of the form >>a ? b : c<<");
-        Expr g = expr();
-        result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
-                                                                 new Actual(null, g)));
+        if (f0.isCasesAndNotExpr())
+          {
+            result = new Match(pos, result, casesBars(i));
+          }
+        else
+          {
+            i.ok();
+            var eac = endAtColon(true);
+            Expr f = expr();
+            endAtColon(eac);
+            i.next();
+            i.ok();
+            matchOperator(":", "expr of the form >>a ? b : c<<");
+            Expr g = expr();
+            i.end();
+            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
+                                                                     new Actual(null, g)));
+          }
       }
     return result;
   }
@@ -2285,7 +2296,9 @@ casesBars   : caze ( '|' casesBars
           {
             matchOperator("|", "cases");
           }
+        var eab = endAtBar(true);
         result.add(caze());
+        endAtBar(eab);
         in.next();
       }
     in.end();
@@ -2340,7 +2353,7 @@ caseBlock   : ARROW          // if followed by '|'
     Block result;
     matchOperator("=>", "caseBlock");
     var oldLine = sameLine(-1);
-    var bar = isOperator('|');
+    var bar = current() == Token.t_barLimit;
     sameLine(oldLine);
     if (bar)
       {
@@ -2478,6 +2491,8 @@ brblock     : BRACEL stmnts BRACER
         t_indentationLimit,
         t_lineLimit,
         t_spaceLimit,
+        t_colonLimit,
+        t_barLimit,
         t_rbrace,
         t_rparen,
         t_rcrochet,

@@ -641,6 +641,24 @@ public class Errors extends ANY
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
+  public static void colonPartOfTernary(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator ':' is part of ternary ? : operator",
+                "This code is part of a ternary expression that must not contain operator ':'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void barPartOfCase(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator '|' is part of match case",
+                "This code is part of a match case that must not contain operator '|'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')' or braces '{' and '}'.");
+  }
+
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
     syntaxError(pos,
