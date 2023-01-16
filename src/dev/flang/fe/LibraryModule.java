@@ -804,7 +804,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 000000vvvFCYkkkk  k = kind, v = visibility, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier
+.6+| true  .6+| 1      | short         | 000000vvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility
                        | Name          | name
                        | int           | arg count
                        | int           | name id
