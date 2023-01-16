@@ -50,6 +50,12 @@ is
   redef asList => from
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => from.finite
+
+
   # does this list start with l?
   #
   starts_with (l list A) bool is

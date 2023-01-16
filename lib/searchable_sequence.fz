@@ -37,6 +37,12 @@ is
   redef asList => from.asList
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => from.finite
+
+
   # does this list start with l?
   #
   starts_with (l Sequence A) =>

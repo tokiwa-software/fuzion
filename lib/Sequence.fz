@@ -69,7 +69,10 @@ Sequence(T type) ref is
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => (mapSequence i32 (_ -> 1)).fold i32.sum
+  count
+    pre
+      debug: finite
+    => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
   # get the first element of this Sequence
@@ -374,8 +377,8 @@ Sequence(T type) ref is
       c Cons => c.head
 
 
-  # is this sequence known to be finite?  For infinite sets, features like count
-  # diverge.
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
   #
   finite => false
 

@@ -33,6 +33,12 @@ is
   redef asList => from.asList
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => from.finite
+
+
   # equality check implementation for inherited hasEquals
   infix = (o comparable_sequence A) bool is
     fa := from.asArray

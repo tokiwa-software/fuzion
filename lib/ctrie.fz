@@ -235,6 +235,11 @@ pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef asList => from.asList
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => true
+
 
 # unit type to indicate an operation did not succeed yet
 # and thus needs a restart
