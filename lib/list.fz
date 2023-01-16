@@ -465,3 +465,17 @@ list(T type, h T, t () -> list T) list T is
   ref : Cons T (list T)
     head => h
     tail => t()
+
+
+# infix operator to create a list from head h and lazy tail t.
+#
+# This is convenient to append an element before a list as in
+#
+#   0 : ()->[1,2,3,4].asList
+#
+# or to create lists by recursion, e.g., a an endless list containing
+# integer 1 repeatedly is
+#
+#   ones => 1 : ()->ones
+#
+infix : (A type, h A, t ()->list A) => list h t
