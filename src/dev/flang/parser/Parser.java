@@ -1460,16 +1460,13 @@ typeList    : type ( COMMA typeList
    *
 actualArgs  : actualsList
             | LPAREN actualList RPAREN
-            | LPAREN RPAREN
             ;
    */
   List<Actual> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualsList()
-      : bracketTermWithNLs(PARENS, "actualArgs",
-                           () -> actualList(),
-                           () -> new List<>());
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualList());
   }
 
 
@@ -1546,19 +1543,28 @@ actualArgs  : actualsList
 
 
   /**
-   * Parse
+   * Parse actualList
    *
-actualList  : actual ( COMMA actualList
-                     |
-                     )
+actualList  : actualSome
+            |
+            ;
+actualSome  : actual actualMore
+            ;
+actualMore  : COMMA actualSome
+            |
             ;
    */
   List<Actual> actualList()
   {
-    var result = new List<>(actual());
-    while (skipComma())
+    var result = new List<Actual>();
+    if (current() != Token.t_rparen   &&
+        current() != Token.t_rcrochet   )
       {
-        result.add(actual());
+        do
+          {
+            result.add(actual());
+          }
+        while (skipComma());
       }
     return result;
   }
