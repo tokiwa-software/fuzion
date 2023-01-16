@@ -2735,7 +2735,7 @@ PIPE        : "|"
   private String tokenAsString()
   {
     if (PRECONDITIONS) require
-      (current() != Token.t_eof);
+      (currentNoLimit() != Token.t_eof);
 
     return asString(pos(), endPos());
   }
