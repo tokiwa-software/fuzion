@@ -61,7 +61,7 @@ public class Util
   }
 
   /**
-   * the comment belonging to this feature
+   * the comment belonging to this feature in HTML
    * @param af
    * @return
    */

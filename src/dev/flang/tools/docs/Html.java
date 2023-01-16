@@ -224,7 +224,7 @@ public class Html
           + "'><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             .replace("$1",
               summary(af))
-            .replace("$2", htmlEncodeNbsp(Util.commentOf(af)))
+            .replace("$2", Util.commentOf(af))
             .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
@@ -242,7 +242,7 @@ public class Html
       .replace("$0", f.isUniverse() ? "API-Documentation": htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
-      .replace("$2", htmlEncodeNbsp(Util.commentOf(f)))
+      .replace("$2", Util.commentOf(f))
       .replace("$5", f.isUniverse() ? "": "d-none")
       .replace("$6", redefines(f));
   }
