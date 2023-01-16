@@ -602,6 +602,8 @@ public class C extends ANY
        "#include <pthread.h>\n"+
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
+       // defines _O_BINARY
+       "#include <sys/fcntl.h>\n"+
        "\n");
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
@@ -673,11 +675,11 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
+    // If we don't do the following stdout/err might be opened in text mode on windows.
+    // This would lead to automatic insertions of carriage returns.
     cf.println("#if _WIN32");
-    cf.println("#ifndef O_BINARY");
-    cf.println("#define O_BINARY 0");
-    cf.println(" _setmode( _fileno( stdout ), _O_BINARY );");
-    cf.println(" _setmode( _fileno( stderr ), _O_BINARY );");
+    cf.println(" _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode");
+    cf.println(" _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode");
     cf.println("#endif");
 
     if (_options._useBoehmGC)
