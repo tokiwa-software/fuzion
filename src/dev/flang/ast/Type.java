@@ -900,10 +900,8 @@ public class Type extends AbstractType
           }
         else
           {
-            if (isThisType())
+            if (isThisType() && _generics.isEmpty())
               {
-                if (CHECKS) check
-                  (_generics == NONE);
                 _generics = feature.generics().asActuals();
               }
             FormalGenerics.resolve(res, _generics, outerfeat);

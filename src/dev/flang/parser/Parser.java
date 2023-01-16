@@ -484,7 +484,7 @@ visiList    : visi ( COMMA visiList
   */
   Visi visibility()
   {
-    Visi v = Consts.VISIBILITY_LOCAL;
+    Visi v = Visi.LOCAL;
     if (isNonEmptyVisibilityPrefix())
       {
         if (skip(Token.t_export))
@@ -497,9 +497,9 @@ visiList    : visi ( COMMA visiList
             // NYI: Do something with l
             v = null;
           }
-        else if (skip(Token.t_private  )) { v = Consts.VISIBILITY_PRIVATE  ; }
-        else if (skip(Token.t_protected)) { v = Consts.VISIBILITY_CHILDREN ; }
-        else if (skip(Token.t_public   )) { v = Consts.VISIBILITY_PUBLIC   ; }
+        else if (skip(Token.t_private  )) { v = Visi.PRIVATE  ; }
+        else if (skip(Token.t_protected)) { v = Visi.CHILDREN ; }
+        else if (skip(Token.t_public   )) { v = Visi.PUBLIC   ; }
         else                              { throw new Error();               }
       }
     return v;
