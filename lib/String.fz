@@ -45,7 +45,7 @@ String ref : has_equality, hasHash String, ordered String is
   byteLength => utf8.count
 
   # length of this string in codepoints
-  codepointLength => asCodepoints.count
+  codepointLength => as_codepoint_sequence.count
 
   # concatenate string with string representation of another object
   infix + (other Any) String is
@@ -253,13 +253,13 @@ String ref : has_equality, hasHash String, ordered String is
 
   # convert this string into an array of codepoints.
   #
-  codepointsArray => asCodepoints.as_array
+  codepointsArray => as_codepoint_sequence.as_array
 
 
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  asCodepoints Sequence codepoint is
+  as_codepoint_sequence Sequence codepoint is
     codepointsAndErrors
       .map (x ->
         match x
@@ -291,7 +291,7 @@ String ref : has_equality, hasHash String, ordered String is
     codepointsAndErrors utf8.as_list
 
 
-  # the list instance returned by asCodepoints
+  # the list instance returned by as_codepoint_sequence
   #
   private codepointsAndErrors(l list u8) list (outcome codepoint) is
     match l
@@ -598,7 +598,7 @@ String ref : has_equality, hasHash String, ordered String is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
     i := state_wrapper (lists.empty String) false 0 0
-    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+    last_state := as_codepoint_sequence.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
           match r.in_run

@@ -153,7 +153,7 @@ private codepoint0 choice codepoint end_of_file error is
               )
           match rest
             l Sequence u8 => String.type.fromBytes l
-                                    .asCodepoints
+                                    .as_codepoint_sequence
                                     .first
             end_of_file => end_of_file
             e error => e // error occurred while reading the rest of utf8 bytes
