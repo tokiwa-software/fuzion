@@ -30,6 +30,30 @@
 # handles that refer to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
+# an example of using handles is shown below, handle (singular) is an
+# alias to initialize a new handle with the given initial value. handle0 T
+# is the type that allows passing around handles.
+#
+#     ex_handles is
+#       hdl := handle 42
+#     
+#       say hdl.get
+#     
+#       x(h handle0 i32) unit is
+#         b := hdl.put 17
+#         say b
+#         say hdl.get
+#     
+#       x hdl
+#     
+#       say hdl.get
+#
+# the example also shows the difference between handles and the mutate effect:
+# while both provide a way to store and update a mutable value, a handle can be
+# passed around between features. meanwhile, mutables are not a type that can be
+# given to other features, only values can. handles essentially provide an
+# abstraction of pointers, implemented natively in Fuzion.
+#
 private handles(
   T, X type,
 
@@ -168,7 +192,8 @@ handles(T type) =>
   (handles T unit).env
 
 
-# handle value created by 'handles.new'
+# type of the reference to the cell that holds a value of type T which can be updated
+# using the handles interface
 #
 private handle0(
   T type,
@@ -205,6 +230,8 @@ handles_type(T type) is
     unit
 
 
-# create a new handle using the handles instance from the current environment
+# initializes a new handle with the given initial value
+#
+# this uses the handles instance from the current environment
 #
 handle(T type, v T) => (handles T).create v
