@@ -87,7 +87,7 @@ private read_line0 outcome String : character_encodings is
       match t
         c codepoint =>
           if c.val = ascii.lf.as_u32 || c.val = ascii.cr.as_u32
-            if r.isEmpty # we read nothing yet, so we just skip the lf/cr
+            if r.is_empty # we read nothing yet, so we just skip the lf/cr
               r
             else
               # NYI explicit tagging should not be necessary #671

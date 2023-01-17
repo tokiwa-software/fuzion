@@ -62,7 +62,7 @@ Set(E type : hasEquals E) ref : Sequence E is
 
 
   redef as_string =>
-    if isEmpty
+    if is_empty
       "∅"
     else
       ("\{"

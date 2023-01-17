@@ -28,8 +28,8 @@ stringtest is
 
   say ("hell😀" * 3)
 
-  say "".isEmpty
-  say "notEmpty".isEmpty
+  say "".is_empty
+  say "notEmpty".is_empty
 
   say ("hell😀"="hell😀")
   say ("hell😀"="again")

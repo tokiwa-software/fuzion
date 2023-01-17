@@ -36,7 +36,7 @@ String ref : has_equality, hasHash String, ordered String is
   utf8 Sequence u8 is abstract
 
   # is this string empty?
-  isEmpty => utf8.isEmpty
+  is_empty => utf8.is_empty
 
   # returns true if string is empty or contains whitespace only
   isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
@@ -505,7 +505,7 @@ String ref : has_equality, hasHash String, ordered String is
   #
   split list String is
     l := utf8.as_list.dropWhile (c -> isAsciiWhiteSpace c)
-    if l.isEmpty
+    if l.is_empty
       nil
     else
       ref : Cons String (list String)
@@ -523,7 +523,7 @@ String ref : has_equality, hasHash String, ordered String is
   #
   split(s String) list String
     pre
-      !s.isEmpty
+      !s.is_empty
     is
     match (find s)
       nil => [as_string].as_list
@@ -646,7 +646,7 @@ String ref : has_equality, hasHash String, ordered String is
   # given separator
   #
   type.concat(sep String) : Monoid String is
-    redef infix ∙ (a, b String) String is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
+    redef infix ∙ (a, b String) String is if (a.is_empty || b.is_empty) a + b else a + sep + b
     redef infix == (a, b String) => a == b
     redef e => ""
 

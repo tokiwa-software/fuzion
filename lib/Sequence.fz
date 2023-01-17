@@ -63,7 +63,7 @@ Sequence(T type) ref is
 
   # is this Sequence empty?
   #
-  isEmpty => as_list.isEmpty
+  is_empty => as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -81,7 +81,7 @@ Sequence(T type) ref is
   #
   first
     pre
-      debug: !isEmpty
+      debug: !is_empty
     => as_list.head.get
 
 
@@ -89,7 +89,7 @@ Sequence(T type) ref is
   #
   first(default T)
     =>
-      if isEmpty then default else first
+      if is_empty then default else first
 
 
   # get the last element of this Sequence
@@ -101,7 +101,7 @@ Sequence(T type) ref is
   #
   last
     pre
-      debug: !isEmpty
+      debug: !is_empty
    => as_list.last
 
 
@@ -109,7 +109,7 @@ Sequence(T type) ref is
   #
   last(default T)
     =>
-    if isEmpty then default else last
+    if is_empty then default else last
 
 
   # collect the contents of this Sequence into an array
@@ -389,7 +389,7 @@ Sequence(T type) ref is
     pre
       debug: 0 <= i,
       debug: finite: i < count,
-      debug: !finite: !(drop i-1).isEmpty
+      debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get
 

@@ -56,8 +56,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # is this list empty?
   #
-  redef isEmpty => (list.this ? nil  => true
-                              | Cons => false)
+  redef is_empty => (list.this ? nil  => true
+                               | Cons => false)
 
 
   # count the elements of this list
@@ -104,7 +104,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   forceTail
     pre
-      debug: !isEmpty
+      debug: !is_empty
     => (list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
                   | c Cons => c.tail)
 
@@ -115,7 +115,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef first
     pre
-      debug: !isEmpty
+      debug: !is_empty
     => head.get
 
 
@@ -125,7 +125,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   init list A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
     init nil
 
@@ -138,7 +138,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   private init(res list A) list A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
@@ -155,7 +155,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef last A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
     forceTail ? nil    => first
               | c Cons => forceTail.last
