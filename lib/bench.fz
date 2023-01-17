@@ -23,7 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
-# benchmark f for nano_seconds
+# benchmark f by iterating it for nano_seconds
+#
+# only completed iterations are counted, any iterations started before
+# warm_up_nano_seconds has elapsed are not counted either
+#
 # returns: iterations per second
 #
 bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
@@ -38,7 +42,12 @@ bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
   else
     iter.as_f64 / (nano_seconds.as_f64 * 1E-9)
 
+
 # benchmark f for milli_seconds (1s warm up)
+#
+# only completed iterations are counted, any iterations started before
+# the one second warmup has elapsed are not counted either
+#
 # returns: iterations per second
 #
 bench(f ()->unit, milli_seconds i32) f64 is

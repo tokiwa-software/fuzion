@@ -28,6 +28,8 @@
 # debug is a condition qualifier that enables conditions if debugging is
 # enabled.
 #
+# this is true if and only if the debug level is greater than zero.
+#
 debug bool is intrinsic  # 0 < debugLevel   , intrinsic only to allow compiler to kick out debug code earlier
 
 
@@ -38,5 +40,13 @@ debug(n i32) => n <= debugLevel
 
 
 # Current debug level, used by condition qualified debug(i32)
+#
+# This can be controlled using the "-debug=" option to the fz tool:
+#
+#     fz -debug=0 ex_debug.fz
+#     fz -debug=3 -c ex_debug.fz
+#
+# Whatever option was set at compile time will be used when running a
+# compile program.
 #
 debugLevel i32 is intrinsic

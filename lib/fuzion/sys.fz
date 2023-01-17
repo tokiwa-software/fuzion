@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys -- unit type to group low-level system APIs APIs
+# fuzion.sys -- unit type to group low-level system APIs
 #
 sys is
 
