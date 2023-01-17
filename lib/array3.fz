@@ -74,7 +74,7 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  redef asString : character_encodings =>
+  redef as_string : character_encodings =>
     dim_1(i i32) =>
       ("  [" + ascii.lf_str
         + indices1

@@ -131,7 +131,7 @@ hasInterval(H type : hasInterval H) : integer H is
 
     # string representation of this interval, e.g., "1..10"
     #
-    redef asString => "$lower..$upper"
+    redef as_string => "$lower..$upper"
 
 
   # the open interval from this to the maximum H value

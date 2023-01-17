@@ -88,7 +88,7 @@ is
 
   # create a string containing all mappings
   #
-  redef asString =>
+  redef as_string =>
     for
       r := "", r + c + n
       i in ks.indices

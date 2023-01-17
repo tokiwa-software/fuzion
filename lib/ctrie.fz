@@ -55,7 +55,7 @@
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
 private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) is
-  redef asString => "tomb_node($sn)"
+  redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
@@ -63,14 +63,14 @@ private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) i
 # a singleton node
 # the node type containing actual data
 private singleton_node(CTK type : hasHash CTK, CTV type, k CTK, v CTV) is
-  redef asString => "singleton_node($k, $v)"
+  redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
 # an indirection or a singleton node
 private branch(CTK type : hasHash CTK, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
-  redef asString =>
+  redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
       singleton_node singleton_node => "$singleton_node"
@@ -110,7 +110,7 @@ private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (b
     container_node bmp copy
 
 
-  redef asString => "container_node($bmp, [{array.map x->x.asString
+  redef as_string => "container_node($bmp, [{array.map x->x.as_string
                                                  .fold (String.type.concat ", ")}])"
 
   as_list => array.flatMapSequence (tuple CTK CTV) (b -> b.as_list)
@@ -123,7 +123,7 @@ private Main_Node(CTK type : hasHash CTK, CTV type, data choice (container_node 
   # a previous node that gets set during a generational aware compare and set
   prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
 
-  redef asString =>
+  redef as_string =>
     match data
       container_node container_node => "$container_node"
       tomb_node tomb_node => "$tomb_node"
@@ -219,7 +219,7 @@ private Indirection_Node(CTK type : hasHash CTK, CTV type, data mutate.new (Main
   infix = (o Indirection_Node CTK CTV) bool is
     Indirection_Node.this.hashCode = o.hashCode
 
-  redef asString => "Indirection_Node($data)"
+  redef as_string => "Indirection_Node($data)"
 
   as_list list (tuple CTK CTV)
   pre match data.get.prev.get
@@ -321,7 +321,7 @@ is
 
   # unit type to indicate when value to lookup/remove is not found
   not_found is
-    redef asString => "not found"
+    redef as_string => "not found"
 
 
   # the width of the branching factor, 2^5 = 32

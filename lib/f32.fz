@@ -95,7 +95,7 @@ f32(val f32) : float f32, f32s is
 
   # convert this to a string.
   #
-  redef asString String is intrinsic
+  redef as_string String is intrinsic
 
 
 # f32s -- unit type defining features related to f32 but not requiring an

@@ -30,7 +30,7 @@ String ref : has_equality, hasHash String, ordered String is
   redef orderedThis String is String.this
 
   # converting a string to a string is just returning string.this
-  redef asString String is String.this
+  redef as_string String is String.this
 
   # any concrete string must implement utf8
   utf8 Sequence u8 is abstract
@@ -49,7 +49,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # concatenate string with string representation of another object
   infix + (other Any) String is
-    String.type.concat String.this other.asString
+    String.type.concat String.this other.as_string
 
 
 
@@ -526,7 +526,7 @@ String ref : has_equality, hasHash String, ordered String is
       !s.isEmpty
     is
     match (find s)
-      nil => [asString].as_list
+      nil => [as_string].as_list
       idx i32 => ref : Cons String (list String)
                    head => substring 0 idx
                    tail =>
@@ -624,7 +624,7 @@ String ref : has_equality, hasHash String, ordered String is
   #
   cut(sep String) tuple String String bool is
     match find sep
-      nil => (asString, "", false)
+      nil => (as_string, "", false)
       i i32 =>
         l := byteLength
         sepl := sep.byteLength
@@ -685,7 +685,7 @@ String ref : has_equality, hasHash String, ordered String is
       fromArray (a.add other)
 
     redef utf8 Sequence u8 is
-      a.flatMapSequence u8 ai->ai.asString.utf8
+      a.flatMapSequence u8 ai->ai.as_string.utf8
 
 
   # create string from the given utf8 bytes

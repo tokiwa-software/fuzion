@@ -104,9 +104,9 @@ is
       mut get
 
 
-    # returns `asString` of the current value
+    # returns `as_string` of the current value
     #
-    redef asString => get.asString
+    redef as_string => get.as_string
 
 
   # install default instance of mutate

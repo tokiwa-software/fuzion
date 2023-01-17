@@ -106,7 +106,7 @@ outerNormalization is
 
     j : n j is
       a => j
-      redef asString => "a 'j'"
+      redef as_string => "a 'j'"
 
     t(r ref j) is
       say "testNormalize: {r.b}"
@@ -127,7 +127,7 @@ outerNormalization is
 
     j : n is
       a => 3
-      redef asString => "a 'j'"
+      redef as_string => "a 'j'"
 
     t(r ref j) is
       say "testNormalize2: {r.b}"

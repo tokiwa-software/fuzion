@@ -98,13 +98,13 @@ integer(I type : integer I) : numeric I is
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
   #
-  redef asString String is integer.this.asString 10
+  redef as_string String is integer.this.as_string 10
 
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  asString(base u32) String : character_encodings
+  as_string(base u32) String : character_encodings
     pre
       debug: u32 1 < base <= 36
   is
@@ -125,22 +125,22 @@ integer(I type : integer I) : numeric I is
           else
             p := -? thiz
             match p
-              v I   => ("-" + v .asString base).utf8.as_stream
-              _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.as_stream
+              v I   => ("-" + v .as_string base).utf8.as_stream
+              _ nil => (("-" + (-(thiz / b)).as_string base) + (-(thiz % b)).as_string base).utf8.as_stream
 
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  asString(len i32, base u32) String
+  as_string(len i32, base u32) String
     pre
       debug: u32 1 < base <= 36
     post
       debug: result.byteLength >= len
   is
     # create number
-    n := integer.this.asString base
+    n := integer.this.as_string base
 
     # split n into sign and digits
     (sign, digits) := if (integer.this.sign < 0) ("-", String.type.fromBytes (n.utf8.drop 1)) else ("", n)
@@ -154,39 +154,39 @@ integer(I type : integer I) : numeric I is
 
   # create binary representation
   #
-  bin => integer.this.asString 2
+  bin => integer.this.as_string 2
 
 
   # create binary representation with given number of digits.
   #
-  bin(len i32) => integer.this.asString len 2
+  bin(len i32) => integer.this.as_string len 2
 
 
   # create octal representation
   #
-  oct => integer.this.asString 8
+  oct => integer.this.as_string 8
 
 
   # create octal representation with given number of digits.
   #
-  oct(len i32) => integer.this.asString len 8
+  oct(len i32) => integer.this.as_string len 8
 
 
   # create decimal representation
   #
-  dec => integer.this.asString 10
+  dec => integer.this.as_string 10
 
 
   # create decimal representation with given number of digits.
   #
-  dec(len i32) => integer.this.asString len 10
+  dec(len i32) => integer.this.as_string len 10
 
 
   # create hexadecimal representation
   #
-  hex => integer.this.asString 16
+  hex => integer.this.as_string 16
 
 
   # create hexadecimal representation with given number of digits.
   #
-  hex(len i32) => integer.this.asString len 16
+  hex(len i32) => integer.this.as_string len 16

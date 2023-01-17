@@ -95,7 +95,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef asString String is
+  redef as_string String is
     option.this ? v T => $v
                 | nil => $nil
 

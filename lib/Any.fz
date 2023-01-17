@@ -28,5 +28,5 @@
 Any ref is
 
   hashCode i32 is intrinsic
-  asString String is intrinsic
-  prefix $ => Any.this.asString
+  as_string String is intrinsic
+  prefix $ => Any.this.as_string

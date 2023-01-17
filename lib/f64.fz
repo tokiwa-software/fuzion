@@ -109,7 +109,7 @@ f64(val f64) : float f64, f64s is
 
   # convert this to a string.
   #
-  redef asString String is intrinsic
+  redef as_string String is intrinsic
 
 
 # f64s -- unit type defining features related to f64 but not requiring an

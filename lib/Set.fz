@@ -61,10 +61,10 @@ Set(E type : hasEquals E) ref : Sequence E is
   remove (k E) Set E is abstract
 
 
-  redef asString =>
+  redef as_string =>
     if isEmpty
       "∅"
     else
       ("\{"
-       + (as_list.map String (x -> x.asString)).fold(String.type.concat ";")
+       + (as_list.map String (x -> x.as_string)).fold(String.type.concat ";")
        + "\}")

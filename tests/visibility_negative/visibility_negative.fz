@@ -518,7 +518,7 @@ visibility_negative is
     e := fun => "x is "+x+""   // 272. should flag an error: feature used before it is declared
     x := 2;          f := fun => "x is "+x+""
     x := x*x*x*x;    g := fun => "x is "+x+""
-    x := x.asString; h := fun => "x is "+x+""
+    x := x.as_string; h := fun => "x is "+x+""
     x := x * 5;      i := fun => "x is "+x+""
     chck (f.call == "x is 2") "x is 2"
     chck (g.call == "x is 16") "x is 16"

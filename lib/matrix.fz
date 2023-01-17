@@ -91,7 +91,7 @@ is
   transpose matrix M is
     matrix (array2 M e.length1 e.length0 i,j->e[j,i])
 
-  redef asString => e.asString
+  redef as_string => e.as_string
 
   # NYI: these three should be implemented in matrices, not here:
   redef zero => panic "matrix.zero not implemented"

@@ -81,7 +81,7 @@ test_this3 is
         u := u32 0, u+1
       while num.this.type.zero.lessThan x
 
-    redef asString => "num.this.type {to_u32_loop} 'asString'"
+    redef as_string => "num.this.type {to_u32_loop} 'as_string'"
 
   intM5(v u8) : num is
     fixed type.zero => test_this3.intM5 0
@@ -112,7 +112,7 @@ test_this4 is
       else
         u
 
-    redef asString => "num.this.type {to_u32_loop} 'asString'"
+    redef as_string => "num.this.type {to_u32_loop} 'as_string'"
 
 
   intM5(v u8) : num is
@@ -139,7 +139,7 @@ test_cov is
       x := n.this
       y := x.p n.this
 
-    redef asString => "{f}"
+    redef as_string => "{f}"
 
   i(isZero bool) : n is
     fixed p(other i) => other
@@ -154,7 +154,7 @@ test_cov_DFA_pop is
   n is
     r =>
       x := n.this
-      x.asString
+      x.as_string
 
   i : n is
 
@@ -177,12 +177,12 @@ test_cov2 is
       x := n.this
       y := x.p n.this
 
-    redef asString => "{f}"
+    redef as_string => "{f}"
 
   i(isZero bool) : n is
     fixed p(other i) => other
 
-s := (test_cov2.i false).asString
+s := (test_cov2.i false).as_string
 say s
 
 
@@ -274,10 +274,10 @@ test_return_this is
   a is
     x a.this.type is
       a.this
-    redef asString => "a"
+    redef as_string => "a"
 
   b : a is
-    redef asString => "b"
+    redef as_string => "b"
 
   say a.x
   say b.x
@@ -290,10 +290,10 @@ test_return_this
 a is
   x a.this.type is
     a.this
-  redef asString => "a"
+  redef as_string => "a"
 
 b : a is
-  redef asString => "b"
+  redef as_string => "b"
 
 say a.x
 say b.x
@@ -303,16 +303,16 @@ say b.x
 #
 q is
   b : a is
-    redef asString => "q.b"
+    redef as_string => "q.b"
 
 r is
   a is
     x a.this.type is
       a.this
-    redef asString => "r.a"
+    redef as_string => "r.a"
 
 c : r.a is
-  redef asString => "c"
+  redef as_string => "c"
 
 say q.b.x
 say r.a.x
@@ -325,12 +325,12 @@ d is
   y => 3
   x d.this.type is
     d.this
-    redef asString => "d"
+    redef as_string => "d"
 
 t is
   e : d is
     redef y := 4
-    redef asString => "s.e"
+    redef as_string => "s.e"
 
 _ := t.e.x.y
 
@@ -340,25 +340,25 @@ _ := t.e.x.y
 ua is
   x ua.this.type is
     ua.this
-  redef asString => "a"
+  redef as_string => "a"
 
 ub : ua is
-  redef asString => "b"
+  redef as_string => "b"
 
 uq is
   v := "v"
   say v
   b : ua is
-    redef asString => "q.b"
+    redef as_string => "q.b"
 
 ur is
   a is
     x a.this.type is
       a.this
-    redef asString => "r.a"
+    redef as_string => "r.a"
 
 uc : ur.a is
-  redef asString => "c"
+  redef as_string => "c"
 
 say ua.x
 say ub.x
@@ -379,10 +379,10 @@ test_generic_this_type is
     call_f =>
       f g.this
 
-    redef asString => "g $T"
+    redef as_string => "g $T"
 
   h : g bool is
-    redef asString => "h"
+    redef as_string => "h"
 
   a := g i32
   b := g i32

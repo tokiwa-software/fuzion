@@ -245,18 +245,18 @@ Sequence(T type) ref is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  redef asString => as_list.asString
+  redef as_string => as_list.as_string
 
 
   # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
   #
-  asString (sep String) => as_list.asString sep
+  as_string (sep String) => as_list.as_string sep
 
 
-  # call 'asString' on the elements
+  # call 'as_string' on the elements
   #
-  as_Strings => mapSequence c->c.asString
+  as_Strings => mapSequence c->c.as_string
 
 
   # map the Sequence to a new list applying function f to all elements
