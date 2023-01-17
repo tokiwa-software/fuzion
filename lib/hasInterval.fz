@@ -62,7 +62,7 @@ hasInterval(H type : hasInterval H) : integer H is
     # create a stream of all the elements of this interval, in order.
     redef as_stream ref : stream H is
       x := num_option lower
-      redef hasNext bool is x.exists && x.val <= upper
+      redef has_next bool is x.exists && x.val <= upper
       redef next H is res := x.val; set x := x +? one; res
 
 
@@ -85,7 +85,7 @@ hasInterval(H type : hasInterval H) : integer H is
       # create a stream of all the elements of this interval, in order.
       redef as_stream ref : stream H is
         x := num_option lower
-        redef hasNext bool is
+        redef has_next bool is
           (step > zero && x.exists && x.val <= upper ||
            step < zero && x.exists && x.val >= upper    )
         redef next H is res := x.val; set x := x +? step; res

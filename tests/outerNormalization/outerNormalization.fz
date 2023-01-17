@@ -144,7 +144,7 @@ outerNormalization is
   testInterval is
     x := 0..
     y := x.as_stream
-    z := y.hasNext
+    z := y.has_next
     for i in 0.. do
       say $i
     until i > 3

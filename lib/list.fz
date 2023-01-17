@@ -400,8 +400,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef as_stream ref : stream A is
     cur := list.this
-    redef hasNext => (cur ? Cons => true
-                          | nil  => false)
+    redef has_next => (cur ? Cons => true
+                           | nil  => false)
     redef next =>
       res := cur.head.get
       set cur := cur.force_tail

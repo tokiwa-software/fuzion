@@ -588,8 +588,8 @@ public class Loop extends ANY
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
             stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(p, new Call(p, streamName), "hasNext" );
-            Call hasNext2 = new Call(p, new Call(p, streamName), "hasNext" );
+            Call hasNext1 = new Call(p, new Call(p, streamName), "has_next" );
+            Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
             Call next1    = new Call(p, new Call(p, streamName), "next");
             Call next2    = new Call(p, new Call(p, streamName), "next");
             List<Stmnt> prolog2 = new List<>();

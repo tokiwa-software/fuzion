@@ -97,7 +97,7 @@ array(redef T type,
     array_this ref array T := array.this
 
     x := 0
-    redef hasNext => x < array_this.length
+    redef has_next => x < array_this.length
     redef next => set x := x + 1; array_this[x-1]
 
   redef for_each (f T -> unit) unit is

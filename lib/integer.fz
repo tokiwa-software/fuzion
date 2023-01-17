@@ -116,7 +116,7 @@ integer(I type : integer I) : numeric I is
           if thiz.sign >= 0
             ref : stream u8
               p := thiz.highest b
-              redef hasNext => p.sign > 0
+              redef has_next => p.sign > 0
               redef next =>
                 d := (thiz / p % b).to_u32.as_u8
                 r := if (d < 10) String.type.zeroChar + d else String.type.aChar + (d - ascii.lf)
