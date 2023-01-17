@@ -137,7 +137,7 @@ integer(I type : integer I) : numeric I is
     pre
       debug: u32 1 < base <= 36
     post
-      debug: result.byteLength >= len
+      debug: result.byte_length >= len
   is
     # create number
     n := integer.this.as_string base
@@ -146,7 +146,7 @@ integer(I type : integer I) : numeric I is
     (sign, digits) := if (integer.this.sign < 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
-    zeros := "0" * 0.max (len - n.byteLength)
+    zeros := "0" * 0.max (len - n.byte_length)
 
     # put it all together
     sign + zeros + digits

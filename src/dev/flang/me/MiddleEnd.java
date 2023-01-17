@@ -151,7 +151,7 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
     markUsed(universe.get(m, "conststring")                    , SourcePosition.builtIn);
-    markUsed(universe.get(m, "conststring").get(m, "isEmpty" ) , SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "conststring").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(universe.get(m, "conststring").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_fuzion_sys_array_data            , SourcePosition.builtIn);
     markUsed(Types.resolved.f_fuzion_sys_array_length          , SourcePosition.builtIn);
