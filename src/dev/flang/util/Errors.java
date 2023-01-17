@@ -89,7 +89,7 @@ public class Errors extends ANY
    */
   public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
   public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 20);
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 10);
 
 
   /**
