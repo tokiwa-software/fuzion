@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature partially_ordered
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# partially_ordered -- feature for immutable values that have an infix <=
+# predicate that defines a partial order
+#
+# features inheriting from partially_ordered define a partial order of their
+# values
+#
+# NYI: the compiler should check that features inheriting from this are
+# actually immutable.
+#
+partially_ordered(P type : partially_ordered P) : has_equality, hasEquals P
+
+/* NYI: quantor intrinsics not supported yet:
+
+  inv
+    analysis: quantors.forAll  T     fun(a       T) => (a <= b),                # reflexivity
+    analysis: quantors.forAll3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
+    analysis: quantors.forAll3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
+*/
+
+is
+
+  # get value of type P.
+  #
+  # NYI: #167: Once Eiffel-style 'like this' works, we can use 'like this' instead of
+  # T and no longer need this feature.
+  #
+  orderedThis P is abstract
+
+  # does this come before other?
+  #
+  infix <= (other P) bool is abstract
+
+  # equality check for immutable values
+  #
+  infix = (o P) => orderedThis <= o && o <= orderedThis

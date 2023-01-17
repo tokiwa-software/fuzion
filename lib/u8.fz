@@ -25,7 +25,7 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrappingInteger u8, hasInterval u8, u8s is
+u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
 
   redef thiz => u8.this.val
   redef orderedThis => u8.this.val
@@ -84,7 +84,7 @@ u8(val u8) : wrappingInteger u8, hasInterval u8, u8s is
   redef infix >  (other u8) bool is intrinsic
   redef infix >= (other u8) bool is intrinsic
 
-  u8.type.equality(a, b u8) bool is intrinsic
+  fixed type.equality(a, b u8) bool is intrinsic
 
   as_i8 i8
     pre
@@ -151,7 +151,7 @@ u8(val u8) : wrappingInteger u8, hasInterval u8, u8s is
 # u8s -- unit type defining features related to u8 but not requiring an
 # instance
 #
-u8s : wrappingIntegers u8 is
+u8s : wrapping_integers u8 is
 
   redef name => "u8"
 

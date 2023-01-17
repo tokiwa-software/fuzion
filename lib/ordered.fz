@@ -31,7 +31,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-ordered(O (ordered O).type) : partiallyOrdered O
+ordered(O type : ordered O) : partially_ordered O
 
 /* NYI: quantor intrinsics not supported yet:
 

@@ -98,16 +98,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => f c.head; c.tail.for_each f
 
 
-  # get the head of this list, panic if list is empty
+  # get the tail of this list
   #
-  forceHead
-    pre
-      debug: !isEmpty
-    => (list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
-                  | c Cons => c.head)
-
-
-  # get the tail of this list, panic if list is empty
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   forceTail
     pre
@@ -116,15 +109,46 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
                   | c Cons => c.tail)
 
 
-  # get the head of this list, panic if list is empty
+  # get the head of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   redef first
     pre
       debug: !isEmpty
-    => forceHead
+    => head.get
 
 
-  # get the last element of this list, panic if list is empty
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  init list A
+    pre
+      debug: !isEmpty
+  is
+    init nil
+
+
+  # returns the list of all but the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
+  #
+  # helper feature for init to allow for tail recursion
+  #
+  private init(res list A) list A
+    pre
+      debug: !isEmpty
+  is
+    list.this ? nil => fuzion.std.panic "list.init called on empty list"
+              | c Cons =>
+                c.tail ? nil => res
+                       | _ Cons => c.tail.init (res ++ [c.head])
+
+
+  # get the last element of this list
+  #
+  # list must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite list.
@@ -227,8 +251,35 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep string) =>
-    "{(map string x->x.asString).fold (strings.concat sep)}"
+  redef asString (sep String) =>
+    "{(map String x->x.asString).fold (String.type.concat sep)}"
+
+
+  # add an element sep in front of every element of this list.
+  #
+  prepend_to_all(sep A) list A is
+    prepend_to_all sep nil
+
+
+  # add an element sep in front of every element of this list, helper to
+  # allow tail recursion.
+  #
+  # if this list is the empty list, return the given result list res, recursively
+  # call this feature on the tail of this list otherwise, feeding it with the
+  # same separator sep but appending sep and the current element to res.
+  #
+  private prepend_to_all(sep A, res list A) list A is
+    match head
+      nil => res
+      x A => tail.prepend_to_all sep (res ++ [sep, x])
+
+
+  # add an element sep between every element of this list.
+  #
+  intersperse(sep A) list A is
+    match head
+      nil => nil
+      x A => [x] ++ tail.prepend_to_all sep
 
 
   # List concatenation, O(count)
@@ -270,7 +321,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # create a slice from this list that consists of the elements starting at index
   # 'from' (including) up to index 'to' (excluding).
   #
-  redef slice(from, to i32) => drop(from).take to-from
+  redef slice(from, to i32) => (drop from).take to-from
 
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
@@ -352,7 +403,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
     redef next =>
-      res := cur.forceHead
+      res := cur.head.get
       set cur := cur.forceTail
       res
 
@@ -414,3 +465,17 @@ list(T type, h T, t () -> list T) list T is
   ref : Cons T (list T)
     head => h
     tail => t()
+
+
+# infix operator to create a list from head h and lazy tail t.
+#
+# This is convenient to append an element before a list as in
+#
+#   0 : ()->[1,2,3,4].asList
+#
+# or to create lists by recursion, e.g., a an endless list containing
+# integer 1 repeatedly is
+#
+#   ones => 1 : ()->ones
+#
+infix : (A type, h A, t ()->list A) => list h t

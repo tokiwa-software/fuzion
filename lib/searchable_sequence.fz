@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature searchable_sequence
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# searchable_sequence -- a Sequence whose elements inherit from hasEquals
+#
+# In contrast to searchable_list, this uses ref type 'Sequence' and not choice
+# type 'list', so it is more flexible.
+#
+#
+searchable_sequence(A type : hasEquals A, from Sequence A) : Sequence A
+is
+
+  # create a list from this Sequence.
+  #
+  redef asList => from.asList
+
+
+  # does this list start with l?
+  #
+  starts_with (l Sequence A) =>
+    (searchable_list asList).starts_with l.asList
+
+
+  # determine the index of element x within this list.  0 if x is at the
+  # head of the list, 1 if it comes directly after head, etc. nil if x is
+  # not in the list.
+  #
+  index_of (x A) => find [x]
+
+  # get the index of l within this list or nil if it does not exist
+  #
+  find (l Sequence A) =>
+    (searchable_list asList).find l.asList
+
+
+  # replace all occurrences of old by new
+  #
+  replace (old, new Sequence A) =>
+    (searchable_list asList).replace old.asList new.asList
+
+
+  # replace the first n occurrences of old by new
+  #
+  replace (old, new Sequence A, n u64) =>
+    (searchable_list asList).replace old.asList new.asList n
+
+
+  # get the number of matches of l
+  #
+  count_matches_overlapping (l Sequence A) =>
+    (searchable_list asList).count_matches_overlapping l.asList
+
+
+  # get the number of non-overlapping matches of l within this
+  #
+  count_matches (l Sequence A) =>
+    (searchable_list asList).count_matches l.asList

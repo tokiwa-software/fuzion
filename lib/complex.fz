@@ -28,7 +28,7 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex (C (numeric C).type,
+complex (C type : numeric C,
          real,    # real part
          imag C   # imaginary part
          ) : numeric (complex C), complexes C
@@ -61,9 +61,8 @@ is
   redef infix == (b complex C) => a.real  = b.real && a.imag  = b.imag
   redef infix != (b complex C) => a.real != b.real || a.imag != b.imag
 
-  # NYI: #637:
-  # complex.type.equality(C (numeric C).type, a, b complex C)
-  #   a.real = b.real && a.imag = b.imag
+  fixed type.equality(a, b complex C) bool is
+    a.real ≟ b.real && a.imag ≟ b.imag
 
   # NYI: total order ignoring imag
   redef infix <  (b complex C) => a.real <  b.real
@@ -80,7 +79,7 @@ is
         "($imag)"
       else
         $imag
-    p := if (si.startsWith "-") then "" else "+"
+    p := if (si.starts_with "-") then "" else "+"
     "{real}$p{si}i"
 
   # NYI: these three should be implemented in complexes, not here:
@@ -98,7 +97,7 @@ is
 # to https://www.wordhippo.com/what-is/the-plural-of/complex.html, so we
 # use complexes.
 #
-complexes(E (numeric E).type) : numerics (complex E) is
+complexes(E type : numeric E) : numerics (complex E) is
 
   redef name => "complex"
 
@@ -123,4 +122,4 @@ complexes(E (numeric E).type) : numerics (complex E) is
 # does not define a type (which would cause a name clash with complex with two
 # arguments).
 #
-complex(E (numeric E).type) => complexes E
+complex(E type : numeric E) => complexes E

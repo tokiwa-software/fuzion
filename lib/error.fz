@@ -33,7 +33,7 @@ error (
   # the message describing the error. Should usually be a single line not
   # followed by a linefeed.
   #
-  msg string
+  msg String
 
   )
 
@@ -43,5 +43,5 @@ is
   #
   # returns "error: $msg"
   #
-  redef asString string is
+  redef asString String is
     "error: $msg"

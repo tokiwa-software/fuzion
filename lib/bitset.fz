@@ -87,7 +87,7 @@ is
          else
            r
 
-  type.equality(a, b bitset) bool is
+  fixed type.equality(a, b bitset) bool is
      h := a.highest >>= i -> b.highest >>= j -> i.max j
      match h
        _ nil => a.highest!! && b.highest!!
@@ -98,9 +98,9 @@ is
          else
            r
 
-  # create a string representation of a bitset of the form "{2, 4}
+  # create a string representation of a bitset of the form "{2, 4}"
   #
-  redef asString string is
+  redef asString String is
     match highest
       _ nil => "\{}"
       h u64 =>
@@ -118,29 +118,11 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty bitset
   #
-  empty bitset is nil
+  type.empty bitset is nil
 
   # monoid of bitset with infix ∪ operation.
   #
-  union : Monoid bitset is
+  type.union : Monoid bitset is
     redef infix ∙ (a, b bitset) => a ∪ b
     redef infix == (a, b bitset) => a == b
-    redef e bitset is empty
-
-
-# bitsets -- unit type defining features related to bitest but not
-# requiring an instance
-#
-bitsets is
-
-  # an empty bitset
-  #
-  empty bitset is nil
-
-
-  # monoid of bitset with infix ∪ operation.
-  #
-  union : Monoid bitset is
-    redef infix ∙ (a, b bitset) => a ∪ b
-    redef infix == (a, b bitset) => a == b
-    redef e bitset is empty
+    redef e bitset is bitset.type.empty

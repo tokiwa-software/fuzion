@@ -135,7 +135,7 @@ public class CTypes extends ANY
     return switch (_fuir.clazzKind(cl))
       {
       case Choice, Routine -> true;
-      case Intrinsic       -> _fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) >= 0;
+      case Intrinsic       -> _fuir.hasPrecondition(cl);
       default              -> false;
       };
 

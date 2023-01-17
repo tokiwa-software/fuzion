@@ -42,6 +42,6 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (strings.fromCodepoints "hell😀".asCodepoints)
+  say (String.type.fromCodepoints "hell😀".asCodepoints)
 
-  say (strings.fromArray ((marrays Object).new 1 nil))
+  say (String.type.fromArray ((marrays Any).new 1 nil))

@@ -32,7 +32,7 @@
 array2(redef T type,
        length0, length1 i32,
        init2 (i32, i32) -> T)
- : array T (fuzion.sys.array T length0*length1) unit unit unit
+ : array T (fuzion.sys.internal_array T length0*length1) unit unit unit
   pre
     safety: length0 >= 0,
     safety: length1 >= 0,
@@ -76,7 +76,7 @@ is
       + ascii.lf_str
       + indices0
           .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(strings.concat("," + ascii.lf_str))
+          .fold(String.type.concat("," + ascii.lf_str))
       + ascii.lf_str + "]")
 
 

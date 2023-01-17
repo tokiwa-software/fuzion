@@ -26,24 +26,24 @@
 # envir.args -- effect providing access to command line args
 #
 private args (
-  all array string,
+  all array String,
 
   # action to be taken: plain, install or replace?
   redef r effectMode.val,
 
   _ unit
-  ) : searchablelist all.asList, effect r
+  ) : searchable_list all.asList, effect r
 is
 
 
 # short-hand for creating and installing args effect and run rr
 #
-args(rr ()->unit) => args fuzion.std.args rr
+args(rr ()->unit) => args fuzion.sys.args rr
 
 
 # short-hand for creating and installing args effect
 #
-args(a array string, rr ()->unit) =>
+args(a array String, rr ()->unit) =>
   _ := args a (effectMode.inst rr) unit
 
 
@@ -59,7 +59,7 @@ args =>
 #
 argses is
 
-  # install default effect args using fuzion.std.args
+  # install default effect args using fuzion.sys.args
   installDefault unit is
     if !(effects.exists envir.args)
-      _ := args fuzion.std.args effectMode.default unit
+      _ := args fuzion.sys.args effectMode.default unit

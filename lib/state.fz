@@ -41,7 +41,7 @@ state(
   get S,
 
   redef r effectMode.val
-  ) ref : onewayMonad T (state T S) r
+  ) ref : oneway_monad T (state T S) r
 is
 
   # monadic operator
@@ -83,7 +83,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef asString string is
+  redef asString String is
     "$val ($get)"
 
 

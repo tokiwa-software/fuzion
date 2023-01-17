@@ -25,7 +25,7 @@
 
 # i8 -- 8-bit signed integer values
 #
-i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
+i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
 
   redef thiz => i8.this.val
   redef orderedThis => i8.this.val
@@ -84,7 +84,7 @@ i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
   redef infix >  (other i8) bool is intrinsic
   redef infix >= (other i8) bool is intrinsic
 
-  type.equality(a, b i8) bool is intrinsic
+  fixed type.equality(a, b i8) bool is intrinsic
 
   # conversion to u32, i64 and u64, with range check
   as_i16  => as_i32.as_i16
@@ -160,7 +160,7 @@ i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #
-i8s : wrappingIntegers i8 is
+i8s : wrapping_integers i8 is
 
   redef name => "i8"
 

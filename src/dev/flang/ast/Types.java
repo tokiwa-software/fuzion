@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
 
 /*---------------------------------------------------------------------*/
 
@@ -197,9 +196,9 @@ public class Types extends ANY
       t_ref_f64       = ct.type("f64"         , true );
       t_bool          = ct.type("bool"        , false);
       t_fuzion        = ct.type("fuzion"      , false);
-      t_string        = ct.type("string"      , false);
+      t_string        = ct.type(FuzionConstants.STRING_NAME, false);
       t_conststring   = ct.type("conststring" , false);
-      t_object        = ct.type("Object"      , false);
+      t_object        = ct.type(FuzionConstants.OBJECT_NAME, false);
       t_unit          = ct.type("unit"        , false);
       t_void          = ct.type("void"        , false);
       f_void          = universe.get(mod, "void");
@@ -220,14 +219,14 @@ public class Types extends ANY
       f_array_internalArray = f_array.get(mod, "internalArray");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
-      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "array");
+      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
+      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }

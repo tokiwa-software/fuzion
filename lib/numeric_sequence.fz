@@ -1,0 +1,95 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature numeric_sequence
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# numeric_sequence -- a Sequence whose elements inherit from numeric
+#
+numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numeric_sequence N) is
+
+  # create a list from this Sequence.
+  #
+  redef asList => from.asList
+
+
+  # the arithmetic mean of the sequence
+  # https://en.wikipedia.org/wiki/Arithmetic_mean
+  average option N is
+    if isEmpty
+      nil
+    else
+      count := (mapSequence N (_ -> first.one)).fold first.sum
+      sum := fold first.sum
+      sum / count
+
+
+  # the variance of the sequence
+  # https://en.wikipedia.org/wiki/Variance
+  variance option N is
+    match average
+      nil => nil
+      avg N =>
+        count := (mapSequence N (_ -> first.one)).fold first.sum
+        sum := (mapSequence N (x -> (x - avg)**first.two)).fold first.sum
+        sum / count
+
+
+  # minimum value in the sequence
+  min option N is
+    if isEmpty
+      nil
+    else
+      reduce first ((r,t) -> if r<=t then r else t)
+
+
+  # maximum value in the sequence
+  max option N is
+    if isEmpty
+      nil
+    else
+      reduce first ((r,t) -> if r<=t then t else r)
+
+
+  # the median of the sequence
+  # https://en.wikipedia.org/wiki/Median
+  median option N is
+    if isEmpty
+      nil
+    else
+      arr := sorted_array_of numeric_sequence.this
+      if arr.length % 2 == 1
+        arr[arr.length / 2]
+      else
+        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
+
+
+  # are these numeric sequences equal?
+  # i.e. do they only contain equal numbers
+  infix = (o numeric_sequence N) bool is
+    ((zip o a,b->a=b) ∀ x->x)
+      & count = o.count
+
+
+  fixed type.equality(a, b numeric_sequence N) bool is
+    ((a.zip b (c,d->equals N c d)) ∀ x->x)
+      & a.count ≟ b.count

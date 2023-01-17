@@ -340,7 +340,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature()
   {
     this(SourcePosition.builtIn,
-         Consts.VISIBILITY_PUBLIC,
+         Visi.PUBLIC,
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
@@ -386,7 +386,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Consts.VISIBILITY_INVISIBLE,
+                       Visi.INVISIBLE,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
@@ -594,7 +594,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Impl     p)
   {
     this(pos,
-         Consts.VISIBILITY_INVISIBLE,
+         Visi.INVISIBLE,
          0,
          r,
          qname,
@@ -680,7 +680,7 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p._kind != Impl.Kind.Field      ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
+      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME))
       : i;
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
@@ -910,7 +910,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (_resultField == null);
         _resultField = new Feature(res,
                                    _pos,
-                                   Consts.VISIBILITY_PRIVATE,
+                                   Visi.PRIVATE,
                                    t,
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
@@ -1150,7 +1150,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS));
+    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME));
   }
 
 
@@ -1298,16 +1298,17 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         res = r;
       }
-    public void         action(AbstractAssign a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
-    public Call         action(Call           c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
-    public Expr         action(DotType        d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Destructure    d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                          return f.resolveTypes(res, f.outer() ); }
-    public Function     action(Function       f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Match          m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
-    public Expr         action(This           t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
-    public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.resolve     (res, outer); }
+    public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
+    public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    public Stmnt        action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    public Stmnt        action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                                return f.resolveTypes   (res, f.outer() ); }
+    public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
+    public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
+    public Expr         action      (This           t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
+    public Type         actionBefore(Type           t, AbstractFeature outer) { return t.resolveThisType(       outer); }
+    public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t.resolve        (res,   outer); }
 
     public boolean doVisitActuals() { return false; }
   }
@@ -1344,7 +1345,7 @@ public class Feature extends AbstractFeature implements Stmnt
             _thisType = tt.resolve(res, this);
           }
 
-        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeForFeatureResultTypeInferencing() == null))
+        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeIfKnown() == null))
           {
             _impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
@@ -1599,7 +1600,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     _choiceTag = new Feature(res,
                              _pos,
-                             Consts.VISIBILITY_PRIVATE,
+                             Visi.PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
                              this);
@@ -1766,10 +1767,11 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call  action(Call        c, AbstractFeature outer) { c.checkTypes(outer); return c; }
-            public void  action(If          i, AbstractFeature outer) { i.checkTypes();                }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);                   }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c;       }
+            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                      }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i;       }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return ((Type)t).checkConstraints(pos()); }
           });
         checkTypes(res);
 
@@ -2212,13 +2214,13 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._initialValue.typeForFeatureResultTypeInferencing();
+        result = _impl._initialValue.typeIfKnown();
       }
     else if (_impl._kind == Impl.Kind.RoutineDef)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._code.typeForFeatureResultTypeInferencing();
+        result = _impl._code.typeIfKnown();
       }
     else if (_returnType.isConstructorType())
       {
@@ -2231,6 +2233,10 @@ public class Feature extends AbstractFeature implements Stmnt
     else
       {
         result = _returnType.functionReturnType();
+      }
+    if (isOuterRef())
+      {
+        result = result.asThis();
       }
 
     return result;
@@ -2386,7 +2392,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                   : this._outer.thisType();
         _outerRef = new Feature(res,
                                 _pos,
-                                Consts.VISIBILITY_PRIVATE,
+                                Visi.PRIVATE,
                                 outerRefType,
                                 outerRefName(),
                                 this);
@@ -2403,7 +2409,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_DECLARATIONS));
+      (isUniverse() || _state.atLeast(State.RESOLVED_DECLARATIONS));
 
     Feature result = _outerRef;
 

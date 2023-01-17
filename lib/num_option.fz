@@ -1,0 +1,154 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature num_option
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# num_option -- optional numeric values
+#
+# This is a pseudo-numeric type that handles one additional
+# value: nil.  Any operation on nil will result in nil for a
+# numeric result or false for a boolean result.
+#
+num_option(T type : numeric T) :
+  choice T nil,
+  monad T (num_option T)
+is
+
+  # Does this option contain a value of type T?
+  #
+  exists => (num_option.this ? T   => true
+                             | nil => false)
+
+
+  # short-hand postfix operator for 'exists'
+  #
+  postfix ?? => exists
+
+
+  # Does this option contain no value of type T?
+  #
+  isNil => !exists
+
+
+  # short-hand postfix operator for 'isNil'
+  #
+  postfix !! => isNil
+
+
+  # value of an option that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this option
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  val T
+    pre
+      safety: num_option.this??
+  is
+    num_option.this ? v T => v
+                    | nil => fuzion.std.panic "num_option.val called on nil"
+
+
+  # monadic operator
+  redef infix >>= (f T -> num_option T) => num_option.this.bind T f
+
+
+  # monadic operator
+  #
+  # Same as non-generic >>=, but also maps to a different type B.
+  #
+  bind(B type : numeric T, f T -> num_option B) num_option B is
+    num_option.this ? v T => f v
+                    | nil => nil
+
+
+  # monadic operator for bool result, false for nil
+  infix >>? (f T -> bool) =>
+    num_option.this ? v T => f v
+                    | nil => false
+
+
+  # basic prefix operations
+  prefix +? num_option T is num_option.this >>= v -> +v
+  prefix -? num_option T is num_option.this >>= v -> -?v
+
+  # basic infix operations
+  infix +? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v +? w
+  infix -? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v -? w
+  infix *? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v *? w
+  infix **?(other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v **? w
+  infix /? (other num_option T) num_option T
+    pre
+      safety: !other.isZero
+  is
+    num_option.this >>= v -> other >>= w -> v / w
+
+  infix %? (other num_option T) num_option T
+    pre
+      safety: !other.isZero
+  is
+    num_option.this >>= v -> other >>= w -> v % w
+
+  # comparison
+  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v == w
+  infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
+  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
+  infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <= w
+  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
+  infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >= w
+
+  isZero => sign ==? 0
+
+  sign num_option i32 is
+    num_option.this ? v T => v.sign
+                    | nil => nil
+
+  abs num_option T is
+    num_option.this >>= v -> if v.sign >= 0 v else -?v
+
+  redef asString String is
+    num_option.this ? v T => v.asString
+                    | nil => "--no value--"
+
+
+# num_option with 1 argument provides an short-hand to wrap a value into a
+# num_option
+#
+# Using this enables to write
+#
+#   o := num_option x
+#
+# instead of
+#
+#   o num_option TypeOfX := x
+#
+num_option(T type : numeric T, o num_option T) => o
+
+
+# type related to num_option declaring features not requiring an instance of num_option
+#
+num_options(T type : numeric T) : monads T (num_option T) is
+
+
+  # return function
+  #
+  return (a T) => num_option a

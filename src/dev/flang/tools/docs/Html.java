@@ -28,8 +28,8 @@ package dev.flang.tools.docs;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,14 +43,39 @@ import dev.flang.ast.AbstractType;
 public class Html
 {
   final DocsOptions config;
+  private final Map<AbstractFeature, SortedSet<AbstractFeature>> mapOfDeclaredFeatures;
+  private final String navigation;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config)
+  public Html(DocsOptions config, Map<AbstractFeature, SortedSet<AbstractFeature>> mapOfDeclaredFeatures, AbstractFeature universe)
   {
     this.config = config;
+    this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
+    this.navigation = navigation(universe, 0);
   }
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+  static final String RUNCODE_BOX_HTML = """
+    <div class="runcode-wrapper">
+      <i class="far fa-spinner fa-spin"></i>
+      <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+        <div class="position-relative">
+          <form id="##ID##">
+            <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
+            <div class="position-absolute runbuttons">
+              <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
+              <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
+              <a href="/tutorial/effects.html"><i>What are effects?</i></a>
+            </div>
+          </form>
+        </div>
+        <div class="computeroutput" id="##ID##.result"></div>
+      </div>
+    </div>""";
 
 
   /*-----------------------------  private methods  -----------------------------*/
@@ -70,8 +95,8 @@ public class Html
       .<String>map(c -> {
         var f = c.calledFeature();
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
-          + htmlEncodeNbsp(basename(f) + " ")
-          + c.generics().stream().map(at -> at.asString()).collect(Collectors.joining(htmlEncodeNbsp(", "))) + "</a>";
+          + htmlEncodedBasename(f) + "&nbsp;"
+          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
@@ -86,7 +111,7 @@ public class Html
   {
     if (at.isGenericArgument())
       {
-        return at.name();
+        return htmlEncodeNbsp(at.name());
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
       .replace("$2", featureAbsoluteURL(at.featureOfType()));
@@ -109,7 +134,7 @@ public class Html
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer()),
-      Stream.of("<a class='fd-feature' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(basename(f)))
+      Stream.of("<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
         .replace("$2", featureAbsoluteURL(f))));
   }
 
@@ -125,38 +150,63 @@ public class Html
     return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
-      + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
-      + (isEffect(af) ? "<span title='effect'>🎆&nbsp;</span>": "&nbsp;&nbsp;")
-      + htmlEncodeNbsp(basename(af))
-      + "</a>"
+      + anchor(af)
       + arguments + "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>"
       + anchor(af.resultType())
       + inherited(af)
+      // fills remaining space and set cursor pointer
+      // to indicate that this area expands revealing a summary
+      + "<div class='cursor-pointer flex-grow-1'></div>"
       + "</div>"
       + source(af)
       + "</div>";
   }
 
 
-  /**
-   * get directly and indirectly inherited features of af
-   */
-  private static Stream<AbstractFeature> inheritedRecursive(AbstractFeature af)
-  {
-    return Stream.concat(af.inherits().stream().map(x -> x.calledFeature()),
-      af.inherits().stream().flatMap(c -> inheritedRecursive(c.calledFeature())));
+  private String anchor(AbstractFeature af) {
+    return "<a class='fd-feature font-weight-600' href='" + featureAbsoluteURL(af) + "'>"
+            + htmlEncodedBasename(af)
+          + "</a>";
   }
 
 
   /**
-   * is the feature inherting from effect?
+   * list of features that are redefined by feature af
    * @param af
-   * @return
+   * @return list of redefined features, as HTML
    */
-  private boolean isEffect(AbstractFeature af)
+  private String redefines(AbstractFeature af)
   {
-    return inheritedRecursive(af).anyMatch(x -> x.qualifiedName().equals("effect"));
+    var result = "";
+
+    if (!af.redefines().isEmpty())
+      {
+        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af) + "</ul><br /></div>";
+      }
+
+    return result;
   }
+
+
+  /**
+   * helper for redefines. returns the list of features that are redefined by feature
+   * af. unlike redefine, which wraps the result of this in a <div></div> container, this
+   * just wraps the redefined features in <li><a></a></li> tags.
+   *
+   * @param af
+   * @return list of redefined features, wrapped in <li> and <a> HTML tags
+   */
+  private String redefines0(AbstractFeature af)
+  {
+    return af
+      .redefines()
+      .stream()
+      .map(f -> """
+        <li><a href="$1">$2</a></li>$3
+      """.replace("$1", featureAbsoluteURL(f)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f)))
+      .collect(Collectors.joining(System.lineSeparator()));
+  }
+
 
 
   /**
@@ -171,10 +221,11 @@ public class Html
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
-          + "'><summary>$1</summary><p class='fd-comment'>$2</p></details>"
+          + "'><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             .replace("$1",
               summary(af))
-            .replace("$2", htmlEncode(Util.commentOf(af), false));
+            .replace("$2", Util.commentOf(af))
+            .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -187,13 +238,13 @@ public class Html
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$4$3</h2><h3>$1</h3><p class='fd-comment'>$2</p>"
-      .replace("$0", f.isUniverse() ? "API-Documentation": basename(f))
-      .replace("$3", f.isUniverse() ? "": anchorTags(f))
+    return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
+      .replace("$0", f.isUniverse() ? "API-Documentation": htmlEncodedBasename(f))
+      .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
-      .replace("$2", htmlEncode(Util.commentOf(f), false))
-      .replace("$4", f.isUniverse() ? "": "<a class='mr-5' href='" + config.docsRoot() + "/'>🌌</a>")
-      .replace("$5", f.isUniverse() ? "": "d-none");
+      .replace("$2", Util.commentOf(f))
+      .replace("$5", f.isUniverse() ? "": "d-none")
+      .replace("$6", redefines(f));
   }
 
   /**
@@ -203,9 +254,9 @@ public class Html
    * @return
    *
    */
-  private String basename(AbstractFeature af)
+  private String htmlEncodedBasename(AbstractFeature af)
   {
-    return af.featureName().baseName().startsWith("@") ? "_": af.featureName().baseName();
+    return htmlEncodeNbsp(af.featureName().baseName().startsWith("@") ? "_": af.featureName().baseName());
   }
 
 
@@ -217,6 +268,63 @@ public class Html
     return "<div class='pl-5'><a href='$1'>[src]</a></div>"
       .replace("$1", featureURL(feature));
   }
+
+
+  /**
+   * process the comment of a feature, in particular detects lines indented
+   * five spaces relative to the # as code blocks and puts them into a runcode
+   * box.
+   *
+   * @param name the name of the feature whose comment is being processed
+   * @param s the comment that is being processed
+   * @return the comment wrapped in HTML
+   */
+  static String processComment(String name, String s)
+  {
+    var codeNo = new ArrayList<Integer>();
+    var codeLines = new ArrayList<String>();
+    var resultLines = new ArrayList<String>();
+
+    s.lines().forEach(l ->
+      {
+        if (l.startsWith("    "))
+          {
+            /* code comment */
+            codeLines.add(l);
+          }
+        else if (l.length() == 0)
+          {
+            /* avoid adding lots of line breaks after code comments */
+            if (codeLines.isEmpty())
+              {
+                resultLines.add(l);
+              }
+          }
+        else
+          {
+            if (!codeLines.isEmpty())
+              {
+                /* dump codeLines into a flang.dev runcode box */
+                var id = "fzdocs." + name + codeNo.size();
+                var code = codeLines
+                  .stream()
+                  .map(cl -> { return cl.replaceAll("^    ", ""); })
+                  .collect(Collectors.joining(System.lineSeparator()));
+                resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
+                codeLines.clear();
+                codeNo.add(1);
+              }
+
+            /* treat as normal line */
+            var replacedLine = htmlEncode(l, false);
+
+            resultLines.add(replacedLine);
+          }
+      });
+
+    return resultLines.stream().collect(Collectors.joining("<br />"));
+  }
+
 
   private static String htmlEncode(String s, boolean spacesNoneBreaking)
   {
@@ -278,11 +386,11 @@ public class Html
 
   /**
    * get full html with doctype, head and body
-   * @param entry
+   * @param af
    * @param bareHtml
    * @return
    */
-  private static String fullHtml(Entry<AbstractFeature, SortedSet<AbstractFeature>> entry, String bareHtml)
+  private static String fullHtml(AbstractFeature af, String bareHtml)
   {
     return ("""
       <!DOCTYPE html>
@@ -298,7 +406,7 @@ public class Html
         </body>
         </html>
                     """)
-        .replace("$qualifiedName", entry.getKey().qualifiedName());
+        .replace("$qualifiedName", af.qualifiedName());
   }
 
 
@@ -369,8 +477,8 @@ public class Html
       }
     return "(" + f.arguments()
       .stream()
-      .map(a -> htmlEncodeNbsp(
-        basename(a) + " ")
+      .map(a ->
+        htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
@@ -380,7 +488,7 @@ public class Html
   {
     if (f.resultType().dependsOnGenerics())
       {
-        return "(" + f.resultType().asString() + ")." + "<div class='fd-keyword'>type</div>";
+        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
       }
     return "<div class='fd-keyword'>type</div>";
   }
@@ -389,8 +497,7 @@ public class Html
   /**
    * render the the navigation at the left side
    */
-  private String navigation(AbstractFeature start,
-    HashMap<AbstractFeature, SortedSet<AbstractFeature>> mapOfDeclaredFeatures, int depth)
+  private String navigation(AbstractFeature start, int depth)
   {
     var declaredFeatures = mapOfDeclaredFeatures.get(start);
     if (declaredFeatures == null || Util.isArgument(start))
@@ -398,7 +505,7 @@ public class Html
         return "";
       }
     return """
-      <ul>
+      <ul class="white-space-no-wrap">
         <li>
           $3<a href='$2'>$0</a>
           $1
@@ -409,30 +516,43 @@ public class Html
         .collect(Collectors.joining())
         .replaceAll("\s$", "―"))
       .replace("$2", featureAbsoluteURL(start))
-      .replace("$0", basename(start))
+      .replace("$0", htmlEncodedBasename(start) + args(start))
       .replace("$1",
         declaredFeatures.stream()
-          .map(af -> navigation(af, mapOfDeclaredFeatures, depth + 1))
+          .map(af -> navigation(af, depth + 1))
           .collect(Collectors.joining(System.lineSeparator())));
+  }
+
+
+  private String args(AbstractFeature start)
+  {
+    if (start.valueArguments().size() == 0)
+      {
+        return "";
+      }
+    if (start.valueArguments().size() == 1)
+      {
+        return " <small>(" + start.valueArguments().size() + " arg)</small>";
+      }
+    return " <small>(" + start.valueArguments().size() + " args)</small>";
   }
 
 
   /*-----------------------------  public methods  -----------------------------*/
 
+
   /**
    * the full content
    * @return
    */
-  String content(Entry<AbstractFeature, SortedSet<AbstractFeature>> entry, AbstractFeature universe,
-    HashMap<AbstractFeature, SortedSet<AbstractFeature>> m)
+  String content(AbstractFeature af)
   {
-    var navigation = navigation(universe, m, 0);
     var bareHtml =
       """
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
             <div class="sidenav">
-              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none');" class="toggle-nav">☰</div>
+              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none');" class="toggle-nav cursor-pointer">☰</div>
               <nav style="display: none">$2</nav>
             </div>
             <div class="container">
@@ -441,10 +561,10 @@ public class Html
             </div>
           </div>
         """
-        .replace("$0", headingSection(entry.getKey()))
-        .replace("$1", mainSection(entry.getValue()))
+        .replace("$0", headingSection(af))
+        .replace("$1", mainSection(mapOfDeclaredFeatures.get(af)))
         .replace("$2", navigation);
-    return config.bare() ? bareHtml: fullHtml(entry, bareHtml);
+    return config.bare() ? bareHtml: fullHtml(af, bareHtml);
   }
 
 

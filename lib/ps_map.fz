@@ -1,0 +1,391 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature ps_map
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# ps_map -- a partially sorted map
+#
+# ps_map is a persistent map from an ordered key PK to a value V.  This map is
+# generally well-behaved with respect to cumulative and average performance.
+#
+# The keys and values are stored in arrays consisting of sorted sub-arrays,
+# with sub-arrays corresponding to the 1-bits in the binary representation
+# of the size.
+#
+# This results in cumulative memory usage in O(size log² size), worst-case
+# lookup time in O(log² size) and average addition time in O(1) and worst-case
+# addition time in O(size log² size).
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of ps_map is performance critical. If the resulting map's size n is a
+# power of 2, this will trigger the worst-case addition time resutling in
+# O(m*n log² n) for adding an element m times.
+#
+# This constructor is for internal use only, to create instance of ps_map, use
+# ps_map PK V without arguments.
+#
+ps_map
+  (
+   # key type
+   PK type : ordered PK,
+
+   # value type
+   redef V type,
+
+   # the array containg the sorted arrays, see below for details
+   data fuzion.sys.internal_array (tuple PK V),
+
+   # the number of key and value pairs in this map.
+   size i32,
+
+   # the first index in data that is unused
+   fill i32)
+
+   : Map PK V
+
+is
+
+/*
+
+The structure of the data array for different values of size and fill is as follows.
+
+size fill data.length data array structure
+ 0    0     0         .
+ 1    1     1         A
+ 2    2     3         AA-
+ 3    3     3         AAB
+ 4    4     8         AAAA----
+ 5    5     8         AAAAB---
+ 6    7     8         AAAA-BB-
+ 7    8     8         AAAA-BBC
+ 8    8    20         AAAAAAAA------------
+ 9    9    20         AAAAAAAAB-----------
+10   11    20         AAAAAAAA-BB---------
+11   12    20         AAAAAAAA-BBC--------
+12   16    20         AAAAAAAA----BBBB----
+13   17    20         AAAAAAAA----BBBBC---
+14   19    20         AAAAAAAA----BBBB-CC-
+15   20    20         AAAAAAAA----BBBB-CCD
+16   16    48         AAAAAAAAAAAAAAAA--------------------------------
+17   17    48         AAAAAAAAAAAAAAAAB-------------------------------
+18   19    48         AAAAAAAAAAAAAAAA-BB-----------------------------
+19   20    48         AAAAAAAAAAAAAAAA-BBC----------------------------
+20   24    48         AAAAAAAAAAAAAAAA----BBBB------------------------
+21   25    48         AAAAAAAAAAAAAAAA----BBBBC-----------------------
+22   27    48         AAAAAAAAAAAAAAAA----BBBB-CC---------------------
+23   28    48         AAAAAAAAAAAAAAAA----BBBB-CCD--------------------
+24   36    48         AAAAAAAAAAAAAAAA------------BBBBBBBB------------
+25   37    48         AAAAAAAAAAAAAAAA------------BBBBBBBBC-----------
+26   39    48         AAAAAAAAAAAAAAAA------------BBBBBBBB-CC---------
+27   40    48         AAAAAAAAAAAAAAAA------------BBBBBBBB-CCD--------
+28   44    48         AAAAAAAAAAAAAAAA------------BBBBBBBB----CCCC----
+29   45    48         AAAAAAAAAAAAAAAA------------BBBBBBBB----CCCCD---
+30   47    48         AAAAAAAAAAAAAAAA------------BBBBBBBB----CCCC-DD-
+31   48    48         AAAAAAAAAAAAAAAA------------BBBBBBBB----CCCC-DDE
+32   32   112         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA--------------------------------------------------------------------------------
+33   33   112         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB-------------------------------------------------------------------------------
+34   35   112         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-BB-----------------------------------------------------------------------------
+35   36   112         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-BBC----------------------------------------------------------------------------
+ etc.
+
+Whenever size reaches a power of two, a new data array is allocated.
+
+The length of the initial data array is 0, the new length for an allocation when
+size is a power of two is the old data.length * 2 + ceil(size / 2), i.e, the
+allocation f for size
+
+   0,1,2, 4, 8,16, 32, 64, 128, 256, 512, 1024, 2048, 4096,  8192, 16384,...
+
+is 0,1,3, 8,20,48,112,256, 576,1280,2816, 6144,13312,28672, 61440,131072,...
+
+and the cumulative allocation is
+
+is 0,1,4,12,32,80,192,448,1024,2304,5120,11264,24576,53248,114688,245760,...
+
+The memory usage for size n as well as the cumulative memory usage are hence in
+O(n log n).
+
+*/
+
+
+  # add mapping from k to v
+  #
+  add (k PK, v V) ps_map PK V is
+    if has k
+      panic "NYI: ps_map currently does not handle updates for existing key"
+    else
+      add (k,v)
+
+
+  # add mapping from kv.values.0 to kv.values.1
+  #
+  # Adding has a cumulative average runtime in O(log size) and a worst-case
+  # runtime of O(size)
+  #
+  add (kv (tuple PK V)) ps_map PK V is
+    nsize := size + 1
+    ndata := data
+    nfill := fill
+
+    # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
+    #
+    join (ole i32, dest i32, sz i32) ps_map PK V is
+      if (size & sz) = 0
+        ps_map ndata nsize dest+sz
+      else
+        tmp := array (tuple PK V) sz (i -> ndata[dest+i])
+        for
+          i1 := 0, if (use1) i1+1 else i1
+          i2 := 0, if (use1) i2   else i2+1
+          use1 := i1 < sz && (i2 >= sz || data[ole + i1].values.0 < tmp[i2].values.0)
+          e := if use1 then data[ole + i1] else tmp[i2]
+        do
+          ndata[dest + i1 + i2] := e
+        until i1 + i2 = 2*sz-1
+        join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
+
+    if (nsize & size) = 0
+      set ndata := fuzion.sys.internal_array (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+      set nfill := 0
+    ndata[nfill] := kv
+    join fill-1 nfill 1
+
+
+  # find the value k is mapped to or nil if k is not part of this map
+  #
+  index [] (k PK) option V is
+
+    binarySearch(l, r i32) option V is
+      m := (l + r) / 2
+      if l > r
+        nil
+      else
+        (mk,mv) := data[m]
+        c := (mk) <> k
+        if      c < 0 then binarySearch m+1 r
+        else if c > 0 then binarySearch l m-1
+        else               mv
+
+    # find k in sub-arrays starting at data[at]
+    #
+    get (at i32, sz i32, tail i32) option V is
+      if sz = 0
+        nil
+      else
+        sz0 := sz / 2
+        nt := (tail - sz0) / 2
+        at0 := (at
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        if (size & sz) != 0
+          match binarySearch at at+sz-1
+            v V => v
+            nil => get at0 sz0 nt
+        else
+          get at0 sz0 nt
+
+    subSz := size.highestOneBit
+    get 0 subSz (data.length - subSz)
+
+
+  show unit is
+    for e in asKeyArray
+        sep := "", " "
+    do
+      yak (sep + e)
+    say
+
+
+  # create sorted array of all keys in this map
+  #
+  asKeyArray array PK is
+    r := fuzion.sys.internal_array PK size
+
+    # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
+    #
+    join (ole i32, sz i32, rsz i32, skip i32) unit is
+      if sz <= size
+        if (size & sz) /= 0
+          tmp := array PK rsz (i -> r[i])
+          for
+            i1 := 0, if (use1) i1+1 else i1
+            i2 := 0, if (use1) i2   else i2+1
+            use1 := i1 < sz && (i2 >= rsz || data[ole + i1].values.0 < tmp[i2])
+            e := if (use1) data[ole + i1].values.0 else tmp[i2]
+          do
+            r[i1 + i2] := e
+          until i1 + i2 = sz+rsz-1
+          join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
+        else
+          join ole-sz 2*sz rsz (skip + sz + skip)
+
+    if size /= 0
+      join fill-1 1 0 0
+    array r unit unit unit
+
+
+  # get an array of all key/value pairs in this map
+  #
+  redef items Sequence (tuple PK V) is
+    asKeyArray.map (tuple PK V) (k -> (k, ps_map.this[k].get))
+
+
+  # get the lowest key in this map
+  #
+  min option PK is
+    if size = 0
+      nil
+    else
+      min (m PK, l i32, r i32) PK is
+        (lk, _) := data[l]
+        if (m <= lk) m else lk
+
+      min (m PK, at i32, sz i32, tail i32) PK is
+        if sz = 0
+          m
+        else
+          sz0 := sz / 2
+          nt := (tail - sz0) / 2
+          at0 := (at
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
+              min m at at+sz-1
+            else
+              m
+          min m0 at0 sz0 nt
+
+      subSz := size.highestOneBit
+      min data[0].values.0 0 subSz (data.length - subSz)
+
+
+  # get the highest key in this map
+  #
+  max option PK is
+    if size = 0
+      nil
+    else
+      max (m PK, l i32, r i32) PK is
+        (rk, _) := data[r]
+        if (m >= rk) m else rk
+
+      max (m PK, at i32, sz i32, tail i32) PK is
+        if sz = 0
+          m
+        else
+          sz0 := sz / 2
+          nt := (tail - sz0) / 2
+          at0 := (at
+                  + (if (size & sz0) /= 0 nt else 0)
+                  + (if (size & sz ) /= 0 sz else 0))
+          m0 := if ((size & sz) != 0)
+              max m at at+sz-1
+            else
+              m
+          max m0 at0 sz0 nt
+
+      subSz := size.highestOneBit
+      max data[0].values.0 0 subSz (data.length - subSz)
+
+
+  # union of two ps_maps
+  #
+  # creates a new ps_map that maps all the keys that exist either in ps_map.this
+  # or in other to the values they are mapped to.  In case a key k exists in
+  # both ps_map.this and other, it will be mapped to ps_map.this[k] or to other[k],
+  # but it is undefined to which of these two.
+  #
+  union (other ref ps_map PK V) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
+    if other.size < size
+      other ∪ ps_map.this
+    else
+
+      # helper to add 'ps_map.this.data[l..r]' to 'a' and return the resulting map.
+      #
+      addAll (a ref ps_map PK V, l i32, r i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
+        if l > r
+          a
+        else
+          kv := data[l]
+          a0 := if (a.has kv.values.0) a else a.add kv
+          addAll a0 l+1 r
+
+      # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
+      # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
+      # well.
+      #
+      addAll (a ref ps_map PK V, at i32, sz i32, tail i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
+        if sz = 0
+          a
+        else
+          sz0 := sz / 2
+          nt := (tail - sz0) / 2
+          at0 := (at
+                  + (if (size & sz0) /= 0 nt else 0)
+                  + (if (size & sz ) /= 0 sz else 0))
+          a0 := if (size & sz) != 0
+              addAll a at at+sz-1
+            else
+              a
+          addAll a0 at0 sz0 nt
+
+      addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
+
+
+  # infix operator synonym for union of two ps_maps
+  #
+  infix ∪ (other ref ps_map PK V) => union other  # NYI: #167: 'ref' due to lack of 'like this'
+
+
+# ps_maps -- unit type feature declaring features related to ps_map
+#
+# NYI: move to ps_map.type
+#
+ps_maps(PK type : ordered PK, V type) is
+
+  # empty -- an empty partially sorted map
+  #
+  # This feature creates an empty instance of ps_map.
+  #
+  empty => ps_map (fuzion.sys.internal_array (tuple PK V) 0) 0 0
+
+
+# ps_map -- routine to initialize a partially sorted map from two Sequences
+#
+# This feature creates a pre-initialized instance of ps_map.
+#
+ps_map(
+    PK type : ordered PK,
+    V type,
+    # list of keys in the map
+    ks Sequence PK,
+    # list of values corresponding to keys in the map
+    vs Sequence V)
+ =>
+  for
+    r := (ps_maps PK V).empty, r.add k v
+    k in ks
+    v in vs
+  else
+    r

@@ -33,4 +33,4 @@
 # NYI: there is also 'yak', which I currently prefer, but this needs some
 # native English speaker's advice.
 #
-spit(s ref Object) => stdout.print s
+spit(s ref Any) => stdout.print s

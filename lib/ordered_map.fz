@@ -1,0 +1,112 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature ordered_map
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# ordered_map -- an immutable map from ordered keys OK to values V
+#
+# Lookup performance is O(log size) since it uses binary search in a
+# sorted array.  When deterministic performance is desired, an ordered map
+# should be preferred over a hash map.
+#
+# performance of creation of the map is in O(n log n) where n is
+# keys.length.
+#
+ordered_map(OK type : ordered OK,
+           redef V type,
+           ks array OK,
+           vs array V) : Map OK V
+  pre
+    ks.length == vs.length
+
+is
+
+  # entry is an index in ks/vs
+  #
+  entry(i i32) : ordered entry is
+    infix <= (other entry) => ks[i] <= ks[other.i]
+    key => ks[i]
+    val => vs[i]
+
+
+  # a sorted array of entries of this map
+  #
+  sortedEntries := sorted_array_of ((0..ks.length-1).mapSequence (i -> entry i)).asArray
+
+
+  # number of entries in this map
+  #
+  size => sortedEntries.length
+
+
+  # get the value k is mapped to, or nil if none.
+  #
+  # performance is O(log size).
+  #
+  index [] (k OK) option V is
+    sortedEntries.find (e -> ks[e.i] <> k)
+                 .map (i -> sortedEntries[i].val)
+
+
+  # get an array of all key/value pairs in this map
+  #
+  items Sequence (tuple OK V) is sortedEntries.map (e -> (e.key, e.val))
+
+
+  # add mapping from k to v
+  #
+  add(k OK, v V) ordered_map OK V is
+    match index[](k)
+      nil =>
+        (ordered_map
+          (ks++[k]).asArray
+          (vs++[v]).asArray)
+      V =>
+        va := array size (i -> if ks[i]=k then v else vs[i])
+        (ordered_map ks va)
+
+
+  # create a string containing all mappings
+  #
+  redef asString =>
+    for
+      r := "", r + c + n
+      i in ks.indices
+      n := "({ks[i]} => {vs[i]})"
+      c := "", ", "
+    else
+      r
+
+
+# ordered_maps -- unit type feature declaring features related to ordered_map
+#
+# NYI: move to ordered_map.type
+#
+ordered_maps (OK type : ordered OK, V type) is
+
+
+  # create an empty instance of ordered_map
+  #
+  empty => (ordered_map
+            ((Sequence OK).type.empty).asArray
+            ((Sequence V).type.empty).asArray)

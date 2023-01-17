@@ -34,8 +34,8 @@ fuzion.std is
 
   # panic -- display a panic message and exit immediately with error code 1
   #
-  panic(msg string) void is
-    err.println "*** panic: $msg"
+  panic(msg String) void is
+    fuzion.sys.err.println "*** panic: $msg"
     exit 1
 
   # no guarantee can be given for precision nor resolution

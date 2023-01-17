@@ -1,0 +1,206 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature wrapping_integer
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# wrapping_integer -- abstract ancestor of wrap-around integer numbers
+#
+# wrapping_integer is the abstract ancestor of integer numbers that have min and
+# max values and operations with wrap-around semantics.
+#
+wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_integers W is
+
+  # overflow checking
+
+  # would negation -thiz cause an overflow?
+  wrappedOnNeg bool is abstract
+
+  # would addition thiz + other cause an overflow or underflow?
+  overflowOnAdd(other W) bool is abstract
+  underflowOnAdd(other W) bool is abstract
+  wrappedOnAdd(other W) => overflowOnAdd(other) || underflowOnAdd(other)
+
+  # would subtraction thiz - other cause an overflow or underflow?
+  overflowOnSub(other W) bool is abstract
+  underflowOnSub(other W) bool is abstract
+  wrappedOnSub(other W) => overflowOnSub(other) || underflowOnSub(other)
+
+  # would multiplication thiz * other cause an overflow or underflow?
+  overflowOnMul(other W) bool is abstract
+  underflowOnMul(other W) bool is abstract
+  wrappedOnMul(other W) => overflowOnMul(other) || underflowOnMul(other)
+
+  # preconditions used in 'numeric' for basic operations: true if the
+  # operation is permitted for the given values
+  prefix -! => !wrappedOnNeg
+  infix +! (other W) => !(overflowOnAdd other) && !(underflowOnAdd other)
+  infix -! (other W) => !(overflowOnSub other) && !(underflowOnSub other)
+  infix *! (other W) => !(overflowOnMul other) && !(underflowOnMul other)
+  infix /! (other W) => true  # other != zero is checked in separate condition
+  infix %! (other W) => true  # other != zero is checked in separate condition
+  infix **!(other W) => !(overflowOnExp other)
+
+  # neg, add, sub, mul with wrap-around semantics
+  prefix -° W is abstract
+  infix +° (other W) W is abstract
+  infix -° (other W) W is abstract
+  infix *° (other W) W is abstract
+
+  isMin => thiz == min
+  isMax => thiz == max
+
+  # check if this type of wrapping_integer is bounded
+  #
+  # wrapping_integers are assumed to be a bound set by default, so
+  # this returns true unless redefined by an implementation
+  redef is_bounded => true
+
+  # basic operations with runtime error on overflow
+
+  # negation, with check for overflow
+  redef prefix - W
+    pre
+      debug: !wrappedOnNeg
+  is -° thiz
+
+  # addition, with check for overflow
+  redef infix +  (other W) W
+    pre
+      debug: !overflowOnAdd(other),
+      debug: !underflowOnAdd(other)
+  is thiz +° other
+
+  # subtraction, with check for overflow
+  redef infix -  (other W) W
+    pre
+      debug: !overflowOnSub(other),
+      debug: !underflowOnSub(other)
+  is thiz -° other
+
+  # multiplication, with check for overflow
+  redef infix *  (other W) W
+    pre
+      debug: !overflowOnMul(other),
+      debug: !underflowOnMul(other)
+  is thiz *° other
+
+  # overflow checking operations
+  redef prefix -?          num_option W is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other W) num_option W is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other W) num_option W is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
+
+  # saturating  operations
+  redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
+  redef infix +^ (other W) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
+  redef infix -^ (other W) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
+  redef infix *^ (other W) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
+
+
+  # exponentiation for positive exponent
+  #
+  # 'zero ** zero' is permitted and results in 'one'.
+  #
+  infix ** (other W) W
+    pre
+      safety: other >= zero,
+      debug: !overflowOnExp(other)
+  is
+    thiz **° other
+
+
+  # exponentiation with wrap-around semantics
+  #
+  # 'zero **° zero' is permitted and results in 'one'.
+  #
+  infix **° (other W) W
+    pre
+      safety: other >= zero
+  is
+    if      (other = zero) one
+    else if (other = one ) thiz
+    else
+      tmp := (thiz *° thiz) **° (other / two)
+      if other %% two
+        tmp
+      else
+        tmp *° thiz
+
+
+  # exponentiation with overflow checking semantics
+  #
+  # 'zero **? zero' is permitted and results in 'one'.
+  #
+  infix **? (other W) num_option W
+    pre
+      safety: other >= zero
+  is
+    if      (other = zero) one
+    else if (other = one ) thiz
+    else
+      tmp := (thiz *? thiz) **? (other / two)
+      if other %% two
+        tmp
+      else
+        tmp *? thiz
+
+
+  # would exponentiation 'this ** other' cause an overflow?
+  #
+  overflowOnExp(other W) => (thiz **? other)!!
+
+
+  # exponentiation with saturating semantics
+  #
+  # 'zero **^ zero' is permitted and results in 'one'.
+  #
+  infix **^ (other W) W
+    pre
+      safety: other >= zero
+  is
+    if overflowOnExp other
+      if thiz >= zero || other %% two
+        max
+      else
+        min
+    else
+      thiz ** other
+
+  # bitwise NOT
+  redef prefix ~ W
+    pre
+      is_bounded
+  is
+    thiz ^ all_bits_set
+
+
+# wrapping_integers -- unit type defining features related to wrapping_integer
+# but not requiring an instance
+#
+wrapping_integers(W type : wrapping_integer W) : numerics W is
+
+  min W is abstract
+  max W is abstract
+
+  # returns the number in whose bit representation all bits are ones
+  all_bits_set W is abstract

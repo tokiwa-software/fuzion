@@ -1,0 +1,152 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature ps_set
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# ps_set -- a partially sorted set based on ps_map
+#
+# ps_set is a persistent set of ordered values.  This set is generally
+# well-behaved with respect to cumulative and average performance.
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of ps_set is performance critical. If the resulting set's size n is a
+# power of 2, this will trigger the worst-case addition time resutling in
+# O(m*n log² n) for adding an element m times.
+#
+ps_set
+  (K type : ordered K,
+   psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
+   dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
+  )
+  : Set K
+is
+
+
+  # number of elements in this set
+  #
+  size => psm.size
+
+
+  # list representation of values in this set
+  #
+  redef asList => psm.keys.asList
+
+
+  # print contents of this set
+  #
+  show => psm.show
+
+
+  # add new element k to this set.
+  #
+  add (k K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+    if has k
+      ps_set.this
+    else
+      ps_set K (psm.add k unit) unit
+
+
+  # create a sorted array from the elements of this set
+  #
+  redef asArray => psm.asKeyArray
+
+
+  # check if an element equal to given element k is part of this set
+  #
+  has (k K) => psm.has k
+
+
+  # get the lowest element in this set
+  #
+  min => psm.min
+
+
+  # get the highest element in this set
+  #
+  max => psm.max
+
+
+  # union of two ps_sets
+  #
+  infix ∪ (other ref ps_set K) => ps_set K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
+
+
+  # intersection of two ps_sets
+  infix ∩ (other ref ps_set K) =>
+    s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
+    (ps_sets K).empty.addAll s
+
+
+  # add all elements of the given Sequence to this set
+  #
+  addAll (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+    this_ref ref ps_set K := ps_set.this
+    s.reduce this_ref ((r,k) -> r.add k)
+
+
+  # number of entries in this set.  May be undefined, i.e., a range of
+  # floating point numbers or an infinite set.
+  #
+  redef sizeOption option i32 is size
+
+
+  # does this set contain the given value?
+  #
+  contains (e K) bool is has e
+
+/*
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
+*/
+
+  # an empty ps_set
+  #
+  empty => (ps_sets K).empty
+
+
+  # monoid of ps_set with infix ∪ operation.
+  #
+  union : Monoid (ps_set K) is
+    redef infix ∙ (a, b ps_set K) => a ∪ b
+    redef infix == (a, b ps_set K) => (a ∪ b).size = a.size  # NYI: a bit expensive
+    redef e => empty
+
+
+# ps_sets -- unit type feature declaring features related to ps_set
+#
+# NYI: move to ps_set.type
+#
+ps_sets(K type : ordered K) is
+
+  # ps_set -- a partially sorted set based on ps_map
+  #
+  # This feature creates an empty instance of ps_set.
+  #
+  empty => ps_set K (ps_maps K unit).empty unit
+
+
+# ps_set -- routine to initialize a partially sorted set from one Sequence
+#
+# This feature creates a pre-initialized instance of ps_set.
+#
+ps_set(K type : ordered K, vs Sequence K) => (ps_sets K).empty.addAll vs

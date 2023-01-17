@@ -36,7 +36,7 @@ marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.array T
+   private data fuzion.sys.internal_array T
    ) : Sequence T
 
   pre
@@ -59,7 +59,7 @@ is
   set [ ] (i i32, o T) unit
     pre
       safety: 0 <= i < length
-  # post   NYI: no '==' for Object yet
+  # post   NYI: no '==' for Any yet
   #   marray.this[i] == o
   is
     data[i] := o
@@ -74,7 +74,7 @@ is
   is
     d := if (data.length > length) data
       else
-        newData := fuzion.sys.array T (8.max data.length*2)
+        newData := fuzion.sys.internal_array T (8.max data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData
@@ -136,7 +136,7 @@ is
 marrays(T type)  is
 
   # This feature provides a convenient constructor for marray T length,
-  # fuzion.sys.array T unit.
+  # fuzion.sys.internal_array T unit.
   #
   new
    (# length of the marray to crate
@@ -148,7 +148,7 @@ marrays(T type)  is
    ) marray T
 
   is
-    data := fuzion.sys.array T length
+    data := fuzion.sys.internal_array T length
 
     for x in 0..length-1 do
       data[x] := init

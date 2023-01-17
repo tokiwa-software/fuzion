@@ -138,7 +138,7 @@ public class IR extends ANY
 
   public IR()
   {
-    _codeIds = new Map2Int(CODE_BASE);
+    _codeIds = new Map2Int<>(CODE_BASE);
   }
 
   /**

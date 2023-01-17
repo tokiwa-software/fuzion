@@ -1,0 +1,296 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.fileio
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fuzion.sys.fileio -- fileio presents basic features to handle File I/O operations
+#
+
+public fileio is
+
+  # reads n bytes of a file opened as fd
+  #
+  # in case the outcome is an array, it may be shorter than n. this means the end of file
+  # has been reached.
+  #
+  read(fd i64, n u64) outcome (array u8) is
+    buf := array n.as_i32 i->(u8 0)
+    res := read fd buf.internalArray.data buf.length
+
+    if res < 0
+      error "unspecified read error: {res}"
+    else if res < n.as_i64 || res = n.as_i64
+      (buf.slice 0 res.as_i32).asArray
+    else
+      error "read more than expected"
+
+
+  # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
+  # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
+  #
+  private read(
+               # the file descriptor
+               fd i64,
+               # the internal array data representing the container for the bytes to be read from the file
+               file_array Any,
+               # the length of the array that represents the file bytes
+               file_array_length i32) i64 is intrinsic
+
+
+  # retrieves the file size in bytes and returns an outcome of error in case of an error
+  #
+  public get_file_size(
+                       # the (relative or absolute) file name, using platform specific path separators
+                       path String) outcome i64 is
+    arr := fuzion.sys.c_string path
+    size := get_file_size arr unit
+    if size != -1
+      size
+    else
+      error "an error occurred while retrieving the size of the file/dir: \"$path\""
+
+  # intrinsic that returns the file size in bytes or -1 in case of an error
+  #
+  private get_file_size(
+                        # the internal array data representing the file path in bytes
+                        path Any,
+                        # dummy parameter for overloading
+                        _ unit) i64 is intrinsic
+
+
+  # writes the content of an array of bytes to a file opened as fd
+  #
+  # this might overwrite parts or all of an existing file.
+  #
+  public write(fd i64, content array u8) outcome unit is
+    res := write fd content.internalArray.data content.length
+
+    if res == 0
+      unit
+    else
+      error "write error: {res}"
+
+  # intrinsic to write bytes (internal array data) in a file using the file descriptor
+  # returns i8 0 in case of success
+  # and the error number/ -1 in the interpreter in case of failure
+  #
+  private write(
+                # the file descriptor
+                fd i64,
+                # the internal array data representing the content bytes to insert in file
+                content Any,
+                # the length of the internal array representing the content
+                content_length i32) i8 is intrinsic
+
+
+  # deletes the file/dir found in the path
+  # returns unit as outcome in case of successful deletion and error in case of failure
+  # if the targeted dir has content, then the return value will be error and the deletion will not take place
+  #
+  public delete(
+                # the (relative or absolute) file name, using platform specific path separators
+                path String) outcome unit is
+    arr := fuzion.sys.c_string path
+    if delete arr unit
+      unit
+    else
+      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
+
+  # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
+  # and FALSE in case of failure
+  #
+  private delete(
+                 # the internal array data representing the file/dir path in bytes
+                 path Any,
+                 # dummy parameter to avoid duplicate feature name
+                 _ unit) bool is intrinsic
+
+
+  #  moves file/dir from an old path to a the new path
+  # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+  # returns a unit type as outcome in case of success and error in case of failure
+  #
+  public move(
+              # the old (relative or absolute) file name, using platform specific path separators
+              old_path String,
+              # the new (relative or absolute) file name, using platform specific path separators
+              new_path String) outcome unit is
+    arr0 := fuzion.sys.c_string old_path
+    arr1 := fuzion.sys.c_string new_path
+    if move arr0 arr1 unit
+      unit
+    else
+      error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
+
+  # intrinsic that returns TRUE in case the move was successful and FALSE in case not
+  #
+  private move(
+               # the internal array data representing the old file/dir path in bytes
+               old_path Any,
+               # the internal array data representing the new file/dir path in bytes
+               new_path Any,
+               # dummy parameter for overloading
+               _ unit) bool is intrinsic
+
+
+  # creates a directory using the specified path
+  # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
+  #
+  public create_dir(
+                    # the (relative or absolute) dir name, using platform specific path separators
+                    path String) outcome unit is
+    arr := fuzion.sys.c_string path
+    if create_dir arr unit
+      unit
+    else
+      error "an error occurred while creating the following directory: \"$path\""
+
+  # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
+  #
+  private create_dir(
+                     # the internal array data representing the dir path in bytes
+                     path Any,
+                     # dummy parameter to enable overloading
+                     _ unit) bool is intrinsic
+
+
+  # intrinsic that fills an array with some metadata of the file/dir provided by the path
+  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # in case the path refers to a symbolic link it resolves it and returns info about the actual file
+  #
+  stats(
+        # the internal array data representing the file/dir path in bytes
+        path Any,
+        # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+        meta_data Any) bool is intrinsic
+
+  # intrinsic that fills an array with some metadata of the file/dir provided by the path
+  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
+  #
+  lstats(path Any, meta_data Any) bool is intrinsic # NYI behaves the same as stats in the interpreter
+
+
+  # Opens an IO source using a Fuzion Any as path and an i8 flag to represent the opening method (Read: 0, Write: 1, Append: 2)
+  # returns outcome i64 representing the file descriptor in success
+  # returns an error in failure
+  #
+  public open(
+              # a Fuzion Object represention the path for the source to be opened
+              path String,
+              # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
+              flag i8) outcome i64 is
+    open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
+    open (fuzion.sys.c_string path) open_results.internalArray.data flag
+    if open_results[1]==0
+      open_results[0]
+    else
+      error "error number: {open_results[1]}"
+
+  # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
+  # after opening the source represented by the path parameter
+  #
+  private open(
+               # a Fuzion Any represention the path for the source to be opened
+               path Any,
+               # open_results[file descriptor, error number] as a Fuzion Any
+               open_results Any,
+               # opening flag (Read: 0, Write: 1, Append: 2)
+               flag i8) unit is intrinsic
+
+
+  # Closes an IO source using an i64 representing the source handler (file descriptor)
+  # returns outcome unit in case of success and an error in case of failure
+  #
+  public close(
+               # file descriptor
+               fd i64) outcome unit is
+    closing_result := close fd unit
+    if closing_result == 0
+      unit
+    else
+      error "error number: $closing_result"
+
+  # intrinsic that takes an i64 value that represents the file descriptor and closes the stream
+  # returns an i8 to represent the result of the operation
+  # 0 in case no errors occurred and the error number in case the operation failed in the C back-end/ -1 in the interpreter
+  #
+  private close(
+                # file descriptor
+                fd i64,
+                # dummy variable to enable overload
+                _ unit) i8 is intrinsic
+
+
+  # seek offset in the stream represented by fd
+  # returns an outcome i64 that represents the new offset
+  # returns an error in case of failure
+  #
+  public seek(
+              # file descriptor
+              fd i64,
+              # the offset to seek from the beginning of this file
+              offset i64) outcome i64 is
+    arr := array 2 (i -> i64 0)
+    seek fd offset arr.internalArray.data
+    if arr[1]==0
+      arr[0]
+    else
+      error "error number: {arr[1]}"
+
+  # intrinsic to set the file-pointer offset at which the next read or write occurs
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # and fills a Fuzion object with the new offset
+  # and the error number from the C back-end/ -1 in the interpreter
+  #
+  private seek(
+               # file descriptor
+               fd i64,
+               # the offset to seek from the beginning of this file
+               offset i64,
+               # Array data [new file position, error number]
+               seek_results Any) unit is intrinsic
+
+
+  # returns the current file-pointer offset as an outcome i64,
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and error in failure
+  #
+  public file_position(
+                       # file descriptor
+                       fd i64) outcome i64 is
+    arr := array 2 (i -> i64 0)
+    file_position fd arr.internalArray.data
+    if arr[1]==0
+      arr[0]
+    else
+      error "error number: {arr[1]}"
+
+  # intrinsic that fills a Fuzion object with the current file stream position
+  # and the error number from C back-end/ -1 in the interpreter
+  #
+  private file_position(
+                        # file descriptor
+                        fd i64,
+                        # Array data [new file position, error number]
+                        position_results Any) unit is intrinsic

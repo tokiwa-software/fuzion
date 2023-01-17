@@ -61,7 +61,7 @@ public class Util
   }
 
   /**
-   * the comment belonging to this feature
+   * the comment belonging to this feature in HTML
    * @param af
    * @return
    */
@@ -86,21 +86,13 @@ public class Util
       }
     Collections.reverse(commentLines);
 
-    var commentsOfRedefinedFeatures = af
-      .redefines()
-      .stream()
-      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator()
-        + commentOf(f))
-      .collect(Collectors.joining(System.lineSeparator()));
-
-    var result = commentLines
+    var result = Html.processComment(af.qualifiedName(), commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l
         .replaceAll("^#", "")
-        .trim())
-      .collect(Collectors.joining(System.lineSeparator()))
-      + commentsOfRedefinedFeatures;
+        .replaceAll("^ ", ""))
+      .collect(Collectors.joining(System.lineSeparator())));
     return result;
   }
 

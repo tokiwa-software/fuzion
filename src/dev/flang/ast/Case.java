@@ -108,7 +108,7 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Consts.VISIBILITY_PRIVATE, t, n), null, c);
+    this(pos, new Feature(pos, Visi.PRIVATE, t, n), null, c);
   }
 
 

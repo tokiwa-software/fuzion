@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.out
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fuzion.sys.out -- unit type grouping routines to print to stdout
+#
+public out : character_encodings is
+
+  public print(s ref Any) =>
+    write s.asString.utf8.asArray
+
+  public println(s ref Any) =>
+    write (s.asString.utf8 ++ [ascii.lf]).asArray
+
+  public println =>
+    write [ascii.lf]
+
+  private write(arr array u8) =>
+    write arr.internalArray.data arr.length
+
+  private write(arrayData Any, length i32) unit is intrinsic
+  private flush unit is intrinsic

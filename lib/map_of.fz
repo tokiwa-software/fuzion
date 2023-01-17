@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature map_of
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# map_of -- routine to initialize a map from arrays of ordered elements
+# and values
+#
+# This feature creates an instance of a map.
+#
+map_of(K type : ordered K, V type, ks array K, vs array V) Map K V is ordered_map ks vs
+
+
+# map_of -- routine to initialize a map from an array of key value tuples
+#
+# This feature creates an instance of a map.
+#
+# example: map_of [(key1, value1), (key2, value2)]
+#
+map_of(K type : ordered K, V type, kvs array (tuple K V)) Map K V is
+  ordered_map (kvs.map (kv -> kv.values.0)) (kvs.map (kv -> kv.values.1))

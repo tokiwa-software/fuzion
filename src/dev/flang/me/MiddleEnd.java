@@ -252,6 +252,13 @@ public class MiddleEnd extends ANY
           {
             markUsed(rf, usedAt);
           }
+        if (f.hasTypeFeature())
+          { // NYI: This might mark too many type features. It shold be
+            // sufficient to mark all type features of types passed as type
+            // parameters and of all features that whose ancestors use this.type
+            // (i.e., Types.get) to access the current type instance.
+            markUsed(f.typeFeature(), false, usedAt);
+          }
       }
   }
 
@@ -317,7 +324,7 @@ public class MiddleEnd extends ANY
     if (cf != null)
       {
         markUsed(cf, c.isDynamic(), c);
-        for (var t : c.generics())
+        for (var t : c.actualTypeParameters())
           {
             if (!t.isGenericArgument())
               {

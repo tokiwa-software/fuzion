@@ -58,7 +58,7 @@ webserver is
 
        req := read?
        say "got request ({req.byteLength} bytes): $req"
-       if req.startsWith "GET "
+       if req.starts_with "GET "
          (send200 "<html>Hello Fuzion $n!</html>")?
 
        # close streams
@@ -105,7 +105,7 @@ webserver is
 
                        req := read
                        say "got request ({req.byteLength} bytes): $req"
-                       if req.startsWith "GET "
+                       if req.starts_with "GET "
                          send200 "<html>Hello Fuzion $n!</html>"
 
                        # close streams

@@ -1,0 +1,398 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue874
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# all the tests are directly declared in the universe
+
+# first example from #874 assigning n.this to a field
+#
+test_this1 is
+
+  n is
+    m => 3
+    l =>
+      for
+        x := n.this
+        y := x.m
+      while false
+
+  i : n.
+
+  _ := i.l
+
+test_this1
+
+
+# second example from #874 assigning n.this to a field
+#
+test_this2 is
+
+  n is
+    m => 3
+    l =>
+      for
+        x := n.this
+        y := x.m
+      while false
+
+  i : n.
+
+  _ := n.l
+
+test_this2
+
+
+# third example from #874 and #885
+#
+test_this3 is
+
+  num is
+
+    type.zero num.this.type is abstract
+    type.one  num.this.type is abstract
+    lessThan(other num.this.type) bool is abstract
+    minus(other num.this.type) num.this.type is abstract
+
+    to_u32_loop =>
+      for
+        x := num.this, x.minus num.this.type.one
+        u := u32 0, u+1
+      while num.this.type.zero.lessThan x
+
+    redef asString => "num.this.type {to_u32_loop} 'asString'"
+
+  intM5(v u8) : num is
+    fixed type.zero => test_this3.intM5 0
+    fixed type.one => test_this3.intM5 1
+    fixed lessThan(other intM5) => v < other.v
+    fixed plus(other intM5) => intM5 (v + other.v)%5
+    fixed minus(other intM5) => intM5 (v - other.v)%5
+
+y := test_this3.intM5 1
+say (y.plus y)
+
+# fourth example from #874 and #886
+#
+test_this4 is
+
+  num is
+
+    type.zero num.this.type is abstract
+    type.one  num.this.type is abstract
+    lessThan(other num.this.type) bool is abstract
+    minus(other num.this.type) num.this.type is abstract
+
+    to_u32_loop =>
+      for
+        x := num.this, x.minus num.this.type.one
+        u := u32 0, u+1
+      while num.this.type.zero.lessThan x
+      else
+        u
+
+    redef asString => "num.this.type {to_u32_loop} 'asString'"
+
+
+  intM5(v u8) : num is
+    fixed type.zero => test_this4.intM5 0
+    fixed type.one => test_this4.intM5 1
+    fixed lessThan(other intM5) => v < other.v
+    fixed plus(other intM5) => intM5 (v + other.v)%5
+    fixed minus(other intM5) => intM5 (v - other.v)%5
+
+y := test_this4.intM5 1
+say (y.plus y)
+
+
+
+# example from #891
+#
+test_cov is
+
+  n is
+
+    p (other n.this.type) n.this.type is abstract
+
+    f =>
+      x := n.this
+      y := x.p n.this
+
+    redef asString => "{f}"
+
+  i(isZero bool) : n is
+    fixed p(other i) => other
+
+say (test_cov.i false)
+
+
+# example from #891 change such that is caused pop on empty stack
+#
+test_cov_DFA_pop is
+
+  n is
+    r =>
+      x := n.this
+      x.asString
+
+  i : n is
+
+  _ := i.r
+  o ref n := i
+  _ := o.r
+
+test_cov_DFA_pop
+
+
+# exmple from #891, but declaring n as ref
+#
+test_cov2 is
+
+  n ref is
+
+    p (other n.this.type) n.this.type is abstract
+
+    f =>
+      x := n.this
+      y := x.p n.this
+
+    redef asString => "{f}"
+
+  i(isZero bool) : n is
+    fixed p(other i) => other
+
+s := (test_cov2.i false).asString
+say s
+
+
+# exmple from #891, but declaring n as ref and simplified
+#
+test_cov2a0 is
+
+  n ref is
+
+    p (other n.this.type) n.this.type is abstract
+
+    f =>
+      x := n.this
+      y := x.p n.this
+
+  i(isZero bool) : n is
+    fixed p(other i) => other
+
+_ := (test_cov2a0.i false).f
+
+
+
+# example form #904
+#
+test_cov3 is
+  a ref is
+
+    f (o a.this.type) unit is
+    g => f a.this
+
+  b : a is
+
+  _ := b
+
+_ := test_cov3
+
+
+# example form #904, modified to call g
+#
+test_cov3a is
+  a ref is
+
+    f (o a.this.type) unit is
+    g => f a.this
+
+  b : a is
+  b.g
+
+_ := test_cov3a
+
+
+# exmple form #905
+#
+test_cov4 is
+  a ref is
+
+  #  x := ""
+  #  say x
+    f (o a.this.type) unit is
+    f a.this
+
+  b : a is
+
+  _ := b
+
+_ := test_cov4
+
+
+# exmple form #905 with a and b containing data, so not unit types
+#
+test_cov4a is
+  a ref is
+
+    x := ""
+    say x
+    f (o a.this.type) unit is
+    f a.this
+
+  b : a is
+
+  _ := b
+
+_ := test_cov4a
+
+
+# example from #923
+#
+test_return_this is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "a"
+
+  b : a is
+    redef asString => "b"
+
+  say a.x
+  say b.x
+
+test_return_this
+
+
+# second example from #923
+#
+a is
+  x a.this.type is
+    a.this
+  redef asString => "a"
+
+b : a is
+  redef asString => "b"
+
+say a.x
+say b.x
+
+
+# extended second example from #923, using nested child and nested parent
+#
+q is
+  b : a is
+    redef asString => "q.b"
+
+r is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "r.a"
+
+c : r.a is
+  redef asString => "c"
+
+say q.b.x
+say r.a.x
+say c.x
+
+
+# more complex nesting that causes error clazz to be created
+#
+d is
+  y => 3
+  x d.this.type is
+    d.this
+    redef asString => "d"
+
+t is
+  e : d is
+    redef y := 4
+    redef asString => "s.e"
+
+_ := t.e.x.y
+
+
+# example that creates C code that uses a unit value, resulting in C compilation failure
+#
+ua is
+  x ua.this.type is
+    ua.this
+  redef asString => "a"
+
+ub : ua is
+  redef asString => "b"
+
+uq is
+  v := "v"
+  say v
+  b : ua is
+    redef asString => "q.b"
+
+ur is
+  a is
+    x a.this.type is
+      a.this
+    redef asString => "r.a"
+
+uc : ur.a is
+  redef asString => "c"
+
+say ua.x
+say ub.x
+say uq.b.x
+say ur.a.x
+say uc.x
+
+
+# exmple from #930
+#
+test_generic_this_type is
+
+  g(T type) is
+    f(o g.this.type) =>
+      say g.this
+      say o
+
+    call_f =>
+      f g.this
+
+    redef asString => "g $T"
+
+  h : g bool is
+    redef asString => "h"
+
+  a := g i32
+  b := g i32
+  ha := h
+  hb := h
+
+  a.call_f
+  b.call_f
+  ha.call_f
+  hb.call_f
+
+  # a.f b      // NYI: b is currently incompatible to g.this.type
+  # ha.f hb    // NYI: hb is currently incompatible to h.this.type

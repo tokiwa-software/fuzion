@@ -27,7 +27,7 @@ genericstest is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
@@ -38,7 +38,7 @@ genericstest is
   List(T type) is
     public Node(
       public el T,
-      public n, p OptNode) ref : Object is
+      public n, p OptNode) ref : Any is
 
     public Nil is
     OptNode : choice Node Nil is
@@ -162,7 +162,7 @@ genericstest is
         p is
           say "y is{y}"
     x0 A i32 bool := A i32 bool
-    x1 (A i32 bool).B string bool := (A i32 bool).B string bool true
+    x1 (A i32 bool).B String bool := (A i32 bool).B String bool true
     x1.p
     unit
 

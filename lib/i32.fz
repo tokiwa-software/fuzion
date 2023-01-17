@@ -25,7 +25,7 @@
 
 # i32 -- 32-bit signed integer values
 #
-i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
+i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
   redef thiz => i32.this.val
   redef orderedThis => i32.this.val
@@ -84,7 +84,7 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
   redef infix >  (other i32) bool is intrinsic
   redef infix >= (other i32) bool is intrinsic
 
-  type.equality(a, b i32) bool is intrinsic
+  fixed type.equality(a, b i32) bool is intrinsic
 
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
@@ -180,18 +180,18 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
 
   # identity element for 'infix +'
   #
-  type.zero => 0
+  fixed type.zero => 0
 
 
   # identity element for 'infix *'
   #
-  type.one  => 1
+  fixed type.one  => 1
 
 
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
-i32s : wrappingIntegers i32 is
+i32s : wrapping_integers i32 is
 
   redef name => "i32"
 

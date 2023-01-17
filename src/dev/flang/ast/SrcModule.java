@@ -72,8 +72,8 @@ public interface SrcModule
   void checkTypes(Feature f);
   AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o);
 
-  AbstractFeature addTypeFeature(AbstractFeature outerType,
-                                 Feature         innerType);
+  void addTypeFeature(AbstractFeature outerType,
+                      Feature         innerType);
 
   /*----------------------  methods needed by AIR  ----------------------*/
 

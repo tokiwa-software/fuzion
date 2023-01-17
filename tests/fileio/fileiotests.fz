@@ -36,23 +36,36 @@ fileiotests =>
   writer := f.write
   reader := f.read
 
-  say "$dir exists: {(f.exists dir).val}"
+  exists(path String) bool is
+    match f.stat path true
+      io.file.meta_data => true
+      error => false
+
+  say "$dir exists: {exists dir}"
   match writer.create_dir dir
     unit => say "$dir was created"
     error =>
-  say "$dir exists: {(f.exists dir).val}"
+  say "$dir exists: {exists dir}"
 
-  say "$file exists: {(f.exists file).val}"
-  match writer.write_all file content.utf8.asArray
+  say "$file exists: {exists file}"
+  match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
+      res := writer.write fd content.utf8.asArray
+      fuzion.sys.fileio.close fd
+      res)
     unit => say "$file was created"
     error =>
-  say "$file exists: {(f.exists file).val}"
+  say "$file exists: {exists file}"
 
   say "$file size is {(f.stat file true).val.size}"
 
-  match reader.read_all file
+  # NYI: we need to use fuzion.sys.fileio directly until we have a
+  # closeable effect.
+  match (fuzion.sys.fileio.open file (i8 0)).bind (array u8) (fd->
+      res := reader.read_file fd
+      fuzion.sys.fileio.close fd
+      res)
     bytes array u8 =>
-      filecontent := strings.fromBytes bytes
+      filecontent := String.type.fromBytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>
@@ -60,17 +73,17 @@ fileiotests =>
   match f.delete file
     unit => say "$file was deleted"
     error =>
-  say "$file exists: {(f.exists file).val}"
+  say "$file exists: {exists file}"
 
-  say "$dir exists: {(f.exists dir).val}"
-  say "$newdir exists: {(f.exists newdir).val}"
+  say "$dir exists: {exists dir}"
+  say "$newdir exists: {exists newdir}"
   match f.move dir newdir
     unit => say "$dir is now: $newdir"
     error =>
-  say "$newdir exists: {(f.exists newdir).val}"
-  say "$dir exists: {(f.exists dir).val}"
+  say "$newdir exists: {exists newdir}"
+  say "$dir exists: {exists dir}"
 
   match f.delete newdir
     unit => say "$newdir was deleted"
     error =>
-  say "$newdir exists: {(f.exists newdir).val}"
+  say "$newdir exists: {exists newdir}"

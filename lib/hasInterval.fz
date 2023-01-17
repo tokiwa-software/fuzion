@@ -25,7 +25,7 @@
 
 # hasInterval -- feature for integers that can define an interval
 #
-hasInterval(H (hasInterval H).type) : integer H is
+hasInterval(H type : hasInterval H) : integer H is
   max  H is abstract
 /*
   zero T is abstract
@@ -61,7 +61,7 @@ hasInterval(H (hasInterval H).type) : integer H is
 
     # create a stream of all the elements of this interval, in order.
     redef asStream ref : stream H is
-      x := numOption lower
+      x := num_option lower
       redef hasNext bool is x.exists && x.val <= upper
       redef next H is res := x.val; set x := x +? one; res
 
@@ -84,7 +84,7 @@ hasInterval(H (hasInterval H).type) : integer H is
 
       # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream H is
-        x := numOption lower
+        x := num_option lower
         redef hasNext bool is
           (step > zero && x.exists && x.val <= upper ||
            step < zero && x.exists && x.val >= upper    )

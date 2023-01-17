@@ -79,8 +79,8 @@ public class Intrinsics extends ANY
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
-    put("fuzion.std.args.count", (c,cl,outer,in) -> c._names.GLOBAL_ARGC.ret());
-    put("fuzion.std.args.get"  , (c,cl,outer,in) ->
+    put("fuzion.sys.args.count", (c,cl,outer,in) -> c._names.GLOBAL_ARGC.ret());
+    put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
           var tmp = new CIdent("tmp");
           var str = c._names.GLOBAL_ARGV.index(A0);
@@ -89,8 +89,8 @@ public class Intrinsics extends ANY
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
     put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
-    put("fuzion.std.out.write" ,
-        "fuzion.std.err.write" , (c,cl,outer,in) ->
+    put("fuzion.sys.out.write" ,
+        "fuzion.sys.err.write" , (c,cl,outer,in) ->
         {
           // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
           return CExpr.call("fwrite",
@@ -101,26 +101,26 @@ public class Intrinsics extends ANY
                                 outOrErr(in)
                               ));
         });
-    IntrinsicCode noFileIo = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
-                 CExpr.exit(1));
-    put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.read"         , (c,cl,outer,in) ->
         {
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
-          var errno = new CIdent("errno");
+          var zero = new CIdent("0");
           return CStmnt.seq(
-            errno.assign(new CIdent("0")),
+            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("bool", resultIdent, new CIdent("true")),
-            // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(readingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
-            errno.castTo("fzT_1i8").ret()
-            );
-        }
-        );
-    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+            CExpr.decl("fzT_1i64", resultIdent, readingIdent.castTo("fzT_1i64")),
+            CExpr.iff(
+              CExpr.notEq(readingIdent, A2.castTo("size_t")),
+              CStmnt.seq(
+                CExpr.iff(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(readingIdent.castTo("fzT_1i64"))),
+                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(CExpr.int64const(-1))),
+                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
+            resultIdent.ret());
+        });
+    put("fuzion.sys.fileio.get_file_size", (c,cl,outer,in) ->
         {
           var statIdent = new CIdent("statbuf");
           var resultIdent = new CIdent("result");
@@ -134,39 +134,28 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.write"        , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.write"        , (c,cl,outer,in) ->
         {
           var writingIdent = new CIdent("writing");
+          var flushingIdent = new CIdent("flushing");
           var resultIdent = new CIdent("result");
           var errno = new CIdent("errno");
+          var zero = new CIdent("0");
           return CStmnt.seq(
-            errno.assign(new CIdent("0")),
+            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
             CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("bool", resultIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
-            CExpr.iff(resultIdent.not(), errno.castTo("fzT_1i8").ret()),
-            // If EOF is reached then the operation was successful otherwise FALSE will be returned
-            CExpr.iff(CExpr.notEq(writingIdent, A2.castTo("size_t")), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), CExpr.int8const(0)))),
-            CExpr.iff(resultIdent, CExpr.int8const(0).ret()),
-            errno.castTo("fzT_1i8").ret()
-            );
-        }
-        );
-    put("fuzion.std.fileio.exists"       ,  (c,cl,outer,in) ->
-        {
-          var fileIdent = new CIdent("f");
-          return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
-            // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent, new CIdent("NULL")),
-            CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
-            // If errno is ENOENT, file/dir does not exist
-            CExpr.iff(CExpr.eq(new CIdent("errno"), new CIdent("ENOENT")), CExpr.int8const(0).ret()),
-            // else return -1 to represent other errors
-            CExpr.int8const(-1).ret()
-            );
-        }
-        );
-    put("fuzion.std.fileio.delete"       ,  (c,cl,outer,in) ->
+            CExpr.decl("fzT_1i8", resultIdent, CExpr.int8const(0)),
+            CExpr.iff(
+              CExpr.notEq(writingIdent, A2.castTo("size_t")),
+              CStmnt.seq(
+                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+                  resultIdent.assign(CExpr.int8const(-1))),
+                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
+            CExpr.decl("bool", flushingIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
+            CExpr.iff(flushingIdent.not(), resultIdent.assign(errno.castTo("fzT_1i8"))),
+            resultIdent.ret());
+        });
+    put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
@@ -176,7 +165,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.move"         , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.move"         , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
@@ -187,7 +176,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.create_dir"   , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
@@ -197,7 +186,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.stats"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.stats"   , (c,cl,outer,in) ->
         {
           var statIdent = new CIdent("statbuf");
           var metadata = new CIdent("metadata");
@@ -221,7 +210,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
+    put("fuzion.sys.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
         {
           var statIdent = new CIdent("statbuf");
           var metadata = new CIdent("metadata");
@@ -245,7 +234,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.open"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.open"   , (c,cl,outer,in) ->
         {
           var filePointer = new CIdent("fp");
           var openResults = new CIdent("open_results");
@@ -285,7 +274,7 @@ public class Intrinsics extends ANY
                     CStmnt.BREAK
                     )
                   )
-                ), 
+                ),
               CStmnt.seq(
                 CExpr.fprintfstderr("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\n"),
                 CExpr.exit(1)
@@ -295,7 +284,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.close"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.close"   , (c,cl,outer,in) ->
         {
           var errno = new CIdent("errno");
           return CStmnt.seq(
@@ -305,7 +294,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.seek"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.seek"   , (c,cl,outer,in) ->
         {
           var seekResults = new CIdent("seek_results");
           var errno = new CIdent("errno");
@@ -318,7 +307,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.file_position"   , (c,cl,outer,in) ->
+    put("fuzion.sys.fileio.file_position"   , (c,cl,outer,in) ->
         {
           var positionResults = new CIdent("position_results");
           var errno = new CIdent("errno");
@@ -330,9 +319,9 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.out.flush" ,
-        "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
-    put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
+    put("fuzion.sys.out.flush"      ,
+        "fuzion.sys.err.flush"      , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
+    put("fuzion.sys.stdin.next_byte", (c,cl,outer,in) ->
         {
           var cIdent = new CIdent("c");
           return CStmnt.seq(
@@ -401,10 +390,10 @@ public class Intrinsics extends ANY
         "i16.infix =="         ,
         "i32.infix =="         ,
         "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.#type_STATIC.equality",
-        "i16.#type_STATIC.equality",
-        "i32.#type_STATIC.equality",
-        "i64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.type.equality"     ,
+        "i16.type.equality"    ,
+        "i32.type.equality"    ,
+        "i64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.infix !="          ,
         "i16.infix !="         ,
         "i32.infix !="         ,
@@ -475,10 +464,10 @@ public class Intrinsics extends ANY
         "u16.infix =="         ,
         "u32.infix =="         ,
         "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.#type_STATIC.equality",
-        "u16.#type_STATIC.equality",
-        "u32.#type_STATIC.equality",
-        "u64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.type.equality"     ,
+        "u16.type.equality"    ,
+        "u32.type.equality"    ,
+        "u64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.infix !="          ,
         "u16.infix !="         ,
         "u32.infix !="         ,
@@ -543,8 +532,8 @@ public class Intrinsics extends ANY
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.infix =="         ,
         "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.#type_STATIC.equality",
-        "f64.#type_STATIC.equality", (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.type.equality"    ,
+        "f64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix !="         ,
         "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <"          ,
@@ -627,7 +616,7 @@ public class Intrinsics extends ANY
     put("f32s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Object.hashCode"      , (c,cl,outer,in) ->
+    put("Any.hashCode"         , (c,cl,outer,in) ->
         {
           var or = c._fuir.clazzOuterRef(cl);
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
@@ -635,7 +624,7 @@ public class Intrinsics extends ANY
             : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
           return hc.ret();
         });
-    put("Object.asString"      , (c,cl,outer,in) ->
+    put("Any.asString"         , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
           var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
@@ -646,20 +635,20 @@ public class Intrinsics extends ANY
                             res.castTo(c._types.clazz(rc)).ret());
         });
 
-    put("fuzion.sys.array.alloc", (c,cl,outer,in) ->
+    put("fuzion.sys.internal_array.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
-    put("fuzion.sys.array.setel", (c,cl,outer,in) ->
+    put("fuzion.sys.internal_array.setel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
-    put("fuzion.sys.array.get" , (c,cl,outer,in) ->
+    put("fuzion.sys.internal_array.get", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
@@ -900,14 +889,14 @@ public class Intrinsics extends ANY
    * Get the proper output file handle 'stdout' or 'stderr' depending on the
    * prefix of the intrinsic feature name in.
    *
-   * @param in name of an intrinsic feature in fuzion.std.out or fuzion.std.err.
+   * @param in name of an intrinsic feature in fuzion.sys.out or fuzion.sys.err.
    *
    * @return CIdent of 'stdout' or 'stderr'
    */
   private static CIdent outOrErr(String in)
   {
-    if      (in.startsWith("fuzion.std.out.")) { return new CIdent("stdout"); }
-    else if (in.startsWith("fuzion.std.err.")) { return new CIdent("stderr"); }
+    if      (in.startsWith("fuzion.sys.out.")) { return new CIdent("stdout"); }
+    else if (in.startsWith("fuzion.sys.err.")) { return new CIdent("stderr"); }
     else                                       { throw new Error("outOrErr called on "+in); }
   }
 
