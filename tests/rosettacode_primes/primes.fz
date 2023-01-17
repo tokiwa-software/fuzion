@@ -44,7 +44,7 @@ primes is
     (2..n).for_each (i ->
         if !a[i]
           yak "$i "
-          (1..n).forWhile (j ->
+          (1..n).for_while (j ->
               a[i*j] := true;
               (i*j+i) <= n
             )

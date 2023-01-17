@@ -136,7 +136,7 @@ Sequence(T type) ref is
 
   # create a new stream and apply 'f' to each element 'e' as long as 'f e'
   #
-  forWhile(f T -> bool) unit is as_stream.forWhile f
+  for_while(f T -> bool) unit is as_stream.for_while f
 
 
   # create a new stream that contains the first elements of this stream for
@@ -206,22 +206,22 @@ Sequence(T type) ref is
   # at may be <= 0 or >= count, in which case the resulting tuple will be the
   # (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
   #
-  splitAt(at i32) => ((take at), (drop at))
+  split_at(at i32) => ((take at), (drop at))
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  takeWhile (p T -> bool) => as_list.takeWhile p
+  take_while (p T -> bool) => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  dropWhile (p T -> bool) => as_list.dropWhile p
+  drop_while (p T -> bool) => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  concatSequences (s Sequence T) Sequence T is as_list.concat s.as_list
+  concat_sequences (s Sequence T) Sequence T is as_list.concat s.as_list
 
 
   # infix operand synonym for concatSequences
@@ -328,7 +328,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sortBy(O type : ordered O, f T->O) => sort (a, b -> f a <= f b)
+  sort_by(O type : ordered O, f T->O) => sort (a, b -> f a <= f b)
 
 
   # create a new list from the result of applying 'f' to the
@@ -433,11 +433,11 @@ Sequence(T type) ref is
 
   # monoid of Sequences with infix concatentation operation.
   #
-  type.concatMonoid : Monoid (Sequence T) is
+  type.concat_monoid : Monoid (Sequence T) is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence T) Sequence T is a.concatSequences b
+    infix ∙ (a, b Sequence T) Sequence T is a.concat_sequences b
 
     # equality
     #
@@ -459,7 +459,7 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn(A type : hasEquals A, l Sequence A, x A) => (searchable_sequence A l).index_of x
+  index_in(A type : hasEquals A, l Sequence A, x A) => (searchable_sequence A l).index_of x
 
 
   # get the index of x within this Sequence or nil if it does not exist

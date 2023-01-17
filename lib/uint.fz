@@ -31,7 +31,7 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := b.dropWhile (x -> x = 0)
+  data := b.drop_while (x -> x = 0)
 
   # bitwise operations
 
@@ -255,7 +255,7 @@ is
         # zip the two equally long lists of digits
         .zip other.data (a,b -> (a,b))
         # skip to first unequal
-        .dropWhile (x -> (a,b) := x; a = b)
+        .drop_while (x -> (a,b) := x; a = b)
         # compare
         .mapSequence (x -> (a,b) := x; a <= b)
         # fallback, if all are equal

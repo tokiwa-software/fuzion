@@ -469,7 +469,7 @@ is
 
   # find k in linked nodes
   private find(ln list_node CTK CTV, k CTK) choice restart not_found CTV is
-    match ln.dropWhile(sn -> sn.k /= k).head
+    match ln.drop_while(sn -> sn.k /= k).head
           nil => not_found
           sn singleton_node => sn.v
 

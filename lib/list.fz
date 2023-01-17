@@ -326,7 +326,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  redef takeWhile (p A -> bool) list A
+  redef take_while (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
@@ -334,20 +334,20 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
         if p c.head
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => c.tail.takeWhile p
+            redef tail => c.tail.take_while p
         else
           nil
 
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  redef dropWhile (p A -> bool) list A
+  redef drop_while (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
       c Cons =>
         if p c.head
-          c.tail.dropWhile p
+          c.tail.drop_while p
         else
           c
 
@@ -362,7 +362,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   private filter0 (p A -> bool) list A is
-    match dropWhile (a -> !(p a))
+    match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head

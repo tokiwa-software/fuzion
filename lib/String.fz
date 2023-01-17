@@ -504,16 +504,16 @@ String ref : has_equality, hasHash String, ordered String is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list String is
-    l := utf8.as_list.dropWhile (c -> is_ascii_white_space c)
+    l := utf8.as_list.drop_while (c -> is_ascii_white_space c)
     if l.is_empty
       nil
     else
       ref : Cons String (list String)
-        head =>  String.type.from_bytes (l.takeWhile (c -> !is_ascii_white_space c))
-        tail => (String.type.from_bytes (l.dropWhile (c -> !is_ascii_white_space c))).split
+        head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
+        tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
         # NYI using the inherited 'from_bytes' as in
         #
-        #   head =>  from_bytes l.takeWhile fun (c i32) => !is_ascii_white_space c
+        #   head =>  from_bytes l.take_while fun (c i32) => !is_ascii_white_space c
         #
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
@@ -539,8 +539,8 @@ String ref : has_equality, hasHash String, ordered String is
   trim String is
     s0 := utf8
 
-    s1 := (s0.dropWhile (fun is_ascii_white_space)).reverse
-    s2 := (s1.dropWhile (fun is_ascii_white_space)).reverse
+    s1 := (s0.drop_while (fun is_ascii_white_space)).reverse
+    s2 := (s1.drop_while (fun is_ascii_white_space)).reverse
 
 # NYI: This causes fz to crash:
 #   from_bytes s2
@@ -553,7 +553,7 @@ String ref : has_equality, hasHash String, ordered String is
   trim_start =>
 # NYI: This causes fz to crash:
 #   from_bytes ...
-    String.type.from_bytes (utf8.dropWhile (fun is_ascii_white_space))
+    String.type.from_bytes (utf8.drop_while (fun is_ascii_white_space))
 
 
   # remove trailing white space from this string
@@ -561,7 +561,7 @@ String ref : has_equality, hasHash String, ordered String is
   trim_end =>
 # NYI: This causes fz to crash:
 #   from_bytes ...
-    String.type.from_bytes (utf8.as_list.reverse.dropWhile (fun is_ascii_white_space)).reverse
+    String.type.from_bytes (utf8.as_list.reverse.drop_while (fun is_ascii_white_space)).reverse
 
 
   # is this part of given set
