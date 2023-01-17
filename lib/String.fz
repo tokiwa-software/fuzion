@@ -697,7 +697,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # create string from the given codepoints
   #
-  type.fromCodepoints(codePoints Sequence codepoint) String is
+  type.from_codepoint_sequence(codePoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
         codePoints
