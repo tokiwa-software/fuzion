@@ -459,18 +459,18 @@ String ref : has_equality, hasHash String, ordered String is
       nil => found >>= (pos -> pos - substring.byteLength)
       idx i32 =>
         skip := idx + substring.byteLength
-        s := String.type.fromBytes (utf8.drop skip)
+        s := String.type.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurrences of old by new
   #
-  replace (old, new String) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
+  replace (old, new String) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  replace(old, new String, n u64) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  replace(old, new String, n u64) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -509,11 +509,11 @@ String ref : has_equality, hasHash String, ordered String is
       nil
     else
       ref : Cons String (list String)
-        head =>  String.type.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
-        tail => (String.type.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
-        # NYI using the inherited 'fromBytes' as in
+        head =>  String.type.from_bytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
+        tail => (String.type.from_bytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
+        # NYI using the inherited 'from_bytes' as in
         #
-        #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
+        #   head =>  from_bytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
         #
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
@@ -543,25 +543,25 @@ String ref : has_equality, hasHash String, ordered String is
     s2 := (s1.dropWhile (fun isAsciiWhiteSpace)).reverse
 
 # NYI: This causes fz to crash:
-#   fromBytes s2
+#   from_bytes s2
 
-    String.type.fromBytes s2
+    String.type.from_bytes s2
 
 
   # remove leading white space from this string
   #
   trimStart =>
 # NYI: This causes fz to crash:
-#   fromBytes ...
-    String.type.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
+#   from_bytes ...
+    String.type.from_bytes (utf8.dropWhile (fun isAsciiWhiteSpace))
 
 
   # remove trailing white space from this string
   #
   trimEnd =>
 # NYI: This causes fz to crash:
-#   fromBytes ...
-    String.type.fromBytes (utf8.as_list.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
+#   from_bytes ...
+    String.type.from_bytes (utf8.as_list.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
 
 
   # is this part of given set
@@ -629,8 +629,8 @@ String ref : has_equality, hasHash String, ordered String is
         l := byteLength
         sepl := sep.byteLength
 
-        before := String.type.fromBytes (utf8.slice 0 i)
-        after := String.type.fromBytes (utf8.slice (i + sepl) l)
+        before := String.type.from_bytes (utf8.slice 0 i)
+        after := String.type.from_bytes (utf8.slice (i + sepl) l)
         (before, after, true)
 
 
@@ -690,7 +690,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # create string from the given utf8 bytes
   #
-  type.fromBytes(utf8Bytes Sequence u8) String is
+  type.from_bytes(utf8Bytes Sequence u8) String is
     ref : String
       redef utf8 => utf8Bytes
 

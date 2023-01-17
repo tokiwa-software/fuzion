@@ -65,7 +65,7 @@ fileiotests =>
       fuzion.sys.fileio.close fd
       res)
     bytes array u8 =>
-      filecontent := String.type.fromBytes bytes
+      filecontent := String.type.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

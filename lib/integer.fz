@@ -143,7 +143,7 @@ integer(I type : integer I) : numeric I is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sign, digits) := if (integer.this.sign < 0) ("-", String.type.fromBytes (n.utf8.drop 1)) else ("", n)
+    (sign, digits) := if (integer.this.sign < 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * 0.max (len - n.byteLength)
