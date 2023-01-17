@@ -32,7 +32,7 @@
 # actions, such as calling asString on a stream will consume values and thus
 # change the state of the stream, as the following example demonstrates:
 #
-#   a := [1, 2, 3, 4, 5].asStream
+#   a := [1, 2, 3, 4, 5].as_stream
 #   say a
 #   say a
 #
@@ -44,14 +44,14 @@
 # mutable state.
 stream(redef T type) ref : Sequence T is
 
-  asList0 option (some (list T)) := nil
+  as_list0 option (some (list T)) := nil
 
   # create a list from this stream
   #
-  redef asList list T is
-    if !asList0.exists
-      set asList0 := some fromStream
-    asList0.get.val
+  redef as_list list T is
+    if !as_list0.exists
+      set as_list0 := some fromStream
+    as_list0.get.val
 
   # this must not be called more than once!
   private fromStream list T is
@@ -77,7 +77,7 @@ stream(redef T type) ref : Sequence T is
     while hasNext
       x := next
     else
-      (a.take i).asList
+      (a.take i).as_list
 
 
   # Return this stream as a stream.
@@ -85,7 +85,7 @@ stream(redef T type) ref : Sequence T is
   # This is a helper function that needs to be defined because stream is an heir
   # of Sequence.
   #
-  redef asStream stream T is stream.this
+  redef as_stream stream T is stream.this
 
 
   # apply f to all elements in this stream
@@ -118,7 +118,7 @@ stream(redef T type) ref : Sequence T is
 
   # create new stream from all elements for which predicate f is true
   #
-  redef filter(f T -> bool) => asList.filter f
+  redef filter(f T -> bool) => as_list.filter f
 
 
   # check if predicate f holds for all elements produced by this stream
@@ -171,13 +171,13 @@ stream(redef T type) ref : Sequence T is
   #
   redef count i32 is
     # NYI: check if this works: (map i32 x->1).fold i32.sum
-    asList.map i32 x->1
+    as_list.map i32 x->1
           .fold i32.sum
 
 
   # collect all items from this stream into an array
   #
-  redef asArray array T is
+  redef as_array array T is
     for
       a := marray 0 (fuzion.sys.internal_array T 0), a.add x
     while hasNext
@@ -204,7 +204,7 @@ stream(redef T type) ref : Sequence T is
   # create a string representation of this stream including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep String) => asList.asString sep
+  redef asString (sep String) => as_list.asString sep
 
 
   # map the stream to a new stream applying function f to all elements

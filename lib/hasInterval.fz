@@ -60,7 +60,7 @@ hasInterval(H type : hasInterval H) : integer H is
         f x
 
     # create a stream of all the elements of this interval, in order.
-    redef asStream ref : stream H is
+    redef as_stream ref : stream H is
       x := num_option lower
       redef hasNext bool is x.exists && x.val <= upper
       redef next H is res := x.val; set x := x +? one; res
@@ -83,7 +83,7 @@ hasInterval(H type : hasInterval H) : integer H is
     infix : (step H) : Set H is
 
       # create a stream of all the elements of this interval, in order.
-      redef asStream ref : stream H is
+      redef as_stream ref : stream H is
         x := num_option lower
         redef hasNext bool is
           (step > zero && x.exists && x.val <= upper ||
@@ -93,11 +93,11 @@ hasInterval(H type : hasInterval H) : integer H is
 
       # list representation of values in this interval
       #
-      redef asList list H is
+      redef as_list list H is
         cons (head H) :  Cons H (list H) is
           tail list H is
             (lower+?step ? nil    => nil
-                         | next H => (next..upper:step).asList)
+                         | next H => (next..upper:step).as_list)
         if (step > zero && lower <= upper ||
             step < zero && lower >= upper    )
           cons lower
@@ -117,7 +117,7 @@ hasInterval(H type : hasInterval H) : integer H is
 
     # create a list from this interval
     #
-    redef asList list H is
+    redef as_list list H is
       cons (head H) : Cons H (list H) is
         tail list H is
           if (head >= upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.

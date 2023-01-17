@@ -191,7 +191,7 @@ String ref : has_equality, hasHash String, ordered String is
     pre base.one < base <= base.from_u32 36
 
   is
-    match utf8.asList
+    match utf8.as_list
       nil => parseError "empty string"
       c Cons =>
         negate := c.head = String.type.minusChar
@@ -253,7 +253,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # convert this string into an array of codepoints.
   #
-  codepointsArray => asCodepoints.asArray
+  codepointsArray => asCodepoints.as_array
 
 
   # convert this string into a Sequence of codepoint and errors for encoding problems
@@ -288,7 +288,7 @@ String ref : has_equality, hasHash String, ordered String is
   # found in the underlying utf8 bytes
   #
   codepointsAndErrors list (outcome codepoint) is
-    codepointsAndErrors utf8.asList
+    codepointsAndErrors utf8.as_list
 
 
   # the list instance returned by asCodepoints
@@ -504,7 +504,7 @@ String ref : has_equality, hasHash String, ordered String is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list String is
-    l := utf8.asList.dropWhile (c -> isAsciiWhiteSpace c)
+    l := utf8.as_list.dropWhile (c -> isAsciiWhiteSpace c)
     if l.isEmpty
       nil
     else
@@ -526,7 +526,7 @@ String ref : has_equality, hasHash String, ordered String is
       !s.isEmpty
     is
     match (find s)
-      nil => [asString].asList
+      nil => [asString].as_list
       idx i32 => ref : Cons String (list String)
                    head => substring 0 idx
                    tail =>
@@ -561,7 +561,7 @@ String ref : has_equality, hasHash String, ordered String is
   trimEnd =>
 # NYI: This causes fz to crash:
 #   fromBytes ...
-    String.type.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
+    String.type.fromBytes (utf8.as_list.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
 
 
   # is this part of given set
@@ -603,7 +603,7 @@ String ref : has_equality, hasHash String, ordered String is
         TRUE =>
           match r.in_run
             TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
-            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].as_list) true r.current_pos (r.current_pos + 1)
         FALSE =>
           match r.in_run
             TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
@@ -663,7 +663,7 @@ String ref : has_equality, hasHash String, ordered String is
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
   #
   type.join(elems Sequence String, sep String) String is
-    (elems.asList.intersperse sep).fold concat
+    (elems.as_list.intersperse sep).fold concat
 
 
   # create string by concatenating the results of $a[a.indices].

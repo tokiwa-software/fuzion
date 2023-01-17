@@ -57,7 +57,7 @@
 private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) is
   redef asString => "tomb_node($sn)"
 
-  asList => sn.asList
+  as_list => sn.as_list
 
 
 # a singleton node
@@ -65,7 +65,7 @@ private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) i
 private singleton_node(CTK type : hasHash CTK, CTV type, k CTK, v CTV) is
   redef asString => "singleton_node($k, $v)"
 
-  asList => [(k,v)].asList
+  as_list => [(k,v)].as_list
 
 
 # an indirection or a singleton node
@@ -75,10 +75,10 @@ private branch(CTK type : hasHash CTK, CTV type) : choice (Indirection_Node CTK 
       indirection_node Indirection_Node => "$indirection_node"
       singleton_node singleton_node => "$singleton_node"
 
-  asList =>
+  as_list =>
     match branch.this
-      indirection_node Indirection_Node => indirection_node.asList
-      singleton_node singleton_node => singleton_node.asList
+      indirection_node Indirection_Node => indirection_node.as_list
+      singleton_node singleton_node => singleton_node.as_list
 
 
 # a container node
@@ -91,13 +91,13 @@ private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (b
 
   # add a child node and return a new container_node
   added(pos, flag u32, sn singleton_node CTK CTV) =>
-    container_node (bmp | flag) (array.insert pos.as_i32 sn).asArray
+    container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array
 
   # remove a child node and return a new container_node
   removed(pos, flag u32) =>
     # NYI delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
-    container_node (bmp ^ flag) tmp.asArray
+    container_node (bmp ^ flag) tmp.as_array
 
 
   # create copy of this container_node and children
@@ -106,15 +106,15 @@ private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (b
                      match x
                        i Indirection_Node => i.copy_to_gen new_gen ct
                        sn singleton_node => sn
-                 .asArray
+                 .as_array
     container_node bmp copy
 
 
   redef asString => "container_node($bmp, [{array.map x->x.asString
                                                  .fold (String.type.concat ", ")}])"
 
-  asList => array.flatMapSequence (tuple CTK CTV) (b -> b.asList)
-                 .asList
+  as_list => array.flatMapSequence (tuple CTK CTV) (b -> b.as_list)
+                 .as_list
 
 
 # a container, tomb or linked list node
@@ -133,14 +133,14 @@ private Main_Node(CTK type : hasHash CTK, CTV type, data choice (container_node 
   infix = (o Main_Node CTK CTV) bool is
     Main_Node.this.hashCode = o.hashCode
 
-  asList
+  as_list
   pre match prev.get
     nil => true
     * => false
    =>
     match data
-      container_node container_node => container_node.asList
-      tomb_node tomb_node => tomb_node.asList
+      container_node container_node => container_node.as_list
+      tomb_node tomb_node => tomb_node.as_list
       list_node list_node => list_node.mapSequence (sn -> (sn.k, sn.v))
 
   # compare and update `prev`
@@ -221,11 +221,11 @@ private Indirection_Node(CTK type : hasHash CTK, CTV type, data mutate.new (Main
 
   redef asString => "Indirection_Node($data)"
 
-  asList list (tuple CTK CTV)
+  as_list list (tuple CTK CTV)
   pre match data.get.prev.get
     nil => true
     * => false
-  is data.get.asList
+  is data.get.as_list
 
 
 # a linked list node
@@ -233,7 +233,7 @@ private Indirection_Node(CTK type : hasHash CTK, CTV type, data mutate.new (Main
 private list_node(CTK type : hasHash CTK, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
-  redef asList => from.asList
+  redef as_list => from.as_list
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
@@ -599,7 +599,7 @@ is
   redef items Sequence (tuple CTK CTV) is
     (snapshot true)
       .read_root
-      .asList
+      .as_list
 
 # initialize a new ctrie
 CTrie(CTK type : hasHash CTK, CTV type) =>

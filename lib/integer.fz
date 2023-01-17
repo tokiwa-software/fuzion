@@ -111,7 +111,7 @@ integer(I type : integer I) : numeric I is
     ref : String
       redef utf8 ref : Sequence u8 is
         redef finite => true
-        redef asStream stream u8 is
+        redef as_stream stream u8 is
           b := from_u32 base
           if thiz.sign >= 0
             ref : stream u8
@@ -125,8 +125,8 @@ integer(I type : integer I) : numeric I is
           else
             p := -? thiz
             match p
-              v I   => ("-" + v .asString base).utf8.asStream
-              _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
+              v I   => ("-" + v .asString base).utf8.as_stream
+              _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.as_stream
 
 
   # convert this to a number using the given base.  If negative, add "-" as

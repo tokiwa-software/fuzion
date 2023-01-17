@@ -51,7 +51,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # This is a helper function that needs to be defined because list is an heir
   # of Sequence.
   #
-  redef asList => list.this
+  redef as_list => list.this
 
 
   # is this list empty?
@@ -186,7 +186,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       _ nil  => nil
       c Cons =>
-        match (f c.head).asList
+        match (f c.head).as_list
           _ nil => c.tail.flatMap B f
           c2 Cons =>
             ref : Cons B (list B)
@@ -304,7 +304,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # infix operand synonym for concat
   #
-  redef infix ++ (t Sequence A) => concat t.asList
+  redef infix ++ (t Sequence A) => concat t.as_list
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
@@ -398,7 +398,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
   # it cannot be shared with threads or used in pure functions
   #
-  redef asStream ref : stream A is
+  redef as_stream ref : stream A is
     cur := list.this
     redef hasNext => (cur ? Cons => true
                           | nil  => false)
@@ -471,7 +471,7 @@ list(T type, h T, t () -> list T) list T is
 #
 # This is convenient to append an element before a list as in
 #
-#   0 : ()->[1,2,3,4].asList
+#   0 : ()->[1,2,3,4].as_list
 #
 # or to create lists by recursion, e.g., a an endless list containing
 # integer 1 repeatedly is

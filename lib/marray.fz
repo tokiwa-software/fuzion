@@ -96,17 +96,17 @@ is
 
   # create immutable array from this
   #
-  as_array =>
+  redef as_array =>
     array T length (i -> marray.this[i])
 
 
   # create a list from this marray
   #
-  redef asList =>
+  redef as_list =>
     # since marray is mutable,
     # we first copy the elements
     # to an immutable array.
-    as_array.asList
+    as_array.as_list
 
 
   # map the array to a new array applying function f to all elements

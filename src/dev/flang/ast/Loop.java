@@ -576,7 +576,7 @@ public class Loop extends ANY
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
             var p = f.pos();
-            Call asStream = new Call(p, f.impl()._initialValue, "asStream");
+            Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
                                          Visi.INVISIBLE,
                                          /* modifiers */   0,

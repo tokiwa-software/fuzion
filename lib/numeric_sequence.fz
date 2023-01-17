@@ -29,7 +29,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
 
   # create a list from this Sequence.
   #
-  redef asList => from.asList
+  redef as_list => from.as_list
 
 
   # is this sequence known to be finite?  For infinite sequences, features like

@@ -100,9 +100,9 @@ is
   post result.values.0.count = result.values.1.count
     =>
     if other.data.count < data.count
-      (data.asList, zeros data.count-other.data.count ++ other.data)
+      (data.as_list, zeros data.count-other.data.count ++ other.data)
     else
-      (zeros other.data.count-data.count ++ data, other.data.asList)
+      (zeros other.data.count-data.count ++ data, other.data.as_list)
 
 
   # divide with remainder the two given positive ints

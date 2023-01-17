@@ -53,8 +53,8 @@ set_of_hashable(K type : hasHash K, vs (CTrie K unit) | (Sequence K)) Set K is
 
     # list representation of values in this set
     #
-    asList list K is
-      map.keys.asList
+    as_list list K is
+      map.keys.as_list
 
 
     # add new element k to this set.
