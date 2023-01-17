@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# sortedarray -- sorted one-dimensional immutable array
+# sorted_array -- sorted one-dimensional immutable array
 #
 # This takes an unsorted array and a compare function as an arguments and
 # returns a sorted one.
@@ -184,12 +184,12 @@ is
     binarySearch 0 length-1
 
 
-# sortedarray -- sorted one-dimensional immutable array of ordered elements
+# sorted_array_of -- sorted one-dimensional immutable array of ordered elements
 #
 # This takes an unsorted array as an argument and returns a sorted one using
 # the order defined by the type of the elements T.
 #
-# See sorted_array(from, lessOrEqual) for details
+# See sorted_array from lessOrEqual for details
 #
 sorted_array_of
   (

@@ -32,4 +32,12 @@
 # run with safety disabled typically have security vulnerabilities that
 # allow system takeover via manipulated input data.
 #
+# Currently, the value of this can be controlled by setting the fuzion.safety
+# Java property when calling the fz tool, for example like this:
+#
+#     FUZION_JAVA_OPTIONS="-Dfuzion.safety=off" fz ex_safety.fz
+#
+# If the program is compiled, not interpreted, then the value of this option
+# at compile time will be used.
+#
 safety bool is intrinsic
