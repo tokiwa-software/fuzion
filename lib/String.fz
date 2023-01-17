@@ -278,7 +278,7 @@ String ref : has_equality, hasHash String, ordered String is
   # string.
   to_valid_utf8(replacement String) String is
     codepointsAndErrors
-      .reduce String (String.type.fromArray ((marrays Any).new 0 "")) ((r, x) ->
+      .reduce String (String.type.from_array ((marrays Any).new 0 "")) ((r, x) ->
         match x
           c codepoint => r + c
           e error => r + replacement)
@@ -680,9 +680,9 @@ String ref : has_equality, hasHash String, ordered String is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  type.fromArray(a marray Any) ref : String is
+  type.from_array(a marray Any) ref : String is
     redef infix + (other Any) String is
-      fromArray (a.add other)
+      from_array (a.add other)
 
     redef utf8 Sequence u8 is
       a.flatMapSequence u8 ai->ai.as_string.utf8
