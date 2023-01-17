@@ -102,10 +102,10 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # list must not be empty, causes precondition failure if debug is enabled.
   #
-  forceTail
+  force_tail
     pre
       debug: !is_empty
-    => (list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
+    => (list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
                   | c Cons => c.tail)
 
 
@@ -157,8 +157,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     pre
       debug: !is_empty
   is
-    forceTail ? nil    => first
-              | c Cons => forceTail.last
+    force_tail ? nil    => first
+               | c Cons => force_tail.last
 
 
   # map the list to a new list applying function f to all elements
@@ -235,9 +235,9 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # recursively reverse the order of the elements in this list
   # and append the already reversed reversedHead
   #
-  reverse (reversedHead list A) list A is
-    list.this ? nil    => reversedHead
-              | c Cons => c.tail.reverse (cons c.head reversedHead)
+  reverse (reversed_head list A) list A is
+    list.this ? nil    => reversed_head
+              | c Cons => c.tail.reverse (cons c.head reversed_head)
 
 
   # create a string representation of this list including all the string
@@ -284,7 +284,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # List concatenation, O(count)
   #
-  concatEagerly (t list A) list A is
+  concat_eagerly (t list A) list A is
     list.this ? nil    => t
               | c Cons => cons A (list A) c.head (c.tail.concat t)
 
@@ -404,7 +404,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
                           | nil  => false)
     redef next =>
       res := cur.head.get
-      set cur := cur.forceTail
+      set cur := cur.force_tail
       res
 
 
@@ -442,7 +442,7 @@ lists is
 
   # monoid of lists with infix concatentation operation.
   #
-  concatMonoid(A type) : Monoid (list A) is
+  concat_monoid(A type) : Monoid (list A) is
 
     # associative operation
     #
@@ -451,7 +451,7 @@ lists is
     # equality
     #
     redef infix == (a, b list A) =>
-      fuzion.std.panic "NYI: lists.concatMonoid.infix ==, requires A : hasEquals"
+      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : hasEquals"
 
     # identity element
     #
