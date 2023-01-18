@@ -305,7 +305,7 @@ is
 
 
   # read root none abortably
-  private read_root() => read_root false
+  private read_root => read_root false
 
 
   # do a double compare and swap of root node
