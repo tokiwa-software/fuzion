@@ -323,8 +323,8 @@ Sequence(T type) ref is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the total order defined by lessOrEqual
-  sort(lessOrEqual (T, T) -> bool) => sorted_array Sequence.this lessOrEqual
+  # sort this Sequence using the total order defined by less_or_equal
+  sort(less_or_equal (T, T) -> bool) => sorted_array Sequence.this less_or_equal
 
 
   # sort this Sequence using total order defined for 'f a[i]'
