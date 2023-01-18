@@ -1601,6 +1601,45 @@ public class AstErrors extends ANY
           .collect(Collectors.joining(", "))
       );
   }
+
+  public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
+  {
+    var cf = usedIn != null ? usedIn._calledFeature : null;
+    String at = null;
+    if (cf != null)
+      {
+        var allUnknown = true;
+        String t = null;
+        var args = cf.arguments();
+        if (args != null)
+          {
+            for (var arg : args)
+              {
+                var argtype = "--still unkown--";
+                if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
+                  {
+                    allUnknown = false;
+                    argtype = s(arg.resultType());
+                  }
+                t = (t == null ? "" : t + " ") + argtype;
+              }
+          }
+        if (!allUnknown)
+          {
+            at = t;
+          }
+      }
+    error(a.pos(),
+          "Actual parameter in a call is a type, but the call expects an expression",
+          (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
+          (cf != null ? "call to " + s(cf) + "\n" : "" ) +
+          "actual type argument found: " + s(a._type) + "\n" +
+          (at != null ? "expected agument types: " + at + "\n" : "" ) +
+          "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
+          "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
+  }
+
+
 }
 
 /* end of file */

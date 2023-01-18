@@ -555,7 +555,7 @@ public class Function extends ExprWithPos
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Actual(null, new Call(pos(), null, name)));
+                actual_args.add(new Actual(new Call(pos(), null, name)));
                 formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }

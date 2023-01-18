@@ -545,8 +545,8 @@ public class Loop extends ANY
                               null /* NYI outer */);
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
-        initialActuals .add(new Actual(null, ia));
-        nextActuals    .add(new Actual(null, na));
+        initialActuals .add(new Actual(ia));
+        nextActuals    .add(new Actual(na));
       }
   }
 

@@ -301,8 +301,8 @@ public class InlineArray extends ExprWithPos
       {
         var et           = elementType();
         var eT           = new List<AbstractType>(et);
-        var args         = new List<Actual>(new Actual(et, Expr.NO_VALUE),
-                                            new Actual(null, new NumLiteral(_elements.size())));
+        var args         = new List<Actual>(new Actual(et),
+                                            new Actual(new NumLiteral(_elements.size())));
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
         var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "internal_array", args).resolveTypes(res, outer);
@@ -319,8 +319,8 @@ public class InlineArray extends ExprWithPos
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
-            var setArgs         = new List<Actual>(new Actual(null, new NumLiteral(i)),
-                                                   new Actual(null, e));
+            var setArgs         = new List<Actual>(new Actual(new NumLiteral(i)),
+                                                   new Actual(e));
             var readSysArrayVar = new Call(e.pos(), null           , sysArrayName     ).resolveTypes(res, outer);
             var setElement      = new Call(e.pos(), readSysArrayVar,
                                            FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
@@ -331,11 +331,11 @@ public class InlineArray extends ExprWithPos
         var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
         var unit2           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
         var unit3           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
-        var sysArrArgs      = new List<Actual>(new Actual(et, Expr.NO_VALUE),
-                                               new Actual(null, readSysArrayVar),
-                                               new Actual(null, unit1),
-                                               new Actual(null, unit2),
-                                               new Actual(null, unit3));
+        var sysArrArgs      = new List<Actual>(new Actual(et),
+                                               new Actual(readSysArrayVar),
+                                               new Actual(unit1),
+                                               new Actual(unit2),
+                                               new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
         stmnts.add(arrayCall);
         result = new Block(pos(), stmnts);

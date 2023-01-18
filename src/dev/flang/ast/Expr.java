@@ -60,9 +60,26 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
-      Expr box(AbstractType frmlT)
+      { _type = Types.t_ERROR; }
+    };
+
+
+  /**
+   * Dummy Expr value. Used in to represent error values.
+   */
+  public static final Expr ERROR_VALUE = new Expr()
+    {
+      public SourcePosition pos()
+      {
+        return SourcePosition.builtIn;
+      }
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
+      }
+      AbstractType typeIfKnown()
+      {
+        return Types.t_ERROR;
       }
     };
 

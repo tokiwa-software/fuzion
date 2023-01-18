@@ -236,7 +236,7 @@ public class Call extends AbstractCall
     var res = new List<Expr>();
     for (var a : la)
       {
-        res.add(a._expr);
+        res.add(a);
       }
     return res;
   }
@@ -679,11 +679,13 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         var actualsResolved = false;
+        if (CHECKS) check
+          (Errors.count() > 0 || _name != Errors.ERROR_STRING);
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
-              (Errors.count() > 0 || targetFeature != null);
+              (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
             if (targetFeature != null && targetFeature != Types.f_ERROR)
               {
                 var fo = calledFeatureCandidates(targetFeature, res, thiz);
@@ -1811,6 +1813,17 @@ public class Call extends AbstractCall
 
     if (CHECKS) check
       (Errors.count() > 0 || _calledFeature != null);
+
+    ListIterator<Expr> i = _actuals.listIterator();
+    while (i.hasNext())
+      {
+        Expr actl = i.next();
+        if (actl instanceof Actual aa)
+          {
+            actl = aa.expr(this);
+          }
+        i.set(actl);
+      }
 
     if (_calledFeature == null)
       {
