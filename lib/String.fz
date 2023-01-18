@@ -194,8 +194,8 @@ String ref : has_equality, hasHash String, ordered String is
     match utf8.asList
       nil => parseError "empty string"
       c Cons =>
-        negate := c.head = String.type.minusChar
-        d := if (negate || c.head = String.type.plusChar) String.type.zeroChar else c.head
+        negate := c.head = String.type.minus_char
+        d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
         parse_integer T base negate base.zero d c.tail
 
 
@@ -224,9 +224,9 @@ String ref : has_equality, hasHash String, ordered String is
 
   is
 
-    d u8 | error := if      (String.type.zeroChar <= c <= String.type.nineChar) c - String.type.zeroChar
-                    else if (String.type.aChar    <= c <= String.type.zChar   ) c - String.type.aChar    + 10
-                    else if (String.type.capAChar <= c <= String.type.capZChar) c - String.type.capAChar + 10
+    d u8 | error := if      (String.type.zero_char  <= c <= String.type.nine_char ) c - String.type.zero_char
+                    else if (String.type.a_char     <= c <= String.type.z_char    ) c - String.type.a_char    + 10
+                    else if (String.type.cap_a_char <= c <= String.type.cap_z_char) c - String.type.cap_a_char + 10
                     else parseError "non-digit found"
 
     # NYI: with more syntactic sugar, the following 3 lines could become
@@ -713,11 +713,11 @@ String ref : has_equality, hasHash String, ordered String is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  type.minusChar => "-".utf8.first
-  type.plusChar  => "+".utf8.first
-  type.zeroChar  => "0".utf8.first
-  type.nineChar  => "9".utf8.first
-  type.aChar     => "a".utf8.first
-  type.zChar     => "z".utf8.first
-  type.capAChar  => "A".utf8.first
-  type.capZChar  => "Z".utf8.first
+  type.minus_char  => "-".utf8.first
+  type.plus_char   => "+".utf8.first
+  type.zero_char   => "0".utf8.first
+  type.nine_char   => "9".utf8.first
+  type.a_char      => "a".utf8.first
+  type.z_char      => "z".utf8.first
+  type.cap_a_char  => "A".utf8.first
+  type.cap_z_char  => "Z".utf8.first

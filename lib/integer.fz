@@ -119,7 +119,7 @@ integer(I type : integer I) : numeric I is
               redef hasNext => p.sign > 0
               redef next =>
                 d := (thiz / p % b).to_u32.as_u8
-                r := if (d < 10) String.type.zeroChar + d else String.type.aChar + (d - ascii.lf)
+                r := if (d < 10) String.type.zero_char + d else String.type.a_char + (d - ascii.lf)
                 set p := p / b
                 r
           else
