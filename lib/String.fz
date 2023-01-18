@@ -260,7 +260,7 @@ String ref : has_equality, hasHash String, ordered String is
   # found in the underlying utf8 bytes
   #
   asCodepoints Sequence codepoint is
-    codepointsAndErrors
+    codepoints_and_errors
       .map (x ->
         match x
           c codepoint => c
@@ -277,7 +277,7 @@ String ref : has_equality, hasHash String, ordered String is
   # replaces runs of invalid UTF-8 byte sequences in this string with the given
   # string.
   to_valid_utf8(replacement String) String is
-    codepointsAndErrors
+    codepoints_and_errors
       .reduce String (String.type.fromArray ((marrays Any).new 0 "")) ((r, x) ->
         match x
           c codepoint => r + c
@@ -287,13 +287,13 @@ String ref : has_equality, hasHash String, ordered String is
   # convert this string into a list of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codepointsAndErrors list (outcome codepoint) is
-    codepointsAndErrors utf8.asList
+  codepoints_and_errors list (outcome codepoint) is
+    codepoints_and_errors utf8.asList
 
 
   # the list instance returned by asCodepoints
   #
-  private codepointsAndErrors(l list u8) list (outcome codepoint) is
+  private codepoints_and_errors(l list u8) list (outcome codepoint) is
     match l
       nil => nil
       c1 Cons =>
@@ -301,7 +301,7 @@ String ref : has_equality, hasHash String, ordered String is
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) is
           ref : Cons (outcome codepoint) (list (outcome codepoint))
             head => c
-            tail => codepointsAndErrors rest
+            tail => codepoints_and_errors rest
 
         p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
@@ -364,12 +364,12 @@ String ref : has_equality, hasHash String, ordered String is
                               e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                             else
                               ret (codepoint res) c4.tail
-              else fuzion.std.panic "String.codepointsAndErrors: missing case for $b1"
+              else fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
         else if u8 0x80 <= b1 <= 0xbf then e1 "stray continuation byte without preceding leading byte."
         else if u8 0xf5 <= b1 <= 0xfd then e1 "codes 0xf5..0xfd are undefined."
         else if u8 0xfe <= b1 <= 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
         else
-          fuzion.std.panic "String.codepointsAndErrors: missing case for $b1"
+          fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
 
 
   # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
