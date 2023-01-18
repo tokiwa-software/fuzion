@@ -69,7 +69,7 @@ is
 
   # execute the code of 'f' in the context of this effect
   #
-  private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
+  private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
     res option R := nil
     cf := effect_call f
     abortable cf
