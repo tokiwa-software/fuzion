@@ -50,8 +50,17 @@ array(redef T type,
   redef finite => true
 
 
+  # a sequence of all valid indices to access this array. Useful e.g., for
+  # `for`-loops:
+  #
+  #   for i in arr.indices do
+  #     say arr[i]
+  #
   indices => 0..length-1
 
+
+  # get the contents of this array at the given index
+  #
   redef index [ ] (i i32) T
     pre
       safety: 0 <= i < length
