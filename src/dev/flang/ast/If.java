@@ -191,15 +191,19 @@ public class If extends ExprWithPos
     while (it.hasNext())
       {
         var t = it.next().typeIfKnown();
-        result = t == null ? Types.t_UNDEFINED : result.union(t);
+        if (t == null)
+          {
+            return null;
+          }
+        result = result.union(t);
       }
-    if (result == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in branches of if statement",
-                                          branches());
-        result = Types.t_ERROR;
-      }
+      if (result==Types.t_UNDEFINED)
+        {
+          new IncompatibleResultsOnBranches(pos(),
+                                            "Incompatible types in branches of if statement",
+                                            branches());
+          result = Types.t_ERROR;
+        }
     return result;
   }
 
@@ -222,8 +226,6 @@ public class If extends ExprWithPos
       }
     return _type;
   }
-
-
 
 
   /**
