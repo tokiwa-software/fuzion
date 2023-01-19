@@ -233,13 +233,13 @@ test_local_mutate is
 
     ring(T type, from Sequence T)
       pre
-        !from.isEmpty
+        !from.is_empty
      =>
       m : local_mutate m is
 
       ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
         c := cell T m from.head.get
-        match from.asList.tail
+        match from.tail
           nil    => c
           t Cons => f := ring2 t
                     l := f.prev
@@ -263,7 +263,7 @@ test_local_mutate is
           cur.p.close
         r
 
-      r := m.run ()->(ring3 from.asList) (unit)->(panic "*** unexpected abort ***")
+      r := m.run ()->(ring3 from.as_list) (unit)->(panic "*** unexpected abort ***")
       say "left local_mutate environment m"
       for
         i in 1..10
@@ -288,7 +288,7 @@ test_local_mutate is
       next, prev ring T is abstract
       data T is abstract
 
-      redef asString =>
+      redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
           # e2 := r, e2.next    # causes crash!
@@ -299,6 +299,10 @@ test_local_mutate is
 
     # ring type for mutable rings
     #
+    # on call to `mut_ring LM T data` creates a minimal ring consisting of only
+    # one single cell.  To create larger rings, you can either call `insert` to
+    # add single cells, or `merge` to merge two rings into one larger ring.
+    #
     mut_ring(# mutate effect to be used to create mutable variables
              LM type : local_mutate LM,
 
@@ -307,30 +311,58 @@ test_local_mutate is
 
              # the data stored in this cell.
              data T) ref : ring T is
+
+      # NYI: `me` is just to avoid bugs in Fuzion when using mut_ring.this
       me mut_ring LM T := mut_ring.this
-      n := LM.env.new me #  mut_ring.this   -- NYI: mut_ring.this causes crash!
-      p := LM.env.new me
 
-      link(ne, pr ref mut_ring LM T) is
-        n <- ne
-        p <- pr
+      # mutable references to next and previous. Initalizes to refer to
+      # mut_ring.this to form a minimal ring
+      #
+      private n := LM.env.new me #  mut_ring.this   -- NYI: mut_ring.this causes crash!
+      private p := LM.env.new me
 
+
+      # short-hand features to get the mutable references from `n` and `p`
+      #
       next => n.get
       prev => p.get
 
-      insert(data T) =>
-        r2 := mut_ring LM T data
-        merge r2
 
+      # add a cell containing `data` to this ring.
+      #
       # mut_ring.this is 'a':
       #
       #  +-> a <-> b <-> c ... m <-+
       #  |                         |
       #  +-------------------------+
       #
+      # the resulting ring then will have a new cell `n` containing `data`
+      # with this shape:
+      #
+      #  +-> a <-> b <-> c ... m <-> n <-+
+      #  |                               |
+      #  +-------------------------------+
+      #
+      insert(data T) =>
+        r2 := mut_ring LM T data
+        merge r2
+
+
+      # merge two rings as follows:
+      #
+      # mut_ring.this is 'a':
+      #
+      #  +-> a <-> b <-> c ... m <-+
+      #  |                         |
+      #  +-------------------------+
+      #
+      # the second ring `n` is
+      #
       #  +-> n <-> o <-> p ... z <-+
       #  |                         |
       #  +-------------------------+
+      #
+      # the resulting ring then will be:
       #
       #  +-> a <-> b <-> c ... m <-> n <-> o <-> p ... z <-+
       #  |                                                 |
@@ -338,33 +370,40 @@ test_local_mutate is
       #
       merge(n mut_ring LM T) =>
         a := mut_ring.this
-        m := a.p.get
-        z := n.p.get
+        m := a.prev
+        z := n.prev
         a.p <- z
         z.n <- a
         m.n <- n
         n.p <- m
 
+      # freeze this ring, i.e., turn all references into immutable values
+      #
       freeze =>
         if n.open
           n.close
           p.close
-          n.get.freeze
+          next.freeze
 
+    # create a ring from the elements of a sequence
+    #
     create_ring(T type, from Sequence T)
       pre
-        !from.isEmpty
+        !from.is_empty
      =>
+      # define mutate context to be used
       m : local_mutate m is
 
+      # create ring, called with the env set to an instance of `m`.
+      #
       create_ring2(from list T) ring T is
         c := mut_ring m T from.head.get
-        from.asList.tail.for_each (x->c.merge (mut_ring m T x))
+        from.as_list.tail.for_each (x->c.merge (mut_ring m T x))
         c.freeze
         c
 
       # NYI: use m.go, not m.run()
-      r := m.run ()->(create_ring2 from.asList) (unit)->(panic "*** unexpected abort ***")
+      r := m.run ()->(create_ring2 from.as_list) (unit)->(panic "*** unexpected abort ***")
       say "left local_mutate environment m"
       say r
       for
