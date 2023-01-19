@@ -41,12 +41,12 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
@@ -222,18 +222,11 @@ public class Docs
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af)
   {
-    if (af.isUniverse())
-      {
-        return false;
-      }
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || af.featureName().baseName().startsWith("@")
+    return af.visibility() == Visi.INVISIBLE
+      || af.visibility() == Visi.PRIVATE
+      || af.isTypeFeature()
       || Util.isArgument(af)
-      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
       || isDummyFeature(af);
-    // NYI this should be used in the future
-    // !af._visibility()
   }
 
 
