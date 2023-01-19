@@ -43,11 +43,11 @@ outerNormalization is
   say "testZero.z is {testZero.z}"
 
 
-  # string.asCodepoints is a constructor that, if it was specialized for
+  # string.as_codepoint_sequence is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
   testCodepointsStream(s String) is
-      l := s.asCodepoints
+      l := s.as_codepoint_sequence
 
   say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
   say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
@@ -106,7 +106,7 @@ outerNormalization is
 
     j : n j is
       a => j
-      redef asString => "a 'j'"
+      redef as_string => "a 'j'"
 
     t(r ref j) is
       say "testNormalize: {r.b}"
@@ -127,7 +127,7 @@ outerNormalization is
 
     j : n is
       a => 3
-      redef asString => "a 'j'"
+      redef as_string => "a 'j'"
 
     t(r ref j) is
       say "testNormalize2: {r.b}"
@@ -143,8 +143,8 @@ outerNormalization is
   #
   testInterval is
     x := 0..
-    y := x.asStream
-    z := y.hasNext
+    y := x.as_stream
+    z := y.has_next
     for i in 0.. do
       say $i
     until i > 3

@@ -51,7 +51,7 @@ transducers is
   compose(TA,A,B,C type, a Transducer(TA,B,C), b Transducer(TA,A,B)) =>
     a ∘ b
 
-  # NYI: cat, mapcat, remove, take, takeWhile, drop, dropWhile, takeEveryNth,
+  # NYI: cat, mapcat, remove, take, take_while, drop, drop_while, takeEveryNth,
   # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...
 
 

@@ -32,10 +32,10 @@ conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_
 
   redef utf8 Sequence u8 is conststring.this
 
-  # Resolve repeated inheritance of asString, isEmpty from string and from array.
+  # Resolve repeated inheritance of as_string, is_empty from string and from array.
   #
-  # NYI: Once we have a select-mechanism, we could select string.asString over
-  # array.asString
+  # NYI: Once we have a select-mechanism, we could select string.as_string over
+  # array.as_string
   #
-  redef asString String is conststring.this
-  redef isEmpty => length = 0
+  redef as_string String is conststring.this
+  redef is_empty => length = 0

@@ -30,26 +30,26 @@ String ref : has_equality, hasHash String, ordered String is
   redef orderedThis String is String.this
 
   # converting a string to a string is just returning string.this
-  redef asString String is String.this
+  redef as_string String is String.this
 
   # any concrete string must implement utf8
   utf8 Sequence u8 is abstract
 
   # is this string empty?
-  isEmpty => utf8.isEmpty
+  is_empty => utf8.is_empty
 
   # returns true if string is empty or contains whitespace only
-  isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
+  is_blank => utf8 ∀ u -> is_ascii_white_space u
 
   # length of this string in bytes
-  byteLength => utf8.count
+  byte_length => utf8.count
 
   # length of this string in codepoints
-  codepointLength => asCodepoints.count
+  codepoint_length => as_codepoint_sequence.count
 
   # concatenate string with string representation of another object
   infix + (other Any) String is
-    String.type.concat String.this other.asString
+    String.type.concat String.this other.as_string
 
 
 
@@ -114,7 +114,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # internal helper to create error for failed parsing
   #
-  private parseError(msg String) => error "failed to parse '{String.this}': $msg"
+  private parse_error(msg String) => error "failed to parse '{String.this}': $msg"
 
 
   # parse this string as a signed 32-bit integer value
@@ -191,8 +191,8 @@ String ref : has_equality, hasHash String, ordered String is
     pre base.one < base <= base.from_u32 36
 
   is
-    match utf8.asList
-      nil => parseError "empty string"
+    match utf8.as_list
+      nil => parse_error "empty string"
       c Cons =>
         negate := c.head = String.type.minusChar
         d := if (negate || c.head = String.type.plusChar) String.type.zeroChar else c.head
@@ -227,7 +227,7 @@ String ref : has_equality, hasHash String, ordered String is
     d u8 | error := if      (String.type.zeroChar <= c <= String.type.nineChar) c - String.type.zeroChar
                     else if (String.type.aChar    <= c <= String.type.zChar   ) c - String.type.aChar    + 10
                     else if (String.type.capAChar <= c <= String.type.capZChar) c - String.type.capAChar + 10
-                    else parseError "non-digit found"
+                    else parse_error "non-digit found"
 
     # NYI: with more syntactic sugar, the following 3 lines could become
     #
@@ -238,7 +238,7 @@ String ref : has_equality, hasHash String, ordered String is
       b u8 =>
         t := base.from_u32 b.as_u32  # i converted to T
         if t >= base
-          parseError "invalid integer digit for base $base"
+          parse_error "invalid integer digit for base $base"
         else
           hi := hi *? base;
           v := if (neg) hi -? t
@@ -247,19 +247,19 @@ String ref : has_equality, hasHash String, ordered String is
             c Cons =>
               parse_integer T base neg v c.head c.tail
             nil =>
-              v ? nil => parseError "numerical overflow"
+              v ? nil => parse_error "numerical overflow"
                 | u T => u
 
 
   # convert this string into an array of codepoints.
   #
-  codepointsArray => asCodepoints.asArray
+  codepoint_array => as_codepoint_sequence.as_array
 
 
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  asCodepoints Sequence codepoint is
+  as_codepoint_sequence Sequence codepoint is
     codepointsAndErrors
       .map (x ->
         match x
@@ -278,7 +278,7 @@ String ref : has_equality, hasHash String, ordered String is
   # string.
   to_valid_utf8(replacement String) String is
     codepointsAndErrors
-      .reduce String (String.type.fromArray ((marrays Any).new 0 "")) ((r, x) ->
+      .reduce String (String.type.from_array ((marrays Any).new 0 "")) ((r, x) ->
         match x
           c codepoint => r + c
           e error => r + replacement)
@@ -288,10 +288,10 @@ String ref : has_equality, hasHash String, ordered String is
   # found in the underlying utf8 bytes
   #
   codepointsAndErrors list (outcome codepoint) is
-    codepointsAndErrors utf8.asList
+    codepointsAndErrors utf8.as_list
 
 
-  # the list instance returned by asCodepoints
+  # the list instance returned by as_codepoint_sequence
   #
   private codepointsAndErrors(l list u8) list (outcome codepoint) is
     match l
@@ -376,7 +376,7 @@ String ref : has_equality, hasHash String, ordered String is
   #
   substring(from, to i32) String
     pre
-      debug: 0 <= from <= to <= String.this.byteLength
+      debug: 0 <= from <= to <= String.this.byte_length
   is
     # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
     # ref : string
@@ -389,28 +389,28 @@ String ref : has_equality, hasHash String, ordered String is
   #
   private substring0(from, to i32) ref : String
     pre
-      debug: 0 <= from <= to <= String.this.byteLength
+      debug: 0 <= from <= to <= String.this.byte_length
   is
     redef utf8 Sequence u8 is
       String.this.utf8.slice from to
 
 
-  # create substring of this string consisting of bytes from (inclusive) .. byteLength (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
   #
   substring(from i32) String
     pre
-      debug: 0 <= from <= byteLength
+      debug: 0 <= from <= byte_length
   is
-    substring from byteLength
+    substring from byte_length
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
   private substring_codepoint(from, to i32) String
     pre
-      debug: 0 <= from <= to <= String.this.codepointLength
+      debug: 0 <= from <= to <= String.this.codepoint_length
   is
-    codepointsArray
+    codepoint_array
       .slice from to
       .map String (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold String.type.concat
@@ -420,9 +420,9 @@ String ref : has_equality, hasHash String, ordered String is
   #
   private substring_codepoint(from i32) String
     pre
-      debug: 0 <= from <= codepointLength
+      debug: 0 <= from <= codepoint_length
   is
-    substring from codepointLength
+    substring from codepoint_length
 
 
   # check if this string starts with given prefix
@@ -433,9 +433,9 @@ String ref : has_equality, hasHash String, ordered String is
 
   # check if this string ends with given suffix
   #
-  endsWith(suffix String) =>
-    l  := byteLength
-    sl := suffix.byteLength
+  ends_with(suffix String) =>
+    l  := byte_length
+    sl := suffix.byte_length
     end := utf8.drop l-sl
     (searchable_sequence end).starts_with suffix.utf8
 
@@ -456,21 +456,21 @@ String ref : has_equality, hasHash String, ordered String is
   # within this string.
   private find_last(substring String, found option i32) option i32 is
     match find substring
-      nil => found >>= (pos -> pos - substring.byteLength)
+      nil => found >>= (pos -> pos - substring.byte_length)
       idx i32 =>
-        skip := idx + substring.byteLength
-        s := String.type.fromBytes (utf8.drop skip)
+        skip := idx + substring.byte_length
+        s := String.type.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurrences of old by new
   #
-  replace (old, new String) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
+  replace (old, new String) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  replace(old, new String, n u64) => String.type.fromBytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  replace(old, new String, n u64) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -486,7 +486,7 @@ String ref : has_equality, hasHash String, ordered String is
 
   # is c an ASCII white-space character?
   #
-  private isAsciiWhiteSpace(c u8) =>
+  private is_ascii_white_space(c u8) =>
     (c =  9 ||  // HT
      c = 10 ||  // LF
      c = 11 ||  // VT
@@ -504,16 +504,16 @@ String ref : has_equality, hasHash String, ordered String is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list String is
-    l := utf8.asList.dropWhile (c -> isAsciiWhiteSpace c)
-    if l.isEmpty
+    l := utf8.as_list.drop_while (c -> is_ascii_white_space c)
+    if l.is_empty
       nil
     else
       ref : Cons String (list String)
-        head =>  String.type.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
-        tail => (String.type.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
-        # NYI using the inherited 'fromBytes' as in
+        head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
+        tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
+        # NYI using the inherited 'from_bytes' as in
         #
-        #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
+        #   head =>  from_bytes l.take_while fun (c i32) => !is_ascii_white_space c
         #
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
@@ -523,14 +523,14 @@ String ref : has_equality, hasHash String, ordered String is
   #
   split(s String) list String
     pre
-      !s.isEmpty
+      !s.is_empty
     is
     match (find s)
-      nil => [asString].asList
+      nil => [as_string].as_list
       idx i32 => ref : Cons String (list String)
                    head => substring 0 idx
                    tail =>
-                     rest := substring (idx + s.byteLength) String.this.byteLength
+                     rest := substring (idx + s.byte_length) String.this.byte_length
                      rest.split s
 
 
@@ -539,50 +539,50 @@ String ref : has_equality, hasHash String, ordered String is
   trim String is
     s0 := utf8
 
-    s1 := (s0.dropWhile (fun isAsciiWhiteSpace)).reverse
-    s2 := (s1.dropWhile (fun isAsciiWhiteSpace)).reverse
+    s1 := (s0.drop_while (fun is_ascii_white_space)).reverse
+    s2 := (s1.drop_while (fun is_ascii_white_space)).reverse
 
 # NYI: This causes fz to crash:
-#   fromBytes s2
+#   from_bytes s2
 
-    String.type.fromBytes s2
+    String.type.from_bytes s2
 
 
   # remove leading white space from this string
   #
-  trimStart =>
+  trim_start =>
 # NYI: This causes fz to crash:
-#   fromBytes ...
-    String.type.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
+#   from_bytes ...
+    String.type.from_bytes (utf8.drop_while (fun is_ascii_white_space))
 
 
   # remove trailing white space from this string
   #
-  trimEnd =>
+  trim_end =>
 # NYI: This causes fz to crash:
-#   fromBytes ...
-    String.type.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
+#   from_bytes ...
+    String.type.from_bytes (utf8.as_list.reverse.drop_while (fun is_ascii_white_space)).reverse
 
 
   # is this part of given set
   #
-  elementOf(s Set String) => s.contains String.this
-  infix ∈ (s Set String) => String.this.elementOf s
+  element_of(s Set String) => s.contains String.this
+  infix ∈ (s Set String) => String.this.element_of s
 
 
   # is this not part of given set
   #
-  notElementOf(s Set String) => !elementOf s
-  infix ∉ (s Set String) => String.this.notElementOf s
+  not_element_of(s Set String) => !element_of s
+  infix ∉ (s Set String) => String.this.not_element_of s
 
 
   # return string of at least length l by
   # padding codepoint s to start of string
   #
   pad_codepoint_start(l i32, s String) String
-  pre s.codepointLength = 1
+  pre s.codepoint_length = 1
   is
-    missing := l - codepointLength
+    missing := l - codepoint_length
     if missing <= 0
       String.this
     else
@@ -598,12 +598,12 @@ String ref : has_equality, hasHash String, ordered String is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
     i := state_wrapper (lists.empty String) false 0 0
-    last_state := asCodepoints.reduce state_wrapper i ((r, c) ->
+    last_state := as_codepoint_sequence.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
           match r.in_run
             TRUE => state_wrapper r.l true r.current_pos (r.current_pos + 1)
-            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].asList) true r.current_pos (r.current_pos + 1)
+            FALSE => state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].as_list) true r.current_pos (r.current_pos + 1)
         FALSE =>
           match r.in_run
             TRUE => state_wrapper r.l false r.current_pos (r.current_pos + 1)
@@ -624,13 +624,13 @@ String ref : has_equality, hasHash String, ordered String is
   #
   cut(sep String) tuple String String bool is
     match find sep
-      nil => (asString, "", false)
+      nil => (as_string, "", false)
       i i32 =>
-        l := byteLength
-        sepl := sep.byteLength
+        l := byte_length
+        sepl := sep.byte_length
 
-        before := String.type.fromBytes (utf8.slice 0 i)
-        after := String.type.fromBytes (utf8.slice (i + sepl) l)
+        before := String.type.from_bytes (utf8.slice 0 i)
+        after := String.type.from_bytes (utf8.slice (i + sepl) l)
         (before, after, true)
 
 
@@ -646,7 +646,7 @@ String ref : has_equality, hasHash String, ordered String is
   # given separator
   #
   type.concat(sep String) : Monoid String is
-    redef infix ∙ (a, b String) String is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
+    redef infix ∙ (a, b String) String is if (a.is_empty || b.is_empty) a + b else a + sep + b
     redef infix == (a, b String) => a == b
     redef e => ""
 
@@ -663,7 +663,7 @@ String ref : has_equality, hasHash String, ordered String is
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
   #
   type.join(elems Sequence String, sep String) String is
-    (elems.asList.intersperse sep).fold concat
+    (elems.as_list.intersperse sep).fold concat
 
 
   # create string by concatenating the results of $a[a.indices].
@@ -680,24 +680,24 @@ String ref : has_equality, hasHash String, ordered String is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  type.fromArray(a marray Any) ref : String is
+  type.from_array(a marray Any) ref : String is
     redef infix + (other Any) String is
-      fromArray (a.add other)
+      from_array (a.add other)
 
     redef utf8 Sequence u8 is
-      a.flatMapSequence u8 ai->ai.asString.utf8
+      a.flatMapSequence u8 ai->ai.as_string.utf8
 
 
   # create string from the given utf8 bytes
   #
-  type.fromBytes(utf8Bytes Sequence u8) String is
+  type.from_bytes(utf8Bytes Sequence u8) String is
     ref : String
       redef utf8 => utf8Bytes
 
 
   # create string from the given codepoints
   #
-  type.fromCodepoints(codePoints Sequence codepoint) String is
+  type.from_codepoint_sequence(codePoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
         codePoints

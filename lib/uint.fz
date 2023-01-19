@@ -31,7 +31,7 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := b.dropWhile (x -> x = 0)
+  data := b.drop_while (x -> x = 0)
 
   # bitwise operations
 
@@ -100,9 +100,9 @@ is
   post result.values.0.count = result.values.1.count
     =>
     if other.data.count < data.count
-      (data.asList, zeros data.count-other.data.count ++ other.data)
+      (data.as_list, zeros data.count-other.data.count ++ other.data)
     else
-      (zeros other.data.count-data.count ++ data, other.data.asList)
+      (zeros other.data.count-data.count ++ data, other.data.as_list)
 
 
   # divide with remainder the two given positive ints
@@ -255,7 +255,7 @@ is
         # zip the two equally long lists of digits
         .zip other.data (a,b -> (a,b))
         # skip to first unequal
-        .dropWhile (x -> (a,b) := x; a = b)
+        .drop_while (x -> (a,b) := x; a = b)
         # compare
         .mapSequence (x -> (a,b) := x; a <= b)
         # fallback, if all are equal
@@ -307,21 +307,21 @@ is
 
   # this uint as a string, may contain leading zeros
   #
-  private asString0 String is
+  private as_string0 String is
     mrd := uint 1_000_000_000
     (q, rem) := uint.this.divide_with_remainder mrd
 
     if q = zero
-      (rem.data.first (u32 0)).asString
+      (rem.data.first (u32 0)).as_string
     else
-      q.asString0 + (rem.data.first (u32 0)).asString.pad_codepoint_start 9 "0"
+      q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
 
 
-  redef asString String is
+  redef as_string String is
     if uint.this = zero
       "0"
     else
-      asString0
+      as_string0
 
 
 uint (val u64) uint is

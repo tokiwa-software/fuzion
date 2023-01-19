@@ -51,7 +51,7 @@ is
 
   # a sorted array of entries of this map
   #
-  sortedEntries := sorted_array_of ((0..ks.length-1).mapSequence (i -> entry i)).asArray
+  sortedEntries := sorted_array_of ((0..ks.length-1).mapSequence (i -> entry i)).as_array
 
 
   # number of entries in this map
@@ -79,8 +79,8 @@ is
     match index[](k)
       nil =>
         (ordered_map
-          (ks++[k]).asArray
-          (vs++[v]).asArray)
+          (ks++[k]).as_array
+          (vs++[v]).as_array)
       V =>
         va := array size (i -> if ks[i]=k then v else vs[i])
         (ordered_map ks va)
@@ -88,7 +88,7 @@ is
 
   # create a string containing all mappings
   #
-  redef asString =>
+  redef as_string =>
     for
       r := "", r + c + n
       i in ks.indices
@@ -108,5 +108,5 @@ ordered_maps (OK type : ordered OK, V type) is
   # create an empty instance of ordered_map
   #
   empty => (ordered_map
-            ((Sequence OK).type.empty).asArray
-            ((Sequence V).type.empty).asArray)
+            ((Sequence OK).type.empty).as_array
+            ((Sequence V).type.empty).as_array)

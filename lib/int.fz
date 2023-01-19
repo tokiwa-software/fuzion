@@ -161,8 +161,8 @@ is
           plus => true
           minus => other.n <= n
 
-  redef asString String is
-    s.asString + n.asString
+  redef as_string String is
+    s.as_string + n.as_string
 
 
 int (val i64) int is
@@ -230,7 +230,7 @@ sign : choice plus minus, has_equality, hasEquals sign is
           plus => false
           minus => true
 
-  redef asString String is
+  redef as_string String is
     match sign.this
       plus => ""
       minus => "-"

@@ -72,9 +72,9 @@ is
 
   abs² => real*real+imag*imag
 
-  redef asString =>
+  redef as_string =>
     si :=
-      for c in ($imag).asCodepoints
+      for c in ($imag).as_codepoint_sequence
       until !("0123456789.+-".contains c)
         "($imag)"
       else

@@ -446,8 +446,8 @@ public class CFG extends ANY
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
     put("f32.castTo_u32"                 , (cfg, cl) -> { } );
     put("f64.castTo_u64"                 , (cfg, cl) -> { } );
-    put("f32.asString"                   , (cfg, cl) -> { } );
-    put("f64.asString"                   , (cfg, cl) -> { } );
+    put("f32.as_string"                  , (cfg, cl) -> { } );
+    put("f64.as_string"                  , (cfg, cl) -> { } );
 
     put("f32s.minExp"                    , (cfg, cl) -> { } );
     put("f32s.maxExp"                    , (cfg, cl) -> { } );
@@ -489,7 +489,7 @@ public class CFG extends ANY
     put("f64s.tanh"                      , (cfg, cl) -> { } );
 
     put("Any.hashCode"                   , (cfg, cl) -> { } );
-    put("Any.asString"                   , (cfg, cl) -> { } );
+    put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );

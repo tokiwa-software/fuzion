@@ -47,7 +47,7 @@ Set(E type : hasEquals E) ref : Sequence E is
 
   # list representation of values in this set
   #
-  redef asList list E is abstract
+  redef as_list list E is abstract
 
 
   # add new element k to this set.
@@ -61,10 +61,10 @@ Set(E type : hasEquals E) ref : Sequence E is
   remove (k E) Set E is abstract
 
 
-  redef asString =>
-    if isEmpty
+  redef as_string =>
+    if is_empty
       "∅"
     else
       ("\{"
-       + (asList.map String (x -> x.asString)).fold(String.type.concat ";")
+       + (as_list.map String (x -> x.as_string)).fold(String.type.concat ";")
        + "\}")

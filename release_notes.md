@@ -1284,7 +1284,7 @@
 
   - stream/streamable: added asList, planning to work more with (lazy,
     immutable) lists than with streams that are inherently mutable. Also added
-    'take', 'drop', 'inifx ++' and 'asArray' to stream/streamable.
+    'take', 'drop', 'infix ++' and 'asArray' to stream/streamable.
 
   - added feature 'some' as standard wrapper. This can be used, e.g., to make an
     'option<some<nil>>' without getting complaints about overlapping values, the

@@ -50,7 +50,7 @@ is
 
   # list representation of values in this set
   #
-  redef asList => psm.keys.asList
+  redef as_list => psm.keys.as_list
 
 
   # print contents of this set
@@ -69,7 +69,7 @@ is
 
   # create a sorted array from the elements of this set
   #
-  redef asArray => psm.asKeyArray
+  redef as_array => psm.asKeyArray
 
 
   # check if an element equal to given element k is part of this set

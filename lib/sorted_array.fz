@@ -56,7 +56,7 @@ sorted_array
 
   )
 
-  : array T (sort from.asArray 1).internalArray unit unit unit
+  : array T (sort from.as_array 1).internalArray unit unit unit
 
 is
 
@@ -80,7 +80,7 @@ is
   is
     # check if the array is fully sorted
     if heapSize >= a.length
-      a.asArray  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
+      a.as_array  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
     else
       # h1 is the mutable index within the current first heap, this is updated
       # by the function passed to the array constructor.

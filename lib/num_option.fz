@@ -125,8 +125,8 @@ is
   abs num_option T is
     num_option.this >>= v -> if v.sign >= 0 v else -?v
 
-  redef asString String is
-    num_option.this ? v T => v.asString
+  redef as_string String is
+    num_option.this ? v T => v.as_string
                     | nil => "--no value--"
 
 

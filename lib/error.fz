@@ -43,5 +43,5 @@ is
   #
   # returns "error: $msg"
   #
-  redef asString String is
+  redef as_string String is
     "error: $msg"

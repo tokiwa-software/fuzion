@@ -40,7 +40,7 @@ public fileio is
     if res < 0
       error "unspecified read error: {res}"
     else if res < n.as_i64 || res = n.as_i64
-      (buf.slice 0 res.as_i32).asArray
+      (buf.slice 0 res.as_i32).as_array
     else
       error "read more than expected"
 

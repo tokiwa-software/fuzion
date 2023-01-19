@@ -51,13 +51,13 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # This is a helper function that needs to be defined because list is an heir
   # of Sequence.
   #
-  redef asList => list.this
+  redef as_list => list.this
 
 
   # is this list empty?
   #
-  redef isEmpty => (list.this ? nil  => true
-                              | Cons => false)
+  redef is_empty => (list.this ? nil  => true
+                               | Cons => false)
 
 
   # count the elements of this list
@@ -102,10 +102,10 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # list must not be empty, causes precondition failure if debug is enabled.
   #
-  forceTail
+  force_tail
     pre
-      debug: !isEmpty
-    => (list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
+      debug: !is_empty
+    => (list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
                   | c Cons => c.tail)
 
 
@@ -115,7 +115,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef first
     pre
-      debug: !isEmpty
+      debug: !is_empty
     => head.get
 
 
@@ -125,7 +125,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   init list A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
     init nil
 
@@ -138,7 +138,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   private init(res list A) list A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
@@ -155,10 +155,10 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef last A
     pre
-      debug: !isEmpty
+      debug: !is_empty
   is
-    forceTail ? nil    => first
-              | c Cons => forceTail.last
+    force_tail ? nil    => first
+               | c Cons => force_tail.last
 
 
   # map the list to a new list applying function f to all elements
@@ -186,7 +186,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       _ nil  => nil
       c Cons =>
-        match (f c.head).asList
+        match (f c.head).as_list
           _ nil => c.tail.flatMap B f
           c2 Cons =>
             ref : Cons B (list B)
@@ -235,24 +235,24 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # recursively reverse the order of the elements in this list
   # and append the already reversed reversedHead
   #
-  reverse (reversedHead list A) list A is
-    list.this ? nil    => reversedHead
-              | c Cons => c.tail.reverse (cons c.head reversedHead)
+  reverse (reversed_head list A) list A is
+    list.this ? nil    => reversed_head
+              | c Cons => c.tail.reverse (cons c.head reversed_head)
 
 
   # create a string representation of this list including all the string
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  redef asString =>
-    "[{list.this.asString ","}]"
+  redef as_string =>
+    "[{list.this.as_string ","}]"
 
 
   # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep String) =>
-    "{(map String x->x.asString).fold (String.type.concat sep)}"
+  redef as_string (sep String) =>
+    "{(map String x->x.as_string).fold (String.type.concat sep)}"
 
 
   # add an element sep in front of every element of this list.
@@ -284,7 +284,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # List concatenation, O(count)
   #
-  concatEagerly (t list A) list A is
+  concat_eagerly (t list A) list A is
     list.this ? nil    => t
               | c Cons => cons A (list A) c.head (c.tail.concat t)
 
@@ -304,7 +304,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # infix operand synonym for concat
   #
-  redef infix ++ (t Sequence A) => concat t.asList
+  redef infix ++ (t Sequence A) => concat t.as_list
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
@@ -326,7 +326,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  redef takeWhile (p A -> bool) list A
+  redef take_while (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
@@ -334,20 +334,20 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
         if p c.head
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => c.tail.takeWhile p
+            redef tail => c.tail.take_while p
         else
           nil
 
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  redef dropWhile (p A -> bool) list A
+  redef drop_while (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
       c Cons =>
         if p c.head
-          c.tail.dropWhile p
+          c.tail.drop_while p
         else
           c
 
@@ -362,7 +362,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   private filter0 (p A -> bool) list A is
-    match dropWhile (a -> !(p a))
+    match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
@@ -398,13 +398,13 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
   # it cannot be shared with threads or used in pure functions
   #
-  redef asStream ref : stream A is
+  redef as_stream ref : stream A is
     cur := list.this
-    redef hasNext => (cur ? Cons => true
-                          | nil  => false)
+    redef has_next => (cur ? Cons => true
+                           | nil  => false)
     redef next =>
       res := cur.head.get
-      set cur := cur.forceTail
+      set cur := cur.force_tail
       res
 
 
@@ -442,7 +442,7 @@ lists is
 
   # monoid of lists with infix concatentation operation.
   #
-  concatMonoid(A type) : Monoid (list A) is
+  concat_monoid(A type) : Monoid (list A) is
 
     # associative operation
     #
@@ -451,7 +451,7 @@ lists is
     # equality
     #
     redef infix == (a, b list A) =>
-      fuzion.std.panic "NYI: lists.concatMonoid.infix ==, requires A : hasEquals"
+      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : hasEquals"
 
     # identity element
     #
@@ -471,7 +471,7 @@ list(T type, h T, t () -> list T) list T is
 #
 # This is convenient to append an element before a list as in
 #
-#   0 : ()->[1,2,3,4].asList
+#   0 : ()->[1,2,3,4].as_list
 #
 # or to create lists by recursion, e.g., a an endless list containing
 # integer 1 repeatedly is
