@@ -545,8 +545,8 @@ public class Loop extends ANY
                               null /* NYI outer */);
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
-        initialActuals .add(new Actual(null, ia));
-        nextActuals    .add(new Actual(null, na));
+        initialActuals .add(new Actual(ia));
+        nextActuals    .add(new Actual(na));
       }
   }
 
@@ -576,7 +576,7 @@ public class Loop extends ANY
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
             var p = f.pos();
-            Call asStream = new Call(p, f.impl()._initialValue, "asStream");
+            Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
                                          Visi.INVISIBLE,
                                          /* modifiers */   0,
@@ -588,8 +588,8 @@ public class Loop extends ANY
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
             stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(p, new Call(p, streamName), "hasNext" );
-            Call hasNext2 = new Call(p, new Call(p, streamName), "hasNext" );
+            Call hasNext1 = new Call(p, new Call(p, streamName), "has_next" );
+            Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
             Call next1    = new Call(p, new Call(p, streamName), "next");
             Call next2    = new Call(p, new Call(p, streamName), "next");
             List<Stmnt> prolog2 = new List<>();

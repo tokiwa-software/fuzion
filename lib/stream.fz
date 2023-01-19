@@ -29,10 +29,10 @@
 # between threads.
 #
 # The mutable nature of streams requires particular prudence, as even basic
-# actions, such as calling asString on a stream will consume values and thus
+# actions, such as calling as_string on a stream will consume values and thus
 # change the state of the stream, as the following example demonstrates:
 #
-#   a := [1, 2, 3, 4, 5].asStream
+#   a := [1, 2, 3, 4, 5].as_stream
 #   say a
 #   say a
 #
@@ -44,26 +44,26 @@
 # mutable state.
 stream(redef T type) ref : Sequence T is
 
-  asList0 option (some (list T)) := nil
+  as_list0 option (some (list T)) := nil
 
   # create a list from this stream
   #
-  redef asList list T is
-    if !asList0.exists
-      set asList0 := some fromStream
-    asList0.get.val
+  redef as_list list T is
+    if !as_list0.exists
+      set as_list0 := some from_stream
+    as_list0.get.val
 
   # this must not be called more than once!
-  private fromStream list T is
-    if hasNext
+  private from_stream list T is
+    if has_next
       h := next
       ref : Cons T (list T)
-        memoizedTail option (some (list T)) := nil
+        memoized_tail option (some (list T)) := nil
         head => h
         tail =>
-          if !memoizedTail.exists
-            set memoizedTail := some fromStream
-          memoizedTail.get.val
+          if !memoized_tail.exists
+            set memoized_tail := some from_stream
+          memoized_tail.get.val
     else
       nil
 
@@ -74,10 +74,10 @@ stream(redef T type) ref : Sequence T is
     for
       a := marray 0 (fuzion.sys.internal_array T 0), a.add x
       i in (1..n)
-    while hasNext
+    while has_next
       x := next
     else
-      (a.take i).asList
+      (a.take i).as_list
 
 
   # Return this stream as a stream.
@@ -85,22 +85,22 @@ stream(redef T type) ref : Sequence T is
   # This is a helper function that needs to be defined because stream is an heir
   # of Sequence.
   #
-  redef asStream stream T is stream.this
+  redef as_stream stream T is stream.this
 
 
   # apply f to all elements in this stream
   #
-  redef for_each(f T -> unit) unit is while hasNext do f(next)
+  redef for_each(f T -> unit) unit is while has_next do f(next)
 
 
   # apply f to all elements in this stream, infix operator synonym of for_each.
   #
-  redef infix | (f T -> unit) unit is while hasNext do f(next)
+  redef infix | (f T -> unit) unit is while has_next do f(next)
 
 
   # apply 'f' to each element 'e' as long as 'f e'
   #
-  redef forWhile(f T -> bool) unit is while hasNext && f(next)
+  redef for_while(f T -> bool) unit is while has_next && f(next)
 
 
   # create a new stream that contains the first elements of this stream for
@@ -108,36 +108,36 @@ stream(redef T type) ref : Sequence T is
   #
   redef before(f T -> bool) stream T is before0 f
   before0(f T -> bool) ref : stream T is
-    nextCache := stream.this.next  # NYI should be option T and set to None if !stream.this.hasNext
-    redef hasNext => !f(nextCache)
+    next_cache := stream.this.next  # NYI should be option T and set to None if !stream.this.has_next
+    redef has_next => !f(next_cache)
     redef next T is
-      res := nextCache
-      set nextCache := stream.this.next
+      res := next_cache
+      set next_cache := stream.this.next
       res
 
 
   # create new stream from all elements for which predicate f is true
   #
-  redef filter(f T -> bool) => asList.filter f
+  redef filter(f T -> bool) => as_list.filter f
 
 
   # check if predicate f holds for all elements produced by this stream
   #
   redef infix ∀ (f T -> bool) bool is
-    while hasNext: f next   # hasNext implies f next
-    until !hasNext
+    while has_next: f next   # has_next implies f next
+    until !has_next
 
 
   # check if predicate f holds for at least one element produced by this stream
   #
   redef infix ∃ (f T -> bool) bool is
-    while hasNext
+    while has_next
     until f next
 
 
   # does this stream have one more element?
   #
-  hasNext bool is abstract
+  has_next bool is abstract
 
 
   # the next element in this stream
@@ -145,15 +145,15 @@ stream(redef T type) ref : Sequence T is
   next T
   /* NYI: C backend creates broken code for calling precondition of abstract feature
     pre
-      hasNext
+      has_next
    */
   is abstract
 
 
-  # get the next element or nil if !hasNext
+  # get the next element or nil if !has_next
   #
-  nextIfExists option T is
-    if hasNext
+  next_if_exists option T is
+    if has_next
       next
     else
       nil
@@ -164,23 +164,23 @@ stream(redef T type) ref : Sequence T is
   print unit is
     for_each (x ->
       yak x
-      if hasNext then yak ", ")
+      if has_next then yak ", ")
 
 
   # count the elements of this stream
   #
   redef count i32 is
     # NYI: check if this works: (map i32 x->1).fold i32.sum
-    asList.map i32 x->1
+    as_list.map i32 x->1
           .fold i32.sum
 
 
   # collect all items from this stream into an array
   #
-  redef asArray array T is
+  redef as_array array T is
     for
       a := marray 0 (fuzion.sys.internal_array T 0), a.add x
-    while hasNext
+    while has_next
       x := next
     else
       a.as_array
@@ -190,21 +190,21 @@ stream(redef T type) ref : Sequence T is
   # by all the elements of s
   #
   concatStreams (s stream T) ref : stream T is
-    hasNext => stream.this.hasNext || s.hasNext
-    next => if (stream.this.hasNext) stream.this.next else s.next
+    has_next => stream.this.has_next || s.has_next
+    next => if (stream.this.has_next) stream.this.next else s.next
 
 
   # create a string from the elements of this stream
   #
-  redef asString ref String is
-    (map String (x -> x.asString))
+  redef as_string ref String is
+    (map String (x -> x.as_string))
       .fold (String.type.concat ", ")
 
 
   # create a string representation of this stream including all the string
   # representations of its contents, separated by 'sep'.
   #
-  redef asString (sep String) => asList.asString sep
+  redef as_string (sep String) => as_list.as_string sep
 
 
   # map the stream to a new stream applying function f to all elements
@@ -214,7 +214,7 @@ stream(redef T type) ref : Sequence T is
   #
   map(B type, f T -> B) stream B is
     ref : stream B
-      hasNext => stream.this.hasNext
+      has_next => stream.this.has_next
       next B is f stream.this.next
 
 
@@ -222,7 +222,7 @@ stream(redef T type) ref : Sequence T is
   # for stream.this.next confuses the type from the outer feature (T) with the type
   # from the inherited feature (B).
   map_broken(B type, f T -> B) : stream B is
-    hasNext => stream.this.hasNext
+    has_next => stream.this.has_next
     next B is f stream.this.next
 
 
@@ -240,7 +240,7 @@ stream(redef T type) ref : Sequence T is
   fold (s T, m Monoid T) =>
     for
       r := s, m.op r next
-    while hasNext
+    while has_next
     else
       r
 
@@ -252,7 +252,7 @@ streams is
 
   # creates a - potentially infinite - stream by using given supplier
   # end of stream is reached once supplier returns nil
-  # note that the supplier is called only once for each hasNext/next cycle
+  # note that the supplier is called only once for each has_next/next cycle
   #
   generate(T type, supplier () -> option T) stream T is
 
@@ -273,7 +273,7 @@ streams is
       val <- not_initialized
 
     ref: stream T
-      redef hasNext bool is
+      redef has_next bool is
         match read
           v T => true
           * => false

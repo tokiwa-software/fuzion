@@ -262,13 +262,13 @@ visibility is
     x := 2;                             say "x is $x"
     // NYI:    x := x as f64;           say "x is $x"
     x := x * 3 / 100 /* NYI: 3.14   */; say "x is $x"
-    x := x.asString  /* NYI: as i32 */; say "x is $x"
+    x := x.as_string  /* NYI: as i32 */; say "x is $x"
   visi6
 
   visi7 is
     x := 2;          f () -> String := () -> "x is "+x+""
     x := x*x*x*x;    g () -> String := () -> "x is "+x+""
-    x := x.asString; h () -> String := () -> "x is "+x+""
+    x := x.as_string; h () -> String := () -> "x is "+x+""
     x := x * 5;      i () -> String := () -> "x is "+x+""
     chck (f.call() == "x is 2") "x is 2"
     chck (g.call() == "x is 16") "x is 16"
@@ -276,7 +276,7 @@ visibility is
     chck (i.call() == "x is 1616161616") "x is 1616161616"
     x := 2;          f1 => r := "x is "+x+""; r
     x := x*x*x*x;    g1 => r := "x is "+x+""; r
-    x := x.asString; h1 => r := "x is "+x+""; r
+    x := x.as_string; h1 => r := "x is "+x+""; r
     x := x * 5;      i1 => r := "x is "+x+""; r
     chck (f1 == "x is 2") "x is 2"
     chck (g1 == "x is 16") "x is 16"

@@ -228,6 +228,20 @@ public class Call extends AbstractCall
 
 
   /**
+   * static helper for Call() constructor to create List<Expr> from List<Actual>
+   * and directly pass it to this().
+   */
+  private static List<Expr> asExprList(List<Actual> la)
+  {
+    var res = new List<Expr>();
+    for (var a : la)
+      {
+        res.add(a);
+      }
+    return res;
+  }
+
+  /**
    * Constructor to call feature with name 'n' on target 't' with actual
    * arguments 'la' with the ability to select from an open generic field.
    *
@@ -244,22 +258,11 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, String n, int select, List<Actual> la)
   {
+    this(pos, t, n, select, la, NO_GENERICS, asExprList(la), null, null);
+
     if (PRECONDITIONS) require
       (la != null,
        select >= -1);
-
-    var a = new List<Expr>();
-    for (var aa : la)
-      {
-        a.add(aa._expr);
-      }
-    this._pos = pos;
-    this._target = t;
-    this._name = n;
-    this._select = select;
-    this._generics = NO_GENERICS;
-    this._actualsNew = la;
-    this._actuals = a;
   }
 
 
@@ -360,15 +363,7 @@ public class Call extends AbstractCall
        AbstractFeature calledFeature,
        AbstractType type)
   {
-    this._pos = pos;
-    this._name = calledFeature.featureName().baseName();
-    this._select = -1;
-    this._generics = generics;
-    this._actualsNew = actualsNew;
-    this._actuals = actuals;
-    this._target = target;
-    this._calledFeature = calledFeature;
-    this._type = type;
+    this(pos, target, calledFeature.featureName().baseName(), -1, actualsNew, generics, actuals, calledFeature, type);
   }
 
 
@@ -382,27 +377,38 @@ public class Call extends AbstractCall
    *
    * @param name the name of the called feature
    *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. -1 for none.
+   *
    * @param actualsNew
    *
    * @param generics
    *
    * @param actuals
    *
+   * @param calledFeature
+   *
+   * @param type
    */
   private Call(SourcePosition pos,
                Expr target,
                String name,
+               int select,
                List<Actual> actualsNew,
                List<AbstractType> generics,
-               List<Expr> actuals)
+               List<Expr> actuals,
+               AbstractFeature calledFeature,
+               AbstractType type)
   {
     this._pos = pos;
     this._name = name;
-    this._select = -1;
+    this._select = select;
     this._generics = generics;
     this._actualsNew = actualsNew;
     this._actuals = actuals;
     this._target = target;
+    this._calledFeature = calledFeature;
+    this._type = type;
   }
 
 
@@ -673,11 +679,13 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         var actualsResolved = false;
+        if (CHECKS) check
+          (Errors.count() > 0 || _name != Errors.ERROR_STRING);
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
-              (Errors.count() > 0 || targetFeature != null);
+              (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
             if (targetFeature != null && targetFeature != Types.f_ERROR)
               {
                 var fo = calledFeatureCandidates(targetFeature, res, thiz);
@@ -1092,9 +1100,12 @@ public class Call extends AbstractCall
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
                           "call",
+                          -1,
                           _actualsNew,
                           NO_GENERICS,
-                          _actuals)
+                          _actuals,
+                          null,
+                          null)
           .resolveTypes(res, outer);
         _actualsNew = NO_PARENTHESES;
         _actuals = Expr.NO_EXPRS;
@@ -1270,7 +1281,7 @@ public class Call extends AbstractCall
   {
     var fargs = _calledFeature.valueArguments();
     _resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
-                                                    : new AbstractType[fargs.size()];
+                                                     : new AbstractType[fargs.size()];
     Arrays.fill(_resolvedFormalArgumentTypes, Types.t_ERROR);
     int count = 0;
     for (var frml : fargs)
@@ -1802,6 +1813,17 @@ public class Call extends AbstractCall
 
     if (CHECKS) check
       (Errors.count() > 0 || _calledFeature != null);
+
+    ListIterator<Expr> i = _actuals.listIterator();
+    while (i.hasNext())
+      {
+        Expr actl = i.next();
+        if (actl instanceof Actual aa)
+          {
+            actl = aa.expr(this);
+          }
+        i.set(actl);
+      }
 
     if (_calledFeature == null)
       {

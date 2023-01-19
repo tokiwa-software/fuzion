@@ -40,7 +40,7 @@ public fileio is
     if res < 0
       error "unspecified read error: {res}"
     else if res < n.as_i64 || res = n.as_i64
-      (buf.slice 0 res.as_i32).asArray
+      (buf.slice 0 res.as_i32).as_array
     else
       error "read more than expected"
 
@@ -59,23 +59,13 @@ public fileio is
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
-  public get_file_size(
-                       # the (relative or absolute) file name, using platform specific path separators
-                       path String) outcome i64 is
-    arr := fuzion.sys.c_string path
-    size := get_file_size arr unit
-    if size != -1
-      size
-    else
-      error "an error occurred while retrieving the size of the file/dir: \"$path\""
-
-  # intrinsic that returns the file size in bytes or -1 in case of an error
-  #
   private get_file_size(
-                        # the internal array data representing the file path in bytes
-                        path Any,
-                        # dummy parameter for overloading
-                        _ unit) i64 is intrinsic
+                        # the (relative or absolute) file name, using platform specific path separators
+                        path String) outcome i64 is
+    md := array 4 i->(i64 0)
+    match stats (fuzion.sys.c_string path) md.internalArray.data
+      TRUE => md[0]
+      FALSE => error "error getting file size"
 
 
   # writes the content of an array of bytes to a file opened as fd

@@ -29,7 +29,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
 
   # create a list from this Sequence.
   #
-  redef asList => from.asList
+  redef as_list => from.as_list
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -41,7 +41,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
   average option N is
-    if isEmpty
+    if is_empty
       nil
     else
       count := (mapSequence N (_ -> first.one)).fold first.sum
@@ -62,7 +62,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
 
   # minimum value in the sequence
   min option N is
-    if isEmpty
+    if is_empty
       nil
     else
       reduce first ((r,t) -> if r<=t then r else t)
@@ -70,7 +70,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
 
   # maximum value in the sequence
   max option N is
-    if isEmpty
+    if is_empty
       nil
     else
       reduce first ((r,t) -> if r<=t then t else r)
@@ -79,7 +79,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
   # the median of the sequence
   # https://en.wikipedia.org/wiki/Median
   median option N is
-    if isEmpty
+    if is_empty
       nil
     else
       arr := sorted_array_of numeric_sequence.this

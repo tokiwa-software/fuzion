@@ -84,7 +84,7 @@ bool : choice FALSE TRUE, has_equality, hasEquals bool is
   ternary ? : (T type, lazy a, b T) => if bool.this a else b
 
   # human readable string
-  redef asString => if bool.this "true" else "false"
+  redef as_string => if bool.this "true" else "false"
 
 
 # boolean value "false"

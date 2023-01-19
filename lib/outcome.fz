@@ -111,7 +111,7 @@ is
 
   # convert this outcome to an option
   # if the outcome is an error, the option is empty
-  as_option() option T is
+  as_option option T is
     match outcome.this
       t T => t
       error => nil
@@ -119,11 +119,11 @@ is
 
   # converts outcome to a string
   #
-  # returns the result of T.asString for a successful outcome, or
+  # returns the result of T.as_string for a successful outcome, or
   # "--$e--" for e error.
   #
-  redef asString =>
-    outcome.this ? v T     => v.asString
+  redef as_string =>
+    outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
 
   # returns o if outcome is ok, otherwise return the outcome's own
@@ -162,7 +162,7 @@ is
   #       fd i64 =>
   #         # read 42 bytes from example file
   #         match read fd 42
-  #           content array u8 => strings.fromBytes content
+  #           content array u8 => strings.from_bytes content
   #           re error => re
   #       oe error => oe
   #

@@ -489,7 +489,7 @@ visiList    : visi ( COMMA visiList
       {
         if (skip(Token.t_export))
           {
-            List<List<String>> l = new List<>(visi());
+            var l = new List<List<String>>(visi());
             while (skipComma())
               {
                 l.add(visi());
@@ -841,7 +841,7 @@ featNames   : qual (COMMA featNames
    */
   List<List<String>> featNames()
   {
-    List<List<String>> result = new List<>(qual(true));
+    var result = new List<List<String>>(qual(true));
     while (skipComma())
       {
         result.add(qual(true));
@@ -1356,7 +1356,7 @@ indexTail   : ":=" exprInLine
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
-            l.add(new Actual(null, exprInLine()));
+            l.add(new Actual(exprInLine()));
             n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
         if (l.isEmpty())
@@ -1653,6 +1653,8 @@ actual   : expr | type
    */
   Actual actual()
   {
+    var pos = posObject();
+
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -1686,7 +1688,7 @@ actual   : expr | type
         t = type();
         e = Expr.NO_VALUE;
       }
-    return new Actual(t, e);
+    return new Actual(pos, t, e);
   }
 
 
@@ -1773,8 +1775,8 @@ expr        : opExpr
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = expr();
             i.end();
-            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
-                                                                     new Actual(null, g)));
+            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
+                                                                     new Actual(g)));
           }
       }
     return result;
@@ -1857,7 +1859,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(null, expr()));
+                             tupleElements.add(new Actual(expr()));
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -1866,7 +1868,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
     return
       isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0)._expr // a klammerexpr, not a tuple
+      tupleElements.size() == 1 ? tupleElements.get(0).expr(null)   // a klammerexpr, not a tuple
                                 : new Call(pos, null, "tuple", tupleElements);
   }
 
@@ -2149,7 +2151,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(null, string2)));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(string2)));
   }
 
 

@@ -87,4 +87,4 @@ is
   fixed type.equality(a, b fraction B) =>
     (a - b).num.isZero
 
-  redef asString => "" + num + "⁄" + den
+  redef as_string => "" + num + "⁄" + den

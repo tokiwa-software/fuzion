@@ -61,7 +61,7 @@ Map(K, V type) ref is
 
   # create a string containing all mappings
   #
-  redef asString =>
+  redef as_string =>
     for
       r := "", r + c + "($k => {index[] k})"
       k in keys

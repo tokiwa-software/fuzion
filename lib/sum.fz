@@ -33,15 +33,15 @@
 #
 sum(T type : numeric T, l Sequence T)
   pre
-    debug: !l.isEmpty   # sum does not work (yet) for empty Sequence
+    debug: !l.is_empty   # sum does not work (yet) for empty Sequence
   =>
 
-  # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
+  # NYI: the following code to get T's sum monoid does not work for l.is_empty,
   # it should be something like
   #
   #  l.fold T.sum
   #
-  n := l.asList.head.get
+  n := l.as_list.head.get
   sum0 n l
 
 

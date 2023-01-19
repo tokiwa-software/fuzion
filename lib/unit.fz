@@ -91,7 +91,7 @@ unit is
 #
 
   # human readable string
-  redef asString => "unit"
+  redef as_string => "unit"
 
   # Monoid that can be used whenever a monoid of the unit type is expected.
   # This is the case for example in some calls to `fold`-like features.

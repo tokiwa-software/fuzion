@@ -74,7 +74,7 @@ is
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  type.latin_alphabet => codepoint.type.A_to_Z.concatSequences a_to_z # NYI It would be better to use union of those two sets
+  type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #

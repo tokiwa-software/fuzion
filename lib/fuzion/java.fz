@@ -74,11 +74,11 @@ public fuzion.java is
     length                  => arrayLength T Array.this
     redef finite            => true
     redef index [ ] (i i32) => arrayGet    T Array.this i
-    redef asList => asList 0
+    redef as_list => as_list 0
 
     # create list starting at index from
     #
-    asList (from i32) list T is
+    as_list (from i32) list T is
       if length <= from
         nil
       else
@@ -92,7 +92,7 @@ public fuzion.java is
         debug: 0 <= i < length
     is
       head => Array.this[i]
-      tail => asList i+1
+      tail => as_list i+1
 
 
 
@@ -197,7 +197,7 @@ public fuzion.java is
   # convert a Sequence to a Java Array object
   #
   public arrayToJavaObject(T type, a Sequence T) Array T is
-    arrayToJavaObject0 T a.asArray.internalArray.data
+    arrayToJavaObject0 T a.as_array.internalArray.data
 
 
   # intrinsic to convert an array to a Java Array object
@@ -208,7 +208,7 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public stringToJavaObject(s String) JavaObject is
-    stringToJavaObject0 s.utf8.asArray.internalArray.data
+    stringToJavaObject0 s.utf8.as_array.internalArray.data
 
 
   # intrinsic to convert a string to a Java String object

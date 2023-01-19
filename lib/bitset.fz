@@ -100,7 +100,7 @@ is
 
   # create a string representation of a bitset of the form "{2, 4}"
   #
-  redef asString String is
+  redef as_string String is
     match highest
       _ nil => "\{}"
       h u64 =>

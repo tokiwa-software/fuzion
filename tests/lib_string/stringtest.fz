@@ -28,8 +28,8 @@ stringtest is
 
   say ("hell😀" * 3)
 
-  say "".isEmpty
-  say "notEmpty".isEmpty
+  say "".is_empty
+  say "notEmpty".is_empty
 
   say ("hell😀"="hell😀")
   say ("hell😀"="again")
@@ -42,6 +42,6 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (String.type.fromCodepoints "hell😀".asCodepoints)
+  say (String.type.from_codepoint_sequence "hell😀".as_codepoint_sequence)
 
-  say (String.type.fromArray ((marrays Any).new 1 nil))
+  say (String.type.from_array ((marrays Any).new 1 nil))

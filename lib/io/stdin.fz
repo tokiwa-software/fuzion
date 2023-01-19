@@ -87,7 +87,7 @@ private read_line0 outcome String : character_encodings is
       match t
         c codepoint =>
           if c.val = ascii.lf.as_u32 || c.val = ascii.cr.as_u32
-            if r.isEmpty # we read nothing yet, so we just skip the lf/cr
+            if r.is_empty # we read nothing yet, so we just skip the lf/cr
               r
             else
               # NYI explicit tagging should not be necessary #671
@@ -152,8 +152,8 @@ private codepoint0 choice codepoint end_of_file error is
                 * => fuzion.std.panic "should not be possible"
               )
           match rest
-            l Sequence u8 => String.type.fromBytes l
-                                    .asCodepoints
+            l Sequence u8 => String.type.from_bytes l
+                                    .as_codepoint_sequence
                                     .first
             end_of_file => end_of_file
             e error => e // error occurred while reading the rest of utf8 bytes
