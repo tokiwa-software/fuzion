@@ -259,23 +259,6 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.sys.fileio.get_file_size", (interpreter, innerClazz) -> args ->
-        {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          try
-            {
-              long fileLength = Files.size(path);
-              return new i64Value(fileLength);
-            }
-          catch (Exception e)
-            {
-              return new i64Value(-1);
-            }
-        });
     put("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)

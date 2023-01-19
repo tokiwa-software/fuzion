@@ -225,7 +225,6 @@ public class CFG extends ANY
     put("fuzion.sys.out.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.err.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.get_file_size", (cfg, cl) -> { } );
     put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.move"         , (cfg, cl) -> { } );
