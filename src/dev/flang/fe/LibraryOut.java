@@ -394,7 +394,9 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
+   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   |        |        |               |           k = kind                            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
@@ -441,15 +443,13 @@ class LibraryOut extends ANY
   void feature(Feature f)
   {
     _data.add(f);
-    var k =
-      !f.isConstructor() ? f.kind().ordinal() :
-      f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                         : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE;
+    int k = f.visibility().ordinal() << 7;
+    k = k | (!f.isConstructor() ? f.kind().ordinal() :
+              f.isThisRef()     ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
+                                : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
-    if (CHECKS) check
-      (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
     if (f.isIntrinsicConstructor())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
@@ -463,7 +463,7 @@ class LibraryOut extends ANY
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
     var n = f.featureName();
-    _data.write(k);
+    _data.writeShort(k);
     var bn = n.baseName();
     if (_sourceModule._options._eraseInternalNamesInLib && bn.startsWith(FuzionConstants.INTERNAL_NAME_PREFIX))
       {

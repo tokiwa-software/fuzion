@@ -42,7 +42,7 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-
+import dev.flang.ast.Visi;
 import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
@@ -804,7 +804,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 0FCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier
+.6+| true  .6+| 1      | short         | 000000vvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -832,7 +832,9 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
+   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   |        |        |               |           k = kind                            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
@@ -883,7 +885,7 @@ Feature
   }
   int featureKind(int at)
   {
-    var ko = data().get(featureKindPos(at));
+    var ko = data().getShort(featureKindPos(at));
     return ko;
   }
   AbstractFeature.Kind featureKindEnum(int at)
@@ -892,6 +894,11 @@ Feature
     return featureIsConstructor(at)
       ? AbstractFeature.Kind.Routine
       : AbstractFeature.Kind.from(k);
+  }
+  Visi featureVisibilityEnum(int at)
+  {
+    var k = (featureKind(at) & FuzionConstants.MIR_FILE_VISIBILITY_MASK) >> 7;
+    return Visi.from(k);
   }
   boolean featureIsConstructor(int at)
   {
@@ -926,7 +933,7 @@ Feature
   }
   int featureNamePos(int at)
   {
-    var i = featureKindPos(at) + 1;
+    var i = featureKindPos(at) + 2;
     return i;
   }
   int featureNameLength(int at)

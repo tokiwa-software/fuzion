@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
+
 /**
  * Visi store the visibility of a Feature
  *
@@ -77,6 +79,22 @@ public enum Visi
   public String toString()
   {
     return this._kind;
+  }
+
+
+  /**
+   * get the Visibility that corresponds to the given ordinal number.
+   */
+  public static Visi from(int ordinal)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (0 <= ordinal,
+        ordinal < values().length);
+
+    if (ANY.CHECKS) ANY.check
+      (values()[ordinal].ordinal() == ordinal);
+
+    return values()[ordinal];
   }
 
 }
