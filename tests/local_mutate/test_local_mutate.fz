@@ -1,0 +1,419 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_local_mutate
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# a test for creating and installing a mutate effect and then using this to create
+# some data that is then returned as an immutable object
+#
+test_local_mutate is
+
+  # the first test uses a local variable to count the elements in a Sequence:
+  #
+  test_sum =>
+
+    # our sequence to count:
+    #
+    l := [0,8,15,47,11]
+
+    sum(l Sequence i32) =>
+
+      # define a local type `m` to identify the mutate effect:
+      #
+      m : local_mutate m is
+
+      # count using a locally mutable variable:
+      #
+      count =>
+
+        # create mutable variable s:
+        s := m.env.new 0
+
+        for e in l do
+
+          # add e to s
+          s.update a->a+e
+
+        # unwrap the sum value in s and return it
+        s.get
+
+      # run code within an instance of m
+      #
+      m.use (()->
+
+        s := m.env.new 0
+
+        for e in l do
+          s.update a->a+e
+
+        say "inside m.use: s.get = {s.get}"
+        say "inside m.use: count = {count}")
+
+      say "using m.run and count: {m.run ()->count (unit)->(-1)}"
+
+#       say (m.go i32 ()->count)     # NY: m.go does not work yet
+
+      count2 =>
+        s := m.env.new 0
+        for e in l do
+          s.update a->a+e
+        option s
+
+      # NYI: move this into negative test
+      if envir.args.count == 2
+        say count    # *** will cause an error, requires m to be installed
+
+      # NYI: move this into negative test
+      if envir.args.count == 3
+        s := (m.run ()->count2 (unit)->nil).get
+        say s        # *** will cause an error, requires m to be installed
+
+/* NYI: check this, causes error:
+
+      if envir.args.count == 4
+        s := m.run ()->count2 (unit)->nil
+        m.use (() ->
+          s <- -12    # *** will cause an error, m has changed!
+          say s)
+*/
+
+      # NYI: move this into negative test
+      if envir.args.count == 4
+        q =>
+          s1 := m.run ()->count2 (unit)->nil
+          m.use (() ->
+            s1.get <- -12    # *** will cause an error, m has changed!  NYI: does not work yet!!!
+            say s1)
+        q
+
+    sum l
+
+  test_sum
+
+
+  # quicksort using old marray, just for reference
+  #
+  # NYI: remove this case, this does not use mutate effect!
+  #
+  test_quicksort0 =>
+
+    quicksort(T type: ordered T, data Sequence T) array T is
+      c := data.count
+      if c = 0
+        []
+      else
+        arr := (marrays T).new c data[0]
+        for i in arr.indices do
+          arr[i] := data[i]
+
+        swap(i,j i32) =>
+          t := arr[i]
+          arr[i] := arr[j]
+          arr[j] := t
+
+        partition(l, r, pivot i32) =>
+          pv := arr[pivot]
+          swap pivot r
+          for
+            a := l, a + (sw ? 0 : 1)
+            b := r, b - (sw ? 1 : 0)
+            sw := arr[a] > pv
+          while a < b
+            if sw
+              swap a b-1
+          else
+            swap b r
+            b
+
+        qs(l, r i32) unit is # =>  does not work
+          if l < r
+            pi := partition l r (l + r)/2
+            qs l pi-1
+            qs pi+1 r
+
+        qs 0 c-1
+        arr.as_array
+
+    say (quicksort [0, 8, 15, 47, 11])
+    say (quicksort 0..10)
+    say (quicksort (10..0 : -1))
+
+  test_quicksort0
+
+
+  # quicksort using array created via local mutate effect
+  #
+  test_quicksort =>
+
+    quicksort(T type: ordered T, data Sequence T) array T is
+      c := data.count
+      if c = 0
+        []
+      else
+        m : local_mutate m is
+
+        # wrap code into iqs (NYI: use m.go with inline code)
+        iqs =>
+          swap(i,j i32) =>
+            t := arr[i]
+            arr[i] := arr[j]
+            arr[j] := t
+
+          partition(l, r, pivot i32) =>
+            pv := arr[pivot]
+            swap pivot r
+            for
+              a := l, a + (sw ? 0 : 1)
+              b := r, b - (sw ? 1 : 0)
+              sw := arr[a] > pv
+            while a < b
+              if sw
+                swap a b-1
+            else
+              swap b r
+              b
+
+          qs(l, r i32) unit is # =>  does not work
+            if l < r
+              pi := partition l r (l + r)/2
+              qs l pi-1
+              qs pi+1 r
+
+          arr := m.env.array T c data[0]
+          for i in arr.indices do
+            arr[i] := data[i]
+
+          qs 0 c-1
+          arr.as_array
+
+        m.run ()->iqs (unit)->(panic "*** unexpected abort ***")
+
+    say (quicksort [0, 8, 15, 47, 11])
+    for i in -1..10 do
+      say (quicksort 0..i)
+      say (quicksort (i..0 : -1))
+
+  test_quicksort
+
+
+  # first try to privde a doubly-linked ring
+  #
+  test_ring1 =>
+
+    cell(T type, LM type : local_mutate LM, data T) ref is
+      me cell T LM := cell.this
+      n := LM.env.new me #  cell.this   -- NYI: cell.this causes crash!
+      p := LM.env.new me
+      link(ne, pr ref cell T LM) is
+        n <- ne
+        p <- pr
+
+      next => n.get
+      prev => p.get
+
+    ring(T type, from Sequence T)
+      pre
+        !from.is_empty
+     =>
+      m : local_mutate m is
+
+      ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
+        c := cell T m from.head.get
+        match from.tail
+          nil    => c
+          t Cons => f := ring2 t
+                    l := f.prev
+                    c.link f l
+                    f.link f.next c
+                    l.link c l.prev
+        c
+
+      ring3(from list T) cell T m is
+        r := ring2 from
+
+        for
+          i in 1..10
+          e := r, e.next
+        do
+          say "$i: {e.data}"
+
+        for cur := r, cur.next
+        while cur.n.open do
+          cur.n.close
+          cur.p.close
+        r
+
+      r := m.run ()->(ring3 from.as_list) (unit)->(panic "*** unexpected abort ***")
+      say "left local_mutate environment m"
+      for
+        i in 1..10
+        e := r, e.next
+      do
+        say "$i: {e.data}"
+      r
+
+    r := ring [0,1,2,3]
+
+  test_ring1
+
+
+  # second try to privde a doubly-linked ring and to return it as a type
+  # 'ring' that does not refer to any mutate effect:
+  #
+  test_ring2 =>
+
+    # abstract type for 'ring'
+    #
+    ring(T type) ref is
+      next, prev ring T is abstract
+      data T is abstract
+
+      redef as_string =>
+        for
+          s := "[ ", s + "{e.data} <-> "
+          # e2 := r, e2.next    # causes crash!
+          e ring T := ring.this, e.next
+          i in 0..3
+        else
+          s + " ... ]"
+
+    # ring type for mutable rings
+    #
+    # on call to `mut_ring LM T data` creates a minimal ring consisting of only
+    # one single cell.  To create larger rings, you can either call `insert` to
+    # add single cells, or `merge` to merge two rings into one larger ring.
+    #
+    mut_ring(# mutate effect to be used to create mutable variables
+             LM type : local_mutate LM,
+
+             # type of data stored in ring cells
+             redef T type,
+
+             # the data stored in this cell.
+             data T) ref : ring T is
+
+      # NYI: `me` is just to avoid bugs in Fuzion when using mut_ring.this
+      me mut_ring LM T := mut_ring.this
+
+      # mutable references to next and previous. Initalizes to refer to
+      # mut_ring.this to form a minimal ring
+      #
+      private n := LM.env.new me #  mut_ring.this   -- NYI: mut_ring.this causes crash!
+      private p := LM.env.new me
+
+
+      # short-hand features to get the mutable references from `n` and `p`
+      #
+      next => n.get
+      prev => p.get
+
+
+      # add a cell containing `data` to this ring.
+      #
+      # mut_ring.this is 'a':
+      #
+      #  +-> a <-> b <-> c ... m <-+
+      #  |                         |
+      #  +-------------------------+
+      #
+      # the resulting ring then will have a new cell `n` containing `data`
+      # with this shape:
+      #
+      #  +-> a <-> b <-> c ... m <-> n <-+
+      #  |                               |
+      #  +-------------------------------+
+      #
+      insert(data T) =>
+        r2 := mut_ring LM T data
+        merge r2
+
+
+      # merge two rings as follows:
+      #
+      # mut_ring.this is 'a':
+      #
+      #  +-> a <-> b <-> c ... m <-+
+      #  |                         |
+      #  +-------------------------+
+      #
+      # the second ring `n` is
+      #
+      #  +-> n <-> o <-> p ... z <-+
+      #  |                         |
+      #  +-------------------------+
+      #
+      # the resulting ring then will be:
+      #
+      #  +-> a <-> b <-> c ... m <-> n <-> o <-> p ... z <-+
+      #  |                                                 |
+      #  +-------------------------------------------------+
+      #
+      merge(n mut_ring LM T) =>
+        a := mut_ring.this
+        m := a.prev
+        z := n.prev
+        a.p <- z
+        z.n <- a
+        m.n <- n
+        n.p <- m
+
+      # freeze this ring, i.e., turn all references into immutable values
+      #
+      freeze =>
+        if n.open
+          n.close
+          p.close
+          next.freeze
+
+    # create a ring from the elements of a sequence
+    #
+    create_ring(T type, from Sequence T)
+      pre
+        !from.is_empty
+     =>
+      # define mutate context to be used
+      m : local_mutate m is
+
+      # create ring, called with the env set to an instance of `m`.
+      #
+      create_ring2(from list T) ring T is
+        c := mut_ring m T from.head.get
+        from.as_list.tail.for_each (x->c.merge (mut_ring m T x))
+        c.freeze
+        c
+
+      # NYI: use m.go, not m.run()
+      r := m.run ()->(create_ring2 from.as_list) (unit)->(panic "*** unexpected abort ***")
+      say "left local_mutate environment m"
+      say r
+      for
+        i in 1..10
+        e := r, e.next
+        b := r, b.prev
+      do
+        say "$i: {e.data} {b.data}"
+      r
+
+    r := create_ring [0,1,2,3]
+
+  test_ring2
