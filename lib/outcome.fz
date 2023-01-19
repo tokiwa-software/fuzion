@@ -111,7 +111,7 @@ is
 
   # convert this outcome to an option
   # if the outcome is an error, the option is empty
-  as_option() option T is
+  as_option option T is
     match outcome.this
       t T => t
       error => nil
