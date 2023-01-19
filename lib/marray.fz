@@ -44,6 +44,13 @@ marray
 
 is
 
+
+  # a sequence of all valid indices to access this array. Useful e.g., for
+  # `for`-loops:
+  #
+  #   for i in arr.indices do
+  #     say arr[i]
+  #
   indices => 0..length-1
 
 
@@ -146,7 +153,7 @@ marrays(T type)  is
   # fuzion.sys.internal_array T unit.
   #
   new
-   (# length of the marray to crate
+   (# length of the marray to create
     length i32,
 
     # initial value for elements
