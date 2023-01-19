@@ -1,0 +1,223 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mut
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# local_mutate -- an effect that permits creation of a local scope that permits
+# mutation
+#
+local_mutate(# NYI: LM should be replaced by local_mutate.this.type
+             LM type : local_mutate LM)
+  : simpleEffect
+is
+
+  # an id used for runtime checks to verify that mutation made with the same effect
+  # the mutable value was created with
+  #
+  id := time.nano.read   # NYI: replace by intrinsic that produces a unique id
+
+  # 0 is used to indicate this is closed
+  #
+  # NYI: remove this check as soon as id is set by an intrinsic guaranteed not to be 0.
+  #
+  if id = 0
+    panic "*** local_mutate.id should never be 0"
+
+  # common type for mutable data
+  mutable_element is
+    # id used to verify that mutation made with the same effect
+    # the mutable value was created with
+    my_id := id
+
+    # check that this effect is intalled and replace it.
+    #
+    private check_and_replace is
+      if my_id != LM.env.id
+        panic "*** invalid local_mutate for type LM"
+      LM.env.replace
+
+    # is this element open, i.e., can it be mutated?
+    #
+    open => id != 0
+
+    # stop any further mutations of this element
+    #
+    close is
+      set id := 0
+
+
+  # create a new mutable value with the given initial value and update the
+  # 'mutate' effect in the current environment
+  #
+  new (
+    T type,
+
+    # initial value, will be updated by 'put' or 'infix <-'.
+    val T
+    )  #   : mutable_element   # NYI: inheriting mutable_element does not work yet
+  is
+
+    # NYI: remove as soon as inheriting mutable_element works
+    my_id := id
+
+
+    # NYI: remove as soon as inheriting mutable_element works
+    private check_and_replace is
+      if my_id != LM.env.id
+        panic "*** invalid local_mutate for type LM"
+      LM.env.replace
+
+    # NYI: remove as soon as inheriting mutable_element works
+    open => id != 0
+
+    # NYI: remove as soon as inheriting mutable_element works
+    close is
+      set id := 0
+
+    # read the current value of this mutable value.
+    #
+    # If this is open, check that the mutate effect this was created with is still
+    # intalled in the current environment.
+    #
+    get =>
+      if open
+        check_and_replace
+      val
+
+    # update mutable field with new value
+    #
+    # Check that the mutate effect this was created with is still
+    # intalled in the current environment.
+    #
+    put (
+      # the new value to be stored with 'h'
+      to T)
+    pre
+      open
+     =>
+      check_and_replace
+      set val := to
+
+
+    # infix operator for put, OCaml/F#-style syntax
+    #
+    infix <- (to T) => put to
+
+
+    # update mutable field using a function of the old value
+    #
+    update (
+      # function calculcating the new value from the old value
+      f T->T
+      )
+     =>
+      put (f get)
+
+
+    # creates a copy of the mutable field
+    #
+    copy new T is
+      new T get
+
+
+    # returns `as_string` of the current value
+    #
+    redef as_string => get.as_string
+
+
+  # create a mutable array.
+  #
+  array (# element type
+         redef T type,
+
+         # length of the array to create
+         length i32,
+
+         # initial value for elements
+         init T
+        ) : Sequence T, mutable_element
+  is
+    private ma := (marrays T).new length init
+
+    # a sequence of all valid indices to access this array. Useful e.g., for
+    # `for`-loops:
+    #
+    #   for i in arr.indices do
+    #     say arr[i]
+    #
+    indices => ma.indices
+
+    # is this sequence known to be finite?  For infinite sequences, features like
+    # count diverge.
+    #
+    redef finite => true
+
+
+    # get element at given index i
+    #
+    redef index [ ] (i i32) T
+      pre
+        safety: 0 <= i < length
+    is
+      check_and_replace
+      ma[i]
+
+    # set element at given index i to given value o
+    #
+    set [ ] (i i32, o T) unit
+      pre
+        safety: 0 <= i < length
+    is
+      check_and_replace
+      ma[i] := o
+
+
+    # create immutable array from this
+    #
+    redef as_array => ma.as_array
+
+
+    # create a list from this marray
+    #
+    redef as_list => ma.as_list
+
+
+    # map the array to a new array applying function f to all elements
+    #
+    map(B type, f T -> B) => ma.map B f
+
+
+    # fold the elements of this array using the given monoid.
+    #
+    # e.g., to sum the elements of an array of i32, use a.fold i32.sum
+    #
+    redef fold (m Monoid T) => ma.fold 0 m.e m
+
+
+
+  go(T type, f ()->T) T is
+    fo () -> option T is ()->f()
+    r := run fo (unit)->nil
+    match r
+      nil => panic "*** unexpected abort in {local_mutate.this.type}"
+      v T => v
