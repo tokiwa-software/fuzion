@@ -164,9 +164,10 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.create_dir"   , (c,cl,outer,in) ->
         {
+          var readWriteExecuteUser = new CIdent("S_IRWXU");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
