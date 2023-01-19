@@ -165,6 +165,37 @@ is
     s.asString + n.asString
 
 
+  # this int as an i32
+  as_i32 i32 is
+    n.as_i32
+
+
+  # this int as an i64
+  as_i64 i64 is
+    n.as_i64
+
+
+  # this int as an i64
+  as_u32 u32
+  pre s.is_plus
+  is
+      n.as_u32
+
+
+  # this int as an u64
+  as_u64 u64
+  pre s.is_plus
+  is
+    n.as_u64
+
+
+  # this int as an uint
+  as_uint uint
+  pre s.is_plus
+  is
+    n
+
+
 int (val i64) int is
   ints.from_i64 val
 
@@ -208,6 +239,12 @@ minus is
 # this can be plus or minus
 #
 sign : choice plus minus, has_equality, hasEquals sign is
+
+  is_plus =>
+    match sign.this
+      plus => true
+      minus => false
+
   infix = (o sign) bool is
     match sign.this
       plus =>
