@@ -291,6 +291,19 @@ is
   redef thiz => uint b unit
 
 
+  # this uint as an i32
+  as_i32 i32
+  pre as_u32 <= i32s.max.as_u32
+  is
+    as_u32.as_i32
+
+
+  # this uint as an i64
+  as_i64 i64
+  is
+    as_u64.as_i64
+
+
   # this uint as an u32
   as_u32 u32
   pre
@@ -298,11 +311,21 @@ is
   is
     data.first (u32 0)
 
-  # this uint as an i32
-  as_i32 i32
-  pre as_u32 <= i32s.max.as_u32
+
+  # this uint as an u64
+  as_u64 u64
+  pre data.count <= 2
   is
-    as_u32.as_i32
+    if data.count = 2
+      data[1].as_u64<<32 | data[0].as_u64
+    else
+      (data.first 0).as_u64
+
+
+  # this uint as an int
+  as_int int
+  is
+    int plus (uint b unit)
 
 
   # this uint as a string, may contain leading zeros

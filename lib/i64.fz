@@ -86,24 +86,35 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 
   fixed type.equality(a, b i64) bool is intrinsic
 
+
+  # this i64 as an i8
   as_i8 i8
     pre
       thiz >= i8.min.as_i64,
       thiz <= i8.max.as_i64
     is
       low8bits.as_i8
+
+
+  # this i64 as an i16
   as_i16 i16
     pre
       thiz <= i16.max.as_i64,
       thiz <= i16.max.as_i64
     is
       low16bits.as_i16
+
+
+  # this i64 as an i32
   as_i32 i32
     pre
       thiz >= i32.min.as_i64,
       thiz <= i32.max.as_i64
     is
       low32bits.castTo_i32
+
+
+  # this i64 as an u8
   as_u8 u8
     pre
       thiz >= 0
@@ -112,6 +123,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 #      analysis: result.as_u64 == thiz
     is
       low8bits
+
+
+  # this i64 as an u16
   as_u16 u16
      pre
       thiz >= 0
@@ -120,6 +134,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 #      analysis: result.as_u64 == thiz
     is
       low16bits
+
+
+  # this i64 as an u32
   as_u32 u32
     pre
       thiz >= 0
@@ -128,6 +145,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 #      analysis:  result.as_i64 == thiz
     is
       low32bits
+
+
+  # this i64 as an u64
   as_u64 u64
     pre
       thiz >= 0
@@ -135,6 +155,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 #      analysis:  result.as_i64 == thiz
     is
       castTo_u64
+
+
+  # this i64 as an u128
   as_u128 u128
     pre
       thiz >= 0
@@ -142,8 +165,18 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
       analysis:  result.as_i64 == thiz
     is
       u128 0 castTo_u64
+
+
+  # this i64 as an int
   as_int int is
     int val
+
+
+  # this i64 as an uint
+  as_uint uint
+  pre val >= 0
+  is
+    uint val.as_u64
 
 
   # casting bit representation to unsigned
