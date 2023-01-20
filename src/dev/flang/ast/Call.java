@@ -1033,20 +1033,7 @@ public class Call extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    if (!_generics.isEmpty())
-      {
-        var i = _generics.listIterator();
-        while (i.hasNext())
-          {
-            var n = i.next();
-            if (CHECKS) check
-              (Errors.count() > 0 || n != null);
-            if (n != null)
-              {
-                i.set(n.visit(v, outer));
-              }
-          }
-      }
+    _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
         ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
@@ -1703,7 +1690,7 @@ public class Call extends AbstractCall
                 var rt = af.propagateExpectedType2(res, outer, at, true);
                 if (rt != null)
                   {
-                    _generics.set(ri, rt);
+                    _generics = _generics.setOrClone(ri, rt);
                   }
                 foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
                 result = true;
