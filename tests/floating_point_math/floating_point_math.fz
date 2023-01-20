@@ -26,13 +26,13 @@
 # tests basic floating point math for f32/f64
 floating_point_math is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
-      set exitCode := 1
+      exit_code <- 1
       "FAILED: "
     say (s + msg)
 
@@ -133,4 +133,4 @@ floating_point_math is
   chck (f64s.positiveInfinity.as_f32 == f32s.positiveInfinity)                 "f64:  ∞  as_f32        = f32s.∞ "
   chck (f32s.isNaN f64s.NaN.as_f32)                                            "f64: NaN as_f32 isNaN "
 
-  exit exitCode
+  exit exit_code.get

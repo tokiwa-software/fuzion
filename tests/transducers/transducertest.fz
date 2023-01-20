@@ -25,14 +25,14 @@
 
 transducertest : transducers is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   xf_filter := filter (Sequence i32) i32 (x -> x > 3)
   r := (1..5).into xf_filter
@@ -50,4 +50,4 @@ transducertest : transducers is
   r := [human(4), human(12), human(30)].into (ages ∘ gt_ten)
   chck ((comparable_sequence r) = (comparable_sequence [12, 30]))                          "compose transducers"
 
-  exit exitCode
+  exit exit_code.get

@@ -25,7 +25,7 @@
 
 inheritance is
 
-  exitCode := 0
+  exit_code := mut 0
 
   curid i32 := 0
   id i32 is
@@ -229,7 +229,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -263,7 +263,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -294,7 +294,7 @@ inheritance is
   check_dyn_binding_when_inheriting_value is
     A is
       a => x
-      x => say "A.x: FAILED."; set exitCode := 1
+      x => say "A.x: FAILED."; exit_code <- 1
     B ref : A is
       a
       redefine x unit is say "B.x: PASSED."
@@ -309,7 +309,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -397,7 +397,7 @@ inheritance is
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        set exitCode := 1
+        exit_code <- 1
   inheritOuter
 
-  exit exitCode
+  exit exit_code.get

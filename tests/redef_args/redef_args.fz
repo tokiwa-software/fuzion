@@ -25,13 +25,13 @@
 
 redef_args is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if (b)
       "PASSED: "
     else
-      set exitCode := 1
+      exit_code <- 1
       "FAILED: "
     say (s + msg)
 
@@ -73,4 +73,4 @@ redef_args is
     chck (a = 2) "redefined field as in #165"
 
 
-  exit exitCode
+  exit exit_code.get

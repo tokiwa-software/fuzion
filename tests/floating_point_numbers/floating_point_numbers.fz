@@ -26,13 +26,13 @@
 # tests basic floating point operations for f32/f64
 floating_point_numbers is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
-      set exitCode := 1
+      exit_code <- 1
       "FAILED: "
     say (s + msg)
 
@@ -123,4 +123,4 @@ floating_point_numbers is
   chck (f64s.minPositive == 0x1P-1022)                                    "f64: minPositive is correct"
   chck (f64s.max == (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
-  exit exitCode
+  exit exit_code.get
