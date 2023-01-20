@@ -951,6 +951,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
+    var result = declaredOrInheritedFeatures(outer).get(name);
+
     /* Was feature f added to the declared features of its outer features late,
      * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
      * currently not added to the sets of declared or inherited features by
@@ -958,8 +960,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
      *
      * This is a fix for #978 but it might need to be removed when fixing #932.
      */
-    return original instanceof Feature of && of._addedLate ? original
-                                                           : declaredOrInheritedFeatures(outer).get(name);
+    return result == null && original instanceof Feature of && of._addedLate ? original
+                                                                             : result;
   }
 
 
