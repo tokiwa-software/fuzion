@@ -25,21 +25,21 @@
 
 visibility_negative is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   chck (a,b i32, msg String) unit is
     if a == b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
-      set exitCode := 1
+      exit_code <- 1
 
   visi1 =>
     a1 is
@@ -611,4 +611,4 @@ visibility_negative is
    say c  // 316. should flag an error: feature not visible
   visiA
 
-  exit exitCode
+  exit exit_code.get
