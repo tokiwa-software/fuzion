@@ -335,6 +335,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
         actualType = Types.t_ERROR;
       }
 
+    if (CHECKS) check
+      (Errors.count() > 0 || actualType != Types.t_ERROR);
+
     this._type = actualType;
     this._select = select;
     /* NYI: Handling of outer in Clazz is not done properly yet. There are two
@@ -981,7 +984,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _module.lookupFeature(feature(), fn);
+    return _module.lookupFeature(feature(), fn, f);
   }
 
 
