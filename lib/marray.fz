@@ -164,7 +164,7 @@ marrays(T type)  is
   is
     data := fuzion.sys.internal_array T length
 
-    for x in 0..length-1 do
+    for x in data.indices do
       data[x] := init
 
     marray length data
