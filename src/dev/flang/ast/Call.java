@@ -978,7 +978,9 @@ public class Call extends AbstractCall
             (_target instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : _target.toString() + ".")
-      + (_name != null ? _name : _calledFeature.featureName().baseName())
+      + (_name          != null ? _name :
+         _calledFeature != null ? _calledFeature.featureName().baseName()
+                                : "--ANONYMOUS--" )
       + (_generics.isEmpty() ? "" : "<" + _generics + ">")
       + (_actuals.isEmpty() ? "" : "(" + _actuals +")")
       + (_select < 0        ? "" : "." + _select);
