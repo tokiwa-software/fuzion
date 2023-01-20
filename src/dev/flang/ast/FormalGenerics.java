@@ -193,22 +193,9 @@ public class FormalGenerics extends ANY
    */
   public static void resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
   {
-    if (!generics.isEmpty())
+    if (!(generics instanceof FormalGenerics.AsActuals))
       {
-        if (!(generics instanceof FormalGenerics.AsActuals))
-          {
-            ListIterator<AbstractType> i = generics.listIterator();
-            while (i.hasNext())
-              {
-                var t = i.next();
-                if (CHECKS) check
-                  (Errors.count() > 0 || t != null);
-                if (t != null)
-                  {
-                    i.set(t.resolve(res, outer));
-                  }
-              }
-          }
+        generics = generics.map(t -> t.resolve(res, outer));
       }
   }
 

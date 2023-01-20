@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
@@ -44,6 +45,16 @@ import java.util.stream.Collector;
 public class List<T>
   extends ArrayList<T>
 {
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Flag that indicates that this list must no longer be mutated, e.g., because
+   * it is used as a key in a cache.
+   */
+  private boolean _isFrozen = false;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -131,6 +142,18 @@ public class List<T>
   {
     super();
     addAll(i);
+  }
+
+
+  /**
+   * Constructor that adds elements of given List.
+   *
+   * @param i
+   */
+  public List(List<T> l)
+  {
+    super();
+    addAll(l);
   }
 
 
@@ -300,6 +323,84 @@ public class List<T>
         return Set.of(Characteristics.UNORDERED);
       }
     };
+  }
+
+
+  /**
+   * Are modifications to this list forbidden?
+   */
+  public boolean isFrozen()
+  {
+    return _isFrozen;
+  }
+
+
+  /**
+   * Forbid modifications to this list.  This should be called to ensure that a
+   * list that is used as a key in a map or similar is no longer modified.
+   */
+  public void freeze()
+  {
+    _isFrozen = true;
+  }
+
+
+  /**
+   * Set an element of this list, but check that the element is either the same
+   * as before or this list is not frozen.
+   *
+   * @param i index of element to set
+   *
+   * @param x the new value for the element
+   *
+   * @return the previous value of the element
+   */
+  public T set(int i, T x)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen() || get(i) == x);
+
+    return super.set(i, x);
+  }
+
+
+  /**
+   * Set an element of this list. For a frozen list, create a clone with that
+   * element changed and leave the original list unchanged.
+   *
+   * @param i index of element to set
+   *
+   * @param x the new value for the element
+   *
+   * @return this in case !this.isFrozen() or get(i) == x, otherwise a clone
+   * of this with element at index i set to x.
+   */
+  public List<T> setOrClone(int i, T x)
+  {
+    var result = this;
+    if (get(i) != x)
+      {
+        result = isFrozen() ? new List<>(this) : this;
+        result.set(i, x);
+      }
+    return result;
+  }
+
+
+  /**
+   * Create a mapping of this list by applying f to all elements
+   *
+   * @return this in case !this.isFrozen or f.apply(e) == e for all elements,
+   * otherwise clone with result.get(i) == f.apply(get(i)).
+   */
+  public List<T> map(Function<T,T> f)
+  {
+    var g = this;
+    for (var i = 0; i < size(); i++)
+      {
+        g = g.setOrClone(i, f.apply(get(i)));
+      }
+    return g;
   }
 
 }

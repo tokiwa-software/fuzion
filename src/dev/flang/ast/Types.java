@@ -294,11 +294,7 @@ public class Types extends ANY
           {
             Types.intern(t.outer());
           }
-        var tg = t._generics.listIterator();
-        while (tg.hasNext())
-          {
-            tg.set(intern(tg.next()));
-          }
+        t._generics = t._generics.map(tt->intern(tt));
         Type existing = t._interned;
         if (existing == null)
           {
