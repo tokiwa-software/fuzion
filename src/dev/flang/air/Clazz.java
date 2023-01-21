@@ -328,7 +328,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
-       outer == null || outer._type != Types.t_ADDRESS);
+       outer == null || outer._type != Types.t_ADDRESS,
+       !actualType.isThisType());
 
     if (actualType == Types.t_UNDEFINED)
       {
@@ -650,7 +651,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return Clazzes.clazz(actualType(t, -1));
+    return t.isThisType() ? findOuter(t.featureOfType(), t)
+                          : Clazzes.clazz(actualType(t, -1));
   }
 
 

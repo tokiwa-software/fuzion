@@ -40,7 +40,7 @@ test_local_mutate is
 
       # define a local type `m` to identify the mutate effect:
       #
-      m : local_mutate m is
+      m : local_mutate is
 
       # count using a locally mutable variable:
       #
@@ -170,7 +170,7 @@ test_local_mutate is
       if c = 0
         []
       else
-        m : local_mutate m is
+        m : local_mutate is
 
         # wrap code into iqs (NYI: use m.go with inline code)
         iqs =>
@@ -220,7 +220,7 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    cell(T type, LM type : local_mutate LM, data T) ref is
+    cell(T type, LM type : local_mutate, data T) ref is
       me cell T LM := cell.this
       n := LM.env.new me #  cell.this   -- NYI: cell.this causes crash!
       p := LM.env.new me
@@ -235,7 +235,7 @@ test_local_mutate is
       pre
         !from.is_empty
      =>
-      m : local_mutate m is
+      m : local_mutate is
 
       ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
         c := cell T m from.head.get
@@ -304,7 +304,7 @@ test_local_mutate is
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
     mut_ring(# mutate effect to be used to create mutable variables
-             LM type : local_mutate LM,
+             LM type : local_mutate,
 
              # type of data stored in ring cells
              redef T type,
@@ -392,7 +392,7 @@ test_local_mutate is
         !from.is_empty
      =>
       # define mutate context to be used
-      m : local_mutate m is
+      m : local_mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
