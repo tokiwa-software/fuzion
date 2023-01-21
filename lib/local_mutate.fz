@@ -31,6 +31,12 @@ local_mutate(# NYI: LM should be replaced by local_mutate.this.type
   : simpleEffect
 is
 
+  # short-hand to access effect type
+  #
+  # NYI: This does not work yet
+  #
+  # LM := local_mutate.this.type
+
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
@@ -99,10 +105,21 @@ is
     # If this is open, check that the mutate effect this was created with is still
     # intalled in the current environment.
     #
-    get =>
+    # mget ! LM =>    -- NYI: effect syntax using '!' does not work yet
+    mget =>
       if open
         check_and_replace
       val
+
+
+    # read the current value of this mutable value after it was close for mutation.
+    #
+    get
+      pre
+        safety: !open
+     =>
+      val
+
 
     # update mutable field with new value
     #
@@ -111,9 +128,9 @@ is
     #
     put (
       # the new value to be stored with 'h'
-      to T)
+      to T) # ! LM  -- NYI: effect syntax using '!' does not work yet
     pre
-      open
+      safety: open
      =>
       check_and_replace
       set val := to
@@ -131,7 +148,7 @@ is
       f T->T
       )
      =>
-      put (f get)
+      put (f mget)
 
 
     # creates a copy of the mutable field
