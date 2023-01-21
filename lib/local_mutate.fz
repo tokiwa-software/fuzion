@@ -26,10 +26,7 @@
 # local_mutate -- an effect that permits creation of a local scope that permits
 # mutation
 #
-local_mutate(# NYI: LM should be replaced by local_mutate.this.type
-             LM type : local_mutate LM)
-  : simpleEffect
-is
+local_mutate : simpleEffect is
 
   # short-hand to access effect type
   #
@@ -58,9 +55,9 @@ is
     # check that this effect is intalled and replace it.
     #
     private check_and_replace is
-      if my_id != LM.env.id
-        panic "*** invalid local_mutate for type LM"
-      LM.env.replace
+      if my_id != local_mutate.this.type.env.id
+        panic "*** invalid local_mutate for ..local_mutate.this.type.." # NYI: add { }
+      local_mutate.this.type.env.replace
 
     # is this element open, i.e., can it be mutated?
     #
@@ -89,9 +86,9 @@ is
 
     # NYI: remove as soon as inheriting mutable_element works
     private check_and_replace is
-      if my_id != LM.env.id
-        panic "*** invalid local_mutate for type LM"
-      LM.env.replace
+      if my_id != local_mutate.this.type.env.id
+        panic "*** invalid local_mutate for ..local_mutate.this.type.." # NYI: add { }
+      local_mutate.this.type.env.replace
 
     # NYI: remove as soon as inheriting mutable_element works
     open => id != 0
@@ -105,7 +102,7 @@ is
     # If this is open, check that the mutate effect this was created with is still
     # intalled in the current environment.
     #
-    # mget ! LM =>    -- NYI: effect syntax using '!' does not work yet
+    # mget ! local_mutate.this.type =>    -- NYI: effect syntax using '!' does not work yet
     mget =>
       if open
         check_and_replace
@@ -128,7 +125,7 @@ is
     #
     put (
       # the new value to be stored with 'h'
-      to T) # ! LM  -- NYI: effect syntax using '!' does not work yet
+      to T) # ! local_mutate.this.type  -- NYI: effect syntax using '!' does not work yet
     pre
       safety: open
      =>
