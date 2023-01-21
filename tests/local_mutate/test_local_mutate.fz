@@ -55,7 +55,7 @@ test_local_mutate is
           s.update a->a+e
 
         # unwrap the sum value in s and return it
-        s.get
+        s.mget
 
       # run code within an instance of m
       #
@@ -66,7 +66,7 @@ test_local_mutate is
         for e in l do
           s.update a->a+e
 
-        say "inside m.use: s.get = {s.get}"
+        say "inside m.use: s.mget = {s.mget}"
         say "inside m.use: count = {count}")
 
       say "using m.run and count: {m.run ()->count (unit)->(-1)}"
@@ -242,10 +242,10 @@ test_local_mutate is
         match from.tail
           nil    => c
           t Cons => f := ring2 t
-                    l := f.prev
+                    l := f.p.mget
                     c.link f l
-                    f.link f.next c
-                    l.link c l.prev
+                    f.link f.n.mget c
+                    l.link c l.p.mget
         c
 
       ring3(from list T) cell T m is
@@ -253,7 +253,7 @@ test_local_mutate is
 
         for
           i in 1..10
-          e := r, e.next
+          e := r, e.n.mget
         do
           say "$i: {e.data}"
 
@@ -370,8 +370,8 @@ test_local_mutate is
       #
       merge(n mut_ring LM T) =>
         a := mut_ring.this
-        m := a.prev
-        z := n.prev
+        m := a.p.mget
+        z := n.n.mget
         a.p <- z
         z.n <- a
         m.n <- n
