@@ -102,7 +102,7 @@ test_local_mutate is
         q =>
           s1 := m.run ()->count2 (unit)->nil
           m.use (() ->
-            s1.get <- -12    # *** will cause an error, m has changed!  NYI: does not work yet!!!
+            s1.get <- -12    # *** will cause an error, m has changed!
             say s1)
         q
 
