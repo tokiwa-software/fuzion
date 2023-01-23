@@ -222,10 +222,14 @@ public class Docs
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af)
   {
-    return af.visibility() == Visi.INVISIBLE
+    return af.resultType().equals(Types.t_ADDRESS)
+      || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
+      || af.featureName().baseName().startsWith("@")
+      || af.visibility() == Visi.INVISIBLE
       || af.visibility() == Visi.PRIVATE
       || af.isTypeFeature()
       || Util.isArgument(af)
+      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
       || isDummyFeature(af);
   }
 
