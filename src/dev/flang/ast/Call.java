@@ -1342,10 +1342,6 @@ public class Call extends AbstractCall
         if (g != null)
           {
             g.resolve(res, outer);
-            if (!g.isGenericArgument())
-              {
-                g.featureOfType().typeFeature(res);
-              }
           }
       }
 

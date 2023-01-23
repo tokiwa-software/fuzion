@@ -2292,7 +2292,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (feature() == Types.resolved.f_Types_get);
 
-                gi = Types.intern(new Type((Type) gi, Type.RefOrVal.LikeUnderlyingFeature));
+                gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }
             result[i] = actualClazz(gi);
           }

@@ -1115,7 +1115,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var fs = lookupFeatures(o, name).values();
             for (var f : fs)
               {
-                if (f.isConstructor() || f.isChoice())
+                if (f.definesType())
                   {
                     type_fs.add(f);
                     result = f;

@@ -56,7 +56,7 @@ local_mutate : simpleEffect is
     #
     private check_and_replace is
       if my_id != local_mutate.this.type.env.id
-        panic "*** invalid local_mutate for ..local_mutate.this.type.." # NYI: add { }
+        panic "*** invalid local_mutate for {local_mutate.this.type}"
       local_mutate.this.type.env.replace
 
     # is this element open, i.e., can it be mutated?
@@ -87,7 +87,7 @@ local_mutate : simpleEffect is
     # NYI: remove as soon as inheriting mutable_element works
     private check_and_replace is
       if my_id != local_mutate.this.type.env.id
-        panic "*** invalid local_mutate for ..local_mutate.this.type.." # NYI: add { }
+        panic "*** invalid local_mutate for {local_mutate.this.type}"
       local_mutate.this.type.env.replace
 
     # NYI: remove as soon as inheriting mutable_element works

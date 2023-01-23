@@ -893,23 +893,20 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
-        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
-        // fact that type features can be defined repeatedly.
-        if (f.isTypeFeature())
-          {
-            warning(pos,
-                    "Duplicate feature declaration (ignored since these are type features, see #461)",
-                    "Feature that was declared repeatedly: " + s(f) + "\n" +
-                    "originally declared at " + existing.pos().show() + "\n" +
-                    "To solve this, consider renaming one of these two features or changing its number of arguments");
-            return;
-          }
-
+        var of = f.isTypeFeature() ? f.typeFeatureOrigin() : f;
         error(pos,
               "Duplicate feature declaration",
-              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features or changing its number of arguments");
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
+              (f.isTypeFeature()
+               ? ("or changing it into a routine by returning a " +
+                  sbn("unit") + " result, i.e.,  adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  " instead of "+ code("is") + ".")
+               : ("or adding an additional argument (e.g. " + code("_ unit") +
+                  " for an ignored unit argument used only to disambiguate these two).")
+               ));
       }
   }
 
@@ -1467,10 +1464,13 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    error(pos,
-          "Incompatible type parameter",
-          "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-          "actual type parameter " + s(g) + "\n");
+    if (g != Types.t_UNDEFINED || count() == 0)
+      {
+        error(pos,
+              "Incompatible type parameter",
+              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "actual type parameter " + s(g) + "\n");
+      }
   }
 
   static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)

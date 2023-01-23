@@ -1419,6 +1419,10 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_SUGAR1;
 
+        if (definesType())
+          {
+            typeFeature(res);
+          }
         visit(new FeatureVisitor()
           {
             public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
@@ -1864,10 +1868,10 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature   f, AbstractFeature outer) { return new Nop(_pos);                         }
-            public Expr  action(Function  f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
+            public Stmnt action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
+            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl      i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
