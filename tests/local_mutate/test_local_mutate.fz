@@ -104,11 +104,13 @@ test_local_mutate is
       say (myPanic.use ()->neg_test5 ()->"ok")
 
       neg_test5 =>
-        s1 := m.go ()->count2
-        m.go ()->
-          s1.get <- -12    # *** will cause an error, m has changed!
-          say s1
-        "** failed, did not panic **"
+        q =>
+          s1 := m.go ()->count2
+          m.go ()->
+            s1.get <- -12    # *** will cause an error, m has changed!
+            say s1
+          "** failed, did not panic **"
+        q
 
     sum l
 
