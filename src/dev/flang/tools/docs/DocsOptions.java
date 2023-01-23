@@ -31,10 +31,15 @@ import java.nio.file.Path;
 /**
  * api doc specific options
  */
-public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles)
+public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
   static final String baseApiDir = "/api/std";
+
+  public boolean ignoreVisibility()
+  {
+    return ignoreVisibility;
+  }
 
   public String docsRoot()
   {
