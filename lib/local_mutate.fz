@@ -210,11 +210,3 @@ local_mutate : simpleEffect is
     # e.g., to sum the elements of an array of i32, use a.fold i32.sum
     #
     redef fold (m Monoid T) => ma.fold 0 m.e m
-
-
-  go(T type, f ()->T) T is
-    fo () -> option T is ()->f()
-    r := run fo (unit)->nil
-    match r
-      nil => panic "*** unexpected abort in {local_mutate.this.type}"
-      v T => v

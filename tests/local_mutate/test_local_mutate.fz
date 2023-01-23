@@ -86,22 +86,30 @@ test_local_mutate is
         s := m.go ()->count2
         say s        # *** will cause an error, requires m to be installed
 
-/*
-      # NYI: move this into negative test
-      if envir.args.count == 4
+      # handler for negative tests that cause panic:
+      #
+      myPanic : Panic_Provider is
+        do_panic(msg String) =>
+          say "*** got '$msg' ***"
+
+      say (myPanic.use ()->neg_test4 ()->"ok")
+
+      neg_test4 =>
         s := m.go ()->count2
         m.go ()->
           s.get <- -12    # *** will cause an error, m has changed!
           say s
-*/
+        "** failed, did not panic **"
 
-      # NYI: move this into negative test
-      if envir.args.count == 5
+      say (myPanic.use ()->neg_test5 ()->"ok")
+
+      neg_test5 =>
         q =>
           s1 := m.go ()->count2
           m.go ()->
             s1.get <- -12    # *** will cause an error, m has changed!
             say s1
+          "** failed, did not panic **"
         q
 
     sum l
@@ -121,7 +129,7 @@ test_local_mutate is
         m : local_mutate is
 
         # execute code with mutate effect `m`:
-        # m.go (()->    -- NYI: use go with inline code when #1002 is fixed
+        # m.go (()->         --- NYI go does not work yet
         iqs =>
           swap(i,j i32) =>
             t := arr[i]
