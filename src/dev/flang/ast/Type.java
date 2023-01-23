@@ -399,11 +399,13 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a ref or value type from a given value / ref type.
+   * Create a clone of original that uses orignalOuterFeature as context to
+   * look up features the type is built from.
    *
    * @param original the original value type
    *
-   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   * @param origininalOuterFeature the original feature, which is not a type
+   * feature.
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
   {
@@ -419,7 +421,10 @@ public class Type extends AbstractType
         this._generics = new List<>();
         for (var g : original._generics)
           {
-            this._generics.add(((Type)g).clone(originalOuterFeature));
+            var gc = (g instanceof Type gt)
+              ? gt.clone(originalOuterFeature)
+              : g;
+            this._generics.add(gc);
           }
       }
     this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
@@ -450,6 +455,9 @@ public class Type extends AbstractType
    *
    * This is used for type features that use types from the original feature,
    * but needs to replace generics by the type feature's generics.
+   *
+   * @param origininalOuterFeature the original feature, which is not a type
+   * feature.
    */
   Type clone(AbstractFeature originalOuterFeature)
   {
@@ -1078,7 +1086,7 @@ public class Type extends AbstractType
           }
       }
 
-    ensure
+    if (POSTCONDITIONS) ensure
       (!result || Errors.count() > 0);
 
     return result;

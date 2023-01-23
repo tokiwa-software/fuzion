@@ -125,21 +125,7 @@ array(redef T type,
     pre
       debug: i >= 0
   is
-    if length <= i
-      nil
-    else
-      arrayCons i
-
-
-  # create a cons cell for a list of this array starting at the given
-  # index
-  #
-  arrayCons (i i32) : Cons T (list T)
-    pre
-      debug: 0 <= i < length
-  is
-    head => array.this[i]
-    tail => as_list i+1
+    slice i length
 
 
   # create a slice from this array's elements at index 'from' (included)

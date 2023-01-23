@@ -606,7 +606,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       !isUniverse());
+       !isUniverse(),
+       !isTypeFeature());
 
     if (_typeFeature == null)
       {
@@ -706,7 +707,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (PRECONDITIONS) require
       (!isUniverse());
-    var outerType = outer().isUniverse() ? universe() : outer().typeFeature(res);
+    var outerType = outer().isUniverse()    ? universe() :
+                    outer().isTypeFeature() ? outer()
+                                            : outer().typeFeature(res);
     var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
     if (result == null)
       {
@@ -789,7 +792,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * createThisType returns a new instance of the type of this feature's frame
    * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * used also for abstract or intrinsic features to determine the resultClazz().
    *
    * @return this feature's frame object
    */
@@ -1005,6 +1008,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Is this a routine that returns the current instance as its result?
    */
   public abstract boolean isConstructor();
+
+
+  /**
+   * Does this feature define a type?
+   *
+   * This is the case for constructors and choice features.
+   *
+   * Type features and any features declared within type features do not declare
+   * types.  Allowing this would open up the pandora tin of having instances of
+   * the f.type.type, f.type.type.type, f.type.type.type.type, ...
+   */
+  public boolean definesType()
+  {
+    var result = (isConstructor() || isChoice()) && !isUniverse();
+    var o = this;
+    while (result && o != null)
+      {
+        result = result && !o.isTypeFeature();
+        o = o.outer();
+      }
+    return result;
+  }
 
 
   /**
