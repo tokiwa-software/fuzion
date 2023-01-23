@@ -1579,15 +1579,23 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
   {
-    error(pos,
-      "Names of arguments used in this feature must be distinct.",
+    int[] cnt = new int[1];
+    error(f.pos(),
+          "Names of arguments used in this feature must be distinct.",
           "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
           + duplicateNames
             .stream()
             .map(n -> sbn(n))
             .collect(Collectors.joining(", ")) + "\n"
+          + "Feature with equally named arguments: "+ s(f) + "\n"
+          + f.arguments()
+            .stream()
+            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbn(a) +
+                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                                                                      : " is ok"        ) + "\n")
+            .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
   }

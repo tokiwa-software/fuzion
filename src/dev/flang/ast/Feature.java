@@ -666,23 +666,6 @@ public class Feature extends AbstractFeature implements Stmnt
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
-
-    // check args for duplicate names
-    if (!a.stream()
-          .map(arg -> arg.featureName().baseName())
-          .filter(argName -> !argName.equals("_"))
-          .allMatch(new HashSet<>()::add))
-      {
-        var usedNames = new HashSet<>();
-        var duplicateNames = a.stream()
-              .map(arg -> arg.featureName().baseName())
-              .filter(argName -> !argName.equals("_"))
-              .filter(argName -> !usedNames.add(argName))
-              .collect(Collectors.toSet());
-        // NYI report pos of arguments not pos of feature
-        AstErrors.argumentNamesNotDistinct(pos, duplicateNames);
-      }
-
     this._arguments = a;
     this._featureName = FeatureName.get(n, arguments().size());
     this._inherits   = (i.isEmpty() &&
@@ -697,6 +680,22 @@ public class Feature extends AbstractFeature implements Stmnt
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
+
+    // check args for duplicate names
+    if (!a.stream()
+          .map(arg -> arg.featureName().baseName())
+          .filter(argName -> !argName.equals("_"))
+          .allMatch(new HashSet<>()::add))
+      {
+        var usedNames = new HashSet<>();
+        var duplicateNames = a.stream()
+              .map(arg -> arg.featureName().baseName())
+              .filter(argName -> !argName.equals("_"))
+              .filter(argName -> !usedNames.add(argName))
+              .collect(Collectors.toSet());
+        // NYI report pos of arguments not pos of feature
+        AstErrors.argumentNamesNotDistinct(this, duplicateNames);
+      }
   }
 
 
