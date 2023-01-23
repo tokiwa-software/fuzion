@@ -77,25 +77,9 @@ local_mutate : simpleEffect is
 
     # initial value, will be updated by 'put' or 'infix <-'.
     val T
-    )  #   : mutable_element   # NYI: inheriting mutable_element does not work yet
+    ) : mutable_element
   is
 
-    # NYI: remove as soon as inheriting mutable_element works
-    my_id := id
-
-
-    # NYI: remove as soon as inheriting mutable_element works
-    private check_and_replace is
-      if my_id != local_mutate.this.type.env.id
-        panic "*** invalid local_mutate for {local_mutate.this.type}"
-      local_mutate.this.type.env.replace
-
-    # NYI: remove as soon as inheriting mutable_element works
-    open => id != 0
-
-    # NYI: remove as soon as inheriting mutable_element works
-    close is
-      set id := 0
 
     # read the current value of this mutable value.
     #
@@ -226,7 +210,6 @@ local_mutate : simpleEffect is
     # e.g., to sum the elements of an array of i32, use a.fold i32.sum
     #
     redef fold (m Monoid T) => ma.fold 0 m.e m
-
 
 
   go(T type, f ()->T) T is
