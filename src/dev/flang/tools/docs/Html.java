@@ -250,15 +250,14 @@ public class Html
   }
 
   /**
-   * the basename of the feature, replaces all internal names
-   * starting with `@` by `_`
+   * the html encoded basename of the feature
    * @param af
    * @return
    *
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseName().startsWith("@") ? "_": af.featureName().baseName());
+    return htmlEncodeNbsp(af.featureName().baseName());
   }
 
 
