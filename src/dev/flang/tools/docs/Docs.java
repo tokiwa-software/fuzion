@@ -223,8 +223,13 @@ public class Docs
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {
+    if (af.isUniverse())
+      {
+        return false;
+      }
+
     return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
+      || af.featureName().isInternal()
       || af.featureName().isNameless()
       || (!ignoreVisibility && af.visibility() == Visi.INVISIBLE)
       || (!ignoreVisibility && af.visibility() == Visi.PRIVATE)

@@ -888,7 +888,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isArtificialField()
   {
-    return isField() && _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+    return isField() && _featureName.isInternal();
   }
 
 
@@ -944,7 +944,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean resultInternal()
   {
     return _impl._kind == Impl.Kind.RoutineDef &&
-      _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+      _featureName.isInternal();
   }
 
 
