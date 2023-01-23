@@ -1,9 +1,6 @@
-inside m.use: s.mget = 81
-inside m.use: count = 81
-using m.run and count: 81
-[0,8,11,15,47]
-[0,1,2,3,4,5,6,7,8,9,10]
-[0,1,2,3,4,5,6,7,8,9,10]
+inside m.go: s.mget = 81
+inside m.go: count = 81
+using m.go and count: 81
 [0,8,11,15,47]
 []
 []
