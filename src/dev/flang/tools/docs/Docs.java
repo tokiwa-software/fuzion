@@ -225,7 +225,7 @@ public class Docs
   {
     return af.resultType().equals(Types.t_ADDRESS)
       || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || af.featureName().baseName().startsWith("@")
+      || af.featureName().isNameless()
       || (!ignoreVisibility && af.visibility() == Visi.INVISIBLE)
       || (!ignoreVisibility && af.visibility() == Visi.PRIVATE)
       || af.isTypeFeature()
