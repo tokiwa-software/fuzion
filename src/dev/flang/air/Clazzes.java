@@ -906,7 +906,6 @@ public class Clazzes extends ANY
         if (f.kind() == AbstractFeature.Kind.TypeParameter)
           {
             var tpc = innerClazz.resultClazz();
-            tpc._typeType = innerClazz.typeParameterActualType()._type;
             do
               {
                 addUsedFeature(tpc.feature(), c.pos());
