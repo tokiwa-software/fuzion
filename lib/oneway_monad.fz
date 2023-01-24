@@ -40,6 +40,3 @@ oneway_monad(
   redef r effectMode.val
   ) : monad A OMA, effect r
 is
-
-oneway_monads(redef A type,
-             OMA type : oneway_monad A OMA) : monads A OMA is
