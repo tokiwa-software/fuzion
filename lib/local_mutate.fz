@@ -86,8 +86,7 @@ local_mutate : simpleEffect is
     # If this is open, check that the mutate effect this was created with is still
     # intalled in the current environment.
     #
-    # mget ! local_mutate.this.type =>    -- NYI: effect syntax using '!' does not work yet
-    mget =>
+    mget ! local_mutate.this.type =>
       if open
         check_and_replace
       val
@@ -109,7 +108,8 @@ local_mutate : simpleEffect is
     #
     put (
       # the new value to be stored with 'h'
-      to T) # ! local_mutate.this.type  -- NYI: effect syntax using '!' does not work yet
+      to T)
+      ! local_mutate.this.type
     pre
       safety: open
      =>
