@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : has_equality, hasHash String, ordered String is
+String ref : has_equality, has_hash, ordered String is
 
   redef orderedThis String is String.this
 

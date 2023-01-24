@@ -54,7 +54,7 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) is
+private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
@@ -62,14 +62,14 @@ private tomb_node(CTK type : hasHash CTK, CTV type, sn singleton_node CTK CTV) i
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : hasHash CTK, CTV type, k CTK, v CTV) is
+private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
 # an indirection or a singleton node
-private branch(CTK type : hasHash CTK, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
+private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -83,7 +83,7 @@ private branch(CTK type : hasHash CTK, CTV type) : choice (Indirection_Node CTK 
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (branch CTK CTV)) is
+private container_node(CTK type : has_hash, CTV type, bmp u32, array array (branch CTK CTV)) is
 
   # update a child node and return a new container_node
   updated(pos u32, node branch CTK CTV) =>
@@ -118,7 +118,7 @@ private container_node(CTK type : hasHash CTK, CTV type, bmp u32, array array (b
 
 
 # a container, tomb or linked list node
-private Main_Node(CTK type : hasHash CTK, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : hasEquals (Main_Node CTK CTV) is
+private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : hasEquals (Main_Node CTK CTV) is
 
   # a previous node that gets set during a generational aware compare and set
   prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
@@ -155,10 +155,10 @@ private Main_Node(CTK type : hasHash CTK, CTV type, data choice (container_node 
 
 
 # a failed node where the previous indirection node contains a main node
-private failed_node(CTK type : hasHash CTK, CTV type, prev Main_Node CTK CTV) is
+private failed_node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) is
 
 # an indirection node
-private Indirection_Node(CTK type : hasHash CTK, CTV type, data mutate.new (Main_Node CTK CTV)) ref : hasEquals (Indirection_Node CTK CTV) is
+private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_Node CTK CTV)) ref : hasEquals (Indirection_Node CTK CTV) is
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
@@ -230,7 +230,7 @@ private Indirection_Node(CTK type : hasHash CTK, CTV type, data mutate.new (Main
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : hasHash CTK, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
+private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef as_list => from.as_list
@@ -250,12 +250,12 @@ private ok is
 
 
 # descriptor for double-compare-single-swap operation
-private rdcss_descriptor(CTK type : hasHash CTK, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
+private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
 
 
 # the ctrie
 # NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
-private CTrie(CTK type : hasHash CTK, CTV type, root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), read_only bool) ref : Map CTK CTV
+private CTrie(CTK type : has_hash, CTV type, root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), read_only bool) ref : Map CTK CTV
 is
 
   # compare and swap root of the ctrie
@@ -457,7 +457,7 @@ is
                   ok => lookup i k lev parent gen
                   restart => restart
             sn singleton_node =>
-              if sn.k = k
+              if sn.k ≟ k
                 sn.v
               else
                 not_found
@@ -469,7 +469,7 @@ is
 
   # find k in linked nodes
   private find(ln list_node CTK CTV, k CTK) choice restart not_found CTV is
-    match ln.drop_while(sn -> sn.k /= k).head
+    match ln.drop_while(sn -> !(sn.k ≟ k)).head
           nil => not_found
           sn singleton_node => sn.v
 
@@ -505,7 +505,7 @@ is
                   ok => add i k v lev parent gen
                   restart => restart
             sn singleton_node =>
-              if sn.k /= k
+              if !(sn.k ≟ k)
                 nin := Indirection_Node (mut (dual sn (singleton_node k v) (lev + width) i.data.get.gen))
                 ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).updated pos nin
                 i.gcas m (Main_Node ncn gen) CTrie.this
@@ -516,7 +516,7 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k /= k)))) i.data.get.gen) CTrie.this
+        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> !(sn.k ≟ k))))) i.data.get.gen) CTrie.this
 
 
   # remove key from ctrie
@@ -547,7 +547,7 @@ is
                   ok => remove i k lev parent gen
                   restart => restart
             sn singleton_node =>
-              if sn.k /= k
+              if !(sn.k ≟ k)
                 not_found
               else
                 ncn  := cn.removed pos flag
@@ -566,7 +566,7 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        fln := list_node ln.filter(sn -> sn.k /= k)
+        fln := list_node ln.filter(sn -> !(sn.k ≟ k))
         nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
         match (i.gcas m nln CTrie.this)
           ok => find ln k
@@ -602,7 +602,7 @@ is
       .as_list
 
 # initialize a new ctrie
-CTrie(CTK type : hasHash CTK, CTV type) =>
+CTrie(CTK type : has_hash, CTV type) =>
   # NYI better type inference could make this tmp unecessary
   tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := Indirection_Node (mut (Main_Node (container_node CTK CTV 0 []) 0))
   CTrie CTK CTV (mut tmp) false
