@@ -265,6 +265,7 @@ routOrField : routine
             ;
 routine     : formArgsOpt
               returnType
+              effects
               inherits
               contract
               implRout
@@ -279,14 +280,16 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var a = formArgsOpt();
-    ReturnType r = returnType();
+    var r = returnType();
+    var eff = effects();
     var hasType = r != NoType.INSTANCE;
     var inh = inherits();
     Contract c = contract(true);
     Impl p =
-      a  .isEmpty() &&
-      inh.isEmpty()    ? implFldOrRout(hasType)
-                       : implRout();
+      a  .isEmpty()    &&
+      eff == Type.NONE &&
+      inh.isEmpty()       ? implFldOrRout(hasType)
+                          : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh);
     l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
     return p2 == null
@@ -459,6 +462,7 @@ field       : returnType
         p = fork();
         p.skipType();
       }
+    p.skipEffects();
     return
       p.isInheritPrefix   () ||
       p.isContractPrefix  () ||
@@ -1154,6 +1158,40 @@ returnType  : type
           }
       }
     return result;
+  }
+
+
+
+  /**
+   * Parse effects
+   *
+effects     : EXCLAMATION typeList
+            |
+            ;
+EXCLAMATION : "!"
+            ;
+   */
+  List<AbstractType> effects()
+  {
+    var result = Type.NONE;
+    if (skip('!'))
+      {
+        var effects = typeList();
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is an effects and if so, skip it
+   *
+   * @return true iff the next token(s) start a constructor return type,
+   * otherwise no functionReturnType was found and the parser/lexer is at an
+   * undefined position.
+   */
+  boolean skipEffects()
+  {
+    return skip('!') && skipTypeList();
   }
 
 
