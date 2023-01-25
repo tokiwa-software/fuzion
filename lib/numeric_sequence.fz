@@ -25,7 +25,7 @@
 
 # numeric_sequence -- a Sequence whose elements inherit from numeric
 #
-numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (numeric_sequence N) is
+numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality is
 
   # create a list from this Sequence.
   #
@@ -91,11 +91,6 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, hasEquals (n
 
   # are these numeric sequences equal?
   # i.e. do they only contain equal numbers
-  infix = (o numeric_sequence N) bool is
-    ((zip o a,b->a=b) ∀ x->x)
-      & count = o.count
-
-
   fixed type.equality(a, b numeric_sequence N) bool is
     ((a.zip b (c,d->equals N c d)) ∀ x->x)
       & a.count ≟ b.count

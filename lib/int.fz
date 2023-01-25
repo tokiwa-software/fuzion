@@ -55,7 +55,7 @@ is
 
   # add this int to other
   infix +  (other int) int is
-    if ns = other.ns
+    if ns ≟ other.ns
       int ns n+other.n
     else
       match ns
@@ -81,7 +81,7 @@ is
   # the sign of the result of the
   # multiplication or division of thiz and other
   private result_sign_mul_div(other int) sign is
-    if ns = other.ns then plus else minus
+    if ns ≟ other.ns then plus else minus
 
 
   # multiply this int by other
@@ -142,7 +142,7 @@ is
 
   # are these two ints equal?
   infix == (other int) bool is
-    ns = other.ns & n = other.n
+    ns ≟ other.ns & n ≟ other.n
 
   fixed type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
@@ -238,23 +238,12 @@ minus is
 #
 # this can be plus or minus
 #
-sign : choice plus minus, has_equality, hasEquals sign is
+sign : choice plus minus, has_equality is
 
   is_plus =>
     match sign.this
       plus => true
       minus => false
-
-  infix = (o sign) bool is
-    match sign.this
-      plus =>
-        match o
-          plus => true
-          minus => false
-      minus =>
-        match o
-          plus => false
-          minus => true
 
   fixed type.equality(a, b sign) bool is
     match a

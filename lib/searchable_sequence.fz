@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# searchable_sequence -- a Sequence whose elements inherit from hasEquals
+# searchable_sequence -- a Sequence whose elements inherit from has_equality
 #
 # In contrast to searchable_list, this uses ref type 'Sequence' and not choice
 # type 'list', so it is more flexible.
 #
 #
-searchable_sequence(A type : hasEquals A, from Sequence A) : Sequence A
+searchable_sequence(A type : has_equality, from Sequence A) : Sequence A
 is
 
   # create a list from this Sequence.

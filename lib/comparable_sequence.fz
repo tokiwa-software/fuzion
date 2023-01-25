@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# comparable_sequence -- a Sequence that inherits from hasEquals
+# comparable_sequence -- a Sequence that inherits from has_equality
 #
-comparable_sequence(A type : hasEquals A, from Sequence A) : Sequence A, hasEquals (comparable_sequence A)
+comparable_sequence(A type : has_equality, from Sequence A) : Sequence A, has_equality
 is
 
   # create a list from this Sequence.
@@ -39,15 +39,8 @@ is
   redef finite => from.finite
 
 
-  # equality check implementation for inherited hasEquals
-  infix = (o comparable_sequence A) bool is
-    fa := from.as_array
-    oa := o.as_array
-    if fa.count != oa.count
-      false
-    else
-      (0..(from.count - 1)) ∀ (i -> fa[i] = oa[i])
-
+  # equality check implementation for inherited has_equality
+  #
   fixed type.equality(a, b comparable_sequence A) bool is
     aa := a.as_array
     ba := b.as_array
