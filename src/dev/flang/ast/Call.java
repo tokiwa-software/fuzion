@@ -1205,7 +1205,29 @@ public class Call extends AbstractCall
               }
             else
               {
-                frmlT = frmlT.replace_THIS_TYPE(target());
+                var target = target();
+                if (target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
+                  {
+                    /*
+                     * Special handling for calling type feature with formal argument types that
+                     * are `this.type` of the original feature:
+                     *
+                     * example:
+                     *
+                     *   has_equality is
+                     *
+                     *     type.equality(a, b has_equality.this.type) bool is abstract
+                     *
+                     *   equals(T type : has_equality, x, y T) => T.equality x y
+                     *
+                     * For the call `T.equality x y`, we must replace the the formal argument type
+                     * for `a` (and `b`) by `T`.
+                     */
+                    frmlT = frmlT.replace_type_parameter_used_for_this_type_in_type_feature
+                      (target.type().featureOfType(),
+                       tc);
+                  }
+
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
