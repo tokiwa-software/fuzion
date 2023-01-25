@@ -885,6 +885,7 @@ public class Intrinsics extends ANY
     put("u8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <  0));
     put("u8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >  0));
     put("u8.infix <="           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <= 0));
+    put("u8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u8Value(), args.get(2).u8Value()) <= 0));
     put("u8.infix >="           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >= 0));
     put("u16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u16Value())));
     put("u16.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u16Value())));
@@ -906,6 +907,7 @@ public class Intrinsics extends ANY
     put("u16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <  0));
     put("u16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >  0));
     put("u16.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <= 0));
+    put("u16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u16Value(), args.get(2).u16Value()) <= 0));
     put("u16.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >= 0));
     put("u32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())));
     put("u32.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u32Value())));
@@ -930,6 +932,7 @@ public class Intrinsics extends ANY
     put("u32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <  0));
     put("u32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >  0));
     put("u32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <= 0));
+    put("u32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u32Value(), args.get(2).u32Value()) <= 0));
     put("u32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >= 0));
     put("u64.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())));
     put("u64.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())));
@@ -954,6 +957,7 @@ public class Intrinsics extends ANY
     put("u64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <  0));
     put("u64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >  0));
     put("u64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <= 0));
+    put("u64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(1).u64Value(), args.get(2).u64Value()) <= 0));
     put("u64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >= 0));
     put("f32.prefix -"          , (interpreter, innerClazz) -> args -> new f32Value (                (                       -  args.get(0).f32Value())));
     put("f32.infix +"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() +  args.get(1).f32Value())));

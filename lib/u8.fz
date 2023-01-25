@@ -84,8 +84,6 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   redef infix >  (other u8) bool is intrinsic
   redef infix >= (other u8) bool is intrinsic
 
-  fixed type.equality(a, b u8) bool is intrinsic
-
   as_i8 i8
     pre
       debug: thiz <= i8.max.as_u8
@@ -161,6 +159,16 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   # identity element for 'infix *'
   #
   fixed type.one  u8  is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b u8) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b u8) bool is intrinsic
 
 
 # u8s -- unit type defining features related to u8 but not requiring an

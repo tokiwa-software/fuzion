@@ -487,6 +487,10 @@ public class Intrinsics extends ANY
         "u16.infix <="         ,
         "u32.infix <="         ,
         "u64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.type.lteq"         ,
+        "u16.type.lteq"        ,
+        "u32.type.lteq"        ,
+        "u64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("i8.as_i32"            , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("i16.as_i32"           , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());

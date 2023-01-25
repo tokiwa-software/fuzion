@@ -84,8 +84,6 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef infix >  (other u16) bool is intrinsic
   redef infix >= (other u16) bool is intrinsic
 
-  fixed type.equality(a, b u16) bool is intrinsic
-
   as_i8 i8
     pre
       debug: thiz <= i8.max.as_u16
@@ -172,6 +170,16 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   # identity element for 'infix *'
   #
   fixed type.one  u16 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b u16) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b u16) bool is intrinsic
 
 
 # u16s -- unit type defining features related to u16 but not requiring an
