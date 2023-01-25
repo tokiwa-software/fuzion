@@ -1150,6 +1150,8 @@ public class DFA extends ANY
     put("f64.infix <"                    , cl -> cl._dfa._bool );
     put("f32.infix <="                   , cl -> cl._dfa._bool );
     put("f64.infix <="                   , cl -> cl._dfa._bool );
+    put("f32.type.lteq"                  , cl -> cl._dfa._bool );
+    put("f64.type.lteq"                  , cl -> cl._dfa._bool );
     put("f32.infix >"                    , cl -> cl._dfa._bool );
     put("f64.infix >"                    , cl -> cl._dfa._bool );
     put("f32.infix >="                   , cl -> cl._dfa._bool );

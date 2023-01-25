@@ -53,9 +53,6 @@ f64(val f64) : float f64, f64s is
   redef infix >  (other f64) bool is intrinsic
   redef infix >= (other f64) bool is intrinsic
 
-  fixed type.equality(a, b f64) bool is intrinsic
-
-
   # conversion
 
   # NaN is converted to 0
@@ -125,6 +122,16 @@ f64(val f64) : float f64, f64s is
   # identity element for 'infix *'
   #
   fixed type.one  f64 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b f64) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b f64) bool is intrinsic
 
 
 # f64s -- unit type defining features related to f64 but not requiring an

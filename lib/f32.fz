@@ -53,9 +53,6 @@ f32(val f32) : float f32, f32s is
   redef infix >  (other f32) bool is intrinsic
   redef infix >= (other f32) bool is intrinsic
 
-  fixed type.equality(a, b f32) bool is intrinsic
-
-
   # conversion
   redef as_i64 => as_f64.as_i64
 
@@ -111,6 +108,16 @@ f32(val f32) : float f32, f32s is
   # identity element for 'infix *'
   #
   fixed type.one  f32 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b f32) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b f32) bool is intrinsic
 
 
 # f32s -- unit type defining features related to f32 but not requiring an
