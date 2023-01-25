@@ -130,6 +130,11 @@ is
                     | nil => "--no value--"
 
 
+  # return function
+  #
+  fixed type.return (a T) => num_option a
+
+
 # num_option with 1 argument provides an short-hand to wrap a value into a
 # num_option
 #
@@ -142,13 +147,3 @@ is
 #   o num_option TypeOfX := x
 #
 num_option(T type : numeric T, o num_option T) => o
-
-
-# type related to num_option declaring features not requiring an instance of num_option
-#
-num_options(T type : numeric T) : monads T (num_option T) is
-
-
-  # return function
-  #
-  return (a T) => num_option a
