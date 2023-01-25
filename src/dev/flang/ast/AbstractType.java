@@ -1041,54 +1041,26 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * `T.equality x y`, such that actual arguments of the same type are
    * assignment compatible to it.
    *
-   * @param target the target of the call
+   * @param tf the type feature we are calling (`has_equality.type` in the example
+   * above).
+   *
+   * @param tc the target call (`T` in the example above).
    */
-  AbstractType replace_THIS_TYPE(Expr target)
+  AbstractType replace_type_parameter_used_for_this_type_in_type_feature(AbstractFeature tf, AbstractCall tc)
   {
     var result = this;
-    var tt = target.type();
-    if (!tt.isGenericArgument())
+    if (isGenericArgument())
       {
-        var tf = tt.featureOfType();
-        if (dependsOnGenerics() &&
-            tf.isTypeFeature() &&
-            target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
-          {
-            if (isGenericArgument())
-              {
-                if (genericArgument().typeParameter() == tf.arguments().get(0))
-                  { // a call of the form `T.f x` where `f` is declared as
-                    // `abc.type.f(arg abc.this.type)`, so replace
-                    // `abc.this.type` by `T`.
-                    result = new Type(tc.pos(), new Generic(tc.calledFeature()));
-                  }
-              }
-            else
-              {
-                var g = generics();
-                var ng = g;
-                for (int i = 0; i < g.size(); i++)
-                  {
-                    var gi = g.get(i);
-                    var gi2 = gi.replace_THIS_TYPE(target);
-                    if (gi != gi2)
-                      {
-                        if (ng != g)
-                          {
-                            ng = new List<>();
-                            ng.addAll(g);
-                          }
-                        ng.set(i, gi2);
-                      }
-                  }
-                var o = outer();
-                var no = o != null ? o.replace_THIS_TYPE(target) : null;
-                if (ng != g || no != o)
-                  {
-                    result = new Type(this, ng, no);
-                  }
-              }
+        if (genericArgument().typeParameter() == tf.arguments().get(0))
+          { // a call of the form `T.f x` where `f` is declared as
+            // `abc.type.f(arg abc.this.type)`, so replace
+            // `abc.this.type` by `T`.
+            result = new Type(tc.pos(), new Generic(tc.calledFeature()));
           }
+      }
+    else
+      {
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_type_feature(tf, tc));
       }
     return result;
   }
@@ -1133,7 +1105,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_this_type_in_type_feature());
+        result = applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_this_type_in_type_feature());
       }
     return result;
   }
