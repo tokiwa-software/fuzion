@@ -214,20 +214,20 @@ visibility is
   visi4 is
     a is
       x => "Outer!"
-      chck (x == "Outer!") "outer x"
+      chck (x ≟ "Outer!") "outer x"
       b is
         x => "Inner!"
-        chck (x == "Inner!") "inner x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"
+        chck (x ≟ "Inner!") "inner x"
+        chck (a.this.x ≟ "Outer!") "a.this.x"
+        chck (b.this.x ≟ "Inner!") "b.this.x"
 
         c is
-          chck (x == "Inner Inner!") "inner inner x"
+          chck (x ≟ "Inner Inner!") "inner inner x"
           x => "Inner Inner!"
-          chck (x == "Inner Inner!") "inner inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x"
+          chck (x ≟ "Inner Inner!") "inner inner x"
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
+          chck (c.this.x ≟ "Inner Inner!") "c.this.x"
     a.b.c
     unit
   visi4
@@ -235,25 +235,25 @@ visibility is
   visi5 is
     a is
       x := "Outer!"
-      chck (x == "Outer!") "outer x"
-      chck (a.this.x == "Outer!") "a.this.x"
+      chck (x ≟ "Outer!") "outer x"
+      chck (a.this.x ≟ "Outer!") "a.this.x"
       b is
-        chck (x == "Outer!") "outer x"
-        chck (a.this.x == "Outer!") "a.this.x"
+        chck (x ≟ "Outer!") "outer x"
+        chck (a.this.x ≟ "Outer!") "a.this.x"
         x := "Inner!"
-        chck (x == "Inner!") "inner x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"
+        chck (x ≟ "Inner!") "inner x"
+        chck (a.this.x ≟ "Outer!") "a.this.x"
+        chck (b.this.x ≟ "Inner!") "b.this.x"
 
         c is
-          chck (x == "Inner!") "inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
+          chck (x ≟ "Inner!") "inner x"
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
           x := "Inner Inner!"
-          chck (x == "Inner Inner!") "inner inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x"
+          chck (x ≟ "Inner Inner!") "inner inner x"
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
+          chck (c.this.x ≟ "Inner Inner!") "c.this.x"
     a.b.c
     unit
 // NYI:   visi5
@@ -270,18 +270,18 @@ visibility is
     x := x*x*x*x;    g () -> String := () -> "x is "+x+""
     x := x.as_string; h () -> String := () -> "x is "+x+""
     x := x * 5;      i () -> String := () -> "x is "+x+""
-    chck (f.call() == "x is 2") "x is 2"
-    chck (g.call() == "x is 16") "x is 16"
-    chck (h.call() == "x is 16") "x is 16"
-    chck (i.call() == "x is 1616161616") "x is 1616161616"
+    chck (f.call() ≟ "x is 2") "x is 2"
+    chck (g.call() ≟ "x is 16") "x is 16"
+    chck (h.call() ≟ "x is 16") "x is 16"
+    chck (i.call() ≟ "x is 1616161616") "x is 1616161616"
     x := 2;          f1 => r := "x is "+x+""; r
     x := x*x*x*x;    g1 => r := "x is "+x+""; r
     x := x.as_string; h1 => r := "x is "+x+""; r
     x := x * 5;      i1 => r := "x is "+x+""; r
-    chck (f1 == "x is 2") "x is 2"
-    chck (g1 == "x is 16") "x is 16"
-    chck (h1 == "x is 16") "x is 16"
-    chck (i1 == "x is 1616161616") "x is 1616161616"
+    chck (f1 ≟ "x is 2") "x is 2"
+    chck (g1 ≟ "x is 16") "x is 16"
+    chck (h1 ≟ "x is 16") "x is 16"
+    chck (i1 ≟ "x is 1616161616") "x is 1616161616"
   visi7
 
   visi8(cond bool) is

@@ -55,7 +55,7 @@ ctrie_test is
   if no ∃  (k -> (ctrie.lookup k).exists)
     panic "value in slot that should be empty"
 
-  if yes ∃ (k -> (ctrie.lookup k).get /= "v$k")
+  if yes ∃ (k -> !((ctrie.lookup k).get ≟ "v$k"))
     panic "a lookup for a key returns incorrect value or none at all"
 
   if ctrie.size /= yes.size

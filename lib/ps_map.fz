@@ -48,7 +48,7 @@
 ps_map
   (
    # key type
-   PK type : ordered PK,
+   PK type : has_total_order,
 
    # value type
    redef V type,
@@ -158,7 +158,7 @@ O(n log n).
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
-          use1 := i1 < sz && (i2 >= sz || data[ole + i1].values.0 < tmp[i2].values.0)
+          use1 := i1 < sz && (i2 >= sz || data[ole + i1].values.0 ⩻ tmp[i2].values.0)
           e := if use1 then data[ole + i1] else tmp[i2]
         do
           ndata[dest + i1 + i2] := e
@@ -182,7 +182,7 @@ O(n log n).
         nil
       else
         (mk,mv) := data[m]
-        c := (mk) <> k
+        c := (mk) ⋄ k
         if      c < 0 then binarySearch m+1 r
         else if c > 0 then binarySearch l m-1
         else               mv
@@ -231,7 +231,7 @@ O(n log n).
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 < sz && (i2 >= rsz || data[ole + i1].values.0 < tmp[i2])
+            use1 := i1 < sz && (i2 >= rsz || data[ole + i1].values.0 ⩻ tmp[i2])
             e := if (use1) data[ole + i1].values.0 else tmp[i2]
           do
             r[i1 + i2] := e
@@ -259,7 +259,7 @@ O(n log n).
     else
       min (m PK, l i32, r i32) PK is
         (lk, _) := data[l]
-        if (m <= lk) m else lk
+        if (m ≤ lk) m else lk
 
       min (m PK, at i32, sz i32, tail i32) PK is
         if sz = 0
@@ -288,7 +288,7 @@ O(n log n).
     else
       max (m PK, l i32, r i32) PK is
         (rk, _) := data[r]
-        if (m >= rk) m else rk
+        if (m ≥ rk) m else rk
 
       max (m PK, at i32, sz i32, tail i32) PK is
         if sz = 0
@@ -362,7 +362,7 @@ O(n log n).
 #
 # NYI: move to ps_map.type
 #
-ps_maps(PK type : ordered PK, V type) is
+ps_maps(PK type : has_total_order, V type) is
 
   # empty -- an empty partially sorted map
   #
@@ -376,7 +376,7 @@ ps_maps(PK type : ordered PK, V type) is
 # This feature creates a pre-initialized instance of ps_map.
 #
 ps_map(
-    PK type : ordered PK,
+    PK type : has_total_order,
     V type,
     # list of keys in the map
     ks Sequence PK,

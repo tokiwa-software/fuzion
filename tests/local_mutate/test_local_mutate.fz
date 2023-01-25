@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: ordered T, data Sequence T) array T is
+    quicksort(T type: has_total_order, data Sequence T) array T is
       c := data.count
       if c = 0
         []
@@ -142,7 +142,7 @@ test_local_mutate is
             for
               a := l, a + (sw ? 0 : 1)
               b := r, b - (sw ? 1 : 0)
-              sw := arr[a] > pv
+              sw := arr[a] ⩼ pv
             while a < b
               if sw
                 swap a b-1

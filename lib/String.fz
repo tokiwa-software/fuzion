@@ -25,9 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : has_equality, has_hash, ordered String is
-
-  redef orderedThis String is String.this
+String ref : has_equality, has_hash, has_total_order is
 
   # converting a string to a string is just returning string.this
   redef as_string String is String.this
@@ -63,15 +61,6 @@ String ref : has_equality, has_hash, ordered String is
       utf8.cycle.take (utf8.count * n)
 
 
-  # compare string byte-by-byte with other string
-  redef infix = (other String) =>
-    ((utf8.zip other.utf8 a,b->a=b) ∀ x->x)
-      & utf8.count = other.utf8.count
-
-
-  infix == (other String) => String.this = other    # NYI: #498: replace by 'infix ='
-
-
   # compare two strings byte-by-byte
   #
   # result is true iff the strings have the same number of utf8 bytes and those
@@ -86,19 +75,6 @@ String ref : has_equality, has_hash, ordered String is
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  infix <= (other String) =>
-    utf8
-      .zip other.utf8 (a,b)->(a,b)
-      .filter (x ->
-        (a, b) := x
-        a != b)
-      .mapSequence (x ->
-        (a, b) := x
-        a <= b)
-      # if all bytes are equal lengths of strings might still differ
-      .first utf8.count<=other.utf8.count
-
-
   fixed type.lteq(a, b String) =>
     a.utf8
       .zip b.utf8 (c,d)->(c,d)

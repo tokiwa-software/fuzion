@@ -61,7 +61,7 @@ listFoldTest is
   sl := ["The ", "quick ", "brown ", "fox ", "jumps ", "over ", "the ", "lazy ", "dog."].as_list;
   say "Fold String list: {sl.fold String.type.concat}"
 
-  chck ((sl.fold String.type.concat) == "The quick brown fox jumps over the lazy dog.") "check String concat"
+  chck ((sl.fold String.type.concat) ≟ "The quick brown fox jumps over the lazy dog.") "check String concat"
 
   say "sum 1 is {l1.fold i32.sum}"; chck ((l1.fold i32.sum) == 0) "sum l1"
   say "sum 2 is {l2.fold i32.sum}"; chck ((l2.fold i32.sum) == 9) "sum l2"
@@ -85,16 +85,16 @@ listFoldTest is
   say "sum 9 is {l9.take(5).fold i32.sum}"; chck ((l9.take(5).fold i32.sum) == 23456000) "take(5).sum l9"
   say "sum 10 is {lA.take(5).fold i32.sum}"; chck ((lA.take(5).fold i32.sum) == 123450000) "take(5).sum lA"
 
-  say "String list 1 is {sl1.fold String.type.concat}"; chck ((sl1.fold String.type.concat) == "") "concat sl1"
-  say "String list 2 is {sl2.fold String.type.concat}"; chck ((sl2.fold String.type.concat) == "dog.") "concat sl2"
-  say "String list 3 is {sl3.fold String.type.concat}"; chck ((sl3.fold String.type.concat) == "lazy dog.") "concat sl3"
-  say "String list 4 is {sl4.fold String.type.concat}"; chck ((sl4.fold String.type.concat) == "the lazy dog.") "concat sl4"
-  say "String list 5 is {sl5.fold String.type.concat}"; chck ((sl5.fold String.type.concat) == "over the lazy dog.") "concat sl5"
-  say "String list 6 is {sl6.fold String.type.concat}"; chck ((sl6.fold String.type.concat) == "jumps over the lazy dog.") "concat sl6"
-  say "String list 7 is {sl7.fold String.type.concat}"; chck ((sl7.fold String.type.concat) == "fox jumps over the lazy dog.") "concat sl"
-  say "String list 8 is {sl8.fold String.type.concat}"; chck ((sl8.fold String.type.concat) == "brown fox jumps over the lazy dog.") "concat sl"
-  say "String list 9 is {sl9.fold String.type.concat}"; chck ((sl9.fold String.type.concat) == "quick brown fox jumps over the lazy dog.") "concat sl9"
-  say "String list 10 is {slA.fold String.type.concat}"; chck ((slA.fold String.type.concat) == "The quick brown fox jumps over the lazy dog.") "concat slA"
+  say "String list 1 is {sl1.fold String.type.concat}"; chck ((sl1.fold String.type.concat) ≟ "") "concat sl1"
+  say "String list 2 is {sl2.fold String.type.concat}"; chck ((sl2.fold String.type.concat) ≟ "dog.") "concat sl2"
+  say "String list 3 is {sl3.fold String.type.concat}"; chck ((sl3.fold String.type.concat) ≟ "lazy dog.") "concat sl3"
+  say "String list 4 is {sl4.fold String.type.concat}"; chck ((sl4.fold String.type.concat) ≟ "the lazy dog.") "concat sl4"
+  say "String list 5 is {sl5.fold String.type.concat}"; chck ((sl5.fold String.type.concat) ≟ "over the lazy dog.") "concat sl5"
+  say "String list 6 is {sl6.fold String.type.concat}"; chck ((sl6.fold String.type.concat) ≟ "jumps over the lazy dog.") "concat sl6"
+  say "String list 7 is {sl7.fold String.type.concat}"; chck ((sl7.fold String.type.concat) ≟ "fox jumps over the lazy dog.") "concat sl"
+  say "String list 8 is {sl8.fold String.type.concat}"; chck ((sl8.fold String.type.concat) ≟ "brown fox jumps over the lazy dog.") "concat sl"
+  say "String list 9 is {sl9.fold String.type.concat}"; chck ((sl9.fold String.type.concat) ≟ "quick brown fox jumps over the lazy dog.") "concat sl9"
+  say "String list 10 is {slA.fold String.type.concat}"; chck ((slA.fold String.type.concat) ≟ "The quick brown fox jumps over the lazy dog.") "concat slA"
 
   // product mod 11
   m : Monoid i32 is
