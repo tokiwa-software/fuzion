@@ -661,7 +661,7 @@ public class Type extends AbstractType
             if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
               {
                 qn = qn.substring(0, qn.lastIndexOf(".type"));
-                n = "this.type";
+                n = "this.type (in type feature)";
               }
             n = qn + "." + n;
           }
@@ -910,7 +910,8 @@ public class Type extends AbstractType
           {
             if (isThisType() && _generics.isEmpty())
               {
-                _generics = feature.generics().asActuals();
+                var g = feature.generics().asActuals();
+                _generics = g.isEmpty() ? NONE : g;
               }
             FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
