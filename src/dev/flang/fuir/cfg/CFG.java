@@ -311,6 +311,10 @@ public class CFG extends ANY
     put("i16.infix <="                   , (cfg, cl) -> { } );
     put("i32.infix <="                   , (cfg, cl) -> { } );
     put("i64.infix <="                   , (cfg, cl) -> { } );
+    put("i8.type.lteq"                   , (cfg, cl) -> { } );
+    put("i16.type.lteq"                  , (cfg, cl) -> { } );
+    put("i32.type.lteq"                  , (cfg, cl) -> { } );
+    put("i64.type.lteq"                  , (cfg, cl) -> { } );
 
     put("u8.prefix -°"                   , (cfg, cl) -> { } );
     put("u16.prefix -°"                  , (cfg, cl) -> { } );

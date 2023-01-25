@@ -800,6 +800,7 @@ public class Intrinsics extends ANY
     put("i8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  <   args.get(1).i8Value() )));
     put("i8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  >   args.get(1).i8Value() )));
     put("i8.infix <="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  <=  args.get(1).i8Value() )));
+    put("i8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  <=  args.get(2).i8Value() )));
     put("i8.infix >="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  >=  args.get(1).i8Value() )));
     put("i16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i16Value())));
     put("i16.castTo_u16"        , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
@@ -820,6 +821,7 @@ public class Intrinsics extends ANY
     put("i16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() <   args.get(1).i16Value())));
     put("i16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() >   args.get(1).i16Value())));
     put("i16.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() <=  args.get(1).i16Value())));
+    put("i16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() <=  args.get(2).i16Value())));
     put("i16.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() >=  args.get(1).i16Value())));
     put("i32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value ((long)        (                           args.get(0).i32Value())));
     put("i32.castTo_u32"        , (interpreter, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
@@ -841,6 +843,7 @@ public class Intrinsics extends ANY
     put("i32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() <   args.get(1).i32Value())));
     put("i32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() >   args.get(1).i32Value())));
     put("i32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() <=  args.get(1).i32Value())));
+    put("i32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
     put("i32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() >=  args.get(1).i32Value())));
     put("i64.castTo_u64"        , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
     put("i64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
@@ -861,6 +864,7 @@ public class Intrinsics extends ANY
     put("i64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() <   args.get(1).i64Value())));
     put("i64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() >   args.get(1).i64Value())));
     put("i64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() <=  args.get(1).i64Value())));
+    put("i64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() <=  args.get(2).i64Value())));
     put("i64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() >=  args.get(1).i64Value())));
     put("u8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u8Value() )));
     put("u8.castTo_i8"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));

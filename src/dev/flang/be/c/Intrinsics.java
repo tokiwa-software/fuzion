@@ -409,6 +409,10 @@ public class Intrinsics extends ANY
         "i16.infix <="         ,
         "i32.infix <="         ,
         "i64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.type.lteq"         ,
+        "i16.type.lteq"        ,
+        "i32.type.lteq"        ,
+        "i64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("u8.prefix -°"         ,
         "u16.prefix -°"        ,

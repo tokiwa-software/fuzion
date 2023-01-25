@@ -1016,6 +1016,10 @@ public class DFA extends ANY
     put("i16.infix <="                   , cl -> cl._dfa._bool );
     put("i32.infix <="                   , cl -> cl._dfa._bool );
     put("i64.infix <="                   , cl -> cl._dfa._bool );
+    put("i8.type.lteq"                   , cl -> cl._dfa._bool );
+    put("i16.type.lteq"                  , cl -> cl._dfa._bool );
+    put("i32.type.lteq"                  , cl -> cl._dfa._bool );
+    put("i64.type.lteq"                  , cl -> cl._dfa._bool );
 
     put("u8.prefix -°"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("u16.prefix -°"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

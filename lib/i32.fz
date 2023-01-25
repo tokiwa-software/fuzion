@@ -84,8 +84,6 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   redef infix >  (other i32) bool is intrinsic
   redef infix >= (other i32) bool is intrinsic
 
-  fixed type.equality(a, b i32) bool is intrinsic
-
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
@@ -186,6 +184,16 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # identity element for 'infix *'
   #
   fixed type.one  i32 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b i32) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b i32) bool is intrinsic
 
 
 # i32s -- unit type defining features related to i32 but not requiring an

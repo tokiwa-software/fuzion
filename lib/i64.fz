@@ -84,9 +84,6 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef infix >  (other i64) bool is intrinsic
   redef infix >= (other i64) bool is intrinsic
 
-  fixed type.equality(a, b i64) bool is intrinsic
-
-
   # this i64 as an i8
   as_i8 i8
     pre
@@ -232,6 +229,16 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # identity element for 'infix *'
   #
   fixed type.one  i64 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b i64) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b i64) bool is intrinsic
 
 
 # i64s -- unit type defining features related to i64 but not requiring an
