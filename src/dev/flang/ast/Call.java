@@ -706,11 +706,11 @@ public class Call extends AbstractCall
                   }
                 if (_calledFeature == null)
                   {
-                    findChainedBooleans(res, thiz);
+                    findOperatorOnOuter(res, thiz);
                   }
                 if (_calledFeature == null)
                   {
-                    findOperatorOnOuter(res, thiz);
+                    findChainedBooleans(res, thiz);
                   }
                 if (_calledFeature == null) // nothing found, so flag error
                   {
