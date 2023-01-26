@@ -902,7 +902,7 @@ public class AstErrors extends ANY
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (f.isTypeFeature()
                ? ("or changing it into a routine by returning a " +
-                  sbn("unit") + " result, i.e.,  adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
                   " instead of "+ code("is") + ".")
                : ("or adding an additional argument (e.g. " + code("_ unit") +
                   " for an ignored unit argument used only to disambiguate these two).")
