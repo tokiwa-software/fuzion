@@ -200,6 +200,18 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
     if v ≟ (u32 0) zero else one # NYI: #706: (from_u32 v-1) +^ one
 
 
+  # equality
+  #
+  fixed type.equality(a, b numeric T) bool is
+    T.equality a b
+
+
+  # total order
+  #
+  fixed type.lteq(a, b numeric T) bool is
+    T.lteq a b
+
+
 # numerics -- unit type defining features related to numeric but not
 # requiring an instance
 #
