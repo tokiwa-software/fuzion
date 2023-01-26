@@ -318,7 +318,7 @@ Sequence(T type) ref is
   #
   insert(at i32, v T)
    pre
-     debug: at >= 0
+     debug: at ≥ 0
    =>
     take at ++ [v] ++ drop at
 
@@ -370,7 +370,7 @@ Sequence(T type) ref is
   #
   nth(n i32) option T
     pre
-      debug: n >= 0
+      debug: n ≥ 0
   is
     match drop n
       nil => nil
@@ -387,8 +387,8 @@ Sequence(T type) ref is
   #
   index [] (i i32) T
     pre
-      debug: 0 <= i,
-      debug: finite: i < count,
+      debug: 0 ≤ i,
+      debug: finite: i ⩻ count,
       debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get

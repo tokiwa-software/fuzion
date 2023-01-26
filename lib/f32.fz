@@ -32,7 +32,6 @@
 f32(val f32) : float f32, f32s is
 
   redef thiz        => f32.this.val
-  redef orderedThis => f32.this.val
 
 
   # basic operations: 'prefix -' (negation)
@@ -44,14 +43,6 @@ f32(val f32) : float f32, f32s is
   infix % (other f32) f32 is intrinsic
   infix ** (other f32) f32 is intrinsic
 
-
-  # comparison
-  redef infix == (other f32) bool is intrinsic
-  redef infix != (other f32) bool is intrinsic
-  redef infix <  (other f32) bool is intrinsic
-  redef infix <= (other f32) bool is intrinsic
-  redef infix >  (other f32) bool is intrinsic
-  redef infix >= (other f32) bool is intrinsic
 
   # conversion
   redef as_i64 => as_f64.as_i64
@@ -73,9 +64,9 @@ f32(val f32) : float f32, f32s is
   redef fract f32 is
     if f32s.isNaN val
       NaN
-    else if val < 0
+    else if val ⩻ (f32 0)
       -(-val).fract
-    else if val < 1
+    else if val ⩻ (f32 1)
       val
     else
       bits := castTo_u32
@@ -83,7 +74,7 @@ f32(val f32) : float f32, f32s is
       bias := (u32 2 ** (exponentBits.as_u32 - 1) - 1)
       mask := u32 2 ** exponentBits.as_u32 - 1
       e := ((bits >> fract_bits) & mask) - bias
-      if (e < fract_bits)
+      if (e ⩻ fract_bits)
         x := bits & (u32s.max << (fract_bits - e))
         val - x.castTo_f32
       else
