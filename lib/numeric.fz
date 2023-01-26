@@ -117,7 +117,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   infix **^(other T) T is abstract
 
 
-  sign => if numeric.this ≟ numeric.this.type.zero then 0 else if numeric.this ⩼ numeric.this.type.zero then 1 else -1
+  sign => if thiz ≟ zero then 0 else if thiz ⩼ zero then 1 else -1
 
   abs => if sign ≥ 0 then thiz else -thiz
 
