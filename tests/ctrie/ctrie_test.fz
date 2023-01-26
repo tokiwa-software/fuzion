@@ -58,16 +58,16 @@ ctrie_test is
   if yes ∃ (k -> !((ctrie.lookup k).get ≟ "v$k"))
     panic "a lookup for a key returns incorrect value or none at all"
 
-  if ctrie.size /= yes.size
+  if !(ctrie.size ≟ yes.size)
     panic "ctrie size is incorrect"
 
-  if no_items.count /= 0
+  if !(no_items.count ≟ 0)
     panic "no items count should be zero"
 
-  if all_items.count /= 101
+  if !(all_items.count ≟ 101)
     panic "all items count should be 101"
 
-  if half_of_items.count /= 50
+  if !(half_of_items.count ≟ 50)
     panic "half of items should be 50"
 
   say "all 😀"

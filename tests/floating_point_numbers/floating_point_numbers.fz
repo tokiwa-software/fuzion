@@ -61,66 +61,66 @@ floating_point_numbers is
 
     # comparision operators
     chck (
-      zero == zero &&
-      zero != one &&
-      one  >= zero &&
-      zero <= one &&
-      zero == zero &&
-      one  >  zero &&
-      zero <  one)                                                         "{a.name}: comparison operators work as expected"
+      (zero ≟ zero) &&
+      !(zero ≟ one) &&
+      (one  ≥ zero) &&
+      (zero ≤ one) &&
+      (zero ≟ zero) &&
+      (one  ⩼  zero) &&
+      (zero ⩻  one))                                                         "{a.name}: comparison operators work as expected"
 
     # negation operator
-    chck ((-(-zero) == zero) &&
-          (-(-one) == one) &&
-          (-(-a.positiveInfinity) == a.positiveInfinity) &&
-          (-(-a.negativeInfinity) == a.negativeInfinity))                  "{a.name}: double negation is same number"
+    chck ((-(-zero) ≟ zero) &&
+          (-(-one) ≟ one) &&
+          (-(-a.positiveInfinity) ≟ a.positiveInfinity) &&
+          (-(-a.negativeInfinity) ≟ a.negativeInfinity))                  "{a.name}: double negation is same number"
 
     # operator +,-,*,/ test
-    chck (zero + one == one)                                               "{a.name}: plus operator"
-    chck (zero - one == -one)                                              "{a.name}: minus operator"
-    chck (zero * one == zero)                                              "{a.name}: product operator"
-    chck (zero / one == zero)                                              "{a.name}: division operator"
+    chck (zero + one ≟ one)                                               "{a.name}: plus operator"
+    chck (zero - one ≟ -one)                                              "{a.name}: minus operator"
+    chck (zero * one ≟ zero)                                              "{a.name}: product operator"
+    chck (zero / one ≟ zero)                                              "{a.name}: division operator"
 
     # modulo
-    chck (three % two == one)                                              "{a.name}: 3 modulo 2 equals 1"
+    chck (three % two ≟ one)                                              "{a.name}: 3 modulo 2 equals 1"
 
     # power
-    chck (two ** three == three + three + two)                             "{a.name}: 2 to the power 3 equals 8"
-    chck (three ** two == three + three + three)                           "{a.name}: 3 to the power 2 equals 9"
+    chck (two ** three ≟ three + three + two)                             "{a.name}: 2 to the power 3 equals 8"
+    chck (three ** two ≟ three + three + three)                           "{a.name}: 3 to the power 2 equals 9"
 
   generic_tests f32s.zero
   generic_tests f64s.zero
 
   # castTo_f32, 0, -∞, ∞
-  chck ((u32 0x_8000_0000).castTo_f32 == (-f32s.zero))                 "castTo_f32 works, bit representation for 0 is correct"
-  chck ((u32 0x_FF80_0000).castTo_f32 == (f32s.negativeInfinity))      "castTo_f32 works, bit representation for -∞ is correct"
-  chck ((u32 0x_7F80_0000).castTo_f32 == (f32s.positiveInfinity))      "castTo_f32 works, bit representation for ∞ is correct"
+  chck ((u32 0x_8000_0000).castTo_f32 ≟ (-f32s.zero))                 "castTo_f32 works, bit representation for 0 is correct"
+  chck ((u32 0x_FF80_0000).castTo_f32 ≟ (f32s.negativeInfinity))      "castTo_f32 works, bit representation for -∞ is correct"
+  chck ((u32 0x_7F80_0000).castTo_f32 ≟ (f32s.positiveInfinity))      "castTo_f32 works, bit representation for ∞ is correct"
 
   # castTo_u32
-  chck ((-f32s.zero).castTo_u32 == 0x_8000_0000)                       "castTo_u32 works for -0"
-  chck ((f32s.negativeInfinity).castTo_u32 == 0x_FF80_0000)            "castTo_u32 works for -∞"
-  chck ((f32s.positiveInfinity).castTo_u32 == 0x_7F80_0000)            "castTo_u32 works for ∞"
+  chck ((-f32s.zero).castTo_u32 ≟ u32 0x_8000_0000)                       "castTo_u32 works for -0"
+  chck ((f32s.negativeInfinity).castTo_u32 ≟ u32 0x_FF80_0000)            "castTo_u32 works for -∞"
+  chck ((f32s.positiveInfinity).castTo_u32 ≟ u32 0x_7F80_0000)            "castTo_u32 works for ∞"
 
   # castTo_f64, 0, -∞, ∞
-  chck ((u64 0x_8000_0000_0000_0000).castTo_f64 == (-f64s.zero))                 "castTo_f64 works, bit representation for 0 is correct"
-  chck ((u64 0x_FFF0_0000_0000_0000).castTo_f64 == (f64s.negativeInfinity))      "castTo_f64 works, bit representation for -∞ is correct"
-  chck ((u64 0x_7FF0_0000_0000_0000).castTo_f64 == (f64s.positiveInfinity))      "castTo_f64 works, bit representation for ∞ is correct"
+  chck ((u64 0x_8000_0000_0000_0000).castTo_f64 ≟ (-f64s.zero))                 "castTo_f64 works, bit representation for 0 is correct"
+  chck ((u64 0x_FFF0_0000_0000_0000).castTo_f64 ≟ (f64s.negativeInfinity))      "castTo_f64 works, bit representation for -∞ is correct"
+  chck ((u64 0x_7FF0_0000_0000_0000).castTo_f64 ≟ (f64s.positiveInfinity))      "castTo_f64 works, bit representation for ∞ is correct"
 
   # castTo_u64
-  chck ((-f64s.zero).castTo_u64 == 0x_8000_0000_0000_0000)                       "castTo_u64 works for -0"
-  chck ((f64s.negativeInfinity).castTo_u64 == 0x_FFF0_0000_0000_0000)            "castTo_u64 works for -∞"
-  chck ((f64s.positiveInfinity).castTo_u64 == 0x_7FF0_0000_0000_0000)            "castTo_u64 works for ∞"
+  chck ((-f64s.zero).castTo_u64 ≟ u64 0x_8000_0000_0000_0000)                       "castTo_u64 works for -0"
+  chck ((f64s.negativeInfinity).castTo_u64 ≟ u64 0x_FFF0_0000_0000_0000)            "castTo_u64 works for -∞"
+  chck ((f64s.positiveInfinity).castTo_u64 ≟ u64 0x_7FF0_0000_0000_0000)            "castTo_u64 works for ∞"
 
   # minExp, maxExp
-  chck (f32s.minExp == -126)                                              "f32: minExp is correct"
-  chck (f32s.maxExp == 127)                                               "f32: maxExp is correct"
-  chck (f64s.minExp == -1022)                                             "f64: minExp is correct"
-  chck (f64s.maxExp == 1023)                                              "f64: maxExp is correct"
+  chck (f32s.minExp ≟ -126)                                              "f32: minExp is correct"
+  chck (f32s.maxExp ≟ 127)                                               "f32: maxExp is correct"
+  chck (f64s.minExp ≟ -1022)                                             "f64: minExp is correct"
+  chck (f64s.maxExp ≟ 1023)                                              "f64: maxExp is correct"
 
   # minPositive, max
-  chck (f32s.minPositive == 0x1P-126)                                     "f32: minPositive is correct"
-  chck (f32s.max == (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
-  chck (f64s.minPositive == 0x1P-1022)                                    "f64: minPositive is correct"
-  chck (f64s.max == (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
+  chck (f32s.minPositive ≟ f32 0x1P-126)                                 "f32: minPositive is correct"
+  chck (f32s.max ≟ (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
+  chck (f64s.minPositive ≟ f64 0x1P-1022)                                "f64: minPositive is correct"
+  chck (f64s.max ≟ (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
   exit exit_code.get
