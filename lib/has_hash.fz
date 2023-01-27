@@ -17,18 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasHash
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature has_hash
 #
 # -----------------------------------------------------------------------
 
-# hasHash -- feature for immutable values that have a hash function
+# has_hash -- feature for immutable values that have a hash function
 #
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-hasHash(redef HE type : hasEquals HE) : hasEquals HE
+has_hash : has_equality
 
 /* NYI: quantor intrinsics not supported yet:
 

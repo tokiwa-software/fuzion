@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
+numeric(redef T type : numeric T) : has_hash, ordered T, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs

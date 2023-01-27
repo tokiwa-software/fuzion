@@ -413,7 +413,7 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K type : hasHash K, f T -> K) Map K (Sequence T) is
+  group_by(K type : has_hash, f T -> K) Map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
     res := CTrie K (Sequence T)
     for_each (x ->
@@ -442,7 +442,7 @@ Sequence(T type) ref is
     # equality
     #
     redef infix == (a, b Sequence T) =>
-      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : hasEquals"
+      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : has_equality"
 
     # identity element
     #
@@ -459,9 +459,9 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  index_in(A type : hasEquals A, l Sequence A, x A) => (searchable_sequence A l).index_of x
+  index_in(A type : has_equality, l Sequence A, x A) => (searchable_sequence A l).index_of x
 
 
   # get the index of x within this Sequence or nil if it does not exist
   #
-  find(A type : hasEquals A, l Sequence A, x Sequence A) => (searchable_sequence A l).find x
+  find(A type : has_equality, l Sequence A, x Sequence A) => (searchable_sequence A l).find x
