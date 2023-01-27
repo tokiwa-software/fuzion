@@ -500,6 +500,7 @@ public class CFG extends ANY
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
+    put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
     put("effect.replace"                 , (cfg, cl) -> { } );
     put("effect.default"                 , (cfg, cl) -> { } );

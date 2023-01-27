@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.date_time
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+#
+# Represents a coordinated universal date and time (UTC) in the gregorian calendar.
+#
+date_time(year, day_in_year, hour, minute, second, nano_seconds i32)
+pre
+  day_in_year >= 1  & day_in_year  <= 366,  # leap years have 366 days
+  hour        >= 0  & hour         <= 23,
+  minute      >= 0  & minute       <= 59,
+  second      >= 0  & second       <= 60,   # 60 because of possible leap seconds
+  nano_seconds >= 0 & nano_seconds <= 1E9
+is
+
+  # # NYI
+  # infix + (other date_time) time.duration is
+
+  # infix - (other date_time) time.duration is
+
+  # # returns ISO 8601 UTC datetime
+  # as_string String is
+
+  # as_string(f date_time_format, local/time_zone) String is
+
+  # is_before(other date_time) bool is
+  # is_after(other date_time) bool is
+  # is_same(other date_time) bool is
+  # is_between(o1, o2 date_time) bool is
+  # ...
+
+  # day_of_month i32 is
+  # day_of_week i32 is
+  # ...
+
+  # type.parse(s String, locale/timezone) date_time is
+
+  # this should be an effect
+  # type.now date_time is
+

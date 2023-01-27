@@ -17,33 +17,52 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.std
+#  Source code of Fuzion standard library feature time.now
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.std -- unit type to group low-level std APIs
+# effect for getting the current date_time
+private now (
+  p () -> time.date_time,
+
+  # action to be taken: install or default?
+  redef r effectMode.val,
+
+  _ unit
+  ) : effect r
+is
+
+  get =>
+    res := p()
+    replace
+    res
+
+
+
+# short-hand for creating and installing time.now effect
 #
-fuzion.std is
-
-  # exit -- exit immediately with the given return code
-  #
-  exit(code i32) void is intrinsic
+now(rr ()->unit) => now default_now rr
 
 
-  # panic -- display a panic message and exit immediately with error code 1
-  #
-  panic(msg String) void is
-    fuzion.sys.err.println "*** panic: $msg"
-    exit 1
 
-  # no guarantee can be given for precision nor resolution
-  nano_time u64 is intrinsic
-
-  # no guarantee can be given for precision nor resolution
-  nano_sleep(n u64) is intrinsic
+# short-hand for creating and installing time.now effect
+#
+now(p ()->time.date_time, rr ()->unit) =>
+  now p (effectMode.inst rr) unit
+  unit
 
 
-  # fills arg with current UTC date time
-  private date_time(array_of_i32 Any) is intrinsic
+
+now =>
+  if !effects.exists now
+    _ := now default_now effectMode.default unit
+  now.env.get
+
+
+
+private default_now ()->time.date_time is () ->
+  a := array i32 6 i->0
+  fuzion.std.date_time a.internalArray.data
+  time.date_time a[0] a[1] a[2] a[3] a[4] a[5]

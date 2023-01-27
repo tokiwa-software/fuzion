@@ -1244,6 +1244,8 @@ public class DFA extends ANY
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
+    put("fuzion.std.date_time"           , cl -> Value.UNIT );
+
     put("effect.replace"                 , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
