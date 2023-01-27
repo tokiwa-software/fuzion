@@ -1053,7 +1053,7 @@ public class Intrinsics extends ANY
         var arg0 = (int[])args.get(1).arrayData()._array;
         arg0[0] = calendar.get(Calendar.YEAR);
         arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
-        arg0[2] = calendar.get(Calendar.HOUR);
+        arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
         arg0[3] = calendar.get(Calendar.MINUTE);
         arg0[4] = calendar.get(Calendar.SECOND);
         arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
