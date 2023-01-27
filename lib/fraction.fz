@@ -88,3 +88,18 @@ is
     (a - b).num.isZero
 
   redef as_string => "" + num + "⁄" + den
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero => B.zero ⁄ B.one
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one => B.one ⁄ B.one

@@ -232,6 +232,21 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
     (v *° 0x_01010101_01010101 >> 56).as_i32
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero u64 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  u64 is 1
+
+
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #

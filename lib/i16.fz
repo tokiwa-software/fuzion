@@ -162,6 +162,21 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
     val.castTo_u16.onesCount
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero i16 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  i16 is 1
+
+
 # i16s -- unit type defining features related to i16 but not requiring an
 # instance
 #
