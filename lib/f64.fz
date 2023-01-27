@@ -112,6 +112,21 @@ f64(val f64) : float f64, f64s is
   redef as_string String is intrinsic
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero f64 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  f64 is 1
+
+
 # f64s -- unit type defining features related to f64 but not requiring an
 # instance
 #

@@ -157,6 +157,21 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
     val.castTo_u8.onesCount
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero i8  is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  i8  is 1
+
+
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #

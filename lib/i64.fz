@@ -219,6 +219,21 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
     val.castTo_u64.onesCount
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero i64 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  i64 is 1
+
+
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #

@@ -159,6 +159,21 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
     (v + (v >> 8)) & 0x1f
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero u16 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  u16 is 1
+
+
 # u16s -- unit type defining features related to u16 but not requiring an
 # instance
 #
