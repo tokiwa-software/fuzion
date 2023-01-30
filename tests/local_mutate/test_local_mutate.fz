@@ -40,7 +40,7 @@ test_local_mutate is
 
       # define a local type `m` to identify the mutate effect:
       #
-      m : local_mutate is
+      m : mutate is
 
       # count using a locally mutable variable:
       #
@@ -55,7 +55,7 @@ test_local_mutate is
           s.update a->a+e
 
         # unwrap the sum value in s and return it
-        s.mget
+        s.get
 
       # run code within an instance of m
       #
@@ -65,7 +65,7 @@ test_local_mutate is
         for e in l do
           s.update a->a+e
 
-        say "inside m.go: s.mget = {s.mget}"
+        say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
         )
 
@@ -126,7 +126,7 @@ test_local_mutate is
       if c = 0
         []
       else
-        m : local_mutate is
+        m : mutate is
 
         # execute code with mutate effect `m`:
         # m.go (()->         --- NYI go does not work yet
@@ -177,7 +177,7 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    cell(T type, LM type : local_mutate, data T) ref is
+    cell(T type, LM type : mutate, data T) ref is
       n := LM.env.new (cell T LM) cell.this
       p := LM.env.new (cell T LM) cell.this
       link(ne, pr cell T LM) is
@@ -191,17 +191,17 @@ test_local_mutate is
       pre
         !from.is_empty
      =>
-      m : local_mutate is
+      m : mutate is
 
       ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
         c := cell T m from.head.get
         match from.tail
           nil    => c
           t Cons => f := ring2 t
-                    l := f.p.mget
+                    l := f.p.get
                     c.link f l
-                    f.link f.n.mget c
-                    l.link c l.p.mget
+                    f.link f.n.get c
+                    l.link c l.p.get
         c
 
       ring3(from list T) cell T m is
@@ -209,7 +209,7 @@ test_local_mutate is
 
         for
           i in 1..10
-          e := r, e.n.mget
+          e := r, e.n.get
         do
           say "$i: {e.data}"
 
@@ -220,7 +220,7 @@ test_local_mutate is
         r
 
       r := m.go ()->(ring3 from.as_list)
-      say "left local_mutate environment m"
+      say "left mutate environment m"
       for
         i in 1..10
         e := r, e.next
@@ -247,7 +247,7 @@ test_local_mutate is
       redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
-          # e2 := r, e2.next    # causes crash!
+          # e2 := r, e2.next    # NYI causes crash!
           e ring T := ring.this, e.next
           i in 0..3
         else
@@ -260,7 +260,7 @@ test_local_mutate is
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
     mut_ring(# mutate effect to be used to create mutable variables
-             LM type : local_mutate,
+             LM type : mutate,
 
              # type of data stored in ring cells
              redef T type,
@@ -326,8 +326,8 @@ test_local_mutate is
       #
       merge(n mut_ring LM T) =>
         a := mut_ring.this
-        m := a.p.mget
-        z := n.n.mget
+        m := a.p.get
+        z := n.n.get
         a.p <- z
         z.n <- a
         m.n <- n
@@ -348,7 +348,7 @@ test_local_mutate is
         !from.is_empty
      =>
       # define mutate context to be used
-      m : local_mutate is
+      m : mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
@@ -359,7 +359,7 @@ test_local_mutate is
         c
 
       r := m.go ()->(create_ring2 from.as_list)
-      say "left local_mutate environment m"
+      say "left mutate environment m"
       say r
       for
         i in 1..10
