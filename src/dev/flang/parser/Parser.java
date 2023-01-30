@@ -1904,10 +1904,25 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        },
                        () -> Void.TYPE);
 
-    return
-      isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0).expr(null)   // a klammerexpr, not a tuple
-                                : new Call(pos, null, "tuple", tupleElements);
+
+    // a lambda expression
+    if (isLambdaPrefix())
+      {
+        return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
+      }
+    // an expr wrapped in parentheses, not a tuple
+    else if (tupleElements.size() == 1)
+      {
+        var actual = tupleElements.get(0).expr(null);
+        return (actual instanceof Function)
+          ? actual
+          : new Block(pos, posObject(), new List<>(actual));
+      }
+    // a tuple
+    else
+      {
+        return new Call(pos, null, "tuple", tupleElements);
+      }
   }
 
 
