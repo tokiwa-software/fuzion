@@ -76,14 +76,6 @@ is
       safety: !(b ≟ zero)
   is fraction(num * b.den                  , den * b.num).reduce
 
-  # comparison
-  fixed type.equality(a, b fraction B) =>
-    (a - b).num.isZero
-
-
-  fixed type.lteq(a, b fraction B) =>
-    (a - b).num.sign ≤ 0
-
   redef as_string => "" + num + "⁄" + den
 
 
@@ -100,3 +92,15 @@ is
   # identity element for 'infix *'
   #
   fixed type.one => B.one ⁄ B.one
+
+
+  # equality
+  #
+  fixed type.equality(a, b fraction B) =>
+    (a - b).num.isZero
+
+
+  # total order
+  #
+  fixed type.lteq(a, b fraction B) =>
+    (a - b).num.sign ≤ 0
