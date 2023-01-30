@@ -200,17 +200,3 @@ sorted_array_of
 
 is
   sorted_array T from (a,b -> a ≤ b)
-
-
-# sorted_array_of_ordered
-#
-# NYI: legacy version of above necessary for entry type in ordered_map
-sorted_array_of_ordered
-  (
-  T type : ordered T,
-  # orginal, unsorted Sequence
-  from Sequence T
-  ) sorted_array T
-
-is
-  sorted_array T from (a,b -> a <= b)
