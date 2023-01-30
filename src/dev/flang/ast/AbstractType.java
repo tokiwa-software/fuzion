@@ -1136,6 +1136,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * Check if for this or any type parameters of this, isThisType is true.  This
+   * must not be the case for any clazzes in FUIR since clazzes require concrete
+   * types.
+   *
+   * @return true if an `this.type` where found
+   */
+  public boolean containsThisType()
+  {
+    return
+      isThisType() ||
+      !isGenericArgument() && generics().stream().anyMatch(g -> g.containsThisType());
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
