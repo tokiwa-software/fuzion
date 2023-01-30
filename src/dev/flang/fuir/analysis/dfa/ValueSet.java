@@ -88,7 +88,7 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on wether this < other, this == other or
+   * @return -1, 0, or +1 depending on whether this < other, this == other or
    * this > other by some order.
    */
   public int compareTo(ValueSet other)
