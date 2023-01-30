@@ -99,6 +99,19 @@ String ref : has_equality, has_hash, ordered String is
       .first utf8.count<=other.utf8.count
 
 
+  fixed type.lteq(a, b String) =>
+    a.utf8
+      .zip b.utf8 (c,d)->(c,d)
+      .filter (x ->
+        (c, d) := x
+        !(a ≟ b))
+      .mapSequence (x ->
+        (c, d) := x
+        c ≤ d)
+      # if all bytes are equal lengths of strings might still differ
+      .first a.utf8.count≤b.utf8.count
+
+
   # create hash code from a string
   #
   hash u64 is
