@@ -545,7 +545,7 @@ public class DFA extends ANY
 
 
   /**
-   * For debugging: dump stack when _chaned is set, for debugging when fix point
+   * For debugging: dump stack when _changed is set, for debugging when fix point
    * is not reached.
    */
   static boolean SHOW_STACK_ON_CHANGE = false;
@@ -1435,7 +1435,7 @@ public class DFA extends ANY
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    *
-   * @return cl a new or exsiting call to cl (or its precondition) with the
+   * @return cl a new or existing call to cl (or its precondition) with the
    * given target, args and environment.
    */
   Call newCall(int cl, boolean pre, Value tvalue, List<Value> args, Env env, Context context)
