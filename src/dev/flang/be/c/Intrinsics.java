@@ -381,34 +381,14 @@ public class Intrinsics extends ANY
         "i32.infix ^"          ,
         "i64.infix ^"          , (c,cl,outer,in) -> outer.xor(A0).ret());
 
-    put("i8.infix =="          ,
-        "i16.infix =="         ,
-        "i32.infix =="         ,
-        "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.type.equality"     ,
         "i16.type.equality"    ,
         "i32.type.equality"    ,
         "i64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix !="          ,
-        "i16.infix !="         ,
-        "i32.infix !="         ,
-        "i64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix >"           ,
-        "i16.infix >"          ,
-        "i32.infix >"          ,
-        "i64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix >="          ,
-        "i16.infix >="         ,
-        "i32.infix >="         ,
-        "i64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix <"           ,
-        "i16.infix <"          ,
-        "i32.infix <"          ,
-        "i64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix <="          ,
-        "i16.infix <="         ,
-        "i32.infix <="         ,
-        "i64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.type.lteq"         ,
+        "i16.type.lteq"        ,
+        "i32.type.lteq"        ,
+        "i64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("u8.prefix -°"         ,
         "u16.prefix -°"        ,
@@ -455,34 +435,14 @@ public class Intrinsics extends ANY
         "u32.infix ^"          ,
         "u64.infix ^"          , (c,cl,outer,in) -> outer.xor(A0).ret());
 
-    put("u8.infix =="          ,
-        "u16.infix =="         ,
-        "u32.infix =="         ,
-        "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.type.equality"     ,
         "u16.type.equality"    ,
         "u32.type.equality"    ,
         "u64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix !="          ,
-        "u16.infix !="         ,
-        "u32.infix !="         ,
-        "u64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix >"           ,
-        "u16.infix >"          ,
-        "u32.infix >"          ,
-        "u64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix >="          ,
-        "u16.infix >="         ,
-        "u32.infix >="         ,
-        "u64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix <"           ,
-        "u16.infix <"          ,
-        "u32.infix <"          ,
-        "u64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix <="          ,
-        "u16.infix <="         ,
-        "u32.infix <="         ,
-        "u64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.type.lteq"         ,
+        "u16.type.lteq"        ,
+        "u32.type.lteq"        ,
+        "u64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("i8.as_i32"            , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("i16.as_i32"           , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
@@ -525,20 +485,10 @@ public class Intrinsics extends ANY
         "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
     put("f32.infix **"         ,
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
-    put("f32.infix =="         ,
-        "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.type.equality"    ,
         "f64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix !="         ,
-        "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <"          ,
-        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <="         ,
-        "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >"          ,
-        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >="         ,
-        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.type.lteq"        ,
+        "f64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->

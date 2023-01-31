@@ -109,12 +109,12 @@ is
     num_option.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v == w
-  infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
-  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
-  infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <= w
-  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
-  infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >= w
+  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≟ w
+  infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> !(v ≟ w)
+  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩻  w
+  infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≤ w
+  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩼  w
+  infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
 
   isZero => sign ==? 0
 
@@ -123,7 +123,7 @@ is
                     | nil => nil
 
   abs num_option T is
-    num_option.this >>= v -> if v.sign >= 0 v else -?v
+    num_option.this >>= v -> if v.sign ≥ 0 v else -?v
 
   redef as_string String is
     num_option.this ? v T => v.as_string
