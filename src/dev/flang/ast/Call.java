@@ -1609,7 +1609,12 @@ public class Call extends AbstractCall
                     inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
                     checked[vai] = true;
                   }
+                // NYI cleanup/merge the two cases below
                 else if (actual instanceof Function af)
+                  {
+                    checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                  }
+                else if (actual instanceof Block b && b.resultExpression() instanceof Function af)
                   {
                     checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
                   }

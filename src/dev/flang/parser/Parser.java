@@ -1914,7 +1914,12 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
     else if (tupleElements.size() == 1)
       {
         var actual = tupleElements.get(0).expr(null);
-        return (actual instanceof Function)
+
+        // special handling for cases like:
+        // s9a i16 := -(32768)
+        // s9c i16 := -(-(-32768))
+        // s9a := i16 -(32768)
+        return (actual instanceof NumLiteral)
           ? actual
           : new Block(pos, posObject(), new List<>(actual));
       }
