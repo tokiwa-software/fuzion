@@ -278,7 +278,7 @@ String ref : has_equality, has_hash, ordered String is
   # string.
   to_valid_utf8(replacement String) String is
     codepoints_and_errors
-      .reduce String (String.type.from_array ((marrays Any).new 0 "")) ((r, x) ->
+      .reduce "" ((r, x) ->
         match x
           c codepoint => r + c
           e error => r + replacement)
