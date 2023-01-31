@@ -268,13 +268,13 @@ String ref : has_equality, has_hash, ordered String is
       )
 
 
-  # replaces runs of invalid UTF-8 byte sequences in this string with the Unicode
+  # replaces invalid UTF-8 byte sequences in this string with the Unicode
   # replacement character (U+FFFD).
   to_valid_utf8 String is
     to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
 
 
-  # replaces runs of invalid UTF-8 byte sequences in this string with the given
+  # replaces invalid UTF-8 byte sequences in this string with the given
   # string.
   to_valid_utf8(replacement String) String is
     codepoints_and_errors
