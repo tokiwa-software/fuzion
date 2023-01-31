@@ -30,7 +30,7 @@ hash_map(HK type : has_hash,
         ks array HK,
         vs array V) : Map HK V
   pre
-    ks.length == vs.length
+    ks.length ≟ vs.length
 
 is
 

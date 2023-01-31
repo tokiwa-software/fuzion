@@ -49,5 +49,5 @@ is
 
   # equality check for immutable values
   #
-  type.equality(a, b has_partial_order.this.type) bool is
+  fixed type.equality(a, b has_partial_order.this.type) bool is
     (a ≤ b) && (b ≤ a)

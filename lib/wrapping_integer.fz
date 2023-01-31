@@ -66,8 +66,8 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   infix -° (other W) W is abstract
   infix *° (other W) W is abstract
 
-  isMin => thiz == min
-  isMax => thiz == max
+  isMin => thiz ≟ min
+  isMax => thiz ≟ max
 
   # check if this type of wrapping_integer is bounded
   #
@@ -111,7 +111,7 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
+  redef prefix -^          => if wrappedOnNeg if thiz ⩼ zero then min else max else - thiz
   redef infix +^ (other W) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
   redef infix -^ (other W) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
   redef infix *^ (other W) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
@@ -123,7 +123,7 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   #
   infix ** (other W) W
     pre
-      safety: other >= zero,
+      safety: other ≥ zero,
       debug: !overflowOnExp(other)
   is
     thiz **° other
@@ -135,10 +135,10 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   #
   infix **° (other W) W
     pre
-      safety: other >= zero
+      safety: other ≥ zero
   is
-    if      (other = zero) one
-    else if (other = one ) thiz
+    if      (other ≟ zero) one
+    else if (other ≟ one ) thiz
     else
       tmp := (thiz *° thiz) **° (other / two)
       if other %% two
@@ -153,10 +153,10 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   #
   infix **? (other W) num_option W
     pre
-      safety: other >= zero
+      safety: other ≥ zero
   is
-    if      (other = zero) one
-    else if (other = one ) thiz
+    if      (other ≟ zero) one
+    else if (other ≟ one ) thiz
     else
       tmp := (thiz *? thiz) **? (other / two)
       if other %% two
@@ -176,10 +176,10 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   #
   infix **^ (other W) W
     pre
-      safety: other >= zero
+      safety: other ≥ zero
   is
     if overflowOnExp other
-      if thiz >= zero || other %% two
+      if (thiz ≥ zero) || (other %% two)
         max
       else
         min

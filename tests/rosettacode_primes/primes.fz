@@ -29,12 +29,12 @@ primes is
     for
       a := (marrays bool).new n+1 false, a
       i := 2, i + 1
-    while i <= n
+    while i ≤ n
       if !a[i]
         yak "$i "
         for
           j := i, j + i
-        while j <= n
+        while j ≤ n
           a[j] := true
     unit # NYI: the loop returns the last value of index variable 'i'. Loops should not force such an automatic result upon us.
   say "Primes using loop:"; primes 1000; say
@@ -46,7 +46,7 @@ primes is
           yak "$i "
           (1..n).for_while (j ->
               a[i*j] := true;
-              (i*j+i) <= n
+              (i*j+i) ≤ n
             )
       )
   say "Primes using streams:"; primes2 1000; say
