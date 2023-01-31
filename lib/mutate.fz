@@ -70,7 +70,7 @@ mutate : simpleEffect is
   #
   # NYI: remove this check as soon as id is set by an intrinsic guaranteed not to be 0.
   #
-  if id = 0
+  if id ≟ u64 0
     panic "*** mutate.id should never be 0"
 
   # common type for mutable data
@@ -82,13 +82,13 @@ mutate : simpleEffect is
     # check that this effect is intalled and replace it.
     #
     private check_and_replace is
-      if my_id != mutate.this.type.env.id
+      if !(my_id ≟ mutate.this.type.env.id)
         panic "*** invalid mutate for {mutate.this.type}"
       mutate.this.type.env.replace
 
     # is this element open, i.e., can it be mutated?
     #
-    open => id != 0
+    open => !(id ≟ u64 0)
 
     # stop any further mutations of this element
     #
@@ -202,7 +202,7 @@ mutate : simpleEffect is
     #
     redef index [ ] (i i32) T
       pre
-        safety: 0 <= i < length
+        safety: 0 ≤ i ⩻ length
     is
       check_and_replace
       ma[i]
@@ -211,7 +211,7 @@ mutate : simpleEffect is
     #
     set [ ] (i i32, o T) unit
       pre
-        safety: 0 <= i < length
+        safety: 0 ≤ i ⩻ length
     is
       check_and_replace
       ma[i] := o
