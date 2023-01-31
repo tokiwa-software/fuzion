@@ -182,7 +182,7 @@ mutate : simpleEffect is
          init T
         ) : Sequence T, mutable_element
   is
-    private ma := (marrays T).new length init
+    private ma := (marray T).type.new length init
 
     # a sequence of all valid indices to access this array. Useful e.g., for
     # `for`-loops:
@@ -252,6 +252,6 @@ mut =>
   mutate.env
 
 
-# create a new mutable value of type T with initial valnue v
+# create a new mutable value of type T with initial value v
 #
 mut(T type, v T) => mut.new T v
