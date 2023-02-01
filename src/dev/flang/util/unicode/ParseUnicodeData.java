@@ -230,7 +230,7 @@ public class ParseUnicodeData extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  ParseUnicodeData(String name) throws IOException
+  ParseUnicodeData(String name)
   {
     _name = name;
     var p = Path.of(name);
@@ -325,7 +325,7 @@ public class ParseUnicodeData extends ANY
   /*--------------------------  static methods  -------------------------*/
 
 
-  public static void main(String[] args) throws IOException
+  public static void main(String[] args)
   {
     try
       {
