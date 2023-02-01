@@ -71,7 +71,7 @@ is
 
 
 
-  # the millisecond of this this datetime.
+  # the millisecond of this datetime.
   milli_second
   post result ≥ 0 & result ≤ 999
     =>
