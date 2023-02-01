@@ -635,7 +635,10 @@ public class Intrinsics extends ANY
      put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
          {
            var last_id= new CIdent("last_id");
-           return CStmnt.seq(CStmnt.decl("static "+c._types.scalar(FUIR.SpecialClazzes.c_u64),last_id),
+           return CStmnt.seq(CStmnt.decl("static",
+                                         c._types.scalar(FUIR.SpecialClazzes.c_u64),
+                                         last_id,
+                                         CExpr.uint64const(0)),
                              last_id.assign(last_id.add(CExpr.uint64const(1))),
                              last_id.ret());
          });
