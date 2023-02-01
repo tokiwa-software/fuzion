@@ -28,18 +28,18 @@
 #
 unicodetest is
 
-  exitCode := 0
+  exit_code := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
         "PASSED: "
       else
-        set exitCode := 1
+        set exit_code := 1
         "FAILED: "
     say (s + msg)
 
 
-  chck ("Hallo Welt".upper_case = "HALLO WELT") "string to upper case"
-  chck ("Hallo Welt".lower_case = "hallo welt") "string to lower case"
+  chck ("Hallo Welt".upper_case ≟ "HALLO WELT") "string to upper case"
+  chck ("Hallo Welt".lower_case ≟ "hallo welt") "string to lower case"
 
-  exit exitCode
+  exit exit_code
