@@ -215,7 +215,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef take (n i32) list A
   is
-    if n <= 0
+    if n ≤ 0
       nil
     else
       match list.this
@@ -223,7 +223,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
         c Cons =>
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => if n = 1 then nil else c.tail.take n-1
+            redef tail => if n ≟ 1 then nil else c.tail.take n-1
 
 
   # reverse the order of the elements in this list
@@ -311,7 +311,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # if the list is shorter than n).
   #
   redef drop (n i32) list A is
-    if n <= 0
+    if n ≤ 0
       list.this
     else
       list.this ? nil    => nil

@@ -551,6 +551,8 @@ public class C extends ANY
           "-Wno-unused-label",
           "-Wno-unused-but-set-variable",
           "-Wno-unused-function",
+          // allow infinite recursion
+          "-Wno-infinite-recursion",
           "-O3");
       }
     if(_options._useBoehmGC)

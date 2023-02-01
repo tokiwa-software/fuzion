@@ -70,7 +70,7 @@ private read(
     t := read_proxy fd bufsize
 
     t.values.0.bind (array u8) (a->
-      if t.values.1 > 0
+      if t.values.1 ⩼ 0
         read_file fd (tmp ++ a).as_array
       else
         tmp)

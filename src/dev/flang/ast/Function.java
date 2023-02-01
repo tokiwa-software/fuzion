@@ -244,7 +244,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpetedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(res, outer, t) tries to infer the
    * result type of a lambda.
    *
    * @param res this is called during type inference, res gives the resolution

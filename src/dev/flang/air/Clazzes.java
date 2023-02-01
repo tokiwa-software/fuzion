@@ -304,7 +304,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.dependsOnGenerics());
+       Errors.count() > 0 || !actualType.dependsOnGenerics(),
+       Errors.count() > 0 || !actualType.containsThisType());
 
     Clazz result = null;
     Clazz o = outer;
@@ -1088,16 +1089,7 @@ public class Clazzes extends ANY
                                       outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
-            if (!Clazz.NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE &&
-                c.calledFeature() == Types.resolved.f_Types_get &&
-                c.actualTypeParameters().get(0).isThisType())
-              {
-                result = outerClazz.findOuter(c.actualTypeParameters().get(0).featureOfType(), c).typeClazz();
-              }
-            else
-              {
-                result = inner.resultClazz();
-              }
+            result = inner.resultClazz();
           }
         else
           {

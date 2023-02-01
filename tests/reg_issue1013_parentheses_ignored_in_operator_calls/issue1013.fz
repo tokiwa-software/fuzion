@@ -17,14 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion issue 238
+#  Source code of Fuzion test issue1013
 #
 # -----------------------------------------------------------------------
 
 
-issue238 =>
-
-  say ([0,1,2,3,4]
-    .group_by (x -> if x % 2 ≟ 0 then "even" else "uneven")
-    .items.mapSequence (kv -> (k,v):=kv; "$k => $v")
-    .fold (String.type.concat "\n"))
+issue1013 is
+  for m in (i64 -1)..1 do
+    for n in (i64 -1)..1 do
+      x bool := ((m ≟ n) ≟ ((int m) ≟ (int n)))
+      say x

@@ -65,7 +65,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
     if is_empty
       nil
     else
-      reduce first ((r,t) -> if r<=t then r else t)
+      reduce first ((r,t) -> if r ≤ t then r else t)
 
 
   # maximum value in the sequence
@@ -73,7 +73,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
     if is_empty
       nil
     else
-      reduce first ((r,t) -> if r<=t then t else r)
+      reduce first ((r,t) -> if r ≤ t then t else r)
 
 
   # the median of the sequence
@@ -83,7 +83,7 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
       nil
     else
       arr := sorted_array_of numeric_sequence.this
-      if arr.length % 2 == 1
+      if arr.length % 2 ≟ 1
         arr[arr.length / 2]
       else
         (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)

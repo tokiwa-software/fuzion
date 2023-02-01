@@ -17,34 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasEquals
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# hasEquals -- feature that allows comparison using 'infix =' operator.
-#
-# Features inheriting from this feature must be immutable.  The operator
-# 'infix =' provides a means to separate values into equivalence classes.
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-hasEquals(HE type : hasEquals HE) : has_equality is
-
-  # equality check for immutable values
-  #
-  infix = (o HE) bool is abstract
-
-  # unequality check for immutable values
-  #
-  infix /= (o HE) bool
-    post
-      result <=> !(hasEquals.this = o)
-  is
-    !(hasEquals.this = o)
-
-  # alternative unicode operator for 'infix /='
-  #
-  infix ≠ (o HE) => hasEquals.this /= o
+override NAME = issue1013
+include ../simple.mk
