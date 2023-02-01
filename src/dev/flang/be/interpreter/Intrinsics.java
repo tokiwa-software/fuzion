@@ -137,6 +137,12 @@ public class Intrinsics extends ANY
   private static long _maxFileDescriptor_  = 3;
 
 
+  /**
+   * the last unique identifier returned by `fuzion.sys.misc.unique_id`.
+   */
+  private static long _last_unique_id_ = 0;
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -766,6 +772,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (interpreter, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (interpreter, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(++_last_unique_id_));
     put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
         {
           var call = Types.resolved.f_function_call;
