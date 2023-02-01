@@ -65,13 +65,15 @@ public interface SrcModule
 
 
   SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer);
-  AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
+  AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
   void findDeclaredOrInheritedFeatures(Feature outer);
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
   FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, AbstractAssign assign, Destructure destructure);
   void checkTypes(Feature f);
   AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o);
 
+  void addTypeFeature(AbstractFeature outerType,
+                      Feature         innerType);
 
   /*----------------------  methods needed by AIR  ----------------------*/
 

@@ -158,7 +158,7 @@ public class If extends ExprWithPos
    * Create an Iterator over all branches in this if statement, including all
    * else-if branches.
    */
-  private Iterator<Expr> branches()
+  Iterator<Expr> branches()
   {
     return new Iterator<Expr>()
     {
@@ -180,84 +180,51 @@ public class If extends ExprWithPos
 
 
   /**
-   * true if this If or any nested else-if-branches end with a missing
-   * else-branch. If so, there is an execution path that does not take any of
-   * the branches, so the result type is void.
-   */
-  private boolean hasUntakenElseBranch()
-  {
-    return
-      elseIf != null ? elseIf.hasUntakenElseBranch()
-                     : elseBlock == null;
-  }
-
-
-  /**
-   * Helper routine for typeForFeatureResultTypeInferencing to determine the
+   * Helper routine for typeIfKnown to determine the
    * type of this if statement on demand, i.e., as late as possible.
    */
   private AbstractType typeFromIfOrElse()
   {
-    AbstractType result;
-    if (hasUntakenElseBranch())
+    AbstractType result = Types.resolved.t_void;
+
+    Iterator<Expr> it = branches();
+    while (it.hasNext())
       {
-        result = Types.resolved.t_unit;
-      }
-    else
-      {
-        result = Types.resolved.t_void;
-        Iterator<Expr> it = branches();
-        while (it.hasNext())
+        var t = it.next().typeIfKnown();
+        if (t == null)
           {
-            var t = it.next().typeForFeatureResultTypeInferencing();
-            result = result == null || t == null ? null : result.union(t);
+            return null;
           }
+        result = result.union(t);
       }
-    if (result == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in branches of if statement",
-                                          branches());
-        result = Types.t_ERROR;
-      }
+      if (result==Types.t_UNDEFINED)
+        {
+          new IncompatibleResultsOnBranches(pos(),
+                                            "Incompatible types in branches of if statement",
+                                            branches());
+          result = Types.t_ERROR;
+        }
     return result;
   }
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or null if not known.
    */
-  public AbstractType type()
+  AbstractType typeIfKnown()
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     if (_type == null)
       {
         _type = typeFromIfOrElse();
       }
     return _type;
-  }
-
-
-  /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result or an if
-   * with one branch not producing a result.
-   */
-  boolean producesResult()
-  {
-    boolean result = !hasUntakenElseBranch();
-    if (result)
-      {
-        var it = branches();
-        while (it.hasNext())
-          {
-            var e = it.next();
-            result = result && e.producesResult();
-          }
-      }
-    return result;
   }
 
 
@@ -269,6 +236,9 @@ public class If extends ExprWithPos
    */
   public void checkTypes()
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     var t = cond.type();
     if (!Types.resolved.t_bool.isAssignableFrom(t))
       {
@@ -289,6 +259,7 @@ public class If extends ExprWithPos
    */
   public If visit(FeatureVisitor v, AbstractFeature outer)
   {
+    createDefaultElseIfMissing();
     cond = cond.visit(v, outer);
     block = block.visit(v, outer);
     if (elseBlock != null)
@@ -312,6 +283,9 @@ public class If extends ExprWithPos
    */
   public void visitStatements(StatementVisitor v)
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     super.visitStatements(v);
     cond.visitStatements(v);
     block.visitStatements(v);
@@ -344,6 +318,9 @@ public class If extends ExprWithPos
    */
   If assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     block = block.assignToField(res, outer, r);
     if (elseBlock != null)
       {
@@ -352,15 +329,6 @@ public class If extends ExprWithPos
     if (elseIf != null)
       {
         elseIf = elseIf.assignToField(res, outer, r);
-      }
-    // special case, default else-branch returning `unit`:
-    // there is no explicit else-branch but we assign if to a field which
-    // we can assign `unit` to. Thus we generate a default else branch.
-    if (hasUntakenElseBranch() && r.resultType().isAssignableFrom(Types.resolved.t_unit))
-      {
-        var unit = new Call(pos(), null, "unit").resolveTypes(res, outer);
-        elseBlock = new Block(pos(), new List<Stmnt>(unit))
-          .assignToField(res, outer, r);
       }
     return this;
   }
@@ -381,6 +349,9 @@ public class If extends ExprWithPos
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     if (cond != null)
       {
         cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
@@ -407,20 +378,40 @@ public class If extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     return addFieldForResult(res, outer, t);
   }
 
 
   /**
-   * Get (or create empty) else block for this if.
+   * If there is no else / elseif, create a default else
+   * branch returning unit.
+   */
+  private void createDefaultElseIfMissing()
+  {
+    if (elseBlock == null && elseIf == null)
+      {
+        var unit = new Call(pos(), "unit");
+        elseBlock = new Block(pos(), new List<>(unit));
+      }
+  }
+
+
+  /**
+   * Get else block for this if.
    *
    * @return an else block.
    */
   public Expr elseBlock()
   {
+    if (PRECONDITIONS) require
+      (elseBlock != null || elseIf != null);
+
     return
-      elseBlock != null ? elseBlock :
-      elseIf    != null ? elseIf    : new Block(pos(), new List<>());
+      elseBlock != null ? elseBlock
+                        : elseIf;
   }
 
   /**

@@ -33,6 +33,7 @@ import java.util.SortedMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -40,7 +41,7 @@ import dev.flang.util.Errors;
  * string like "sort", "i32", "prefix -", "#result", etc., and the number of
  * formal arguments to that feature.
  *
- * The FeatureName may change when a feature is inherited by a heir class: If
+ * The FeatureName may change when a feature is inherited by an heir class: If
  * the feature has an argument of an open generic type, the actual number of
  * arguments may change by replacing that argument by the actual generic
  * arguments.
@@ -263,15 +264,18 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
     return _argCount;
   }
 
+
   public String argCountAndIdString()
   {
     return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
   }
 
+
   public String toString()
   {
     return _baseName + argCountAndIdString();
   }
+
 
   public boolean equalsExceptId(FeatureName o)
   {
@@ -286,6 +290,26 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   {
     _all_.clear();
     _allBaseNames_.clear();
+  }
+
+
+  /**
+   * Returns true iff the name of the feature is an internal name, i.e. it starts with the
+   * internal name prefix.
+   */
+  public boolean isInternal()
+  {
+    return baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+  }
+
+
+  /**
+   * Returns true if this FeatureName is unspecified, i.e. an "@"-name would be generated
+   * by baseName above.
+   */
+  public boolean isNameless()
+  {
+    return _baseNameId < 0;
   }
 
 }

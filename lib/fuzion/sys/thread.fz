@@ -37,4 +37,4 @@ private thread is
 
     spawn0 doCall
 
-  private spawn0(T (()->unit).type, code T) unit is intrinsic
+  private spawn0(T type : ()->unit, code T) unit is intrinsic

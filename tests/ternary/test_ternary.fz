@@ -1,0 +1,82 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ternary
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# test the syntax of ternary ? : and match using single lines, multi lines
+# and using expressions containing ':' and '|' operators.
+#
+test_ternary is
+
+  a is
+    ternary ? : (b, c Any) is say "a ? $b : $c"
+
+  # single line ternary ? :
+  _ := a ? { 3 } : { 4 }
+  _ := a ? ( 3 ) : ( 4 )
+  _ := a ?   3   :   4
+  a      ?   3   :   4
+
+  # multi-line ternary ? :
+  _ := (a ? 3
+          : 4)
+  a       ? 3
+          : 4
+
+  # ternary with mid-term containing ':'
+  _ :=  a ? (3 : ()->[4,5].as_list) : nil
+  _ := (a ? (3 : ()->[4,5].as_list)
+          : nil)
+  a ? say (3 : ()->[4,5].as_list) : say nil
+  a ? say (3 : ()->[4,5].as_list)
+    : say nil
+
+  x, y.
+  f(c x | y) =>
+
+    # single line ? | match
+    _ := c ? _ x => { f } | _ y => { g }
+    _ := c ? _ x => ( f ) | _ y => ( g )
+    _ := c ? _ x =>   f   | _ y =>   g
+    c      ? _ x =>   f   | _ y =>   g
+
+    # multi-line ? | match
+    _ := (c ? _ x => f
+            | _ y => g)
+    c       ? _ x => f
+            | _ y => g
+
+    # match with cases containing '|'
+    _ :=  c ? _ x => (3 | 4) | _ y => (5 | 8)
+    _ := (c ? _ x => (3 | 4)
+            | _ y => (5 | 8))
+    c ? _ x => say (3 | 4) | _ y => say (5 | 8)
+    c ? _ x => say (3 | 4)
+      | _ y => say (5 | 8)
+
+    f => say "found x"
+    g => say "found y"
+
+  f x
+  f y

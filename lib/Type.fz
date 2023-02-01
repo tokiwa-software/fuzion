@@ -28,19 +28,22 @@
 # type features 'f.type' are declared implicitly for every feature f.
 # Type features do not contain state, they are unit types.
 #
+# All type features inherit directly (Any.type) or indirectly (all
+# others type features) from this feature.
+#
 Type ref is
 
 
   # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
-  name string is intrinsic
+  name String is intrinsic
 
 
   # string representation of this type to be used for debugging.
   #
   # result has the form "Type of '<name>'", but this might change in the future
   #
-  redef asString => "Type of '$name'"
+  redef as_string => "Type of '$name'"
 
 
 # Types -- features related to Type but not requiring an instance of Type
@@ -50,6 +53,7 @@ Types is
   # Get the Type instance corresponding to a given type
   #
   # The result of 'Types.get x' is the same as 'x.type'.
+  #
   # Internally, Fuzion's front end implements 'x.type' using
   # 'Types.get x'.
   #

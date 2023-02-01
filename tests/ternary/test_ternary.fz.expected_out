@@ -1,0 +1,30 @@
+a ? 3 : 4
+a ? 3 : 4
+a ? 3 : 4
+a ? 3 : 4
+a ? 3 : 4
+a ? 3 : 4
+a ? [3,4,5] : --nil--
+a ? [3,4,5] : --nil--
+[3,4,5]
+--nil--
+a ? unit : unit
+[3,4,5]
+--nil--
+a ? unit : unit
+found x
+found x
+found x
+found x
+found x
+found x
+7
+7
+found y
+found y
+found y
+found y
+found y
+found y
+13
+13

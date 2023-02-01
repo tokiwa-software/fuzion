@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.TreeSet;
 
 
@@ -89,7 +89,7 @@ public class Errors extends ANY
    */
   public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
   public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 20);
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 10);
 
 
   /**
@@ -349,7 +349,36 @@ public class Errors extends ANY
   {
     error(s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
+  }
+
+
+  /**
+   * Record the given error found during compilation and exit immediately with
+   * exit code 1.
+   *
+   * @param e the exception that lead to the failure
+   *
+   */
+  public static void fatal(Throwable e)
+  {
+    if (e instanceof FatalError fe)
+      {
+        throw fe;
+      }
+    var sw = new StringWriter();
+    var pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    fatal(sw.toString());
+  }
+
+
+  /**
+   * Throw runtime error FatalError containing exit status code.
+   */
+  private static void exit(int status)
+  {
+    throw new FatalError(status);
   }
 
 
@@ -367,7 +396,7 @@ public class Errors extends ANY
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
   }
 
 
@@ -408,13 +437,13 @@ public class Errors extends ANY
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
-    System.exit(1);
+    exit(1);
   }
 
 
   /**
    * Check if any errors found.  If so, show the number of errors and
-   * System.exit(1).
+   * exit(1).
    *
    * Otherwise, if warningStatistics is true, report the number of warnings
    * encountered.  Return normally in this case.
@@ -436,7 +465,7 @@ public class Errors extends ANY
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
                 ".");
-        System.exit(1);
+        exit(1);
       }
     else if (warningStatistics && warningCount() > 0)
       {
@@ -447,7 +476,7 @@ public class Errors extends ANY
 
   /**
    * Check if any errors found.  If so, show the number of errors and
-   * System.exit(1).
+   * exit(1).
    */
   public static void showAndExit()
   {
@@ -612,6 +641,24 @@ public class Errors extends ANY
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
+  public static void colonPartOfTernary(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator ':' is part of ternary ? : operator",
+                "This code is part of a ternary expression that must not contain operator ':'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void barPartOfCase(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator '|' is part of match case",
+                "This code is part of a match case that must not contain operator '|'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')' or braces '{' and '}'.");
+  }
+
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
     syntaxError(pos,
@@ -645,6 +692,27 @@ public class Errors extends ANY
   {
     _errors_.clear();
     _warnings_.clear();
+  }
+
+
+  public static void runAndExit(Runnable r)
+  {
+    try
+      {
+        try
+          {
+            r.run();
+            Errors.showAndExit(true);
+          }
+        catch (Throwable e)
+          {
+            Errors.fatal(e);
+          }
+      }
+    catch (FatalError e)
+      {
+        System.exit(e.getStatus());
+      }
   }
 
 }

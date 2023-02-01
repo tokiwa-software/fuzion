@@ -42,6 +42,8 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.List;
 
 /**
@@ -90,8 +92,7 @@ public class ParseUnicodeData extends ANY
       var e = s.split(";");
       if (e.length < 10)
         {
-          System.err.println("*** error, expected 15 entries, found "+e.length+" for "+s);
-          System.exit(1);
+          Errors.fatal("*** error, expected 15 entries, found "+e.length+" for "+s);
         }
       _code = Integer.parseInt(e[0],16);
       _name = e[1];
@@ -225,25 +226,33 @@ public class ParseUnicodeData extends ANY
   {
     _name = name;
     var p = Path.of(name);
-    _lastModified = Files.readAttributes(p, BasicFileAttributes.class).lastModifiedTime();
-    Files.lines(p).forEach(s -> {
-        var e = new CP(s);
-        _codepoints.add(e);
-        if (_lastCP != null && e._code <= _lastCP._code)
-          {
-            System.err.println("*** error, expected unicode data to be sorted");
-            System.exit(1);
-          }
-        if (_firstCP != null && (_firstCP.isLast() || !e.isLast() && e._code > _lastCP._code + 1 || e.isFirst() || e._category != _firstCP._category))
-          {
-            finishBlock();
-          }
-        if (_firstCP == null || e._category != _firstCP._category)
-          {
-            _firstCP = e;
-          }
-        _lastCP = e;
-      });
+    try
+      {
+        _lastModified = Files.readAttributes(p, BasicFileAttributes.class).lastModifiedTime();
+        Files.lines(p).forEach(s -> {
+            var e = new CP(s);
+            if (_lastCP != null && e._code <= _lastCP._code)
+              {
+                Errors.fatal("*** error, expected unicode data to be sorted");
+              }
+            if (_firstCP != null && (_firstCP.isLast() || !e.isLast() && e._code > _lastCP._code + 1 || e.isFirst() || e._category != _firstCP._category))
+              {
+                finishBlock();
+              }
+            if (_firstCP == null || e._category != _firstCP._category)
+              {
+                _firstCP = e;
+              }
+            _lastCP = e;
+          });
+
+        var attr = Files.readAttributes(p, BasicFileAttributes.class);
+        System.out.println("  /* Unicode data from '" + name + "' last modified '" + attr.lastModifiedTime() + "' */");
+      }
+    catch (IOException | UncheckedIOException e)
+      {
+        Errors.fatal("*** I/O error: " + e);
+      }
     if (_firstCP != null)
       {
         finishBlock();
@@ -312,19 +321,26 @@ public class ParseUnicodeData extends ANY
 
   public static void main(String[] args) throws IOException
   {
-    if (!(args.length == 2 && args[0].equals("-fz") || args.length == 1))
+    try
       {
-        System.err.println("Usage: ParseUnicodeData [-fz] <UnicodeData.txt>");
-        System.exit(1);
-      }
+        if (!(args.length == 2 && args[0].equals("-fz") || args.length == 1))
+          {
+            System.err.println("Usage: ParseUnicodeData [-fz] <UnicodeData.txt>");
+            System.exit(1);
+          }
 
-    if (!args[0].equals("-fz"))
-      {
-        new ParseUnicodeData(args[0]).PrintJava();
+        if (!args[0].equals("-fz"))
+          {
+            new ParseUnicodeData(args[0]).PrintJava();
+          }
+        else
+          {
+            new ParseUnicodeData(args[1]).PrintFuzion();
+          }
       }
-    else
+    catch (FatalError e)
       {
-        new ParseUnicodeData(args[1]).PrintFuzion();
+        System.exit(e.getStatus());
       }
   }
 
@@ -368,9 +384,9 @@ public class ParseUnicodeData extends ANY
     System.out.println();
 
     System.out.println("unicode.data is" + "\n\n"
-      + "  lower_case_mappings => " + "mapOf [\n    " + lTable + "]\n\n\n"
-      + "  upper_case_mappings => " + "mapOf [\n    " + uTable + "]\n\n\n"
-      + "  title_case_mappings => " + "mapOf [\n    " + tTable + "]"
+      + "  lower_case_mappings => " + "map_of [\n    " + lTable + "]\n\n\n"
+      + "  upper_case_mappings => " + "map_of [\n    " + uTable + "]\n\n\n"
+      + "  title_case_mappings => " + "map_of [\n    " + tTable + "]"
       );
   }
 

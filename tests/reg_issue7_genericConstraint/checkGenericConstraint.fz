@@ -34,7 +34,7 @@ checkGenericConstraint is
   H is
     h i32 is abstract
 
-  hm (T H.type, x T) is
+  hm (T type : H, x T) is
     x.h
     unit
 

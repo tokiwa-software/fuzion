@@ -1,0 +1,40 @@
+This currently fails for the interpreter backend when PRECONDITIONS are enabled
+
+../check_simple_example.sh "../../bin/fz " test_this_type.fz || exit 1
+RUN test_this_type.fz 18,26c18
+< r.x.b3.print: (expecting rr) rr
+< instance of Type of 'test_redef_using_fixed.b' with debug
+< expecting 'a': instance of 'a'
+< expecting 'a': instance of 'a'
+< expecting 'b with 2': instance of Type of 'test_redef_using_fixed.b' with 2
+< instance of Type of 'test_redef_using_fixed.c'
+< expecting 'a.op_implemented: a.op_implemented
+< expecting 'b.op_implemented: b.op_implemented
+< expecting 'a.op_implemented: a.op_implemented
+---
+> r.x.b3.print: (expecting rr) r
+\ Kein Zeilenumbruch am Dateiende.
+*** FAILED out on test_this_type.fz
+0a1,48
+>
+> error 1: *** java.lang.Error: require-condition1 failed: dev.flang.be.interpreter.Instance:storeNonRef:332
+> Call stack:
+> simple_test_for_this_type_value: --CURDIR--/test_this_type.fz:91:47:
+>   say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+> ----------------------------------------------^
+> #universe: --CURDIR--/test_this_type.fz:96:1:
+> simple_test_for_this_type_value
+> ^
+>
+>
+>
+> error 2: java.lang.Error: require-condition1 failed: dev.flang.be.interpreter.Instance:storeNonRef:332
+> 	at dev.flang.util.ANY.require(ANY.java:78)
+> 	at dev.flang.be.interpreter.Instance.storeNonRef(Instance.java:332)
+> 	at dev.flang.be.interpreter.Interpreter.setNonRefField(Interpreter.java:1148)
+> 	at dev.flang.be.interpreter.Interpreter.setFieldSlot(Interpreter.java:1360)
+> 	at dev.flang.be.interpreter.Interpreter.setField(Interpreter.java:1389)
+> 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:337)
+> 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:370)
+> 	at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:370)
+> 	at dev.flang.be.interpreter.Interpreter.callOnInstance(Interpreter.java:921)

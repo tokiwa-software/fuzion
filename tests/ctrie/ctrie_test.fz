@@ -24,11 +24,11 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := CTrie i32 string
+  ctrie := CTrie i32 String
 
-  all := psSet 0..100
-  removed := psSet 0..100:2
-  readded := psSet 0..100:3
+  all := ps_set 0..100
+  removed := ps_set 0..100:2
+  readded := ps_set 0..100:3
 
   # snapshot
   no_items := ctrie.items
@@ -50,24 +50,24 @@ ctrie_test is
 
   # NYI Set should have `except()` feature
   no  := removed.filter (x -> !(readded.contains x))
-  yes := (psSet (all.filter (x -> !(removed.contains x)))) ⋃ readded
+  yes := (ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
 
   if no ∃  (k -> (ctrie.lookup k).exists)
     panic "value in slot that should be empty"
 
-  if yes ∃ (k -> (ctrie.lookup k).get /= "v$k")
+  if yes ∃ (k -> !((ctrie.lookup k).get ≟ "v$k"))
     panic "a lookup for a key returns incorrect value or none at all"
 
-  if ctrie.size /= yes.size
+  if !(ctrie.size ≟ yes.size)
     panic "ctrie size is incorrect"
 
-  if no_items.count /= 0
+  if !(no_items.count ≟ 0)
     panic "no items count should be zero"
 
-  if all_items.count /= 101
+  if !(all_items.count ≟ 101)
     panic "all items count should be 101"
 
-  if half_of_items.count /= 50
+  if !(half_of_items.count ≟ 50)
     panic "half of items should be 50"
 
   say "all 😀"

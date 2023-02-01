@@ -28,7 +28,7 @@
 # This is used as heir feature for effects such as io.out and io.err.
 #
 private printEffect (
-  p canPrint,
+  p Can_Print,
 
   # action to be taken: plain nomad, install or replace?
   redef r effectMode.val
@@ -37,13 +37,13 @@ is
 
   # print the given string followed be new line
   #
-  println (s Object) =>
+  println (s Any) =>
     p.println s
     replace
 
   # print the given string
   #
-  print (s Object) =>
+  print (s Any) =>
     p.print s
     replace
 
@@ -54,13 +54,13 @@ is
     replace
 
 
-canPrint ref is
+Can_Print ref is
 
-  println(s Object) =>
+  println(s Any) =>
     print s
     println
 
   println =>
     print (codepoint 10)
 
-  print(s Object) unit is abstract
+  print(s Any) unit is abstract

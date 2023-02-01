@@ -1,0 +1,89 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of tests for File I/O operations
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+fileiotests =>
+
+  dir := "testdir"
+  newdir := "newdir"
+  file := dir + "/" + "testfile"
+
+  content := "Hello world 🌍"
+
+  f := io.file
+
+  writer := f.write
+  reader := f.read
+
+  exists(path String) bool is
+    match f.stat path true
+      io.file.meta_data => true
+      error => false
+
+  say "$dir exists: {exists dir}"
+  match writer.create_dir dir
+    unit => say "$dir was created"
+    error =>
+  say "$dir exists: {exists dir}"
+
+  say "$file exists: {exists file}"
+  match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
+      res := writer.write fd content.utf8.as_array
+      fuzion.sys.fileio.close fd
+      res)
+    unit => say "$file was created"
+    error =>
+  say "$file exists: {exists file}"
+
+  say "$file size is {(f.stat file true).val.size}"
+
+  # NYI: we need to use fuzion.sys.fileio directly until we have a
+  # closeable effect.
+  match (fuzion.sys.fileio.open file (i8 0)).bind (array u8) (fd->
+      res := reader.read_file fd
+      fuzion.sys.fileio.close fd
+      res)
+    bytes array u8 =>
+      filecontent := String.type.from_bytes bytes
+      say "file content bytes: $bytes"
+      say "file content is $filecontent"
+    error =>
+
+  match f.delete file
+    unit => say "$file was deleted"
+    error =>
+  say "$file exists: {exists file}"
+
+  say "$dir exists: {exists dir}"
+  say "$newdir exists: {exists newdir}"
+  match f.move dir newdir
+    unit => say "$dir is now: $newdir"
+    error =>
+  say "$newdir exists: {exists newdir}"
+  say "$dir exists: {exists dir}"
+
+  match f.delete newdir
+    unit => say "$newdir was deleted"
+    error =>
+  say "$newdir exists: {exists newdir}"

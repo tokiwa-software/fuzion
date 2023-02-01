@@ -81,8 +81,8 @@ public class Box extends Expr
        frmlT.isGenericArgument() || !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
-    var t = value.type();
-    this._type = frmlT.isGenericArgument() ? t : t.asRef();
+    var t = Types.intern(value.type());
+    this._type = needsBoxingForGenericOrThis(frmlT) ? t : t.asRef();
   }
 
 
@@ -116,12 +116,13 @@ public class Box extends Expr
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or null if not known.
    */
-  public AbstractType type()
+  AbstractType typeIfKnown()
   {
     return _type;
   }

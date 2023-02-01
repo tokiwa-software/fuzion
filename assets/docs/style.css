@@ -1,0 +1,174 @@
+/*
+
+This file is part of the Fuzion language implementation.
+
+The Fuzion language implementation is free software: you can redistribute it
+and/or modify it under the terms of the GNU General Public License as published
+by the Free Software Foundation, version 3 of the License.
+
+The Fuzion language implementation is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+License for more details.
+
+You should have received a copy of the GNU General Public License along with The
+Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
+
+/*-----------------------------------------------------------------------
+ *
+ * Tokiwa Software GmbH, Germany
+ *
+ * Source of docs/style
+ *
+ *---------------------------------------------------------------------*/
+
+.d-grid{
+  display: grid;
+}
+
+.d-inline-grid{
+  display: inline-grid;
+}
+
+.d-flex{
+  display: flex;
+}
+
+.d-none{
+  display: none;
+}
+
+.flex-wrap{
+  flex-wrap: wrap;
+}
+
+.pl-5{
+  padding-left: .5em;
+}
+
+.mr-5{
+  margin-right: .5em;
+}
+
+.mr-2{
+  margin-right: .2em;
+}
+
+.mx-5{
+  margin-left: .5em;
+  margin-right: .5em;
+}
+
+.container{
+  padding: 15px;
+}
+
+.justify-content-between{
+  justify-content: space-between;
+}
+
+.word-break-break-word{
+  word-break: break-word;
+}
+
+.white-space-no-wrap{
+  white-space: nowrap;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.flex-grow-1{
+  flex-grow: 1;
+}
+
+.font-weight-600{
+  font-weight: 600;
+}
+
+.fd{
+  font-family: 'Fira Mono', monospace;
+  display: flex;
+  position: relative;
+}
+
+.fd a{
+  text-decoration: none;
+}
+
+.fd-keyword{
+  color: #af00db;
+}
+
+.fd-feature{
+  color: #795e26;
+}
+
+.fd-type{
+  color: #267f99;
+  font-style: italic;
+}
+
+.fd-comment{
+  color: rgba(0, 0, 0, 0.5);
+  background: #724d9515;
+  padding: 1em;
+}
+
+.fd-comment:empty{
+  display: none;
+}
+
+.fd details{
+  margin: 1em;
+  /* marker needs more space */
+  margin-left: 2em;
+  border: 2px outset rgba(0,0,0,0.1);
+}
+
+.fd details p{
+  margin-top: 1em;
+}
+
+.fd summary{
+  list-style-position: outside;
+}
+
+.fd-anchor-sign{
+  color: rgba(0,0,0,0.6);
+  opacity: 0;
+}
+
+.fd summary:hover .fd-anchor-sign{
+  opacity: 1;
+}
+
+.fd-inherited{
+  font-size: 80%;
+  display: flex;
+  align-items: center;
+}
+
+.fd .sidenav{
+  overflow-y: auto;
+  max-height: 100vh;
+  padding-right: 15px;
+}
+
+.fd .sidenav .toggle-nav{
+  float: right;
+  margin-left: 15px;
+  font-size: 2em;
+}
+
+.fd .sidenav nav ul{
+  list-style: none;
+  padding-left: 0;
+}
+
+.fd .sidenav nav li{
+  line-height: 1;
+}

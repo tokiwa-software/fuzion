@@ -1,0 +1,153 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_equals.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_equals tests the equality relation for some standard types and the
+# definition of user-defined equality relations
+#
+test_equals =>
+
+  # compare two strings using string.type.equality directly
+  #
+  eq1(a, b String) => String.type.equality a b
+
+  # compare two strings using equals without type inference for the type
+  # parameter
+  #
+  eq2(a, b String) => equals String a b
+
+  # compare two strings using equals with type inference for the type
+  # parameter
+  #
+  eq3(a, b String) => equals a b
+
+  # compare two strings using infix ≟ without infix syntax and without
+  # type inference for the type parameter
+  #
+  eq4(a, b String) => infix ≟ String a b
+
+  # compare two strings using infix ≟ without infix syntax and with type
+  # inference for the type parameter
+  #
+  eq5(a, b String) => infix ≟ a b
+
+  # compare two strings using infix ≟ with infix syntax and with type
+  # inference for the type parameter
+  #
+  eq6(a, b String) => a ≟ b
+
+  say "comparing A and B {eq1 "A" "B"}"
+  say "comparing A and A {eq1 "A" "A"}"
+  say "comparing A and B {eq2 "A" "B"}"
+  say "comparing A and A {eq2 "A" "A"}"
+  say "comparing A and B {eq3 "A" "B"}"
+  say "comparing A and A {eq3 "A" "A"}"
+  say "comparing A and B {eq4 "A" "B"}"
+  say "comparing A and A {eq4 "A" "A"}"
+  say "comparing A and B {eq5 "A" "B"}"
+  say "comparing A and A {eq5 "A" "A"}"
+  say "comparing A and B {eq6 "A" "B"}"
+  say "comparing A and A {eq6 "A" "A"}"
+
+  # create some colored text:
+  #
+  red_cat  := test_equals_types.colored_text test_equals_types.red  "cat".utf8
+  blue_cat := test_equals_types.colored_text test_equals_types.blue "cat".utf8
+  red_dog  := test_equals_types.colored_text test_equals_types.red  "dog".utf8
+  blue_dog := test_equals_types.colored_text test_equals_types.blue "dog".utf8
+
+  say "comparing red cat and blue cat as strings: {eq3 red_cat blue_cat}"
+  say "comparing red cat and blue dog as strings: {eq3 red_cat blue_dog}"
+  say "comparing red cat and blue cat as Has_color: {test_equals_types.eq_color red_cat blue_cat}"
+  say "comparing blue cat and blue dog as Has_color: {test_equals_types.eq_color blue_cat blue_dog}"
+  say "comparing red cat and blue cat as colored_text: {equals red_cat blue_cat}"
+  say "comparing red cat and red cat as colored_text: {equals red_cat red_cat}"
+  say "comparing red cat and blue cat as colored_text: {infix ≟ red_cat blue_cat}"
+  say "comparing red cat and red cat as colored_text: {infix ≟ red_cat red_cat}"
+  say "comparing red cat and blue cat as colored_text: {red_cat ≟ blue_cat}"
+  say "comparing red cat and red cat as colored_text: {red_cat ≟ red_cat}"
+  say "comparing red cat, blue cat and blue dog as colored_text: {red_cat ≟ blue_cat ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue dog as colored_text: {blue_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing red dog, blue dog and blue dog as colored_text: {red_dog ≟ blue_dog ≟ blue_dog}"
+  say "comparing blue dog, blue dog and blue cat as colored_text: {blue_dog ≟ blue_dog ≟ blue_cat}"
+  say "comparing red dog, red dog, red dog and red dog as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red cat, red dog, red dog and red dog as colored_text: {red_cat ≟ red_dog ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red cat, red dog and red dog as colored_text: {red_dog ≟ red_cat ≟ red_dog ≟ red_dog}"
+  say "comparing red dog, red dog, red cat and red dog as colored_text: {red_dog ≟ red_dog ≟ red_cat ≟ red_dog}"
+  say "comparing red dog, red dog, red dog and red cat as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_cat}"
+
+
+test_equals
+
+test_equals_types is
+
+  # define a color choice type:
+  #
+  color : choice of red, blue.
+
+  # Has_color provides an equality relation for instances that provide
+  # a 'col' feature
+  #
+  Has_color ref : has_equality is
+
+    # the color of this instance
+    #
+    col color is abstract
+
+    # equality relation comparing the value produced by 'col'
+    #
+    fixed type.equality(a, b test_equals_types.Has_color) =>
+
+      # NYI: There is currently no easy way to compare choice types, so we do exhaustive
+      # matches:
+      #
+      match a.col
+        test_equals_types.red  => match b.col
+                              test_equals_types.red  => true
+                              *                      => false
+        test_equals_types.blue => match b.col
+                              test_equals_types.blue => true
+                              *                => false
+
+  # compare two instances of Has_color
+  #
+  eq_color(a, b Has_color) => infix ≟ a b
+
+  # a colored_text is a string with an associated color:
+  #
+  colored_text(
+
+    # the color
+    col color,
+
+    # the string
+    utf8 Sequence u8)
+
+   : Has_color, String, has_equality is
+
+    # equality relation comparing color and strings
+    #
+    fixed type.equality(a, b test_equals_types.colored_text) =>
+      (test_equals_types.eq_color a b &&
+       String.type.equality       a b   )

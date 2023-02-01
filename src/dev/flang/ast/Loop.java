@@ -308,12 +308,11 @@ public class Loop extends ANY
       }
 
     var formalArguments = new List<Feature>();
-    var initialActuals = new List<Expr>();
-    var nextActuals = new List<Expr>();
+    var initialActuals = new List<Actual>();
+    var nextActuals = new List<Actual>();
     initialArguments(formalArguments, initialActuals, nextActuals);
-    var initialCall       = new Call(pos, loopName, initialActuals);
-    var tailRecursiveCall = new Call(pos, loopName, nextActuals   );
-    tailRecursiveCall._isTailRecursive = true;
+    var initialCall       = new Call(pos, null, loopName, initialActuals);
+    var tailRecursiveCall = new Call(pos, null, loopName, nextActuals   );
     if (_nextIteration == null)
       {
         _nextIteration = tailRecursiveCall;
@@ -337,8 +336,8 @@ public class Loop extends ANY
       }
     var p = block.pos();
     Feature loop = new Feature(p,
-                               Consts.VISIBILITY_INVISIBLE,
-                               Consts.MODIFIER_FINAL,
+                               Visi.INVISIBLE,
+                               0,
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
@@ -476,8 +475,8 @@ public class Loop extends ANY
       {
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
-                                    Consts.VISIBILITY_INVISIBLE,
-                                    Consts.MODIFIER_FINAL,
+                                    Visi.INVISIBLE,
+                                    0,
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),
@@ -505,8 +504,7 @@ public class Loop extends ANY
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[inProlog ? 0 : 1].featureName().baseName(),
-                    Expr.NO_EXPRS);
+                    _loopElse[inProlog ? 0 : 1].featureName().baseName());
   }
 
 
@@ -520,8 +518,8 @@ public class Loop extends ANY
    * @param nextActuals will receive the actual arguments after nextIteration
    */
   private void initialArguments(List<Feature> formalArguments,
-                                List<Expr> initialActuals,
-                                List<Expr> nextActuals)
+                                List<Actual> initialActuals,
+                                List<Actual> nextActuals)
   {
     int i = -1;
     Iterator<Feature> ivi = _indexVars.iterator();
@@ -540,15 +538,15 @@ public class Loop extends ANY
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
-                              Consts.VISIBILITY_INVISIBLE,
+                              Visi.INVISIBLE,
                               type,
                               f.featureName().baseName(),
                               type == null ? ia : null,
                               null /* NYI outer */);
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
-        initialActuals .add(ia);
-        nextActuals    .add(na);
+        initialActuals .add(new Actual(ia));
+        nextActuals    .add(new Actual(na));
       }
   }
 
@@ -578,9 +576,9 @@ public class Loop extends ANY
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
             var p = f.pos();
-            Call asStream = new Call(p, f.impl()._initialValue, "asStream");
+            Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
-                                         Consts.VISIBILITY_INVISIBLE,
+                                         Visi.INVISIBLE,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
                                          /* name */        new List<>(streamName),
@@ -590,8 +588,8 @@ public class Loop extends ANY
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
             stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(p, new Call(p, streamName), "hasNext" );
-            Call hasNext2 = new Call(p, new Call(p, streamName), "hasNext" );
+            Call hasNext1 = new Call(p, new Call(p, streamName), "has_next" );
+            Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
             Call next1    = new Call(p, new Call(p, streamName), "next");
             Call next2    = new Call(p, new Call(p, streamName), "next");
             List<Stmnt> prolog2 = new List<>();

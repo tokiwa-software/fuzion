@@ -32,7 +32,7 @@
 # Sequence is a 'ref' type, i.e., different sub-features may be assigned
 # to a field of type 'Sequence'.
 #
-# Heirs of Sequence must implement either 'asList' or 'asStream'.  Failure
+# Heirs of Sequence must implement either 'as_list' or 'as_stream'.  Failure
 # to implement any of these results in an endless recursion when the Sequence
 # is used.
 #
@@ -44,10 +44,10 @@ Sequence(T type) ref is
   # A list is immutable, so it can be reused and shared between threads.
   # Compared to a stream, a list may require more (heap) allocation.
   #
-  # Default implementation uses asStream. Heirs must redefine at least
-  # one of asList or asStream.
+  # Default implementation uses as_stream. Heirs must redefine at least
+  # one of as_list or as_stream.
   #
-  asList list T is asStream.asList
+  as_list list T is as_stream.as_list
 
 
   # create a stream of T.
@@ -55,102 +55,110 @@ Sequence(T type) ref is
   # A stream contains mutable state, so it cannot be reused or shared
   # between threads.
   #
-  # Default implementation uses asList.  Heirs must redefine at least
-  # one of asList or asStream.
+  # Default implementation uses as_list.  Heirs must redefine at least
+  # one of as_list or as_stream.
   #
-  asStream stream T is asList.asStream
+  as_stream stream T is as_list.as_stream
 
 
-  # is this list empty?
+  # is this Sequence empty?
   #
-  isEmpty => asList.isEmpty
+  is_empty => as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => (mapSequence i32 (_ -> 1)).fold i32.sum
+  count
+    pre
+      analysis: finite  # in practice, we do not always have this information
+    => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
-  # get the head of this list, panic if list is empty
+  # get the first element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   first
     pre
-      debug: !isEmpty
-    => asList.forceHead
+      debug: !is_empty
+    => as_list.head.get
 
 
-  # get the head of this list or default if sequence is empty
+  # get the first element of this Sequence or default if sequence is empty
   #
   first(default T)
     =>
-      if isEmpty then default else first
+      if is_empty then default else first
 
 
-  # get the last element of this list, panic if list is empty
+  # get the last element of this Sequence
+  #
+  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
-  # for an infinite list.
+  # for an infinite Sequence.
   #
   last
     pre
-      debug: !isEmpty
-   => asList.last
+      debug: !is_empty
+   => as_list.last
 
 
-  # get the last element of this list or default if sequence is empty
+  # get the last element of this Sequence or default if sequence is empty
   #
   last(default T)
     =>
-    if isEmpty then default else last
+    if is_empty then default else last
 
 
   # collect the contents of this Sequence into an array
   #
-  asArray array T is
-    s := asStream
+  as_array array T is
+    s := as_stream
     array T count i->s.next
 
 
-  # create a stream and call 'forAll f' on it
+  # create a stream and call 'for_each f' on it
   #
-  forAll(f T -> unit) unit is asStream.forAll f
+  for_each(f T -> unit) unit is as_stream.for_each f
 
 
-  # create a stream and have it consumed by f, infix operator synonyme of forAll.
+  # create a stream and have it consumed by f, infix operator synonym of for_each.
   #
-  infix | (f T -> unit) => forAll f
+  infix | (f T -> unit) => for_each f
 
 
-  # create a stream, infix operator synonyme for asStream
+  # create a stream, postfix operator synonym for as_stream
   #
-  postfix | => asStream
+  postfix | => as_stream
 
 
   # create a new stream and apply 'f' to each element 'e' as long as 'f e'
   #
-  forWhile(f T -> bool) unit is asStream.forWhile f
+  for_while(f T -> bool) unit is as_stream.for_while f
 
 
   # create a new stream that contains the first elements of this stream for
   # which 'f e' is false
   #
-  before(f T -> bool) stream T is asStream.before f
+  before(f T -> bool) stream T is as_stream.before f
 
 
   # create a new stream and filter its elements using predicate f
+  # values for which f is false are dropped
   #
-  filter   (f T -> bool) Sequence T is asList.filter f
+  filter   (f T -> bool) Sequence T is as_list.filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   infix |& (f T -> bool) => filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
-  # synonyme of filter.
+  # synonym of filter.
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
@@ -159,24 +167,29 @@ Sequence(T type) ref is
 
   # create a stream and check if predicate f holds for all elements produced
   #
-  infix ∀ (f T -> bool) bool is asStream ∀ f
+  infix ∀ (f T -> bool) bool is as_stream ∀ f
 
 
   # create a stream and check if predicate f holds for at least one element produced
   #
-  infix ∃ (f T -> bool) bool is asStream ∃ f
+  infix ∃ (f T -> bool) bool is as_stream ∃ f
 
 
   # create a list that consists only of the first n elements of this
   # Sequence, fewer if this stream has fewer elements
   #
-  take (n i32) => asList.take n
+  take (n i32) => as_list.take n
 
 
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
-  drop (n i32) => asList.drop n
+  drop (n i32) => as_list.drop n
+
+
+  # get a function that, given an index, returns the element at that index
+  #
+  index [] () i32 -> T is n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
@@ -184,124 +197,144 @@ Sequence(T type) ref is
   #
   slice(from, to i32) => drop(from).take to-from
     # NYI: OPTIMIZATION: We could redefine this, e.g. to avoid copying array data
-    # on array.slice(from,to).asArray.
+    # on array.slice(from,to).as_array.
 
 
   # create a tuple of two Sequences by splitting this at the given index, i.e.,
   # a Sequence of length 'at' and one of length 'count-at'.
   #
   # at may be <= 0 or >= count, in which case the resulting tuple will be the
-  # (empty list, Sequence.this.asList) or (Sequence.this.asList, empty list), resp.
+  # (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
   #
-  splitAt(at i32) => ((take at), (drop at))
+  split_at(at i32) => ((take at), (drop at))
 
-  # Lazily take the first elements of a list for which predicate 'p' holds.
+  # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  takeWhile (p T -> bool) => asList.takeWhile p
+  take_while (p T -> bool) => as_list.take_while p
 
 
-  # Lazily drop the first elements of a list for which predicate 'p' holds.
+  # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  dropWhile (p T -> bool) => asList.dropWhile p
+  drop_while (p T -> bool) => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  concatSequences (s Sequence T) Sequence T is asList.concat s.asList
+  concat_sequences (s Sequence T) Sequence T is as_list.concat s.as_list
 
 
-  # infix operand synonyme for concatSequences
+  # infix operand synonym for concatSequences
   #
-  infix ++ (s Sequence T) => asList ++ s.asList
+  infix ++ (s Sequence T) => as_list ++ s.as_list
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  cycle list T is asList.cycle
+  cycle list T is as_list.cycle
 
 
-  # create a lazy list of all the tails of this list, including the complete list
-  # 'list.this' and the empty list 'nil'.
+  # create a lazy list of all the tails of this Sequence, including the complete Sequence
+  # as a list and the empty list 'nil'.
   #
-  tails list (list T) is asList.tails
+  tails list (list T) is as_list.tails
 
 
-  # create a string representation of this list including all the string
+  # create a string representation of this Sequence including all the string
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  redef asString => asList.asString
+  redef as_string => as_list.as_string
 
 
-  # create a string representation of this list including all the string
+  # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
   #
-  asString (sep string) => asList.asString sep
+  as_string (sep String) => as_list.as_string sep
 
 
-  # call 'asString' on the elements
+  # call 'as_string' on the elements
   #
-  as_strings => mapSequence c->c.asString
+  as_Strings => mapSequence c->c.as_string
 
 
-  # map the Sequence to a new Sequence applying function f to all elements
+  # map the Sequence to a new list applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
-  # in the list are accessed.
+  # in the resulting list are accessed.
   #
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapSequence(B type, f T -> B) => asList.map f
+  mapSequence(B type, f T -> B) => as_list.map f
 
 
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
   # flatMap(B type, f T -> Sequence B) =>
-  #   asList.flatMap f
+  #   as_list.flatMap f
   flatMapSequence(B type, f T -> Sequence B) =>
-    asList.flatMap f
+    as_list.flatMap f
 
 
   # fold the elements of this Sequence using the given monoid.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  fold (m Monoid T) => asList.fold m.e m
+  fold (m Monoid T) => as_list.fold m.e m
 
 
   # reduce this Sequence to R with an initial value init
-  # and a reducing function f
-  reduce(R type, init R, f (R,T) -> R) R is
-    match asList
+  # and a reducing function f.
+  # the reduction is finished once f yields abort or
+  # if the end of the sequence is reached.
+  #
+  reduce(R type, init R, f (R,T) -> R | abort R) R is
+    match as_list
       nil => init
-      c Cons => c.tail.reduce R (f init c.head) f
+      c Cons =>
+        match f init c.head
+          a abort => a.val
+          r R => c.tail.reduce r f
+
+
+  # reduce this Sequence to `outcome R`
+  # with an initial value `init` and a reducing function `f`.
+  # the reduction is finished once `f` yields `abort` or
+  # if the end of the sequence is reached.
+  #
+  reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R is
+    match as_list
+      nil => init
+      c Cons =>
+        match f init c.head
+          a abort => a.val
+          r R => c.tail.reduce_or_error r f
 
 
   # insert element v at position at
   #
   insert(at i32, v T)
    pre
-     debug: at >= 0
+     debug: at ≥ 0
    =>
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the total order defined by lessOrEqual
-  sort(lessOrEqual (T, T) -> bool) => sortedArray Sequence.this lessOrEqual
+  # sort this Sequence using the total order defined by less_or_equal
+  sort(less_or_equal (T, T) -> bool) => sorted_array Sequence.this less_or_equal
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sortBy(O (ordered O).type, f T->O) => sort (a, b -> f a <= f b)
+  sort_by(O type : has_total_order, f T->O) => sort (a, b -> f a ≤ f b)
 
 
   # create a new list from the result of applying 'f' to the
-  # elements of this list and 'b' in order.
+  # elements of this Sequence and 'b' in order.
   #
-  zip(U,V type, b Sequence U, f (T,U)->V) => asList.zip0 b.asList f
+  zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip0 b.as_list f
 
 
   # takes a transducer xf, a reducer f and an initial value
@@ -326,7 +359,7 @@ Sequence(T type) ref is
   into(TA type, xf Transducer(Sequence(TA),TA,T)) Sequence(TA) is
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res := Sequences.empty(TA) , red.call res el
+      res := (Sequence TA).type.empty , red.call res el
       el in Sequence.this do
     else
       res
@@ -337,18 +370,26 @@ Sequence(T type) ref is
   #
   nth(n i32) option T
     pre
-      debug: n >= 0
+      debug: n ≥ 0
   is
     match drop n
       nil => nil
       c Cons => c.head
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  finite => false
+
+
   # the nth element in the sequence, must exist
   #
   index [] (i i32) T
     pre
-      safety: 0 <= i < count
+      debug: 0 ≤ i,
+      debug: finite: i ⩻ count,
+      debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get
 
@@ -357,7 +398,55 @@ Sequence(T type) ref is
   # every element in the sequence
   #
   indexed list (tuple i32 T) is
-    zip (0..) (a,b -> (b, a))
+    indexed 0
+
+
+  # adds an index to every element
+  # in the sequence starting at start_idx
+  #
+  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
+    zip (start_idx..) (a,b -> (b, a))
+
+
+
+  # group the elements of this sequence by a key of type K
+  #
+  # f determines the key of an element
+  #
+  group_by(K type : has_hash, f T -> K) Map K (Sequence T) is
+    # NYI It should be possible to choose the map implementation that is used.
+    res := CTrie K (Sequence T)
+    for_each (x ->
+      key := f x
+      match res[key]
+        nil => res.add key [x]
+        s Sequence T => res.add key (s ++ [x])
+      )
+    res
+
+
+  # create an empty list and return it as a Sequence
+  #
+  type.empty Sequence T is
+    lists.empty T
+
+
+  # monoid of Sequences with infix concatentation operation.
+  #
+  type.concat_monoid : Monoid (Sequence T) is
+
+    # associative operation
+    #
+    infix ∙ (a, b Sequence T) Sequence T is a.concat_sequences b
+
+    # equality
+    #
+    redef infix == (a, b Sequence T) =>
+      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : has_equality"
+
+    # identity element
+    #
+    e => (Sequence T).type.empty
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring
@@ -366,37 +455,13 @@ Sequence(T type) ref is
 Sequences is
 
 
-  # create an empty list
-  #
-  empty(T type) Sequence T is
-    lists.empty T
-
-
-  # monoid of Sequences with infix concatentation operation.
-  #
-  concatMonoid(redef T type) : Monoid (Sequence T) is
-
-    # associative operation
-    #
-    infix ∙ (a, b Sequence T) Sequence T is a.concatSequences b
-
-    # equality
-    #
-    redef infix == (a, b Sequence T) =>
-      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : hasEquals"
-
-    # identity element
-    #
-    e => empty T
-
-
-  # determine the index of element x within list l.  0 if x is at the head
+  # determine the index of element x within Sequence l.  0 if x is at the head
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn(A (hasEquals A).type, l Sequence A, x A) => (searchableSequence A l).indexOf x
+  index_in(A type : has_equality, l Sequence A, x A) => (searchable_sequence A l).index_of x
 
 
-  # get the index of x within this list or nil if it does not exist
+  # get the index of x within this Sequence or nil if it does not exist
   #
-  find(A (hasEquals A).type, l Sequence A, x Sequence A) => (searchableSequence A l).find x
+  find(A type : has_equality, l Sequence A, x Sequence A) => (searchable_sequence A l).find x

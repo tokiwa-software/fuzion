@@ -33,7 +33,7 @@
 redefineAsVoid is
 
  p is
-  f string is abstract
+  f String is abstract
   res := f
   say "FAILED: $res!"
 
@@ -44,7 +44,7 @@ redefineAsVoid is
   #
   redef f void is
     say "PASSED: exiting f that was redefined to return void."
-    fuzion.std.exit 0
+    exit 0
 
  h
  unit

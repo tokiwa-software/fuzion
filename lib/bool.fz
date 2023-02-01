@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-bool : choice FALSE TRUE, hasEquals bool is
+bool : choice FALSE TRUE, has_equality is
 
   # not
   prefix ! bool is
@@ -63,9 +63,13 @@ bool : choice FALSE TRUE, hasEquals bool is
   # ('true <=> false <=> false' evaluates to 'true')
   infix <=> (other bool) => if bool.this other else !other
 
-  # equality check implementation for inherited hasEquals
-  infix = (other bool) bool is
-    bool.this <=> other
+  # equality check implementation for inherited has_equality
+  #
+  fixed type.equality(a, b bool) =>
+    if a
+      b
+    else
+      !b
 
   # xor
   infix ^   (other bool) => if bool.this (!other) else  other
@@ -78,7 +82,7 @@ bool : choice FALSE TRUE, hasEquals bool is
   ternary ? : (T type, lazy a, b T) => if bool.this a else b
 
   # human readable string
-  redef asString => if bool.this "true" else "false"
+  redef as_string => if bool.this "true" else "false"
 
 
 # boolean value "false"

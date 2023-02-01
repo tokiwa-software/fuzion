@@ -31,14 +31,61 @@ private read(
   _ unit
   ) : reads, effect r is
 
-  # reads all bytes from the file in the path
-  # returns a byte array representing the content of the file if it exists
-  # returns an error in case the file in the path does not exist
+
+  # how much of a file do we read at a time, in bytes
   #
-  read_all(path string) =>
-    content := ro.read path
+  private bufsize u64 is 512
+
+
+  # reads all bytes from the file in the path
+  # returns outcome array u8, a byte array representing the content of the file if the operation was successful
+  # returns an error in case the operation fails
+  #
+  read_file(fd i64) outcome (array u8) is
+    empty array u8 := []
+    content := read_file fd empty
+
     replace
     content
+
+
+  # helper feature for read_file(fd, tmp)
+  #
+  # this just calls the read operation and returns the result in a more useful
+  # format for the use case of read_file(fd, tmp).
+  #
+  private read_proxy(fd i64, n u64) tuple (outcome (array u8)) i32 is
+    a := ro.read fd n
+    replace
+
+    if a.ok
+      (a, a.val.length)
+    else
+      (a, 0)
+
+
+  # helper feature for read_file to allow recursion
+  #
+  private read_file(fd i64, tmp array u8) outcome (array u8) is
+    t := read_proxy fd bufsize
+
+    t.values.0.bind (array u8) (a->
+      if t.values.1 ⩼ 0
+        read_file fd (tmp ++ a).as_array
+      else
+        tmp)
+
+
+# short-hand for installing and creating effects
+#
+read_custom(f () -> unit) => read_custom default_read_operation f
+
+# short-hand for installing and creating effects
+#
+read_custom(ro Read_Operation, f () -> unit) =>
+  s := read ro effectMode.new unit
+  s.use0 f
+  unit
 
 # short-hand for accessing read effect in current environment
 #
@@ -49,13 +96,13 @@ read =>
 # reference to the reading operations that could take place
 #
 Read_Operation ref is
-  read(path string) outcome (array u8) is abstract
+  read(fd i64, n u64) outcome (array u8) is abstract
 
-# the default file reading operation reading bytes from files via fuzion.std.fileio.read
+# the default file reading operation reading bytes from files via fuzion.sys.fileio.read
 #
 default_read_operation : Read_Operation is
-  read(path string) =>
-    fuzion.std.fileio.read path
+  read(fd i64, n u64) =>
+    fuzion.sys.fileio.read fd n
 
 # unit type feature defining features related to read effect but not requiring an
 # instance.

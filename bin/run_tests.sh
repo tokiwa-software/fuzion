@@ -36,9 +36,10 @@ TESTS=$(echo "$BUILD_DIR"/tests/*/)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
+rm -rf "$BUILD_DIR"/run_tests.failures
 
 # print collected results up until interruption
-trap "echo """"; cat ""$BUILD_DIR""/run_tests.results; exit 130;" INT
+trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
 
 for test in $TESTS; do
   if test -n "$VERBOSE"; then
@@ -49,9 +50,14 @@ for test in $TESTS; do
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
     START_TIME=$(date +%s%N | cut -b1-13)
-    make "$TARGET" -e -C >"$test"/out.txt "$test" 2>/dev/null \
-        && (echo -n "." && echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results) \
-        || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results)
+    if make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+        echo -n "."
+        echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results
+    else
+        echo -n "#"
+        echo "$test: failed" >>"$BUILD_DIR"/run_tests.results
+        cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
+    fi
     END_TIME=$(date +%s%N | cut -b1-13)
     if test -n "$VERBOSE"; then
       echo -en " time: $((END_TIME-START_TIME))ms"
@@ -59,15 +65,16 @@ for test in $TESTS; do
   fi
 done
 
-OK=$(     cat "$BUILD_DIR"/run_tests.results | grep --count ok$      || true)
-SKIPPED=$(cat "$BUILD_DIR"/run_tests.results | grep --count skipped$ || true)
-FAILED=$( cat "$BUILD_DIR"/run_tests.results | grep --count failed$  || true)
+OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
+SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
+FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 
 echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
 echo -n " $SKIPPED skipped,"
 echo    " $FAILED failed."
-cat "$BUILD_DIR"/run_tests.results | grep failed$ || echo -n
+grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
 
 if [ "$FAILED" -ge 1 ]; then
+  cat "$BUILD_DIR"/run_tests.failures
   exit 1;
 fi

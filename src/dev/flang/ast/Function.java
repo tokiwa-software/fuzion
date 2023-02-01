@@ -150,7 +150,7 @@ public class Function extends ExprWithPos
       (c._actuals.size() == 0);
 
     this._call = c;
-    c.forFun = true;
+    c._forFun = true;
     this._wrapper = null;
   }
 
@@ -211,8 +211,7 @@ public class Function extends ExprWithPos
               {
                 if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for constructor type not allowed");
-                    System.exit(1);
+                    Errors.fatal("NYI: fun for constructor type not allowed");
                   }
               }
           }
@@ -245,7 +244,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpetedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(res, outer, t) tries to infer the
    * result type of a lambda.
    *
    * @param res this is called during type inference, res gives the resolution
@@ -295,7 +294,7 @@ public class Function extends ExprWithPos
         for (var n : _names)
           {
             var arg = new Feature(pos() /* better n.pos() */,
-                                  Consts.VISIBILITY_LOCAL,
+                                  Visi.LOCAL,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
                                   n,
@@ -316,12 +315,13 @@ public class Function extends ExprWithPos
             this._feature = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
+            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
+            _inheritsCall._generics = gs; // NYI: hack to set infered result type, see below
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
-                                   Consts.VISIBILITY_INVISIBLE,
-                                   Consts.MODIFIER_FINAL,
+                                   Visi.INVISIBLE,
+                                   0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
@@ -334,7 +334,7 @@ public class Function extends ExprWithPos
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(f);
                 result = f.resultType();
-                gs.set(0, result);
+                gs.set(0, result);   // NYI: hack to set infered result type
               }
 
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
@@ -490,13 +490,13 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeForGenericsTypeInfereing returns the type of this expression or null if
-   * the type is still unknown, i.e., before or during type resolution for
-   * generic type arguments.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForGenericsTypeInfereing()
+  AbstractType typeIfKnown()
   {
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
@@ -538,7 +538,7 @@ public class Function extends ExprWithPos
              * [..]
              */
             Call call = this._call;
-            call.forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
+            call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors aor special case
@@ -549,18 +549,18 @@ public class Function extends ExprWithPos
              *  - calling a single feature
              *  - calling a feature in a different module
              */
-            List<Expr> actual_args = new List<Expr>();
-            List<Feature> formal_args = new List<Feature>();
+            var actual_args = new List<Actual>();
+            var formal_args = new List<Feature>();
             int argnum = 1;
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Call(pos(), null, name));
-                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
+                actual_args.add(new Actual(new Call(pos(), null, name)));
+                formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
-            Call callWithArgs = new Call(pos(), null, call.name, actual_args);
-            Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
+            Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
+            Feature fcall = new Feature(pos(), Visi.PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
@@ -571,23 +571,28 @@ public class Function extends ExprWithPos
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<AbstractCall> inherits = new List<>(new Call(pos(), fr.featureName().baseName(), _type.generics(), Expr.NO_EXPRS));
+            var args = new List<Actual>();
+            for (var g : _type.generics())
+              {
+                args.add(new Actual(g));
+              }
+            List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
-                                           Consts.VISIBILITY_INVISIBLE,
-                                           Consts.MODIFIER_FINAL,
+                                           Visi.INVISIBLE,
+                                           0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),
                                            NO_FEATURES,
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
                                            new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
-            res._module.findDeclarations(function, call.target.type().featureOfType());
+            res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
-                              call.target,
+                              call.target(),
                               function)
               .resolveTypes(res, outer);
           }

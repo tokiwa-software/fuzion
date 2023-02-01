@@ -109,7 +109,7 @@ typeinference_negative is
      z := y
 
   funct1 is
-     a := fun () i32 { 3 }
+     a () -> i32 := () -> 3
      b := a
      c := b
      d := c
@@ -118,7 +118,7 @@ typeinference_negative is
 
   funct2 is
      a := d  // 35. f2. should flag an error, illegal forward reference
-     b := fun () i32 { 3 }
+     b () -> i32 := () -> 3
      c := b
      d := c
 
@@ -159,7 +159,7 @@ typeinference_negative is
     x => z; y => x;  z => y; // 36. r3.z should flag an error, cyclic result type inference
 
   result4 is
-    x => x // 37. r4. should flag an error, cannot infer result type from itself
+    x => x // this is fine, inferring result type from itself results in result type being void!
 
   result5 is
     x => y // 38. r5.x should flag an error, cyclic result type inference
@@ -209,7 +209,7 @@ typeinference_negative is
 
   typeInferencingFromIf1(b bool) =>
     if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
-    else if !b     { "string" }
+    else if !b     { "String" }
     else if b && b { x i32 := 3 }
     else if b || b { }
     else           { false }
@@ -217,24 +217,24 @@ typeinference_negative is
   typeInferencingFromIf2(b bool) is
     f =>
       if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
-      else if !b     { "string" }
+      else if !b     { "String" }
       else if b && b { x i32 := 3 }
       else if b || b { }
       else           { false }
 
   typeInferencingFromIf3(b bool) is
-    f choice i32 string bool :=
+    f choice i32 String bool :=
     {
       if       b { 3 }
-      else if !b { "string" }
+      else if !b { "String" }
       else       { false }
     }
 
   typeInferencingFromIf4(b bool) is
-    f(x choice i32 string bool) is
+    f(x choice i32 String bool) is
     f({
         if       b { 3 }
-        else if !b { "string" }
+        else if !b { "String" }
         else       { false }
       })
 
@@ -249,7 +249,7 @@ typeinference_negative is
     test(x abcde) =>
       match x          // 48. should flag an error: result type cannot be inferred
         a A => 3
-        B,C => "string"
+        B,C => "String"
         d D => false
         e E => e
 
@@ -265,7 +265,7 @@ typeinference_negative is
       f =>
         match x          // 49. should flag an error: result type cannot be inferred
           a A => 3
-          B,C => "string"
+          B,C => "String"
           d D => false
           e E => e
 
@@ -278,11 +278,11 @@ typeinference_negative is
     abcde : choice A B C D E is
     x abcde := A
 
-    f choice i32 string bool E :=
+    f choice i32 String bool E :=
     {
       match x
         a A => 3
-        B,C => "string"
+        B,C => "String"
         d D => false
         e E => e
     }
@@ -296,11 +296,11 @@ typeinference_negative is
     abcde : choice A B C D E is
     x abcde := A
 
-    f(y choice i32 string bool E)
+    f(y choice i32 String bool E)
     f({
         match x
           a A => 3
-          B,C => "string"
+          B,C => "String"
           d D => false
           e E => e
       })

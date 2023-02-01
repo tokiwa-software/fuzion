@@ -1,0 +1,42 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature has_equality
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# has_equality -- feature for immutable values that define an equality relation
+#
+has_equality is
+
+
+  # equality implements the default equality relation for values of this type.
+  #
+  # This relation must be
+  #
+  #  - reflexive (equality a b),
+  #  - symmetric (equality a b = equality b a), and
+  #  - transitive ((equality a b && equality b c) : equality a c).
+  #
+  # result is true iff 'a' is considered to represent the same abstract value
+  # as 'b'.
+  #
+  type.equality(a, b has_equality.this.type) bool is abstract

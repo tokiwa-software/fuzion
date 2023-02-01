@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
 
@@ -77,8 +78,18 @@ public class Tag extends Expr
     super();
 
     if (PRECONDITIONS) require
-      (value != null);
-
+      (value != null,
+       taggedType.isChoice(),
+       Errors.count() > 0
+        || taggedType
+            .choiceGenerics()
+            .stream()
+            .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+            .count() == 1
+        // NYI why is value.type() sometimes unit
+        // even though none of the choice elements is unit
+        || value.type().compareTo(Types.resolved.t_unit) == 0
+       );
     this._value = value;
     this._taggedType = taggedType;
   }
@@ -97,12 +108,13 @@ public class Tag extends Expr
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or null if not known.
    */
-  public AbstractType type()
+  AbstractType typeIfKnown()
   {
     return _taggedType;
   }

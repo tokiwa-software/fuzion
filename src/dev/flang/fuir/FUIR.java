@@ -30,13 +30,11 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
-import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -44,7 +42,6 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
-import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -57,12 +54,10 @@ import dev.flang.ast.Unbox; // NYI: remove dependency
 
 import dev.flang.ir.IR;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -195,7 +190,7 @@ public class FUIR extends IR
   public FUIR(Clazz main)
   {
     _main = main;
-    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
@@ -269,9 +264,20 @@ public class FUIR extends IR
         for (var cl : Clazzes.all())
           {
             if (CHECKS) check
-              (cl._type != Types.t_ERROR);
+              (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
-            if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type == Types.t_ERROR)
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0);
+
+                if (Errors.count() == 0)
+                  {
+                    Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
+                                 "were reported.  This can only be the result of a severe bug.");
+                  }
+              }
+            else if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
                 add(cl);
               }
@@ -1041,7 +1047,13 @@ hw25 is
         var result = switch (clazzKind(cc))
           {
           case Abstract, Choice -> false;
-          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          case Intrinsic, Routine, Field ->
+            (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
+            && cc != Clazzes.conststring.getIfCreated()
+            && !cc.isAbsurd()
+            // NYI: this should not depend on string comparison!
+            && !(cc.feature().qualifiedName().equals("void.absurd"))
+            ;
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;
@@ -1065,7 +1077,7 @@ hw25 is
   /**
    * Get the id of clazz consstring
    *
-   * @param the id of connststring or -1 if that clazz was not created.
+   * @return the id of conststring or -1 if that clazz was not created.
    */
   public int clazz_conststring()
   {
@@ -1077,7 +1089,7 @@ hw25 is
   /**
    * Get the id of clazz consstring.internalArray
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @return the id of conststring.internalArray or -1 if that clazz was not created.
    */
   public int clazz_conststring_internalArray()
   {
@@ -1089,7 +1101,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
-   * @param the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
+   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
@@ -1101,7 +1113,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.length
    *
-   * @param the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
+   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
@@ -1436,7 +1448,7 @@ hw25 is
    *
    * @param c code block containing the access
    *
-   * @param ix index of the acces
+   * @param ix index of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
@@ -1487,7 +1499,6 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var outerClazz = clazz(cl);
     var call = (AbstractCall) _codeIds.get(c).get(ix);
     return call.isInheritanceCall();
   }
@@ -1693,7 +1704,7 @@ hw25 is
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isAssignableFrom(cg))
+                if (t.isDirectlyAssignableFrom(cg))
                   {
                     resultL.add(tag);
                   }
@@ -1737,17 +1748,17 @@ hw25 is
 
 
   /**
-   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.
    *
-   * @param cl index of a clazz that is a heir of 'Function'.
+   * @param cl index of a clazz that is an heir of 'Function'.
    */
   public int lookupCall(int cl)
   {
     var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    var ic = cc.lookup(call);
     return id(ic);
   }
 
@@ -2040,6 +2051,31 @@ hw25 is
 
     var or = clazzOuterRef(cl);
     return clazzResultClazz(or);
+  }
+
+
+  /**
+   * Test is a given clazz is not -1 and stores data.
+   *
+   * @param cl the clazz defining a type, may be -1
+   *
+   * @return true if cl != -1 and not unit or void type.
+   */
+  public boolean hasData(int cl)
+  {
+    return cl != -1 &&
+      !clazzIsUnitType(cl) &&
+      !clazzIsVoidType(cl) &&
+      cl != clazzUniverse();
+  }
+
+
+  /**
+   * Does this clazzes contract include any preconditions?
+   */
+  public boolean hasPrecondition(int cl)
+  {
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
   }
 
 

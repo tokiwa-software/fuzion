@@ -41,11 +41,16 @@ set -euo pipefail
 FUZION_CMD=$0
 FUZION_BIN="$(dirname "$(readlink -f "$0")")"
 
-: ${FUZION_HOME="$FUZION_BIN/.."}
-: ${FUZION_JAVA=java}
-: ${FUZION_JAVA_ADDITIONAL_CLASSPATH=""}
-: ${FUZION_JAVA_CLASSPATH="$FUZION_HOME/classes:$FUZION_JAVA_ADDITIONAL_CLASSPATH"}
-: ${FUZION_JAVA_STACK_SIZE=5m}
-: ${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}
+: "${FUZION_HOME="$FUZION_BIN/.."}"
+: "${FUZION_JAVA=java}"
+: "${FUZION_JAVA_ADDITIONAL_CLASSPATH=""}"
+: "${FUZION_JAVA_CLASSPATH="$FUZION_HOME/classes"}"
+# windows (msys2) does not seem to like trailing colons in the class path
+if [ -n "$FUZION_JAVA_ADDITIONAL_CLASSPATH" ]
+then
+  FUZION_JAVA_CLASSPATH="$FUZION_JAVA_CLASSPATH:$FUZION_JAVA_ADDITIONAL_CLASSPATH"
+fi
+: "${FUZION_JAVA_STACK_SIZE=5m}"
+: "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
 
-$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.Fuzion "$@"
+$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dline.separator=$'\n' -Dfile.encoding=UTF-8 -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.Fuzion "$@"

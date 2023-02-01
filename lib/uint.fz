@@ -31,7 +31,7 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := b.dropWhile (x -> x = 0)
+  data := b.drop_while (x -> x ≟ u32 0)
 
   # bitwise operations
 
@@ -55,14 +55,13 @@ is
 
   # shift right
   infix >> (other uint) uint
-  pre other <= uint i32s.max.as_u64
+  pre other ≤ uint i32s.max.as_u64
   is
-    if other = zero
+    if other ≟ zero
       thiz
-    else if other >= uint 32
-      (uint (data
-        .reverse
-        .drop (other.as_i32 / 32)) unit) >> (other % (uint 32))
+    else if other ≥ uint 32
+      discard := other.as_i32 / 32
+      (uint (data.take data.count-discard) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
       (l,_) := data
@@ -76,11 +75,11 @@ is
 
   # shift left
   infix << (other uint) uint
-  pre other <= uint i32s.max.as_u64
+  pre other ≤ uint i32s.max.as_u64
   is
-    if other = zero
+    if other ≟ zero
       thiz
-    else if other >= uint 32
+    else if other ≥ uint 32
       uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
@@ -97,25 +96,25 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   private equalize(other uint)
-  post result.values.0.count = result.values.1.count
+  post result.values.0.count ≟ result.values.1.count
     =>
-    if other.data.count < data.count
-      (data.asList, zeros data.count-other.data.count ++ other.data)
+    if other.data.count ⩻ data.count
+      (data.as_list, zeros data.count-other.data.count ++ other.data)
     else
-      (zeros other.data.count-data.count ++ data, other.data.asList)
+      (zeros other.data.count-data.count ++ data, other.data.as_list)
 
 
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
   # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
   private divide_with_remainder (divisor uint) tuple uint uint
-  pre divisor > zero
+  pre divisor ⩼ zero
   is
-    if thiz = zero
+    if thiz ≟ zero
       (zero, zero)
-    else if thiz < divisor
+    else if thiz ⩻ divisor
       (zero, thiz)
-    else if thiz = divisor
+    else if thiz ≟ divisor
       (one, zero)
     else
       # The idea is to shift the divisor left as
@@ -136,7 +135,7 @@ is
   # example: uint 8 => 4
   highest_bit uint
   is
-    if uint.this = zero
+    if thiz ≟ zero
       zero
     else
       uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
@@ -161,7 +160,7 @@ is
 
   # subtract other from this unsigned int
   infix - (other uint) uint
-  pre thiz >= other
+  pre thiz ≥ other
   is
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
@@ -174,7 +173,7 @@ is
 
         difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
 
-        ([difference.low32bits] ++ res, if difference >= two_pow_32 then u64 0 else u64 1)
+        ([difference.low32bits] ++ res, if difference ≥ two_pow_32 then u64 0 else u64 1)
       )
     uint r unit
 
@@ -209,7 +208,7 @@ is
 
   # divide these unsigned ints
   infix /  (other uint) uint
-  pre other != zero
+  pre !(other ≟ zero)
   is
     (quotient,_) := (divide_with_remainder other)
     quotient
@@ -226,9 +225,9 @@ is
   # this uint to the power of other
   infix ** (other uint) uint
   is
-    if other = zero
+    if other ≟ zero
       one
-    else if other = one
+    else if other ≟ one
       thiz
     else
       if other %% (uint 2)
@@ -239,41 +238,41 @@ is
 
 
   # are these unsigned integers equal?
-  infix == (other uint) bool is
-    data.count = other.data.count &
-      ((data.zip other.data (a,b -> a = b)) ∀ (x->x))
+  fixed type.equality(a, b uint) bool is
+    a.data.count ≟ b.data.count &&
+      ((a.data.zip b.data (c,d -> c ≟ d)) ∀ (x->x))
 
 
   # less or equal
-  infix <= (other uint) =>
-    if data.count = other.data.count
-      data
+  fixed type.lteq(a, b uint) =>
+    if a.data.count ≟ b.data.count
+      a.data
         # zip the two equally long lists of digits
-        .zip other.data (a,b -> (a,b))
+        .zip b.data (c,d -> (c,d))
         # skip to first unequal
-        .dropWhile (x -> (a,b) := x; a = b)
+        .drop_while (x -> (c,d) := x; c ≟ d)
         # compare
-        .mapSequence (x -> (a,b) := x; a <= b)
+        .mapSequence (x -> (c,d) := x; c ≤ d)
         # fallback, if all are equal
         .first true
     else
-      data.count < other.data.count
+      a.data.count ⩻ b.data.count
 
 
   # checks if operations are allowed
 
-  prefix -! bool is thiz=zero
+  prefix -! bool is thiz ≟ zero
   infix +! (other uint) bool is true
-  infix -! (other uint) bool is thiz >= other
+  infix -! (other uint) bool is thiz ≥ other
   infix *! (other uint) bool is true
-  infix /! (other uint) bool is other != zero
+  infix /! (other uint) bool is !(other ≟ zero)
   infix %! (other uint) bool is true
   infix **!(other uint) bool is true
 
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  infix **?(other uint) numOption uint is thiz ** other
+  infix **?(other uint) num_option uint is thiz ** other
   infix **^(other uint) uint is thiz ** other
 
   orderedThis uint is thiz
@@ -287,37 +286,60 @@ is
   redef thiz => uint b unit
 
 
-  # this uint as an u32
-  as_u32 u32
-  pre
-    data.count <= 1
-  is
-    data.first (u32 0)
-
   # this uint as an i32
   as_i32 i32
-  pre as_u32 <= i32s.max.as_u32
+  pre as_u32 ≤ i32s.max.as_u32
   is
     as_u32.as_i32
 
 
+  # this uint as an i64
+  as_i64 i64
+  is
+    as_u64.as_i64
+
+
+  # this uint as an u32
+  as_u32 u32
+  pre
+    data.count ≤ 1
+  is
+    data.first (u32 0)
+
+
+  # this uint as an u64
+  as_u64 u64
+  pre data.count ≤ 2
+  is
+    if data.count ≟ 2
+      data[1].as_u64<<32 | data[0].as_u64
+    else
+      (data.first 0).as_u64
+
+
+  # this uint as an int
+  as_int int
+  is
+    int plus (uint b unit)
+
+
   # this uint as a string, may contain leading zeros
   #
-  private asString0 string is
+  private as_string0 String is
     mrd := uint 1_000_000_000
     (q, rem) := uint.this.divide_with_remainder mrd
 
-    if q = zero
-      (rem.data.first (u32 0)).asString
+    if q ≟ zero
+      (rem.data.first (u32 0)).as_string
     else
-      q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
+      q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
 
 
-  redef asString string is
-    if uint.this = zero
+  redef as_string String is
+    if thiz ≟ zero
       "0"
     else
-      asString0
+      as_string0
 
 
 uint (val u64) uint is

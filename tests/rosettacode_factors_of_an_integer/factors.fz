@@ -39,16 +39,16 @@ factors is
   say
 
   yak "factors iterating over an interval:"
-  (1..n).forAll (x -> if (n %% x) print x)
+  (1..n).for_each (x -> if (n %% x) print x)
   say
 
   yak "factors consuming a Sequence:"
-  (1..n).forAll (x -> if (n %% x) print x)
+  (1..n).for_each (x -> if (n %% x) print x)
   say
 
   yak "factors filtering and consuming a Sequence:"
   (1..n).filter (x -> n %% x)
-        .forAll (fun print)
+        .for_each (fun print)
   say
 
   yak "factors filtering and printing a Sequence: "
@@ -58,7 +58,7 @@ factors is
   (1..n) & (x -> n %% x) | fun print
   say
 
-  say "factors embedded in string: {(1..n) &  (x -> n %% x)}"
+  say "factors embedded in String: {(1..n) &  (x -> n %% x)}"
 
   (1..n) | m ->
     say("factors of $m: " +

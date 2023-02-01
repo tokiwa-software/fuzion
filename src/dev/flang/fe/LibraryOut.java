@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -393,9 +394,12 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CYkkkk  k = kind                            |
+   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   |        |        |               |           k = kind                            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -439,15 +443,13 @@ class LibraryOut extends ANY
   void feature(Feature f)
   {
     _data.add(f);
-    var k =
-      !f.isConstructor() ? f.kind().ordinal() :
-      f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                         : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE;
+    int k = f.visibility().ordinal() << 7;
+    k = k | (!f.isConstructor() ? f.kind().ordinal() :
+              f.isThisRef()     ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
+                                : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
-    if (CHECKS) check
-      (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
     if (f.isIntrinsicConstructor())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
@@ -456,10 +458,14 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
+    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
+      }
     var n = f.featureName();
-    _data.write(k);
+    _data.writeShort(k);
     var bn = n.baseName();
-    if (_sourceModule._options._eraseInternalNamesInLib && bn.startsWith(FuzionConstants.INTERNAL_NAME_PREFIX))
+    if (_sourceModule._options._eraseInternalNamesInLib && n.isInternal())
       {
         bn = "";
       }
@@ -531,7 +537,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | isRef                                         |
+   *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -566,13 +572,11 @@ class LibraryOut extends ANY
           }
         else
           {
-            boolean makeRef = t.isRef() && !t.featureOfType().isThisRef();
-            // there is no explicit value type at this phase:
-            if (CHECKS) check
-              (makeRef || t.isRef() == t.featureOfType().isThisRef());
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.featureOfType());
-            _data.writeBool(makeRef);
+            _data.write(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
+                        t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                       : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
               {
                 type(gt);
@@ -779,7 +783,7 @@ class LibraryOut extends ANY
       }
     else if (s instanceof Call c)
       {
-        lastPos = expressions(c.target, lastPos);
+        lastPos = expressions(c.target(), lastPos);
         for (var a : c._actuals)
           {
             lastPos = expressions(a, lastPos);

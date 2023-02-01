@@ -1,7 +1,7 @@
-string.blub => "string.blub"
+String.blub => "String.blub"
 
 test_modules is
-  s string := ""
+  s String := ""
 
   # check qualified addition to base.fum feature string
   say s.blub

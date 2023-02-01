@@ -26,7 +26,7 @@
 functions is
 
     y(f ()->i32){}
-    x0(f Function i32 Object i32) is
+    x0(f Function i32 Any i32) is
       say "here 1x0---------------"
       r1 i32 := f.call "hallo" 3
       say "here 2x0---------------"
@@ -36,10 +36,10 @@ functions is
       say "$r1  $r2"
       say "here 1x0 done---------------"
 
-    x(f (Object, i32) -> i32) is
+    x(f (Any, i32) -> i32) is
       say "here 1x---------------"
       r1 i32 := f.call "hallo" 3
-      g (Object, i32) -> i32 := f;
+      g (Any, i32) -> i32 := f;
       r2 i32 := g.call "welt"  4
       // i32 r3 := f     ("hola",5);
       // i32 r4 := g     ("mundo",5);
@@ -61,14 +61,14 @@ functions is
     x ((o, i) -> { o.hashCode + i })  // implicit assignment to result from last statement
 
     say "here 1c---------------"
-    x (ref : Function i32 Object i32 {
-        redefine call(o Object, i i32) i32 is
+    x (ref : Function i32 Any i32 {
+        redefine call(o Any, i i32) i32 is
           say "in anonymous function: $o"
           o.hashCode + i
        })
 
-    f ref : Function i32 Object i32 is
-        redefine call(o Object, i i32) i32 is
+    f ref : Function i32 Any i32 is
+        redefine call(o Any, i i32) i32 is
           say "here f.call---------------"
           set result := o.hashCode + i
           say "here f.call done---------------"
@@ -77,14 +77,14 @@ functions is
     x0 f()
     say "here x0 f---------------"
     x0 f
-    say "here x0 (fun i32 (Object o, i32 i) \{ set result := o.hashCode + i })---------------"
+    say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hashCode + i })---------------"
     x0 ((o, i) -> { set result := o.hashCode + i })
     say "here x f()---------------"
     x f()
     say "here x(f)---------------"
     x f
 
-    f1(o Object, i i32) i32 is
+    f1(o Any, i i32) i32 is
         say "here f1 o i !!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         o.hashCode + i
     say "here x0 (fun f1)---------------"

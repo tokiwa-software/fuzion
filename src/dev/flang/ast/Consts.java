@@ -26,13 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
+
 
 /**
- * Consts <description>
+ * Consts defines global constants used in the AST
+ *
+ * NYI: Consider moving these constants to dev.flang.util.FuzionConstants.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Consts
+public class Consts extends ANY
 {
 
 
@@ -42,80 +46,28 @@ public class Consts
   /**
    *
    */
-  public static final int MODIFIER_ONCE         = 0x0001;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_LAZY         = 0x0002;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_SYNCHRONIZED = 0x0004;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_VALUE        = 0x0008;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_REDEFINE     = 0x0010;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_CONST        = 0x0020;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_LEAF         = 0x0040;
-
-  /**
-   *
-   */
-  public static final int MODIFIER_FINAL        = 0x0080;
+  public static final String[] MODIFIER_STRINGS = {"lazy", "redef", "fixed"};
 
 
   /**
    *
    */
-  public static final String[] MODIFIER_STRINGS = {"once", "lazy","synchronized","value","redefine","const","leaf","final"};
-
-
-  /**
-   * visibility for anonymous features
-   */
-  public static final Visi VISIBILITY_INVISIBLE  = new Visi("INVISIBLE");
-
+  public static final int MODIFIER_LAZY         = 0x01;
+  static { if (CHECKS) check(modifierToString(MODIFIER_LAZY).trim().equals("lazy")); }
 
   /**
-   * default visibility: visible to all inner classes of outer class
-   * of declaring class
+   *
    */
-  public static final Visi VISIBILITY_LOCAL      = new Visi("LOCAL");
-
+  public static final int MODIFIER_REDEFINE     = 0x02;
+  static { if (CHECKS) check(modifierToString(MODIFIER_REDEFINE).trim().equals("redef")); }
 
   /**
-   * private visibility: visible to declaring class and all its inner
-   * classes
+   * 'fixed' modifier to force feature to be fixed, i.e., not inherited by
+   * heirs.
    */
-  public static final Visi VISIBILITY_PRIVATE    = new Visi("PRIVATE");
+  public static final int MODIFIER_FIXED        = 0x04;
+  static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
 
-
-  /**
-   * protected visibility: visibly to all heirs of declaring class
-   */
-  public static final Visi VISIBILITY_CHILDREN   = new Visi("CHILDREN");
-
-
-  /**
-   * public visibility: visible to all classes
-   */
-  public static final Visi VISIBILITY_PUBLIC     = new Visi("PUBLIC");
 
 
   /*-----------------------------  methods  -----------------------------*/

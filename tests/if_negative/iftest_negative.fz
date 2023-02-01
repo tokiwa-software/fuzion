@@ -25,13 +25,13 @@
 
 iftest_negative is
 
-  exitCode := 0
+  exit_code := mut 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
-      set exitCode := 1
+      exit_code <- 1
       "FAILED: "
     say (s + msg)
 
@@ -52,4 +52,18 @@ iftest_negative is
   testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
   testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
 
-  fuzion.std.exit exitCode
+  routine_positive (b bool) choice unit String is
+    if b // ok
+      "Hello"
+
+  # NYI improve error message
+  routine_negative (b bool) String is
+    if b // 5. should flag an error: Incompatible types in assignment
+      "Hello"
+
+  # NYI improve error message
+  constructor (b bool) is
+    if b // 6. should flag an error: Incompatible types in branches of if statement
+      "Hello"
+
+  exit exit_code.get

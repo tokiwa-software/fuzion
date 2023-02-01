@@ -26,9 +26,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.fzjava;
 
+import dev.flang.ast.AbstractFeature;
+
+import dev.flang.fe.FrontEnd;
+import dev.flang.fe.FrontEndOptions;
+
+import dev.flang.tools.FuzionHome;
 import dev.flang.tools.Tool;
 
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 
 import java.io.IOException;
 
@@ -84,6 +91,23 @@ public class FZJava extends Tool
    * generated before sub-classes.
    */
   TreeMap<String, ForClass> _classes = new TreeMap<>();
+
+
+  /**
+   * An instance of FrontEnd, which is required to load library modules.
+   */
+  private FrontEnd _fe;
+
+
+  /**
+   * The features that have already been defined in the loaded library modules.
+   */
+  TreeSet<String> _existingFeatures = new TreeSet<String>();
+
+  /**
+   * The name of the module that is currently being processed.
+   */
+  String _currentModule;
 
 
   /*--------------------------  static methods  -------------------------*/
@@ -159,6 +183,14 @@ public class FZJava extends Tool
               {
                 _options._overwrite = parseOnOffArg(a);
               }
+            else if (a.startsWith("-modules="))
+              {
+                _options._loadModules.addAll(parseStringListArg(a));
+              }
+            else if (a.startsWith("-moduleDirs="))
+              {
+                _options._moduleDirs.addAll(parseStringListArg(a));
+              }
             else if (a.startsWith("-"))
               {
                 unknownArg(a);
@@ -185,6 +217,23 @@ public class FZJava extends Tool
   {
     if (createDestDir())
       {
+        List<String> emptyList = new List<>();
+        var feOptions = new FrontEndOptions(/* verbose */ 0,
+                                            /* fuzionHome */ (new FuzionHome())._fuzionHome,
+                                            /* loadBaseLib */ true,
+                                            /* eraseInternalNamesInLib */ true,
+                                            /* modules */ _options._loadModules,
+                                            /* moduleDirs */ _options._moduleDirs,
+                                            /* dumpModules */ emptyList,
+                                            /* fuzionDebugLevel */ 0,
+                                            /* fuzionSafety */ true,
+                                            /* enableUnsafeIntrinsics */ true,
+                                            /* sourceDirs */ emptyList,
+                                            /* readStdin */ false,
+                                            /* main */ null,
+                                            /* loadSources */ true);
+        _fe = new FrontEnd(feOptions);
+
         for (var m : _options._modules)
           {
             if (!m.endsWith(".jmod"))
@@ -192,6 +241,37 @@ public class FZJava extends Tool
                 m = m + ".jmod";
               }
             processModule(m);
+          }
+      }
+  }
+
+
+  /**
+   * Given a qualified name, add this qualified name and the qualified name of
+   * its outer features declared by the given feature in any of the loaded
+   * modules to _existingFeatures.
+   *
+   * This is usually called with the universe as given feature in the first
+   * iteration. Then the qualified names of the given feature itself, and all of
+   * its parents end up in _existingFeatures.
+   *
+   * The recursion here ends because no feature can be both an outer and an inner
+   * feature of some other feature, i.e. the outer-inner relationship defines a
+   * tree of features.
+   */
+  private void recurseDeclaredFeature(String name, AbstractFeature f)
+  {
+    for (var m : _fe.getModules())
+      {
+        var df = m.declaredFeatures(f);
+
+        for (var fn : df.values())
+          {
+            if (name.startsWith(fn.qualifiedName()))
+              {
+                _existingFeatures.add(fn.qualifiedName());
+                recurseDeclaredFeature(name, fn);
+              }
           }
       }
   }
@@ -231,10 +311,15 @@ public class FZJava extends Tool
   /**
    * Create Fuzion features to interface Java code for given module.
    *
-   * @param a module such as 'java.base.mod'
+   * @param m a module such as 'java.base.mod'
    */
   void processModule(String m)
   {
+    // clean up in case a previous run of processModule filled this already:
+    _currentModule = m.substring(0, m.length() - 5);
+    _pkgs.clear();
+    _classes.clear();
+
     var p = modulePath(m);
     if (_verbose > 0)
       {
@@ -244,7 +329,7 @@ public class FZJava extends Tool
     String url = "file:jar://" + p.toUri().getPath();
     try
       {
-        var cl = new java.net.URLClassLoader​(new URL[] { new URL(url) });
+        var cl = new java.net.URLClassLoader(new URL[] { new URL(url) });
         try
           {
             var zip = new ZipFile(p.toFile());
@@ -418,6 +503,8 @@ public class FZJava extends Tool
    */
   void createOuter(String jfn)
   {
+    recurseDeclaredFeature(jfn.replace("/", "."), _fe._universe);
+
     var pkg = jfn.substring(0, jfn.lastIndexOf("/"));
     if (pkg.indexOf("/") >= 0)
       {
@@ -426,7 +513,11 @@ public class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
-        FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+        // do not generate duplicate features
+        if (!_existingFeatures.contains(pkg.replace("/", ".")))
+          {
+            FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+          }
       }
   }
 

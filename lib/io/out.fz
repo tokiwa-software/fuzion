@@ -26,7 +26,7 @@
 # out -- effect providing an output stream
 #
 private out (
-  redef p canPrint,
+  redef p Can_Print,
 
   # action to be taken: install or default?
   redef r effectMode.val,
@@ -43,7 +43,7 @@ out(rr ()->unit) => out defaultPrintToOut rr
 
 # short-hand for creating and installing out effect
 #
-out(p canPrint, rr ()->unit) =>
+out(p Can_Print, rr ()->unit) =>
   out p (effectMode.inst rr) unit
   unit
 
@@ -55,9 +55,9 @@ out =>
   io.out.env
 
 
-defaultPrintToOut : canPrint is
+defaultPrintToOut : Can_Print is
 
-  print(s Object) => stdout.print s
+  print(s Any) => stdout.print s
 
 
 # unit type feature defining features related to out but not requiring an

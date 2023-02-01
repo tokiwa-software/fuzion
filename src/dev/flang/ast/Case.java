@@ -108,7 +108,7 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Consts.VISIBILITY_PRIVATE, t, n), null, c);
+    this(pos, new Feature(pos, Visi.PRIVATE, t, n), null, c);
   }
 
 
@@ -303,7 +303,7 @@ public class Case extends AbstractCase
         if (CHECKS) check
           (Errors.count() > 0 || cg != null);
         if (cg != null &&
-            (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+            (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;

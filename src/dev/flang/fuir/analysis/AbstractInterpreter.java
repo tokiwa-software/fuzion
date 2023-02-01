@@ -195,6 +195,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
   /**
    * property-controlled flag to enable debug output.
+   *
+   * To enable debugging, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
    */
   static final boolean DEBUG =
     System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG",
@@ -227,7 +231,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param fuir the intermediate code.
    */
-  public AbstractInterpreter(FUIR fuir, ProcessStatement processor)
+  public AbstractInterpreter(FUIR fuir, ProcessStatement<VALUE, RESULT> processor)
   {
     if (PRECONDITIONS) require
       (fuir != null,
@@ -417,7 +421,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             res = null;
           }
       }
-    return new Pair(res, _processor.sequence(l));
+    return new Pair<>(res, _processor.sequence(l));
   }
 
 

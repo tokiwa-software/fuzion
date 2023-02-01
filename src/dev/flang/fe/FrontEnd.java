@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.TreeMap;
 
@@ -65,6 +66,12 @@ public class FrontEnd extends ANY
 
 
   static FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
+
+
+  /**
+   * Offset added to global indices to detect false usage of these early on.
+   */
+  static int GLOBAL_INDEX_OFFSET = 0x40000000;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -119,6 +126,12 @@ public class FrontEnd extends ANY
    * The module we are compiling. null if !options._loadSources or Errors.count() != 0
    */
   private final SourceModule _module;
+
+
+  /**
+   * The total # of bytes loadeded for modules. Global indices are in this range.
+   */
+  private int _totalModuleData = 0;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -222,7 +235,13 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        result = new LibraryModule(this, data, new LibraryModule[0], _universe);
+        var base = _totalModuleData;
+        _totalModuleData = base + data.limit();
+        result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
+                                   this,
+                                   data,
+                                   new LibraryModule[0],
+                                   _universe);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -319,6 +338,15 @@ public class FrontEnd extends ANY
       {
         m.loadInnerFeatures(f);
       }
+  }
+
+
+  /**
+   * Return the collection of loaded modules.
+   */
+  public Collection<LibraryModule> getModules()
+  {
+    return _modules.values();
   }
 
 }

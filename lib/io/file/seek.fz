@@ -1,0 +1,111 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature seek
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# seek -- effect providing stream seeking operations
+#
+private seek(
+  ps Provided_Seek,
+  redef r effectMode.val,
+  _ unit
+  ) : seeks, effect r is
+
+  # seek offset in the stream represented by fd
+  # returns an outcome i64 that represents the new offset
+  # returns an error in case of failure
+  #
+  seek(
+       # the file descriptor
+       fd i64,
+       # the offset to seek from the beginning of the stream pointer
+       offset i64) =>
+    tmp := ps.seek fd offset
+    replace
+    tmp
+
+  # returns the current file-pointer offset as an outcome i64,
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and error in failure
+  #
+  file_position(
+                # the file descriptor
+                fd i64) =>
+    tmp := ps.file_position fd
+    replace
+    tmp
+
+# short-hand for accessing seek effect in current environment and performing the default seek operation using 
+# io.file.seek.seek fd offset
+# seek offset in the stream represented by fd
+# returns an outcome i64 that represents the new offset
+# returns an error in case of failure
+#
+seek(
+     # the file descriptor
+     fd i64,
+     # the offset to seek from the beginning of the stream pointer
+     offset i64) =>
+  seeks.installDefault
+  seek.env.seek fd offset
+
+# short-hand for creating and installing effect
+#
+seek_custom(f () -> unit) => seek_custom default_provided_seek f
+
+# short-hand for creating and installing effect
+#
+seek_custom(ps Provided_Seek, f () -> unit) =>
+  s := seek ps effectMode.new unit
+  s.use0 f
+  unit
+
+# short-hand for accessing seek effect in current environment
+#
+seek => 
+  seeks.installDefault
+  seek.env
+
+# reference to the seek operations that could be provided
+#
+Provided_Seek ref is
+  seek(fd i64, offset i64) outcome i64 is abstract
+  file_position(fd i64) outcome i64 is abstract
+
+# the default stream seeking
+#
+default_provided_seek : Provided_Seek is
+  seek(fd i64, offset i64) =>
+    fuzion.sys.fileio.seek fd offset
+
+  file_position(fd i64) =>
+    fuzion.sys.fileio.file_position fd
+
+# unit type feature defining features related to seek effect but not requiring an
+# instance.
+#
+seeks is
+  # install default effect io.file.seek
+  installDefault unit is 
+    if !(effects.exists io.file.seek)
+      _ := seek default_provided_seek effectMode.default unit
