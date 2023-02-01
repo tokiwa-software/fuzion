@@ -63,7 +63,7 @@ public class ParseUnicodeData extends ANY
   /**
    * Class representing a line in UnicodeData.txt that represents on code point.
    */
-  class CP
+  class CP implements Comparable<CP>
   {
     int _code;
     String _name;
@@ -135,6 +135,14 @@ public class ParseUnicodeData extends ANY
     boolean isLast()
     {
       return _name.startsWith("<") && _name.endsWith(", Last>");
+    }
+
+    /*
+     * compare this CP to other
+     */
+    public int compareTo(CP other)
+    {
+      return this._code - other._code;
     }
   }
 
@@ -231,6 +239,7 @@ public class ParseUnicodeData extends ANY
         _lastModified = Files.readAttributes(p, BasicFileAttributes.class).lastModifiedTime();
         Files.lines(p).forEach(s -> {
             var e = new CP(s);
+            _codepoints.add(e);
             if (_lastCP != null && e._code <= _lastCP._code)
               {
                 Errors.fatal("*** error, expected unicode data to be sorted");
@@ -245,9 +254,6 @@ public class ParseUnicodeData extends ANY
               }
             _lastCP = e;
           });
-
-        var attr = Files.readAttributes(p, BasicFileAttributes.class);
-        System.out.println("  /* Unicode data from '" + name + "' last modified '" + attr.lastModifiedTime() + "' */");
       }
     catch (IOException | UncheckedIOException e)
       {
@@ -355,25 +361,34 @@ public class ParseUnicodeData extends ANY
 
     var lTable = _codepoints
       .stream()
+      .sorted()
       .filter(cp -> !cp._lowercaseMapping.isBlank())
       .map(cp -> {
-        return "(u32 " + cp._code +", codepoint " + Integer.parseInt(cp._lowercaseMapping, 16) +  ")";
+        var m = Integer.parseInt(cp._lowercaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
       })
       .collect(Collectors.joining(",\n    "));
 
     var uTable = _codepoints
       .stream()
+      .sorted()
       .filter(cp -> !cp._uppercaseMapping.isBlank())
       .map(cp -> {
-        return "(u32 " + cp._code +", codepoint " + Integer.parseInt(cp._uppercaseMapping, 16) +  ")";
+        var m = Integer.parseInt(cp._uppercaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
       })
       .collect(Collectors.joining(",\n    "));
 
     var tTable = _codepoints
       .stream()
+      .sorted()
       .filter(cp -> !cp._titlecaseMapping.isBlank())
       .map(cp -> {
-        return "(u32 " + cp._code +", codepoint " + Integer.parseInt(cp._titlecaseMapping, 16) +  ")";
+        var m = Integer.parseInt(cp._titlecaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
       })
       .collect(Collectors.joining(",\n    "));
 
