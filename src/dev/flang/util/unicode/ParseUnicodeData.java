@@ -331,8 +331,7 @@ public class ParseUnicodeData extends ANY
       {
         if (!(args.length == 2 && args[0].equals("-fz") || args.length == 1))
           {
-            System.err.println("Usage: ParseUnicodeData [-fz] <UnicodeData.txt>");
-            System.exit(1);
+            Errors.fatal("Usage: ParseUnicodeData [-fz] <UnicodeData.txt>");
           }
 
         if (!args[0].equals("-fz"))
