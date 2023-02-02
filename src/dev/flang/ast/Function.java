@@ -446,8 +446,22 @@ public class Function extends ExprWithPos
   {
     if (this._call == null)
       {
-        // do not do anything yet, we are waiting for propagateExpectedType to
-        // tell us what we are.
+        if(_expr != null &&  _expr.producesResult() && _names.isEmpty())
+          {
+            var t = ((Block)_expr).resultExpression().typeIfKnown();
+            if(t != null)
+              {
+                _type = new Type(pos(), Types.resolved.f_function.featureName().baseName(),
+                                 new List<>(t), null, Types.resolved.f_function,
+                                 Type.RefOrVal.LikeUnderlyingFeature)
+                                  .resolve(res, outer);
+              }
+          }
+        else
+          {
+            // do not do anything yet, we are waiting for propagateExpectedType to
+            // tell us what we are.
+          }
       }
     else if (this._feature == null)
       {
