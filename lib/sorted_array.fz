@@ -135,7 +135,7 @@ is
                  # use less_or_equal instead:
                  #
                  less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
-        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
   is
     binary_search(l, r i32) option i32 is
       m := (l + r) / 2
