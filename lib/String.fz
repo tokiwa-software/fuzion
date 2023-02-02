@@ -80,7 +80,7 @@ String ref : has_equality, has_hash, has_total_order is
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
         (c, d) := x
-        !(a ≟ b))
+        !(c ≟ d))
       .mapSequence (x ->
         (c, d) := x
         c ≤ d)
