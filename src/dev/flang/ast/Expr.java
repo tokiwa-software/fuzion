@@ -147,6 +147,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  AbstractType typeForCallTarget()
+  {
+    return type();
+  }
+
+
+  /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.

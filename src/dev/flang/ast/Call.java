@@ -449,7 +449,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (_target != null);
 
-    var result = _target.type();
+    var result = _target.typeForCallTarget();
     if (result.isGenericArgument())
       {
         var g = result.genericArgument();
@@ -1470,17 +1470,51 @@ public class Call extends AbstractCall
    * perform type resolution (which includes possibly replacing it by a
    * different Expr) and return it.
    *
-   * @param aargs iterator
+   * This is called twice for two passes: First, with formalTypeForPropagation
+   * == null, to find all the types of actuals that are happy to provide their
+   * type.  Second, with formalTypeForPropagation != null, to first propagate a
+   * type that was possibly found during the first pass before before resolving
+   * the actual's type.
+   *
+   * @param formalTypeForPropagation  the formal argument type
+   *
+   * @param aargs iterator whose next value is the actual to process
    *
    * @param res the resolution instance
    *
    * @param outer the root feature that contains this statement
    */
-  private Expr resolveTypeForNextActual(ListIterator<Expr> aargs, Resolution res, AbstractFeature outer)
+  private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
+                                        ListIterator<Expr> aargs,
+                                        Resolution res,
+                                        AbstractFeature outer)
   {
     Expr actual = aargs.next();
-    actual = res.resolveType(actual, outer);
-    aargs.set(actual);
+    var actualWantsPropagation = actual instanceof NumLiteral;
+    if (formalTypeForPropagation != null && actualWantsPropagation)
+      {
+        if (formalTypeForPropagation.isGenericArgument())
+          {
+            var g = formalTypeForPropagation.genericArgument();
+            if (g.feature() == _calledFeature)
+              { // we found a use of a generic type, so record it:
+                var t = _generics.get(g.index());
+                if (t != Types.t_UNDEFINED)
+                  {
+                    actual = actual.propagateExpectedType(res, outer, t);
+                  }
+              }
+          }
+      }
+    if ((formalTypeForPropagation != null) || !actualWantsPropagation)
+      {
+        actual = res.resolveType(actual, outer);
+        aargs.set(actual);
+      }
+    else
+      {
+        actual = null;
+      }
     return actual;
   }
 
@@ -1570,61 +1604,72 @@ public class Call extends AbstractCall
   void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
   {
     var cf = _calledFeature;
-    int count = 1; // argument count, for error messages
-    ListIterator<Expr> aargs = _actuals.listIterator();
-    var va = cf.valueArguments();
-    var vai = 0;
-    for (var frml : va)
+    // run two passes: first, ignore numeric literals and open generics, do these in second pass
+    for (var pass = 0; pass < 2; pass++)
       {
-        if (CHECKS) check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+        int count = 1; // argument count, for error messages
 
-        if (!checked[vai])
+        ListIterator<Expr> aargs = _actuals.listIterator();
+        var va = cf.valueArguments();
+        var vai = 0;
+        for (var frml : va)
           {
-            var t = frml.resultTypeIfPresent(res, NO_GENERICS);
-            var g = t.isGenericArgument() ? t.genericArgument() : null;
-            if (g != null && g.feature() == cf && g.isOpen())
+            if (CHECKS) check
+                          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+            if (!checked[vai])
               {
-                checked[vai] = true;
-                foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
-                while (aargs.hasNext())
+                var t = frml.resultTypeIfPresent(res, NO_GENERICS);
+                var g = t.isGenericArgument() ? t.genericArgument() : null;
+                if (g != null && g.feature() == cf && g.isOpen())
+                  {
+                    if (pass == 1)
+                      {
+                        checked[vai] = true;
+                        foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
+                        while (aargs.hasNext())
+                          {
+                            count++;
+                            Expr actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, outer);
+                            var actualType = actual.typeIfKnown();
+                            if (actualType == null)
+                              {
+                                actualType = Types.t_ERROR;
+                                AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                              }
+                            _generics.add(actualType);
+                          }
+                      }
+                  }
+                else if (aargs.hasNext())
                   {
                     count++;
-                    Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                    var actualType = actual.typeIfKnown();
-                    if (actualType == null)
+                    Expr actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer);
+                    var actualType = actual == null ? null : actual.typeIfKnown();
+                    if (actualType != null)
                       {
-                        actualType = Types.t_ERROR;
-                        AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                        inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
+                        checked[vai] = true;
                       }
-                    _generics.add(actualType);
+                    // NYI cleanup/merge the two cases below
+                    else if (actual instanceof Function af)
+                      {
+                        checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                      }
+                    else if (actual instanceof Block b && b.resultExpression() instanceof Function af)
+                      {
+                        checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                      }
                   }
               }
             else if (aargs.hasNext())
               {
-                count++;
-                Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                var actualType = actual.typeIfKnown();
-                if (actualType != null)
-                  {
-                    inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
-                    checked[vai] = true;
-                  }
-                // NYI cleanup/merge the two cases below
-                else if (actual instanceof Function af)
-                  {
-                    checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
-                  }
-                else if (actual instanceof Block b && b.resultExpression() instanceof Function af)
-                  {
-                    checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
-                  }
+                aargs.next();
               }
+            vai++;
           }
-        vai++;
       }
   }
-
 
 
   /**
