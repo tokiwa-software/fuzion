@@ -117,4 +117,6 @@ entry(OK type : has_total_order,
   val => om.vs[i]
 
 
+  # total order over entries.
+  #
   fixed type.lteq(a, b entry OK V) => a.om.ks[a.i] ≤ b.om.ks[b.i]
