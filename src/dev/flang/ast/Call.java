@@ -1537,6 +1537,7 @@ public class Call extends AbstractCall
         else if (conflict[i])
           {
             AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
+            _generics.set(i, Types.t_ERROR);
           }
       }
 
