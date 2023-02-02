@@ -53,4 +53,4 @@ jobs:
         run: make
 
       - name: run tests
-        run: make run_tests_parallel
+        run: make run_tests
