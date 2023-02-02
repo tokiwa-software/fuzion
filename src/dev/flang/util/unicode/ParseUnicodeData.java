@@ -175,12 +175,12 @@ public class ParseUnicodeData extends ANY
   List<String> _categories = new List<String>();
 
   /**
-   * NUmber of blocks of letter categories found
+   * Number of blocks of letter categories found
    */
   int _letterBlocks = 0;
 
   /**
-   * NUmber of blocks of letters found
+   * Number of blocks of letters found
    */
   int _letters = 0;
 

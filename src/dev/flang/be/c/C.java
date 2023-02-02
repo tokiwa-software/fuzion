@@ -157,7 +157,7 @@ public class C extends ANY
     /**
      * Perform a call of a feature with target instance tvalue with given
      * arguments.. The type of tvalue might be dynamic (a refernce). See
-     * FUIR.acess*().
+     * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).

@@ -416,7 +416,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 if (actual.featureOfType() == featureOfType())
                   {
-                    if (actual.generics().size() == generics().size()) // NYI: Check: What aboout open generics?
+                    if (actual.generics().size() == generics().size()) // NYI: Check: What about open generics?
                       {
                         result = true;
                         // NYI: Should we check if the generics are assignable as well?

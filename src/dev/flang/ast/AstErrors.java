@@ -284,7 +284,7 @@ public class AstErrors extends ANY
    *
    * @param where location of the incompaible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignement to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -523,7 +523,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment is not a field",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n");
   }
@@ -532,7 +532,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           "Was defined as loop index variable at " + f.pos().show());
@@ -1642,7 +1642,7 @@ public class AstErrors extends ANY
           (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
           (cf != null ? "call to " + s(cf) + "\n" : "" ) +
           "actual type argument found: " + s(a._type) + "\n" +
-          (at != null ? "expected agument types: " + at + "\n" : "" ) +
+          (at != null ? "expected argument types: " + at + "\n" : "" ) +
           "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
           "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
   }

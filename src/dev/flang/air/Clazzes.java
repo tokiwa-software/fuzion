@@ -566,7 +566,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Has f been found to be caled dynamically?
+   * Has f been found to be called dynamically?
    */
   static boolean isCalledDynamically(AbstractFeature f)
   {

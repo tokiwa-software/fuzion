@@ -1001,7 +1001,7 @@ public class Call extends AbstractCall
       }
     else  if (ot != null)
       {
-        throw new Error("target alredy set: old: "+ot+" new: "+t);
+        throw new Error("target already set: old: "+ot+" new: "+t);
       }
     else
       {
