@@ -1565,13 +1565,13 @@ public class Call extends AbstractCall
               (Errors.count() > 0 || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
-                _generics.set(i, Types.t_ERROR);
+                _generics.set(i, Types.t_ERROR);  // NYI: use setOrClone?
               }
           }
         else if (conflict[i])
           {
             AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
-            _generics.set(i, Types.t_ERROR);
+            _generics.set(i, Types.t_ERROR);  // NYI: use setOrClone?
           }
       }
 
@@ -1696,11 +1696,15 @@ public class Call extends AbstractCall
         if (g.feature() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.index();
-            if (foundAt[i] == null || actualType.isAssignableFromOrContainsError(_generics.get(i)))
+            var gt = _generics.get(i);
+            var nt = gt == Types.t_UNDEFINED ? actualType
+                                             : gt.union(actualType);
+            if (nt == Types.t_UNDEFINED)
               {
-                _generics.set(i, actualType);
+                conflict[i] = true;
+                nt = Types.t_ERROR;
               }
-            conflict[i] = conflict[i] || !_generics.get(i).isAssignableFromOrContainsError(actualType);
+            _generics.set(i, nt);  // NYI: use setOrClone?
             foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
           }
       }
