@@ -237,13 +237,15 @@ is
         thiz * (thiz**(other-one))
 
 
-  # are these unsigned integers equal?
+  # equality: are these unsigned integers equal?
+  #
   fixed type.equality(a, b uint) bool is
     a.data.count ≟ b.data.count &&
       ((a.data.zip b.data (c,d -> c ≟ d)) ∀ (x->x))
 
 
-  # less or equal
+  # total order
+  #
   fixed type.lteq(a, b uint) =>
     if a.data.count ≟ b.data.count
       a.data

@@ -140,11 +140,13 @@ is
       plus => thiz ** other
       minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
-  # are these two ints equal?
+  # equality: are these two ints equal?
+  #
   fixed type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
 
-  # is less or equal
+  # total order
+  #
   fixed type.lteq(a, b int) bool is
     match a.ns
       plus =>
@@ -240,6 +242,8 @@ sign : choice plus minus, has_equality is
       plus => true
       minus => false
 
+  # equality: are these signs equal?
+  #
   fixed type.equality(a, b sign) bool is
     match a
       plus =>

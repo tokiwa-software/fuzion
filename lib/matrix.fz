@@ -60,7 +60,8 @@ is
   is
     panic "'matrix.infix /' not defined."
 
-  # comparison
+  # equality
+  #
   fixed type.equality(a, b matrix M) =>
     for
       x in a.e
@@ -71,6 +72,7 @@ is
       true
 
   # NYI: total order
+  #
   fixed type.lteq(a, b matrix M) =>
     panic "matrix does not define a total order"
 

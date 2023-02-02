@@ -140,11 +140,13 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
     else
       thiz
 
-  # comparison
+  # equality
+  #
   fixed type.equality(a, b u128) =>
     a.hi ≟ b.hi && a.lo ≟ b.lo
 
-
+  # total order
+  #
   fixed type.lteq(a, b u128) =>
     a.hi ⩻ b.hi || (a.hi ≟ b.hi) && (a.lo ≤ b.lo)
 

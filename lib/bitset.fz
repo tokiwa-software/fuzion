@@ -87,6 +87,8 @@ is
          else
            r
 
+  # equality
+  #
   fixed type.equality(a, b bitset) bool is
      h := a.highest >>= i -> b.highest >>= j -> i.max j
      match h
