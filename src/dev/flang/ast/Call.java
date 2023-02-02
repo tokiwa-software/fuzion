@@ -1604,6 +1604,7 @@ public class Call extends AbstractCall
   void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
   {
     var cf = _calledFeature;
+    // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
         int count = 1; // argument count, for error messages
@@ -1660,6 +1661,10 @@ public class Call extends AbstractCall
                         checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
                       }
                   }
+              }
+            else if (aargs.hasNext())
+              {
+                aargs.next();
               }
             vai++;
           }
