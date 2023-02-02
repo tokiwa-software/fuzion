@@ -393,7 +393,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
-       Types.intern(actual) == actual,
+       Errors.count() > 0 || Types.intern(actual) == actual,
        this  .isGenericArgument() || this  .featureOfType() != null || Errors.count() > 0,
        actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
        Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
