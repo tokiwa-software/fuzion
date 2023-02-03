@@ -149,14 +149,13 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 
 
   # this u64 as an int
-  as_int  => ints.from_u64 val
+  as_int  => int.type.from_u64 val
 
 
   # this u64 as an uint
   as_uint uint
-  pre val ≥ u64 0
   is
-    uints.from_u64 val
+    uint val
 
 
   low8bits   u8  is intrinsic
