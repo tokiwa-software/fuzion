@@ -51,8 +51,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
@@ -997,6 +1002,20 @@ public class Intrinsics extends ANY
             }
           return new Instance(Clazzes.c_unit.get());
         });
+    put("fuzion.std.date_time", (interpreter, innerClazz) -> args ->
+      {
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        calendar.setTime(date);
+        var arg0 = (int[])args.get(1).arrayData()._array;
+        arg0[0] = calendar.get(Calendar.YEAR);
+        arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
+        arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
+        arg0[3] = calendar.get(Calendar.MINUTE);
+        arg0[4] = calendar.get(Calendar.SECOND);
+        arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
+        return new Instance(Clazzes.c_unit.get());
+      });
     put("effect.replace"  ,
         "effect.default"  ,
         "effect.abortable",
