@@ -95,9 +95,16 @@ for test in $TESTS; do
 done
 wait
 
-echo -n " $(grep --count ok$ "$BUILD_DIR"/run_tests.results || true)/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true) skipped,"
-echo    " $(grep --count failed$ "$BUILD_DIR"/run_tests.results || true) failed."
-if grep failed$ "$BUILD_DIR"/run_tests.results; then
+OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
+SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
+FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
+
+echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
+echo -n " $SKIPPED skipped,"
+echo    " $FAILED failed."
+grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
+
+if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
+  exit 1;
 fi
