@@ -712,7 +712,7 @@ public class DFA extends ANY
   /**
    * Create a new Instance of FUIR using the information collected during this
    * DFA analyssis. In particular, Let 'clazzNeedsCode' return false for
-   * routines that were found never to be caled.
+   * routines that were found never to be called.
    */
   public FUIR new_fuir()
   {

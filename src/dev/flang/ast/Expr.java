@@ -56,7 +56,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
-   * of the acual.
+   * of the actual.
    */
   public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {

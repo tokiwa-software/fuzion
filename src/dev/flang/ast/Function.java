@@ -164,7 +164,7 @@ public class Function extends ExprWithPos
    *
    * @param names the names of the arguments, "x", "y"
    *
-   * @param i the inheritance clause, currently alway empty list
+   * @param i the inheritance clause, currently always empty list
    *
    * @param c the contract
    *
@@ -461,7 +461,7 @@ public class Function extends ExprWithPos
       {
         _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
-        // Call.resolveType returns something differnt than this only for an
+        // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
