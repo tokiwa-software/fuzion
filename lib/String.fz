@@ -61,7 +61,7 @@ String ref : has_equality, has_hash, has_total_order is
       utf8.cycle.take (utf8.count * n)
 
 
-  # compare two strings byte-by-byte
+  # equality: compare two strings byte-by-byte
   #
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
@@ -71,7 +71,7 @@ String ref : has_equality, has_hash, has_total_order is
       & a.utf8.count ≟ b.utf8.count
 
 
-  # does this come before other?
+  # is `a` less than or equal to `b` when comparing their utf8 bytes?
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #

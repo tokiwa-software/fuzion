@@ -712,7 +712,7 @@ public class DFA extends ANY
   /**
    * Create a new Instance of FUIR using the information collected during this
    * DFA analyssis. In particular, Let 'clazzNeedsCode' return false for
-   * routines that were found never to be caled.
+   * routines that were found never to be called.
    */
   public FUIR new_fuir()
   {
@@ -1194,6 +1194,8 @@ public class DFA extends ANY
         });
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+
+    put("fuzion.std.date_time"           , cl -> Value.UNIT );
 
     put("effect.replace"                 , cl ->
         {

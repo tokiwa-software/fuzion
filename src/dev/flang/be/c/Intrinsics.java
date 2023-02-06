@@ -710,6 +710,24 @@ public class Intrinsics extends ANY
                             /* NYI: while: */ CExpr.call("nanosleep",new List<>(req.adrOf(),req.adrOf())));
         });
 
+
+    put("fuzion.std.date_time", (c,cl,outer,in) ->
+      {
+        var rawTime = new CIdent("rawtime");
+        var ptm = new CIdent("ptm");
+
+        return CStmnt.seq(
+            CStmnt.decl("time_t", rawTime),
+            CExpr.call("time", new List<>(rawTime.adrOf())),
+            CStmnt.decl("struct tm *", ptm, CExpr.call("gmtime", new List<>(rawTime.adrOf()))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(0)).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(1)).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(2)).assign(ptm.deref().field(new CIdent("tm_hour"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(3)).assign(ptm.deref().field(new CIdent("tm_min"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(4)).assign(ptm.deref().field(new CIdent("tm_sec"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(5)).assign(CExpr.int32const(0)));
+      });
+
     put("effect.replace"       ,
         "effect.default"       ,
         "effect.abortable"     ,

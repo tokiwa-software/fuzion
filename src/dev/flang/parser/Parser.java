@@ -3206,7 +3206,7 @@ anonymous   : returnType
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
     // does not work yet, probably because of too much that is done explicitly
-    // for anonymsous featues.
+    // for anonymous featues.
     //
     // return new Block(pos, b.closingBracePos_, new List<>(f, ca));
   }

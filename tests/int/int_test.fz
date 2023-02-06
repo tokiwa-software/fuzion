@@ -50,7 +50,7 @@ int_test is
       if n ≥ i64 0
         chck (int m**n ≟ (int m ** int n)) "int: m $m ** n $n"
 
-    chck ("$m" ≟ "{ints.from_i64 m}")  "int:  $m as string"
+    chck ("$m" ≟ "{int m}")  "int:  $m as string"
 
   # test basic uint operations with small numbers
   for m in (u64 0)..5 do
@@ -77,7 +77,7 @@ int_test is
 
   # test int/uint as_string around first overflow
   for m in (u32_max - 3)..(u32_max + 3) do
-    chck ("$m" ≟ "{ints.from_u64 m}")  "int:  $m as string"
+    chck ("$m" ≟ "{int.type.from_u64 m}")  "int:  $m as string"
     chck ("$m" ≟ "{uint m}") "uint: $m as string"
 
 
