@@ -156,7 +156,7 @@ public class C extends ANY
 
     /**
      * Perform a call of a feature with target instance tvalue with given
-     * arguments.. The type of tvalue might be dynamic (a refernce). See
+     * arguments.. The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
@@ -374,7 +374,7 @@ public class C extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environemnt.
+     * Access the effect of type ecl that is installed in the environment.
      */
     public Pair<CExpr, CStmnt> env(int ecl)
     {
@@ -478,7 +478,7 @@ public class C extends ANY
   final Intrinsics _intrinsics;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -919,7 +919,7 @@ public class C extends ANY
    *
    * @param len length of this string, in bytes
    *
-   * @param tmp local vad the new string should be assigned to
+   * @param tmp local var the new string should be assigned to
    */
   CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
   {
@@ -1175,7 +1175,7 @@ public class C extends ANY
 
 
   /**
-   * Create code for the C function implemeting the routine corresponding to the
+   * Create code for the C function implementing the routine corresponding to the
    * given clazz.
    *
    * @param cl id of clazz to compile
@@ -1349,7 +1349,7 @@ public class C extends ANY
    * @param type the type of the instance, may be a ref or value type
    *
    * @return C expression of the struct that contains a field. In case type is a
-   * references, refOrValue will be dereferenced and the fiields member will be
+   * references, refOrValue will be dereferenced and the fields member will be
    * accessed.
    */
   CExpr fields(CExpr refOrVal, int type)

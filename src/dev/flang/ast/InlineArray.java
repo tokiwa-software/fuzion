@@ -47,7 +47,7 @@ public class InlineArray extends ExprWithPos
 
   /**
    * quick-and-dirty way to make unique names for temporary variables needed for
-   * array initializtion.
+   * array initialization.
    */
   static private long _id_ = 0;
 

@@ -118,7 +118,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Costructor initializing fields as given.
+   * Constructor initializing fields as given.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,

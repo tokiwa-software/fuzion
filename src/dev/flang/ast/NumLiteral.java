@@ -62,7 +62,7 @@ public class NumLiteral extends Constant
     // ct_f256 (237, 19),   -- NYI: support for f256
 
     /**
-     * bytes in memory occuplied by this type
+     * bytes in memory occupied by this type
      */
     final int _bytes;
 

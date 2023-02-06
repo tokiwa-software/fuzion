@@ -126,7 +126,7 @@ public class Function extends ExprWithPos
    *
    *   f(o Object, i int) int { result = o.hashCode + i; };
    *
-   * then the "fun f" is syntactic surgar for
+   * then the "fun f" is syntactic sugar for
    *
    *  a.b._anonymous<#>_f_: Function<int,Object,int>
    *   {
@@ -316,7 +316,7 @@ public class Function extends ExprWithPos
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
-            _inheritsCall._generics = gs; // NYI: hack to set infered result type, see below
+            _inheritsCall._generics = gs; // NYI: hack to set inferred result type, see below
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
@@ -334,7 +334,7 @@ public class Function extends ExprWithPos
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(f);
                 result = f.resultType();
-                gs.set(0, result);   // NYI: hack to set infered result type
+                gs.set(0, result);   // NYI: hack to set inferred result type
               }
 
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
@@ -378,7 +378,7 @@ public class Function extends ExprWithPos
   public void findGenerics(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._feature != null)
-      { /* NYI: Neeed? The following comment seems wrong: */
+      { /* NYI: Need? The following comment seems wrong: */
         // directly process generics in _feature's arguments and return type,
         // while visit() skips the _feature.
         var f = this._feature;
@@ -517,7 +517,7 @@ public class Function extends ExprWithPos
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (Errors.count() == 0)  // avoid null pointer hdlg in case calledFeature not found etc.
+    if (Errors.count() == 0)  // avoid null pointer handling in case calledFeature not found etc.
       {
         if (this._feature == null)
           { /* We have an expression of the form
@@ -541,7 +541,7 @@ public class Function extends ExprWithPos
             call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
-             * calledTarget and flag an error. Possible errors aor special case
+             * calledTarget and flag an error. Possible errors or special cases
              * are
              *
              *  - calling an abstract feature

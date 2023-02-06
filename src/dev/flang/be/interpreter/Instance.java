@@ -44,7 +44,7 @@ public class Instance extends ValueWithClazz
 
 
   /**
-   * Just for debugging: value used for uninitialzed non-ref data
+   * Just for debugging: value used for uninitialized non-ref data
    */
   static final int UNINITIALIZED_INT = -555555555;
 

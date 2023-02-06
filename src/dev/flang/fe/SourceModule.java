@@ -108,7 +108,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * The universe is the implicit root of all features that
-   * themeselves do not have their own root.
+   * themselves do not have their own root.
    */
   final Feature _universe;
 
@@ -329,7 +329,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param f a feature
    *
    * @return a path from root, via the base names of f's outer features to a
-   * directory wtih f's base name, null if this does not exist.
+   * directory with f's base name, null if this does not exist.
    */
   private SourceDir dirExists(SourceDir root, AbstractFeature f) throws IOException, UncheckedIOException
   {
@@ -609,8 +609,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Add type new feature.
    *
-   * This is somewhat ugly since it addes typeFeature to the declaredFeatures or
-   * decalredOrInheritedFeatures of the outer types even after those had been
+   * This is somewhat ugly since it adds typeFeature to the declaredFeatures or
+   * declaredOrInheritedFeatures of the outer types even after those had been
    * determined already.
    *
    * @param outerType the static outer type of universe.
@@ -660,7 +660,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
-  /*-----------------------  attachng data to AST  ----------------------*/
+  /*-----------------------  attaching data to AST  ----------------------*/
 
 
   /**
@@ -690,7 +690,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        // NYI: cleanup: See #462: Remove once sub-directries are loaded
+        // NYI: cleanup: See #462: Remove once sub-directories are loaded
         // directly, not implicitly when outer feature is found
         for (var inner : s.values())
           {
@@ -898,7 +898,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         for (var h : d._heirs)
           {
-            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
+            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
             addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
             addToHeirs(h, fn, f);
           }
@@ -1016,7 +1016,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param assign the assign we are trying to resolve, or null when not resolving an
    * assign
    *
-   * @param destructure the destructure we are strying to resolve, or null when not
+   * @param destructure the destructure we are trying to resolve, or null when not
    * resolving a destructure.
    *
    * @return in case we found features visible in the call's scope, the features
@@ -1080,7 +1080,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * Lookup the feature that is referenced in a non-generic type.  There might
-   * be several features with the given name and different argumentn counts.
+   * be several features with the given name and different argument counts.
    * Then, only the feature that is a constructor defines the type.
    *
    * If there are several such constructors, the type is ambiguous and an error
@@ -1172,7 +1172,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param to original argument type in 'original'.
    *
-   * @param tr new argument type in 'redefinitiion'.
+   * @param tr new argument type in 'redefinition'.
    *
    * @return true if 'to' may be replaced with 'tr'.
    */
@@ -1199,7 +1199,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        (to.featureOfType() == original    .outer()             ) &&
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
-      /* original and redefinition are inner featurs of type features, to is
+      /* original and redefinition are inner features of type features, to is
        * THIS_TYPE and tr is the underlying non-type features thisType.
        *
        * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
@@ -1264,7 +1264,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
         var t2 = f.resultType();
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
-          { // NYI: CLEANUP: #706: allow redefintion of THIS_TYPE in type features for now, these are created internally.
+          { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
         else if ((t1.isChoice()
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine

@@ -61,8 +61,8 @@ public class Errors extends ANY
 
 
   /**
-   * Positions that produced a syntax error. If a syntax error occured, all
-   * other errors at this position will be supressed.
+   * Positions that produced a syntax error. If a syntax error occurred, all
+   * other errors at this position will be suppressed.
    */
   private static final TreeSet<SourcePosition> _syntaxErrorPositions_ = new TreeSet<>();
 
@@ -75,7 +75,7 @@ public class Errors extends ANY
 
 
   /**
-   * If two errors at the same posisition with the same message only differ in
+   * If two errors at the same position with the same message only differ in
    * the detail message, chances are high that the detail message differs only
    * due to AST conversions done meanwhile, so we produce only one error in this
    * case.
@@ -241,7 +241,7 @@ public class Errors extends ANY
   /**
    * Record the given error found during compilation.
    *
-   * @param pos source code position where this error occured, may be null
+   * @param pos source code position where this error occurred, may be null
    *
    * @param msg the error message, should not contain any LF or any case specific details
    *
@@ -270,7 +270,7 @@ public class Errors extends ANY
    * Record the given syntax error found during compilation.  A syntax error
    * will automatically suppress all other errors at pos.
    *
-   * @param pos source code position where this error occured, may be null
+   * @param pos source code position where this error occurred, may be null
    *
    * @param msg the error message, should not contain any LF or any case specific details
    *
@@ -292,7 +292,7 @@ public class Errors extends ANY
   /**
    * print the given error or warning found during compilation.
    *
-   * @param pos source code position where this error occured, may be null
+   * @param pos source code position where this error occurred, may be null
    *
    * @param msg the error or warning message created by errorMessage() or
    * warningMessage().
@@ -386,7 +386,7 @@ public class Errors extends ANY
    * Record the given error found during compilation and exit immediately with
    * exit code 1.
    *
-   * @param pos source code position where this error occured, may be null
+   * @param pos source code position where this error occurred, may be null
    *
    * @param s the error message, should not contain any LF or any case specific details
    *
@@ -427,7 +427,7 @@ public class Errors extends ANY
   /**
    * Record the given runtime error found and exit immediately with exit code 1.
    *
-   * @param pos source code position where this error occured, may be null
+   * @param pos source code position where this error occurred, may be null
    *
    * @param s the error message, should not contain any LF or any case specific details
    *
@@ -508,7 +508,7 @@ public class Errors extends ANY
   /**
    * Record the given warning found during compilation.
    *
-   * @param pos source code position where this warning occured, may be null
+   * @param pos source code position where this warning occurred, may be null
    *
    * @param msg the warning message, should not contain any LF or any case specific details
    *

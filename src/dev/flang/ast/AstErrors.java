@@ -282,9 +282,9 @@ public class AstErrors extends ANY
    *
    * @param pos the source code position
    *
-   * @param where location of the incompaible types, e.g, "in assignment".
+   * @param where location of the incompatible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignement to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignment to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -476,7 +476,7 @@ public class AstErrors extends ANY
 
   /**
    * Create an error message for incompatible types when assigning an element e
-   * during array initilization of the form '[a, b, ..., e, ... ]'.
+   * during array initialization of the form '[a, b, ..., e, ... ]'.
    *
    * @param pos the source code position of the assignment.
    *
@@ -881,7 +881,7 @@ public class AstErrors extends ANY
           "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
-          "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
+          "To solve this, you could add a redefinition of " + sbn(f1) + " to " + s(heir) + ".");
   }
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -1088,7 +1088,7 @@ public class AstErrors extends ANY
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
         error(f.pos(),
-              "Missing result type in field declaration with initializaton",
+              "Missing result type in field declaration with initialization",
               "Field declared: " + s(f) + "");
       }
   }
@@ -1122,7 +1122,7 @@ public class AstErrors extends ANY
           "Constraint for type parameter must not be a type parameter",
           "Affected type parameter: " + s(tp) + "\n" +
           "_constraint: " + s(tp.resultType()) + "\n" +
-          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
+          "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1623,7 +1623,7 @@ public class AstErrors extends ANY
           {
             for (var arg : args)
               {
-                var argtype = "--still unkown--";
+                var argtype = "--still unknown--";
                 if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
                   {
                     allUnknown = false;

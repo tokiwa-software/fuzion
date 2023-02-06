@@ -63,7 +63,7 @@ public class Env extends ANY implements Comparable<Env>
 
   /**
    * Sorted array of types that are present in this environment. This is
-   * currenlty used to uniquely identify and Env instance, i.e., environments
+   * currently used to uniquely identify and Env instance, i.e., environments
    * that define the same effect types are joined into one environment.
    */
   int[] _types;
@@ -87,7 +87,7 @@ public class Env extends ANY implements Comparable<Env>
   Value _effectValue;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -157,7 +157,7 @@ public class Env extends ANY implements Comparable<Env>
   public int compareTo(Env other)
   {
     // NYI: The code to distinguish two environments is currently poor, we just
-    // distinguish enviroments depending on the set types they set, so two
+    // distinguish environments depending on the set types they set, so two
     // environments that set, e.g., io.out, to different effects will be treated
     // the same.  This must be improved in a way that gives more accuracy
     // without state explosion!

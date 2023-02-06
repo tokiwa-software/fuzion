@@ -59,7 +59,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   Long _value;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
