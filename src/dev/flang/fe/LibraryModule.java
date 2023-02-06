@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -47,6 +48,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
@@ -190,7 +192,13 @@ public class LibraryModule extends Module
       {
         var n = moduleRefName(p);
         var v = moduleRefVersion(p);
-        var mr = new ModuleRef(moduleOffset, n, v, fe.loadModule(n));
+        var m = fe.loadModule(n);
+        var mv = m.version();
+        if (!Arrays.equals(v, mv))
+          {
+            FeErrors.incompatibleModuleVersion(this, m, v, mv);
+          }
+        var mr = new ModuleRef(moduleOffset, n, v, m);
         _modules[i] = mr;
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
