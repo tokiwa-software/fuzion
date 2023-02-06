@@ -91,8 +91,14 @@ f64(val f64) : float f64, f64s is
     castTo_u64 >= 1P63
 
 
-  # the amount of bits that are used to encode the mantissa
-  type.mantissa_bits => f64s.significandBits - 1
+  # number of bits used for mantissa,
+  # including leading '1' that is not actually stored
+  #
+  type.significand_bits => 53
+
+  # number of bits used for exponent
+  #
+  type.exponent_bits => 11
 
 
   # mask for the the bits that encode the mantissa
@@ -162,8 +168,6 @@ f64s : floats f64 is
   redef one  => f64 1
 
   redef bytes => 8
-  significandBits => 53
-  exponentBits => 11
 
 
   redef isNaN(val f64) bool is intrinsic

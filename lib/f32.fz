@@ -78,8 +78,15 @@ f32(val f32) : float f32, f32s is
     castTo_u32 >= 1P31
 
 
-  # the amount of bits that are used to encode the mantissa
-  type.mantissa_bits => f32s.significandBits - 1
+  # number of bits used for mantissa,
+  # including leading '1' that is not actually stored
+  #
+  type.significand_bits => 24
+
+
+  # number of bits used for exponent
+  #
+  type.exponent_bits => 8
 
 
   # mask for the the bits that encode the mantissa
@@ -150,8 +157,6 @@ f32s : floats f32 is
   redef one  => f32 1
 
   redef bytes => 4
-  significandBits => 24
-  exponentBits => 8
 
 
   redef isNaN(val f32) bool is intrinsic
