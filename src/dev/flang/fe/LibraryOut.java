@@ -396,10 +396,10 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
-   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
