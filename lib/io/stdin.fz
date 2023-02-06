@@ -90,11 +90,11 @@ private read_line0 outcome String : character_encodings is
             if r.is_empty # we read nothing yet, so we just skip the lf/cr
               r
             else
-              abort (outcome String) r
+              abort (outcome r)
           else
             r + c
         end_of_file =>
-          abort (outcome String) r
+          abort (outcome r)
         e error =>
           abort (outcome String) e
     )
@@ -112,7 +112,7 @@ is
         c codepoint =>
           r + c
         end_of_file =>
-          abort (outcome String) r // return what we read so far
+          abort (outcome r) // return what we read so far
         e error =>
           abort (outcome String) e   // return only the error, discarding what we read so far
       )
