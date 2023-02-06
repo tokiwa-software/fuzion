@@ -50,7 +50,7 @@ test_this_type_negative is
     op0(v xa.this.type) xa.this.type is abstract
 
 
-  xb(val string) : xa is
+  xb(val String) : xa is
     op0(v xb.this.type) xb.this.type is xb.this
 
   xb1 := xb "1"

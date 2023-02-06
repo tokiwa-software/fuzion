@@ -29,20 +29,20 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer(I (integer I).type) : numeric I is
+integer(I type : integer I) : numeric I is
 
   # division remainder
   redef infix % (other I) I
     pre
-      safety: other != zero
+      safety: !(other ≟ zero)
   is abstract
 
   # test divisibility by other
   infix %% (other I) bool
     pre
-      safety: other != zero
+      safety: !(other ≟ zero)
   is
-    thiz % other == zero
+    thiz % other ≟ zero
 
   # bitwise operations
   infix &  (other I) I is abstract
@@ -62,12 +62,12 @@ integer(I (integer I).type) : numeric I is
   # shift operations
   infix >> (other I) I
     pre
-      safety: other.sign >= 0
+      safety: other.sign ≥ 0
   is abstract
 
   infix << (other I) I
     pre
-      safety: other.sign >= 0
+      safety: other.sign ≥ 0
   is abstract
 
   # check if this type of integer is bounded
@@ -80,10 +80,10 @@ integer(I (integer I).type) : numeric I is
   # note that this assumes zero to be divisible by any positive integer.
   gcd(b I) I
     pre
-      safety: sign >= 0,
-      safety: b.sign >= 0
+      safety: sign ≥ 0,
+      safety: b.sign ≥ 0
   is
-    if b == zero
+    if b ≟ zero
       thiz
     else
       b.gcd(thiz % b)  # tail recursion
@@ -98,54 +98,55 @@ integer(I (integer I).type) : numeric I is
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
   #
-  redef asString string is integer.this.asString 10
+  redef as_string String is integer.this.as_string 10
 
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  asString(base u32) string : character_encodings
+  as_string(base u32) String : character_encodings
     pre
-      debug: u32 1 < base <= 36
+      debug: u32 1 ⩻ base ≤ (u32 36)
   is
-    ref : string
+    ref : String
       redef utf8 ref : Sequence u8 is
-        redef asStream stream u8 is
+        redef finite => true
+        redef as_stream stream u8 is
           b := from_u32 base
-          if thiz.sign >= 0
+          if thiz.sign ≥ 0
             ref : stream u8
               p := thiz.highest b
-              redef hasNext => p.sign > 0
+              redef has_next => p.sign ⩼ 0
               redef next =>
                 d := (thiz / p % b).to_u32.as_u8
-                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - ascii.lf)
+                r := if (d ⩻ u8 10) String.type.zero_char + d else String.type.a_char + (d - ascii.lf)
                 set p := p / b
                 r
           else
             p := -? thiz
             match p
-              v I   => ("-" + v .asString base).utf8.asStream
-              _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
+              v I   => ("-" + v .as_string base).utf8.as_stream
+              _ nil => (("-" + (-(thiz / b)).as_string base) + (-(thiz % b)).as_string base).utf8.as_stream
 
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  asString(len i32, base u32) string
+  as_string(len i32, base u32) String
     pre
-      debug: u32 1 < base <= 36
+      debug: u32 1 ⩻ base ≤ (u32 36)
     post
-      debug: result.byteLength >= len
+      debug: result.byte_length ≥ len
   is
     # create number
-    n := integer.this.asString base
+    n := integer.this.as_string base
 
     # split n into sign and digits
-    (sign, digits) := if (integer.this.sign < 0) ("-", strings.fromBytes (n.utf8.drop 1)) else ("", n)
+    (sign, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
-    zeros := "0" * 0.max (len - n.byteLength)
+    zeros := "0" * 0.max (len - n.byte_length)
 
     # put it all together
     sign + zeros + digits
@@ -153,39 +154,39 @@ integer(I (integer I).type) : numeric I is
 
   # create binary representation
   #
-  bin => integer.this.asString 2
+  bin => integer.this.as_string 2
 
 
   # create binary representation with given number of digits.
   #
-  bin(len i32) => integer.this.asString len 2
+  bin(len i32) => integer.this.as_string len 2
 
 
   # create octal representation
   #
-  oct => integer.this.asString 8
+  oct => integer.this.as_string 8
 
 
   # create octal representation with given number of digits.
   #
-  oct(len i32) => integer.this.asString len 8
+  oct(len i32) => integer.this.as_string len 8
 
 
   # create decimal representation
   #
-  dec => integer.this.asString 10
+  dec => integer.this.as_string 10
 
 
   # create decimal representation with given number of digits.
   #
-  dec(len i32) => integer.this.asString len 10
+  dec(len i32) => integer.this.as_string len 10
 
 
   # create hexadecimal representation
   #
-  hex => integer.this.asString 16
+  hex => integer.this.as_string 16
 
 
   # create hexadecimal representation with given number of digits.
   #
-  hex(len i32) => integer.this.asString len 16
+  hex(len i32) => integer.this.as_string len 16

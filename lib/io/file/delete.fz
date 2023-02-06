@@ -37,7 +37,7 @@ private delete(
     #
     delete(
            # the (relative or absolute) dir name, using platform specific path separators
-           path string) =>
+           path String) =>
         tmp := dop.delete path
         replace
         tmp
@@ -58,20 +58,20 @@ delete_custom(dop Delete_Operation, f () -> unit) =>
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-delete(path string) =>
+delete(path String) =>
   deletes.installDefault
   delete.env.delete path
 
 # reference to the delete operations that could take place
 #
 Delete_Operation ref is
-    delete(path string) outcome unit is abstract
+    delete(path String) outcome unit is abstract
 
-# the default file/dir delete operation via fuzion.std.fileio.delete
+# the default file/dir delete operation via fuzion.sys.fileio.delete
 #
 default_delete_operation : Delete_Operation is
-    delete(path string) =>
-        fuzion.std.fileio.delete path
+    delete(path String) =>
+        fuzion.sys.fileio.delete path
 
 # unit type feature defining features related to delete effect but not requiring an
 # instance.

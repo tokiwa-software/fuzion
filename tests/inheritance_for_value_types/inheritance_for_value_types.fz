@@ -34,39 +34,39 @@
 #
 inheritance_for_value_types is
 
-  exitCode := 0
+  exit_code := mut 0
 
-  chck (msg string, b bool) unit is
+  chck (msg String, b bool) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   a is
-    x (msg string, expected i32) unit is chck msg expected=1
-    y (msg string, expected i32) unit is x msg expected
-    z (msg string, expected i32) =>      x msg expected
-    q (msg string, expected i32) is
+    x (msg String, expected i32) unit is chck msg expected≟1
+    y (msg String, expected i32) unit is x msg expected
+    z (msg String, expected i32) =>      x msg expected
+    q (msg String, expected i32) is
       xx is z msg expected
 
   b : a is
-    redef x (msg string, expected i32) unit is chck msg expected=2
+    redef x (msg String, expected i32) unit is chck msg expected≟2
 
   c : a is
-    redef x (msg string, expected i32) unit is chck msg expected=3
+    redef x (msg String, expected i32) unit is chck msg expected≟3
 
   v (v a.q) is
     v.xx
     unit
 
-  rx (rv ref a, msg string, expected i32) unit is
+  rx (rv ref a, msg String, expected i32) unit is
     rv.x msg expected
 
-  ry (rv ref a, msg string, expected i32) unit is
+  ry (rv ref a, msg String, expected i32) unit is
     rv.y msg expected
 
-  rz (rv ref a, msg string, expected i32) unit is
+  rz (rv ref a, msg String, expected i32) unit is
     rv.z msg expected
 
   a.y "a.y" 1
@@ -88,4 +88,4 @@ inheritance_for_value_types is
   // v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
   // v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
-  exit exitCode
+  exit exit_code.get

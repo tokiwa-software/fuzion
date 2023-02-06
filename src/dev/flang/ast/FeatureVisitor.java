@@ -77,6 +77,7 @@ public abstract class FeatureVisitor extends ANY
   public void         action      (Match          m, AbstractFeature outer) { }
   public void         action      (Tag            b, AbstractFeature outer) { }
   public Expr         action      (This           t, AbstractFeature outer) { return t; }
+  public Type         actionBefore(Type           t, AbstractFeature outer) { return t; }
   public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t; }
 
   /**

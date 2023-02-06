@@ -5,7 +5,7 @@ ex_tree is
     left B is abstract
     right C is abstract
 
-  tree(A (ordered A).type) : choice nil (Node A (tree A) (tree A)) is
+  tree(A type : has_total_order) : choice nil (Node A (tree A) (tree A)) is
 
     size i32 is
       tree.this ? nil    => 0
@@ -19,7 +19,7 @@ ex_tree is
         right tree A is right
 
   trees is
-    empty(A (ordered A).type) tree A is
+    empty(A type : has_total_order) tree A is
       nil
 
   x := (trees.empty i32).smart 42 nil nil

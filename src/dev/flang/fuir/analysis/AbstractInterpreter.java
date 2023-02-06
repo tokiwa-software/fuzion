@@ -119,14 +119,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.acess*().
+     * might be dynamic (a reference). See FUIR.access*().
      */
     public abstract RESULT              assign(int cl, int c, int i, VALUE tvalue, VALUE avalue);
 
     /**
      * Perform a call of a feature with target instance tvalue with given
      * arguments.. The type of tvalue might be dynamic (a refernce). See
-     * FUIR.acess*().
+     * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
@@ -195,6 +195,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
   /**
    * property-controlled flag to enable debug output.
+   *
+   * To enable debugging, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
    */
   static final boolean DEBUG =
     System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG",
@@ -484,7 +488,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Perform absstract interpretation on given statement
+   * Perform abstract interpretation on given statement
    *
    * @param cl clazz id
    *

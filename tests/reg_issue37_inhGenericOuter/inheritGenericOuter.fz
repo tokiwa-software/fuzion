@@ -38,4 +38,4 @@ inheritGenericOuter is
     c is say "in (a T).c"
 
   (a i32).b
-  (a string).b
+  (a String).b

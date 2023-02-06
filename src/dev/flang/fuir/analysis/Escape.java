@@ -53,6 +53,18 @@ public class Escape extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * property-controlled flag to enable debug output.
+   *
+   * To enable debugging, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.Escape.DEBUG=true
+   */
+  static final boolean DEBUG =
+    System.getProperty("dev.flang.fuir.analysis.Escape.DEBUG",
+                       "false").equals("true");
+
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -142,9 +154,14 @@ public class Escape extends ANY
    */
   private boolean doesCurEscape(int cl, Stack<Boolean> stack, int c)
   {
-    for (int i = 0; _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    var gotVoid = false;
+    for (int i = 0; !gotVoid && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
+        if (DEBUG)
+          {
+            System.out.println("ESCAPE: process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
+          }
         switch (s)
           {
           case AdrOf:
@@ -191,7 +208,17 @@ public class Escape extends ANY
             }
           case Unbox:
             {
-              stack.push(stack.pop());
+              var refc = _fuir.unboxOuterRefClazz(cl, c, i);
+              var resc = _fuir.unboxResultClazz(cl, c, i);
+              var v = false;
+              if (_fuir.hasData(refc))
+                {
+                  v = stack.pop();
+                }
+              if (_fuir.hasData(resc))
+                {
+                  stack.push(v);
+                }
               break;
             }
           case Call:
@@ -200,7 +227,7 @@ public class Escape extends ANY
               var cc0 = _fuir.accessedClazz  (cl, c, i);
               var rt = _fuir.clazzResultClazz(cc0);
               // NYI: for dynamic all, check all called methods!
-              if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+              if (_fuir.hasPrecondition(cc0))
                 {
                   // NYI: check if current escapes via pre-condition
                   //
@@ -238,6 +265,7 @@ public class Escape extends ANY
                             }
                         }
                     }
+                  gotVoid = _fuir.clazzIsVoidType(rt);
                   if (_fuir.hasData(rt))
                     {
                       stack.push(false);

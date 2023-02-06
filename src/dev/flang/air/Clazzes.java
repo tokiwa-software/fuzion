@@ -183,7 +183,15 @@ public class Clazzes extends ANY
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
-  public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
+  public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
+    {
+      public Clazz get()
+      {
+        if (CHECKS) check
+          (Errors.count() > 0);
+        return super.get();
+      }
+    };
   public static Clazz constStringInternalArray;  // field conststring.internalArray
   public static Clazz fuzionSysArray_u8;         // result clazz of conststring.internalArray
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
@@ -296,7 +304,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.dependsOnGenerics());
+       Errors.count() > 0 || !actualType.dependsOnGenerics(),
+       Errors.count() > 0 || !actualType.containsThisType());
 
     Clazz result = null;
     Clazz o = outer;
@@ -433,11 +442,11 @@ public class Clazzes extends ANY
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, SourcePosition.builtIn);
     fuzionSysArray_u8 = constStringInternalArray.resultClazz();
     fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
-    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
-    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
+    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -557,7 +566,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Has f been found to be caled dynamically?
+   * Has f been found to be called dynamically?
    */
   static boolean isCalledDynamically(AbstractFeature f)
   {
@@ -738,7 +747,7 @@ public class Clazzes extends ANY
         Clazz sClazz = clazz(a._target, outerClazz);
         outerClazz.setRuntimeClazz(a._tid, sClazz);
         var vc = sClazz.asValue();
-        var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a);
+        var fc = vc.lookup(a._assignedField, a);
         propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
         if (isUsed(a._assignedField, sClazz))
           {
@@ -857,24 +866,24 @@ public class Clazzes extends ANY
       {
         calledDynamically(cf);
       }
-    if(cf.isChoice())
-    {
-      outerClazz
-        .actualGenerics(c.generics())
-        .stream()
-        .forEach(ag ->
-          {
-            if (!ag.isRef())
-              {
-                // Even though choice element ag
-                // might never actually be instantiated
-                // there might be tagging code being generated for ag.
-                // related: tests/issue459.fz
-                clazz(ag).instantiated(c.pos());
-              }
-          });
-    }
-    if (!cf.isChoice() && tclazz != c_void.get())
+    if (cf.isChoice())
+      {
+        outerClazz
+          .actualGenerics(c.actualTypeParameters())
+          .stream()
+          .forEach(ag ->
+            {
+              if (!ag.isRef())
+                {
+                  // Even though choice element ag
+                  // might never actually be instantiated
+                  // there might be tagging code being generated for ag.
+                  // related: tests/issue459.fz
+                  clazz(ag).instantiated(c.pos());
+                }
+            });
+      }
+    else if (tclazz != c_void.get())
       {
         var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.actualTypeParameters()), c, c.isInheritanceCall());
         if (c._sid < 0)
@@ -898,7 +907,6 @@ public class Clazzes extends ANY
         if (f.kind() == AbstractFeature.Kind.TypeParameter)
           {
             var tpc = innerClazz.resultClazz();
-            tpc._typeType = innerClazz.typeParameterActualType()._type;
             do
               {
                 addUsedFeature(tpc.feature(), c.pos());
@@ -908,6 +916,22 @@ public class Clazzes extends ANY
             while (tpc != null && !tpc.feature().isUniverse());
           }
       }
+  }
+
+
+  /**
+   * Find actual clazzes used by a constant expression
+   *
+   * @param c the constant
+   *
+   * @param outerClazz the surrounding clazz
+   */
+  public static void findClazzes(AbstractConstant c, Clazz outerClazz)
+  {
+    if (PRECONDITIONS) require
+      (c != null, outerClazz != null);
+
+    clazz(c, outerClazz).instantiated(c.pos());
   }
 
 
@@ -943,7 +967,7 @@ public class Clazzes extends ANY
     if (f != null)
       {
         var fOrFc = isUsed(f, outerClazz)
-          ? outerClazz.lookup(f, AbstractCall.NO_GENERICS, isUsedAt(f))
+          ? outerClazz.lookup(f)
           : outerClazz.actualClazz(f.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
@@ -1002,7 +1026,7 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i).resultClazz();
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, i).resultClazz();
     sa.instantiated(i);
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
@@ -1149,7 +1173,8 @@ public class Clazzes extends ANY
   public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !thiz.dependsOnGenerics());
+      (Errors.count() > 0 || !thiz.dependsOnGenerics(),
+       !thiz.isThisType());
 
     Clazz outerClazz;
     if (thiz.outer() != null)

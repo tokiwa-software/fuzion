@@ -225,7 +225,7 @@ public class AstErrors extends ANY
           "Feature implementation using " + code("of") + " must contain only features without type parameters. ",
           "Type parameters " + s(f.generics()) + " is not permitted.\n" +
           "Declaration started at " + ofPos.show() + "\n" +
-          "To solve this, you may remove the formal generics " + s(f.generics()) + ".\n");
+          "To solve this, you may remove the type parameters " + s(f.generics()) + ".\n");
   }
 
 
@@ -284,7 +284,7 @@ public class AstErrors extends ANY
    *
    * @param where location of the incompaible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignement to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -523,7 +523,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment is not a field",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n");
   }
@@ -532,7 +532,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           "Was defined as loop index variable at " + f.pos().show());
@@ -588,22 +588,22 @@ public class AstErrors extends ANY
                                             String detail2)
   {
     error(pos,
-          "Wrong number of generic arguments",
-          "Wrong number of actual generic arguments in " + detail1 + ":\n" +
+          "Wrong number of type parameters",
+          "Wrong number of actual type parameters in " + detail1 + ":\n" +
           detail2 +
           "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
   /**
-   * A type that might originally be a generic argument could be a concrete type
+   * A type that might originally be a type parameter could be a concrete type
    * when we detect an error. So if we have both, the original type and the
    * concrete type, we include both in the error message. If both are the same,
    * only one is shown.
    *
    * @param t the concrete type we found a problem with
    *
-   * @param from the declared type that has become t when generics were
+   * @param from the declared type that has become t when type parameters were
    * replaced. Might be equal to t.
    *
    * @return s(t) if t equals from, s(t) + " (from " + s(from + ")" otherwise.
@@ -616,27 +616,31 @@ public class AstErrors extends ANY
   }
 
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
-                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg)
+                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg, boolean suggestAddingFixed)
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " +
-          // originalArg.resultType() might be a generic argument that has been replaced by originalArgType:
+          // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
           typeWithFrom(originalArgType, originalArg.resultType()) + ".  " +
-          "Original argument declared at " + originalArg.pos().show());
+          "Original argument declared at " + originalArg.pos().show() + "\n" +
+          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                              : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
   }
 
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
-                                                      AbstractFeature redefinedFeature)
+                                                      AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
     error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
-          // originalFeature.resultType() might be a generic argument that has been replaced by originalType:
+          // originalFeature.resultType() might be a type parameter that has been replaced by originalType:
           typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
-          "Original feature declared at " + originalFeature.pos().show());
+          "Original feature declared at " + originalFeature.pos().show() + "\n" +
+          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                              : "To solve this, change type of result to " + s(originalType)));
   }
 
   public static void constructorResultMustBeUnit(Expr res)
@@ -889,23 +893,20 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
-        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
-        // fact that type features can be defined repeatedly.
-        if (f.isTypeFeature())
-          {
-            warning(pos,
-                    "Duplicate feature declaration (ignored since these are type features, see #461)",
-                    "Feature that was declared repeatedly: " + s(f) + "\n" +
-                    "originally declared at " + existing.pos().show() + "\n" +
-                    "To solve this, consider renaming one of these two features or changing its number of arguments");
-            return;
-          }
-
+        var of = f.isTypeFeature() ? f.typeFeatureOrigin() : f;
         error(pos,
               "Duplicate feature declaration",
-              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features or changing its number of arguments");
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
+              (f.isTypeFeature()
+               ? ("or changing it into a routine by returning a " +
+                  sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  " instead of "+ code("is") + ".")
+               : ("or adding an additional argument (e.g. " + code("_ unit") +
+                  " for an ignored unit argument used only to disambiguate these two).")
+               ));
       }
   }
 
@@ -933,7 +934,7 @@ public class AstErrors extends ANY
 
   public static void cannotRedefineGeneric(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
+    cannotRedefine(pos, f, existing, "Cannot redefine feature with type parameters",
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
@@ -1014,7 +1015,7 @@ public class AstErrors extends ANY
     error(pos,
           "Expected actual type parameter in call",
           "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
-          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " as an argument to this call.\n");
+          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.OBJECT_NAME) + " as an argument to this call.\n");
   }
 
   static void expectedTypeExpression(SourcePosition pos, Expr e)
@@ -1023,7 +1024,7 @@ public class AstErrors extends ANY
           "Expected type in 'xyz.type' expression",
           "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
           "Expression found: " + s(e) + "\n"+
-          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " instead of " + s(e) + ".\n");
+          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.OBJECT_NAME) + " instead of " + s(e) + ".\n");
   }
 
 
@@ -1055,7 +1056,7 @@ public class AstErrors extends ANY
       }
     error(pos,
           "Type not found",
-          "Type " + st(t) + " was not found, no corresponding feature nor formal generic argument exists\n" +
+          "Type " + st(t) + " was not found, no corresponding feature nor formal type parameter exists\n" +
           "Type that was not found: " + st(t) + "\n" +
           "in feature: " + s(outer) + "\n" +
           (n == 0 ? "" :
@@ -1137,21 +1138,21 @@ public class AstErrors extends ANY
   static void formalGenericAsOuterType(SourcePosition pos, Type t)
   {
     error(pos,
-          "Formal generic cannot be used as outer type",
-          "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
+          "Formal type parameter cannot be used as outer type",
+          "In a type >>a.b<<, the outer type >>a<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal generic used " + s(t.outer()) + "\n" +
-          "Formal generic declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
+          "Formal type parameter used " + s(t.outer()) + "\n" +
+          "Formal type parameter declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
   }
 
   static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
   {
     error(pos,
-          "Formal generic cannot have generic arguments",
-          "In a type with generic arguments >>A B<<, the base type >>A<< must not be a formal generic argument.\n" +
+          "Formal type parameter cannot have type parameters",
+          "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal generic used " + s(generic) + "\n" +
-          "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
+          "Formal type parameter used " + s(generic) + "\n" +
+          "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
   static void refToChoice(SourcePosition pos)
@@ -1164,7 +1165,7 @@ public class AstErrors extends ANY
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
-          "Generics arguments to choice type must be disjoint types",
+          "Actual type parameters to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
           "" + s(t1) + "" + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
           "" + s(t2) + "" + /* " at " + t2.pos().show() + */ "\n");
@@ -1173,8 +1174,8 @@ public class AstErrors extends ANY
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, Generic generic)
   {
     error(pos,
-          "Illegal use of open formal generic type",
-          "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
+          "Illegal use of open formal type parameter type",
+          "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
           "Open formal argument: " + s(generic) + "");
   }
 
@@ -1241,7 +1242,7 @@ public class AstErrors extends ANY
     error(pos,
           "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
           "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
-          "with argument count of the lambda expression equal to the number of generic parameters of the type.\n" +
+          "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
           "Target type: " + s(t) + "\n" +
           "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
   }
@@ -1251,7 +1252,7 @@ public class AstErrors extends ANY
     error(pos,
           "No type information can be inferred from a lambda expression",
           "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
-          "with argument count of the lambda expression equal to the number of generic parameters of the type.  The type of the\n" +
+          "with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the\n" +
           "assigned field must be given explicitly.\n" +
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
   }
@@ -1353,7 +1354,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to its own value type as one of the choice alternatives",
           "Embedding a choice type in itself would result in an infinitely large type.\n" +
-          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
   }
 
   static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
@@ -1361,7 +1362,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
@@ -1384,16 +1385,16 @@ public class AstErrors extends ANY
   static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
   {
     error(pos,
-          "Cannot access value of open generic type",
-          "When calling " + s(f) + " result type " + s(t) + " is open generic, " +
-          "which cannot be accessed directly.  You might try to access one specific generic parameter " +
+          "Cannot access value of open type parameter",
+          "When calling " + s(f) + " result type " + s(t) + " is open type parameter, " +
+          "which cannot be accessed directly.  You might try to access one specific type parameter parameter " +
           "by adding '.0', '.1', etc.");
   }
 
   static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
   {
     error(pos,
-          "Use of selector requires call to feature with open generic type",
+          "Use of selector requires call to feature whose type is an open type parameter",
           "In call to " + s(f) + "\n" +
           "Selected variant " + ss(name + "." + select) + "\n" +
           "Type of called feature: " + s(t));
@@ -1403,38 +1404,38 @@ public class AstErrors extends ANY
   {
     error(pos,
           "" +
-          (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual generic arguments" :
-           sz == 1 ? "Selector must be 0 for one actual generic argument"
-           : "Selector not permitted since no actual genenric arguments are")+
-          " given for the open generic type",
+          (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual type parameters" :
+           sz == 1 ? "Selector must be 0 for one actual type parameter"
+           : "Selector not permitted since no actual type parameters are")+
+          " given for the open type parameter type",
           "In call to " + s(f) + "\n" +
           "Selected variant " + ss(name + "." + select) + "\n" +
-          "Number of actual generic arguments: " + types.size() + "\n" +
-          "Actual generic arguments: " + (sz == 0 ? "none" : s(types)) + "\n");
+          "Number of actual type parameters: " + types.size() + "\n" +
+          "Actual type parameters: " + (sz == 0 ? "none" : s(types)) + "\n");
   }
 
   static void failedToInferOpenGenericArg(SourcePosition pos, int count, Expr actual)
   {
     error(pos,
-          "Failed to infer open generic argument type from actual argument.",
+          "Failed to infer open type parameter type from actual argument.",
           "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
   static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)
   {
     error(pos,
-          "Incompatible types found during type inference for generic arguments",
-          "Types inferred for " + ordinal(g.index()+1) + " generic argument " + s(g) + ":\n" +
+          "Incompatible types found during type inference for type parameters",
+          "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
           foundAt);
   }
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
   {
     error(pos,
-          "Failed to infer actual generic parameters",
-          "In call to " + s(cf) + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
-          "Expected generic parameters: " + s(cf.generics()) + "\n"+
-          "Type inference failed for " + singularOrPlural(missing.size(), "generic argument") + " " + slg(missing) + "\n");
+          "Failed to infer actual type parameters",
+          "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
+          "Expected type parameters: " + s(cf.generics()) + "\n"+
+          "Type inference failed for " + singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
   }
 
   static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
@@ -1463,18 +1464,21 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    error(pos,
-          "Incompatible type parameter",
-          "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-          "actual type parameter " + s(g) + "\n");
+    if (g != Types.t_UNDEFINED || count() == 0)
+      {
+        error(pos,
+              "Incompatible type parameter",
+              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "actual type parameter " + s(g) + "\n");
+      }
   }
 
   static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
   {
     error(pos,
-          "Destructuring not possible for value whose type is a generic argument.",
+          "Destructuring not possible for value whose type is a type parameter.",
           "Type of expression is " + s(t) + "\n" +
-          "Cannot destructure value of generic argument type into (" + sn(names) + ")");
+          "Cannot destructure value of type parameter type into (" + sn(names) + ")");
   }
 
   static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
@@ -1575,15 +1579,23 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
   {
-    error(pos,
-      "Names of arguments used in this feature must be distinct.",
+    int[] cnt = new int[1];
+    error(f.pos(),
+          "Names of arguments used in this feature must be distinct.",
           "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
           + duplicateNames
             .stream()
             .map(n -> sbn(n))
             .collect(Collectors.joining(", ")) + "\n"
+          + "Feature with equally named arguments: "+ s(f) + "\n"
+          + f.arguments()
+            .stream()
+            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbn(a) +
+                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                                                                      : " is ok"        ) + "\n")
+            .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
   }
@@ -1597,6 +1609,45 @@ public class AstErrors extends ANY
           .collect(Collectors.joining(", "))
       );
   }
+
+  public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
+  {
+    var cf = usedIn != null ? usedIn._calledFeature : null;
+    String at = null;
+    if (cf != null)
+      {
+        var allUnknown = true;
+        String t = null;
+        var args = cf.arguments();
+        if (args != null)
+          {
+            for (var arg : args)
+              {
+                var argtype = "--still unkown--";
+                if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
+                  {
+                    allUnknown = false;
+                    argtype = s(arg.resultType());
+                  }
+                t = (t == null ? "" : t + " ") + argtype;
+              }
+          }
+        if (!allUnknown)
+          {
+            at = t;
+          }
+      }
+    error(a.pos(),
+          "Actual parameter in a call is a type, but the call expects an expression",
+          (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
+          (cf != null ? "call to " + s(cf) + "\n" : "" ) +
+          "actual type argument found: " + s(a._type) + "\n" +
+          (at != null ? "expected argument types: " + at + "\n" : "" ) +
+          "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
+          "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
+  }
+
+
 }
 
 /* end of file */

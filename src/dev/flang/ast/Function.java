@@ -164,7 +164,7 @@ public class Function extends ExprWithPos
    *
    * @param names the names of the arguments, "x", "y"
    *
-   * @param i the inheritance clause, currently alway empty list
+   * @param i the inheritance clause, currently always empty list
    *
    * @param c the contract
    *
@@ -244,7 +244,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpetedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(res, outer, t) tries to infer the
    * result type of a lambda.
    *
    * @param res this is called during type inference, res gives the resolution
@@ -294,7 +294,7 @@ public class Function extends ExprWithPos
         for (var n : _names)
           {
             var arg = new Feature(pos() /* better n.pos() */,
-                                  Consts.VISIBILITY_LOCAL,
+                                  Visi.LOCAL,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
                                   n,
@@ -320,7 +320,7 @@ public class Function extends ExprWithPos
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
-                                   Consts.VISIBILITY_INVISIBLE,
+                                   Visi.INVISIBLE,
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
@@ -461,7 +461,7 @@ public class Function extends ExprWithPos
       {
         _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
-        // Call.resolveType returns something differnt than this only for an
+        // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
@@ -490,13 +490,13 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeForGenericsTypeInfereing returns the type of this expression or null if
-   * the type is still unknown, i.e., before or during type resolution for
-   * generic type arguments.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForGenericsTypeInfereing()
+  AbstractType typeIfKnown()
   {
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
@@ -555,12 +555,12 @@ public class Function extends ExprWithPos
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Actual(null, new Call(pos(), null, name)));
-                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
+                actual_args.add(new Actual(new Call(pos(), null, name)));
+                formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
-            Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
+            Feature fcall = new Feature(pos(), Visi.PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
@@ -582,7 +582,7 @@ public class Function extends ExprWithPos
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
-                                           Consts.VISIBILITY_INVISIBLE,
+                                           Visi.INVISIBLE,
                                            0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),

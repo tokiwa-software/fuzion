@@ -157,7 +157,7 @@ public class C extends ANY
     /**
      * Perform a call of a feature with target instance tvalue with given
      * arguments.. The type of tvalue might be dynamic (a refernce). See
-     * FUIR.acess*().
+     * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
@@ -166,7 +166,7 @@ public class C extends ANY
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ol = new List<CStmnt>();
-      if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
+      if (_fuir.hasPrecondition(cc0))
         {
           var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
           ol.add(callpair._v1);
@@ -551,6 +551,8 @@ public class C extends ANY
           "-Wno-unused-label",
           "-Wno-unused-but-set-variable",
           "-Wno-unused-function",
+          // allow infinite recursion
+          "-Wno-infinite-recursion",
           "-O3");
       }
     if(_options._useBoehmGC)
@@ -602,6 +604,8 @@ public class C extends ANY
        "#include <pthread.h>\n"+
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
+       // defines _O_BINARY
+       "#include <sys/fcntl.h>\n"+
        "\n");
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
@@ -673,6 +677,13 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
+    // If we don't do the following stdout/err might be opened in text mode on windows.
+    // This would lead to automatic insertions of carriage returns.
+    cf.println("#if _WIN32");
+    cf.println(" _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode");
+    cf.println(" _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode");
+    cf.println("#endif");
+
     if (_options._useBoehmGC)
       {
         cf.println("GC_INIT(); /* Optional on Linux/X86 */");
@@ -680,9 +691,13 @@ public class C extends ANY
 
     cf.print(initializeEffectsEnvironment());
 
+    var cl = _fuir.mainClazzId();
+
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+                        _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
+                        CExpr.call(_names.function(cl, false), new List<>())
+                        ));
     cf.println("}");
   }
 
@@ -1216,7 +1231,7 @@ public class C extends ANY
           case Routine  :
           case Intrinsic: l.add(cFunctionDecl(cl, false, null));
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(cFunctionDecl(cl, true, null));
           }
@@ -1249,7 +1264,7 @@ public class C extends ANY
               l.add(cFunctionDecl(cl, false, o));
             }
           }
-        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
+        if (_fuir.hasPrecondition(cl))
           {
             l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
             l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));

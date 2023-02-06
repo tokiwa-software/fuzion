@@ -56,7 +56,7 @@ public class FuzionConstants extends ANY
   public static final String UNIVERSE_NAME    = INTERNAL_NAME_PREFIX + "universe";
 
   /**
-   * Prefix of artifically generated name of outer refs.
+   * Prefix of artificially generated name of outer refs.
    */
   public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
 
@@ -64,7 +64,32 @@ public class FuzionConstants extends ANY
    * Name of Object feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String OBJECT_NAME          = "Object";
+  public static final String OBJECT_NAME          = "Any";
+
+
+  /**
+   * Name of String feature.
+   */
+  public static final String STRING_NAME          = "String";
+
+
+  /**
+   * Name of feature `index []`.
+   */
+  public static final String FEATURE_NAME_INDEX = "index [ ]";
+
+
+  /**
+   * Name of feature `index [..]`.
+   */
+  public static final String FEATURE_NAME_INDEX_DOTDOT = "index [..]";
+
+
+  /**
+   * Name of feature `index [] :=`.
+   */
+  public static final String FEATURE_NAME_INDEX_ASSIGN = "index [ ] := ";
+
 
 
   /**
@@ -95,16 +120,21 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of (dynamic) type features.
+   * Name of type features.
    */
   public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
 
 
   /**
    * Name of type parameter for type features.  This type parameter will be set
-   * to the actual static type.
+   * to the actual corresponding type, i.e., including the type's type
+   * parameters.
+   *
+   * NOTE: Here, the INTERNAL_NAME_PREFIX is not used as a prefix since feature
+   * names with this prefix will be removed from .fum files which results in
+   * this not being found in redefinitions.
    */
-  public static final String TYPE_FEATURE_THIS_TYPE = "THIS_TYPE";
+  public static final String TYPE_FEATURE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
 
 
   /**
@@ -199,9 +229,15 @@ public class FuzionConstants extends ANY
   public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 8;
 
   /**
-   * The bits of feature kind that are not flags
+   * The bits of feature kind that encode the kind.
    */
   public static final int MIR_FILE_KIND_MASK    = 0xf;
+
+
+  /**
+   * The bits of feature kind that encode the visibility.
+   */
+  public static final int MIR_FILE_VISIBILITY_MASK    = 0x7 << 7;
 
 
   /**

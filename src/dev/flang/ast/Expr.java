@@ -56,13 +56,30 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
-   * of the acual.
+   * of the actual.
    */
   public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
-      Expr box(AbstractType frmlT)
+      { _type = Types.t_ERROR; }
+    };
+
+
+  /**
+   * Dummy Expr value. Used in to represent error values.
+   */
+  public static final Expr ERROR_VALUE = new Expr()
+    {
+      public SourcePosition pos()
+      {
+        return SourcePosition.builtIn;
+      }
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
+      }
+      AbstractType typeIfKnown()
+      {
+        return Types.t_ERROR;
       }
     };
 
@@ -117,7 +134,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   public AbstractType type()
   {
-    var result = typeForFeatureResultTypeInferencing();
+    var result = typeIfKnown();
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -130,27 +147,28 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeForCallTarget()
   {
     return type();
   }
 
 
   /**
-   * typeForGenericsTypeInfereing returns the type of this expression or null if
-   * the type is still unknown, i.e., before or during type resolution for
-   * generic type arguments.
+   * typeIfKnown returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForGenericsTypeInfereing()
+  AbstractType typeIfKnown()
   {
-    return typeForFeatureResultTypeInferencing();
+    return type();
   }
 
 
@@ -282,7 +300,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         var pos = pos();
         Feature r = new Feature(res,
                                 pos,
-                                Consts.VISIBILITY_INVISIBLE,
+                                Visi.INVISIBLE,
                                 t,
                                 FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
                                 outer);
@@ -396,13 +414,28 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * Is boxing needed when we assign to frmlT since frmlT is generic (so it
+   * could be a ref) or frmlT is this type and the underlying feature is by
+   * default a ref?
+   *
+   * @param frmlT the formal type we are assigning to.
+   */
+  boolean needsBoxingForGenericOrThis(AbstractType frmlT)
+  {
+    return
+      frmlT.isGenericArgument() ||
+      frmlT.isThisType() && frmlT.featureOfType().isThisRef();
+  }
+
+
+  /**
    * Is boxing needed when we assign to frmlT?
    * @param frmlT the formal type we are assigning to.
    */
   private boolean needsBoxing(AbstractType frmlT)
   {
     var t = type();
-    if (frmlT.isGenericArgument())
+    if (needsBoxingForGenericOrThis(frmlT))
       {
         return true;
       }

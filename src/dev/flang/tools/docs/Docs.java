@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
@@ -106,10 +107,7 @@ public class Docs
         return;
       }
     var head = queue.remove();
-    if (!head.isUniverse())
-      {
-        c.accept(head);
-      }
+    c.accept(head);
     queue.addAll(declaredFeatures(head).collect(Collectors.toList()));
     breadthFirstTraverse0(c, queue);
   }
@@ -160,13 +158,14 @@ public class Docs
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, false, true);
+        return new DocsOptions(null, false, true, false);
       }
 
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
-    return new DocsOptions(destination, bare, false);
+    var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
+    return new DocsOptions(destination, bare, false, ignoreVisibility);
   }
 
 
@@ -222,20 +221,22 @@ public class Docs
    */
   // NYI we want to ignore most but not all fields
   // but how to distinguish?
-  private static boolean ignoreFeature(AbstractFeature af)
+  private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {
     if (af.isUniverse())
       {
         return false;
       }
+
     return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || af.featureName().baseName().startsWith("@")
+      || af.featureName().isInternal()
+      || af.featureName().isNameless()
+      || (!ignoreVisibility && af.visibility() == Visi.INVISIBLE)
+      || (!ignoreVisibility && af.visibility() == Visi.PRIVATE)
+      || af.isTypeFeature()
       || Util.isArgument(af)
       || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
       || isDummyFeature(af);
-    // NYI this should be used in the future
-    // !af._visibility()
   }
 
 
@@ -272,44 +273,36 @@ public class Docs
 
   private void run(DocsOptions config)
   {
+    // declared features are sorted by feature name
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, SortedSet<AbstractFeature>>();
 
     breadthFirstTraverse(feature -> {
-      var outerFeature = feature.outer();
-      if (ignoreFeature(outerFeature))
+      if (ignoreFeature(feature, config.ignoreVisibility()))
         {
           return;
         }
-
-      mapOfDeclaredFeatures.compute(outerFeature, (k, v) -> {
-        if (v == null)
-          {
-            v = new TreeSet<AbstractFeature>(byFeatureName);
-          }
-        if (!ignoreFeature(feature))
-          {
-            v.add(feature);
-          }
-        return v;
-      });
+      var s = declaredFeatures(feature)
+        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()))
+        .collect(Collectors.toCollection(
+          () -> new TreeSet<>(byFeatureName)));
+      mapOfDeclaredFeatures.put(feature, s);
     }, universe);
 
-    var htmlTool = new Html(config);
+    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe);
 
     mapOfDeclaredFeatures
-      .entrySet()
+      .keySet()
       .stream()
-      .forEach(entry -> {
-        var key = entry.getKey();
-        var path = key.isUniverse()
+      .forEach(af -> {
+        var path = af.isUniverse()
                                     ? config.destination()
-                                    : config.destination().resolve(featurePath(key));
+                                    : config.destination().resolve(featurePath(af));
         path.toFile().mkdirs();
 
         try
           {
             FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-            var output = htmlTool.content(entry, universe, mapOfDeclaredFeatures);
+            var output = htmlTool.content(af);
             writer.write(output);
             writer.close();
           }

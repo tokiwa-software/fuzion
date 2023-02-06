@@ -95,7 +95,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef asString string is
+  redef as_string String is
     option.this ? v T => $v
                 | nil => $nil
 
@@ -129,6 +129,11 @@ is
                   | nil => default()
 
 
+  # return function
+  #
+  fixed type.return (a T) => option a
+
+
 # option with 1 argument provides an short-hand to wrap a value into an option
 #
 # Using this enables to write
@@ -140,13 +145,3 @@ is
 #   o option TypeOfX := x
 #
 option(T type, o option T) => o
-
-
-# type related to option declaring features not requiring an instance of option
-#
-options(redef A type) : monads A (option A) is
-
-
-  # return function
-  #
-  return (a A) => option a

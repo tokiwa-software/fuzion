@@ -73,6 +73,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   word-break: break-word;
 }
 
+.white-space-no-wrap{
+  white-space: nowrap;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.flex-grow-1{
+  flex-grow: 1;
+}
+
+.font-weight-600{
+  font-weight: 600;
+}
+
 .fd{
   font-family: 'Fira Mono', monospace;
   display: flex;
@@ -89,7 +105,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd-feature{
   color: #795e26;
-  font-weight: 600;
 }
 
 .fd-type{
@@ -120,7 +135,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd summary{
   list-style-position: outside;
-  cursor: pointer;
 }
 
 .fd-anchor-sign{
@@ -136,7 +150,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-size: 80%;
   display: flex;
   align-items: center;
-  font-weight: 400;
 }
 
 .fd .sidenav{
@@ -149,7 +162,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   float: right;
   margin-left: 15px;
   font-size: 2em;
-  cursor: pointer;
 }
 
 .fd .sidenav nav ul{

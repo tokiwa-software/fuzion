@@ -31,17 +31,17 @@
 #   say (sum l)     # '6'
 #
 #
-sum(T (numeric T).type, l Sequence T)
+sum(T type : numeric T, l Sequence T)
   pre
-    debug: !l.isEmpty   # sum does not work (yet) for empty Sequence
+    debug: !l.is_empty   # sum does not work (yet) for empty Sequence
   =>
 
-  # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
+  # NYI: the following code to get T's sum monoid does not work for l.is_empty,
   # it should be something like
   #
   #  l.fold T.sum
   #
-  n := l.asList.head.get
+  n := l.as_list.head.get
   sum0 n l
 
 
@@ -56,8 +56,8 @@ sum(T (numeric T).type, l Sequence T)
 #
 sum0(
   # the numeric type we are summing, unit value
-  U (numerics T).type,
-  T (numeric T).type,
+  U type : numerics T,
+  T type : numeric T,
   n U,
   l Sequence T
   )

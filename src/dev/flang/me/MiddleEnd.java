@@ -150,11 +150,11 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
-    markUsed(universe.get(m, "conststring")                   , SourcePosition.builtIn);
-    markUsed(universe.get(m, "conststring").get(m, "isEmpty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(universe.get(m, "conststring").get(m, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(Types.resolved.f_fuzion_sys_array_data           , SourcePosition.builtIn);
-    markUsed(Types.resolved.f_fuzion_sys_array_length         , SourcePosition.builtIn);
+    markUsed(universe.get(m, "conststring")                    , SourcePosition.builtIn);
+    markUsed(universe.get(m, "conststring").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "conststring").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(Types.resolved.f_fuzion_sys_array_data            , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_sys_array_length          , SourcePosition.builtIn);
     markUsed(universe.get(m, "unit")          , SourcePosition.builtIn);
     markUsed(universe.get(m, "void")          , SourcePosition.builtIn);
   }
@@ -251,6 +251,13 @@ public class MiddleEnd extends ANY
         for (AbstractFeature rf : redefinitions(f))
           {
             markUsed(rf, usedAt);
+          }
+        if (f.hasTypeFeature())
+          { // NYI: This might mark too many type features. It shold be
+            // sufficient to mark all type features of types passed as type
+            // parameters and of all features that whose ancestors use this.type
+            // (i.e., Types.get) to access the current type instance.
+            markUsed(f.typeFeature(), false, usedAt);
           }
       }
   }

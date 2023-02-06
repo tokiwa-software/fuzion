@@ -235,7 +235,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public Visi visibility()
   {
-    return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
+    return _libModule.featureVisibilityEnum(_index);
   }
 
   /**
@@ -243,7 +243,10 @@ public class LibraryFeature extends AbstractFeature
    */
   public int modifiers()
   {
-    return _libModule.featureIsFixed(_index) ? Consts.MODIFIER_FIXED : 0;
+    return
+      (_libModule.featureIsFixed       (_index)     ? Consts.MODIFIER_FIXED    : 0) |
+      (_libModule.featureRedefinesCount(_index) > 0 ? Consts.MODIFIER_REDEFINE : 0);
+
   }
 
 

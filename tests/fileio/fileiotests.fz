@@ -36,7 +36,7 @@ fileiotests =>
   writer := f.write
   reader := f.read
 
-  exists(path string) bool is
+  exists(path String) bool is
     match f.stat path true
       io.file.meta_data => true
       error => false
@@ -48,16 +48,24 @@ fileiotests =>
   say "$dir exists: {exists dir}"
 
   say "$file exists: {exists file}"
-  match writer.write_all file content.utf8.asArray
+  match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
+      res := writer.write fd content.utf8.as_array
+      fuzion.sys.fileio.close fd
+      res)
     unit => say "$file was created"
     error =>
   say "$file exists: {exists file}"
 
   say "$file size is {(f.stat file true).val.size}"
 
-  match reader.read_all file
+  # NYI: we need to use fuzion.sys.fileio directly until we have a
+  # closeable effect.
+  match (fuzion.sys.fileio.open file (i8 0)).bind (array u8) (fd->
+      res := reader.read_file fd
+      fuzion.sys.fileio.close fd
+      res)
     bytes array u8 =>
-      filecontent := strings.fromBytes bytes
+      filecontent := String.type.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

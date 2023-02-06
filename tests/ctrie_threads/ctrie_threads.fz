@@ -25,10 +25,10 @@
 
 ctrie_threads is
 
-  ctrie := CTrie<i32, string>
+  ctrie := CTrie<i32, String>
 
-  one := psSet 0..1000
-  two := psSet 500..1500
+  one := ps_set 0..1000
+  two := ps_set 500..1500
 
   run_in_thread(s Set<i32>, num i32) is
     concur.thread.spawn (() ->

@@ -317,7 +317,7 @@ public class Value extends ANY
 
 
   /**
-   * Perform c.accept on this and, if this is a set, o all values contained in
+   * Perform c.accept on this and, if this is a set, on all values contained in
    * the set.
    *
    * @param c a consumer to apply to the values.

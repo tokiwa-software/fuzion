@@ -38,7 +38,7 @@ concur_simple : time.durations =>
   t2 := ms 120
   t3 := ms 180
 
-  count(s string, t0, t time.duration) =>
+  count(s String, t0, t time.duration) =>
     time.nano.sleep t0
     for i in 0..N do
       time.nano.sleep t

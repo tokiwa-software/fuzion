@@ -266,7 +266,18 @@ public class FUIR extends IR
             if (CHECKS) check
               (Errors.count() > 0 || cl._type != Types.t_ERROR);
 
-            if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type == Types.t_ERROR)
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0);
+
+                if (Errors.count() == 0)
+                  {
+                    Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
+                                 "were reported.  This can only be the result of a severe bug.");
+                  }
+              }
+            else if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
                 add(cl);
               }
@@ -1035,7 +1046,7 @@ hw25 is
           {
           case Abstract, Choice -> false;
           case Intrinsic, Routine, Field ->
-            (cc.isInstantiated() || cc.feature().isOuterRef())
+            (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.conststring.getIfCreated()
             && !cc.isAbsurd()
             // NYI: this should not depend on string comparison!
@@ -1064,7 +1075,7 @@ hw25 is
   /**
    * Get the id of clazz consstring
    *
-   * @param the id of connststring or -1 if that clazz was not created.
+   * @return the id of conststring or -1 if that clazz was not created.
    */
   public int clazz_conststring()
   {
@@ -1076,7 +1087,7 @@ hw25 is
   /**
    * Get the id of clazz consstring.internalArray
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @return the id of conststring.internalArray or -1 if that clazz was not created.
    */
   public int clazz_conststring_internalArray()
   {
@@ -1088,7 +1099,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
-   * @param the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
+   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
@@ -1100,7 +1111,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.length
    *
-   * @param the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
+   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
@@ -1745,7 +1756,7 @@ hw25 is
   {
     var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    var ic = cc.lookup(call);
     return id(ic);
   }
 
@@ -2054,6 +2065,15 @@ hw25 is
       !clazzIsUnitType(cl) &&
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
+  }
+
+
+  /**
+   * Does this clazzes contract include any preconditions?
+   */
+  public boolean hasPrecondition(int cl)
+  {
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
   }
 
 

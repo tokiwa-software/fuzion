@@ -201,7 +201,7 @@ public class Assign extends AbstractAssign
           }
         else
           {
-            throw new Error("NYI: Assignement to result defined in library feature not handled well yet!");
+            throw new Error("NYI: Assignment to result defined in library feature not handled well yet!");
           }
       }
   }

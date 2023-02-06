@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 nested_choice_negative =>
-  my_choice : choice (choice nil string) (choice nil unit) is
-    redef asString =>
+  my_choice : choice (choice nil String) (choice nil unit) is
+    redef as_string =>
       match my_choice.this
-        choice choice nil string =>
+        choice choice nil String =>
           match choice
             nil nil => "inner nil"
-            string string => string
+            String String => String
         choice choice nil unit =>
           match choice
             nil nil => "inner nil"
@@ -37,8 +37,8 @@ nested_choice_negative =>
 
   c my_choice := nil // 1. should flag an error: ambigous assignment
 
-  my_string : string is
-  my_choice2 : choice string my_string is
+  my_string : String is
+  my_choice2 : choice String my_string is
   my_choice2 := "str" // 2. should flag an error: generics must be disjoint
 
   my_i32 : i32 1 is
@@ -46,4 +46,4 @@ nested_choice_negative =>
   my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
 
   my_generic_choice(A,B type) : choice A B is
-  a my_generic_choice string my_string := "string" // 4. should flag an error: generics must be disjoint
+  a my_generic_choice String my_string := "string" // 4. should flag an error: generics must be disjoint

@@ -50,14 +50,14 @@ private stat(
   #
   stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path string) outcome meta_data is
+        path String) outcome meta_data is
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
     else
       replace
-      error "error while retrieving meta_data for the following file/dir: $path"
+      error "stat error {data[0]} for {path}"
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -66,14 +66,14 @@ private stat(
   #
   lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path string) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path String) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
     else
       replace
-      error "error while retrieving meta_data for the following file/dir: $path"
+      error "lstat error {data[0]} for {path}"
 
 # short-hand for installing the default stat effect to the provided code
 #
@@ -100,7 +100,7 @@ stat =>
 #
 stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path string,
+     path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) => 
   stats.installDefault
@@ -112,17 +112,17 @@ stat(
 # reference to the stats that could be provided
 #
 Provided_Stat ref is
-  stats(path Object, meta_data_arr Object) bool is abstract
-  lstats(path Object, meta_data_arr Object) bool is abstract
+  stats(path Any, meta_data_arr Any) bool is abstract
+  lstats(path Any, meta_data_arr Any) bool is abstract
 
 # the default file stat provided
 #
 default_provided_stat : Provided_Stat is
-  stats(path Object, meta_data_arr Object) =>
-    fuzion.std.fileio.stats path meta_data_arr
+  stats(path Any, meta_data_arr Any) =>
+    fuzion.sys.fileio.stats path meta_data_arr
 
-  lstats(path Object, meta_data_arr Object) =>
-    fuzion.std.fileio.lstats path meta_data_arr
+  lstats(path Any, meta_data_arr Any) =>
+    fuzion.sys.fileio.lstats path meta_data_arr
 
 # unit type feature defining features related to stat effect but not requiring an
 # instance.

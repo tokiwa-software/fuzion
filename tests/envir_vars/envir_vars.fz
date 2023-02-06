@@ -28,8 +28,8 @@ envir_vars is
     error => exit 1
 
   match envir.vars.get "FUZION_ENVIR_VARS_TEST_SET"
-    val string =>
-      if val = "world"
+    val String =>
+      if val ≟ "world"
         say " successful"
       else
         exit 1
@@ -41,5 +41,5 @@ envir_vars is
     error => exit 1
 
   match envir.vars.get "FUZION_ENVIR_VARS_TEST_SET"
-    val string => exit 1
+    val String => exit 1
     nil => say " successful"

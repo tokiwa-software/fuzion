@@ -57,7 +57,7 @@ err =>
 
 defaultPrintToErr : Can_Print is
 
-  print(s Object) => fuzion.std.err.print s
+  print(s Any) => fuzion.sys.err.print s
 
 
 # unit type feature defining features related to err but not requiring an

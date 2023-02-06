@@ -456,7 +456,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * For a feature declared with a qualified name, find the actual outer
    * feature, which might be different to the surrounding outer feature.
    *
-   * Then, call setOUterAndAddInner with the outer that was found.  This call
+   * Then, call setOuterAndAddInner with the outer that was found.  This call
    * might be delayed until outer's declarations have been resolved, i.e., after
    * the return of this call.
    *
@@ -479,7 +479,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Helper for setOuterAndAddInnerForQualifiedRec() above to iterate over outer features except the
+   * Helper for setOuterAndAddInnerForQualified() above to iterate over outer features except the
    * outermost feature.
    *
    * This might register a callback in case the outer did not go through
@@ -800,6 +800,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         f.redefines().add(existing);
       }
+    if (f     instanceof Feature ff &&
+        outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
+    if (f instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
     doi.put(fn, f);
   }
 
@@ -937,12 +946,22 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring or inheriting feature
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
-    return declaredOrInheritedFeatures(outer).get(name);
+    var result = declaredOrInheritedFeatures(outer).get(name);
+
+    /* Was feature f added to the declared features of its outer features late,
+     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
+     * currently not added to the sets of declared or inherited features by
+     * children of their outer clazz.
+     *
+     * This is a fix for #978 but it might need to be removed when fixing #932.
+     */
+    return result == null && original instanceof Feature of && of._addedLate ? original
+                                                                             : result;
   }
 
 
@@ -1096,7 +1115,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var fs = lookupFeatures(o, name).values();
             for (var f : fs)
               {
-                if (f.isConstructor() || f.isChoice())
+                if (f.definesType())
                   {
                     type_fs.add(f);
                     result = f;
@@ -1160,7 +1179,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
   boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
-                                   AbstractType tr)
+                                   AbstractType tr,
+                                   boolean ignoreFixedModifier)
   {
     return
       /* to is original    .this.type  and
@@ -1191,8 +1211,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
        to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        !tr.isGenericArgument()                                                                                                         &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0)                                                                       &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisType()) == 0                                                             );
+       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisTypeInTypeFeature()) == 0                                               );
   }
 
 
@@ -1222,7 +1242,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 var t1 = ta[i];
                 var t2 = ra[i];
                 if (t1.compareTo(t2) != 0 &&
-                    !isLegalCovariantThisType(o, f, t1, t2) &&
+                    !isLegalCovariantThisType(o, f, t1, t2, false) &&
                     !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
@@ -1235,7 +1255,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
                     var originalArg = o.arguments().get(i);
                     var actualArg   =   args       .get(ai);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
-                                                                 f, actualArg);
+                                                                 f, actualArg,
+                                                                 isLegalCovariantThisType(o, f, t1, t2, true));
                   }
               }
           }
@@ -1249,9 +1270,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
                  t2 != Types.resolved.t_void &&
-                 !isLegalCovariantThisType(o, f, t1, t2))
+                 !isLegalCovariantThisType(o, f, t1, t2, false))
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
+            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }
       }
 
