@@ -145,7 +145,11 @@ public class Intrinsics extends ANY
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A0.castTo("char *")))),
+            // try delete as a file first
+            CExpr.decl("int", resultIdent, CExpr.call("unlink", new List<>(A0.castTo("char *")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            // then try delete as a directory
+            resultIdent.assign(CExpr.call("rmdir", new List<>(A0.castTo("char *")))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
@@ -187,8 +191,8 @@ public class Intrinsics extends ANY
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
             CExpr.decl("struct stat", statIdent),
-            CExpr.decl("long *", metadata),
-            metadata.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", metadata),
+            metadata.assign(A1.castTo("fzT_1i64 *")),
             // write stats in metadata if stat was successful and return true
             CExpr.iff(
               CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
@@ -215,8 +219,8 @@ public class Intrinsics extends ANY
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
             CExpr.decl("struct stat", statIdent),
-            CExpr.decl("long *", metadata),
-            metadata.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", metadata),
+            metadata.assign(A1.castTo("fzT_1i64 *")),
             // write stats in metadata if lstat was successful and return true
             CExpr.iff(
               CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
@@ -303,7 +307,7 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
-            CExpr.decl("long *", seekResults, A2.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", seekResults, A2.castTo("fzT_1i64 *")),
             CStmnt.iff(CExpr.call("fseeko", new List<>(A0.castTo("FILE *"), A1.castTo("off_t"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
             seekResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
             seekResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
@@ -316,7 +320,7 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
-            CExpr.decl("long *", positionResults, A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", positionResults, A1.castTo("fzT_1i64 *")),
             positionResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
             positionResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
             );
