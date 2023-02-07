@@ -258,7 +258,7 @@ public class Resolution extends ANY
   /**
    * Add a feature to the set of features schedule for type resolution
    */
-  void scheduleForTypeInterference(Feature f)
+  void scheduleForTypeInference(Feature f)
   {
     if (PRECONDITIONS) require
       (f.state() == Feature.State.RESOLVED_SUGAR1);
