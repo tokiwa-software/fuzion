@@ -169,7 +169,7 @@ public class Intrinsics extends ANY
 
           // NYI maybe use CreateDirectory or similar?
           var windows = CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("_mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *")))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret());
 
@@ -244,11 +244,11 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             CExpr.decl("FILE *", filePointer),
-            CExpr.decl("long *", openResults),
-            openResults.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", openResults),
+            openResults.assign(A1.castTo("fzT_1i64 *")),
             errno.assign(new CIdent("0")),
             CStmnt.suitch(
-              A2.castTo("int"),
+              A2,
               new List<>(
                 CStmnt.caze(
                   new List<>(CExpr.int8const(0)),
