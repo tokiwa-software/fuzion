@@ -83,13 +83,6 @@ public class Type extends AbstractType
 
 
   /**
-   * The sourcecode position of this type, used for error messages.
-   */
-  public final HasSourcePosition pos;
-  public SourcePosition pos() { return pos.pos(); }
-
-
-  /**
    * Is this an explicit reference or value type?  Ref/Value to make this a
    * reference/value type independent of the type of the underlying feature
    * defining a ref type or not, false to keep the underlying feature's
@@ -262,11 +255,9 @@ public class Type extends AbstractType
   public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
-      (pos != null,
-       n.length() > 0,
+      (n.length() > 0,
        Errors.count() > 0 || f == null || f.generics().sizeMatches(g == null ? NONE : g));
 
-    this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     if (o instanceof Type ot && ot.isThisType())
@@ -302,7 +293,6 @@ public class Type extends AbstractType
     if (PRECONDITIONS) require
       (g != null);
 
-    this.pos = pos;
     this.name  = g.name();
     this._generics = NONE;
     this._outer = null;
@@ -336,7 +326,6 @@ public class Type extends AbstractType
     if (PRECONDITIONS) require
       (n.length() > 0);
 
-    this.pos               = SourcePosition.builtIn;
     this.name              = n;
     this._generics         = NONE;
     this._outer            = null;
@@ -387,7 +376,6 @@ public class Type extends AbstractType
     if (PRECONDITIONS) require
       (refOrVal != original._refOrVal);
 
-    this.pos                = original.pos;
     this._refOrVal          = refOrVal;
     this.name               = original.name;
     this._generics          = original._generics;
@@ -409,7 +397,6 @@ public class Type extends AbstractType
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
   {
-    this.pos                = original.pos;
     this._refOrVal          = original._refOrVal;
     this.name               = original.name;
     if (original._generics.isEmpty())
@@ -957,7 +944,7 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            feature = res._module.lookupFeatureForType(pos(), name, of);
+            feature = res._module.lookupFeatureForType(outerfeat.pos(), name, of);
           }
       }
     if (POSTCONDITIONS) ensure

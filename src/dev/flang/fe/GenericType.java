@@ -76,7 +76,7 @@ public class GenericType extends LibraryType
    */
   GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic, Type.RefOrVal rov)
   {
-    super(mod, at, pos);
+    super(mod, at);
 
     this._generic = generic;
     this._refOrVal = Type.RefOrVal.LikeUnderlyingFeature;
@@ -180,7 +180,7 @@ public class GenericType extends LibraryType
     return switch (_refOrVal)
       {
       case Ref -> this;
-      default -> new GenericType(_libModule, _at, _pos, _generic, Type.RefOrVal.Ref);
+      default -> new GenericType(_libModule, _at, this, _generic, Type.RefOrVal.Ref);
       };
   }
   public AbstractType asValue()

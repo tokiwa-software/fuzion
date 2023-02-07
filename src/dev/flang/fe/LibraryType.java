@@ -66,11 +66,6 @@ public abstract class LibraryType extends AbstractType
    */
   public final int _at;
 
-  /**
-   * The sourcecode position of this type, used for error messages.
-   */
-  public final HasSourcePosition _pos;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -78,21 +73,16 @@ public abstract class LibraryType extends AbstractType
   /**
    * Constructor to set common fields.
    */
-  LibraryType(LibraryModule mod, int at, HasSourcePosition pos)
+  LibraryType(LibraryModule mod, int at)
   {
     this._libModule = mod;
     this._at = at;
-    this._pos = pos;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public SourcePosition pos()
-  {
-    return _pos.pos();
-  }
 
 }
 

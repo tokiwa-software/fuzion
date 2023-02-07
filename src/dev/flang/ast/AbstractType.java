@@ -68,6 +68,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /*-----------------------------  methods  -----------------------------*/
 
 
+  // NYI remove eventually
+  public SourcePosition pos()
+  {
+    if(this instanceof Type t)
+    {
+      return t.feature != null
+       ? t.feature.pos()
+       : SourcePosition.notAvailable;
+    }
+    return SourcePosition.notAvailable;
+  }
+
   /**
    * setOuter
    *
@@ -1157,7 +1169,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isRef();
   public abstract AbstractType asThis();
   public abstract boolean isThisType();
-  public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
