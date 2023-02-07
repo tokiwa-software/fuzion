@@ -196,9 +196,9 @@ O(n log n).
         sz0 := sz / 2
         nt := (tail - sz0) / 2
         at0 := (at
-                + (if !((size & sz0) ≟ 0) nt else 0)
-                + (if !((size & sz ) ≟ 0) sz else 0))
-        if !((size & sz) ≟ 0)
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        if (size & sz) != 0
           match binarySearch at at+sz-1
             v V => v
             nil => get at0 sz0 nt
@@ -226,7 +226,7 @@ O(n log n).
     #
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz ≤ size
-        if !((size & sz) ≟ 0)
+        if (size & sz) != 0
           tmp := array PK rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
@@ -240,7 +240,7 @@ O(n log n).
         else
           join ole-sz 2*sz rsz (skip + sz + skip)
 
-    if !(size ≟ 0)
+    if size != 0
       join fill-1 1 0 0
     array r unit unit unit
 
@@ -268,9 +268,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          m0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
               min m at at+sz-1
             else
               m
@@ -297,9 +297,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          m0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
               max m at at+sz-1
             else
               m
@@ -342,9 +342,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          a0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          a0 := if (size & sz) != 0
               addAll a at at+sz-1
             else
               a

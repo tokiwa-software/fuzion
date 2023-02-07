@@ -82,13 +82,13 @@ mutate : simpleEffect is
     # check that this effect is intalled and replace it.
     #
     private check_and_replace is
-      if !(my_id ≟ mutate.this.type.env.id)
+      if my_id != mutate.this.type.env.id
         panic "*** invalid mutate for {mutate.this.type}"
       mutate.this.type.env.replace
 
     # is this element open, i.e., can it be mutated?
     #
-    open => !(id ≟ u64 0)
+    open => id != u64 0
 
     # stop any further mutations of this element
     #

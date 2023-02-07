@@ -55,11 +55,11 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   # division and remainder with check for div-by-zero
   redef infix / (other i8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => div(other)
   redef infix % (other i8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
