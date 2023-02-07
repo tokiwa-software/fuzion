@@ -166,11 +166,19 @@ public class Intrinsics extends ANY
         {
           var readWriteExecuteUser = new CIdent("S_IRWXU");
           var resultIdent = new CIdent("result");
-          return CStmnt.seq(
+
+          // NYI maybe use CreateDirectory or similar?
+          var windows = CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("_mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(
             CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
-            );
+            c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         }
         );
     put("fuzion.sys.fileio.stats"   , (c,cl,outer,in) ->
@@ -618,19 +626,29 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
+          // NYI setenv is posix only
+          var windows = CStmnt.seq(c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
                                                                       A1.castTo("char*") /* value */,
                                                                       CExpr.int32const(1) /* overwrite */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         });
      put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
+          // NYI unsetenv is posix only
+          var windows = CStmnt.seq(c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         });
      put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
          {
