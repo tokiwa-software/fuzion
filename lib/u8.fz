@@ -84,6 +84,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   as_i32 i32 is intrinsic
   as_i64  => as_i32.as_i64
 # as_i128 => as_i32.as_i128
+  as_u8   => val
   as_u16  => as_i32.as_u16
   as_u32  => as_i32.as_u32
   as_u64  => as_i32.as_u64
