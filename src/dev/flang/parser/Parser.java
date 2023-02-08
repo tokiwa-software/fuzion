@@ -1049,12 +1049,8 @@ typeType    : "type"
                       }
                     result[0] = FormalOrActual.formal;
                   }
-                else if (!skipType())
-                  {
-                    result[0] = FormalOrActual.actual;
-                    return false;
-                  }
-                else if (skipDot())
+                // tolerate missing type here
+                else if ((skipType() || true) && skipDot())
                   {
                     if (!skip(Token.t_type))
                       {
