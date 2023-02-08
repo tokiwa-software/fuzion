@@ -105,7 +105,8 @@ ordered_maps (OK type : has_total_order, V type) is
             ((Sequence V).type.empty).as_array)
 
 
-# entry is an index in ks/vs
+# an entry is a key and a value
+# in an ordered map at index i.
 #
 entry(OK type : has_total_order,
       V type,
@@ -117,6 +118,7 @@ entry(OK type : has_total_order,
   val => om.vs[i]
 
 
-  # total order over entries.
+  # defines a total order over entries.
+  # is a.key lower or equal than b.key?
   #
-  fixed type.lteq(a, b entry OK V) => a.om.ks[a.i] ≤ b.om.ks[b.i]
+  fixed type.lteq(a, b entry OK V) => a.key ≤ b.key
