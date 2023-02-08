@@ -27,13 +27,13 @@ nested_choice =>
 
     simple is
       the_choice : choice i32 f64 is
-        redef asString =>
+        redef as_string =>
           match the_choice.this
             n i32 => $n
             f f64 => $f
 
       map_res : choice the_choice String is
-        redef asString =>
+        redef as_string =>
           match map_res.this
             t the_choice => $t
             s String => s
@@ -49,7 +49,7 @@ nested_choice =>
       bool_or_u64 : choice u64 bool is
 
       tripel_nested_choice : choice i32 bool_or_u64 is
-        redef asString =>
+        redef as_string =>
           match tripel_nested_choice.this
             i32 i32 => $i32
             b1 bool_or_u64 =>
@@ -76,19 +76,19 @@ nested_choice =>
 
     only_references is
       My_Ref1 ref is
-        redef asString => "ref1"
+        redef as_string => "ref1"
       My_Ref2 ref is
-        redef asString => "ref2"
+        redef as_string => "ref2"
       My_Ref3 ref is
-        redef asString => "ref3"
+        redef as_string => "ref3"
 
       only_ref : choice My_Ref1 My_Ref2 is
-        redef asString =>
+        redef as_string =>
           match only_ref.this
             mr1 My_Ref1 => $mr1
             mr2 My_Ref2 => $mr2
       only_ref_nested : choice My_Ref3 only_ref is
-        redef asString =>
+        redef as_string =>
           match only_ref_nested.this
             mr3 My_Ref3 => $mr3
             or only_ref => $or
@@ -111,7 +111,7 @@ nested_choice =>
 
     mix_ref_and_non_ref is
       choice_mixed : choice i32 (choice String u64) is
-        redef asString =>
+        redef as_string =>
           match choice_mixed.this
             n i32 => $n
             c choice String u64 =>
@@ -164,7 +164,7 @@ nested_choice =>
 
   issue562 =>
     my_choice : choice (choice nil String) nil is
-      redef asString =>
+      redef as_string =>
         match my_choice.this
           choice choice nil String =>
             match choice
@@ -179,7 +179,7 @@ nested_choice =>
     say b
 
     my_choice2 : choice (choice nil String) (choice nil unit) is
-      redef asString =>
+      redef as_string =>
         match my_choice2.this
           choice choice nil String =>
             match choice

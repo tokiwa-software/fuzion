@@ -17,27 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasHash
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# hasHash -- feature for immutable values that have a hash function
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-hasHash(redef HE type : hasEquals HE) : hasEquals HE
-
-/* NYI: quantor intrinsics not supported yet:
-
-  inv
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
-*/
-
-is
-
-  # create hash code for this instance
-  hash u64 is abstract
+override NAME = test_local_mutate
+include ../simple.mk

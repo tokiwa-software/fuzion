@@ -28,10 +28,10 @@
 public err: character_encodings is
 
   public print(s ref Any) =>
-    write s.asString.utf8.asArray
+    write s.as_string.utf8.as_array
 
   public println(s ref Any) =>
-    write (s.asString.utf8 ++ [ascii.lf]).asArray
+    write (s.as_string.utf8 ++ [ascii.lf]).as_array
 
   public println =>
     write [ascii.lf]

@@ -35,7 +35,7 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
 
   # create a list from this Sequence.
   #
-  redef asList => from.asList
+  redef as_list => from.as_list
 
 
   # the standard deviation of the sequence

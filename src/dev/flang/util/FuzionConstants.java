@@ -56,7 +56,7 @@ public class FuzionConstants extends ANY
   public static final String UNIVERSE_NAME    = INTERNAL_NAME_PREFIX + "universe";
 
   /**
-   * Prefix of artifically generated name of outer refs.
+   * Prefix of artificially generated name of outer refs.
    */
   public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
 
@@ -229,9 +229,15 @@ public class FuzionConstants extends ANY
   public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 8;
 
   /**
-   * The bits of feature kind that are not flags
+   * The bits of feature kind that encode the kind.
    */
   public static final int MIR_FILE_KIND_MASK    = 0xf;
+
+
+  /**
+   * The bits of feature kind that encode the visibility.
+   */
+  public static final int MIR_FILE_VISIBILITY_MASK    = 0x7 << 7;
 
 
   /**

@@ -120,20 +120,6 @@ public class Intrinsics extends ANY
                 CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
             resultIdent.ret());
         });
-    put("fuzion.sys.fileio.get_file_size", (c,cl,outer,in) ->
-        {
-          var statIdent = new CIdent("statbuf");
-          var resultIdent = new CIdent("result");
-          return CStmnt.seq(
-            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
-            CExpr.decl("struct stat", statIdent),
-            // result = size if successful
-            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
-            // result = -1 if it failed
-            resultIdent.ret()
-            );
-        }
-        );
     put("fuzion.sys.fileio.write"        , (c,cl,outer,in) ->
         {
           var writingIdent = new CIdent("writing");
@@ -178,9 +164,10 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.create_dir"   , (c,cl,outer,in) ->
         {
+          var readWriteExecuteUser = new CIdent("S_IRWXU");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
@@ -206,6 +193,10 @@ public class Intrinsics extends ANY
                 )
               ),
             // return false if stat failed
+            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
+            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }
@@ -230,6 +221,10 @@ public class Intrinsics extends ANY
                 )
               ),
             // return false if lstat failed
+            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
+            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
+            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }
@@ -386,34 +381,14 @@ public class Intrinsics extends ANY
         "i32.infix ^"          ,
         "i64.infix ^"          , (c,cl,outer,in) -> outer.xor(A0).ret());
 
-    put("i8.infix =="          ,
-        "i16.infix =="         ,
-        "i32.infix =="         ,
-        "i64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("i8.type.equality"     ,
         "i16.type.equality"    ,
         "i32.type.equality"    ,
         "i64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix !="          ,
-        "i16.infix !="         ,
-        "i32.infix !="         ,
-        "i64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix >"           ,
-        "i16.infix >"          ,
-        "i32.infix >"          ,
-        "i64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix >="          ,
-        "i16.infix >="         ,
-        "i32.infix >="         ,
-        "i64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix <"           ,
-        "i16.infix <"          ,
-        "i32.infix <"          ,
-        "i64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("i8.infix <="          ,
-        "i16.infix <="         ,
-        "i32.infix <="         ,
-        "i64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("i8.type.lteq"         ,
+        "i16.type.lteq"        ,
+        "i32.type.lteq"        ,
+        "i64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("u8.prefix -°"         ,
         "u16.prefix -°"        ,
@@ -460,34 +435,14 @@ public class Intrinsics extends ANY
         "u32.infix ^"          ,
         "u64.infix ^"          , (c,cl,outer,in) -> outer.xor(A0).ret());
 
-    put("u8.infix =="          ,
-        "u16.infix =="         ,
-        "u32.infix =="         ,
-        "u64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("u8.type.equality"     ,
         "u16.type.equality"    ,
         "u32.type.equality"    ,
         "u64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix !="          ,
-        "u16.infix !="         ,
-        "u32.infix !="         ,
-        "u64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix >"           ,
-        "u16.infix >"          ,
-        "u32.infix >"          ,
-        "u64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix >="          ,
-        "u16.infix >="         ,
-        "u32.infix >="         ,
-        "u64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix <"           ,
-        "u16.infix <"          ,
-        "u32.infix <"          ,
-        "u64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("u8.infix <="          ,
-        "u16.infix <="         ,
-        "u32.infix <="         ,
-        "u64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("u8.type.lteq"         ,
+        "u16.type.lteq"        ,
+        "u32.type.lteq"        ,
+        "u64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
 
     put("i8.as_i32"            , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("i16.as_i32"           , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
@@ -530,20 +485,10 @@ public class Intrinsics extends ANY
         "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
     put("f32.infix **"         ,
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
-    put("f32.infix =="         ,
-        "f64.infix =="         , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.type.equality"    ,
         "f64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix !="         ,
-        "f64.infix !="         , (c,cl,outer,in) -> outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <"          ,
-        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <="         ,
-        "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >"          ,
-        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >="         ,
-        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.type.lteq"        ,
+        "f64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->
@@ -559,8 +504,8 @@ public class Intrinsics extends ANY
         });
     put("f32.castTo_u32"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
     put("f64.castTo_u64"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
-    put("f32.asString"         ,
-        "f64.asString"         , (c,cl,outer,in) ->
+    put("f32.as_string"        ,
+        "f64.as_string"        , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
           var rc = c._fuir.clazzResultClazz(cl);
@@ -624,7 +569,7 @@ public class Intrinsics extends ANY
             : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
           return hc.ret();
         });
-    put("Any.asString"         , (c,cl,outer,in) ->
+    put("Any.as_string"        , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
           var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
@@ -687,6 +632,16 @@ public class Intrinsics extends ANY
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
         });
+     put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
+         {
+           var last_id= new CIdent("last_id");
+           return CStmnt.seq(CStmnt.decl("static",
+                                         c._types.scalar(FUIR.SpecialClazzes.c_u64),
+                                         last_id,
+                                         CExpr.uint64const(0)),
+                             last_id.assign(last_id.add(CExpr.uint64const(1))),
+                             last_id.ret());
+         });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -754,6 +709,24 @@ public class Intrinsics extends ANY
                                                                                     nsec.code())),
                             /* NYI: while: */ CExpr.call("nanosleep",new List<>(req.adrOf(),req.adrOf())));
         });
+
+
+    put("fuzion.std.date_time", (c,cl,outer,in) ->
+      {
+        var rawTime = new CIdent("rawtime");
+        var ptm = new CIdent("ptm");
+
+        return CStmnt.seq(
+            CStmnt.decl("time_t", rawTime),
+            CExpr.call("time", new List<>(rawTime.adrOf())),
+            CStmnt.decl("struct tm *", ptm, CExpr.call("gmtime", new List<>(rawTime.adrOf()))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(0)).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(1)).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(2)).assign(ptm.deref().field(new CIdent("tm_hour"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(3)).assign(ptm.deref().field(new CIdent("tm_min"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(4)).assign(ptm.deref().field(new CIdent("tm_sec"))),
+            A0.castTo("fzT_1i32 *").index(CExpr.int32const(5)).assign(CExpr.int32const(0)));
+      });
 
     put("effect.replace"       ,
         "effect.default"       ,

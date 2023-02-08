@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# sortedarray -- sorted one-dimensional immutable array
+# sorted_array -- sorted one-dimensional immutable array
 #
 # This takes an unsorted array and a compare function as an arguments and
 # returns a sorted one.
@@ -48,15 +48,15 @@ sorted_array
   #
   # must satisfy:
   #
-  #   forAll a,b: lessOrEqual(a, b) <=> (a = b)
-  #   forAll a,b: lessOrEqual(a, b) || lessOrEqual(b, a)
-  #   forAll a,b,c: (lessOrEqual(a, b) && lessOrEqual(b, c)): lessOrEqual(a, c)
+  #   forAll a,b: less_or_equal(a, b) <=> (a = b)
+  #   forAll a,b: less_or_equal(a, b) || less_or_equal(b, a)
+  #   forAll a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
   #
-  lessOrEqual (T, T) -> bool
+  less_or_equal (T, T) -> bool
 
   )
 
-  : array T (sort from.asArray 1).internalArray unit unit unit
+  : array T (sort from.as_array 1).internalArray unit unit unit
 
 is
 
@@ -66,21 +66,21 @@ is
   #
   sort
     (
-    # array with sub-heaps of heapSize sorted
+    # array with sub-heaps of heap_size sorted
     a array T,
 
     # the current heap size, 1 on initial call, must be power of 2
-    heapSize i32
+    heap_size i32
     ) array T
 
     pre
-      debug: heapSize >= 0,
-      debug: (heapSize & (heapSize-1)) = 0
-      # NYI: analysis: for all i=0..a.length/heapSize: a[heapSize*i .. heapSize*(i+1)-1] is sorted
+      debug: heap_size ≥ 0,
+      debug: (heap_size & (heap_size-1)) ≟ 0
+      # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
   is
     # check if the array is fully sorted
-    if heapSize >= a.length
-      a.asArray  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
+    if heap_size ≥ a.length
+      a.as_array  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
     else
       # h1 is the mutable index within the current first heap, this is updated
       # by the function passed to the array constructor.
@@ -91,22 +91,22 @@ is
 
       na := array T a.length (i ->
         # index in current pair of heaps
-        hi := i & (heapSize*2-1)
+        hi := i & (heap_size*2-1)
         # reset h1 in case we start new pair of heaps
-        set h1 := if (hi = 0) 0 else h1
+        set h1 := if (hi ≟ 0) 0 else h1
         # index within second heap
         h2 := hi - h1
 
         # absolute indices in first and second heap
         i1 := i - hi + h1;
-        i2 := i - hi + heapSize + h2;
+        i2 := i - hi + heap_size + h2;
 
         # did we reach end of first or second heap?
-        heap1Empty := h1 >= heapSize
-        heap2Empty := h2 >= heapSize || i2 >= a.length
+        heap1_empty := h1 ≥ heap_size
+        heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
 
         # check if next element comes from first heap
-        if heap2Empty || !heap1Empty && lessOrEqual(a[i1], a[i2])
+        if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
           # if so, increment index in first heap and return element from first heap
           set h1 := h1 + 1
           a[i1]
@@ -116,7 +116,7 @@ is
         )
 
       # continue sorting with doubled heap size
-      sort na 2*heapSize
+      sort na 2*heap_size
 
 
   # find index of given key using binary search
@@ -128,23 +128,23 @@ is
   # this sorted_array, the index of one of the matching keys will be
   # returned, but is not specified which one.
   #
-  findKey (key T) option i32
+  find_key (key T) option i32
     post
       match result
         i i32 => # sorted_array.this[i] = key, but we do not have 'infix =' available, so
-                 # use lessOrEqual instead:
+                 # use less_or_equal instead:
                  #
-                 lessOrEqual sorted_array.this[i] key && lessOrEqual key sorted_array.this[i]
-        nil   => true # NYI: analyis: for all i=0..a.length-1, sorted_array.this[i] /= key
+                 less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
   is
-    binarySearch(l, r i32) option i32 is
+    binary_search(l, r i32) option i32 is
       m := (l + r) / 2
-      if l > r                                     then nil
-      else if !lessOrEqual key sorted_array.this[m] then binarySearch m+1 r
-      else if !lessOrEqual sorted_array.this[m] key then binarySearch l m-1
-      else                                              m
+      if l ⩼ r                                     then nil
+      else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
+      else if !less_or_equal sorted_array.this[m] key then binary_search l m-1
+      else                                                 m
 
-    binarySearch 0 length-1
+    binary_search 0 length-1
 
 
   # find index of key for which cmp returns 0
@@ -168,35 +168,35 @@ is
 
     post
       match result
-        i i32 => (cmp sorted_array.this[i]) = 0
-        nil   => true # NYI: analyis: for all i=0..a.length-1, sorted_array.this[i] /= key
+        i i32 => (cmp sorted_array.this[i]) ≟ 0
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
   is
-    binarySearch(l, r i32) option i32 is
+    binary_search(l, r i32) option i32 is
       m := (l + r) / 2
-      if l > r
+      if l ⩼ r
         nil
       else
         c := cmp sorted_array.this[m]
-        if      c < 0 then binarySearch m+1 r
-        else if c > 0 then binarySearch l m-1
+        if      c ⩻ 0 then binary_search m+1 r
+        else if c ⩼ 0 then binary_search l m-1
         else               m
 
-    binarySearch 0 length-1
+    binary_search 0 length-1
 
 
-# sortedarray -- sorted one-dimensional immutable array of ordered elements
+# sorted_array_of -- sorted one-dimensional immutable array of ordered elements
 #
 # This takes an unsorted array as an argument and returns a sorted one using
 # the order defined by the type of the elements T.
 #
-# See sorted_array(from, lessOrEqual) for details
+# See sorted_array from less_or_equal for details
 #
 sorted_array_of
   (
-  T type : ordered T,
+  T type : has_total_order,
   # orginal, unsorted Sequence
   from Sequence T
   ) sorted_array T
 
 is
-  sorted_array T from (a,b -> a <= b)
+  sorted_array T from (a,b -> a ≤ b)

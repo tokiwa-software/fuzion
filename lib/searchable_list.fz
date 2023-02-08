@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# searchable_list -- a list whose elements inherit from hasEquals
+# searchable_list -- a list whose elements inherit from has_equality
 #
 # In contrast to searchable_sequence, this uses choice type 'list' and not ref
 # type 'Sequence', so it is more efficient.
 #
 #
-searchable_list(A type : hasEquals A, from list A) : Sequence A
+searchable_list(A type : has_equality, from Sequence A) : Sequence A
 /* : list A -- NYI: we might allow inherting from a choice to get a choice
                     with more restrictions on the type arguments
 
@@ -37,7 +37,7 @@ searchable_list(A type : hasEquals A, from list A) : Sequence A
   such as
 
     pre
-      A : hasEquals
+      A : has_equality
 
   Then, the inner features of searchableList could move to list.fz.
 
@@ -47,7 +47,13 @@ is
 
   # create a list from this searchable_list.
   #
-  redef asList => from
+  redef as_list => from.as_list
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => from.finite
 
 
   # does this list start with l?
@@ -56,9 +62,9 @@ is
     match l
       nil    => true
       c2 Cons =>
-        match from
+        match from.as_list
           nil     => false
-          c1 Cons => c1.head = c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
+          c1 Cons => c1.head ≟ c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
 
 
   # get the index of l within this list or nil if it does not exist
@@ -67,19 +73,19 @@ is
     if starts_with l
       0
     else
-      match from
+      match from.as_list
         nil     => nil
         c1 Cons => ((searchable_list c1.tail).find l) >>= n -> n + 1
 
 
   # replace all occurrences of old by new
   #
-  replace (old, new list A) => replace old new nil from nil
+  replace (old, new list A) => replace old new nil from.as_list nil
 
 
   # replace the first n occurrences of old by new
   #
-  replace (old, new list A, n u64) => replace old new nil from n
+  replace (old, new list A, n u64) => replace old new nil from.as_list n
 
 
   # tail recursive helper for the replace features
@@ -112,7 +118,7 @@ is
   # get the number of non-overlapping matches of l within this
   #
   count_matches (l list A) i32 is
-    match from
+    match from.as_list
       nil     => 0
       c1 Cons => (if (starts_with l) 1 + (searchable_list (drop l.count)).count_matches l
                   else                   (searchable_list c1.tail       ).count_matches l)

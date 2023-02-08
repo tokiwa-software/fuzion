@@ -265,6 +265,7 @@ routOrField : routine
             ;
 routine     : formArgsOpt
               returnType
+              effects
               inherits
               contract
               implRout
@@ -279,14 +280,16 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var a = formArgsOpt();
-    ReturnType r = returnType();
+    var r = returnType();
+    var eff = effects();
     var hasType = r != NoType.INSTANCE;
     var inh = inherits();
     Contract c = contract(true);
     Impl p =
-      a  .isEmpty() &&
-      inh.isEmpty()    ? implFldOrRout(hasType)
-                       : implRout();
+      a  .isEmpty()    &&
+      eff == Type.NONE &&
+      inh.isEmpty()       ? implFldOrRout(hasType)
+                          : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh);
     l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
     return p2 == null
@@ -459,6 +462,7 @@ field       : returnType
         p = fork();
         p.skipType();
       }
+    p.skipEffects();
     return
       p.isInheritPrefix   () ||
       p.isContractPrefix  () ||
@@ -489,7 +493,7 @@ visiList    : visi ( COMMA visiList
       {
         if (skip(Token.t_export))
           {
-            List<List<String>> l = new List<>(visi());
+            var l = new List<List<String>>(visi());
             while (skipComma())
               {
                 l.add(visi());
@@ -841,7 +845,7 @@ featNames   : qual (COMMA featNames
    */
   List<List<String>> featNames()
   {
-    List<List<String>> result = new List<>(qual(true));
+    var result = new List<List<String>>(qual(true));
     while (skipComma())
       {
         result.add(qual(true));
@@ -1157,6 +1161,40 @@ returnType  : type
   }
 
 
+
+  /**
+   * Parse effects
+   *
+effects     : EXCLAMATION typeList
+            |
+            ;
+EXCLAMATION : "!"
+            ;
+   */
+  List<AbstractType> effects()
+  {
+    var result = Type.NONE;
+    if (skip('!'))
+      {
+        var effects = typeList();
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is an effects and if so, skip it
+   *
+   * @return true iff the next token(s) start a constructor return type,
+   * otherwise no functionReturnType was found and the parser/lexer is at an
+   * undefined position.
+   */
+  boolean skipEffects()
+  {
+    return skip('!') && skipTypeList();
+  }
+
+
   /**
    * Check if the current position starts a returnType that is not a
    * FunctioNReturnType.  Does not change the position of the parser.
@@ -1356,7 +1394,7 @@ indexTail   : ":=" exprInLine
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
-            l.add(new Actual(null, exprInLine()));
+            l.add(new Actual(exprInLine()));
             n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
         if (l.isEmpty())
@@ -1653,6 +1691,8 @@ actual   : expr | type
    */
   Actual actual()
   {
+    var pos = posObject();
+
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -1686,7 +1726,7 @@ actual   : expr | type
         t = type();
         e = Expr.NO_VALUE;
       }
-    return new Actual(t, e);
+    return new Actual(pos, t, e);
   }
 
 
@@ -1773,8 +1813,8 @@ expr        : opExpr
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = expr();
             i.end();
-            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(null, f),
-                                                                     new Actual(null, g)));
+            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
+                                                                     new Actual(g)));
           }
       }
     return result;
@@ -1857,17 +1897,37 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(null, expr()));
+                             tupleElements.add(new Actual(expr()));
                            }
                          while (skipComma());
                          return Void.TYPE;
                        },
                        () -> Void.TYPE);
 
-    return
-      isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0)._expr // a klammerexpr, not a tuple
-                                : new Call(pos, null, "tuple", tupleElements);
+
+    // a lambda expression
+    if (isLambdaPrefix())
+      {
+        return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
+      }
+    // an expr wrapped in parentheses, not a tuple
+    else if (tupleElements.size() == 1)
+      {
+        var actual = tupleElements.get(0).expr(null);
+
+        // special handling for cases like:
+        // s9a i16 := -(32768)
+        // s9c i16 := -(-(-32768))
+        // s9a := i16 -(32768)
+        return (actual instanceof NumLiteral)
+          ? actual
+          : new Block(pos, posObject(), new List<>(actual));
+      }
+    // a tuple
+    else
+      {
+        return new Call(pos, null, "tuple", tupleElements);
+      }
   }
 
 
@@ -2149,7 +2209,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(null, string2)));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(string2)));
   }
 
 
@@ -3146,7 +3206,7 @@ anonymous   : returnType
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
     // does not work yet, probably because of too much that is done explicitly
-    // for anonymsous featues.
+    // for anonymous featues.
     //
     // return new Block(pos, b.closingBracePos_, new List<>(f, ca));
   }

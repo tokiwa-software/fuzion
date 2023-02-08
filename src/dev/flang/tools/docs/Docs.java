@@ -41,12 +41,12 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
@@ -158,13 +158,14 @@ public class Docs
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, false, true);
+        return new DocsOptions(null, false, true, false);
       }
 
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
-    return new DocsOptions(destination, bare, false);
+    var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
+    return new DocsOptions(destination, bare, false, ignoreVisibility);
   }
 
 
@@ -220,20 +221,22 @@ public class Docs
    */
   // NYI we want to ignore most but not all fields
   // but how to distinguish?
-  private static boolean ignoreFeature(AbstractFeature af)
+  private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {
     if (af.isUniverse())
       {
         return false;
       }
+
     return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().baseName().contains(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || af.featureName().baseName().startsWith("@")
+      || af.featureName().isInternal()
+      || af.featureName().isNameless()
+      || (!ignoreVisibility && af.visibility() == Visi.INVISIBLE)
+      || (!ignoreVisibility && af.visibility() == Visi.PRIVATE)
+      || af.isTypeFeature()
       || Util.isArgument(af)
       || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
       || isDummyFeature(af);
-    // NYI this should be used in the future
-    // !af._visibility()
   }
 
 
@@ -274,12 +277,12 @@ public class Docs
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, SortedSet<AbstractFeature>>();
 
     breadthFirstTraverse(feature -> {
-      if (ignoreFeature(feature))
+      if (ignoreFeature(feature, config.ignoreVisibility()))
         {
           return;
         }
       var s = declaredFeatures(feature)
-        .filter(af -> !ignoreFeature(af))
+        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()))
         .collect(Collectors.toCollection(
           () -> new TreeSet<>(byFeatureName)));
       mapOfDeclaredFeatures.put(feature, s);

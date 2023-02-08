@@ -49,7 +49,7 @@ fileiotests =>
 
   say "$file exists: {exists file}"
   match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
-      res := writer.write fd content.utf8.asArray
+      res := writer.write fd content.utf8.as_array
       fuzion.sys.fileio.close fd
       res)
     unit => say "$file was created"
@@ -65,7 +65,7 @@ fileiotests =>
       fuzion.sys.fileio.close fd
       res)
     bytes array u8 =>
-      filecontent := String.type.fromBytes bytes
+      filecontent := String.type.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

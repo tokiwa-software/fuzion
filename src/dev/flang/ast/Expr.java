@@ -56,13 +56,30 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
-   * of the acual.
+   * of the actual.
    */
   public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
-      Expr box(AbstractType frmlT)
+      { _type = Types.t_ERROR; }
+    };
+
+
+  /**
+   * Dummy Expr value. Used in to represent error values.
+   */
+  public static final Expr ERROR_VALUE = new Expr()
+    {
+      public SourcePosition pos()
+      {
+        return SourcePosition.builtIn;
+      }
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
+      }
+      AbstractType typeIfKnown()
+      {
+        return Types.t_ERROR;
       }
     };
 
@@ -126,6 +143,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         AstErrors.failedToInferType(this);
       }
     return result;
+  }
+
+
+  /**
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  AbstractType typeForCallTarget()
+  {
+    return type();
   }
 
 

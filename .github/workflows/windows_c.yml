@@ -1,0 +1,41 @@
+name: run c tests on windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_tests_c:
+    name: windows run c tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          path-type: minimal
+# NYI maybe use mingw64 here?
+          msystem: MSYS
+# git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            mingw-w64-x86_64-clang
+            diffutils
+
+      - name: install choco packages
+        shell: powershell
+        run: choco install openjdk --version 17.0.0
+
+      - uses: actions/checkout@v2
+
+# NYI how can we set PATH???
+      - name: echo PATH
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && echo "$PATH"
+
+      - name: echo versions
+        run:  export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
+
+      - name: run tests
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && make run_tests_c

@@ -195,7 +195,7 @@ public class OpExpr extends ANY
           {             // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new Call(op.pos, e1, "infix "+op.text, new List<>(new Actual(null, e2)));
+            Expr e = new Call(op.pos, e1, "infix "+op.text, new List<>(new Actual(e2)));
             els.remove(max+1);
             els.remove(max);
             els.set(max-1, e);
@@ -374,7 +374,7 @@ public class OpExpr extends ANY
                                             new Precedence( 8,        "#"  ),
                                             new Precedence(14, 7, 14, "$"  ),
                                             new Precedence( 6,        ""   ),
-                                            new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟"),
+                                            new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
                                             new Precedence( 4,        "&"  ),
                                             new Precedence( 3,        "|⦶⦷"),
                                             new Precedence( 2,        "∀"  ),

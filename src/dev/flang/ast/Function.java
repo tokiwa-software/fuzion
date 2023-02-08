@@ -164,7 +164,7 @@ public class Function extends ExprWithPos
    *
    * @param names the names of the arguments, "x", "y"
    *
-   * @param i the inheritance clause, currently alway empty list
+   * @param i the inheritance clause, currently always empty list
    *
    * @param c the contract
    *
@@ -244,7 +244,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpetedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(res, outer, t) tries to infer the
    * result type of a lambda.
    *
    * @param res this is called during type inference, res gives the resolution
@@ -461,7 +461,7 @@ public class Function extends ExprWithPos
       {
         _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
-        // Call.resolveType returns something differnt than this only for an
+        // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
@@ -555,7 +555,7 @@ public class Function extends ExprWithPos
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Actual(null, new Call(pos(), null, name)));
+                actual_args.add(new Actual(new Call(pos(), null, name)));
                 formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }

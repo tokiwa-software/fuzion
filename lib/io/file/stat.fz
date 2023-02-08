@@ -54,10 +54,10 @@ private stat(
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
     else
       replace
-      error "error while retrieving meta_data for the following file/dir: $path"
+      error "stat error {data[0]} for {path}"
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -70,10 +70,10 @@ private stat(
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] == 1) (data[3] == 1)
+      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
     else
       replace
-      error "error while retrieving meta_data for the following file/dir: $path"
+      error "lstat error {data[0]} for {path}"
 
 # short-hand for installing the default stat effect to the provided code
 #

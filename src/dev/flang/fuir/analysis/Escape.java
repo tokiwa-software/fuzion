@@ -53,6 +53,18 @@ public class Escape extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * property-controlled flag to enable debug output.
+   *
+   * To enable debugging, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.Escape.DEBUG=true
+   */
+  static final boolean DEBUG =
+    System.getProperty("dev.flang.fuir.analysis.Escape.DEBUG",
+                       "false").equals("true");
+
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -142,9 +154,14 @@ public class Escape extends ANY
    */
   private boolean doesCurEscape(int cl, Stack<Boolean> stack, int c)
   {
-    for (int i = 0; _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    var gotVoid = false;
+    for (int i = 0; !gotVoid && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
+        if (DEBUG)
+          {
+            System.out.println("ESCAPE: process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
+          }
         switch (s)
           {
           case AdrOf:
@@ -248,6 +265,7 @@ public class Escape extends ANY
                             }
                         }
                     }
+                  gotVoid = _fuir.clazzIsVoidType(rt);
                   if (_fuir.hasData(rt))
                     {
                       stack.push(false);

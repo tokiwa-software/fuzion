@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = floating_point_math
-include ../positive.mk
+override NAME = issue1013
+include ../simple.mk

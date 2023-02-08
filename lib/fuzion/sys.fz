@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys -- unit type to group low-level system APIs APIs
+# fuzion.sys -- unit type to group low-level system APIs
 #
 sys is
 
@@ -34,4 +34,4 @@ sys is
   # This is used to pass strings down to instrinsics
   #
   private c_string (s String) =>
-    (s + codepoint 0).utf8.asArray.internalArray.data
+    (s + codepoint 0).utf8.as_array.internalArray.data

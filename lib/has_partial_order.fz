@@ -17,49 +17,37 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature ordered
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature has_partial_order
 #
 # -----------------------------------------------------------------------
 
-# ordered -- feature for immutable values that have an infix <= function
-# predicate that defines a total order
+# has_partial_order -- feature for immutable values that have an infix <=
+# predicate that defines a partial order
 #
-# features inheriting from ordered define a total order of their values
+# features inheriting from has_partial_order define a partial order of their
+# values
 #
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-ordered(O type : ordered O) : partially_ordered O
+has_partial_order : has_equality
 
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.forAll2 T T fun(a, b T) => a <= b || b <= a,
+    analysis: quantors.forAll  T     fun(a       T) => (a <= b),                # reflexivity
+    analysis: quantors.forAll3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
+    analysis: quantors.forAll3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
 */
 
 is
 
-  # does this come strictly after other?
-  #
-  infix >  (other O) bool is !(orderedThis <= other)
 
-  # does this come strictly before other?
+  # does a come before b or is equal to b?
   #
-  infix <  (other O) bool is  !(orderedThis >= other)
+  type.lteq(a, b has_partial_order.this.type) bool is abstract
 
-  # does this come after other?
+  # equality check for immutable values
   #
-  infix >= (other O) bool is other <= orderedThis
-
-  # three-way comparison between this and other.
-  #
-  # result is < 0 if this < other
-  # result is > 0 if this > other
-  # result is = 0 if this = other
-  #
-  infix <> (other O) i32 is
-    if      orderedThis < other then -1
-    else if orderedThis > other then +1
-    else                        0
+  fixed type.equality(a, b has_partial_order.this.type) bool is
+    (a ≤ b) && (b ≤ a)

@@ -40,17 +40,32 @@ marray
    ) : Sequence T
 
   pre
-    safety: length >= 0 && length <= data.length
+    safety: (length ≥ 0) && (length ≤ data.length)
 
 is
 
+
+  # a sequence of all valid indices to access this array. Useful e.g., for
+  # `for`-loops:
+  #
+  #   for i in arr.indices do
+  #     say arr[i]
+  #
   indices => 0..length-1
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  redef finite => true
+
 
   # get element at given index i
   #
   redef index [ ] (i i32) T
     pre
-      safety: 0 <= i < length
+      safety: 0 ≤ i,
+      safety: i ⩻ length
   is
     data[i]
 
@@ -58,9 +73,10 @@ is
   #
   set [ ] (i i32, o T) unit
     pre
-      safety: 0 <= i < length
+      safety: 0 ≤ i,
+      safety: i ⩻ length
   # post   NYI: no '==' for Any yet
-  #   marray.this[i] == o
+  #   marray.this[i] ≟ o
   is
     data[i] := o
 
@@ -69,10 +85,10 @@ is
   #
   add (o T) marray T
     post
-      debug: result.length = length + 1
-      # debug: result[length] = o  -- there is no 'infix =' defined for T
+      debug: result.length ≟ length + 1
+      # debug: result[length] ≟ o  -- there is no 'infix =' defined for T
   is
-    d := if (data.length > length) data
+    d := if (data.length ⩼ length) data
       else
         newData := fuzion.sys.internal_array T (8.max data.length*2)
         for i in indices do
@@ -89,17 +105,17 @@ is
 
   # create immutable array from this
   #
-  as_array =>
+  redef as_array =>
     array T length (i -> marray.this[i])
 
 
   # create a list from this marray
   #
-  redef asList =>
+  redef as_list =>
     # since marray is mutable,
     # we first copy the elements
     # to an immutable array.
-    as_array.asList
+    as_array.as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -121,9 +137,9 @@ is
   #
   fold (i i32, s T, m Monoid T) T
     pre
-      debug: 0 <= i <= length
+      debug: 0 ≤ i ≤ length
   is
-    if i == length
+    if i ≟ length
       s
     else
       fold i+1 (m.op s marray.this[i]) m
@@ -139,7 +155,7 @@ marrays(T type)  is
   # fuzion.sys.internal_array T unit.
   #
   new
-   (# length of the marray to crate
+   (# length of the marray to create
     length i32,
 
     # initial value for elements
@@ -150,7 +166,7 @@ marrays(T type)  is
   is
     data := fuzion.sys.internal_array T length
 
-    for x in 0..length-1 do
+    for x in data.indices do
       data[x] := init
 
     marray length data

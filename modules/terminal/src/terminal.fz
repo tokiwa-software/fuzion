@@ -43,7 +43,7 @@ public terminal is
 
   # control sequence introducer
   #
-  public csi => (String.type.fromBytes [u8 0o033]) + "[";
+  public csi => (String.type.from_bytes [u8 0o033]) + "[";
 
   # raw codes not surrounded by 'csi' and "m"
   #

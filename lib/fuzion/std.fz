@@ -43,3 +43,7 @@ fuzion.std is
 
   # no guarantee can be given for precision nor resolution
   nano_sleep(n u64) is intrinsic
+
+
+  # fills arg with current UTC date time
+  private date_time(array_of_i32 Any) is intrinsic

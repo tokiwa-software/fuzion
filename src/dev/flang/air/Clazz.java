@@ -328,12 +328,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
-       outer == null || outer._type != Types.t_ADDRESS);
+       outer == null || outer._type != Types.t_ADDRESS,
+       !actualType.isThisType());
 
     if (actualType == Types.t_UNDEFINED)
       {
         actualType = Types.t_ERROR;
       }
+
+    if (CHECKS) check
+      (Errors.count() > 0 || actualType != Types.t_ERROR);
 
     this._type = actualType;
     this._select = select;
@@ -647,18 +651,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return Clazzes.clazz(actualType(t, -1));
+    return t.isThisType() ? findOuter(t.featureOfType(), t)
+                          : Clazzes.clazz(actualType(t, -1));
   }
-
-
-  /**
-   * This is experimental: actualGenerics() could replace `a.this.type` by the
-   * actual outer type. This would avoid special handling in Clazzes.clazz(Expr
-   * e, Clazz outerClazz). However, this is currently disabled since it has the
-   * side-effect of marking some clazzes as instantiated that are actually not
-   * (in tests/reg_issues874ff), need to check why.
-   */
-  static final boolean NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE = false;
 
 
   /**
@@ -672,35 +667,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
-    if (NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE)
+    var result = this._type.replaceGenerics(generics);
+
+    // Replace any `a.this.type` actual generics by the actual outer clazz:
+    if (result.stream().anyMatch(x->x.isThisType()))
       {
-        /**
-         * Replace any `a.this.type` actual generics by the actual outer clazz:
-         */
-        if (generics.stream().anyMatch(x->x.isThisType()))
-          {
-            var ng = new List<AbstractType>();
-            for (var g : generics)
-              {
-                if (g.isThisType())
-                  {
-                    var nc = findOuter(g.featureOfType(), SourcePosition.builtIn).typeClazz();
-                    System.out.println("replace "+g+" with "+nc+" in "+this);
-                    ng.add(nc._type);
-                  }
-                else
-                  {
-                    ng.add(g);
-                  }
-              }
-          }
+        result = result.map(g -> g.isThisType() ? findOuter(g.featureOfType(), SourcePosition.builtIn)._type
+                                                : g);
       }
-    generics = this._type.replaceGenerics(generics);
+
     if (this._outer != null)
       {
-        generics = this._outer.actualGenerics(generics);
+        result = this._outer.actualGenerics(result);
       }
-    return generics;
+    return result;
   }
 
 
@@ -981,7 +961,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _module.lookupFeature(feature(), fn);
+    return _module.lookupFeature(feature(), fn, f);
   }
 
 
@@ -1978,37 +1958,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a type clazz such as 'i32.type', this will set the type this clazz
-   * represents.
-   *
-   * NYI: This is currently set in Clazzes.findClasses() when processing
-   * TypeParameters.  It would be nicer (less error prone etc.) to have this
-   * information available directly when this instance of Clazz is created.
-   *
-   * Maybe if we added a type parameter to feature 'Type' or to all instances
-   * inheriting from 'Type', we could have this information available directly.
-   */
-  AbstractType _typeType = null;
-
-
-  /**
    * For a type clazz such as 'i32.type' return its name, such as 'i32'.
    */
   public String typeName()
   {
-    if (isRef()) // the type was boxed, so get the name from the original value type
-      {
-        return asValue().typeName();
-      }
-    else if (_typeType == null)
-      {
-        Errors.error("*** internal error: type name is not set for '" + this + "'");
-        return "** UNDEF **";
-      }
-    else
-      {
-        return _typeType.asString();
-      }
+    if (PRECONDITIONS) require
+      (feature().isTypeFeature());
+
+    return _type.generics().get(0).asString();
   }
 
 
@@ -2321,7 +2278,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (feature() == Types.resolved.f_Types_get);
 
-                gi = Types.intern(new Type((Type) gi, Type.RefOrVal.LikeUnderlyingFeature));
+                gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }
             result[i] = actualClazz(gi);
           }
