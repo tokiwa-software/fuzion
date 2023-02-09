@@ -89,7 +89,7 @@ public class Errors extends ANY
    */
   public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
   public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 20);
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 10);
 
 
   /**
@@ -639,6 +639,24 @@ public class Errors extends ANY
                 "This code is part of an actual argument that must not contain white space.\n" +
                 detail + "\n" +
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void colonPartOfTernary(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator ':' is part of ternary ? : operator",
+                "This code is part of a ternary expression that must not contain operator ':'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void barPartOfCase(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "operator '|' is part of match case",
+                "This code is part of a match case that must not contain operator '|'\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')' or braces '{' and '}'.");
   }
 
   public static void expectedStringContinuation(SourcePosition pos, String token)

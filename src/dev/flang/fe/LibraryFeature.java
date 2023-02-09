@@ -235,7 +235,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public Visi visibility()
   {
-    return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
+    return _libModule.featureVisibilityEnum(_index);
   }
 
   /**

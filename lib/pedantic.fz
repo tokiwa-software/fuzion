@@ -28,4 +28,6 @@
 # pedantic is a condition qualifier for conditions a pedantic purist would require,
 # but that a more relaxed hacker would prefer to do without.
 #
+# currently, pedantic always returns true.
+#
 pedantic => true

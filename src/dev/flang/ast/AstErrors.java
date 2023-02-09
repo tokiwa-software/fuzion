@@ -284,7 +284,7 @@ public class AstErrors extends ANY
    *
    * @param where location of the incompaible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignement to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -523,7 +523,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment is not a field",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n");
   }
@@ -532,7 +532,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           "Was defined as loop index variable at " + f.pos().show());
@@ -893,23 +893,20 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
-        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
-        // fact that type features can be defined repeatedly.
-        if (f.isTypeFeature())
-          {
-            warning(pos,
-                    "Duplicate feature declaration (ignored since these are type features, see #461)",
-                    "Feature that was declared repeatedly: " + s(f) + "\n" +
-                    "originally declared at " + existing.pos().show() + "\n" +
-                    "To solve this, consider renaming one of these two features or changing its number of arguments");
-            return;
-          }
-
+        var of = f.isTypeFeature() ? f.typeFeatureOrigin() : f;
         error(pos,
               "Duplicate feature declaration",
-              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features or changing its number of arguments");
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
+              (f.isTypeFeature()
+               ? ("or changing it into a routine by returning a " +
+                  sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  " instead of "+ code("is") + ".")
+               : ("or adding an additional argument (e.g. " + code("_ unit") +
+                  " for an ignored unit argument used only to disambiguate these two).")
+               ));
       }
   }
 
@@ -1467,10 +1464,13 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    error(pos,
-          "Incompatible type parameter",
-          "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-          "actual type parameter " + s(g) + "\n");
+    if (g != Types.t_UNDEFINED || count() == 0)
+      {
+        error(pos,
+              "Incompatible type parameter",
+              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "actual type parameter " + s(g) + "\n");
+      }
   }
 
   static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
@@ -1579,15 +1579,23 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
   {
-    error(pos,
-      "Names of arguments used in this feature must be distinct.",
+    int[] cnt = new int[1];
+    error(f.pos(),
+          "Names of arguments used in this feature must be distinct.",
           "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
           + duplicateNames
             .stream()
             .map(n -> sbn(n))
             .collect(Collectors.joining(", ")) + "\n"
+          + "Feature with equally named arguments: "+ s(f) + "\n"
+          + f.arguments()
+            .stream()
+            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbn(a) +
+                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                                                                      : " is ok"        ) + "\n")
+            .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
   }
@@ -1601,6 +1609,45 @@ public class AstErrors extends ANY
           .collect(Collectors.joining(", "))
       );
   }
+
+  public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
+  {
+    var cf = usedIn != null ? usedIn._calledFeature : null;
+    String at = null;
+    if (cf != null)
+      {
+        var allUnknown = true;
+        String t = null;
+        var args = cf.arguments();
+        if (args != null)
+          {
+            for (var arg : args)
+              {
+                var argtype = "--still unkown--";
+                if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
+                  {
+                    allUnknown = false;
+                    argtype = s(arg.resultType());
+                  }
+                t = (t == null ? "" : t + " ") + argtype;
+              }
+          }
+        if (!allUnknown)
+          {
+            at = t;
+          }
+      }
+    error(a.pos(),
+          "Actual parameter in a call is a type, but the call expects an expression",
+          (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
+          (cf != null ? "call to " + s(cf) + "\n" : "" ) +
+          "actual type argument found: " + s(a._type) + "\n" +
+          (at != null ? "expected argument types: " + at + "\n" : "" ) +
+          "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
+          "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
+  }
+
+
 }
 
 /* end of file */

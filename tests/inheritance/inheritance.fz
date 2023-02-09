@@ -25,7 +25,7 @@
 
 inheritance is
 
-  exitCode := 0
+  exit_code := mut 0
 
   curid i32 := 0
   id i32 is
@@ -164,9 +164,9 @@ inheritance is
 
 
   // Inheritance from outer: stream.before inherits from stream:
-  (1..).before (x -> x > 100)
-       .before (x -> x > 40)
-       .before (x -> x > 20)
+  (1..).before (x -> x ⩼ 100)
+       .before (x -> x ⩼ 40)
+       .before (x -> x ⩼ 20)
        .for_each (x -> say x)
 
   // test for recursive inheritance/outer relation with refs
@@ -203,7 +203,7 @@ inheritance is
   Z
   Z ref is
     B ref : Z is
-    if cnt < 10
+    if cnt ⩻ 10
       set cnt := cnt + 1
       _ := B
 
@@ -216,7 +216,7 @@ inheritance is
         B ref is
           q ref : Z is
             say "tricky_Inheritance.Z.B.q: $cnt"
-        if cnt < 10
+        if cnt ⩻ 10
           set cnt := cnt + 1
           _ := B.q
     unit
@@ -229,7 +229,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -247,13 +247,13 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1 "call to y in arguments must be performed on heir instance"
+        chck i≟1 "call to y in arguments must be performed on heir instance"
 
       B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
@@ -263,7 +263,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -281,20 +281,20 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1 "call to y in arguments must be performed on heir instance"
+        chck i≟1 "call to y in arguments must be performed on heir instance"
 
       B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
   check_dyn_binding_when_inheriting_value is
     A is
       a => x
-      x => say "A.x: FAILED."; set exitCode := 1
+      x => say "A.x: FAILED."; exit_code <- 1
     B ref : A is
       a
       redefine x unit is say "B.x: PASSED."
@@ -309,7 +309,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        set exitCode := 1
+        exit_code <- 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -327,13 +327,13 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1 "call to y in arguments must be performed on heir instance"
+        chck i≟1 "call to y in arguments must be performed on heir instance"
 
       B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
+    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y≟1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
   inheritOuter is
@@ -393,11 +393,11 @@ inheritance is
     chck "test Ecnt" Ecnt 6
     chck "test Fcnt" Fcnt 3
     chck(msg String, v, expected i32) =>
-      if v == expected
+      if v ≟ expected
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        set exitCode := 1
+        exit_code <- 1
   inheritOuter
 
-  exit exitCode
+  exit exit_code.get

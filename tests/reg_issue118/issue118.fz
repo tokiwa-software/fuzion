@@ -30,11 +30,11 @@
 # ri.ref a.thiz: /home/fridi/fuzion/work/build/bin/../lib/i32.fz:30:26:
 #   redef thiz => i32.this.val
 # -------------------------^
-# ri.ref a.asString.ref #anonymous0.ref utf8.asStream: /home/fridi/fuzion/work/build/bin/../lib/integer.fz:138:16:
+# ri.ref a.as_string.ref #anonymous0.ref utf8.as_stream: /home/fridi/fuzion/work/build/bin/../lib/integer.fz:138:16:
 #             if thiz.sign >= 0
 # ---------------^
 # fuzion.std.out.println: /home/fridi/fuzion/work/build/bin/../lib/fuzion/std/out.fz:34:9:
-#     for c in s.asString.utf8 do
+#     for c in s.as_string.utf8 do
 # --------^
 # say: /home/fridi/fuzion/work/build/bin/../lib/say.fz:29:29:
 # say(s ref Any) => stdout.println s

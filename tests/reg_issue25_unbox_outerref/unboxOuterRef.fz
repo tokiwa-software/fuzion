@@ -33,9 +33,9 @@
 unboxOuterRef is
 
   y (i i32) is
-    redef asString => "y $i"
+    redef as_string => "y $i"
     g (v y) is
-      vs := v.asString
+      vs := v.as_string
       say "in g: $vs $i"
     f is
 #     g y.this   # y.this is not assignable to y, should be type 'like y.this', see #167

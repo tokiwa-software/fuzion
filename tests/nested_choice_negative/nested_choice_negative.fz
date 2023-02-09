@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 nested_choice_negative =>
   my_choice : choice (choice nil String) (choice nil unit) is
-    redef asString =>
+    redef as_string =>
       match my_choice.this
         choice choice nil String =>
           match choice

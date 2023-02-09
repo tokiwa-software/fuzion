@@ -113,7 +113,7 @@ public class Type extends AbstractType
   /**
    *
    */
-  public final List<AbstractType> _generics;
+  List<AbstractType> _generics;
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -399,11 +399,13 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a ref or value type from a given value / ref type.
+   * Create a clone of original that uses orignalOuterFeature as context to
+   * look up features the type is built from.
    *
    * @param original the original value type
    *
-   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   * @param origininalOuterFeature the original feature, which is not a type
+   * feature.
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
   {
@@ -419,7 +421,10 @@ public class Type extends AbstractType
         this._generics = new List<>();
         for (var g : original._generics)
           {
-            this._generics.add(((Type)g).clone(originalOuterFeature));
+            var gc = (g instanceof Type gt)
+              ? gt.clone(originalOuterFeature)
+              : g;
+            this._generics.add(gc);
           }
       }
     this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
@@ -450,6 +455,9 @@ public class Type extends AbstractType
    *
    * This is used for type features that use types from the original feature,
    * but needs to replace generics by the type feature's generics.
+   *
+   * @param origininalOuterFeature the original feature, which is not a type
+   * feature.
    */
   Type clone(AbstractFeature originalOuterFeature)
   {
@@ -653,7 +661,7 @@ public class Type extends AbstractType
             if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
               {
                 qn = qn.substring(0, qn.lastIndexOf(".type"));
-                n = "this.type";
+                n = "this.type (in type feature)";
               }
             n = qn + "." + n;
           }
@@ -890,23 +898,32 @@ public class Type extends AbstractType
       {
         ensureNotOpen();
       }
+    var result = this;
     if (!isGenericArgument())
       {
         resolveFeature(res, outerfeat);
         if (feature == Types.f_ERROR)
           {
-            return Types.t_ERROR;
+            result = Types.t_ERROR;
           }
-        FormalGenerics.resolve(res, _generics, outerfeat);
-        if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                              this,
-                                                              "type",
-                                                              "Type: " + toString() + "\n"))
+        else
           {
-            return Types.t_ERROR;
+            if (isThisType() && _generics.isEmpty())
+              {
+                var g = feature.generics().asActuals();
+                _generics = g.isEmpty() ? NONE : g;
+              }
+            FormalGenerics.resolve(res, _generics, outerfeat);
+            if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+                                                                  this,
+                                                                  "type",
+                                                                  "Type: " + toString() + "\n"))
+              {
+                result = Types.t_ERROR;
+              }
           }
       }
-    return (Type) Types.intern(this);
+    return (Type) Types.intern(result);
   }
 
 
@@ -1070,7 +1087,7 @@ public class Type extends AbstractType
           }
       }
 
-    ensure
+    if (POSTCONDITIONS) ensure
       (!result || Errors.count() > 0);
 
     return result;

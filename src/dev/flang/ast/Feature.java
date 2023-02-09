@@ -320,6 +320,18 @@ public class Feature extends AbstractFeature implements Stmnt
   }
 
 
+  /**
+   * Flag used by dev.flang.fe.SourceModule to mark Features that were added to
+   * their outer feature late.  Features that were added late will not be seen
+   * via heirs.
+   *
+   * This is used for adding internal features like wrappers for lambdas.
+   *
+   * This is a fix for #978 but it might need to be removed when fixing #932.
+   */
+  public boolean _addedLate = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -340,7 +352,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature()
   {
     this(SourcePosition.builtIn,
-         Consts.VISIBILITY_PUBLIC,
+         Visi.PUBLIC,
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
@@ -386,7 +398,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Consts.VISIBILITY_INVISIBLE,
+                       Visi.INVISIBLE,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
@@ -594,7 +606,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Impl     p)
   {
     this(pos,
-         Consts.VISIBILITY_INVISIBLE,
+         Visi.INVISIBLE,
          0,
          r,
          qname,
@@ -654,23 +666,6 @@ public class Feature extends AbstractFeature implements Stmnt
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
-
-    // check args for duplicate names
-    if (!a.stream()
-          .map(arg -> arg.featureName().baseName())
-          .filter(argName -> !argName.equals("_"))
-          .allMatch(new HashSet<>()::add))
-      {
-        var usedNames = new HashSet<>();
-        var duplicateNames = a.stream()
-              .map(arg -> arg.featureName().baseName())
-              .filter(argName -> !argName.equals("_"))
-              .filter(argName -> !usedNames.add(argName))
-              .collect(Collectors.toSet());
-        // NYI report pos of arguments not pos of feature
-        AstErrors.argumentNamesNotDistinct(pos, duplicateNames);
-      }
-
     this._arguments = a;
     this._featureName = FeatureName.get(n, arguments().size());
     this._inherits   = (i.isEmpty() &&
@@ -685,6 +680,22 @@ public class Feature extends AbstractFeature implements Stmnt
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
+
+    // check args for duplicate names
+    if (!a.stream()
+          .map(arg -> arg.featureName().baseName())
+          .filter(argName -> !argName.equals("_"))
+          .allMatch(new HashSet<>()::add))
+      {
+        var usedNames = new HashSet<>();
+        var duplicateNames = a.stream()
+              .map(arg -> arg.featureName().baseName())
+              .filter(argName -> !argName.equals("_"))
+              .filter(argName -> !usedNames.add(argName))
+              .collect(Collectors.toSet());
+        // NYI report pos of arguments not pos of feature
+        AstErrors.argumentNamesNotDistinct(this, duplicateNames);
+      }
   }
 
 
@@ -876,7 +887,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isArtificialField()
   {
-    return isField() && _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+    return isField() && _featureName.isInternal();
   }
 
 
@@ -910,7 +921,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (_resultField == null);
         _resultField = new Feature(res,
                                    _pos,
-                                   Consts.VISIBILITY_PRIVATE,
+                                   Visi.PRIVATE,
                                    t,
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
@@ -932,7 +943,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean resultInternal()
   {
     return _impl._kind == Impl.Kind.RoutineDef &&
-      _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+      _featureName.isInternal();
   }
 
 
@@ -1345,7 +1356,7 @@ public class Feature extends AbstractFeature implements Stmnt
             _thisType = tt.resolve(res, this);
           }
 
-        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeForFeatureResultTypeInferencing() == null))
+        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeIfKnown() == null))
           {
             _impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
@@ -1407,6 +1418,10 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_SUGAR1;
 
+        if (definesType())
+          {
+            typeFeature(res);
+          }
         visit(new FeatureVisitor()
           {
             public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
@@ -1600,7 +1615,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     _choiceTag = new Feature(res,
                              _pos,
-                             Consts.VISIBILITY_PRIVATE,
+                             Visi.PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
                              this);
@@ -1852,10 +1867,10 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature   f, AbstractFeature outer) { return new Nop(_pos);                         }
-            public Expr  action(Function  f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
+            public Stmnt action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
+            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl      i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -2214,13 +2229,13 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._initialValue.typeForFeatureResultTypeInferencing();
+        result = _impl._initialValue.typeIfKnown();
       }
     else if (_impl._kind == Impl.Kind.RoutineDef)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._code.typeForFeatureResultTypeInferencing();
+        result = _impl._code.typeIfKnown();
       }
     else if (_returnType.isConstructorType())
       {
@@ -2233,6 +2248,10 @@ public class Feature extends AbstractFeature implements Stmnt
     else
       {
         result = _returnType.functionReturnType();
+      }
+    if (isOuterRef())
+      {
+        result = result.asThis();
       }
 
     return result;
@@ -2388,7 +2407,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                   : this._outer.thisType();
         _outerRef = new Feature(res,
                                 _pos,
-                                Consts.VISIBILITY_PRIVATE,
+                                Visi.PRIVATE,
                                 outerRefType,
                                 outerRefName(),
                                 this);

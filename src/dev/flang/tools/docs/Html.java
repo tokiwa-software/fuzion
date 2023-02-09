@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Visi;
 
 public class Html
 {
@@ -95,8 +96,8 @@ public class Html
       .<String>map(c -> {
         var f = c.calledFeature();
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
-          + htmlEncodeNbsp(basename(f) + " ")
-          + c.actualTypeParameters().stream().map(at -> at.asString()).collect(Collectors.joining(htmlEncodeNbsp(", "))) + "</a>";
+          + htmlEncodedBasename(f) + "&nbsp;"
+          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
@@ -111,7 +112,7 @@ public class Html
   {
     if (at.isGenericArgument())
       {
-        return at.name();
+        return htmlEncodeNbsp(at.name());
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
       .replace("$2", featureAbsoluteURL(at.featureOfType()));
@@ -134,7 +135,7 @@ public class Html
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer()),
-      Stream.of("<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(basename(f)))
+      Stream.of("<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
         .replace("$2", featureAbsoluteURL(f))));
   }
 
@@ -165,7 +166,7 @@ public class Html
 
   private String anchor(AbstractFeature af) {
     return "<a class='fd-feature font-weight-600' href='" + featureAbsoluteURL(af) + "'>"
-            + htmlEncodeNbsp(basename(af))
+            + htmlEncodedBasename(af)
           + "</a>";
   }
 
@@ -203,7 +204,7 @@ public class Html
       .stream()
       .map(f -> """
         <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureAbsoluteURL(f)).replace("$2", f.qualifiedName()).replace("$3", redefines0(f)))
+      """.replace("$1", featureAbsoluteURL(f)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f)))
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
@@ -221,7 +222,8 @@ public class Html
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
-          + "'><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+          + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+            .replace("$0", (config.ignoreVisibility() && (af.visibility() == Visi.PRIVATE)) ? "class='fd-private' hidden" : "")
             .replace("$1",
               summary(af))
             .replace("$2", Util.commentOf(af))
@@ -239,7 +241,7 @@ public class Html
   private String headingSection(AbstractFeature f)
   {
     return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
-      .replace("$0", f.isUniverse() ? "API-Documentation": basename(f))
+      .replace("$0", f.isUniverse() ? "API-Documentation": htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
       .replace("$2", Util.commentOf(f))
@@ -248,15 +250,14 @@ public class Html
   }
 
   /**
-   * the basename of the feature, replaces all internal names
-   * starting with `@` by `_`
+   * the html encoded basename of the feature
    * @param af
    * @return
    *
    */
-  private String basename(AbstractFeature af)
+  private String htmlEncodedBasename(AbstractFeature af)
   {
-    return af.featureName().baseName().startsWith("@") ? "_": af.featureName().baseName();
+    return htmlEncodeNbsp(af.featureName().baseName());
   }
 
 
@@ -477,8 +478,8 @@ public class Html
       }
     return "(" + f.arguments()
       .stream()
-      .map(a -> htmlEncodeNbsp(
-        basename(a) + " ")
+      .map(a ->
+        htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
@@ -488,7 +489,7 @@ public class Html
   {
     if (f.resultType().dependsOnGenerics())
       {
-        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + f.resultType().asString();
+        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
       }
     return "<div class='fd-keyword'>type</div>";
   }
@@ -516,7 +517,7 @@ public class Html
         .collect(Collectors.joining())
         .replaceAll("\s$", "―"))
       .replace("$2", featureAbsoluteURL(start))
-      .replace("$0", basename(start) + args(start))
+      .replace("$0", htmlEncodedBasename(start) + args(start))
       .replace("$1",
         declaredFeatures.stream()
           .map(af -> navigation(af, depth + 1))
@@ -558,12 +559,16 @@ public class Html
             <div class="container">
               <section>$0</section>
               <section>$1</section>
+              $3
             </div>
           </div>
         """
         .replace("$0", headingSection(af))
         .replace("$1", mainSection(mapOfDeclaredFeatures.get(af)))
-        .replace("$2", navigation);
+        .replace("$2", navigation)
+        .replace("$3", config.ignoreVisibility() ? """
+          <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
+        """ : "");
     return config.bare() ? bareHtml: fullHtml(af, bareHtml);
   }
 

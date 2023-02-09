@@ -1,0 +1,75 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.now
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# effect for getting the current date_time
+private now (
+  p () -> time.date_time,
+
+  # action to be taken: install or default?
+  redef r effectMode.val,
+
+  _ unit
+  ) : effect r
+is
+
+  get =>
+    res := p()
+    replace
+    res
+
+
+
+# short-hand for creating and installing default time.now effect
+#
+now(rr ()->unit) => now default_now rr
+
+
+
+# short-hand for creating and installing custom time.now effect
+#
+now(p ()->time.date_time, rr ()->unit) unit is
+  _ := now p (effectMode.inst rr) unit
+
+
+
+# get the current date_time.
+# Uses currently installed time.now effect
+# or installs the default_now provider
+#
+now =>
+  if !effects.exists now
+    _ := now default_now effectMode.default unit
+  now.env.get
+
+
+
+# default provider for now effect.
+# returns the current date_time
+# the system is giving us.
+#
+private default_now ()->time.date_time is () ->
+  a := array i32 6 i->0
+  fuzion.std.date_time a.internalArray.data
+  time.date_time a[0] a[1] a[2] a[3] a[4] a[5]

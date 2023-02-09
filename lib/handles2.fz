@@ -43,7 +43,7 @@ private handles2(
 
   # action to be taken: plain monad, install or replace?
   redef r effectMode.val
-  ) : onewayMonad X (handles2 T X) r
+  ) : oneway_monad X (handles2 T X) r
 is
 
   # create a new instance with one additional handle
@@ -106,7 +106,7 @@ is
     w T)
   pre
     match mode
-      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.plain   => false  # must be used as oneway_monad only
       effectMode.default => false
       effectMode.new     => false
       effectMode.abort   => false
@@ -128,7 +128,7 @@ is
     )
   pre
     match mode
-      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.plain   => false  # must be used as oneway_monad only
       effectMode.default => false
       effectMode.new     => false
       effectMode.abort   => false

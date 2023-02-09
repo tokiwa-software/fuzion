@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -42,11 +43,12 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-
+import dev.flang.ast.Visi;
 import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
@@ -190,7 +192,13 @@ public class LibraryModule extends Module
       {
         var n = moduleRefName(p);
         var v = moduleRefVersion(p);
-        var mr = new ModuleRef(moduleOffset, n, v, fe.loadModule(n));
+        var m = fe.loadModule(n);
+        var mv = m.version();
+        if (!Arrays.equals(v, mv))
+          {
+            FeErrors.incompatibleModuleVersion(this, m, v, mv);
+          }
+        var mr = new ModuleRef(moduleOffset, n, v, m);
         _modules[i] = mr;
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
@@ -804,7 +812,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 0FCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier
+.6+| true  .6+| 1      | short         | 000000vvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -832,10 +840,12 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0FCYkkkk  k = kind                            |
+   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -883,7 +893,7 @@ Feature
   }
   int featureKind(int at)
   {
-    var ko = data().get(featureKindPos(at));
+    var ko = data().getShort(featureKindPos(at));
     return ko;
   }
   AbstractFeature.Kind featureKindEnum(int at)
@@ -892,6 +902,11 @@ Feature
     return featureIsConstructor(at)
       ? AbstractFeature.Kind.Routine
       : AbstractFeature.Kind.from(k);
+  }
+  Visi featureVisibilityEnum(int at)
+  {
+    var k = (featureKind(at) & FuzionConstants.MIR_FILE_VISIBILITY_MASK) >> 7;
+    return Visi.from(k);
   }
   boolean featureIsConstructor(int at)
   {
@@ -926,7 +941,7 @@ Feature
   }
   int featureNamePos(int at)
   {
-    var i = featureKindPos(at) + 1;
+    var i = featureKindPos(at) + 2;
     return i;
   }
   int featureNameLength(int at)

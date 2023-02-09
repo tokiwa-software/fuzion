@@ -25,14 +25,14 @@
 
 overloading_negative is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (msg String, b bool) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   test1 is
     a is

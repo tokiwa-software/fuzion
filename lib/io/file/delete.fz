@@ -67,11 +67,11 @@ delete(path String) =>
 Delete_Operation ref is
     delete(path String) outcome unit is abstract
 
-# the default file/dir delete operation via fuzion.std.fileio.delete
+# the default file/dir delete operation via fuzion.sys.fileio.delete
 #
 default_delete_operation : Delete_Operation is
     delete(path String) =>
-        fuzion.std.fileio.delete path
+        fuzion.sys.fileio.delete path
 
 # unit type feature defining features related to delete effect but not requiring an
 # instance.

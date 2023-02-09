@@ -43,7 +43,7 @@ Type ref is
   #
   # result has the form "Type of '<name>'", but this might change in the future
   #
-  redef asString => "Type of '$name'"
+  redef as_string => "Type of '$name'"
 
 
 # Types -- features related to Type but not requiring an instance of Type

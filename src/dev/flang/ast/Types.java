@@ -219,7 +219,7 @@ public class Types extends ANY
       f_array_internalArray = f_array.get(mod, "internalArray");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
-      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "array");
+      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
       f_Type                       = universe.get(mod, "Type");
@@ -294,11 +294,7 @@ public class Types extends ANY
           {
             Types.intern(t.outer());
           }
-        var tg = t._generics.listIterator();
-        while (tg.hasNext())
-          {
-            tg.set(intern(tg.next()));
-          }
+        t._generics = t._generics.map(tt->intern(tt));
         Type existing = t._interned;
         if (existing == null)
           {

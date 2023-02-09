@@ -100,13 +100,22 @@ public class DataOut extends ANY
 
 
   /**
-   * Write given int to this buffer and increase offset by 4.
+   * Write given int to this buffer and increase offset by 1.
    */
   public void writeBool(boolean b)
   {
     write(b ? 1 : 0);
   }
 
+
+  /**
+   * Write given short to this buffer and increase offset by 2.
+   */
+  public void writeShort(int i)
+  {
+    write((i >>  8) & 0xFF);
+    write((i      ) & 0xFF);
+  }
 
 
   /**

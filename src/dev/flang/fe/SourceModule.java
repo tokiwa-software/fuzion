@@ -800,6 +800,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         f.redefines().add(existing);
       }
+    if (f     instanceof Feature ff &&
+        outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
+    if (f instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
     doi.put(fn, f);
   }
 
@@ -937,12 +946,22 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring or inheriting feature
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
-    return declaredOrInheritedFeatures(outer).get(name);
+    var result = declaredOrInheritedFeatures(outer).get(name);
+
+    /* Was feature f added to the declared features of its outer features late,
+     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
+     * currently not added to the sets of declared or inherited features by
+     * children of their outer clazz.
+     *
+     * This is a fix for #978 but it might need to be removed when fixing #932.
+     */
+    return result == null && original instanceof Feature of && of._addedLate ? original
+                                                                             : result;
   }
 
 
@@ -1096,7 +1115,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var fs = lookupFeatures(o, name).values();
             for (var f : fs)
               {
-                if (f.isConstructor() || f.isChoice())
+                if (f.definesType())
                   {
                     type_fs.add(f);
                     result = f;
