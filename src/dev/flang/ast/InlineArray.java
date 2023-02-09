@@ -122,7 +122,7 @@ public class InlineArray extends ExprWithPos
         if (_type == null)
           {
             _type =
-              t == null ? Types.t_ERROR :
+              t == null ? null :
               Types.intern(new Type(pos(),
                                   "array",
                                   new List<>(t),
