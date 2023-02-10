@@ -27,25 +27,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -57,40 +49,6 @@ import dev.flang.util.SourcePosition;
  */
 public class Feature extends AbstractFeature implements Stmnt
 {
-
-
-  /*----------------------------  constants  ----------------------------*/
-
-
-  public enum State {
-    LOADING,
-    FINDING_DECLARATIONS,
-    LOADED,
-    RESOLVING,
-    RESOLVING_INHERITANCE,
-    RESOLVED_INHERITANCE,
-    RESOLVING_DECLARATIONS,
-    RESOLVED_DECLARATIONS,
-    RESOLVING_TYPES,
-    RESOLVED_TYPES,
-    RESOLVING_SUGAR1,
-    RESOLVED_SUGAR1,
-    TYPES_INFERENCING,
-    TYPES_INFERENCED,
-    BOXING,
-    BOXED,
-    CHECKING_TYPES1,
-    CHECKED_TYPES1,
-    RESOLVING_SUGAR2,
-    RESOLVED_SUGAR2,
-    CHECKING_TYPES2,
-    RESOLVED,
-    ERROR;
-    public boolean atLeast(State s)
-    {
-      return this.ordinal() >= s.ordinal();
-    }
-  };
 
 
   /*------------------------  static variables  -------------------------*/
@@ -2180,25 +2138,6 @@ public class Feature extends AbstractFeature implements Stmnt
     return false;
   }
 
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return
-      _visibility+" "+
-      Consts.modifierToString(_modifiers)+
-      _returnType + " "+
-      _featureName.baseName()+
-      generics()+
-      (_arguments.isEmpty() ? "" : "("+_arguments+")")+
-      (_inherits.isEmpty() ? "" : " : "+_inherits)+
-      _contract+
-      _impl.toString();
-  }
 
 
   /**

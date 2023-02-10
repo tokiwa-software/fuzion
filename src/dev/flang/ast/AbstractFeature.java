@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -81,6 +79,38 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       return values()[ordinal];
     }
   }
+
+
+  // NYI The feature state should be part of the resolution.
+  public enum State {
+    LOADING,
+    FINDING_DECLARATIONS,
+    LOADED,
+    RESOLVING,
+    RESOLVING_INHERITANCE,
+    RESOLVED_INHERITANCE,
+    RESOLVING_DECLARATIONS,
+    RESOLVED_DECLARATIONS,
+    RESOLVING_TYPES,
+    RESOLVED_TYPES,
+    RESOLVING_SUGAR1,
+    RESOLVED_SUGAR1,
+    TYPES_INFERENCING,
+    TYPES_INFERENCED,
+    BOXING,
+    BOXED,
+    CHECKING_TYPES1,
+    CHECKED_TYPES1,
+    RESOLVING_SUGAR2,
+    RESOLVED_SUGAR2,
+    CHECKING_TYPES2,
+    RESOLVED,
+    ERROR;
+    public boolean atLeast(State s)
+    {
+      return this.ordinal() >= s.ordinal();
+    }
+  };
 
 
   /*------------------------  static variables  -------------------------*/
@@ -1578,6 +1608,24 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         result++;
       }
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
+
+
+  /**
+   * this feature as a human readable string
+   */
+  public String toString()
+  {
+    return visibility() + " " +
+      Consts.modifierToString(modifiers()) +
+      featureName().baseName() +
+      (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
+      (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
+      (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
+      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
+       +  "is " + implKind().toString();
+
   }
 
 
