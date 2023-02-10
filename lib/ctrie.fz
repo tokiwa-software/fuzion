@@ -606,3 +606,17 @@ CTrie(CTK type : has_hash, CTV type) =>
   # NYI better type inference could make this tmp unecessary
   tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := Indirection_Node (mut (Main_Node (container_node CTK CTV 0 []) 0))
   CTrie CTK CTV (mut tmp) false
+
+
+# ctrie -- routine to initialize a ctrie from a sequence of key value tuples
+#
+# This feature creates an instance of a ctrie.
+#
+# example: ctrie [(key1, value1), (key2, value2)]
+#
+ctrie(K type : has_hash, V type, kvs Sequence (tuple K V)) CTrie K V is
+  m := CTrie K V
+  kvs.for_each (kv ->
+    (k,v) := kv
+    m.add k v)
+  m
