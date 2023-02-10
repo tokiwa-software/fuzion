@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -34,18 +34,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface Stmnt
+public interface Stmnt extends HasSourcePosition
 {
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this statment, used for error messages.
-   */
-  public SourcePosition pos();
-
 
   /**
    * visit all the features, expressions, statements within this feature.
