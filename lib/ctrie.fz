@@ -129,9 +129,10 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
       tomb_node tomb_node => "$tomb_node"
       list_node list_node => "$list_node"
 
-  # NYI
-  infix = (o Main_Node CTK CTV) bool is
-    Main_Node.this.hashCode ≟ o.hashCode
+  # equality - NYI
+  #
+  fixed type.equality(a, b Main_Node CTK CTV) bool is
+    a.hashCode ≟ b.hashCode
 
   as_list
   pre match prev.get
@@ -215,9 +216,10 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
     # increase the generation of node by one
     Indirection_Node (mut (Main_Node m.data new_gen))
 
-  # NYI
-  infix = (o Indirection_Node CTK CTV) bool is
-    Indirection_Node.this.hashCode ≟ o.hashCode
+  # equality - NYI
+  #
+  fixed type.equality(a, b Indirection_Node CTK CTV) bool is
+    a.hashCode ≟ b.hashCode
 
   redef as_string => "Indirection_Node($data)"
 
@@ -281,7 +283,7 @@ is
             rdcss_complete abort
         else
           old_main := desc.ov.gcas_read CTrie.this
-          if old_main = desc.exp
+          if old_main ≟ desc.exp
             if cas_root desc desc.nv
               desc.nv
             else
@@ -387,7 +389,7 @@ is
             sub := cn.array[pos.as_i32]
             match sub
               Indirection_Node Indirection_Node CTK CTV =>
-                if Indirection_Node = i
+                if Indirection_Node ≟ i
                   match i.gcas_read(CTrie.this).data
                     tn tomb_node CTK CTV =>
                       ncn := cn.updated pos tn.sn
@@ -606,3 +608,17 @@ CTrie(CTK type : has_hash, CTV type) =>
   # NYI better type inference could make this tmp unecessary
   tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := Indirection_Node (mut (Main_Node (container_node CTK CTV 0 []) 0))
   CTrie CTK CTV (mut tmp) false
+
+
+# ctrie -- routine to initialize a ctrie from a sequence of key value tuples
+#
+# This feature creates an instance of a ctrie.
+#
+# example: ctrie [(key1, value1), (key2, value2)]
+#
+ctrie(K type : has_hash, V type, kvs Sequence (tuple K V)) CTrie K V is
+  m := CTrie K V
+  kvs.for_each (kv ->
+    (k,v) := kv
+    m.add k v)
+  m

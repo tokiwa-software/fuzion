@@ -1428,7 +1428,7 @@ public class Feature extends AbstractFeature implements Stmnt
           });
 
         _state = State.RESOLVED_SUGAR1;
-        res.scheduleForTypeInteference(this);
+        res.scheduleForTypeInference(this);
       }
 
     if (POSTCONDITIONS) ensure

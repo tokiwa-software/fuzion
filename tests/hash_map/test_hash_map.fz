@@ -17,40 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#  Source code of Fuzion test hash map
 #
 # -----------------------------------------------------------------------
 
-on:
-  push:
-    branches:
-      - 'main'
-  pull_request: {}
+test_hash_map is
 
-env:
-  PRECONDITIONS: true
-  POSTCONDITIONS: true
+  # init an empty hash map
+  a := (hash_map i32 String).type.empty
+  say a
 
-jobs:
-  run_tests:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+  # init a hash map without duplicate keys
+  b := hash_map [0,1,2,3] ["a","b","c","d"]
+  say b
 
-      - name: install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev shellcheck
+  # init a hash map with one duplicate key
+  c := hash_map [0,1,2,3,0] ["a","b","c","d","e"]
+  say c
 
-      - name: check shell scripts
-        run: make shellcheck
 
-      - name: build (no-java)
-        run: make no-java
-
-      - name: run tests
-        run: make run_tests_parallel
