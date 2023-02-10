@@ -1049,12 +1049,8 @@ typeType    : "type"
                       }
                     result[0] = FormalOrActual.formal;
                   }
-                else if (!skipType())
-                  {
-                    result[0] = FormalOrActual.actual;
-                    return false;
-                  }
-                else if (skipDot())
+                // tolerate missing type here
+                else if ((skipType() || true) && skipDot())
                   {
                     if (!skip(Token.t_type))
                       {
@@ -3422,8 +3418,11 @@ contract    : require
    */
   Contract contract(boolean atMinIndent)
   {
-    return new Contract(requir   (atMinIndent),
-                        ensur    (atMinIndent));
+    var pre  = requir(atMinIndent);
+    var post = ensur (atMinIndent);
+    return pre == null && post == null
+      ? Contract.EMPTY_CONTRACT
+      : new Contract(pre, post);
   }
 
 

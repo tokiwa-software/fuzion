@@ -55,11 +55,11 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # division and remainder with check for div-by-zero
   redef infix / (other i64)
     pre
-      safety: !(other ≟ i64 0)
+      safety: other != i64 0
    => div other
   redef infix % (other i64)
     pre
-      safety: !(other ≟ i64 0)
+      safety: other != i64 0
    => mod other
 
   # private division and remainder with crash in case of div-by-zero

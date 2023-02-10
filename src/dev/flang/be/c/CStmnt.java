@@ -509,6 +509,33 @@ abstract class CStmnt extends ANY
   }
 
 
+  /**
+   * create an ifdef macro with if and else branch
+   *
+   * @param identifier used in: #if `identifier`
+   * @param ifStmnt the statement that is compiled when `identifier` evaluates to true
+   * @param elseStmnt the statement that is compiled when `identifier` evaluates to false
+   * @return the combined CStmnt
+   */
+  static CStmnt ifdef(String identifier, CStmnt ifStmnt, CStmnt elseStmnt)
+  {
+    return new CStmnt() {
+      @Override
+      void code(CString sb)
+      {
+        sb.append("\n#if " + identifier + "\n");
+        ifStmnt.code(sb);
+        sb.append("\n#else\n");
+        elseStmnt.code(sb);
+        sb.append("\n#endif\n");
+      }
+      boolean needsSemi()
+      {
+        return false;
+      }
+    };
+  }
+
 
   /**
    * Add label l before this statement, such that is is possible to 'goto $l'.

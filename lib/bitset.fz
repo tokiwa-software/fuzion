@@ -74,19 +74,6 @@ is
       x u64   => x
       a array => a.length.as_u64-1
 
-  # compare two bitsets
-  #
-  infix == (other bitset) bool is
-     h := highest >>= i -> other.highest >>= j -> i.max j
-     match h
-       _ nil => highest!! && other.highest!!
-       m u64 =>
-         for
-           r := true, r && ((has i) <=> other.has i)
-           i in u64 0 .. m
-         else
-           r
-
   # equality
   #
   fixed type.equality(a, b bitset) bool is
