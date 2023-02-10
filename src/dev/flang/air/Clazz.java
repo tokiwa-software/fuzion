@@ -1243,9 +1243,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName() + (this._type.generics().isEmpty()
-                                                 ? ""
-                                                 : "<" + this._type.generics() + ">"));
+         + feature().featureName().baseName()
+         + this._type.generics()
+             .toString(" ", " ", "", t -> t.toString(true))
+        );
   }
 
 

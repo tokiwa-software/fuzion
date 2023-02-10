@@ -502,10 +502,8 @@ public class FUIR extends IR
   {
     var cc = clazz(cl);
     var res = cc.feature().featureName().baseName();
-    if (!cc._type.generics().isEmpty())
-      {
-        res = res + cc._type.generics().toString("<",",",">");
-      }
+    res = res + cc._type.generics()
+      .toString(" ", " ", "", t -> t.toString(true));
     return res;
   }
 

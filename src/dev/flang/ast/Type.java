@@ -26,12 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Set;
-
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -694,7 +688,8 @@ public class Type extends AbstractType
       }
     if (_generics != NONE)
       {
-        result = result + "<" + _generics + ">";
+        result = result + _generics
+          .toString(" ", " ", "", (g) -> g.toString(true));
       }
     return result;
   }

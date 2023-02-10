@@ -1208,6 +1208,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+
+  /**
+   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   */
+  public String toString(boolean wrapInBrackets)
+  {
+    return wrapInBrackets && dependsOnGenerics()
+           ? "(" + toString() + ")"
+           : toString();
+  }
+
+
   /**
    * Check if constraints of this type are satisfied.
    * Returns itself on success or t_ERROR if constraints are not met.

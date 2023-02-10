@@ -498,6 +498,18 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   }
 
 
+  /**
+   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   */
+  public String toString(boolean wrapInBrackets)
+  {
+    return wrapInBrackets
+           // NYI wrapping might not always be needed
+           ? "(" + toString() + ")"
+           : toString();
+  }
+
+
 }
 
 /* end of file */
