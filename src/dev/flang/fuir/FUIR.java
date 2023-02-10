@@ -6,7 +6,7 @@ The Fuzion language implementation is free software: you can redistribute it
 and/or modify it under the terms of the GNU General Public License as published
 by the Free Software Foundation, version 3 of the License.
 
-The Fuzion language imbooplementation is distributed in the hope that it will be
+The Fuzion language implementation is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 License for more details.
@@ -357,7 +357,7 @@ public class FUIR extends IR
    *
    * NYI: Instead of returning -1 for non-instantiated value clazzes, it would
    * be much nicer if those clazzes would be removed completely from the IR or
-   * replaced by someting obvious like 'void'.
+   * replaced by something obvious like 'void'.
    */
   public int clazzChoice(int cl, int i)
   {
@@ -871,7 +871,7 @@ public class FUIR extends IR
       {
         /*
 NYI: Any side-effects in p.target() or p.actuals() will be executed twice, once for
-     the precondition and once for the inlinded call! See this example:
+     the precondition and once for the inlined call! See this example:
 
 hw25 is
   A (a i32)
@@ -1075,7 +1075,7 @@ hw25 is
 
 
   /**
-   * Get the id of clazz consstring
+   * Get the id of clazz conststring
    *
    * @return the id of conststring or -1 if that clazz was not created.
    */
@@ -1087,7 +1087,7 @@ hw25 is
 
 
   /**
-   * Get the id of clazz consstring.internalArray
+   * Get the id of clazz conststring.internalArray
    *
    * @return the id of conststring.internalArray or -1 if that clazz was not created.
    */
@@ -1330,7 +1330,7 @@ hw25 is
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 0) :
       (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 1) :
       (s instanceof Clazz          fld ) ? fld :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("acccessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return innerClazz == null ? -1 : id(innerClazz);
   }
@@ -1468,7 +1468,7 @@ hw25 is
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
       (s instanceof AbstractCall   call) ? call.isDynamic() && ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef() :
-      new Object() { { if (true) throw new Error("acccessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
+      new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
 
     return res;
   }
@@ -1529,7 +1529,7 @@ hw25 is
       (s instanceof AbstractAssign ass ) ? (Clazz) outerClazz.getRuntimeData(ass._tid) : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 1) :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("acccessTargetClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return id(tclazz);
   }
@@ -1940,10 +1940,10 @@ hw25 is
    *   8: mul
    *
    * Then 'skip(cl, c, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, c,
-   * 2)' is 0 (popping 'curent.n').
+   * 2)' is 0 (popping 'current.n').
    *
    * 'skip(cl, c, 7)' will result in 7, while 'skip(cl, c, 8)' will result in an
-   * error since there is no expression before 'mul 1 (sub curent.n (add
+   * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
    * @param cl index of the clazz containing the code block.
@@ -2011,7 +2011,7 @@ hw25 is
 
 
   /**
-   * Is cl one of the instrinsics in effect that changes the effect in
+   * Is cl one of the intrinsics in effect that changes the effect in
    * the current environment?
    *
    * @param cl the id of the intrinsic clazz

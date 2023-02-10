@@ -345,7 +345,7 @@ public class Intrinsics extends ANY
           );
         });
 
-        /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
+        /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
          */
     put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());

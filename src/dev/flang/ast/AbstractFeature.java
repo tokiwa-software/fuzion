@@ -189,7 +189,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -264,7 +264,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * qualifiedName0 returns the qualified name of this feature without any special handling for type featurs.
+   * qualifiedName0 returns the qualified name of this feature without any special handling for type features.
    *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
@@ -1004,7 +1004,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the copy of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefCopyOfValue()
@@ -1012,7 +1012,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (outer() != null);
 
-    // if outher is a small and immutable value type, we can copy it:
+    // if outer is a small and immutable value type, we can copy it:
     return this.outer().isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
   }
 
@@ -1023,7 +1023,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the address of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefAdrOfValue()
@@ -1110,7 +1110,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param module the main SrcModule if available (used for debugging only)
    *
-   * @param f a feature that is declared in or inherted by this feature
+   * @param f a feature that is declared in or inherited by this feature
    *
    * @param fn a feature name within this feature
    *
@@ -1149,7 +1149,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param a an array of types to be handed down
    *
-   * @param heir a feature that inhertis from outer()
+   * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
@@ -1236,7 +1236,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from
@@ -1274,7 +1274,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from

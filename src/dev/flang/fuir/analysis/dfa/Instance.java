@@ -77,7 +77,7 @@ public class Instance extends Value implements Comparable<Instance>
   final boolean _isBoxed;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -189,7 +189,7 @@ public class Instance extends Value implements Comparable<Instance>
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {

@@ -63,7 +63,7 @@ public class SysArray extends Value implements Comparable<SysArray>
   Value _elements = null;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -182,7 +182,7 @@ public class SysArray extends Value implements Comparable<SysArray>
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {

@@ -62,7 +62,7 @@ test_covariance is
       else
         0
 
-    # create string representation consiting of type, to_u32
+    # create string representation consisting of type, to_u32
     # and valueString
     #
     redef as_string => "num.this.type {to_u32} {to_u32_loop} '$valueString'"

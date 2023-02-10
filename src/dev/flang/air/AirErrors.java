@@ -49,7 +49,7 @@ public class AirErrors extends AstErrors
   /*--------------------------  static fields  --------------------------*/
 
   /**
-   * Error count of only those errors that occured in the IR.
+   * Error count of only those errors that occurred in the IR.
    */
   static int count = 0;
 

@@ -31,7 +31,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Operator represents an infix, prefix or postfix opeartor encountered while
+ * Operator represents an infix, prefix or postfix operator encountered while
  * parsing.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
@@ -55,7 +55,7 @@ public class Operator extends ANY
   /**
    * Constructor for operator
    *
-   * @param pos where was this operatator found
+   * @param pos where was this operator found
    *
    * @param text the operator itself, e.g., ">>="
    *

@@ -293,7 +293,7 @@ abstract class CExpr extends CStmnt
   /**
    * Create a C expression for a C string
    *
-   * @param bytes the UTF8-encoded byts of the string
+   * @param bytes the UTF8-encoded bytes of the string
    *
    * @return the resulting expression
    */
@@ -350,7 +350,7 @@ abstract class CExpr extends CStmnt
    *
    * @param op the operator, should be "==" or "!="
    *
-   * @param rhs rightt hand side of resulting expression
+   * @param rhs right hand side of resulting expression
    */
   private static CExpr eq(CExpr lhs, String op, CExpr rhs)
   {
@@ -372,7 +372,7 @@ abstract class CExpr extends CStmnt
    *
    * @param lhs left hand side of resulting expression
    *
-   * @param rhs rightt hand side of resulting expression
+   * @param rhs right hand side of resulting expression
    */
   static CExpr eq(CExpr lhs, CExpr rhs)
   {
@@ -385,7 +385,7 @@ abstract class CExpr extends CStmnt
    *
    * @param lhs left hand side of resulting expression
    *
-   * @param rhs rightt hand side of resulting expression
+   * @param rhs right hand side of resulting expression
    */
   static CExpr notEq(CExpr lhs, CExpr rhs)
   {

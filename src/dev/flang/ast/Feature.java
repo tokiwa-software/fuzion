@@ -220,14 +220,14 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Actions collectected to be executed as soon as this feature has reached
+   * Actions collected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
   private LinkedList<Runnable> whenResolvedDeclarations = new LinkedList<>();
 
 
   /**
-   * Actions collectected to be executed as soon as this feature has reached
+   * Actions collected to be executed as soon as this feature has reached
    * State.RESOLVED_TYPES, see method whenResolvedTypes().
    */
   private LinkedList<Runnable> whenResolvedTypes = new LinkedList<>();
@@ -246,7 +246,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * is represented.
    *
    * This might not become part of the runtime clazz if isChoiceOfOnlyRefs()
-   * holds for that classs.
+   * holds for that class.
    */
   public Feature _choiceTag = null;
   public AbstractFeature choiceTag() { return _choiceTag; }
@@ -263,7 +263,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -693,7 +693,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * The sourcecode position of this statment, used for error messages.
+   * The sourcecode position of this statement, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -702,7 +702,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check for possible errors related to the feature name. Currenlty, this only
+   * Check for possible errors related to the feature name. Currently, this only
    * checks that no feature uses FuzionConstants.RESULT_NAME as its base name
    * since this is reserved for the implicit result field.
    */
@@ -719,7 +719,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * Get the outer feature of this feature, or null if this is the universe.
    *
    * The outer is set during FIND_DECLARATIONS, so this cannot be called before
-   * the find declarations phase is done (i.e. we are in Satet.LOADED), or
+   * the find declarations phase is done (i.e. we are in State.LOADED), or
    * before _outer was during the finding declarations phase.
    */
   public AbstractFeature outer()
@@ -1113,7 +1113,7 @@ public class Feature extends AbstractFeature implements Stmnt
         cyclicInhData.clear();
       }
     else
-      { // mark all member of the cycl
+      { // mark all member of the cycle
         cyclicInhData.add(": feature " + qualifiedName()+" at " + _pos.show() + "\n" + inh);
         _detectedCyclicInheritance = true;
       }
@@ -1289,7 +1289,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * of the expression. Were needed, perform type inference. Schedule f for
    * syntactic sugar resolution.
    *
-   * NOTE: This is called by Resoltion.java. To force a feature is in state
+   * NOTE: This is called by Resolution.java. To force a feature is in state
    * RESOLVED_TYPES, use Resolution.resolveTypes(f).
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -1480,7 +1480,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * is part of the typeInference pass.
    *
    *
-   * @param res this is called during type inteference, res gives the resolution
+   * @param res this is called during type interference, res gives the resolution
    * instance to schedule new fields for resolution.
    */
   private void checkChoiceAndAddInternalFields(Resolution res)
@@ -1588,7 +1588,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * Check if this is a choice and if so, call checkChoiceAndAddInternalFields
    * for further checking and adding of fields.
    *
-   * @param res this is called during type inteference, res gives the resolution
+   * @param res this is called during type interference, res gives the resolution
    * instance to schedule new fields for resolution.
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
@@ -1645,7 +1645,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
 
         /**
-         * Perform type inference from outside to the inside, i.e., propage the
+         * Perform type inference from outside to the inside, i.e., propagate the
          * expected type as in
          *
          *   f (b bool) i64              { if (b) { 23 } else { -17 } }
@@ -1708,7 +1708,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
   /**
    * Perform type checking, in particular, verify that all redefinitions of this
-   * have the argument types.  Create compile time erros if this is not the
+   * have the argument types.  Create compile time errors if this is not the
    * case.
    */
   private void checkTypes(Resolution res)
@@ -1937,7 +1937,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param assign the assign we are trying to resolve, or null when not resolving an
    * assign
    *
-   * @param destructure the destructure we are strying to resolve, or null when not
+   * @param destructure the destructure we are trying to resolve, or null when not
    * resolving a destructure.
    *
    * @param inner the inner feature that contains call or assign, null if

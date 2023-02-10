@@ -262,7 +262,7 @@ public class FrontEnd extends ANY
    *
    * @param m the module name, excluding path or ".fum" suffix
    *
-   * @return the loaded module or null if it was not found or an error occured.
+   * @return the loaded module or null if it was not found or an error occurred.
    */
   LibraryModule loadModule(String m)
   {

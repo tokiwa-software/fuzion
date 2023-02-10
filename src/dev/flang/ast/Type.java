@@ -295,7 +295,7 @@ public class Type extends AbstractType
    * the type of the outer reference within inner is feat<A, B, C>.  This
    * constructor is used to create A, B, C in this case.
    *
-   * @param g the formal generic this referes to
+   * @param g the formal generic this refers to
    */
   public Type(HasSourcePosition pos, Generic g)
   {
@@ -399,12 +399,12 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a clone of original that uses orignalOuterFeature as context to
+   * Create a clone of original that uses originalOuterFeature as context to
    * look up features the type is built from.
    *
    * @param original the original value type
    *
-   * @param origininalOuterFeature the original feature, which is not a type
+   * @param originalOuterFeature the original feature, which is not a type
    * feature.
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
@@ -449,14 +449,14 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a clone of this Type that uses orignalOuterFeature as context to
+   * Create a clone of this Type that uses originalOuterFeature as context to
    * look up features the type is built from.  Generics will be looked up in the
    * current context.
    *
    * This is used for type features that use types from the original feature,
    * but needs to replace generics by the type feature's generics.
    *
-   * @param origininalOuterFeature the original feature, which is not a type
+   * @param originalOuterFeature the original feature, which is not a type
    * feature.
    */
   Type clone(AbstractFeature originalOuterFeature)

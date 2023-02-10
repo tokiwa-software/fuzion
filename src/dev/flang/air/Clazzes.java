@@ -234,7 +234,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Initilize Clazzes with given Options.
+   * Initialize Clazzes with given Options.
    */
   public static void init(FuzionOptions options)
   {
@@ -292,7 +292,7 @@ public class Clazzes extends ANY
    * @param actualType the type of the clazz, must be free from generics
    *
    * @param select in case actualType is a field with open generic result, this
-   * choses the actual field from outer's actual generics. -1 otherwise.
+   * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param clazz the runtime clazz of the outer feature of
    * actualType.featureOfType.
@@ -989,7 +989,7 @@ public class Clazzes extends ANY
   {
     if (m._runtimeClazzId < 0)
       {
-        // NYI: Check if this works for a match that is part of a inhertis clause, do
+        // NYI: Check if this works for a match that is part of a inherits clause, do
         // we need to store in outerClazz.outer?
         m._runtimeClazzId = getRuntimeClazzIds(1);
       }
@@ -1122,7 +1122,7 @@ public class Clazzes extends ANY
         if (result == string.get())
           { /* this is a bit tricky: in the front end, the type of a string
              * constant is 'string'.  However, for the back end, the type is
-             * 'consstring' such that the backend can create an instance of
+             * 'conststring' such that the backend can create an instance of
              * 'constString' and see the correct type (and create proper type
              * conversion code to 'string' if this is needed).
              */
@@ -1209,7 +1209,7 @@ public class Clazzes extends ANY
    * @param thiz the type of the clazz, must be free from generics
    *
    * @param select in case thiz is a field with open generic result, this
-   * choses the actual field from outer's actual generics. -1 otherwise.
+   * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param outerClazz the outer clazz
    *
@@ -1270,7 +1270,7 @@ public class Clazzes extends ANY
    *
    *   For a feature f that inherits from a generic feature g.h, the inherits
    *   clause specifies actual generic arguments to g and g.h and these actual
-   *   generic argument may contain only the formal genric arguments of
+   *   generic argument may contain only the formal generic arguments of
    *   a.b.c.f.  Consequently, the presence of generics in the parent feature
    *   does not add any new clazzes.
    *
@@ -1279,7 +1279,7 @@ public class Clazzes extends ANY
    * a call.
    *
    * Note that a generic signature <V,W>,<X>,<Y,Z> cannot be flattened to
-   * <V,W,X,Y,Z> since formal genric lists can be open, i.e, they do not have
+   * <V,W,X,Y,Z> since formal generic lists can be open, i.e, they do not have
    * a fixed length.
    *
    * So, essentially, we need one clazz for each (f,s) where f is a feature

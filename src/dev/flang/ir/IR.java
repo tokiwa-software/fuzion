@@ -144,7 +144,7 @@ public class IR extends ANY
   /**
    * Clone this IR such that modifications can be made by optimizers.  A heir of
    * IR can use this to redefine some methods while reusing the data from
-   * orignal for all the rest.
+   * original for all the rest.
    *
    * @param original the original IR instance that we are cloning.
    */
@@ -158,7 +158,7 @@ public class IR extends ANY
 
 
   /**
-   * Create list of ExprKind from the given statment (and its nested
+   * Create list of ExprKind from the given statement (and its nested
    * statements).
    *
    * @param s a statement.

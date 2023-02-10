@@ -52,7 +52,7 @@ public class Call extends AbstractCall
 
   /**
    * Special value for an empty actuals lists to distinguish a call without
-   * parenthesis ("a.b") from a call with parenthesises and an empty actual
+   * parenthesis ("a.b") from a call with parenthesis and an empty actual
    * arguments list ("a.b()").
    */
   public static final List<Actual> NO_PARENTHESES = new List<>();
@@ -157,7 +157,7 @@ public class Call extends AbstractCall
 
   /**
    * For static type analysis: This gives the resolved formal argument types for
-   * the arguemnts of this call.  During type checking, it has to be checked
+   * the arguments of this call.  During type checking, it has to be checked
    * that the actual arguments can be assigned to these types.
    *
    * The number of resolved formal arguments might be different to the number of
@@ -426,7 +426,7 @@ public class Call extends AbstractCall
 
   /**
    * True iff this call was performed giving 0 or more actual arguments in
-   * parentheses.  This allows a disinction between "a.b" and "a.b()" if b has
+   * parentheses.  This allows a distinction between "a.b" and "a.b()" if b has
    * no formal arguments and is of a fun type. In this case, "a.b" calls only b,
    * while "a.b()" is syntactic sugar for "a.b.call".
    *
@@ -514,7 +514,7 @@ public class Call extends AbstractCall
    * contracts or implementation of a feature f, thiz is f itself.
    *
    * @return the map of FeatureName to Features of the found candidates. May be
-   * empty. ERROR_MAP in case an error occured and was reported already.
+   * empty. ERROR_MAP in case an error occurred and was reported already.
    */
   private FeaturesAndOuter calledFeatureCandidates(AbstractFeature targetFeature, Resolution res, AbstractFeature thiz)
   {
@@ -911,7 +911,7 @@ public class Call extends AbstractCall
    * @param ff the candidate that might be called
    *
    * @param addOne true iff one actual argument will be added (used in
-   * findOperatorOnOuter wich will add the target to the actual arguments).
+   * findOperatorOnOuter which will add the target to the actual arguments).
    *
    * @return true if ff is a valid candidate to be called.
    */
@@ -1074,8 +1074,8 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this statement.
    *
-   * @param result this in case this was not an immediate call, otherwise qthe
-   * resulting cll to Function/Routine.call.
+   * @param result this in case this was not an immediate call, otherwise the
+   * resulting call to Function/Routine.call.
    */
   private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
   {
@@ -1319,7 +1319,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * While type parameters are still unkown because they need to be inferred
+   * While type parameters are still unknown because they need to be inferred
    * from the actual arguments, this can be used to register actions to be
    * performed as soon as the type parameters are known.
    */
@@ -1410,7 +1410,7 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
       { // NYI (see #282): special handling could maybe be avoided? Maybe make
-        // this special handling the normal handlng for all features whose
+        // this special handling the normal handling for all features whose
         // result type depends on a generic that can be replaced by an actual
         // generic given in the call?
         var gt = _generics.get(0);
@@ -1814,7 +1814,7 @@ public class Call extends AbstractCall
    *    target.outer arg1 arg2 ...
    *
    * is a tail recursive call provided that the result returned is not
-   * processed. The call may be dynamic, i.e., target may evalute to something
+   * processed. The call may be dynamic, i.e., target may evaluate to something
    * different than outer.outer.
    *
    * This is used to allow cyclic type inferencing of the form
@@ -1842,7 +1842,7 @@ public class Call extends AbstractCall
    * @param e an expression.
    *
    * @return true iff this is a expression that can produce the result of e (but
-   * not necesarily the only one).
+   * not necessarily the only one).
    */
   boolean returnsThis(Expr e)
   {

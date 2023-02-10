@@ -58,7 +58,7 @@ public class CTypes extends ANY
   private final CNames _names;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

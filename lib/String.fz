@@ -527,7 +527,7 @@ String ref : has_equality, has_hash, has_total_order is
       split0 s nil true
 
 
-  # split string at s, for at most n occurences of s
+  # split string at s, for at most n occurrences of s
   #
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
@@ -540,7 +540,7 @@ String ref : has_equality, has_hash, has_total_order is
       split0 s n false
 
 
-  # split string after s, for at most n occurences of s
+  # split string after s, for at most n occurrences of s
   #
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements

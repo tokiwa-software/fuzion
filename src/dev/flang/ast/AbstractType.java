@@ -150,7 +150,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * is this a formal generic argument that is open, i.e., the last argument in
    * a formal generic arguments list and followed by ... as A in
-   * Funtion<R,A...>.
+   * Function<R,A...>.
    *
    * This type needs very special treatment, it is allowed only as an argument
    * type of the last argument in an abstract feature declaration.  When
@@ -1118,7 +1118,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param f function to apply to generics and outer types
    *
    * @return in case f resulted in any changes, a new type with generics and
-   * outer types replaced by the corresponding results of f.appy.  this in case
+   * outer types replaced by the corresponding results of f.apply.  this in case
    * the were no changes.
    */
   private AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
@@ -1209,7 +1209,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if contraints of this type are satisfied.
+   * Check if constraints of this type are satisfied.
    * Returns itself on success or t_ERROR if constraints are not met.
    */
   // NYI Can this result in an infinite recursion?

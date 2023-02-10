@@ -97,7 +97,7 @@ vars_type is
 
 # Vars_Provider -- abstract source of environment vars
 #
-# Different heirs of this feature may provided different sources for environemnt
+# Different heirs of this feature may provided different sources for environment
 # variables
 #
 Vars_Provider ref is

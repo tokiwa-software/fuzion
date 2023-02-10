@@ -98,7 +98,7 @@ public class Impl extends ANY
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
-    Of;           // Syntacitic sugar 'enum : choice of red, green, blue is', exists only during parsing
+    Of;           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
 
     public String toString(){
       return switch(this)

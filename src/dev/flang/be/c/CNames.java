@@ -71,7 +71,7 @@ public class CNames extends ANY
 
   /**
    * Maximum length of (external) function names in C.  Since name mangling
-   * easily results in lengthy names, we have to be careful not to exeed this.
+   * easily results in lengthy names, we have to be careful not to exceed this.
    */
   private static final int MAX_C99_IDENTIFIER_LENGTH = 31;
 
@@ -364,7 +364,7 @@ public class CNames extends ANY
   final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames._prefix + "bool", "1");
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

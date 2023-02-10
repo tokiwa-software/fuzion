@@ -112,7 +112,7 @@ public class Actual extends Expr
 
 
   /**
-   * The sourcecode position of this statment, used for error messages.
+   * The sourcecode position of this statement, used for error messages.
    */
   public SourcePosition pos()
   {

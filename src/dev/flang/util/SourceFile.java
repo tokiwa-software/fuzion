@@ -448,7 +448,7 @@ public class SourceFile extends ANY
 
 
   /**
-   * Extract the codePont from the result of makeCodePointWithSize.
+   * Extract the codePoint from the result of makeCodePointWithSize.
    */
   private int codePointFromCpAndSize(int cpAndSz)
   {

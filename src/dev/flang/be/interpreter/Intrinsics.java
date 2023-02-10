@@ -84,7 +84,7 @@ public class Intrinsics extends ANY
 
 
   /**
-   * Contains possible error numbers emitted by intrisics when an error happens
+   * Contains possible error numbers emitted by intrinsics when an error happens
    * on the system side. This attempts to match C's errno.h names and numbers.
    */
   enum SystemErrNo
@@ -1083,7 +1083,7 @@ public class Intrinsics extends ANY
               }
             }
           case "effect.abort": throw new Abort(cl);
-          default: throw new Error("unexected effect intrinsic '"+innerClazz+"'");
+          default: throw new Error("unexpected effect intrinsic '"+innerClazz+"'");
           }
         return Value.EMPTY_VALUE;
       };
