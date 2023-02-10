@@ -98,7 +98,7 @@ is
 
   # divide this int by other
   infix /  (other int) int
-  pre !(other ≟ int.type.zero)
+  pre other != int.type.zero
   is
     s sign := result_sign_mul_div other
     int s n/other.n
@@ -131,7 +131,7 @@ is
   infix -! (other int) bool is true
   infix *! (other int) bool is true
   infix /! (other int) bool is
-    !(other ≟ int.type.zero)
+    other != int.type.zero
   infix %! (other int) bool is true
 
   infix **!(other int) bool is

@@ -34,13 +34,13 @@ integer(I type : integer I) : numeric I is
   # division remainder
   redef infix % (other I) I
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
   is abstract
 
   # test divisibility by other
   infix %% (other I) bool
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
   is
     thiz % other ≟ zero
 

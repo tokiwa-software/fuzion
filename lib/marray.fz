@@ -64,8 +64,7 @@ is
   #
   redef index [ ] (i i32) T
     pre
-      safety: 0 ≤ i,
-      safety: i ⩻ length
+      safety: 0 ≤ i ⩻ length
   is
     data[i]
 
@@ -73,8 +72,7 @@ is
   #
   set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i,
-      safety: i ⩻ length
+      safety: 0 ≤ i ⩻ length
   # post   NYI: no '==' for Any yet
   #   marray.this[i] ≟ o
   is

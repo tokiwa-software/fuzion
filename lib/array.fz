@@ -150,9 +150,7 @@ array(redef T type,
   #
   arrayCons (i, to i32) : Cons T (list T)
     pre
-      debug: 0 ≤ i,
-      debug: i⩻ to,
-      debug: to ≤ length
+      debug: 0 ≤ i ⩻ to ≤ length
   is
     head => array.this[i]
     tail => slice i+1 to

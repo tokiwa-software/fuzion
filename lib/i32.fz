@@ -55,11 +55,11 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # division and remainder with check for div-by-zero
   redef infix / (other i32)
     pre
-      safety: !(other ≟ 0)
+      safety: other != 0
    => div(other)
   redef infix % (other i32)
     pre
-      safety: !(other ≟ 0)
+      safety: other != 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
