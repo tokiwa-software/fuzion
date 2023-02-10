@@ -3418,8 +3418,11 @@ contract    : require
    */
   Contract contract(boolean atMinIndent)
   {
-    return new Contract(requir   (atMinIndent),
-                        ensur    (atMinIndent));
+    var pre  = requir(atMinIndent);
+    var post = ensur (atMinIndent);
+    return pre == null && post == null
+      ? Contract.EMPTY_CONTRACT
+      : new Contract(pre, post);
   }
 
 
