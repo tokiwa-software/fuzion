@@ -982,9 +982,9 @@ public class Call extends AbstractCall
       + (_name          != null ? _name :
          _calledFeature != null ? _calledFeature.featureName().baseName()
                                 : "--ANONYMOUS--" )
-      + _generics.toString("", " ", "", t -> t.toString(true))
-      + _actuals.toString("", " ", "", e -> e.toString(true))
-      + (_select < 0        ? "" : "." + _select);
+      + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
+      + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())
+      + (_select < 0        ? "" : " ." + _select);
   }
 
 

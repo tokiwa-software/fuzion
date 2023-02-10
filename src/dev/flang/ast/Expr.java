@@ -499,12 +499,11 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   * wrap the result of toString in parentheses if necessary
    */
-  public String toString(boolean wrapInBrackets)
+  public String toStringWrapped()
   {
-    return wrapInBrackets
-           // NYI wrapping might not always be needed
+    return toString().contains(" ")
            ? "(" + toString() + ")"
            : toString();
   }

@@ -262,7 +262,7 @@ public class NormalType extends LibraryType
       }
     result = result + (featureOfType().featureName().baseName());
     result = result + generics()
-      .toString(" ", " ", "", t -> t.toString(true));
+      .toString(" ", " ", "", t -> t.toStringWrapped());
     return result;
   }
 

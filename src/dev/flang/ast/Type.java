@@ -689,7 +689,7 @@ public class Type extends AbstractType
     if (_generics != NONE)
       {
         result = result + _generics
-          .toString(" ", " ", "", (g) -> g.toString(true));
+          .toString(" ", " ", "", (g) -> g.toStringWrapped());
       }
     return result;
   }
