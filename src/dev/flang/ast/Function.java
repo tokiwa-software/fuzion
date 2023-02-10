@@ -378,7 +378,7 @@ public class Function extends ExprWithPos
   public void findGenerics(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._feature != null)
-      { /* NYI: Need? The following comment seems wrong: */
+      { /* NYI: Needed? The following comment seems wrong: */
         // directly process generics in _feature's arguments and return type,
         // while visit() skips the _feature.
         var f = this._feature;
