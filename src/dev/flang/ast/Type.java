@@ -987,22 +987,12 @@ public class Type extends AbstractType
   public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !isGenericArgument());
+      (Errors.count() > 0 || !isGenericArgument(),
+       Errors.count() > 0 || feature != null);
 
-    var result = feature;
-
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.count() > 0);
-
-        result = Types.f_ERROR;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return feature != null
+      ? feature
+      : Types.f_ERROR;
   }
 
 
