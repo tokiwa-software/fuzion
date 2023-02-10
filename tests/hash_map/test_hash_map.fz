@@ -17,31 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test hash map
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
+test_hash_map is
 
-  say ("hell😀" * 3)
+  # init an empty hash map
+  a := (hash_map i32 String).type.empty
+  say a
 
-  say "".is_empty
-  say "notEmpty".is_empty
+  # init a hash map without duplicate keys
+  b := hash_map [0,1,2,3] ["a","b","c","d"]
+  say b
 
-  say ("hell😀"≟"hell😀")
-  say ("hell😀"≟"again")
+  # init a hash map with one duplicate key
+  c := hash_map [0,1,2,3,0] ["a","b","c","d","e"]
+  say c
 
 
-  match "13".parse_integer i32 10
-    n i32 => say n≟13
-    error => say "FAIL"
-
-  say 10
-  say [0,1,2]
-
-  say (String.type.from_codepoint_sequence "hell😀".as_codepoint_sequence)
-
-  say (String.type.from_array ((marray Any).type.new 1 nil))

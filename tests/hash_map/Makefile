@@ -17,31 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
-
-  say ("hell😀" * 3)
-
-  say "".is_empty
-  say "notEmpty".is_empty
-
-  say ("hell😀"≟"hell😀")
-  say ("hell😀"≟"again")
-
-
-  match "13".parse_integer i32 10
-    n i32 => say n≟13
-    error => say "FAIL"
-
-  say 10
-  say [0,1,2]
-
-  say (String.type.from_codepoint_sequence "hell😀".as_codepoint_sequence)
-
-  say (String.type.from_array ((marray Any).type.new 1 nil))
+override NAME = test_hash_map
+include ../simple.mk
