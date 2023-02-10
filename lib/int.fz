@@ -179,7 +179,14 @@ is
     n.as_i64
 
 
-  # this int as an i64
+  # this int as an u8
+  as_u8 u8
+  pre s.is_plus
+  is
+      n.as_u8
+
+
+  # this int as an u32
   as_u32 u32
   pre s.is_plus
   is
