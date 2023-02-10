@@ -145,7 +145,11 @@ public class Intrinsics extends ANY
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A0.castTo("char *")))),
+            // try delete as a file first
+            CExpr.decl("int", resultIdent, CExpr.call("unlink", new List<>(A0.castTo("char *")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            // then try delete as a directory
+            resultIdent.assign(CExpr.call("rmdir", new List<>(A0.castTo("char *")))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
@@ -166,11 +170,19 @@ public class Intrinsics extends ANY
         {
           var readWriteExecuteUser = new CIdent("S_IRWXU");
           var resultIdent = new CIdent("result");
-          return CStmnt.seq(
+
+          // NYI maybe use CreateDirectory or similar?
+          var windows = CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(
             CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), readWriteExecuteUser))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
-            );
+            c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         }
         );
     put("fuzion.sys.fileio.stats"   , (c,cl,outer,in) ->
@@ -179,8 +191,8 @@ public class Intrinsics extends ANY
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
             CExpr.decl("struct stat", statIdent),
-            CExpr.decl("long *", metadata),
-            metadata.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", metadata),
+            metadata.assign(A1.castTo("fzT_1i64 *")),
             // write stats in metadata if stat was successful and return true
             CExpr.iff(
               CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
@@ -207,8 +219,8 @@ public class Intrinsics extends ANY
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
             CExpr.decl("struct stat", statIdent),
-            CExpr.decl("long *", metadata),
-            metadata.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", metadata),
+            metadata.assign(A1.castTo("fzT_1i64 *")),
             // write stats in metadata if lstat was successful and return true
             CExpr.iff(
               CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
@@ -236,11 +248,11 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             CExpr.decl("FILE *", filePointer),
-            CExpr.decl("long *", openResults),
-            openResults.assign(A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", openResults),
+            openResults.assign(A1.castTo("fzT_1i64 *")),
             errno.assign(new CIdent("0")),
             CStmnt.suitch(
-              A2.castTo("int"),
+              A2,
               new List<>(
                 CStmnt.caze(
                   new List<>(CExpr.int8const(0)),
@@ -295,7 +307,7 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
-            CExpr.decl("long *", seekResults, A2.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", seekResults, A2.castTo("fzT_1i64 *")),
             CStmnt.iff(CExpr.call("fseeko", new List<>(A0.castTo("FILE *"), A1.castTo("off_t"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
             seekResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
             seekResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
@@ -308,7 +320,7 @@ public class Intrinsics extends ANY
           var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
-            CExpr.decl("long *", positionResults, A1.castTo("long *")),
+            CExpr.decl("fzT_1i64 *", positionResults, A1.castTo("fzT_1i64 *")),
             positionResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
             positionResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
             );
@@ -618,19 +630,29 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
+          // NYI setenv is posix only
+          var windows = CStmnt.seq(c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(CStmnt.iff(CExpr.call("setenv",new List<>(A0.castTo("char*") /* name */,
                                                                       A1.castTo("char*") /* value */,
                                                                       CExpr.int32const(1) /* overwrite */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         });
      put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
+          // NYI unsetenv is posix only
+          var windows = CStmnt.seq(c._names.FZ_FALSE.ret());
+
+          var unix = CStmnt.seq(CStmnt.iff(CExpr.call("unsetenv",new List<>(A0.castTo("char*") /* name */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
+
+          return CStmnt.ifdef("_WIN32", windows, unix);
         });
      put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
          {
