@@ -1840,8 +1840,31 @@ hw25 is
    *
    * @param c the code block
    */
-  public void dumpCode(int cl, int c, TreeSet<Integer> printed)
+  public void dumpCode(int cl, int c)
   {
+    dumpCode(cl, c, null);
+  }
+
+
+  /**
+   * Print the contents of the given code block to System.out, for debugging.
+   *
+   * In case printed != null, recursively print all successor code blocks for
+   * Match statements and add their ids to printed, unless they has been added
+   * already.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   *
+   * @param printed set of code blocks that had already been printed.
+   */
+  private void dumpCode(int cl, int c, TreeSet<Integer> printed)
+  {
+    if (printed != null)
+      {
+        printed.add(c);
+      }
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
         System.out.printf("%d.%4d: %s\n", c, ix, codeAtAsString(cl, c, ix));
@@ -1855,7 +1878,6 @@ hw25 is
                     var mc = matchCaseCode(c, ix, cix);
                     if (!printed.contains(mc))
                       {
-                        printed.add(mc);
                         dumpCode(cl, mc, printed);
                       }
                   }
