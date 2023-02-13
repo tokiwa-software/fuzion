@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -940,7 +941,10 @@ hw25 is
         var cc = clazz(cl);
         var ff = cc.feature();
         var code = new List<Object>();
-        addCode(cc, code, ff);
+        if (!clazzIsVoidType(cl))
+          {
+            addCode(cc, code, ff);
+          }
         res = _codeIds.add(code);
         _clazzCode.put(cl, res);
       }
@@ -1812,7 +1816,15 @@ hw25 is
       case Comment -> "Comment";
       case Const   -> "Const";
       case Dup     -> "Dup";
-      case Match   -> "Match";
+      case Match   -> {
+                        var sb = new StringBuilder("Match");
+                        for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
+                          {
+                            var f = matchCaseField(cl, c, ix, cix);
+                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + matchCaseCode(c, ix, cix));
+                          }
+                        yield sb.toString();
+                      }
       case Tag     -> "Tag";
       case Env     -> "Env";
       case Pop     -> "Pop";
@@ -1828,11 +1840,29 @@ hw25 is
    *
    * @param c the code block
    */
-  public void dumpCode(int cl, int c)
+  public void dumpCode(int cl, int c, TreeSet<Integer> printed)
   {
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
         System.out.printf("%d.%4d: %s\n", c, ix, codeAtAsString(cl, c, ix));
+        if (printed != null)
+          {
+            switch (codeAt(c,ix))
+              {
+              case Match:
+                for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
+                  {
+                    var mc = matchCaseCode(c, ix, cix);
+                    if (!printed.contains(mc))
+                      {
+                        printed.add(mc);
+                        dumpCode(cl, mc, printed);
+                      }
+                  }
+                break;
+              default: break;
+              }
+          }
       }
   }
 
@@ -1847,7 +1877,25 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    dumpCode(cl, clazzCode(cl));
+    System.out.println("Code for " + clazzAsString(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    dumpCode(cl, clazzCode(cl), new TreeSet<>());
+  }
+
+
+  /**
+   * Print the code of all routines
+   */
+  public void dumpCode()
+  {
+    addClasses();
+    _clazzIds.ints().forEach(cl ->
+      {
+        switch (clazzKind(cl))
+          {
+          case Routine: dumpCode(cl); break;
+          default: break;
+          }
+      });
   }
 
 
