@@ -71,11 +71,11 @@ public class Util
       {
         return "";
       }
-    var line = af.pos()._line - 1;
+    var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
-        var pos = new SourcePosition(af.pos()._sourceFile, line, 0);
+        var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
         var strline = Util.lineAt(pos);
         if (line < 1 || !strline.matches("^\\s*#.*"))
           {
@@ -106,7 +106,7 @@ public class Util
       .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().toString())).toUri();
     try
       {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos._line - 1);
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
       }
     catch (IOException e)
       {
