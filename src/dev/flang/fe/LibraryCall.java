@@ -107,6 +107,7 @@ public abstract class LibraryCall extends AbstractCall
     Collections.reverse(actuals);
     _actuals = actuals;
     _generics = g;
+    g.freeze();
     Expr target = null;
     var feat = lib.callCalledFeature(index);
     var f = lib.libraryFeature(feat);
@@ -144,7 +145,7 @@ public abstract class LibraryCall extends AbstractCall
       {
         i.set(i.next().visit(v, outer));
       }
-    var j = actuals().listIterator(); // _actuals can change during resolveTypes, so create iterator early
+    var j = actuals().listIterator();
     while (j.hasNext())
       {
         j.set(j.next().visit(v, outer));
