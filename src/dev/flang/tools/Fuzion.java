@@ -170,7 +170,7 @@ class Fuzion extends Tool
       boolean runsCode() { return false; }
       void process(FuzionOptions options, FUIR fuir)
       {
-        fuir.dumpCode(fuir.mainClazzId());
+        fuir.dumpCode();
       }
     },
 
