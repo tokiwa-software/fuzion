@@ -115,6 +115,7 @@ public class Call extends AbstractCall
               }
           }
       }
+    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateExpectedType2 performs gs.set
     return res;
   }
 
@@ -1705,7 +1706,7 @@ public class Call extends AbstractCall
                 conflict[i] = true;
                 nt = Types.t_ERROR;
               }
-            _generics.set(i, nt);  // NYI: use setOrClone?
+            _generics = _generics.setOrClone(i, nt);
             foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
           }
       }

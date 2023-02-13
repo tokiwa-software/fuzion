@@ -334,7 +334,7 @@ public class Function extends ExprWithPos
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(f);
                 result = f.resultType();
-                gs.set(0, result);   // NYI: hack to set inferred result type
+                gs.set(0, result);   // NYI: hack to set inferred result type, this prevents performing freeze in Call.actualTypeParameters.
               }
 
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
