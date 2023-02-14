@@ -1440,3 +1440,12 @@ Zl
 Zp
 Zp
 zu
+wrapInBrackets
+ifdef
+ifStmnt
+elseStmnt
+unlink
+rmdir
+CreateDirectory
+posix
+itemToString
