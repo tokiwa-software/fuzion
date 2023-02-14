@@ -220,7 +220,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   {
     if (_column == null)
       {
-        _column = _bytePos - _sourceFile.lineStartPos(_line) + 1;
+        _column = _bytePos - _sourceFile.lineStartPos(line()) + 1;
       }
     return _column;
   }
