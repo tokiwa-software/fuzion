@@ -49,7 +49,10 @@ jobs:
       - name: check shell scripts
         run: make shellcheck
 
-      - name: build (no-java)
+      - name: build java code
+        run: make javac
+
+      - name: build (no java modules)
         run: make no-java
 
       - name: run tests
