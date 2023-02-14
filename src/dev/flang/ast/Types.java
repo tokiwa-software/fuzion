@@ -304,6 +304,7 @@ public class Types extends ANY
                 types.put(t,t);
                 existing = t;
               }
+            t._generics.freeze();
             t._interned = existing;
           }
         at = existing;
