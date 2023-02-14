@@ -120,7 +120,7 @@ integer(I type : integer I) : numeric I is
       digit_as_utf8_byte(d u8) u8
       pre d ≤ (u8 35) # 35 would be a Z
       is
-        if d ⩻ u8 10 then String.type.zero_char + d else String.type.cap_a_char + d - 10
+        if d ⩻ u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
       as_list0 (power I) =>
         if power.sign <= 0
