@@ -117,7 +117,7 @@ public class NormalType extends LibraryType
    * Dummy visit() for types.
    *
    * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FaetureVisitor.
+   * replaced by a different mechanism not using FeatureVisitor.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
@@ -261,10 +261,8 @@ public class NormalType extends LibraryType
         result = result + (isRef() ? "ref " : "value ");
       }
     result = result + (featureOfType().featureName().baseName());
-    if (generics() != Type.NONE)
-      {
-        result = result + "<" + generics() + ">";
-      }
+    result = result + generics()
+      .toString(" ", " ", "", t -> t.toString(true));
     return result;
   }
 

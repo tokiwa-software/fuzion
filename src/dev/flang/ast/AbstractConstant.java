@@ -26,11 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
-
-
 /**
- * AbstractConstant represents a constant in the source code such as '3.14', 'true',
+ * AbstractConstant represents a constant in the source code such as '3.14',
  * '"Hello"'.  This class might be loaded from a library or parsed in sources.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
@@ -43,7 +40,7 @@ public abstract class AbstractConstant extends Expr
 
 
   /**
-   * Constructor for a Constant at the given source code postition.
+   * Constructor for a Constant at the given source code position.
    */
   public AbstractConstant()
   {

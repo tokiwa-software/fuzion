@@ -84,7 +84,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Costructor initializing fields as given.
+   * Constructor initializing fields as given.
    */
   public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics)
   {
@@ -100,7 +100,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Costructor initializing fields from existing FuzionOptions instance
+   * Constructor initializing fields from existing FuzionOptions instance
    */
   public FuzionOptions(FuzionOptions fo)
   {
@@ -115,7 +115,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Check if verbose output at the given leven is enabled.
+   * Check if verbose output at the given level is enabled.
    */
   public boolean verbose(int level)
   {

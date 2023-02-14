@@ -841,7 +841,7 @@
   - several optimizations like caching to improve performance of using module
     file.
 
-  - save source code positions of feature declarations and statments to module
+  - save source code positions of feature declarations and statements to module
     file for more detailed error messages.
 
 
@@ -944,7 +944,7 @@
 
 - tests
 
-  - analysed root cause of failing tests, added issues to github for tests that
+  - analyzed root cause of failing tests, added issues to github for tests that
     could not be fixed, added mechanism to skip these tests, such that a normal
     build does not report any errors for known problems.
 
@@ -1975,7 +1975,7 @@ Benchmarks:
   : c>(args ..)" puts the constraint c on the generic argument T. NYI: Still
   need to check that the actual generic arg is assignable to the constraint.
 
-- '°' is now a legal character in an operator. New opeartors +°, -° and *°
+- '°' is now a legal character in an operator. New operators +°, -° and *°
   implement wrap-around operations, while +, - and * have preconditions that
   ensure there is no overflow.
 

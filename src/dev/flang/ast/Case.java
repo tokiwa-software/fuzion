@@ -213,7 +213,7 @@ public class Case extends AbstractCase
    * @param outer the outer feature that contains this match statement
    *
    * @param matched map from index in cgs to source position for all matches
-   * that have already beend found.  This is updated and used to report an error
+   * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    *
    * @return true iff all types could be resolved, false if any type resolution
@@ -229,7 +229,7 @@ public class Case extends AbstractCase
         _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
-    else if (_types != null)  // maching 'type1, type2, type3'
+    else if (_types != null)  // matching 'type1, type2, type3'
       {
         var ti = _types.listIterator();
         while (ti.hasNext())
@@ -281,7 +281,7 @@ public class Case extends AbstractCase
    * @param outer the outer feature that contains this match statement
    *
    * @param matched map from index in cgs to source position for all matches
-   * that have already beend found.  This is updated and used to report an error
+   * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
   AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)

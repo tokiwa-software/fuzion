@@ -282,9 +282,9 @@ public class AstErrors extends ANY
    *
    * @param pos the source code position
    *
-   * @param where location of the incompaible types, e.g, "in assignment".
+   * @param where location of the incompatible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignment to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -476,7 +476,7 @@ public class AstErrors extends ANY
 
   /**
    * Create an error message for incompatible types when assigning an element e
-   * during array initilization of the form '[a, b, ..., e, ... ]'.
+   * during array initialization of the form '[a, b, ..., e, ... ]'.
    *
    * @param pos the source code position of the assignment.
    *
@@ -523,7 +523,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment is not a field",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n");
   }
@@ -532,7 +532,7 @@ public class AstErrors extends ANY
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
-          "Target of assignement: " + s(f) + "\n" +
+          "Target of assignment: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           "Was defined as loop index variable at " + f.pos().show());
@@ -881,7 +881,7 @@ public class AstErrors extends ANY
           "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
-          "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
+          "To solve this, you could add a redefinition of " + sbn(f1) + " to " + s(heir) + ".");
   }
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -893,23 +893,20 @@ public class AstErrors extends ANY
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
       {
-        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
-        // fact that type features can be defined repeatedly.
-        if (f.isTypeFeature())
-          {
-            warning(pos,
-                    "Duplicate feature declaration (ignored since these are type features, see #461)",
-                    "Feature that was declared repeatedly: " + s(f) + "\n" +
-                    "originally declared at " + existing.pos().show() + "\n" +
-                    "To solve this, consider renaming one of these two features or changing its number of arguments");
-            return;
-          }
-
+        var of = f.isTypeFeature() ? f.typeFeatureOrigin() : f;
         error(pos,
               "Duplicate feature declaration",
-              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features or changing its number of arguments");
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
+              (f.isTypeFeature()
+               ? ("or changing it into a routine by returning a " +
+                  sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  " instead of "+ code("is") + ".")
+               : ("or adding an additional argument (e.g. " + code("_ unit") +
+                  " for an ignored unit argument used only to disambiguate these two).")
+               ));
       }
   }
 
@@ -1091,7 +1088,7 @@ public class AstErrors extends ANY
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
         error(f.pos(),
-              "Missing result type in field declaration with initializaton",
+              "Missing result type in field declaration with initialization",
               "Field declared: " + s(f) + "");
       }
   }
@@ -1125,7 +1122,7 @@ public class AstErrors extends ANY
           "Constraint for type parameter must not be a type parameter",
           "Affected type parameter: " + s(tp) + "\n" +
           "_constraint: " + s(tp.resultType()) + "\n" +
-          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
+          "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1467,10 +1464,13 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    error(pos,
-          "Incompatible type parameter",
-          "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-          "actual type parameter " + s(g) + "\n");
+    if (g != Types.t_UNDEFINED || count() == 0)
+      {
+        error(pos,
+              "Incompatible type parameter",
+              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "actual type parameter " + s(g) + "\n");
+      }
   }
 
   static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
@@ -1579,15 +1579,23 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(SourcePosition pos, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
   {
-    error(pos,
-      "Names of arguments used in this feature must be distinct.",
+    int[] cnt = new int[1];
+    error(f.pos(),
+          "Names of arguments used in this feature must be distinct.",
           "The duplicate" + (duplicateNames.size() > 1 ? " names are " : " name is ")
           + duplicateNames
             .stream()
             .map(n -> sbn(n))
             .collect(Collectors.joining(", ")) + "\n"
+          + "Feature with equally named arguments: "+ s(f) + "\n"
+          + f.arguments()
+            .stream()
+            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbn(a) +
+                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                                                                      : " is ok"        ) + "\n")
+            .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
   }
@@ -1615,7 +1623,7 @@ public class AstErrors extends ANY
           {
             for (var arg : args)
               {
-                var argtype = "--still unkown--";
+                var argtype = "--still unknown--";
                 if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
                   {
                     allUnknown = false;
@@ -1634,7 +1642,7 @@ public class AstErrors extends ANY
           (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
           (cf != null ? "call to " + s(cf) + "\n" : "" ) +
           "actual type argument found: " + s(a._type) + "\n" +
-          (at != null ? "expected agument types: " + at + "\n" : "" ) +
+          (at != null ? "expected argument types: " + at + "\n" : "" ) +
           "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
           "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
   }

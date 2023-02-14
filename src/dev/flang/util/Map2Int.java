@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import java.util.stream.IntStream;
+
 
 /**
  * Map2Int gives an efficient mapping from a comparable instance to int
@@ -153,6 +155,15 @@ public class Map2Int<T> extends ANY
   public int size()
   {
     return _mapT2Int.size();
+  }
+
+
+  /**
+   * Get a stream of all the integers this map maps to.
+   */
+  public IntStream ints()
+  {
+    return IntStream.range(_base, _base + size() - 1);
   }
 
 }

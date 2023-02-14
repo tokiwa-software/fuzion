@@ -128,7 +128,7 @@ effectMode is
     inst(f ()->unit).  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
 
-effect : effect (effectMode.inst code)
+code_effect : effect (effectMode.inst code)
 is
 
   # the code to be executed within this effect.  This is typically
@@ -153,5 +153,15 @@ is
 
   # install this simpleEffect and run code
   #
-  private use(code ()->unit) unit is
+  use(code ()->unit) unit is
     abortable (effect_call code)
+
+  # install this effect and run code that produces a result of
+  # type T. panic in case abort is called.
+  #
+  go(T type, f ()->T) T is
+    fo () -> option T is ()->f()
+    r := run fo (unit)->nil
+    match r
+      nil => panic "*** unexpected abort in {simpleEffect.this.type}"
+      v T => v

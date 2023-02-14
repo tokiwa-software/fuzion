@@ -78,7 +78,7 @@ public class Block extends AbstractBlock
    * @param s the list of statements
    *
    * @param newScope true iff this block opens a new scope, false if declaration
-   * in this block should remain visibile after the block (which is usually the
+   * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
    */
   private Block(SourcePosition pos,
@@ -341,7 +341,7 @@ public class Block extends AbstractBlock
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statment with several branches such as an "if" or a "match"
+   * this is a statement with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this
    * into a statement that does not produce a value.
    *

@@ -26,12 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Set;
-
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -295,7 +289,7 @@ public class Type extends AbstractType
    * the type of the outer reference within inner is feat<A, B, C>.  This
    * constructor is used to create A, B, C in this case.
    *
-   * @param g the formal generic this referes to
+   * @param g the formal generic this refers to
    */
   public Type(HasSourcePosition pos, Generic g)
   {
@@ -399,11 +393,13 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a ref or value type from a given value / ref type.
+   * Create a clone of original that uses originalOuterFeature as context to
+   * look up features the type is built from.
    *
    * @param original the original value type
    *
-   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   * @param originalOuterFeature the original feature, which is not a type
+   * feature.
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
   {
@@ -419,7 +415,10 @@ public class Type extends AbstractType
         this._generics = new List<>();
         for (var g : original._generics)
           {
-            this._generics.add(((Type)g).clone(originalOuterFeature));
+            var gc = (g instanceof Type gt)
+              ? gt.clone(originalOuterFeature)
+              : g;
+            this._generics.add(gc);
           }
       }
     this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
@@ -444,12 +443,15 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a clone of this Type that uses orignalOuterFeature as context to
+   * Create a clone of this Type that uses originalOuterFeature as context to
    * look up features the type is built from.  Generics will be looked up in the
    * current context.
    *
    * This is used for type features that use types from the original feature,
    * but needs to replace generics by the type feature's generics.
+   *
+   * @param originalOuterFeature the original feature, which is not a type
+   * feature.
    */
   Type clone(AbstractFeature originalOuterFeature)
   {
@@ -653,7 +655,7 @@ public class Type extends AbstractType
             if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
               {
                 qn = qn.substring(0, qn.lastIndexOf(".type"));
-                n = "this.type";
+                n = "this.type (in type feature)";
               }
             n = qn + "." + n;
           }
@@ -686,7 +688,8 @@ public class Type extends AbstractType
       }
     if (_generics != NONE)
       {
-        result = result + "<" + _generics + ">";
+        result = result + _generics
+          .toString(" ", " ", "", (g) -> g.toString(true));
       }
     return result;
   }
@@ -902,7 +905,8 @@ public class Type extends AbstractType
           {
             if (isThisType() && _generics.isEmpty())
               {
-                _generics = feature.generics().asActuals();
+                var g = feature.generics().asActuals();
+                _generics = g.isEmpty() ? NONE : g;
               }
             FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
@@ -978,22 +982,12 @@ public class Type extends AbstractType
   public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !isGenericArgument());
+      (Errors.count() > 0 || !isGenericArgument(),
+       Errors.count() > 0 || feature != null);
 
-    var result = feature;
-
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.count() > 0);
-
-        result = Types.f_ERROR;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return feature != null
+      ? feature
+      : Types.f_ERROR;
   }
 
 
@@ -1078,7 +1072,7 @@ public class Type extends AbstractType
           }
       }
 
-    ensure
+    if (POSTCONDITIONS) ensure
       (!result || Errors.count() > 0);
 
     return result;

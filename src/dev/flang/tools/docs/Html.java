@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Visi;
 
 public class Html
 {
@@ -221,7 +222,8 @@ public class Html
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
-          + "'><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+          + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+            .replace("$0", (config.ignoreVisibility() && (af.visibility() == Visi.PRIVATE)) ? "class='fd-private' hidden" : "")
             .replace("$1",
               summary(af))
             .replace("$2", Util.commentOf(af))
@@ -248,15 +250,14 @@ public class Html
   }
 
   /**
-   * the basename of the feature, replaces all internal names
-   * starting with `@` by `_`
+   * the html encoded basename of the feature
    * @param af
    * @return
    *
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseName().startsWith("@") ? "_": af.featureName().baseName());
+    return htmlEncodeNbsp(af.featureName().baseName());
   }
 
 
@@ -431,7 +432,7 @@ public class Html
     return f.pos()._sourceFile._fileName
       .toString()
       .replace("$FUZION/lib", DocsOptions.baseApiDir)
-      + "#l" + f.pos()._line;
+      + "#l" + f.pos().line();
   }
 
 
@@ -558,12 +559,16 @@ public class Html
             <div class="container">
               <section>$0</section>
               <section>$1</section>
+              $3
             </div>
           </div>
         """
         .replace("$0", headingSection(af))
         .replace("$1", mainSection(mapOfDeclaredFeatures.get(af)))
-        .replace("$2", navigation);
+        .replace("$2", navigation)
+        .replace("$3", config.ignoreVisibility() ? """
+          <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
+        """ : "");
     return config.bare() ? bareHtml: fullHtml(af, bareHtml);
   }
 

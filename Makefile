@@ -1054,3 +1054,8 @@ show_readme:
 .PHONY: show_release_notes
 show_release_notes:
 	grip -b release_notes.md
+
+# do spell checking of comments and strings in java source code.
+.PHONY: spellcheck
+spellcheck:
+	bin/spell_check_java.sh

@@ -109,12 +109,12 @@ is
     num_option.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v == w
+  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≟ w
   infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
-  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
-  infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <= w
-  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
-  infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >= w
+  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩻  w
+  infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≤ w
+  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩼  w
+  infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
 
   isZero => sign ==? 0
 
@@ -123,11 +123,16 @@ is
                     | nil => nil
 
   abs num_option T is
-    num_option.this >>= v -> if v.sign >= 0 v else -?v
+    num_option.this >>= v -> if v.sign ≥ 0 v else -?v
 
   redef as_string String is
     num_option.this ? v T => v.as_string
                     | nil => "--no value--"
+
+
+  # return function
+  #
+  fixed type.return (a T) => num_option a
 
 
 # num_option with 1 argument provides an short-hand to wrap a value into a
@@ -142,13 +147,3 @@ is
 #   o num_option TypeOfX := x
 #
 num_option(T type : numeric T, o num_option T) => o
-
-
-# type related to num_option declaring features not requiring an instance of num_option
-#
-num_options(T type : numeric T) : monads T (num_option T) is
-
-
-  # return function
-  #
-  return (a T) => num_option a

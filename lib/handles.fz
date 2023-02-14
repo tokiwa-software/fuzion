@@ -87,13 +87,13 @@ is
   post
     result.hasLast
   is
-    na := array T count+1 (i -> if (i < count) ar[i] else w)
+    na := array T count+1 (i -> if (i ⩻ count) ar[i] else w)
     handles T X v na mode
 
 
   # has one element been created using 'new'?
   #
-  hasLast => count > 0
+  hasLast => count ⩼ 0
 
 
   # return the last handle that was created by 'new'

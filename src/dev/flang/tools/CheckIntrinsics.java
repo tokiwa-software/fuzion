@@ -87,7 +87,7 @@ class CheckIntrinsics extends ANY
    *
    * @param implemented set of names of implemented intrinsics
    *
-   * @param where module that provides impelmented intrinsics, e.g., "C backend".
+   * @param where module that provides implemented intrinsics, e.g., "C backend".
    */
   void checkIntrinsics(Set<String> all, Set<String> implemented, String where)
   {

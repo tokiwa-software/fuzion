@@ -60,7 +60,7 @@ public class FuzionLogo
   // Width of black lines as percentage of main radius
   static double BLACK_LINE_WIDTH = 1.0D/15;
 
-  // size of three small cicles relative to their surrounding circles
+  // size of three small circles relative to their surrounding circles
   static double SMALL_CIRCLE_PERCENTAGE = 0.25D;
 
 
@@ -106,7 +106,7 @@ public class FuzionLogo
       //
       //  h = r - r2 - b               -- using radius r
       //
-      //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonomy
+      //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
       //
       // so we get for r2
       //

@@ -257,7 +257,7 @@ modAndNames : visibility
    * Parse routOrField:
    *
    * Note that this fork()s the parser repeatedly in case several feature names
-   * are declared given as parament n.
+   * are declared given as parameter n.
    *
    *
 routOrField : routine
@@ -265,6 +265,7 @@ routOrField : routine
             ;
 routine     : formArgsOpt
               returnType
+              effects
               inherits
               contract
               implRout
@@ -279,14 +280,16 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var a = formArgsOpt();
-    ReturnType r = returnType();
+    var r = returnType();
+    var eff = effects();
     var hasType = r != NoType.INSTANCE;
     var inh = inherits();
     Contract c = contract(true);
     Impl p =
-      a  .isEmpty() &&
-      inh.isEmpty()    ? implFldOrRout(hasType)
-                       : implRout();
+      a  .isEmpty()    &&
+      eff == Type.NONE &&
+      inh.isEmpty()       ? implFldOrRout(hasType)
+                          : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh);
     l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
     return p2 == null
@@ -363,7 +366,7 @@ field       : returnType
    * @param s the statements containing the feature declarations to be added, in
    * this case "x, y, z."
    *
-   * @param g the list of type to be callected, will be added as generic
+   * @param g the list of type to be collected, will be added as generic
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
@@ -459,6 +462,7 @@ field       : returnType
         p = fork();
         p.skipType();
       }
+    p.skipEffects();
     return
       p.isInheritPrefix   () ||
       p.isContractPrefix  () ||
@@ -802,7 +806,7 @@ modifier    : "lazy"
             Errors.error(posObject(pos),
                          "Syntax error: modifier '"+current().keyword()+"' specified repeatedly.",
                          "Within one feature declaration, each modifier may at most appear once.\n" +
-                         "Second occurence of modifier at " + posObject(p2) + "\n" +
+                         "Second occurrence of modifier at " + posObject(p2) + "\n" +
                          "Parse stack: " + parseStack());
           }
         ms = ms | m;
@@ -813,7 +817,7 @@ modifier    : "lazy"
 
 
   /**
-   * Check if the current position starts non-empty modifieres flags.  Does not
+   * Check if the current position starts non-empty modifiers flags.  Does not
    * change the position of the parser.
    *
    * @return true iff the next token(s) start a name
@@ -1045,12 +1049,8 @@ typeType    : "type"
                       }
                     result[0] = FormalOrActual.formal;
                   }
-                else if (!skipType())
-                  {
-                    result[0] = FormalOrActual.actual;
-                    return false;
-                  }
-                else if (skipDot())
+                // tolerate missing type here
+                else if ((skipType() || true) && skipDot())
                   {
                     if (!skip(Token.t_type))
                       {
@@ -1157,9 +1157,43 @@ returnType  : type
   }
 
 
+
+  /**
+   * Parse effects
+   *
+effects     : EXCLAMATION typeList
+            |
+            ;
+EXCLAMATION : "!"
+            ;
+   */
+  List<AbstractType> effects()
+  {
+    var result = Type.NONE;
+    if (skip('!'))
+      {
+        var effects = typeList();
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is an effects and if so, skip it
+   *
+   * @return true iff the next token(s) start a constructor return type,
+   * otherwise no functionReturnType was found and the parser/lexer is at an
+   * undefined position.
+   */
+  boolean skipEffects()
+  {
+    return skip('!') && skipTypeList();
+  }
+
+
   /**
    * Check if the current position starts a returnType that is not a
-   * FunctioNReturnType.  Does not change the position of the parser.
+   * FunctionReturnType.  Does not change the position of the parser.
    *
    * @return true iff the next token(s) start a constructor return type.
    */
@@ -1481,7 +1515,7 @@ actualArgs  : actualsList
    *
    * @param in the indentation used for the actuals, null if none.
    *
-   * @return true if the next symbold ends actual arguments or in!=null and the
+   * @return true if the next symbol ends actual arguments or in!=null and the
    * next symbol is not properly indented.
    */
   boolean endsActuals(boolean atMinIndent)
@@ -1866,10 +1900,30 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        },
                        () -> Void.TYPE);
 
-    return
-      isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
-      tupleElements.size() == 1 ? tupleElements.get(0).expr(null)   // a klammerexpr, not a tuple
-                                : new Call(pos, null, "tuple", tupleElements);
+
+    // a lambda expression
+    if (isLambdaPrefix())
+      {
+        return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
+      }
+    // an expr wrapped in parentheses, not a tuple
+    else if (tupleElements.size() == 1)
+      {
+        var actual = tupleElements.get(0).expr(null);
+
+        // special handling for cases like:
+        // s9a i16 := -(32768)
+        // s9c i16 := -(-(-32768))
+        // s9a := i16 -(32768)
+        return (actual instanceof NumLiteral)
+          ? actual
+          : new Block(pos, posObject(), new List<>(actual));
+      }
+    // a tuple
+    else
+      {
+        return new Call(pos, null, "tuple", tupleElements);
+      }
   }
 
 
@@ -2420,7 +2474,7 @@ caseBlock   : ARROW          // if followed by '|'
    * Check if the current position is starts caze and not an expr and skip an
    * unspecified part of it.
    *
-   * @return true iff a caue was found
+   * @return true iff a cause was found
    */
   boolean skipCazePrefix()
   {
@@ -2672,7 +2726,7 @@ stmnt       : feature
             | assign
             | destructure
             | exprInLine
-            | checkstmt
+            | checkstmnt
             ;
    */
   Stmnt stmnt()
@@ -2951,9 +3005,9 @@ elseBlock   : "else" ( ifstmnt
 
 
   /**
-   * Parse checksmnt
+   * Parse checkstmnt
    *
-checkstmt   : "check" cond
+checkstmnt   : "check" cond
             ;
    */
   Stmnt checkstmnt()
@@ -3081,7 +3135,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Check if the current position starts a destructr and skip an unspecified part
    * of it.
    *
-   * @return true iff the next token(s) start a destructroe.
+   * @return true iff the next token(s) start a destructure.
    */
   boolean skipDestructrPrefix()
   {
@@ -3148,7 +3202,7 @@ anonymous   : returnType
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
     // does not work yet, probably because of too much that is done explicitly
-    // for anonymsous featues.
+    // for anonymous features.
     //
     // return new Block(pos, b.closingBracePos_, new List<>(f, ca));
   }
@@ -3364,8 +3418,11 @@ contract    : require
    */
   Contract contract(boolean atMinIndent)
   {
-    return new Contract(requir   (atMinIndent),
-                        ensur    (atMinIndent));
+    var pre  = requir(atMinIndent);
+    var post = ensur (atMinIndent);
+    return pre == null && post == null
+      ? Contract.EMPTY_CONTRACT
+      : new Contract(pre, post);
   }
 
 
@@ -4050,7 +4107,7 @@ typeInParens: "(" typeInParens ")"
   /**
    * Check if the current position has typeInParens and skip them.
    *
-   * @return true if a typeInPaens was skipped
+   * @return true if a typeInParens was skipped
    */
   boolean skipTypeInParens()
   {
@@ -4218,7 +4275,7 @@ dot         : "."      // either preceded by white space or not followed by whit
 fullStop    : "."        // not following white space but followed by white space
             ;
    *
-   * @return true iff a "." follwed by white space was found and skipped.
+   * @return true iff a "." followed by white space was found and skipped.
    */
   boolean skipFullStop()
   {

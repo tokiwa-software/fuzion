@@ -17,34 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasEquals
+#  Source code of Fuzion standard library feature fuzion.sys.misc
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# hasEquals -- feature that allows comparison using 'infix =' operator.
+# fuzion.sys.misc -- miscellaneous system intrinsics
 #
-# Features inheriting from this feature must be immutable.  The operator
-# 'infix =' provides a means to separate values into equivalence classes.
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-hasEquals(HE type : hasEquals HE) : has_equality is
+private misc is
 
-  # equality check for immutable values
-  #
-  infix = (o HE) bool is abstract
 
-  # unequality check for immutable values
+  # intrinsic to get a unique id > 0
   #
-  infix /= (o HE) bool
-    post
-      result <=> !(hasEquals.this = o)
-  is
-    !(hasEquals.this = o)
-
-  # alternative unicode operator for 'infix /='
+  # this can be used to add a unique identifier to compare instances.
   #
-  infix ≠ (o HE) => hasEquals.this /= o
+  # sine there are 2^64-1 possible values, you can safely assume that these are
+  # in fact unique.  Assuming one unique id is consumed every nanosecond, it
+  # would take more than 500 years before we run out of values
+  # (2^64/10^9/3600/24/365.25).
+  #
+  private unique_id u64 is intrinsic

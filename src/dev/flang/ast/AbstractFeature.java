@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -81,6 +79,38 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       return values()[ordinal];
     }
   }
+
+
+  // NYI The feature state should be part of the resolution.
+  public enum State {
+    LOADING,
+    FINDING_DECLARATIONS,
+    LOADED,
+    RESOLVING,
+    RESOLVING_INHERITANCE,
+    RESOLVED_INHERITANCE,
+    RESOLVING_DECLARATIONS,
+    RESOLVED_DECLARATIONS,
+    RESOLVING_TYPES,
+    RESOLVED_TYPES,
+    RESOLVING_SUGAR1,
+    RESOLVED_SUGAR1,
+    TYPES_INFERENCING,
+    TYPES_INFERENCED,
+    BOXING,
+    BOXED,
+    CHECKING_TYPES1,
+    CHECKED_TYPES1,
+    RESOLVING_SUGAR2,
+    RESOLVED_SUGAR2,
+    CHECKING_TYPES2,
+    RESOLVED,
+    ERROR;
+    public boolean atLeast(State s)
+    {
+      return this.ordinal() >= s.ordinal();
+    }
+  };
 
 
   /*------------------------  static variables  -------------------------*/
@@ -159,7 +189,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -234,7 +264,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * qualifiedName0 returns the qualified name of this feature without any special handling for type featurs.
+   * qualifiedName0 returns the qualified name of this feature without any special handling for type features.
    *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
@@ -242,10 +272,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     var n = featureName().baseName();
     return
-      isUniverse()         ||
-      outer() == null      ||
-      outer().isUniverse()                        ? n
-                                                  : outer().qualifiedName() + "." + n;
+      !state().atLeast(Feature.State.FINDING_DECLARATIONS) ||
+      isUniverse()                                         ||
+      outer() == null                                      ||
+      outer().isUniverse()                                    ? n
+                                                              : outer().qualifiedName() + "." + n;
   }
 
 
@@ -606,7 +637,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       !isUniverse());
+       !isUniverse(),
+       !isTypeFeature());
 
     if (_typeFeature == null)
       {
@@ -706,7 +738,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (PRECONDITIONS) require
       (!isUniverse());
-    var outerType = outer().isUniverse() ? universe() : outer().typeFeature(res);
+    var outerType = outer().isUniverse()    ? universe() :
+                    outer().isTypeFeature() ? outer()
+                                            : outer().typeFeature(res);
     var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
     if (result == null)
       {
@@ -789,7 +823,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * createThisType returns a new instance of the type of this feature's frame
    * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * used also for abstract or intrinsic features to determine the resultClazz().
    *
    * @return this feature's frame object
    */
@@ -970,7 +1004,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the copy of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefCopyOfValue()
@@ -978,7 +1012,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (outer() != null);
 
-    // if outher is a small and immutable value type, we can copy it:
+    // if outer is a small and immutable value type, we can copy it:
     return this.outer().isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
   }
 
@@ -989,7 +1023,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the address of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefAdrOfValue()
@@ -1005,6 +1039,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Is this a routine that returns the current instance as its result?
    */
   public abstract boolean isConstructor();
+
+
+  /**
+   * Does this feature define a type?
+   *
+   * This is the case for constructors and choice features.
+   *
+   * Type features and any features declared within type features do not declare
+   * types.  Allowing this would open up the pandora tin of having instances of
+   * the f.type.type, f.type.type.type, f.type.type.type.type, ...
+   */
+  public boolean definesType()
+  {
+    var result = (isConstructor() || isChoice()) && !isUniverse();
+    var o = this;
+    while (result && o != null)
+      {
+        result = result && !o.isTypeFeature();
+        o = o.outer();
+      }
+    return result;
+  }
 
 
   /**
@@ -1054,7 +1110,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param module the main SrcModule if available (used for debugging only)
    *
-   * @param f a feature that is declared in or inherted by this feature
+   * @param f a feature that is declared in or inherited by this feature
    *
    * @param fn a feature name within this feature
    *
@@ -1093,7 +1149,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param a an array of types to be handed down
    *
-   * @param heir a feature that inhertis from outer()
+   * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
@@ -1180,7 +1236,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from
@@ -1218,7 +1274,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from
@@ -1552,6 +1608,24 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         result++;
       }
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
+
+
+  /**
+   * this feature as a human readable string
+   */
+  public String toString()
+  {
+    return visibility() + " " +
+      Consts.modifierToString(modifiers()) +
+      featureName().baseName() +
+      (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
+      (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
+      (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
+      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
+       +  "is " + implKind().toString();
+
   }
 
 

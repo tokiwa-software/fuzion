@@ -396,10 +396,10 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
-   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -465,7 +465,7 @@ class LibraryOut extends ANY
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
-    if (_sourceModule._options._eraseInternalNamesInLib && bn.startsWith(FuzionConstants.INTERNAL_NAME_PREFIX))
+    if (_sourceModule._options._eraseInternalNamesInLib && n.isInternal())
       {
         bn = "";
       }

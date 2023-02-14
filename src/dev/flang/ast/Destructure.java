@@ -126,7 +126,7 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * The sourcecode position of this statment, used for error messages.
+   * The sourcecode position of this statement, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -277,7 +277,7 @@ public class Destructure extends ANY implements Stmnt
   {
     List<Stmnt> stmnts = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
-    // create the dcomposition code later, after resolveTypes is done.
+    // create the decomposition code later, after resolveTypes is done.
     var t = _value.type();
     if (t.isGenericArgument())
       {

@@ -56,7 +56,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
-   * of the acual.
+   * of the actual.
    */
   public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
@@ -147,6 +147,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  AbstractType typeForCallTarget()
+  {
+    return type();
+  }
+
+
+  /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -211,7 +224,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statment with several branches such as an "if" or a "match"
+   * this is a statement with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this
    * into a statement that does not produce a value.
    *
@@ -482,6 +495,18 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean producesResult()
   {
     return true;
+  }
+
+
+  /**
+   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   */
+  public String toString(boolean wrapInBrackets)
+  {
+    return wrapInBrackets
+           // NYI wrapping might not always be needed
+           ? "(" + toString() + ")"
+           : toString();
   }
 
 

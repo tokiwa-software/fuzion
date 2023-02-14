@@ -17,27 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasHash
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test hash map
 #
 # -----------------------------------------------------------------------
 
-# hasHash -- feature for immutable values that have a hash function
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-hasHash(redef HE type : hasEquals HE) : hasEquals HE
+test_hash_map is
 
-/* NYI: quantor intrinsics not supported yet:
+  # init an empty hash map
+  a := (hash_map i32 String).type.empty
+  say a
 
-  inv
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
-*/
+  # init a hash map without duplicate keys
+  b := hash_map [0,1,2,3] ["a","b","c","d"]
+  say b
 
-is
+  # init a hash map with one duplicate key
+  c := hash_map [0,1,2,3,0] ["a","b","c","d","e"]
+  say c
 
-  # create hash code for this instance
-  hash u64 is abstract
+

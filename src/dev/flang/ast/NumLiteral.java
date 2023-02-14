@@ -62,7 +62,7 @@ public class NumLiteral extends Constant
     // ct_f256 (237, 19),   -- NYI: support for f256
 
     /**
-     * bytes in memory occuplied by this type
+     * bytes in memory occupied by this type
      */
     final int _bytes;
 
@@ -360,22 +360,27 @@ public class NumLiteral extends Constant
   {
     if (_type == null)
       {
-        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
-        if (i == null)
-          {
-            _type = Types.resolved.t_f64;
-          }
-        else if (ConstantType.ct_i32.canHold(i))
-          {
-            _type = Types.resolved.t_i32;
-          }
-        else
-          {
-            _type = Types.resolved.t_i64;
-          }
+        _type = typeForCallTarget();
         checkRange();
       }
     return _type;
+  }
+
+
+  /**
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  AbstractType typeForCallTarget()
+  {
+    var i = hasDot() ? null : intValue(ConstantType.ct_i32);
+    return
+      i == null                      ? Types.resolved.t_f64 :
+      ConstantType.ct_i32.canHold(i) ? Types.resolved.t_i32
+                                     : Types.resolved.t_i64;
   }
 
 
@@ -690,7 +695,7 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                { return null;             }
+    else                                             { return null;                }
   }
 
 

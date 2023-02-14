@@ -56,7 +56,7 @@ public class Generic extends ANY
 
 
   /**
-   * Constructor for a constrainted formal generic parameter from a type
+   * Constructor for a constrained formal generic parameter from a type
    * parameter feature.
    *
    * @param typeParameter the type parameter this is made from

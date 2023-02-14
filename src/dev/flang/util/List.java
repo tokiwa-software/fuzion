@@ -29,10 +29,12 @@ package dev.flang.util;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
+
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
 import java.util.stream.Collector;
 
 
@@ -220,7 +222,7 @@ public class List<T>
   public String toString(String pre, String sep, String term)
   {
     StringBuffer res = new StringBuffer();
-    Iterator it = iterator();
+    Iterator<T> it = iterator();
     if (it.hasNext())
       {
         res.
@@ -231,6 +233,44 @@ public class List<T>
             res
               .append(sep)
               .append(it.next());
+          }
+        res.append(term);
+      }
+    return res.toString();
+  }
+
+
+  /**
+   * toString for a list A, B, C will create
+   *
+   *   "pre A sep B sep C term"
+   *
+   * or for an empty list
+   *
+   *   ""
+   *
+   * @param sep
+   *
+   * @param term
+   *
+   * @param itemToString
+   *
+   * @return
+   */
+  public String toString(String pre, String sep, String term, Function<T, String> itemToString)
+  {
+    StringBuffer res = new StringBuffer();
+    Iterator<T> it = iterator();
+    if (it.hasNext())
+      {
+        res.
+          append(pre).
+          append(itemToString.apply(it.next()));
+        while (it.hasNext())
+          {
+            res
+              .append(sep)
+              .append(itemToString.apply(it.next()));
           }
         res.append(term);
       }

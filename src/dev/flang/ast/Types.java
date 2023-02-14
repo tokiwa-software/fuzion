@@ -71,7 +71,7 @@ public class Types extends ANY
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference.  Examples are the result of union of distinct types on different
-   * branches of an if or match, or the type of the result var befure type
+   * branches of an if or match, or the type of the result var before type
    * inference has determined the result type.
    */
   static final String UNDEFINED_NAME = "--UNDEFINED--";
@@ -85,7 +85,7 @@ public class Types extends ANY
 
 
   /**
-   * Names if internal types that are not backed by physical feature defintions.
+   * Names if internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,

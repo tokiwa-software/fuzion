@@ -32,7 +32,6 @@
 f32(val f32) : float f32, f32s is
 
   redef thiz        => f32.this.val
-  redef orderedThis => f32.this.val
 
 
   # basic operations: 'prefix -' (negation)
@@ -43,17 +42,6 @@ f32(val f32) : float f32, f32s is
   infix / (other f32) f32 is intrinsic
   infix % (other f32) f32 is intrinsic
   infix ** (other f32) f32 is intrinsic
-
-
-  # comparison
-  redef infix == (other f32) bool is intrinsic
-  redef infix != (other f32) bool is intrinsic
-  redef infix <  (other f32) bool is intrinsic
-  redef infix <= (other f32) bool is intrinsic
-  redef infix >  (other f32) bool is intrinsic
-  redef infix >= (other f32) bool is intrinsic
-
-  fixed type.equality(a, b f32) bool is intrinsic
 
 
   # conversion
@@ -128,9 +116,9 @@ f32(val f32) : float f32, f32s is
   redef fract f32 is
     if f32s.isNaN val
       NaN
-    else if val < 0
+    else if val ⩻ (f32 0)
       -(-val).fract
-    else if val < 1
+    else if val ⩻ (f32 1)
       val
     else
       shift := (f32.type.mantissa_bits - exponent)
@@ -144,6 +132,31 @@ f32(val f32) : float f32, f32s is
   # convert this to a string.
   #
   redef as_string String is intrinsic
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero f32 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  f32 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b f32) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b f32) bool is intrinsic
 
 
 # f32s -- unit type defining features related to f32 but not requiring an

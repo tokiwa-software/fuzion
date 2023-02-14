@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = floating_point_math
-include ../positive.mk
+override NAME = test_hash_map
+include ../simple.mk

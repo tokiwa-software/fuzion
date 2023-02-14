@@ -191,7 +191,7 @@ public class SourceFile extends ANY
       }
     catch (IOException e)
       {
-        Errors.error(new SourcePosition(this, 1, 1),
+        Errors.error(new SourcePosition(this, 0),
                      "I/O Error: " + e.getMessage(),
                      "");
         sf = new byte[0];
@@ -448,7 +448,7 @@ public class SourceFile extends ANY
 
 
   /**
-   * Extract the codePont from the result of makeCodePointWithSize.
+   * Extract the codePoint from the result of makeCodePointWithSize.
    */
   private int codePointFromCpAndSize(int cpAndSz)
   {
@@ -830,12 +830,7 @@ public class SourceFile extends ANY
    */
   public SourcePosition sourcePos(int pos)
   {
-    int line = lineNum(pos);
-    if (line == 0)
-      {
-        return new SourcePosition(this, 1, 1);
-      }
-    return new SourcePosition(this, line, codePointInLine(pos, line));
+    return new SourcePosition(this, pos);
   }
 
 

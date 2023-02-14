@@ -657,16 +657,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * This is experimental: actualGenerics() could replace `a.this.type` by the
-   * actual outer type. This would avoid special handling in Clazzes.clazz(Expr
-   * e, Clazz outerClazz). However, this is currently disabled since it has the
-   * side-effect of marking some clazzes as instantiated that are actually not
-   * (in tests/reg_issues874ff), need to check why.
-   */
-  static final boolean NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE = false;
-
-
-  /**
    * Convert the given generics to the actual generics of this class.
    *
    * @param generics a list of generic arguments that might itself consist of
@@ -677,35 +667,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
-    if (NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE)
+    var result = this._type.replaceGenerics(generics);
+
+    // Replace any `a.this.type` actual generics by the actual outer clazz:
+    if (result.stream().anyMatch(x->x.isThisType()))
       {
-        /**
-         * Replace any `a.this.type` actual generics by the actual outer clazz:
-         */
-        if (generics.stream().anyMatch(x->x.isThisType()))
-          {
-            var ng = new List<AbstractType>();
-            for (var g : generics)
-              {
-                if (g.isThisType())
-                  {
-                    var nc = findOuter(g.featureOfType(), SourcePosition.builtIn).typeClazz();
-                    System.out.println("replace "+g+" with "+nc+" in "+this);
-                    ng.add(nc._type);
-                  }
-                else
-                  {
-                    ng.add(g);
-                  }
-              }
-          }
+        result = result.map(g -> g.isThisType() ? findOuter(g.featureOfType(), SourcePosition.builtIn)._type
+                                                : g);
       }
-    generics = this._type.replaceGenerics(generics);
+
     if (this._outer != null)
       {
-        generics = this._outer.actualGenerics(generics);
+        result = this._outer.actualGenerics(result);
       }
-    return generics;
+    return result;
   }
 
 
@@ -785,7 +760,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *    absurd (i i32, v void) is {}
    *
    * that has a field of type void is effectively a void type. This call will,
-   * however, return false for ushc user defined void types.
+   * however, return false for user defined void types.
    */
   public boolean isVoidType()
   {
@@ -1203,7 +1178,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * When seen from this Clazz, is feature f effectively abstract? This is the
-   * case if f is abstract and if f is fixed to another outher feature than
+   * case if f is abstract and if f is fixed to another outer feature than
    * this.feature(), i.e. this clazz inherits f but not its implementation.
    */
   boolean isEffectivelyAbstract(AbstractFeature f)
@@ -1268,9 +1243,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName() + (this._type.generics().isEmpty()
-                                                 ? ""
-                                                 : "<" + this._type.generics() + ">"));
+         + feature().featureName().baseName()
+         + this._type.generics()
+             .toString(" ", " ", "", t -> t.toString(true))
+        );
   }
 
 
@@ -1540,7 +1516,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is this a choice-type whose actual generics inlude ref?  If so, a field for
+   * Is this a choice-type whose actual generics include ref?  If so, a field for
    * all the refs will be needed.
    */
   public boolean isChoiceWithRefs()
@@ -1658,7 +1634,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * For a choice clazz, get the clazz that corresponds to the generic
    * argument to choice at index id (0..n-1).
    *
-   * @param id the index of the paramenter
+   * @param id the index of the parameter
    */
   public Clazz getChoiceClazz(int id)
   {
@@ -1710,8 +1686,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find clazzes required by intrinsic method that has been found be to called.
    *
-   * This includes results of intrinsic contructors are any specifc clazzes
-   * required for specific instrinsics, e.g., clazzes called from the intrinsic.
+   * This includes results of intrinsic constructors are any specific clazzes
+   * required for specific intrinsics, e.g., clazzes called from the intrinsic.
    *
    * @param at position that the intrinsic has been found to be called.
    */
@@ -1782,7 +1758,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
   /**
-   * Is this clazz absured, i.e., does it have any arguments of type void?
+   * Is this clazz absurd, i.e., does it have any arguments of type void?
    */
   public boolean isAbsurd()
   {
@@ -1828,7 +1804,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Flag to detetect endless recursion between isInstantiated() and
+   * Flag to detect endless recursion between isInstantiated() and
    * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
    * its outer clazz.
    */
@@ -1983,37 +1959,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a type clazz such as 'i32.type', this will set the type this clazz
-   * represents.
-   *
-   * NYI: This is currently set in Clazzes.findClasses() when processing
-   * TypeParameters.  It would be nicer (less error prone etc.) to have this
-   * information available directly when this instance of Clazz is created.
-   *
-   * Maybe if we added a type parameter to feature 'Type' or to all instances
-   * inheriting from 'Type', we could have this information available directly.
-   */
-  AbstractType _typeType = null;
-
-
-  /**
    * For a type clazz such as 'i32.type' return its name, such as 'i32'.
    */
   public String typeName()
   {
-    if (isRef()) // the type was boxed, so get the name from the original value type
-      {
-        return asValue().typeName();
-      }
-    else if (_typeType == null)
-      {
-        Errors.error("*** internal error: type name is not set for '" + this + "'");
-        return "** UNDEF **";
-      }
-    else
-      {
-        return _typeType.asString();
-      }
+    if (PRECONDITIONS) require
+      (feature().isTypeFeature());
+
+    return _type.generics().get(0).asString();
   }
 
 
@@ -2119,7 +2072,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
-      // NYI (see #282): Would be nice if this would not need special handlng but would
+      // NYI (see #282): Would be nice if this would not need special handling but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {
@@ -2315,7 +2268,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (feature() == Types.resolved.f_Types_get);
 
-                gi = Types.intern(new Type((Type) gi, Type.RefOrVal.LikeUnderlyingFeature));
+                gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }
             result[i] = actualClazz(gi);
           }

@@ -51,8 +51,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
@@ -79,7 +84,7 @@ public class Intrinsics extends ANY
 
 
   /**
-   * Contains possible error numbers emitted by intrisics when an error happens
+   * Contains possible error numbers emitted by intrinsics when an error happens
    * on the system side. This attempts to match C's errno.h names and numbers.
    */
   enum SystemErrNo
@@ -135,6 +140,12 @@ public class Intrinsics extends ANY
    * This variable starts at 3 because 0, 1, 2 usually represents standard in, out and err
    */
   private static long _maxFileDescriptor_  = 3;
+
+
+  /**
+   * the last unique identifier returned by `fuzion.sys.misc.unique_id`.
+   */
+  private static long _last_unique_id_ = 0;
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -766,6 +777,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (interpreter, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (interpreter, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(++_last_unique_id_));
     put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
         {
           var call = Types.resolved.f_function_call;
@@ -794,13 +806,8 @@ public class Intrinsics extends ANY
     put("i8.infix ^"            , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  ^   args.get(1).i8Value() )));
     put("i8.infix >>"           , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  >>  args.get(1).i8Value() )));
     put("i8.infix <<"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  <<  args.get(1).i8Value() )));
-    put("i8.infix =="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  ==  args.get(1).i8Value() )));
     put("i8.type.equality"      , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  ==  args.get(2).i8Value() )));
-    put("i8.infix !="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  !=  args.get(1).i8Value() )));
-    put("i8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  <   args.get(1).i8Value() )));
-    put("i8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  >   args.get(1).i8Value() )));
-    put("i8.infix <="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  <=  args.get(1).i8Value() )));
-    put("i8.infix >="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i8Value()  >=  args.get(1).i8Value() )));
+    put("i8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  <=  args.get(2).i8Value() )));
     put("i16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i16Value())));
     put("i16.castTo_u16"        , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
     put("i16.prefix -°"         , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (                       -   args.get(0).i16Value())));
@@ -814,13 +821,8 @@ public class Intrinsics extends ANY
     put("i16.infix ^"           , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() ^   args.get(1).i16Value())));
     put("i16.infix >>"          , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() >>  args.get(1).i16Value())));
     put("i16.infix <<"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() <<  args.get(1).i16Value())));
-    put("i16.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() ==  args.get(1).i16Value())));
     put("i16.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() ==  args.get(2).i16Value())));
-    put("i16.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() !=  args.get(1).i16Value())));
-    put("i16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() <   args.get(1).i16Value())));
-    put("i16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() >   args.get(1).i16Value())));
-    put("i16.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() <=  args.get(1).i16Value())));
-    put("i16.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i16Value() >=  args.get(1).i16Value())));
+    put("i16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() <=  args.get(2).i16Value())));
     put("i32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value ((long)        (                           args.get(0).i32Value())));
     put("i32.castTo_u32"        , (interpreter, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
     put("i32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i32Value())));
@@ -835,13 +837,8 @@ public class Intrinsics extends ANY
     put("i32.infix ^"           , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() ^   args.get(1).i32Value())));
     put("i32.infix >>"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())));
     put("i32.infix <<"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())));
-    put("i32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() ==  args.get(1).i32Value())));
     put("i32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() ==  args.get(2).i32Value())));
-    put("i32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() !=  args.get(1).i32Value())));
-    put("i32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() <   args.get(1).i32Value())));
-    put("i32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() >   args.get(1).i32Value())));
-    put("i32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() <=  args.get(1).i32Value())));
-    put("i32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i32Value() >=  args.get(1).i32Value())));
+    put("i32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
     put("i64.castTo_u64"        , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
     put("i64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
     put("i64.prefix -°"         , (interpreter, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).u64Value())));
@@ -855,13 +852,8 @@ public class Intrinsics extends ANY
     put("i64.infix ^"           , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() ^   args.get(1).i64Value())));
     put("i64.infix >>"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() >>  args.get(1).i64Value())));
     put("i64.infix <<"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() <<  args.get(1).i64Value())));
-    put("i64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() ==  args.get(1).i64Value())));
     put("i64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() ==  args.get(2).i64Value())));
-    put("i64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() !=  args.get(1).i64Value())));
-    put("i64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() <   args.get(1).i64Value())));
-    put("i64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() >   args.get(1).i64Value())));
-    put("i64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() <=  args.get(1).i64Value())));
-    put("i64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).i64Value() >=  args.get(1).i64Value())));
+    put("i64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() <=  args.get(2).i64Value())));
     put("u8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u8Value() )));
     put("u8.castTo_i8"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));
     put("u8.prefix -°"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                       -   args.get(0).u8Value() )));
@@ -875,13 +867,8 @@ public class Intrinsics extends ANY
     put("u8.infix ^"            , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  ^   args.get(1).u8Value() )));
     put("u8.infix >>"           , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  >>> args.get(1).u8Value() )));
     put("u8.infix <<"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  <<  args.get(1).u8Value() )));
-    put("u8.infix =="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u8Value()  ==  args.get(1).u8Value() )));
     put("u8.type.equality"      , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u8Value()  ==  args.get(2).u8Value() )));
-    put("u8.infix !="           , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u8Value()  !=  args.get(1).u8Value() )));
-    put("u8.infix <"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <  0));
-    put("u8.infix >"            , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >  0));
-    put("u8.infix <="           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <= 0));
-    put("u8.infix >="           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >= 0));
+    put("u8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u8Value(), args.get(2).u8Value()) <= 0));
     put("u16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u16Value())));
     put("u16.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u16Value())));
     put("u16.castTo_i16"        , (interpreter, innerClazz) -> args -> new i16Value ((short)       (                           args.get(0).u16Value())));
@@ -896,13 +883,8 @@ public class Intrinsics extends ANY
     put("u16.infix ^"           , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() ^   args.get(1).u16Value())));
     put("u16.infix >>"          , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() >>> args.get(1).u16Value())));
     put("u16.infix <<"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() <<  args.get(1).u16Value())));
-    put("u16.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u16Value() ==  args.get(1).u16Value())));
     put("u16.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u16Value() ==  args.get(2).u16Value())));
-    put("u16.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u16Value() !=  args.get(1).u16Value())));
-    put("u16.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <  0));
-    put("u16.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >  0));
-    put("u16.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <= 0));
-    put("u16.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >= 0));
+    put("u16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u16Value(), args.get(2).u16Value()) <= 0));
     put("u32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())));
     put("u32.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u32Value())));
     put("u32.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).u32Value())));
@@ -920,13 +902,8 @@ public class Intrinsics extends ANY
     put("u32.infix ^"           , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() ^   args.get(1).u32Value())));
     put("u32.infix >>"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() >>> args.get(1).u32Value())));
     put("u32.infix <<"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() <<  args.get(1).u32Value())));
-    put("u32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u32Value() ==  args.get(1).u32Value())));
     put("u32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u32Value() ==  args.get(2).u32Value())));
-    put("u32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u32Value() !=  args.get(1).u32Value())));
-    put("u32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <  0));
-    put("u32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >  0));
-    put("u32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <= 0));
-    put("u32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >= 0));
+    put("u32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u32Value(), args.get(2).u32Value()) <= 0));
     put("u64.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())));
     put("u64.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())));
     put("u64.low32bits"         , (interpreter, innerClazz) -> args -> new u32Value ((int)         (                           args.get(0).u64Value())));
@@ -944,13 +921,8 @@ public class Intrinsics extends ANY
     put("u64.infix ^"           , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() ^   args.get(1).u64Value())));
     put("u64.infix >>"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() >>> args.get(1).u64Value())));
     put("u64.infix <<"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() <<  args.get(1).u64Value())));
-    put("u64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u64Value() ==  args.get(1).u64Value())));
     put("u64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u64Value() ==  args.get(2).u64Value())));
-    put("u64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(0).u64Value() !=  args.get(1).u64Value())));
-    put("u64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <  0));
-    put("u64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >  0));
-    put("u64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <= 0));
-    put("u64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >= 0));
+    put("u64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(1).u64Value(), args.get(2).u64Value()) <= 0));
     put("f32.prefix -"          , (interpreter, innerClazz) -> args -> new f32Value (                (                       -  args.get(0).f32Value())));
     put("f32.infix +"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() +  args.get(1).f32Value())));
     put("f32.infix -"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() -  args.get(1).f32Value())));
@@ -958,13 +930,8 @@ public class Intrinsics extends ANY
     put("f32.infix /"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
     put("f32.infix %"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
     put("f32.infix **"          , (interpreter, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
-    put("f32.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
     put("f32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() == args.get(2).f32Value())));
-    put("f32.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() != args.get(1).f32Value())));
-    put("f32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
-    put("f32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
-    put("f32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())));
-    put("f32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())));
+    put("f32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() <= args.get(2).f32Value())));
     put("f32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
     put("f32.castTo_u32"        , (interpreter, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
     put("f32.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())));
@@ -975,13 +942,8 @@ public class Intrinsics extends ANY
     put("f64.infix /"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
     put("f64.infix %"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
     put("f64.infix **"          , (interpreter, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
-    put("f64.infix =="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
     put("f64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() == args.get(2).f64Value())));
-    put("f64.infix !="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())));
-    put("f64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
-    put("f64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));
-    put("f64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >  args.get(1).f64Value())));
-    put("f64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())));
+    put("f64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() <= args.get(2).f64Value())));
     put("f64.as_i64_lax"        , (interpreter, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (interpreter, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.castTo_u64"        , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
@@ -1040,6 +1002,20 @@ public class Intrinsics extends ANY
             }
           return new Instance(Clazzes.c_unit.get());
         });
+    put("fuzion.std.date_time", (interpreter, innerClazz) -> args ->
+      {
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        calendar.setTime(date);
+        var arg0 = (int[])args.get(1).arrayData()._array;
+        arg0[0] = calendar.get(Calendar.YEAR);
+        arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
+        arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
+        arg0[3] = calendar.get(Calendar.MINUTE);
+        arg0[4] = calendar.get(Calendar.SECOND);
+        arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
+        return new Instance(Clazzes.c_unit.get());
+      });
     put("effect.replace"  ,
         "effect.default"  ,
         "effect.abortable",
@@ -1107,7 +1083,7 @@ public class Intrinsics extends ANY
               }
             }
           case "effect.abort": throw new Abort(cl);
-          default: throw new Error("unexected effect intrinsic '"+innerClazz+"'");
+          default: throw new Error("unexpected effect intrinsic '"+innerClazz+"'");
           }
         return Value.EMPTY_VALUE;
       };
