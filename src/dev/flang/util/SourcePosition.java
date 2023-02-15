@@ -200,7 +200,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
   /**
    * @return the line of this source position,
-   * starting at 1.
+   * starting at 1, return 0 for empty file.
    */
   public int line()
   {
@@ -220,7 +220,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   {
     if (_column == null)
       {
-        _column = _bytePos - _sourceFile.lineStartPos(_line) + 1;
+        _column = _sourceFile.codePointInLine(_bytePos);
       }
     return _column;
   }
