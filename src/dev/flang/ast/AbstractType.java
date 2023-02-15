@@ -1267,11 +1267,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * @param wrapInBrackets wrap the generated string in brackets if necessary
+   * wrap the result of toString in parentheses if necessary
    */
-  public String toString(boolean wrapInBrackets)
+  public String toStringWrapped()
   {
-    return wrapInBrackets && dependsOnGenerics()
+    return toString().contains(" ")
            ? "(" + toString() + ")"
            : toString();
   }

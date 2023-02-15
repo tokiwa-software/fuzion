@@ -192,10 +192,9 @@ public abstract class LibraryCall extends AbstractCall
             ? ""
             : t.toString() + ".")
       + calledFeature().featureName().baseName()
-      + (actualTypeParameters().isEmpty() && actuals().isEmpty() ? "": " ")
-      + actualTypeParameters().toString("", " ", "", at -> at.toString(true))
-      + actuals().toString("", " ", "", e -> e.toString(true))
-      //+ (select() < 0        ? "" : "." + select())
+      + actualTypeParameters().toString(" ", " ", "", at -> at.toStringWrapped())
+      + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
+      //+ (select() < 0        ? "" : " ." + select())
       ;
   }
 
