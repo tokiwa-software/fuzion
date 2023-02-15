@@ -1632,8 +1632,8 @@ public class Call extends AbstractCall
                         while (aargs.hasNext())
                           {
                             count++;
-                            Expr actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, outer);
-                            var actualType = actual.typeIfKnown();
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, outer);
+                            var actualType = typeFromActual(actual, outer);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
@@ -1646,11 +1646,11 @@ public class Call extends AbstractCall
                 else if (aargs.hasNext())
                   {
                     count++;
-                    Expr actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer);
-                    var actualType = actual == null ? null : actual.typeIfKnown();
+                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer);
+                    var actualType = typeFromActual(actual, outer);
                     if (actualType != null)
                       {
-                        inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
+                        inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
                         checked[vai] = true;
                       }
                     // NYI cleanup/merge the two cases below
@@ -1675,6 +1675,32 @@ public class Call extends AbstractCall
 
 
   /**
+   * During type inference for type parameters, determine the type of an actual
+   * argument in the context of `outer`.
+   *
+   * In case `actual`'s type depends on a type parameter g of a feature f and
+   * the context is the corresponding type feature ft, then g will be replaced
+   * by the corresponding type parameter of ft.
+   *
+   * @param actual an actual argument or null if not known
+   *
+   * @param outer the root feature that contains this call.
+   *
+   * @return the type of actual as seen within outer, or null if not known.
+   */
+  AbstractType typeFromActual(Expr actual,
+                              AbstractFeature outer)
+  {
+    var actualType = actual == null ? null : actual.typeIfKnown();
+    if (actualType != null)
+      {
+        actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
+      }
+    return actualType;
+  }
+
+
+  /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
    *
    * @param res the resolution instance.
@@ -1690,8 +1716,11 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Resolution res, AbstractType formalType, AbstractType actualType, SourcePosition pos, boolean[] conflict, String[] foundAt)
+  private void inferGeneric(Resolution res, AbstractFeature outer, AbstractType formalType, AbstractType actualType, SourcePosition pos, boolean[] conflict, String[] foundAt)
   {
+    if (PRECONDITIONS) require
+      (actualType.compareTo(actualType.replace_type_parameters_of_type_feature_origin(outer)) == 0);
+
     if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
@@ -1722,6 +1751,7 @@ public class Call extends AbstractCall
                 if (i < actualType.generics().size())
                   {
                     inferGeneric(res,
+                                 outer,
                                  formalType.generics().get(i),
                                  actualType.generics().get(i),
                                  pos, conflict, foundAt);
@@ -1732,7 +1762,7 @@ public class Call extends AbstractCall
           {
             for (var ct : formalType.choiceGenerics())
               {
-                inferGeneric(res, ct, actualType, pos, conflict, foundAt);
+                inferGeneric(res, outer, ct, actualType, pos, conflict, foundAt);
               }
           }
         else if (aft != null)
@@ -1743,7 +1773,7 @@ public class Call extends AbstractCall
                 if (pt != null)
                   {
                     var apt = actualType.actualType(pt);
-                    inferGeneric(res, formalType, apt, pos, conflict, foundAt);
+                    inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
                   }
               }
           }
@@ -1970,6 +2000,13 @@ public class Call extends AbstractCall
             _type = Types.t_ERROR;
           }
         resolveFormalArgumentTypes(res);
+      }
+    if (_type != null &&
+        // exclude call to create type instance, it requires origin's type parameters:
+        !calledFeature().isTypeFeature()
+        )
+      {
+        _type = _type.replace_type_parameters_of_type_feature_origin(outer);
       }
     return result;
   }

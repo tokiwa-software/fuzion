@@ -1112,6 +1112,63 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * For any type parameter g used in this, in cases these are type parameters
+   * of the origin of a type feature o, where o is f or an outer feature of f,
+   * replace g by the correspodinging type parameter of o.
+   *
+   * This is used to infer type parameter for a call to a feature declared in a
+   * type feature where the actual arguments are instances of the original
+   * (non-type) feature.
+   *
+   * @param f the outer feature this type is used in.
+   */
+  public AbstractType replace_type_parameters_of_type_feature_origin(AbstractFeature f)
+  {
+    var t = this;
+    if (!f.isUniverse())
+      {
+        t = t.replace_type_parameters_of_type_feature_origin(f.outer());
+        if (f.isTypeFeature())
+          {
+            t = t.replace_type_parameter_of_type_origin(f);
+          }
+      }
+    return Types.intern(t);
+  }
+
+
+  /**
+   * Helper for replace_type_parameters_of_type_feature_origin working on a
+   * given outer type feature.
+   *
+   * @param outerTypeFeature one outer type feature this is used in.
+   */
+  private AbstractType replace_type_parameter_of_type_origin(AbstractFeature outerTypeFeature)
+  {
+    if (PRECONDITIONS) require
+      (outerTypeFeature.isTypeFeature());
+
+    AbstractType result;
+    if (isGenericArgument())
+      {
+        if (genericArgument().feature() == outerTypeFeature.typeFeatureOrigin())
+          {
+            result = new Type(this, outerTypeFeature.generics().list.get(genericArgument().index() + 1));
+          }
+        else
+          {
+            result = this;
+          }
+      }
+    else
+      {
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_of_type_origin(outerTypeFeature));
+      }
+    return result;
+  }
+
+
+  /**
    * Apply given function recursively to generics and outer types in this type
    * to create a new type.
    *
