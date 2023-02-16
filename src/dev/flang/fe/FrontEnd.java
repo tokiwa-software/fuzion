@@ -189,7 +189,7 @@ public class FrontEnd extends ANY
    */
   private Path baseModuleDir()
   {
-    return _options._fuzionHome.resolve("modules");
+    return _options.fuzionHome().resolve("modules");
   }
 
 
