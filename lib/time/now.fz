@@ -70,6 +70,6 @@ now =>
 # the system is giving us.
 #
 private default_now ()->time.date_time is () ->
-  a := array i32 6 i->0
+  a := (array i32).type.new 6 i->0
   fuzion.std.date_time a.internalArray.data
   time.date_time a[0] a[1] a[2] a[3] a[4] a[5]

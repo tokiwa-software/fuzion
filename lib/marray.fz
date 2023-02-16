@@ -104,7 +104,7 @@ is
   # create immutable array from this
   #
   redef as_array =>
-    array T length (i -> marray.this[i])
+    (array T).type.new length (i -> marray.this[i])
 
 
   # create a list from this marray
@@ -119,7 +119,7 @@ is
   # map the array to a new array applying function f to all elements
   #
   map(B type, f T -> B) array B is
-    array B marray.this.length (i -> f marray.this[i])
+    (array B).type.new marray.this.length (i -> f marray.this[i])
 
 
   # fold the elements of this array using the given monoid.
