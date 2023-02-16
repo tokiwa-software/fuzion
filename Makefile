@@ -334,6 +334,7 @@ FUZION_JAVA_MODULES = \
 FUZION_FILES = \
 			 $(BUILD_DIR)/tests \
 			 $(BUILD_DIR)/examples \
+			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md
 
@@ -951,6 +952,11 @@ $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	rm -rf $@
 	cp -rf $^ $@
 	chmod +x $@/*.sh
+
+$(BUILD_DIR)/include: $(FZ_SRC)/include
+	mkdir -p $(@D)
+	rm -rf $@
+	cp -rf $^ $@
 
 $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	mkdir -p $(@D)
