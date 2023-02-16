@@ -329,13 +329,13 @@ public class MiddleEnd extends ANY
             if (!t.isGenericArgument())
               {
                 AbstractFeature f = t.featureOfType();
-                markUsed(f, t);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f, c);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
                 if (CHECKS) check
                   (Errors.count() > 0 || f.hasTypeFeature());
 
                 if (f.hasTypeFeature())
                   {
-                    markUsed(f.typeFeature(), t);
+                    markUsed(f.typeFeature(), c);
                   }
               }
           }

@@ -3645,7 +3645,7 @@ type        : thistype
               {
                 l.add(onetype());
               }
-            result = new Type(result.pos(), "choice", l, null);
+            result = new Type(result.pos2BeRemoved(), "choice", l, null);
           }
       }
     return result;
@@ -3748,7 +3748,7 @@ thistype    : qualThis dot "type"
   Expr thistypeAsExpr()
   {
     var result = thistype();
-    return new DotType(result.pos(), result);
+    return new DotType(result.pos2BeRemoved(), result);
   }
 
 

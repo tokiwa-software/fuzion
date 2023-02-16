@@ -89,7 +89,7 @@ public abstract class LibraryType extends AbstractType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public SourcePosition pos()
+  public SourcePosition pos2BeRemoved()
   {
     return _pos.pos();
   }

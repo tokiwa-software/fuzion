@@ -1181,7 +1181,7 @@ hw25 is
     if (result == null)
       {
         Errors.fatal((e instanceof Stmnt s) ? s.pos() :
-                     (e instanceof Clazz z) ? z._type.pos() : null,
+                     (e instanceof Clazz z) ? z._type.pos2BeRemoved() : null,
                      "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
