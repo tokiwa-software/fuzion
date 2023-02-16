@@ -426,7 +426,7 @@ public class AstErrors extends ANY
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(typePar.pos(),
+    incompatibleType(typePar.pos2BeRemoved(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -1354,7 +1354,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to its own value type as one of the choice alternatives",
           "Embedding a choice type in itself would result in an infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
   }
 
   static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
@@ -1362,7 +1362,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)

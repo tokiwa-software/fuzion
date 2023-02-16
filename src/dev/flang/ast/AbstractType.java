@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -42,7 +41,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractType extends ANY implements Comparable<AbstractType>, HasSourcePosition
+public abstract class AbstractType extends ANY implements Comparable<AbstractType>
 {
 
 
@@ -182,7 +181,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (isOpenGeneric())
       {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos(), genericArgument());
+        AstErrors.illegalUseOfOpenFormalGeneric(pos2BeRemoved(), genericArgument());
         result = false;
       }
     return result;
@@ -1153,7 +1152,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (genericArgument().feature() == outerTypeFeature.typeFeatureOrigin())
           {
-            result = new Type(this, outerTypeFeature.generics().list.get(genericArgument().index() + 1));
+            result = new Type(this.pos2BeRemoved(), outerTypeFeature.generics().list.get(genericArgument().index() + 1));
           }
         else
           {
@@ -1214,7 +1213,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isRef();
   public abstract AbstractType asThis();
   public abstract boolean isThisType();
-  public abstract SourcePosition pos();
+  public abstract SourcePosition pos2BeRemoved();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();

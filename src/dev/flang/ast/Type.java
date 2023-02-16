@@ -80,7 +80,7 @@ public class Type extends AbstractType
    * The sourcecode position of this type, used for error messages.
    */
   public final HasSourcePosition pos;
-  public SourcePosition pos() { return pos.pos(); }
+  public SourcePosition pos2BeRemoved() { return pos.pos(); }
 
 
   /**
@@ -183,7 +183,7 @@ public class Type extends AbstractType
    *
    * @param o
    */
-  public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
+  public Type(SourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }
@@ -201,7 +201,7 @@ public class Type extends AbstractType
    */
   public Type(Type t, List<AbstractType> g, AbstractType o)
   {
-    this((HasSourcePosition) t, t.name, g, o, t.feature, t._refOrVal);
+    this(t.pos2BeRemoved(), t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
@@ -224,7 +224,7 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
-    this((HasSourcePosition) t, t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
+    this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
          t.isRef() ? RefOrVal.Ref
                    : RefOrVal.Value);
@@ -767,7 +767,7 @@ public class Type extends AbstractType
           {
             if (outer().isGenericArgument())
               {
-                AstErrors.formalGenericAsOuterType(pos(), this);
+                AstErrors.formalGenericAsOuterType(pos2BeRemoved(), this);
               }
           }
         else
@@ -782,7 +782,7 @@ public class Type extends AbstractType
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
+                AstErrors.formalGenericWithGenericArgs(pos2BeRemoved(), this, generic);
               }
           }
       }
@@ -842,7 +842,7 @@ public class Type extends AbstractType
       {
         if (isMatchingTypeFeature(o))
           {
-            result = new Type(pos(), new Generic(o.typeArguments().get(0)));
+            result = new Type(pos2BeRemoved(), new Generic(o.typeArguments().get(0)));
             o = null;
           }
         else
@@ -908,7 +908,7 @@ public class Type extends AbstractType
               }
             FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                                  this,
+                                                                  this.pos2BeRemoved(),
                                                                   "type",
                                                                   "Type: " + toString() + "\n"))
               {
@@ -950,7 +950,7 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            feature = res._module.lookupFeatureForType(pos(), name, of);
+            feature = res._module.lookupFeatureForType(pos2BeRemoved(), name, of);
           }
       }
     if (POSTCONDITIONS) ensure

@@ -651,7 +651,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return t.isThisType() ? findOuter(t.featureOfType(), t)
+    return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
   }
 
@@ -778,7 +778,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos();
+        var tp = _type.pos2BeRemoved();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))
