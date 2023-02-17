@@ -25,6 +25,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
+#ifndef	_FUZION_H
+#define	_FUZION_H	1
+
+#include <stdlib.h>     // setenv, unsetenv
+#include <sys/stat.h>   // mkdir
+#include <sys/types.h>  // mkdir
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -59,3 +66,6 @@ int fzE_unsetenv(const char *name){
   return unsetenv(name);
 #endif
 }
+
+
+#endif /* fz.h  */
