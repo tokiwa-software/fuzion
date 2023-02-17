@@ -148,6 +148,10 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
     (v + (v >> 8)) & 0x1f
 
 
+  # how many bytes does this integer use?
+  bytes i32 is 2
+
+
   # -----------------------------------------------------------------------
   #
   # type features:

@@ -1,0 +1,150 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.net
+#
+# -----------------------------------------------------------------------
+
+net is
+
+  // get a socket descriptor, zero on success
+  socket i32 is intrinsic
+
+  // connect, zero on success
+  bind   (sd i32, family i32, arr_data Any, length i32) i32 is intrinsic
+
+  // listen, zero on success
+  listen (sd i32, backlog i32) i32 is intrinsic
+
+  // returns file descriptor or -1 on error
+  accept (sd i32) i32 is intrinsic
+
+  // connect, zero on success
+  connect(sd i32, family i32, arr_data Any, length i32) i32 is intrinsic
+
+  // closes a descriptor, zero on success
+  close  (d i32) i32 is intrinsic
+
+  // read length from file of file descriptor into arr_data
+  // return zero on success
+  read   (cd i32, arr_data Any, length i32) i32 is intrinsic
+
+  // write length to file of file descriptor into arr_data
+  // return zero on success
+  write  (cd i32, arr_data Any, length i32) i32 is intrinsic
+
+
+
+  server(port u16, read_write ((i32) -> outcome (Sequence u8), (Sequence u8) -> outcome nil) -> bool) outcome nil is
+
+    backlog := 10
+
+    # open socket
+    sd := socket
+
+    if sd = -1
+      error "a new socket could not be created"
+    else
+      af_inet := 2
+      port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
+      # bind to port
+      if (bind sd af_inet port_addr.internalArray.data port_addr.length) != 0
+        close sd
+        error "binding socket to port $port failed."
+      else
+        # listen
+        if (listen sd backlog) = -1
+          close sd
+          error "listening on socket failed."
+        else
+          for cd := accept sd, accept sd
+          while cd != -1 && (read_write
+              # reading
+              ((max) ->
+                buffer := array u8 max (idx -> 0)
+                r := read cd buffer.internalArray.data buffer.length
+                if r = -1
+                  error "error reading from socket"
+                else
+                  # NYI do we need special handling for r=0?
+                  buffer.slice 0 r-1)
+
+              # writing
+              ((data) ->
+                if write cd data.as_array.internalArray.data data.count = -1
+                  error "error writing data to socket"
+                else
+                  nil)
+            )
+          else
+            # NYI better type inference needed
+            res outcome nil := (if cd = -1
+              close sd
+              error "there was an error accepting a new connection."
+            else
+              if close cd = -1
+                close sd
+                error "error closing connection"
+              else
+                if close sd = -1
+                  error "error closing socket"
+                else
+                  nil)
+            res
+
+
+
+  client(addr u32, port u16, read_write ((i32) -> outcome (Sequence u8), (Sequence u8) -> outcome nil) -> unit) outcome nil is
+
+    # open socket
+    sd := socket
+
+    if sd = -1
+      error "a new socket could not be created"
+    else
+      af_inet := 2
+      port_addr array u8:= (port.as_bytes ++ addr.as_bytes).as_array
+
+      # connect to addr, port
+      if (connect sd af_inet port_addr.internalArray.data port_addr.length) != 0
+        close sd
+        error "binding socket to port $port failed."
+      else
+        (read_write
+          # reading
+          ((max) ->
+            buffer := array u8 max (idx -> 0)
+            r := read sd buffer.internalArray.data buffer.length
+            if r = -1
+              error "error reading from socket"
+            else
+              # NYI do we need special handling for r=0?
+              buffer.slice 0 r-1)
+
+          # writing
+          ((data) ->
+            if write sd data.as_array.internalArray.data data.count = -1
+              error "error writing data to socket"
+            else
+              nil)
+          )
+
+        if close sd = 0 then nil else error "error closing socket"
+
+

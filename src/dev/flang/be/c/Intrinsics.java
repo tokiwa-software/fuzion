@@ -63,6 +63,7 @@ public class Intrinsics extends ANY
   static CIdent A0 = new CIdent("arg0");
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
+  static CIdent A3 = new CIdent("arg2");
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
@@ -749,6 +750,46 @@ public class Intrinsics extends ANY
             A0.castTo("fzT_1i32 *").index(CExpr.int32const(4)).assign(ptm.deref().field(new CIdent("tm_sec"))),
             A0.castTo("fzT_1i32 *").index(CExpr.int32const(5)).assign(CExpr.int32const(0)));
       });
+
+
+    put("fuzion.sys.net.socket",  (c,cl,outer,in) -> CExpr.call("fzE_socket",
+      // NYI get domain, type, protocol from args
+      new List<CExpr>(new CIdent("AF_INET"), new CIdent("SOCK_STREAM"), new CIdent("IPPROTO_TCP"))));
+    put("fuzion.sys.net.bind",    (c,cl,outer,in) -> CExpr.call("fzE_bind", new List<CExpr>(
+      A0, // socket descriptor
+      new CIdent("AF_INET"), // family
+      A2, // data for family, an array of bytes
+      A3  // data length
+    )));
+    put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
+      A0, // socket descriptor
+      A1  // size of backlog
+    )));
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> CExpr.call("fzE_accept", new List<CExpr>(
+      A0, // socket descriptor
+      CNames.NULL, // NYI return the client info
+      CNames.NULL
+    )));
+    put("fuzion.sys.net.connect", (c,cl,outer,in) -> CExpr.call("fzE_connect", new List<CExpr>(
+      A0, // socket descriptor
+      new CIdent("AF_INET"), // family
+      A2, // data for family, an array of bytes
+      A3  // data length
+    )));
+    put("fuzion.sys.net.close",   (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
+      A0 // socket descriptor
+    )));
+    put("fuzion.sys.net.read",    (c,cl,outer,in) -> CExpr.call("fzE_read", new List<CExpr>(
+      A0, // socket descriptor
+      A1, // buffer (internal_array)
+      A2  // buffer size
+    )));
+    put("fuzion.sys.net.write",   (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
+      A0, // socket descriptor
+      A1, // buffer (internal_array)
+      A2  // buffer size
+    )));
+
 
     put("effect.replace"       ,
         "effect.default"       ,

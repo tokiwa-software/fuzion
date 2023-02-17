@@ -40,7 +40,8 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import java.lang.reflect.Array;
-
+import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.io.File;
@@ -61,6 +62,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -118,6 +120,11 @@ public class Intrinsics extends ANY
    * The value represents the open stream
    */
   private static TreeMap<Long, RandomAccessFile> _openStreams_ = new TreeMap<Long, RandomAccessFile>();
+
+
+
+  private static AtomicInteger socketDescriptor = new AtomicInteger(0);
+  private static TreeMap<Integer, Socket> _openSockets_ = new TreeMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -790,6 +797,40 @@ public class Intrinsics extends ANY
           t.start();
           return new Instance(Clazzes.c_unit.get());
         });
+
+
+    put("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
+      var descriptor = socketDescriptor.getAndIncrement();
+      _openSockets_.put(descriptor, new Socket());
+      return new i32Value(descriptor);
+    });
+    put("fuzion.sys.net.bind"    , (interpreter, innerClazz) -> args -> {
+      try
+        {
+          // NYI
+          _openSockets_.get(args.get(0)).bind(new InetSocketAddress("0.0.0.0", 0));
+          return new i32Value(0);
+        }
+      catch(IOException e){
+        return new i32Value(-1);
+      }
+    });
+    put("fuzion.sys.net.close"   , (interpreter, innerClazz) -> args -> {
+      try
+        {
+          _openSockets_.get(args.get(0)).close();
+          return new i32Value(0);
+        }
+      catch(IOException e){
+        return new i32Value(-1);
+      }
+    });
+    put("fuzion.sys.net.connect" , (interpreter, innerClazz) -> args -> null);
+    put("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> null);
+    put("fuzion.sys.net.read"    , (interpreter, innerClazz) -> args -> null);
+    put("fuzion.sys.net.socket"  , (interpreter, innerClazz) -> args -> null);
+    put("fuzion.sys.net.write"   , (interpreter, innerClazz) -> args -> null);
+
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
     put("debugLevel"            , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));

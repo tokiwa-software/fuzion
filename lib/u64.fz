@@ -219,6 +219,10 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
     (v *° 0x_01010101_01010101 >> 56).as_i32
 
 
+  # how many bytes does this integer use?
+  bytes i32 is 8
+
+
   # -----------------------------------------------------------------------
   #
   # type features:

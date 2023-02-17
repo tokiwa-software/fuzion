@@ -193,3 +193,18 @@ integer(I type : integer I) : numeric I is
   # create hexadecimal representation with given number of digits.
   #
   hex(len i32) => integer.this.as_string len 16
+
+
+  # the lowest byte of this integer
+  low8bits u8 is abstract
+
+
+  # how many bytes does this integer use?
+  bytes i32 is abstract
+
+
+  # this integer as an array of bytes
+  as_bytes array u8 is
+    array u8 bytes (idx ->
+      shift I := from_u32((bytes.as_u32-idx.as_u32-1)*8)
+      (integer.this>>shift).low8bits)

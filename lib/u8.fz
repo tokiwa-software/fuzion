@@ -138,6 +138,13 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
     v
 
 
+  low8bits u8 is val
+
+
+  # how many bytes does this integer use?
+  bytes i32 is 1
+
+
   # -----------------------------------------------------------------------
   #
   # type features:
