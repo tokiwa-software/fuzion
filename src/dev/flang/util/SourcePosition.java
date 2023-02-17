@@ -115,7 +115,9 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   public SourcePosition(SourceFile sourceFile, int bytePos)
   {
     if (PRECONDITIONS) require
-      (sourceFile != null);
+      (sourceFile != null,
+       bytePos >= 0,
+       bytePos <= sourceFile._bytes.length);
 
     this._sourceFile = sourceFile;
     this._bytePos = bytePos;
