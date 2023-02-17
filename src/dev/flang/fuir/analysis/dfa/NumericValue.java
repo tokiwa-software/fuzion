@@ -216,6 +216,10 @@ public class NumericValue extends Value implements Comparable<NumericValue>
             return super.joinInstances(v);
           }
       }
+    else if (v instanceof ValueSet)
+      {
+        return v.join(this);
+      }
     else
       {
         return super.joinInstances(v);
