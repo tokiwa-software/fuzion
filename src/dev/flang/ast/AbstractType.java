@@ -1248,12 +1248,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               + featureOfType().featureName().baseName();
         for (var g : generics())
           {
-            var gs = g.asString();
-            if (gs.indexOf(" ") >= 0)
-              {
-                gs = "(" + gs + ")";
-              }
-            result = result + " " + gs;
+            result = result + " " + g.asStringWrapped();
           }
         if (isThisType())
           {
@@ -1264,7 +1259,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-
   /**
    * wrap the result of toString in parentheses if necessary
    */
@@ -1273,6 +1267,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return toString().contains(" ")
            ? "(" + toString() + ")"
            : toString();
+  }
+
+
+  /**
+   * wrap the result of asString in parentheses if necessary
+   */
+  public String asStringWrapped()
+  {
+    var s = asString();
+    return s.contains(" ") ? "(" + s + ")"
+                           :       s      ;
   }
 
 
