@@ -41,6 +41,7 @@ import dev.flang.util.List;
 
 import java.lang.reflect.Array;
 import java.net.Socket;
+import java.net.ServerSocket;
 import java.net.InetSocketAddress;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
@@ -119,12 +120,7 @@ public class Intrinsics extends ANY
    * The key represents a file descriptor
    * The value represents the open stream
    */
-  private static TreeMap<Long, RandomAccessFile> _openStreams_ = new TreeMap<Long, RandomAccessFile>();
-
-
-
-  private static AtomicInteger socketDescriptor = new AtomicInteger(0);
-  private static TreeMap<Integer, Socket> _openSockets_ = new TreeMap<>();
+  private static TreeMap<Long, AutoCloseable> _openStreams_ = new TreeMap<Long, AutoCloseable>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -224,7 +220,7 @@ public class Intrinsics extends ANY
    *
    * @return the next available file descriptor.
    */
-  private static synchronized long allocFileDescriptor()
+  private static synchronized long allocNewDescriptor()
   {
     if (_availableFileDescriptors_.empty())
       {
@@ -239,7 +235,7 @@ public class Intrinsics extends ANY
    *
    * @param fileDescriptor the file descriptor to release.
    */
-  private static synchronized void releaseFileDescriptor(long fileDescriptor)
+  private static synchronized void releaseDescriptor(long fileDescriptor)
   {
     _availableFileDescriptors_.push(fileDescriptor);
   }
@@ -279,7 +275,7 @@ public class Intrinsics extends ANY
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              int bytesRead = _openStreams_.get(args.get(1).i64Value()).read(byteArr);
+              int bytesRead = ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).read(byteArr);
 
               if (args.get(3).i32Value() != bytesRead)
                 {
@@ -306,7 +302,7 @@ public class Intrinsics extends ANY
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
-              _openStreams_.get(args.get(1).i64Value()).write(fileContent);
+              ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).write(fileContent);
               return new i8Value(0);
             }
           catch (Exception e)
@@ -380,20 +376,20 @@ public class Intrinsics extends ANY
               switch (args.get(3).i8Value()) {
                 case 0:
                   RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
-                  fd = allocFileDescriptor();
+                  fd = allocNewDescriptor();
                   _openStreams_.put(fd, fis);
                   open_results[0] = fd;
                   break;
                 case 1:
                   RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  fd = allocFileDescriptor();
+                  fd = allocNewDescriptor();
                   _openStreams_.put(fd, fos);
                   open_results[0] = fd;
                   break;
                 case 2:
                   RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
                   fas.seek(fas.length());
-                  fd = allocFileDescriptor();
+                  fd = allocNewDescriptor();
                   _openStreams_.put(fd, fas);
                   open_results[0] = fd;
                   break;
@@ -422,7 +418,7 @@ public class Intrinsics extends ANY
               if (_openStreams_.containsKey(fd))
                 {
                   _openStreams_.remove(fd).close();
-                  releaseFileDescriptor(fd);
+                  releaseDescriptor(fd);
                   return new i8Value(0);
                 }
               return new i8Value(-1);
@@ -483,8 +479,9 @@ public class Intrinsics extends ANY
           var seekResults = (long[])args.get(3).arrayData()._array;
           try
             {
-              _openStreams_.get(fd).seek(args.get(2).i16Value());
-              seekResults[0] = _openStreams_.get(fd).getFilePointer();
+              var raf = (RandomAccessFile)_openStreams_.get(fd);
+              raf.seek(args.get(2).i16Value());
+              seekResults[0] = raf.getFilePointer();
               return Value.EMPTY_VALUE;
             }
           catch (Exception e)
@@ -504,7 +501,7 @@ public class Intrinsics extends ANY
           long[] arr = (long[])args.get(2).arrayData()._array;
           try
             {
-              arr[0] = _openStreams_.get(fd).getFilePointer();
+              arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
               return Value.EMPTY_VALUE;
             }
           catch (Exception e)
@@ -799,37 +796,61 @@ public class Intrinsics extends ANY
         });
 
 
-    put("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
-      var descriptor = socketDescriptor.getAndIncrement();
-      _openSockets_.put(descriptor, new Socket());
-      return new i32Value(descriptor);
+    put("fuzion.sys.net.socket"  , (interpreter, innerClazz) -> args -> {
+      // does nothing in java
+      return new i64Value(0);
     });
     put("fuzion.sys.net.bind"    , (interpreter, innerClazz) -> args -> {
+      var family = args.get(1);
+      var arr = (byte[])args.get(2).arrayData()._array;
+      var port = (((int)arr[0])<<8 + (int)arr[1]);
+      var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
       try
         {
-          // NYI
-          _openSockets_.get(args.get(0)).bind(new InetSocketAddress("0.0.0.0", 0));
-          return new i32Value(0);
+          var descriptor = allocNewDescriptor();
+          var ss = new ServerSocket();
+          ss.bind(new InetSocketAddress(ipAddress, port));
+          _openStreams_.put(descriptor, ss);
+          return new i64Value(descriptor);
         }
-      catch(IOException e){
-        return new i32Value(-1);
-      }
+      catch(IOException e)
+        {
+          return new i64Value(-1);
+        }
     });
-    put("fuzion.sys.net.close"   , (interpreter, innerClazz) -> args -> {
+    put("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
+      // just echos the socket descriptor
+      return new i64Value(args.get(0).i64Value());
+    });
+    put("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
       try
         {
-          _openSockets_.get(args.get(0)).close();
-          return new i32Value(0);
+          var socket = ((ServerSocket)_openStreams_.get(args.get(0).i64Value())).accept();
+          var descriptor = allocNewDescriptor();
+          _openStreams_.put(descriptor, socket);
+          return new i64Value(descriptor);
         }
-      catch(IOException e){
-        return new i32Value(-1);
-      }
+      catch(IOException e)
+        {
+          return new i64Value(-1);
+        }
     });
-    put("fuzion.sys.net.connect" , (interpreter, innerClazz) -> args -> null);
-    put("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> null);
-    put("fuzion.sys.net.read"    , (interpreter, innerClazz) -> args -> null);
-    put("fuzion.sys.net.socket"  , (interpreter, innerClazz) -> args -> null);
-    put("fuzion.sys.net.write"   , (interpreter, innerClazz) -> args -> null);
+    put("fuzion.sys.net.connect" , (interpreter, innerClazz) -> args -> {
+      var family = args.get(1).i32Value();
+      var arr = (byte[])args.get(2).arrayData()._array;
+      var port = (((int)arr[0])<<8 + (int)arr[1]);
+      var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
+      try
+        {
+          var descriptor = allocNewDescriptor();
+          _openStreams_.put(descriptor, new Socket(ipAddress, port));
+          return new i64Value(descriptor);
+        }
+      catch(IOException e)
+        {
+          return new i64Value(-1);
+        }
+    });
 
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));

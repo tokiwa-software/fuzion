@@ -776,19 +776,6 @@ public class Intrinsics extends ANY
       A2, // data for family, an array of bytes
       A3  // data length
     )));
-    put("fuzion.sys.net.close",   (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
-      A0 // socket descriptor
-    )));
-    put("fuzion.sys.net.read",    (c,cl,outer,in) -> CExpr.call("fzE_read", new List<CExpr>(
-      A0, // socket descriptor
-      A1, // buffer (internal_array)
-      A2  // buffer size
-    )));
-    put("fuzion.sys.net.write",   (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
-      A0, // socket descriptor
-      A1, // buffer (internal_array)
-      A2  // buffer size
-    )));
 
 
     put("effect.replace"       ,

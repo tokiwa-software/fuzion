@@ -24,34 +24,23 @@
 net is
 
   // get a socket descriptor, zero on success
-  socket i32 is intrinsic
+  socket i64 is intrinsic
 
   // connect, zero on success
-  bind   (sd i32, family i32, arr_data Any, length i32) i32 is intrinsic
+  bind   (sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
 
   // listen, zero on success
-  listen (sd i32, backlog i32) i32 is intrinsic
+  listen (sd i64, backlog i32) i64 is intrinsic
 
   // returns file descriptor or -1 on error
-  accept (sd i32) i32 is intrinsic
+  accept (sd i64) i64 is intrinsic
 
   // connect, zero on success
-  connect(sd i32, family i32, arr_data Any, length i32) i32 is intrinsic
-
-  // closes a descriptor, zero on success
-  close  (d i32) i32 is intrinsic
-
-  // read length from file of file descriptor into arr_data
-  // return zero on success
-  read   (cd i32, arr_data Any, length i32) i32 is intrinsic
-
-  // write length to file of file descriptor into arr_data
-  // return zero on success
-  write  (cd i32, arr_data Any, length i32) i32 is intrinsic
+  connect(sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
 
 
 
-  server(port u16, read_write ((i32) -> outcome (Sequence u8), (Sequence u8) -> outcome nil) -> bool) outcome nil is
+  server(port u16, read_write ((u64) -> outcome (array u8), (Sequence u8) -> outcome unit) -> bool) outcome unit is
 
     backlog := 10
 
@@ -65,52 +54,41 @@ net is
       port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
       # bind to port
       if (bind sd af_inet port_addr.internalArray.data port_addr.length) != 0
-        close sd
+        fuzion.sys.fileio.close sd
         error "binding socket to port $port failed."
       else
         # listen
         if (listen sd backlog) = -1
-          close sd
+          fuzion.sys.fileio.close sd
           error "listening on socket failed."
         else
           for cd := accept sd, accept sd
           while cd != -1 && (read_write
               # reading
               ((max) ->
-                buffer := array u8 max (idx -> 0)
-                r := read cd buffer.internalArray.data buffer.length
-                if r = -1
-                  error "error reading from socket"
-                else
-                  # NYI do we need special handling for r=0?
-                  buffer.slice 0 r-1)
-
+                fuzion.sys.fileio.read cd max)
               # writing
               ((data) ->
-                if write cd data.as_array.internalArray.data data.count = -1
-                  error "error writing data to socket"
-                else
-                  nil)
+                fuzion.sys.fileio.write cd data.as_array)
             )
           else
             # NYI better type inference needed
-            res outcome nil := (if cd = -1
-              close sd
+            res outcome unit := (if cd = -1
+              fuzion.sys.fileio.close sd
               error "there was an error accepting a new connection."
             else
-              if close cd = -1
-                close sd
-                error "error closing connection"
-              else
-                if close sd = -1
-                  error "error closing socket"
-                else
-                  nil)
+              match fuzion.sys.fileio.close cd
+                err error =>
+                  fuzion.sys.fileio.close sd
+                  err
+                unit      =>
+                  fuzion.sys.fileio.close sd
+                )
             res
 
 
 
-  client(addr u32, port u16, read_write ((i32) -> outcome (Sequence u8), (Sequence u8) -> outcome nil) -> unit) outcome nil is
+  client(addr u32, port u16, read_write ((u64) -> outcome (array u8), (Sequence u8) -> outcome unit) -> unit) outcome unit is
 
     # open socket
     sd := socket
@@ -123,28 +101,17 @@ net is
 
       # connect to addr, port
       if (connect sd af_inet port_addr.internalArray.data port_addr.length) != 0
-        close sd
+        fuzion.sys.fileio.close sd
         error "binding socket to port $port failed."
       else
         (read_write
           # reading
           ((max) ->
-            buffer := array u8 max (idx -> 0)
-            r := read sd buffer.internalArray.data buffer.length
-            if r = -1
-              error "error reading from socket"
-            else
-              # NYI do we need special handling for r=0?
-              buffer.slice 0 r-1)
-
+            fuzion.sys.fileio.read sd max)
           # writing
           ((data) ->
-            if write sd data.as_array.internalArray.data data.count = -1
-              error "error writing data to socket"
-            else
-              nil)
-          )
+            fuzion.sys.fileio.write sd data.as_array)
+        )
 
-        if close sd = 0 then nil else error "error closing socket"
-
+        fuzion.sys.fileio.close sd
 
