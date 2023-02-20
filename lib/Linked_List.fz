@@ -23,7 +23,7 @@
 
 # abstract type for 'Linked_List'
 #
-Linked_List(T type) ref is
+Linked_List(redef T type) ref : Sequence T is
 
 
   # next is the following element of the linked list, or nil if there are
@@ -39,13 +39,21 @@ Linked_List(T type) ref is
 
   # helper feature for tail-recursive implementation of as_string.
   #
-  as_string(pfx String) String is
+  private as_string0(pfx String) String is
     match next
-      ll Linked_List T => ll.as_string (pfx + "{ll.data} -> ")
+      ll Linked_List T => ll.as_string0 (pfx + "{ll.data} -> ")
       nil => pfx + "nil ]"
 
 
   # a representation of this linked list as a string.
   #
   redef as_string =>
-    Linked_List.this.as_string "[ {data} -> "
+    Linked_List.this.as_string0 "[ {data} -> "
+
+
+  # return this linked list as a list
+  #
+  redef as_list list T is
+    match next
+      ll Linked_List T => (data : ()->ll.as_list)
+      nil => (data : ()->nil)
