@@ -43,11 +43,12 @@ import java.lang.reflect.Array;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.InetSocketAddress;
-import java.io.PrintStream;
-import java.io.RandomAccessFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -275,18 +276,40 @@ public class Intrinsics extends ANY
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              int bytesRead = ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).read(byteArr);
-
-              if (args.get(3).i32Value() != bytesRead)
+              if (_openStreams_.get(args.get(1).i64Value()) instanceof RandomAccessFile raf)
                 {
-                  if (bytesRead == -1)
-                    {
-                      // no more data to read due to end of file
-                      return new i64Value(0);
-                    }
-                }
+                  int bytesRead = raf.read(byteArr);
 
-              return new i64Value(bytesRead);
+                  if (args.get(3).i32Value() != bytesRead)
+                    {
+                      if (bytesRead == -1)
+                        {
+                          // no more data to read due to end of file
+                          return new i64Value(0);
+                        }
+                    }
+
+                  return new i64Value(bytesRead);
+                }
+              else if (_openStreams_.get(args.get(1).i64Value()) instanceof Socket socket)
+                {
+                  int bytesRead = socket.getInputStream().read(byteArr);
+
+                  if (args.get(3).i32Value() != bytesRead)
+                    {
+                      if (bytesRead == -1)
+                        {
+                          // no more data to read due to end of file
+                          return new i64Value(0);
+                        }
+                    }
+
+                  return new i64Value(bytesRead);
+                }
+              else
+                {
+                  return new i64Value(-1);
+                }
             }
           catch (Exception e)
             {
@@ -302,8 +325,20 @@ public class Intrinsics extends ANY
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
-              ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).write(fileContent);
-              return new i8Value(0);
+              if (_openStreams_.get(args.get(1).i64Value()) instanceof RandomAccessFile raf)
+                {
+                  raf.write(fileContent);
+                  return new i8Value(0);
+                }
+              else if (_openStreams_.get(args.get(1).i64Value()) instanceof Socket socket)
+                {
+                  socket.getOutputStream().write(fileContent);
+                  return new i8Value(0);
+                }
+              else
+                {
+                  return new i8Value(-1);
+                }
             }
           catch (Exception e)
             {
@@ -797,21 +832,19 @@ public class Intrinsics extends ANY
 
 
     put("fuzion.sys.net.socket"  , (interpreter, innerClazz) -> args -> {
-      // does nothing in java
-      return new i64Value(0);
+      return new i64Value(allocNewDescriptor());
     });
     put("fuzion.sys.net.bind"    , (interpreter, innerClazz) -> args -> {
-      var family = args.get(1);
-      var arr = (byte[])args.get(2).arrayData()._array;
-      var port = (((int)arr[0])<<8 + (int)arr[1]);
+      var family = args.get(2);
+      var arr = (byte[])args.get(3).arrayData()._array;
+      var port = ((((int)arr[0])<<8) + (int)arr[1]);
       var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
       try
         {
-          var descriptor = allocNewDescriptor();
           var ss = new ServerSocket();
           ss.bind(new InetSocketAddress(ipAddress, port));
-          _openStreams_.put(descriptor, ss);
-          return new i64Value(descriptor);
+          _openStreams_.put(args.get(1).i64Value(), ss);
+          return new i64Value(0);
         }
       catch(IOException e)
         {
@@ -819,13 +852,12 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
-      // just echos the socket descriptor
-      return new i64Value(args.get(0).i64Value());
+      return new i64Value(0);
     });
     put("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
       try
         {
-          var socket = ((ServerSocket)_openStreams_.get(args.get(0).i64Value())).accept();
+          var socket = ((ServerSocket)_openStreams_.get(args.get(1).i64Value())).accept();
           var descriptor = allocNewDescriptor();
           _openStreams_.put(descriptor, socket);
           return new i64Value(descriptor);
@@ -836,15 +868,14 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.sys.net.connect" , (interpreter, innerClazz) -> args -> {
-      var family = args.get(1).i32Value();
-      var arr = (byte[])args.get(2).arrayData()._array;
-      var port = (((int)arr[0])<<8 + (int)arr[1]);
+      var family = args.get(2).i32Value();
+      var arr = (byte[])args.get(3).arrayData()._array;
+      var port = ((((int)arr[0])<<8) + (int)arr[1]);
       var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
       try
         {
-          var descriptor = allocNewDescriptor();
-          _openStreams_.put(descriptor, new Socket(ipAddress, port));
-          return new i64Value(descriptor);
+          _openStreams_.put(args.get(1).i64Value(), new Socket(ipAddress, port));
+          return new i64Value(0);
         }
       catch(IOException e)
         {

@@ -21,25 +21,45 @@
 #
 # -----------------------------------------------------------------------
 
+# groups networking related features
 net is
 
-  // get a socket descriptor, zero on success
+  # create a new socket descriptor
+  # on error a negative integer is returned.
+  # on success zero or more is returned.
   socket i64 is intrinsic
 
-  // connect, zero on success
+  # bind server, zero on success
+  # array data depends on the family.
+  # - ipv4: first two bytes encode the port,
+  #         then four bytes for the ip address
+  # returns zero on success, anything else is an error.
   bind   (sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
 
-  // listen, zero on success
+  # activates the server socket, setting a backlog
+  # for maximum amount of connections which are kept
+  # waiting for acceptance.
+  # returns zero on success, anything else is an error.
   listen (sd i64, backlog i32) i64 is intrinsic
 
-  // returns file descriptor or -1 on error
+  # accept a new connection for given socket.
+  # blocks until there is a connection to accept.
+  # returns a new / different descriptor which
+  # corresponds to the accepted connection only.
+  # on error a negative integer is returned.
+  # on success zero or more is returned.
   accept (sd i64) i64 is intrinsic
 
-  // connect, zero on success
+  # connect the socket.
+  # details depend on the used family:
+  # - ipv4: first two bytes encode the port,
+  #         then four bytes for the ip address
+  # returns zero on success, anything else is an error.
   connect(sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
 
 
 
+  // NYI can we yield control so that we can abort on error?
   server(port u16, read_write ((u64) -> outcome (array u8), (Sequence u8) -> outcome unit) -> bool) outcome unit is
 
     backlog := 10
@@ -55,7 +75,7 @@ net is
       # bind to port
       if (bind sd af_inet port_addr.internalArray.data port_addr.length) != 0
         fuzion.sys.fileio.close sd
-        error "binding socket to port $port failed."
+        error "binding server socket to port $port failed."
       else
         # listen
         if (listen sd backlog) = -1
@@ -102,7 +122,7 @@ net is
       # connect to addr, port
       if (connect sd af_inet port_addr.internalArray.data port_addr.length) != 0
         fuzion.sys.fileio.close sd
-        error "binding socket to port $port failed."
+        error "connecting client socket to addr {addr.as_bytes} port $port failed."
       else
         (read_write
           # reading
