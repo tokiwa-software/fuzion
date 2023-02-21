@@ -1,0 +1,122 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Entry
+#
+# -----------------------------------------------------------------------
+
+
+# Entry -- an entry of a mutable tree map
+#
+private Entry(LM type : mutate, K type : has_total_order, V type, k K, v V) ref is
+
+
+  # the mutable key of this entry
+  #
+  private key := LM.env.new K k
+
+
+  # the mutable value stored at this entry
+  #
+  private val := LM.env.new V v
+
+
+  # reference to the left subtree at this entry, or, if it is empty, nil
+  #
+  private left := LM.env.new (option (Entry LM K V)) nil
+
+
+  # reference to the right subtree at this entry, or if it is empty, nil
+  #
+  private right := LM.env.new (option (Entry LM K V)) nil
+
+
+  # height of the subtree whose root is this entry
+  #
+  private height := LM.env.new i32 0
+
+
+  # size of the subtree whose root is this entry
+  #
+  private size u32 is
+    # helper feature for calculating the size of the left subtree
+    #
+    private left_size u32 is
+      left.get ? nil => 0
+               | e Entry => e.size
+
+    # helper feature for calculating the size of the right subtree
+    #
+    private right_size u32 is
+      right.get ? nil => 0
+                | e Entry => e.size
+
+    left_size + right_size + 1
+
+
+  # return a string representation of the subtree whose root is this
+  # entry
+  #
+  redef as_string =>
+    private left_string =>
+      left.get ? nil => "E"
+               | e Entry => e.as_string
+
+    private right_string =>
+      right.get ? nil => "E"
+                | e Entry => e.as_string
+
+    "T(({key.get}, {val.get}), {height.get}, {left_string}, {right_string})"
+
+
+  # get the value stored in this submap at key k, nil if k is not a key
+  # in this submap
+  #
+  private get(k K) option V is
+    if k ⩻ key.get
+      left.get ? nil => nil
+               | e Entry => e.get k
+    else if key.get ⩻ k
+      right.get ? nil => nil
+                | e Entry => e.get k
+    else
+      val.get
+
+
+  # freeze this entry and all the entries below them, such that they
+  # are no longer mutable
+  #
+  private freeze =>
+    if key.open
+      key.close
+
+    if val.open
+      val.close
+
+    if left.open
+      left.close
+
+      left.get ? nil =>
+               | e Entry => e.freeze
+
+    if right.open
+      right.close
+
+      right.get ? nil =>
+                | e Entry => e.freeze
