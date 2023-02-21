@@ -67,7 +67,8 @@ net is
     ipv6    := 41
 
   families is
-    ipv4 :=  2
+    local:= 1  # pipes etc.
+    ipv4 := 2
     ipv6 := 10
 
   socket_types is
