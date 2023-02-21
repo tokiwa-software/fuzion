@@ -63,7 +63,7 @@ public class Intrinsics extends ANY
   static CIdent A0 = new CIdent("arg0");
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
-  static CIdent A3 = new CIdent("arg2");
+  static CIdent A3 = new CIdent("arg3");
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
@@ -109,7 +109,12 @@ public class Intrinsics extends ANY
           var zero = new CIdent("0");
           return CStmnt.seq(
             CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
-            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(
+              A1,                                                                                // the buffer
+              CExpr.int8const(1),                                                          // chunk size
+              CExpr.call("fzE_bytes_available", new List<>(A0.castTo("FILE *"), A2)),       // chunk count
+              A0.castTo("FILE *")                                                                // file pointer
+              ))),
             CExpr.decl("fzT_1i64", resultIdent, readingIdent.castTo("fzT_1i64")),
             CExpr.iff(
               CExpr.notEq(readingIdent, A2.castTo("size_t")),
@@ -752,30 +757,28 @@ public class Intrinsics extends ANY
       });
 
 
-    put("fuzion.sys.net.socket",  (c,cl,outer,in) -> CExpr.call("fzE_socket",
+    put("fuzion.sys.net.socket",  (c,cl,outer,in) -> toBeNamed(CExpr.call("fzE_socket",
       // NYI get domain, type, protocol from args
-      new List<CExpr>(new CIdent("AF_INET"), new CIdent("SOCK_STREAM"), new CIdent("IPPROTO_TCP"))));
+      new List<CExpr>(new CIdent("AF_INET"), new CIdent("SOCK_STREAM"), new CIdent("IPPROTO_TCP")))));
     put("fuzion.sys.net.bind",    (c,cl,outer,in) -> CExpr.call("fzE_bind", new List<CExpr>(
-      A0, // socket descriptor
-      new CIdent("AF_INET"), // family
-      A2, // data for family, an array of bytes
-      A3  // data length
-    )));
+      A0.castTo("FILE *"), // socket descriptor
+      A1.castTo("int"), // family
+      A2.castTo("char *"), // data for family, an array of bytes
+      A3.castTo("int")  // data length
+    )).ret());
     put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
-      A0, // socket descriptor
-      A1  // size of backlog
-    )));
-    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> CExpr.call("fzE_accept", new List<CExpr>(
-      A0, // socket descriptor
-      CNames.NULL, // NYI return the client info
-      CNames.NULL
-    )));
+      A0.castTo("FILE *"), // socket descriptor
+      A1.castTo("int")  // size of backlog
+    )).ret());
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> toBeNamed(CExpr.call("fzE_accept", new List<CExpr>(
+      A0.castTo("FILE *") // socket descriptor
+    ))));
     put("fuzion.sys.net.connect", (c,cl,outer,in) -> CExpr.call("fzE_connect", new List<CExpr>(
-      A0, // socket descriptor
-      new CIdent("AF_INET"), // family
-      A2, // data for family, an array of bytes
-      A3  // data length
-    )));
+      A0.castTo("FILE *"), // socket descriptor
+      A1.castTo("int"), // family
+      A2.castTo("char *"), // data for family, an array of bytes
+      A3.castTo("int")  // data length
+    )).ret());
 
 
     put("effect.replace"       ,
@@ -1009,6 +1012,23 @@ public class Intrinsics extends ANY
     var rs = ru.castTo(st);
 
     return rs;
+  }
+
+
+  static CStmnt toBeNamed(CExpr expr)
+  {
+    var filePointer = new CIdent("fp");
+    return CStmnt.seq(
+      CExpr.decl("FILE *", filePointer),
+      filePointer.assign(expr),
+
+      // error
+      CExpr.iff(CExpr.eq(filePointer, new CIdent("NULL")),
+        CExpr.int64const(-1).ret()
+      ),
+      // success
+      filePointer.castTo("fzT_1i64").ret()
+      );
   }
 
 }
