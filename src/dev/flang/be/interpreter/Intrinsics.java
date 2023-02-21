@@ -844,15 +844,15 @@ public class Intrinsics extends ANY
           var ss = new ServerSocket();
           ss.bind(new InetSocketAddress(ipAddress, port));
           _openStreams_.put(args.get(1).i64Value(), ss);
-          return new i64Value(0);
+          return new i32Value(0);
         }
       catch(IOException e)
         {
-          return new i64Value(-1);
+          return new i32Value(-1);
         }
     });
     put("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
-      return new i64Value(0);
+      return new i32Value(0);
     });
     put("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
       try
@@ -875,11 +875,11 @@ public class Intrinsics extends ANY
       try
         {
           _openStreams_.put(args.get(1).i64Value(), new Socket(ipAddress, port));
-          return new i64Value(0);
+          return new i32Value(0);
         }
       catch(IOException e)
         {
-          return new i64Value(-1);
+          return new i32Value(-1);
         }
     });
 

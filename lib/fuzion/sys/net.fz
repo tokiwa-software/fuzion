@@ -34,13 +34,13 @@ net is
   # - ipv4: first two bytes encode the port,
   #         then four bytes for the ip address
   # returns zero on success, anything else is an error.
-  bind   (sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
+  bind   (sd i64, family i32, arr_data Any, length i32) i32 is intrinsic
 
   # activates the server socket, setting a backlog
   # for maximum amount of connections which are kept
   # waiting for acceptance.
   # returns zero on success, anything else is an error.
-  listen (sd i64, backlog i32) i64 is intrinsic
+  listen (sd i64, backlog i32) i32 is intrinsic
 
   # accept a new connection for given socket.
   # blocks until there is a connection to accept.
@@ -55,8 +55,24 @@ net is
   # - ipv4: first two bytes encode the port,
   #         then four bytes for the ip address
   # returns zero on success, anything else is an error.
-  connect(sd i64, family i32, arr_data Any, length i32) i64 is intrinsic
+  connect(sd i64, family i32, arr_data Any, length i32) i32 is intrinsic
 
+
+  # NYI these numbers are system dependent
+
+  protocols is
+    ip      := 0
+    tcp     := 6
+    udp     := 17
+    ipv6    := 41
+
+  families is
+    ipv4 :=  2
+    ipv6 := 10
+
+  socket_types is
+    stream := 2
+    raw    := 3
 
 
   // NYI can we yield control so that we can abort on error?
@@ -70,10 +86,9 @@ net is
     if sd = -1
       error "a new socket could not be created"
     else
-      af_inet := 2
       port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
       # bind to port
-      if (bind sd af_inet port_addr.internalArray.data port_addr.length) != 0
+      if (bind sd families.ipv4 port_addr.internalArray.data port_addr.length) != 0
         fuzion.sys.fileio.close sd
         error "binding server socket to port $port failed."
       else
@@ -116,11 +131,10 @@ net is
     if sd = -1
       error "a new socket could not be created"
     else
-      af_inet := 2
       port_addr array u8:= (port.as_bytes ++ addr.as_bytes).as_array
 
       # connect to addr, port
-      if (connect sd af_inet port_addr.internalArray.data port_addr.length) != 0
+      if (connect sd families.ipv4 port_addr.internalArray.data port_addr.length) != 0
         fuzion.sys.fileio.close sd
         error "connecting client socket to addr {addr.as_bytes} port $port failed."
       else
