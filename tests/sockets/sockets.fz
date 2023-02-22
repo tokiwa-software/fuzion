@@ -23,21 +23,17 @@
 
 sockets =>
 
-  read_max_bytes u64 := 100
-  localhost := (u32 127 << u32 24)+1
+  localhost array u8 := [127, 0, 0, 1]
   port u16 := 9000
 
   # start server
   concur.thread.spawn ()->
-    say (fuzion.sys.net.server port ( read,write ->
+    say (fuzion.sys.net.server fuzion.sys.net.ipv4 port ( read,write ->
 
       say "accepted connection while listening on port $port"
 
-      match read read_max_bytes
-        err error  => say err
-        a array u8 =>
-          s := String.type.from_bytes a
-          say "received request: $s"
+      s := String.type.from_bytes read()
+      say "received request: $s"
 
       write "I am a response payload".utf8
 
@@ -53,9 +49,6 @@ sockets =>
 
       write "I am a request payload".utf8
 
-      match read read_max_bytes
-        err error  => say err
-        a array u8 =>
-          s := String.type.from_bytes a
-          say "received response: $s"
+      s := String.type.from_bytes read()
+      say "received response: $s"
       ))

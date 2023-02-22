@@ -60,24 +60,73 @@ net is
 
   # NYI these numbers are system dependent
 
-  protocols is
-    ip      := 0
-    tcp     := 6
-    udp     := 17
-    ipv6    := 41
+  tcp is
+  udp is
+  local is
+  ipv4 is
+  ipv6 is
+  stream is
+  raw is
 
-  families is
-    local:= 1  # pipes etc.
-    ipv4 := 2
-    ipv6 := 10
 
-  socket_types is
-    stream := 2
-    raw    := 3
+  protocols : choice ipv4 tcp udp ipv6 is
+    num i32 is
+      match protocols.this
+        ipv4 => 0
+        tcp => 6
+        udp => 17
+        ipv6 => 41
+
+  family : choice local ipv4 ipv6 is
+    num i32 is
+      match family.this
+        local => 1  # pipes etc.
+        ipv4  => 2
+        ipv6  => 10
+
+  socket_type : choice stream raw is
+    num i32 is
+      match socket_type.this
+        stream stream => 2
+        raw raw => 3
+
+
+  # read buffer in bytes
+  buffer_size u64 := 1000
+
+
+  # NYI blocking / none blocking
+  private read_from(descriptor i64) list (outcome u8) : fuzion.sys.fileio is
+    match read descriptor buffer_size
+      arr array u8 =>
+        match arr.as_list
+          nil => nil
+          c Cons u8 (list u8) =>
+            list_of (outcome u8) c.head c.tail.map((outcome u8), (x -> x))
+            # list_of (outcome u8) c.head (c.tail.map((outcome u8), (x -> x)).concat2 (()->read_from descriptor))
+      err error =>
+        list_of (outcome u8) err nil
+
+
+  # NYI collect occured errors
+  private read_until_error(descriptor i64) list u8 is
+    (read_from descriptor).take_while(x ->
+      match x
+        u8 => true
+        error => false
+    ).map(x ->
+      match x
+        b u8 => b
+        error => panic "should not be possible")
+
 
 
   // NYI can we yield control so that we can abort on error?
-  server(port u16, read_write ((u64) -> outcome (array u8), (Sequence u8) -> outcome unit) -> bool) outcome unit is
+  // NYI should we ensure, read is only called once?
+
+  server(f family, port u16, read_write (() -> list u8, (Sequence u8) -> outcome unit) -> bool)
+    outcome unit : fuzion.sys.fileio
+  is
 
     backlog := 10
 
@@ -89,42 +138,47 @@ net is
     else
       port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
       # bind to port
-      if (bind sd families.ipv4 port_addr.internalArray.data port_addr.length) != 0
-        fuzion.sys.fileio.close sd
+      if (bind sd f.num port_addr.internalArray.data port_addr.length) != 0
+        close sd
         error "binding server socket to port $port failed."
       else
         # listen
         if (listen sd backlog) = -1
-          fuzion.sys.fileio.close sd
+          close sd
           error "listening on socket failed."
         else
           for cd := accept sd, accept sd
           while cd != -1 && (read_write
               # reading
-              ((max) ->
-                fuzion.sys.fileio.read cd max)
+              (() -> read_until_error cd)
               # writing
-              ((data) ->
-                fuzion.sys.fileio.write cd data.as_array)
+              ((data) -> write cd data.as_array)
             )
           else
             # NYI better type inference needed
             res outcome unit := (if cd = -1
-              fuzion.sys.fileio.close sd
+              close sd
               error "there was an error accepting a new connection."
             else
-              match fuzion.sys.fileio.close cd
+              match close cd
                 err error =>
-                  fuzion.sys.fileio.close sd
+                  close sd
                   err
                 unit      =>
-                  fuzion.sys.fileio.close sd
+                  close sd
                 )
             res
 
 
 
-  client(addr u32, port u16, read_write ((u64) -> outcome (array u8), (Sequence u8) -> outcome unit) -> unit) outcome unit is
+  client(addr Sequence u8, port u16, read_write (() -> list u8, (Sequence u8) -> outcome unit) -> unit)
+    outcome unit : fuzion.sys.fileio
+  pre  (addr.count = 32/8   # ipv4
+     || addr.count = 128/8) # ipv6
+  is
+
+    family_of(addr Sequence u8) family is
+      if addr.count = 32/8 then ipv4 else ipv6
 
     # open socket
     sd := socket
@@ -132,21 +186,18 @@ net is
     if sd = -1
       error "a new socket could not be created"
     else
-      port_addr array u8:= (port.as_bytes ++ addr.as_bytes).as_array
+      port_addr array u8 := (port.as_bytes ++ addr).as_array
 
       # connect to addr, port
-      if (connect sd families.ipv4 port_addr.internalArray.data port_addr.length) != 0
-        fuzion.sys.fileio.close sd
-        error "connecting client socket to addr {addr.as_bytes} port $port failed."
+      if (connect sd (family_of addr).num port_addr.internalArray.data port_addr.length) != 0
+        close sd
+        error "connecting client socket to addr {addr} port $port failed."
       else
         (read_write
           # reading
-          ((max) ->
-            fuzion.sys.fileio.read sd max)
+          (() -> read_until_error sd)
           # writing
-          ((data) ->
-            fuzion.sys.fileio.write sd data.as_array)
-        )
+          ((data) -> write sd data.as_array))
 
-        fuzion.sys.fileio.close sd
+        close sd
 
