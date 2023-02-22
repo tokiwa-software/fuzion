@@ -467,6 +467,14 @@ list(T type, h T, t () -> list T) list T is
     tail => t()
 
 
+# convenience routine to create a list from head h and tail t.
+#
+list_of(T type, h T, t list T) list T is
+  ref : Cons T (list T)
+    head => h
+    tail => t
+
+
 # infix operator to create a list from head h and lazy tail t.
 #
 # This is convenient to append an element before a list as in
