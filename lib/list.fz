@@ -421,6 +421,15 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | nil    => nil
 
 
+  # creates an infinite list repeating
+  # the same element forever
+  type.infinite (el A) list A is
+    ref : Cons A (list A)
+      head => el
+      tail => infinite el
+
+
+
 # lists -- unit type defining features related to list but not requiring an
 # instance
 #
