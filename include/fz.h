@@ -50,6 +50,41 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+// make directory, return zero on success
+int fzE_mkdir(const char *pathname){
+#if _WIN32
+  // should we CreateDirectory here?
+  return mkdir(pathname);
+#else
+  return mkdir(pathname, S_IRWXU);
+#endif
+}
+
+
+
+// set environment variable, return zero on success
+int fzE_setenv(const char *name, const char *value, int overwrite){
+#if _WIN32
+  // setenv is posix only
+  return -1;
+#else
+  return setenv(name, value, overwrite);
+#endif
+}
+
+
+
+// unset environment variable, return zero on success
+int fzE_unsetenv(const char *name){
+#if _WIN32
+  // unsetenv is posix only
+  return -1;
+#else
+  return unsetenv(name);
+#endif
+}
+
+
 // int set_socket_none_blocking(int fd)
 // {
 //   if (fd < 0){
