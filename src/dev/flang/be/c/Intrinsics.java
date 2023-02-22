@@ -694,9 +694,9 @@ public class Intrinsics extends ANY
                                                                                    CNames.NULL,
                                                                                    CNames.fzThreadStartRoutine.adrOf(),
                                                                                    arg))),
-                                CExpr.iff(res.ne(CExpr.int32const(0)),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+                                CExpr.iff(res.ne(CExpr.int32const(0)), CExpr.int64const(Long.MAX_VALUE).ret()),
+                                pt.castTo("fzT_1u64")
+                                );
               // NYI: free(pt)!
             }
           else

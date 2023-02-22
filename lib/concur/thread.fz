@@ -56,7 +56,7 @@ Thread_Provider ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) unit is abstract
+  spawn(code ()->unit) outcome u64 is abstract
 
 
 # type related to thread declaring features not requiring an instance of thread

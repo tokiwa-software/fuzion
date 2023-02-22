@@ -30,11 +30,21 @@ private thread is
 
   # intrinsic to spawn a new thread
   #
-  private spawn(code ()->unit) =>
+  private spawn(code ()->unit) outcome u64 is
     doCall ref : Function unit is
       call =>
         code()
 
-    spawn0 doCall
+    r := spawn0 doCall
+    if r = u64s.max
+      error "failed spawning thread"
+    else
+      r
 
-  private spawn0(T type : ()->unit, code T) unit is intrinsic
+
+  # intrinsic to spawn a thread.
+  #
+  # on success : thread_id
+  # on error   : u64.max
+  # NYI remove the hack that u64.max represents the error
+  private spawn0(T type : ()->unit, code T) u64 is intrinsic

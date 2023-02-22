@@ -131,6 +131,19 @@ public class Intrinsics extends ANY
   };
 
 
+  /**
+   * This contains all open files/streams.
+   */
+  private static OpenResources<Thread> _runningThreads_ = new OpenResources<Thread>()
+  {
+    @Override
+    protected boolean close(Thread t) {
+      t.interrupt();
+      return true;
+    }
+  };
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -740,7 +753,7 @@ public class Intrinsics extends ANY
           var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
           t.setDaemon(true);
           t.start();
-          return new Instance(Clazzes.c_unit.get());
+          return new u64Value(_runningThreads_.add(t));
         });
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
