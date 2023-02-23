@@ -93,7 +93,7 @@ public class Intrinsics extends ANY
    */
   enum SystemErrNo
   {
-    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95);
+    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95), ECONNREFUSED(111);
 
     final int errno;
 
@@ -832,10 +832,16 @@ public class Intrinsics extends ANY
 
 
     put("fuzion.sys.net.socket"  , (interpreter, innerClazz) -> args -> {
-      return new i64Value(allocNewDescriptor());
+      var res = (long[])args.get(1).arrayData()._array;
+      res[0] = allocNewDescriptor();
+      return new boolValue(true);
     });
     put("fuzion.sys.net.bind"    , (interpreter, innerClazz) -> args -> {
-      var family = args.get(2);
+      var family = args.get(2).i32Value();
+      if (family != 2)
+        {
+          throw new RuntimeException("NYI");
+        }
       var arr = (byte[])args.get(3).arrayData()._array;
       var port = ((((int)arr[0])<<8) + (int)arr[1]);
       var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
@@ -860,15 +866,20 @@ public class Intrinsics extends ANY
           var socket = ((ServerSocket)_openStreams_.get(args.get(1).i64Value())).accept();
           var descriptor = allocNewDescriptor();
           _openStreams_.put(descriptor, socket);
-          return new i64Value(descriptor);
+          ((long[])args.get(2).arrayData()._array)[0] = descriptor;
+          return new boolValue(true);
         }
       catch(IOException e)
         {
-          return new i64Value(-1);
+          return new boolValue(false);
         }
     });
     put("fuzion.sys.net.connect" , (interpreter, innerClazz) -> args -> {
       var family = args.get(2).i32Value();
+      if (family != 2)
+        {
+          throw new RuntimeException("NYI");
+        }
       var arr = (byte[])args.get(3).arrayData()._array;
       var port = ((((int)arr[0])<<8) + (int)arr[1]);
       var ipAddress = arr[2] + "." + arr[3] + "." + arr[4] + "." + arr[5];
@@ -879,7 +890,7 @@ public class Intrinsics extends ANY
         }
       catch(IOException e)
         {
-          return new i32Value(-1);
+          return new i32Value(SystemErrNo.ECONNREFUSED.errno);
         }
     });
 

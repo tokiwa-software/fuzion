@@ -1,3 +1,4 @@
+--error: connecting client socket to addr [127,0,0,1] port 9000 failed with error 111.--
 accepted connection while listening on port 9000
 received request: I am a request payload
 received response: I am a response payload

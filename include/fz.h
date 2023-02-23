@@ -28,6 +28,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef	_FUZION_H
 #define	_FUZION_H	1
 
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <stdlib.h>     // setenv, unsetenv
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
@@ -112,11 +116,15 @@ int fzE_bind(FILE * sockfd, int family, char * data, int data_len){
   memset(&sa, 0, sizeof sa);
   sa.sa_family = family;
   memcpy(sa.sa_data, data, data_len);
-  return bind(fileno(sockfd), &sa, sizeof sa);
+  return (bind(fileno(sockfd), &sa, sizeof sa) == -1)
+    ? errno
+    : 0;
 }
 
 int fzE_listen(FILE * sockfd, int backlog){
-  return listen(fileno(sockfd), backlog);
+  return (listen(fileno(sockfd), backlog) == -1)
+    ? errno
+    : 0;
 }
 
 FILE * fzE_accept(FILE * sockfd){
@@ -128,7 +136,9 @@ int fzE_connect(FILE * sockfd, int family, char * data, int data_len){
   memset(&sa, 0, sizeof sa);
   sa.sa_family = family;
   memcpy(sa.sa_data, data, data_len);
-  return connect(fileno(sockfd), &sa, sizeof sa);
+  return (connect(fileno(sockfd), &sa, sizeof sa) == -1)
+    ? errno
+    : 0;
 }
 
 

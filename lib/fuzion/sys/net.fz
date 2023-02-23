@@ -24,37 +24,68 @@
 # groups networking related features
 net is
 
+
   # create a new socket descriptor
-  # on error a negative integer is returned.
-  # on success zero or more is returned.
-  socket i64 is intrinsic
+  #
+  # true  => arr_result[0] is the socket descriptor
+  # false => arr_result[0] is an error number
+  #
+  socket(arr_result Any) bool is intrinsic
+
+  # convenience wrapper for socket intrinsic
+  socket outcome i64 is
+    arr array i64 := [0]
+    if socket arr.internalArray.data then arr[0] else error "error number: {arr[0]}"
+
 
   # bind server, zero on success
   # array data depends on the family.
   # - ipv4: first two bytes encode the port,
   #         then four bytes for the ip address
+  #
   # returns zero on success, anything else is an error.
+  #
   bind   (sd i64, family i32, arr_data Any, length i32) i32 is intrinsic
+
+
+  # NYI wrap bind, listen, connect like this:
+  # bind   (sd i64, family i32, arr_data Any, length i32) outcome unit is
+  #   res := bind sd family arr_data length
+  #   if res = 0 then unit else error "binding failed with error: $res."
+
 
   # activates the server socket, setting a backlog
   # for maximum amount of connections which are kept
   # waiting for acceptance.
+  #
   # returns zero on success, anything else is an error.
+  #
   listen (sd i64, backlog i32) i32 is intrinsic
+
 
   # accept a new connection for given socket.
   # blocks until there is a connection to accept.
   # returns a new / different descriptor which
   # corresponds to the accepted connection only.
-  # on error a negative integer is returned.
-  # on success zero or more is returned.
-  accept (sd i64) i64 is intrinsic
+  #
+  # true  => arr_result[0] is the socket descriptor
+  # false => arr_result[0] is an error number
+  #
+  accept (sd i64, arr_result Any) bool is intrinsic
+
+  # convenience wrapper for accept intrinsic
+  accept(sd i64) outcome i64 is
+    arr array i64 := [0]
+    if accept sd arr.internalArray.data then arr[0] else error "error number: {arr[0]}"
+
 
   # connect the socket.
   # details depend on the used family:
   # - ipv4: first two bytes encode the port,
   #         then four bytes for the ip address
+  #
   # returns zero on success, anything else is an error.
+  #
   connect(sd i64, family i32, arr_data Any, length i32) i32 is intrinsic
 
 
@@ -131,43 +162,46 @@ net is
     backlog := 10
 
     # open socket
-    sd := socket
-
-    if sd = -1
-      error "a new socket could not be created"
-    else
-      port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
-      # bind to port
-      if (bind sd f.num port_addr.internalArray.data port_addr.length) != 0
-        close sd
-        error "binding server socket to port $port failed."
-      else
-        # listen
-        if (listen sd backlog) = -1
+    match socket
+      sd i64 =>
+        port_addr array u8:= (port.as_bytes ++ [u8 0, u8 0, u8 0, u8 0]).as_array
+        # bind to port
+        res := bind sd f.num port_addr.internalArray.data port_addr.length
+        if res != 0
           close sd
-          error "listening on socket failed."
+          error "binding server socket to port $port failed with error $res."
         else
-          for cd := accept sd, accept sd
-          while cd != -1 && (read_write
-              # reading
-              (() -> read_until_error cd)
-              # writing
-              ((data) -> write cd data.as_array)
-            )
+          # listen
+          res := listen sd backlog
+          if res != 0
+            close sd
+            error "listening on socket failed with error $res."
           else
-            # NYI better type inference needed
-            res outcome unit := (if cd = -1
-              close sd
-              error "there was an error accepting a new connection."
+            for ar := accept sd, accept sd
+            while (
+              match ar
+                desc i64 =>
+                  read_write
+                    # reading
+                    (() -> read_until_error desc)
+                    # writing
+                    ((data) -> write desc data.as_array)
+                error => false
+            )
             else
-              match close cd
-                err error =>
+              match ar
+                # NYI name desc results in error. Ambigous target
+                desc_else i64 =>
+                  match close desc_else
+                    err error =>
+                      close sd
+                      err
+                    unit      =>
+                      close sd
+                error error =>
                   close sd
                   err
-                unit      =>
-                  close sd
-                )
-            res
+      err error => err
 
 
 
@@ -181,23 +215,22 @@ net is
       if addr.count = 32/8 then ipv4 else ipv6
 
     # open socket
-    sd := socket
+    match socket
+      sd i64 =>
+        port_addr array u8 := (port.as_bytes ++ addr).as_array
 
-    if sd = -1
-      error "a new socket could not be created"
-    else
-      port_addr array u8 := (port.as_bytes ++ addr).as_array
+        # connect to addr, port
+        res := connect sd (family_of addr).num port_addr.internalArray.data port_addr.length
+        if res != 0
+          close sd
+          error "connecting client socket to addr {addr} port $port failed with error {res}."
+        else
+          (read_write
+            # reading
+            (() -> read_until_error sd)
+            # writing
+            ((data) -> write sd data.as_array))
 
-      # connect to addr, port
-      if (connect sd (family_of addr).num port_addr.internalArray.data port_addr.length) != 0
-        close sd
-        error "connecting client socket to addr {addr} port $port failed."
-      else
-        (read_write
-          # reading
-          (() -> read_until_error sd)
-          # writing
-          ((data) -> write sd data.as_array))
-
-        close sd
-
+          close sd
+      err error =>
+        err

@@ -26,6 +26,10 @@ sockets =>
   localhost array u8 := [127, 0, 0, 1]
   port u16 := 9000
 
+  # should result in connection refused
+  # since no server is running yet...
+  say (fuzion.sys.net.client localhost port ( read,write ->))
+
   # start server
   concur.thread.spawn ()->
     say (fuzion.sys.net.server fuzion.sys.net.ipv4 port ( read,write ->

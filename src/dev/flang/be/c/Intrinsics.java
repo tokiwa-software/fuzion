@@ -737,9 +737,9 @@ public class Intrinsics extends ANY
       });
 
 
-    put("fuzion.sys.net.socket",  (c,cl,outer,in) -> toBeNamed(CExpr.call("fzE_socket",
+    put("fuzion.sys.net.socket",  (c,cl,outer,in) -> toBeNamed(c, CExpr.call("fzE_socket",
       // NYI get domain, type, protocol from args
-      new List<CExpr>(new CIdent("AF_INET"), new CIdent("SOCK_STREAM"), new CIdent("IPPROTO_TCP")))));
+      new List<CExpr>(new CIdent("AF_INET"), new CIdent("SOCK_STREAM"), new CIdent("IPPROTO_TCP"))), A0));
     put("fuzion.sys.net.bind",    (c,cl,outer,in) -> CExpr.call("fzE_bind", new List<CExpr>(
       A0.castTo("FILE *"), // socket descriptor
       A1.castTo("int"), // family
@@ -750,9 +750,9 @@ public class Intrinsics extends ANY
       A0.castTo("FILE *"), // socket descriptor
       A1.castTo("int")  // size of backlog
     )).ret());
-    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> toBeNamed(CExpr.call("fzE_accept", new List<CExpr>(
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> toBeNamed(c, CExpr.call("fzE_accept", new List<CExpr>(
       A0.castTo("FILE *") // socket descriptor
-    ))));
+    )), A1));
     put("fuzion.sys.net.connect", (c,cl,outer,in) -> CExpr.call("fzE_connect", new List<CExpr>(
       A0.castTo("FILE *"), // socket descriptor
       A1.castTo("int"), // family
@@ -995,20 +995,30 @@ public class Intrinsics extends ANY
   }
 
 
-  static CStmnt toBeNamed(CExpr expr)
+  static CStmnt toBeNamed(C c,CExpr expr, CIdent res)
   {
     var filePointer = new CIdent("fp");
     return CStmnt.seq(
       CExpr.decl("FILE *", filePointer),
       filePointer.assign(expr),
-
       // error
       CExpr.iff(CExpr.eq(filePointer, new CIdent("NULL")),
-        CExpr.int64const(-1).ret()
+        CStmnt.seq(
+          res
+            .castTo("fzT_1i64 *")
+            .index(CExpr.int32const(0))
+            .assign(new CIdent("errno")),
+          c._names.FZ_FALSE.ret()
+        )
       ),
       // success
-      filePointer.castTo("fzT_1i64").ret()
-      );
+      CStmnt.seq(
+        res
+          .castTo("fzT_1i64 *")
+          .index(CExpr.int32const(0))
+          .assign(filePointer.castTo("fzT_1i64")),
+        c._names.FZ_TRUE.ret()
+      ));
   }
 
 }
