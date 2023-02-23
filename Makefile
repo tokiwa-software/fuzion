@@ -338,6 +338,17 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md
 
+# files required for fz command with interpreter backend
+FZ_INT = \
+			 $(BUILD_DIR)/bin/fz \
+			 $(MOD_BASE)
+
+# files required for fz command with C backend
+FZ_C = \
+			 $(BUILD_DIR)/bin/fz \
+			 $(BUILD_DIR)/include \
+			 $(MOD_BASE)
+
 DOCUMENTATION = \
 	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
 
@@ -1010,13 +1021,13 @@ run_tests: run_tests_int run_tests_c
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
@@ -1026,13 +1037,13 @@ run_tests_parallel: run_tests_int_parallel run_tests_c_parallel
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
