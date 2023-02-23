@@ -82,4 +82,4 @@ test_type_of is
   u f64          "Type of 'f64'"
   u (option i32) "Type of 'option i32'"
 
-  exit exit_code
+  exit exit_code.get
