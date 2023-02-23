@@ -1695,6 +1695,10 @@ public class Call extends AbstractCall
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
+        if (!actualType.isGenericArgument() && actualType.featureOfType().isTypeFeature())
+          {
+            actualType = Types.resolved.f_Type.thisType();
+          }
       }
     return actualType;
   }

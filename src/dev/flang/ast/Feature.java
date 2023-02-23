@@ -2139,7 +2139,6 @@ public class Feature extends AbstractFeature implements Stmnt
   }
 
 
-
   /**
    * resultTypeRaw returns the result type of this feature using the
    * formal generic argument.
@@ -2163,18 +2162,22 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
       }
-    else if (_impl._kind == Impl.Kind.FieldDef ||
-             _impl._kind == Impl.Kind.FieldActual)
+    else if (_impl._kind == Impl.Kind.FieldDef    ||
+             _impl._kind == Impl.Kind.FieldActual ||
+             _impl._kind == Impl.Kind.RoutineDef)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._initialValue.typeIfKnown();
-      }
-    else if (_impl._kind == Impl.Kind.RoutineDef)
-      {
-        if (CHECKS) check
-          (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl._code.typeIfKnown();
+        var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
+                                                       : _impl._initialValue;
+        result = from.typeIfKnown();
+        if (!(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get) &&
+            result != null &&
+            !result.isGenericArgument() &&
+            result.featureOfType().isTypeFeature())
+          {
+            result = Types.resolved.f_Type.thisType();
+          }
       }
     else if (_returnType.isConstructorType())
       {

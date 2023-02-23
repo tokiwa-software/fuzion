@@ -795,11 +795,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public AbstractFeature typeFeature()
   {
     if (PRECONDITIONS) require
-      (hasTypeFeature());
+      (isTypeFeature() || hasTypeFeature());
 
     if (_typeFeature == null)
       {
-        _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
+        _typeFeature = this == Types.f_ERROR ? this :
+                       isTypeFeature()       ? Types.resolved.f_Type
+                                             : existingTypeFeature();
       }
     var result = _typeFeature;
 
