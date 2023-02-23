@@ -521,7 +521,7 @@ public class C extends ANY
         var cf = new CFile(cname);
         try
           {
-            createCode(cf);
+            createCode(cf, _options);
           }
         finally
           {
@@ -585,8 +585,9 @@ public class C extends ANY
   /**
    * After the CFile has been opened and stored in _c, this methods generates
    * the code into this file.
+   * @throws IOException
    */
-  private void createCode(CFile cf)
+  private void createCode(CFile cf, COptions _options) throws IOException
   {
     cf.print
       ((_options._useBoehmGC ? "#include <gc.h>\n" : "")+
@@ -605,8 +606,11 @@ public class C extends ANY
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
        // defines _O_BINARY
-       "#include <sys/fcntl.h>\n"+
-       "\n");
+       "#include <sys/fcntl.h>\n");
+
+    var fzH = _options.fuzionHome().resolve("include/fz.h").normalize().toAbsolutePath();
+    cf.println("#include \"" + fzH.toString() + "\"\n");
+
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
     cf.print
