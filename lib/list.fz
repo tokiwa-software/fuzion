@@ -28,7 +28,7 @@
 # list provides an abstract type for a sequence of elements of the same type.
 #
 # A list sequence may be empty and contain no element, or it may have a fixed
-# or even infitie number of elements.
+# or even an infinite number of elements.
 #
 # The core of the implementation of an actual list lies in the implementation
 # of the actual Cons cell a non-empty list consists of.
