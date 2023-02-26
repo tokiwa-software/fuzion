@@ -297,20 +297,20 @@ choice_mix is
   alternatives1
 
   alternatives2 unit is // use pipe for choice argument type
-    Nil is
-    MyRef (a,b,c i32) ref is
+    Nil2 is
+    MyRef2 (a,b,c i32) ref is
 
-    test(p i32 | bool | String | Nil | MyRef) unit is
+    test(p i32 | bool | String | Nil2 | MyRef2) unit is
       match p
         i i32    => say "i32:    $i"
         b bool   => say "bool:   $b"
         s String => say "string: $s"
-        n Nil    => say "Nil:    $n"
-        m MyRef  => say "MyRef:  $m"
+        n Nil2   => say "Nil:    $n"
+        m MyRef2 => say "MyRef:  $m"
 
     test 3
     test true
     test "string"
-    test Nil
-    test (MyRef 3 4 5)
+    test Nil2
+    test (MyRef2 3 4 5)
   alternatives2

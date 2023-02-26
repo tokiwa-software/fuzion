@@ -51,10 +51,10 @@ nested_choice =>
       tripel_nested_choice : choice i32 bool_or_u64 is
         redef as_string =>
           match tripel_nested_choice.this
-            i32 i32 => $i32
+            i i32 => $i
             b1 bool_or_u64 =>
               match b1
-                u64 u64 => $u64
+                u u64 => $u
                 b2 bool => $b2
 
 
@@ -169,7 +169,7 @@ nested_choice =>
           choice choice nil String =>
             match choice
               nil nil => "inner nil"
-              String String => String
+              str String => str
           nil nil => "outer nil"
 
     a my_choice := nil
@@ -184,7 +184,7 @@ nested_choice =>
           choice choice nil String =>
             match choice
               nil nil => "inner nil"
-              String String => String
+              str String => str
           choice choice nil unit =>
             match choice
               nil nil => "inner nil"

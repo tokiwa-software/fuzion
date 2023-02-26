@@ -85,13 +85,13 @@ inheritance is
   // mixing value and ref types along the inheritance chain:
   mixValAndRef is
     // simple test: value type inheriting form ref type:
-    A ref is
+    AA ref is
       x := 3
       p => print
       print =>
         say x
-    B : A is
-    b := B
+    BB : AA is
+    b := BB
     b.p // all type info is static in this call
 
     c := 1000
@@ -100,9 +100,9 @@ inheritance is
     // nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
     // variant and calls to features of the corresponding outer features.
     P ref is
-      id := count
+      pid := count
       p => print
-      print => say id
+      print => say pid
       Q ref is
         q => yak "q"; p
         R ref is
@@ -202,23 +202,23 @@ inheritance is
   cnt := 0
   Z
   Z ref is
-    B ref : Z is
+    BB ref : Z is
     if cnt ⩻ 10
       set cnt := cnt + 1
-      _ := B
+      _ := BB
 
   /* more complex inheritcane of outer feateature, with one more level of nesting: */
   tricky_Inheritance is
     cnt := 0
-    Z
-    Z ref is
-        say "tricky_Inheritance.Z: $cnt"
-        B ref is
-          q ref : Z is
-            say "tricky_Inheritance.Z.B.q: $cnt"
+    ZZ
+    ZZ ref is
+        say "tricky_Inheritance.ZZ: $cnt"
+        BB ref is
+          q ref : ZZ is
+            say "tricky_Inheritance.ZZ.B.q: $cnt"
         if cnt ⩻ 10
           set cnt := cnt + 1
-          _ := B.q
+          _ := BB.q
     unit
   tricky_Inheritance
 
@@ -233,25 +233,25 @@ inheritance is
 
     cnt_A_y := 0
     cnt_C_y := 0
-    A is
+    AA is
       x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
-      C ref : A is
+      CC ref : AA is
         redefine y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      D(i i32) is
+      DD(i i32) is
         say i
         chck i≟1 "call to y in arguments must be performed on heir instance"
 
-      B ref : x, C, D y is
+      BB ref : x, CC, DD BB.this.y is
 
-    A.B
+    AA.BB
     chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
@@ -267,38 +267,38 @@ inheritance is
 
     cnt_A_y := 0
     cnt_C_y := 0
-    A ref is
+    AA ref is
       x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
-      C ref : A is
+      CC ref : AA is
         redefine y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      D(i i32) is
+      DD(i i32) is
         say i
         chck i≟1 "call to y in arguments must be performed on heir instance"
 
-      B ref : x, C, D y is
+      BB ref : x, CC, DD BB.this.y is
 
-    A.B
+    AA.BB
     chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
   check_dyn_binding_when_inheriting_value is
-    A is
+    AA is
       a => x
       x => say "A.x: FAILED."; exit_code <- 1
-    B ref : A is
+    BB ref : AA is
       a
       redefine x unit is say "B.x: PASSED."
-    B
+    BB
     unit
   check_dyn_binding_when_inheriting_value
 
@@ -313,25 +313,25 @@ inheritance is
 
     cnt_A_y := 0
     cnt_C_y := 0
-    A is
+    AA is
       x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
-      C ref : A is
+      CC ref : AA is
         redefine y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      D(i i32) is
+      DD(i i32) is
         say i
         chck i≟1 "call to y in arguments must be performed on heir instance"
 
-      B ref : x, C, D y is
+      BB ref : x, CC, DD BB.this.y is
 
-    A.B
+    AA.BB
     chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y≟1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
@@ -344,36 +344,36 @@ inheritance is
     Ecnt := 0
     Fcnt := 0
 
-    A ref is
+    AA ref is
       set Acnt := Acnt + 1
-      B ref is
+      BB ref is
         set Bcnt := Bcnt + 1
-        C ref is
+        CC ref is
           set Ccnt := Ccnt + 1
-          D ref is
+          DD ref is
             set Dcnt := Dcnt + 1
-            E ref is
+            EE ref is
               set Ecnt := Ecnt + 1
-              F ref is
+              FF ref is
                 set Fcnt := Fcnt + 1
-                F3 ref : F is
-              E3 ref : E is
-            D3 ref : D is
-          C3 ref : C is
-        B3 ref : B is
-      A3 ref : A is
-    A1 ref : A is
-    B1 ref : A1.B is
-    C1 ref : B1.C is
-    D1 ref : C1.D is
-    E1 ref : D1.E is
-    F1 ref : E1.F is
-    A2 ref : A.A3 is
-    B2 ref : A2.B.B3 is
-    C2 ref : B2.C.C3 is
-    D2 ref : C2.D.D3 is
-    E2 ref : D2.E.E3 is
-    F2 ref : E2.F.F3 is
+                F3 ref : FF is
+              E3 ref : EE is
+            D3 ref : DD is
+          C3 ref : CC is
+        B3 ref : BB is
+      A3 ref : AA is
+    A1 ref : AA is
+    B1 ref : A1.BB is
+    C1 ref : B1.CC is
+    D1 ref : C1.DD is
+    E1 ref : D1.EE is
+    F1 ref : E1.FF is
+    A2 ref : AA.A3 is
+    B2 ref : A2.BB.B3 is
+    C2 ref : B2.CC.C3 is
+    D2 ref : C2.DD.D3 is
+    E2 ref : D2.EE.E3 is
+    F2 ref : E2.FF.F3 is
     A1
     B1
     C1

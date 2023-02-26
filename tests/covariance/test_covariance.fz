@@ -217,8 +217,8 @@ test_this_type =>
   chck $z       "abcz"
   chck $Z       "vwxZ"
 
-  chck(s, t String) =>
-    say (if s ≟ t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
+  chck(s1, s2 String) =>
+    say (if s1 ≟ s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
 
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.
