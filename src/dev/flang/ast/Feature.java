@@ -1931,14 +1931,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param name the name of the feature
    *
-   * @param call the call we are trying to resolve, or null when not resolving a
-   * call.
-   *
-   * @param assign the assign we are trying to resolve, or null when not resolving an
-   * assign
-   *
-   * @param destructure the destructure we are trying to resolve, or null when not
-   * resolving a destructure.
+   * @param use the call, assign or destructure we are trying to resolve
    *
    * @param inner the inner feature that contains call or assign, null if
    * call/assign is part of current feature's code.
@@ -1946,13 +1939,13 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return in case we found a feature visible in the call's or assign's scope,
    * this is the feature.
    */
-  public Feature findFieldDefInScope(String name, Call call, AbstractAssign assign, Destructure destructure, AbstractFeature inner)
+  public Feature findFieldDefInScope(String name, Stmnt use, AbstractFeature inner)
   {
     if (PRECONDITIONS) require
       (name != null,
-       call != null && assign == null && destructure == null ||
-       call == null && assign != null && destructure == null ||
-       call == null && assign == null && destructure != null,
+       use instanceof Call ||
+       use instanceof AbstractAssign ||
+       use instanceof Destructure,
        inner == null || inner.outer() == this);
 
     // curres[0]: currently visible field with name name
@@ -1986,7 +1979,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         public Call action(Call c, AbstractFeature outer)
         {
-          if (c == call)
+          if (c == use)
             { // Found the call, so we got the result!
               found();
             }
@@ -2004,14 +1997,14 @@ public class Feature extends AbstractFeature implements Stmnt
         }
         public void action(AbstractAssign a, AbstractFeature outer)
         {
-          if (a == assign)
+          if (a == use)
             { // Found the assign, so we got the result!
               found();
             }
         }
         public Stmnt action(Destructure d, AbstractFeature outer)
         {
-          if (d == destructure)
+          if (d == use)
             { // Found the assign, so we got the result!
               found();
             }

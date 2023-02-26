@@ -173,17 +173,23 @@ public class Assign extends AbstractAssign
     var f = _assignedField;
     if (f == null)
       {
-        var fo = res._module.lookupNoTarget(outer, _name, null, destructure == null ? this : null, destructure);
-        if (CHECKS) check
-          (Errors.count() > 0 || fo.features.size() <= 1);
-        f = fo.filter(pos(), FeatureName.get(_name, 0), __ -> false);
-        if (f == null)
+        var fo = FeatureAndOuter.filter(res._module.lookup(outer,
+                                                           _name,
+                                                           destructure == null ? this : destructure,
+                                                           true),
+                                        pos(), "assignment", FeatureName.get(_name, 0), __ -> false);
+        if (fo != null)
+          {
+            _target = fo.target(pos(), res, outer);
+            f = fo._feature;
+          }
+        else
           {
             AstErrors.assignmentTargetNotFound(this, outer);
+            _target = Expr.NO_VALUE;
             f = Types.f_ERROR;
           }
         _assignedField = f;
-        _target        = fo.target(pos(), res, outer);
       }
     if      (f == Types.f_ERROR          ) { if (CHECKS) check
                                                (Errors.count() > 0);

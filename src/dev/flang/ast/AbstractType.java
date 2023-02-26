@@ -1129,7 +1129,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType replace_type_parameters_of_type_feature_origin(AbstractFeature f)
   {
     var t = this;
-    if (!f.isUniverse())
+    if (!f.isUniverse() && f != Types.f_ERROR)
       {
         t = t.replace_type_parameters_of_type_feature_origin(f.outer());
         if (f.isTypeFeature())
