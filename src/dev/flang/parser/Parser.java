@@ -401,7 +401,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
           }
       }
     else
