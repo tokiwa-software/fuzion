@@ -64,6 +64,11 @@ public class Intrinsics extends ANY
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
 
+  /**
+   * Predefined identifier to access errno macro.
+   */
+  static CIdent errno = new CIdent("errno");
+
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
@@ -125,7 +130,6 @@ public class Intrinsics extends ANY
           var writingIdent = new CIdent("writing");
           var flushingIdent = new CIdent("flushing");
           var resultIdent = new CIdent("result");
-          var errno = new CIdent("errno");
           var zero = new CIdent("0");
           return CStmnt.seq(
             CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
@@ -187,18 +191,18 @@ public class Intrinsics extends ANY
             CExpr.iff(
               CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
               CStmnt.seq(
-                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
-                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
-                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(2).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(3).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
                 c._names.FZ_TRUE.ret()
                 )
               ),
             // return false if stat failed
-            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
-            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
-            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
-            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
+            metadata.index(0).assign(errno),
+            metadata.index(1).assign(CExpr.int64const(0)),
+            metadata.index(2).assign(CExpr.int64const(0)),
+            metadata.index(3).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }
@@ -215,18 +219,18 @@ public class Intrinsics extends ANY
             CExpr.iff(
               CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
               CStmnt.seq(
-                metadata.index(CExpr.ident("0")).assign(statIdent.field(new CIdent("st_size"))),
-                metadata.index(CExpr.ident("1")).assign(statIdent.field(new CIdent("st_mtime"))),
-                metadata.index(CExpr.ident("2")).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                metadata.index(CExpr.ident("3")).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
+                metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
+                metadata.index(2).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
+                metadata.index(3).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
                 c._names.FZ_TRUE.ret()
                 )
               ),
             // return false if lstat failed
-            metadata.index(CExpr.ident("0")).assign(new CIdent("errno")),
-            metadata.index(CExpr.ident("1")).assign(CExpr.int64const(0)),
-            metadata.index(CExpr.ident("2")).assign(CExpr.int64const(0)),
-            metadata.index(CExpr.ident("3")).assign(CExpr.int64const(0)),
+            metadata.index(0).assign(errno),
+            metadata.index(1).assign(CExpr.int64const(0)),
+            metadata.index(2).assign(CExpr.int64const(0)),
+            metadata.index(3).assign(CExpr.int64const(0)),
             c._names.FZ_FALSE.ret()
             );
         }
@@ -235,7 +239,6 @@ public class Intrinsics extends ANY
         {
           var filePointer = new CIdent("fp");
           var openResults = new CIdent("open_results");
-          var errno = new CIdent("errno");
           return CStmnt.seq(
             CExpr.decl("FILE *", filePointer),
             CExpr.decl("fzT_1i64 *", openResults),
@@ -249,7 +252,7 @@ public class Intrinsics extends ANY
                   CStmnt.seq(
                     filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(CExpr.ident("0")).assign(filePointer.castTo("fzT_1i64")))),
+                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
                     )
                   ),
@@ -258,7 +261,7 @@ public class Intrinsics extends ANY
                   CStmnt.seq(
                     filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(CExpr.ident("0")).assign(filePointer.castTo("fzT_1i64")))),
+                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
                     )
                   ),
@@ -267,7 +270,7 @@ public class Intrinsics extends ANY
                   CStmnt.seq(
                     filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(CExpr.ident("0")).assign(filePointer.castTo("fzT_1i64")))),
+                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
                     )
                   )
@@ -277,13 +280,12 @@ public class Intrinsics extends ANY
                 CExpr.exit(1)
                 )
               ),
-            openResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            openResults.index(1).assign(errno.castTo("fzT_1i64"))
             );
         }
         );
     put("fuzion.sys.fileio.close"   , (c,cl,outer,in) ->
         {
-          var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CStmnt.iff(CExpr.call("fclose", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0)), CExpr.int8const(0).ret()),
@@ -294,25 +296,23 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.seek"   , (c,cl,outer,in) ->
         {
           var seekResults = new CIdent("seek_results");
-          var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CExpr.decl("fzT_1i64 *", seekResults, A2.castTo("fzT_1i64 *")),
             CStmnt.iff(CExpr.call("fseeko", new List<>(A0.castTo("FILE *"), A1.castTo("off_t"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
-            seekResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
-            seekResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            seekResults.index(0).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
+            seekResults.index(1).assign(errno.castTo("fzT_1i64"))
             );
         }
         );
     put("fuzion.sys.fileio.file_position"   , (c,cl,outer,in) ->
         {
           var positionResults = new CIdent("position_results");
-          var errno = new CIdent("errno");
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CExpr.decl("fzT_1i64 *", positionResults, A1.castTo("fzT_1i64 *")),
-            positionResults.index(CExpr.ident("0")).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
-            positionResults.index(CExpr.ident("1")).assign(errno.castTo("fzT_1i64"))
+            positionResults.index(0).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
+            positionResults.index(1).assign(errno.castTo("fzT_1i64"))
             );
         }
         );
@@ -722,12 +722,12 @@ public class Intrinsics extends ANY
             CStmnt.decl("time_t", rawTime),
             CExpr.call("time", new List<>(rawTime.adrOf())),
             CStmnt.decl("struct tm *", ptm, CExpr.call("gmtime", new List<>(rawTime.adrOf()))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(0)).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(1)).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(2)).assign(ptm.deref().field(new CIdent("tm_hour"))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(3)).assign(ptm.deref().field(new CIdent("tm_min"))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(4)).assign(ptm.deref().field(new CIdent("tm_sec"))),
-            A0.castTo("fzT_1i32 *").index(CExpr.int32const(5)).assign(CExpr.int32const(0)));
+            A0.castTo("fzT_1i32 *").index(0).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
+            A0.castTo("fzT_1i32 *").index(1).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
+            A0.castTo("fzT_1i32 *").index(2).assign(ptm.deref().field(new CIdent("tm_hour"))),
+            A0.castTo("fzT_1i32 *").index(3).assign(ptm.deref().field(new CIdent("tm_min"))),
+            A0.castTo("fzT_1i32 *").index(4).assign(ptm.deref().field(new CIdent("tm_sec"))),
+            A0.castTo("fzT_1i32 *").index(5).assign(CExpr.int32const(0)));
       });
 
     put("effect.replace"       ,
