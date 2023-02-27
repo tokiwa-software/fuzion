@@ -191,7 +191,32 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
     pre
       is_bounded
   is
-    thiz ^ all_bits_set
+    thiz ^ (wrapping_integer W).type.all_bits_set
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  ones_count i32 is abstract
+
+
+  # this integer as an array of bytes (little endian)
+  as_bytes array u8 is
+    bs := (wrapping_integer W).type.byte_size
+    array u8 bs (idx ->
+      shift W := from_u32 (bs.as_u32-idx.as_u32-1)*8
+      (wrapping_integer.this>>shift).low8bits)
+
+
+
+  # returns the number in whose bit representation all bits are ones
+  type.all_bits_set W is abstract
+
+
+  # how many bytes does this integer use?
+  type.byte_size i32 is
+    all_bits_set.ones_count / 8
+
 
 
 # wrapping_integers -- unit type defining features related to wrapping_integer
@@ -202,5 +227,3 @@ wrapping_integers(W type : wrapping_integer W) : numerics W is
   min W is abstract
   max W is abstract
 
-  # returns the number in whose bit representation all bits are ones
-  all_bits_set W is abstract

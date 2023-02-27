@@ -1280,7 +1280,7 @@
   - fix quadratic runtime of printing string consisting of many sub-strings
     concatenated using 'infix +'.
 
-  - i32/u32/i64/u64: added onesCount (population count)
+  - i32/u32/i64/u64: added ones_count (population count)
 
   - stream/streamable: added asList, planning to work more with (lazy,
     immutable) lists than with streams that are inherently mutable. Also added

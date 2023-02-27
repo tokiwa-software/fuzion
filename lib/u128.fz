@@ -238,8 +238,13 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    hi.onesCount + lo.onesCount
+  ones_count i32 is
+    hi.ones_count + lo.ones_count
+
+
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
 
 
 # u128s -- unit type defining features related to u128 but not requiring an
@@ -254,9 +259,6 @@ u128s : wrapping_integers u128 is
 
   redef min => u128 0 0
   redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
 # u128 -- returns value of unit type u128s
