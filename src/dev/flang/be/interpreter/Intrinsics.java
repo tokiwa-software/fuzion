@@ -111,35 +111,30 @@ public class Intrinsics extends ANY
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
-
   /**
-   * This will contain the current open streams
-   * The key represents a file descriptor
-   * The value represents the open stream
+   * This contains all open files/streams.
    */
-  private static TreeMap<Long, RandomAccessFile> _openStreams_ = new TreeMap<Long, RandomAccessFile>();
+  private static OpenResources<RandomAccessFile> _openStreams_ = new OpenResources<RandomAccessFile>()
+  {
+    @Override
+    protected boolean close(RandomAccessFile f) {
+      try
+      {
+        f.close();
+        return true;
+      }
+      catch(IOException e)
+      {
+        return false;
+      }
+    }
+  };
 
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /*------------------------  static variables  -------------------------*/
-
-
-  /**
-   * This will represent the current available file descriptor number to be used as a key for the openstreams maps
-   * The value of this variable will be incremented each time a new stream is created
-   */
-  private static Stack<Long> _availableFileDescriptors_ = new Stack<Long>();
-
-
-  /**
-   * This will represent the current largest available file descriptor number
-   * The value of this variable will be incremented when the current available file descriptors are not enough
-   * and needs to be increased
-   * This variable starts at 3 because 0, 1, 2 usually represents standard in, out and err
-   */
-  private static long _maxFileDescriptor_  = 3;
 
 
   /**
@@ -210,31 +205,6 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
-  }
-
-  /**
-   * Checks the file descriptors stack and expands it as necessary.
-   *
-   * @return the next available file descriptor.
-   */
-  private static synchronized long allocFileDescriptor()
-  {
-    if (_availableFileDescriptors_.empty())
-      {
-        _maxFileDescriptor_++;
-        return _maxFileDescriptor_-1;
-      }
-    return _availableFileDescriptors_.pop();
-  }
-
-  /**
-   * Checks the file descriptors stack and expands it as necessary.
-   *
-   * @param fileDescriptor the file descriptor to release.
-   */
-  private static synchronized void releaseFileDescriptor(long fileDescriptor)
-  {
-    _availableFileDescriptors_.push(fileDescriptor);
   }
 
   static
@@ -367,28 +337,21 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           var open_results = (long[])args.get(2).arrayData()._array;
-          long fd;
           try
             {
               switch (args.get(3).i8Value()) {
                 case 0:
                   RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
-                  fd = allocFileDescriptor();
-                  _openStreams_.put(fd, fis);
-                  open_results[0] = fd;
+                  open_results[0] = _openStreams_.add(fis);
                   break;
                 case 1:
                   RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  fd = allocFileDescriptor();
-                  _openStreams_.put(fd, fos);
-                  open_results[0] = fd;
+                  open_results[0] = _openStreams_.add(fos);
                   break;
                 case 2:
                   RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
                   fas.seek(fas.length());
-                  fd = allocFileDescriptor();
-                  _openStreams_.put(fd, fas);
-                  open_results[0] = fd;
+                  open_results[0] = _openStreams_.add(fas);
                   break;
                 default:
                   open_results[1] = -1;
@@ -410,20 +373,9 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           long fd = args.get(1).i64Value();
-          try
-            {
-              if (_openStreams_.containsKey(fd))
-                {
-                  _openStreams_.remove(fd).close();
-                  releaseFileDescriptor(fd);
-                  return new i8Value(0);
-                }
-              return new i8Value(-1);
-            }
-          catch (Exception e)
-            {
-              return new i8Value(-1);
-            }
+          return _openStreams_.remove(fd)
+            ? new i8Value(0)
+            : new i8Value(-1);
         });
     put("fuzion.sys.fileio.stats",
         "fuzion.sys.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
