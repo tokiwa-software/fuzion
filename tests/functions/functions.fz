@@ -26,24 +26,24 @@
 functions is
 
     y(f ()->i32){}
-    x0(f Function i32 Any i32) is
+    x0(f0 Function i32 Any i32) is
       say "here 1x0---------------"
-      r1 i32 := f.call "hallo" 3
+      r1 i32 := f0.call "hallo" 3
       say "here 2x0---------------"
       r2 i32 := 42
-      //r2 := f "welt" 5
+      //r2 := f0 "welt" 5
       say "here 3x0---------------"
       say "$r1  $r2"
       say "here 1x0 done---------------"
 
-    x(f (Any, i32) -> i32) is
+    x(f0 (Any, i32) -> i32) is
       say "here 1x---------------"
-      r1 i32 := f.call "hallo" 3
-      g (Any, i32) -> i32 := f;
+      r1 i32 := f0.call "hallo" 3
+      g (Any, i32) -> i32 := f0;
       r2 i32 := g.call "welt"  4
-      // i32 r3 := f     ("hola",5);
+      // i32 r3 := f0    ("hola",5);
       // i32 r4 := g     ("mundo",5);
-      // r5 := f("Konnichiwa sekai!",7);
+      // r5 := f0("Konnichiwa sekai!",7);
       say "$r1  $r2"
 
     say "here 1a---------------"

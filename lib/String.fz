@@ -57,8 +57,8 @@ String ref : has_equality, has_hash, has_total_order is
     n ≥ 0
   is
     redef utf8 Sequence u8 is
-      utf8 := String.this.utf8
-      utf8.cycle.take (utf8.count * n)
+      bytes := String.this.utf8
+      bytes.cycle.take (bytes.count * n)  # NYI: this does not work for infinite Strings.
 
 
   # equality: compare two strings byte-by-byte
@@ -569,7 +569,7 @@ String ref : has_equality, has_hash, has_total_order is
         n u32 => n ⩼ (u32 0)
     is
       match (find s)
-        nil => [as_string].as_list
+        nil => String.this.as_string : ()->nil
         idx i32 =>
           ref : Cons String (list String)
             head => substring 0 (if split_after then idx + s.byte_length else idx)
@@ -675,7 +675,7 @@ String ref : has_equality, has_hash, has_total_order is
   #
   cut(sep String) tuple String String bool is
     match find sep
-      nil => (as_string, "", false)
+      nil => (String.this.as_string, "", false)
       i i32 =>
         l := byte_length
         sepl := sep.byte_length

@@ -104,7 +104,7 @@ hasInterval(H type : hasInterval H) : integer H is
 
       # use map implementation from Sequence:
       #
-      map(B type, f H -> B)  => mapSequence f
+      map(B type, f H -> B)  => infix : .this.mapSequence f
 
 
     # create a list from this interval

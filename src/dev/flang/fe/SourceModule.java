@@ -53,7 +53,7 @@ import dev.flang.ast.Consts;
 import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FeaturesAndOuter;
+import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
@@ -246,7 +246,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name, ref) ->
                              {
-                               var f = lookupFeatureForType(SourcePosition.builtIn, name, _universe);
+                               var f = lookupType(SourcePosition.builtIn, _universe, name, false);
                                return new NormalType(stdlib,
                                                      -1,
                                                      SourcePosition.builtIn,
@@ -499,7 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer)
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, true)
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -966,42 +966,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get all declared or inherited features with the given base name,
-   * independent of the number of arguments or the id.
-   *
-   * @param outer the declaring or inheriting feature
-   *
-   * @param name the name of the feature
-   */
-  public SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name)
-  {
-    if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
-
-    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
-  }
-
-
-  /**
-   * Get all declared or inherited features with the given base name and
-   * argument count, independent of the id.
-   *
-   * @param outer the declaring or inheriting feature
-   *
-   * @param name the name of the feature
-   *
-   * @param argCount the argument count
-   */
-  SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name, int argCount)
-  {
-    if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
-
-    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
-  }
-
-
-  /**
    * Find set of candidate features in an unqualified access (call or
    * assignment).  If several features match the name but have different
    * argument counts, return all of them.
@@ -1010,32 +974,35 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param name the name of the feature
    *
-   * @param call the call we are trying to resolve, or null when not resolving a
-   * call.
+   * @param use the call, assign or destructure we are trying to resolve, used
+   * to find field in scope, or null if fields should not be checked for scope
    *
-   * @param assign the assign we are trying to resolve, or null when not resolving an
-   * assign
-   *
-   * @param destructure the destructure we are trying to resolve, or null when not
-   * resolving a destructure.
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public FeaturesAndOuter lookupNoTarget(AbstractFeature outer, String name, Call call, AbstractAssign assign, Destructure destructure)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
-    var result = new FeaturesAndOuter();
+    List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
     AbstractFeature inner = null;
+    var foundFieldInScope = false;
     do
       {
-        var fs = assign != null ? lookupFeatures(curOuter, name, 0)
-                                : lookupFeatures(curOuter, name);
-        if (fs.size() >= 1)
-          {
+        var foundFieldInThisScope = foundFieldInScope;
+        var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
+        if (fs.size() >= 1 && use != null && traverseOuter)
+          { // try to disambiguate fields as in
+            //
+            //  x := a
+            //  x := x + 1
+            //  x := 2 * x
             List<FeatureName> fields = new List<>();
             for (var e : fs.entrySet())
               {
@@ -1049,7 +1016,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (!fields.isEmpty())
               {
                 var f = curOuter instanceof Feature of /* NYI: AND cutOuter loaded by this module */
-                  ? of.findFieldDefInScope(name, call, assign, destructure, inner)
+                  ? of.findFieldDefInScope(name, use, inner)
                   : null;
                 fs = new TreeMap<>(fs);
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
@@ -1064,16 +1031,25 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 if (f != null)
                   {
                     fs.put(f.featureName(), f);
+                    foundFieldInThisScope = true;
                   }
               }
           }
-        result.features = fs;
-        result.outer = curOuter;
+
+        for (var e : fs.entrySet())
+          {
+            var v = e.getValue();
+            if (!v.isField() || !foundFieldInScope)
+              {
+                result.add(new FeatureAndOuter(v, curOuter));
+                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+              }
+          }
+
         inner = curOuter;
         curOuter = curOuter.outer();
       }
-    while ((result.features.isEmpty()) && (curOuter != null));
-
+    while (traverseOuter && curOuter != null);
     return result;
   }
 
@@ -1090,57 +1066,67 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param pos the position of the type.
    *
+   * @param outer the outer feature of the type
+   *
    * @param name the name of the type
    *
-   * @param o the outer feature of the type
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
    */
-  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o)
+  public AbstractFeature lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || o != Types.f_ERROR);
+      (Errors.count() > 0 || outer != Types.f_ERROR);
 
-    AbstractFeature result = null;
-    if (o == Types.f_ERROR)
+    AbstractFeature result = Types.f_ERROR;
+    if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
-        result = Types.f_ERROR;
-      }
-    else
-      {
+        _res.resolveDeclarations(outer);
+        var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var orig_o = o;
-        _res.resolveDeclarations(o);
-        do
+        if (false)  // NYI: Using this code does not work yet due to type
+                    // ambiguity for effectMode.abort. Type lookup currently
+                    // handled different than calls when several matches in
+                    // different outer levels are found: This produces an error
+                    // for calls, but currently does not produce for types
+                    // (where the innermost found type is used).
           {
-            var fs = lookupFeatures(o, name).values();
-            for (var f : fs)
+            var fs = lookup(outer, name, null, traverseOuter);
+            for (var fo : fs)
               {
-                if (f.definesType())
-                  {
-                    type_fs.add(f);
-                    result = f;
-                  }
-                else
-                  {
-                    nontype_fs.add(f);
-                  }
+                var f = fo._feature;
+                (f.definesType() ? type_fs
+                                 : nontype_fs).add(f);
               }
-            if (type_fs.size() > 1)
-              {
-                AstErrors.ambiguousType(pos, name, type_fs);
-                result = Types.f_ERROR;
-              }
-            o = o.outer();
           }
-        while (result == null && o != null);
-
-        if (result == null)
+        else
           {
-            result = Types.f_ERROR;
-            if (name != Types.ERROR_NAME)
+            do
               {
-                AstErrors.typeNotFound(pos, name, orig_o, nontype_fs);
+                var fs = lookup(curOuter, name, null, false);
+                for (var fo : fs)
+                  {
+                    var f = fo._feature;
+                    (f.definesType() ? type_fs
+                     : nontype_fs).add(f);
+                  }
+                curOuter = curOuter.outer();
               }
+            while (traverseOuter && type_fs.size() == 0 && curOuter != null);
+          }
+        if (type_fs.size() > 1)
+          {
+            AstErrors.ambiguousType(pos, name, type_fs);
+          }
+        else if (type_fs.size() < 1)
+          {
+            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+          }
+        else
+          {
+            result = type_fs.get(0);
           }
       }
     return result;
