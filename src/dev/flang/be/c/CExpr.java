@@ -582,6 +582,19 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create CExpr that corresponds to indexing an array given in this
+   *
+   * @param ix the index
+   *
+   * @return the resulting expression to read this[ix]
+   */
+  CExpr index(int ix)
+  {
+    return index(int32const(ix));
+  }
+
+
+  /**
    * Helper clazz for unary-expr with precedence 2
    */
   private static class Unary extends CExpr
