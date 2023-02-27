@@ -995,8 +995,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + ".this." + fn.baseName()))
-          .append(o.isUniverse() ? Terminal.INTENSE_BOLD_RED + " *** NYI: #1168 qualification for universe is not supported yet *** " + Terminal.RESET : "");
+          .append(code(o.qualifiedName() + ".this." + fn.baseName()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
