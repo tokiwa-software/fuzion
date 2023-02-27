@@ -460,11 +460,21 @@ lists is
 
 
 # convenience routine to create a list from head h and lazy tail t.
+# NYI: #1166, syntax sugar for lazy evaluation
 #
 list(T type, h T, t () -> list T) list T is
   ref : Cons T (list T)
     head => h
     tail => t()
+
+
+# convenience routine to create a list from head h and tail t.
+# NYI: #1166, syntax sugar for lazy evaluation
+#
+list_of_non_lazy(T type, h T, t list T) list T is
+  ref : Cons T (list T)
+    head => h
+    tail => t
 
 
 # infix operator to create a list from head h and lazy tail t.
