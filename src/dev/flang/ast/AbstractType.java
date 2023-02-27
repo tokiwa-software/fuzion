@@ -1001,22 +1001,26 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     var result = this;
     var fot = featureOfType();
-    if (fot.isTypeFeature())
+    if (!fot.isUniverse() && this != Types.t_ERROR)
       {
-        result = Types.resolved.f_Type.thisType();
-      }
-    else if (!fot.isUniverse() && this != Types.t_ERROR)
-      {
-        var f = res == null ? fot.typeFeature()
-                            : fot.typeFeature(res);
-        var g = new List<AbstractType>(this);
-        g.addAll(generics());
-        result = Types.intern(new Type(f.pos(),
-                                       f.featureName().baseName(),
-                                       g,
-                                       outer().typeType(res),
-                                       f,
-                                       Type.RefOrVal.Value));
+        var f = fot.isTypeFeature() ? null
+              : res == null         ? fot.typeFeature()
+                                    : fot.typeFeature(res);
+        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features linke #anonymous. Neeed to check why.
+          {
+            result = Types.resolved.f_Type.thisType();
+          }
+        else
+          {
+            var g = new List<AbstractType>(this);
+            g.addAll(generics());
+            result = Types.intern(new Type(f.pos(),
+                                           f.featureName().baseName(),
+                                           g,
+                                           outer().typeType(res),
+                                           f,
+                                           Type.RefOrVal.Value));
+          }
       }
     return result;
   }
