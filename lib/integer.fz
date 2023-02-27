@@ -193,3 +193,8 @@ integer(I type : integer I) : numeric I is
   # create hexadecimal representation with given number of digits.
   #
   hex(len i32) => integer.this.as_string len 16
+
+
+  # the least significant byte of this integer
+  low8bits u8 is abstract
+

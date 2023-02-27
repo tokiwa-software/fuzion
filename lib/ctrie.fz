@@ -340,7 +340,7 @@ is
     idx := (hash >> lev) & 0x1F
     flag := u32 1 << idx
     mask := flag -° 1
-    pos := (bmp & mask).onesCount.as_u32
+    pos := (bmp & mask).ones_count.as_u32
     (flag, pos)
 
 

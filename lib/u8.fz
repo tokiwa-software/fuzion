@@ -130,12 +130,17 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
+  ones_count i32 is
     v := val.as_i32
     m := v & 0xaa; v := v - m + (m >> 1)
     m := v & 0xcc; v := v - m + (m >> 2)
     m := v & 0xf0; v := v - m + (m >> 4)
     v
+
+
+  # the least significant byte of this integer
+  low8bits u8 is val
+
 
 
   # -----------------------------------------------------------------------
@@ -163,6 +168,11 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   fixed type.lteq(a, b u8) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u8 0xff
+
+
+
 # u8s -- unit type defining features related to u8 but not requiring an
 # instance
 #
@@ -175,9 +185,6 @@ u8s : wrapping_integers u8 is
 
   redef min => zero
   redef max => u8 0xff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u8 0xff
 
 
 # u8 -- returns value of unit type u8s
