@@ -2242,23 +2242,6 @@ PIPE        : "|"
 
 
   /**
-   * In case the current token is Token.t_ident, return the identifier, otherwise
-   * return Errors.ERROR_STRING.
-   */
-  String identifierOrError()
-  {
-    String result = Errors.ERROR_STRING;
-
-    if (current() == Token.t_ident)
-      {
-        result = identifier();
-      }
-
-    return result;
-  }
-
-
-  /**
    * Return an object with the details of the current t_numliteral token.
    */
   Literal curLiteral()
