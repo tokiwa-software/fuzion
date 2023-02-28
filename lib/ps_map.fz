@@ -166,7 +166,7 @@ O(n log n).
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
     if (nsize & size) ≟ 0
-      set ndata := fuzion.sys.internal_array (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+      set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1 nfill 1
@@ -220,7 +220,7 @@ O(n log n).
   # create sorted array of all keys in this map
   #
   asKeyArray array PK is
-    r := fuzion.sys.internal_array PK size
+    r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
@@ -368,7 +368,7 @@ ps_maps(PK type : has_total_order, V type) is
   #
   # This feature creates an empty instance of ps_map.
   #
-  empty => ps_map (fuzion.sys.internal_array (tuple PK V) 0) 0 0
+  empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
 # ps_map -- routine to initialize a partially sorted map from two Sequences
