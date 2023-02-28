@@ -499,7 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, true)
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -1086,35 +1086,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        if (false)  // NYI: Using this code does not work yet due to type
-                    // ambiguity for effectMode.abort. Type lookup currently
-                    // handled different than calls when several matches in
-                    // different outer levels are found: This produces an error
-                    // for calls, but currently does not produce for types
-                    // (where the innermost found type is used).
+        var fs = lookup(outer, name, null, traverseOuter);
+        for (var fo : fs)
           {
-            var fs = lookup(outer, name, null, traverseOuter);
-            for (var fo : fs)
-              {
-                var f = fo._feature;
-                (f.definesType() ? type_fs
-                                 : nontype_fs).add(f);
-              }
-          }
-        else
-          {
-            do
-              {
-                var fs = lookup(curOuter, name, null, false);
-                for (var fo : fs)
-                  {
-                    var f = fo._feature;
-                    (f.definesType() ? type_fs
-                     : nontype_fs).add(f);
-                  }
-                curOuter = curOuter.outer();
-              }
-            while (traverseOuter && type_fs.size() == 0 && curOuter != null);
+            var f = fo._feature;
+            (f.definesType() ? type_fs
+                             : nontype_fs).add(f);
           }
         if (type_fs.size() > 1)
           {
