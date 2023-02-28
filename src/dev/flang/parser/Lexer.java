@@ -191,6 +191,7 @@ public class Lexer extends SourceFile
     t_public("public"),
     t_of("of"),
     t_type("type"),
+    t_universe("universe"),
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
@@ -2238,23 +2239,6 @@ PIPE        : "|"
       (current() == Token.t_ident);
 
     return identifier(false);
-  }
-
-
-  /**
-   * In case the current token is Token.t_ident, return the identifier, otherwise
-   * return Errors.ERROR_STRING.
-   */
-  String identifierOrError()
-  {
-    String result = Errors.ERROR_STRING;
-
-    if (current() == Token.t_ident)
-      {
-        result = identifier();
-      }
-
-    return result;
   }
 
 

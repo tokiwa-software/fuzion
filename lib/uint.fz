@@ -150,9 +150,9 @@ is
 
         (bits, rest, carry_over) := r
 
-        sum := t.as_u64 + rest.first.as_u64 + carry_over
+        s := t.as_u64 + rest.first.as_u64 + carry_over
 
-        ([sum.low32bits] ++ bits, (rest.drop 1), (sum>>32))
+        ([s.low32bits] ++ bits, (rest.drop 1), (s>>32))
       )
 
     uint d unit

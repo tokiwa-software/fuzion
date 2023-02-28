@@ -146,13 +146,13 @@ integer(I type : integer I) : numeric I is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sign, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
+    (sgn, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * 0.max (len - n.byte_length)
 
     # put it all together
-    sign + zeros + digits
+    sgn + zeros + digits
 
 
   # create binary representation
@@ -195,16 +195,6 @@ integer(I type : integer I) : numeric I is
   hex(len i32) => integer.this.as_string len 16
 
 
-  # the lowest byte of this integer
+  # the least significant byte of this integer
   low8bits u8 is abstract
 
-
-  # how many bytes does this integer use?
-  bytes i32 is abstract
-
-
-  # this integer as an array of bytes
-  as_bytes array u8 is
-    array u8 bytes (idx ->
-      shift I := from_u32((bytes.as_u32-idx.as_u32-1)*8)
-      (integer.this>>shift).low8bits)

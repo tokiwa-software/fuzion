@@ -115,10 +115,10 @@ net is
         ipv4  => 2
         ipv6  => 10
 
-  socket_type : choice stream raw is
+  socket_type : choice net.stream raw is
     num i32 is
       match socket_type.this
-        stream stream => 2
+        stream net.stream => 2
         raw raw => 3
 
 
@@ -133,10 +133,10 @@ net is
         match arr.as_list
           nil => nil
           c Cons u8 (list u8) =>
-            list_of (outcome u8) c.head c.tail.map((outcome u8), (x -> x))
+            list_of_non_lazy (outcome u8) c.head c.tail.map((outcome u8), (x -> x))
             # list_of (outcome u8) c.head (c.tail.map((outcome u8), (x -> x)).concat2 (()->read_from descriptor))
-      err error =>
-        list_of (outcome u8) err nil
+      read_err error =>
+        list_of_non_lazy (outcome u8) read_err nil
 
 
   # NYI collect occured errors
@@ -193,15 +193,15 @@ net is
                 # NYI name desc results in error. Ambigous target
                 desc_else i64 =>
                   match close desc_else
-                    err error =>
+                    close_err error =>
                       close sd
-                      err
+                      close_err
                     unit      =>
                       close sd
-                error error =>
+                acc_err error =>
                   close sd
-                  err
-      err error => err
+                  acc_err
+      con_err error => con_err
 
 
 
@@ -232,5 +232,5 @@ net is
             ((data) -> write sd data.as_array))
 
           close sd
-      err error =>
-        err
+      con_err error =>
+        con_err

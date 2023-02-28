@@ -199,12 +199,12 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
       * => (gcas_commit m ct)
 
   # generation aware compare and set
-  gcas(o Main_Node CTK CTV, n Main_Node CTK CTV, ct ref CTrie CTK CTV) choice restart ok is
+  gcas(o Main_Node CTK CTV, n Main_Node CTK CTV, ct ref CTrie CTK CTV) choice restart ctrie_ok is
     n.cas_prev o nil
     if(cas o n)
       gcas_commit n ct
       match n.prev.get
-        nil => ok
+        nil => ctrie_ok
         * => restart
     else
       restart
@@ -248,7 +248,7 @@ is
 private restart is
 
 # unit type to indicate success
-private ok is
+private ctrie_ok is
 
 
 # descriptor for double-compare-single-swap operation
@@ -340,7 +340,7 @@ is
     idx := (hash >> lev) & 0x1F
     flag := u32 1 << idx
     mask := flag -° 1
-    pos := (bmp & mask).onesCount.as_u32
+    pos := (bmp & mask).ones_count.as_u32
     (flag, pos)
 
 
@@ -395,7 +395,7 @@ is
                       ncn := cn.updated pos tn.sn
                       match (p.gcas m (contract ncn lev gen) CTrie.this)
                         restart => clean_parent p i hash lev gen
-                        ok =>
+                        ctrie_ok =>
                     * =>
               * =>
         * =>
@@ -456,7 +456,7 @@ is
                 lookup sin k (lev + width) i gen
               else
                 match i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this
-                  ok => lookup i k lev parent gen
+                  ctrie_ok => lookup i k lev parent gen
                   restart => restart
             sn singleton_node =>
               if sn.k ≟ k
@@ -483,13 +483,13 @@ is
     match add r k v 0 nil r.data.get.gen
       r restart =>
         add k v
-      ok =>
+      ctrie_ok =>
         unit
 
 
   # try adding an element to the ctrie
   # may fail and result in a restart
-  private add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen i32) choice restart ok is
+  private add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen i32) choice restart ctrie_ok is
     m := i.gcas_read CTrie.this
     match m.data
       cn container_node CTK CTV =>
@@ -504,7 +504,7 @@ is
                 add sin k v (lev+width) i gen
               else
                 match (i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this)
-                  ok => add i k v lev parent gen
+                  ctrie_ok => add i k v lev parent gen
                   restart => restart
             sn singleton_node =>
               if !(sn.k ≟ k)
@@ -546,7 +546,7 @@ is
                 remove sin k (lev + width) i gen
               else
                 match (i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this)
-                  ok => remove i k lev parent gen
+                  ctrie_ok => remove i k lev parent gen
                   restart => restart
             sn singleton_node =>
               if !(sn.k ≟ k)
@@ -555,7 +555,7 @@ is
                 ncn  := cn.removed pos flag
                 cntr := contract ncn lev gen
                 match (i.gcas m cntr CTrie.this)
-                  ok => sn.v
+                  ctrie_ok => sn.v
                   restart => restart
           match res
             v CTV =>
@@ -571,7 +571,7 @@ is
         fln := list_node ln.filter(sn -> !(sn.k ≟ k))
         nln Main_Node CTK CTV := if fln.count ≟ 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
         match (i.gcas m nln CTrie.this)
-          ok => find ln k
+          ctrie_ok => find ln k
           restart => restart
 
 

@@ -1,0 +1,100 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_type_of
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+test_type_of is
+
+  exit_code := mut 0
+
+  chck(b bool, msg String) =>
+    s := if b
+      "PASSED: "
+    else
+      exit_code <- 1
+      "FAILED: "
+    say (s + msg)
+
+  chck_cmp(s1, s2 String) =>
+    chck s1=s2 "$s1 = $s2"
+
+
+  # type_of using explicit result type
+  #
+  type_of1(T type, _ T) Type is T
+
+
+  # type_of using inferred result type
+  #
+  type_of2(T type, _ T) => T
+
+
+  # type_of using field with inferred  type
+  #
+  type_of3(T type, v T, s String) =>
+    x := T
+    chck_cmp "$x $v" s
+
+
+  chck_cmp $(type_of1 3.14                  ) "Type of 'f64'"
+  chck_cmp $(type_of1 (option 42)           ) "Type of 'option i32'"
+  chck_cmp $(type_of1 (type_of1 (option 42))) "Type of 'Type'"
+  chck_cmp $(type_of1 (option i32).type     ) "Type of 'Type'"
+
+  chck_cmp $(type_of2 3.14                  ) "Type of 'f64'"
+  chck_cmp $(type_of2 (option 42)           ) "Type of 'option i32'"
+  chck_cmp $(type_of2 (type_of2 (option 42))) "Type of 'Type'"
+  chck_cmp $(type_of2 (option i32).type     ) "Type of 'Type'"
+
+  type_of3 3140000000             "Type of 'i64' 3140000000"
+  type_of3 (option 42)            "Type of 'option i32' 42"
+  type_of3 (type_of2 (option 42)) "Type of 'Type' Type of 'option i32'"
+  type_of3 (option i32).type      "Type of 'Type' Type of 'option i32'"
+
+  chck_cmp $(Types.get f64         ) "Type of 'f64'"
+  chck_cmp $(Types.get (option i32)) "Type of 'option i32'"
+
+  t(T type) => T
+  chck_cmp $(t f64         ) "Type of 'f64'"
+  chck_cmp $(t (option i32)) "Type of 'option i32'"
+
+  u(T type, s String) => chck_cmp $T s
+  u f64          "Type of 'f64'"
+  u (option i32) "Type of 'option i32'"
+
+  # additional tests using base lib's `type_of`:
+  chck_cmp $(type_of 3.14                  ) "Type of 'f64'"
+  chck_cmp $(type_of (option 42)           ) "Type of 'option i32'"
+  chck_cmp $(type_of (type_of (option 42))) "Type of 'Type'"
+  chck_cmp $(type_of (option i32).type     ) "Type of 'Type'"
+  chck_cmp $(type_of "bal"                 ) "Type of 'String'"
+
+  # additional tests using base lib's `type_of` with lazy argument:
+  chck_cmp $(type_of_lazy ()->3.14                          ) "Type of 'f64'"
+  chck_cmp $(type_of_lazy ()->(option 42)                   ) "Type of 'option i32'"
+  chck_cmp $(type_of_lazy ()->(type_of_lazy ()->(option 42))) "Type of 'Type'"
+  chck_cmp $(type_of_lazy ()->((option i32).type)           ) "Type of 'Type'"
+  chck_cmp $(type_of_lazy ()->"bal"                         ) "Type of 'String'"
+  chck_cmp $(type_of_lazy ()->(panic "***")                 ) "Type of 'void'"
+
+  exit exit_code.get

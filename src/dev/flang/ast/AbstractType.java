@@ -1000,18 +1000,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
 
     var result = this;
-    if (!featureOfType().isUniverse() && this != Types.t_ERROR)
+    var fot = featureOfType();
+    if (!fot.isUniverse() && this != Types.t_ERROR)
       {
-        var f = res == null ? featureOfType().typeFeature()
-                            : featureOfType().typeFeature(res);
-        var g = new List<AbstractType>(this);
-        g.addAll(generics());
-        result = Types.intern(new Type(f.pos(),
-                                       f.featureName().baseName(),
-                                       g,
-                                       outer().typeType(res),
-                                       f,
-                                       Type.RefOrVal.Value));
+        var f = fot.isTypeFeature() ? null
+              : res == null         ? fot.typeFeature()
+                                    : fot.typeFeature(res);
+        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features linke #anonymous. Neeed to check why.
+          {
+            result = Types.resolved.f_Type.thisType();
+          }
+        else
+          {
+            var g = new List<AbstractType>(this);
+            g.addAll(generics());
+            result = Types.intern(new Type(f.pos(),
+                                           f.featureName().baseName(),
+                                           g,
+                                           outer().typeType(res),
+                                           f,
+                                           Type.RefOrVal.Value));
+          }
       }
     return result;
   }
@@ -1124,7 +1133,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType replace_type_parameters_of_type_feature_origin(AbstractFeature f)
   {
     var t = this;
-    if (!f.isUniverse())
+    if (!f.isUniverse() && f != Types.f_ERROR)
       {
         t = t.replace_type_parameters_of_type_feature_origin(f.outer());
         if (f.isTypeFeature())

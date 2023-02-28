@@ -35,6 +35,10 @@ i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
   # from hasInterval is abstract, fz should not complain about this conflict.
   redef max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
+
+
 
 # i128s -- unit type defining features related to i128 but not requiring an
 # instance
@@ -49,8 +53,6 @@ i128s : wrapping_integers i128 is
   redef min => i128 -0x_8000_0000_0000_0000 0
   redef max => i128  0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
 
 
 # i128 -- returns value of unit type i128s

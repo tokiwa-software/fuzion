@@ -158,8 +158,8 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u32.onesCount
+  ones_count i32 is
+    val.castTo_u32.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -187,6 +187,11 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   fixed type.lteq(a, b i32) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i32 -1
+
+
+
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
@@ -200,8 +205,6 @@ i32s : wrapping_integers i32 is
   redef min => -0x_8000_0000
   redef max =>  0x_7fff_ffff
 
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i32 -1
 
 
 # i32 -- returns value of unit type i32s

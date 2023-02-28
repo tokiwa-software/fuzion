@@ -45,7 +45,7 @@ is
   # If set, get the environment variable corresponding to v.
   # Otherwise, return default
   #
-  get(v String, default String) => (get v).get default
+  get(v String, default String) => (get v).get get.this.default
 
   # Set the environment variable corresponding to n to have the
   # value v.

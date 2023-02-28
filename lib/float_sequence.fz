@@ -40,11 +40,8 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
 
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
-  std_dev option F is
-    match variance
-      nil => nil
-      variance F =>
-        first.sqrt variance
+  std_dev =>
+    variance.map (x -> first.sqrt x)
 
 
   # the euclidean norm of this sequence

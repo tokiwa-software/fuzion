@@ -17,22 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue580
+#  Source code of Fuzion test Makefile
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-
-issue580 is
-  abort0(T type, a T) is
-
-  a(T type, b T | abort0 T) is
-    match b
-      T => say "t"
-      abort0 => say "i"
-
-  a 2
-  a i32 (abort0 2)
-
-  unit
+override NAME = test_type_of
+include ../positive.mk

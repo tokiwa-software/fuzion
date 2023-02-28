@@ -204,8 +204,8 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u64.onesCount
+  ones_count i32 is
+    val.castTo_u64.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -233,6 +233,11 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   fixed type.lteq(a, b i64) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i64 -1
+
+
+
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
@@ -246,8 +251,6 @@ i64s : wrapping_integers i64 is
   redef min => -0x_8000_0000_0000_0000
   redef max =>  0x_7fff_ffff_ffff_ffff
 
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i64 -1
 
 
 # i64 -- returns value of unit type i64s

@@ -401,7 +401,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
           }
       }
     else
@@ -3164,17 +3164,39 @@ callOrFeatOrThis  : anonymous
                   | qualThis
                   | plainLambda
                   | call
+                  | universeCall
                   ;
    */
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
-      isThistype()          ? thistypeAsExpr() : // starts with type followed by 'this.type'
-      isQualThisPrefix()    ? qualThisAsThis() : // starts with name
-      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()        ? call(null)         // starts with name
-                            : null;
+      isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
+      isThistype()                  ? thistypeAsExpr() : // starts with type followed by 'this.type'
+      isQualThisPrefix()            ? qualThisAsThis() : // starts with name
+      isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isNamePrefix()                ? call(null)       : // starts with name
+      current() == Token.t_universe ? universeCall()
+                                    : null;
+  }
+
+
+  /**
+   * Parse universeCall
+   *
+   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
+   * is not possible to get the value of the `universe`.
+   *
+universeCall      : "universe" dot "this" dot call
+                  ;
+   */
+  Expr universeCall()
+  {
+    var pos = posObject();
+    match(Token.t_universe, "universeCall");
+    matchOperator(".",      "universeCall");
+    match(Token.t_this,     "universeCall");
+    matchOperator(".",      "universeCall");
+    return call(new Universe(pos));
   }
 
 

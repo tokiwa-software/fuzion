@@ -287,22 +287,22 @@ test_return_this
 
 # second example from #923
 #
-a is
-  x a.this.type is
-    a.this
+aaa is
+  x aaa.this.type is
+    aaa.this
   redef as_string => "a"
 
-b : a is
+bbb : aaa is
   redef as_string => "b"
 
-say a.x
-say b.x
+say aaa.x
+say bbb.x
 
 
 # extended second example from #923, using nested child and nested parent
 #
 q is
-  b : a is
+  b : aaa is
     redef as_string => "q.b"
 
 r is
