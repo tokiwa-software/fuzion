@@ -40,26 +40,13 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # returns the size of the map, i.e. the number of elements it contains
   #
   size u32 is
-    root.get ? nil => 0
-             | e Entry => e.size
+    fold u32 0 ((i, _) -> i + 1)
 
 
-  # returns a string representation of the tree
-  #
-  # E represents an empty tree
-  #
-  # A non-empty entry of the tree is represented as
-  #
-  #   T((k, v), h, l, r)
-  #
-  # where k is the key of the entry, v is the value stored
-  # at the entry, and h is the height of the subtree starting
-  # at this entry. l is the left subtree of the entry, and
-  # r is the right subtree of the entry.
+  # returns a string representation of the map
   #
   redef as_string String is
-    root.get ? nil => "E"
-             | e Entry => e.as_string
+    "\{" + (String.type.join (fold (lists.empty String) ((i, x) -> list_of_none_lazy "{x.key.get}={x.val.get}" i)) ", ") + "\}"
 
 
   # freeze the map, such that it is no longer mutable afterwards
@@ -68,8 +55,20 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     if root.open
       root.close
 
-    root.get ? nil =>
-             | e Entry => e.freeze
+    fold unit ((_, x) ->
+      if x.key.open
+        x.key.close
+
+      if x.val.open
+        x.val.close
+
+      if x.left.open
+        x.left.close
+
+      if x.right.open
+        x.right.close
+
+      unit)
 
 
   # get the value stored in this map at key k, nil if k is not
@@ -302,6 +301,19 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     else
       # do nothing
       node
+
+
+  # perform an in-order traversal of the tree and process the entries
+  # encountered using the initial value init and the combinator feature
+  # f. the latter takes the last result of the computation and the node
+  # currently visited and combines this information in some way.
+  #
+  fold(B type, init B, f (B, Entry LM K V) -> B) B is
+    private fold0(init B, node option (Entry LM K V)) B is
+      node ? nil => init
+           | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
+
+    fold0 init root.get
 
 
   # returns an empty tree of elements of type A.
