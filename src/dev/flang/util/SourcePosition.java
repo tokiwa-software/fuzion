@@ -26,20 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import java.nio.file.Path;
 
 
 /**
  * SourcePosition represents a position in a source code file.
- *
- * NYI: SourcePosition is quite expensive and typically allocated often as part
- * of an parsed abstract syntax tree.  Instead, we could use an int or long id
- * consisting of a file id an a byte offset in that file.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -54,18 +45,31 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public final SourceFile _sourceFile;
 
+
   /**
-   * character position in _sourceFile.
+   * The byte position in the source file that this refers to.
    */
-  public final int _line;
-  public final int _column;
+  private final int _bytePos;
+
+
+  /**
+   * cache for line()
+   */
+  private Integer _line;
+
+
+  /**
+   * cache for column()
+   */
+  private Integer _column;
+
 
 
   /**
    * SourcePosition instance for built-in types and features that do not have a
    * source code position.
    */
-  public static final SourcePosition builtIn = new SourcePosition(new SourceFile(Path.of("--builtin--"), new byte[0]), 0, 0)
+  public static final SourcePosition builtIn = new SourcePosition(new SourceFile(Path.of("--builtin--"), new byte[0]), 0)
     {
       public boolean isBuiltIn()
       {
@@ -83,7 +87,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for source positions that are not available, e.g., for
    * precompiled modules that do not include source code..
    */
-  public static final SourcePosition notAvailable = new SourcePosition(new SourceFile(Path.of("--not available--"), new byte[0]), 0, 0)
+  public static final SourcePosition notAvailable = new SourcePosition(new SourceFile(Path.of("--not available--"), new byte[0]), 0)
     {
       public boolean isBuiltIn()
       {
@@ -100,25 +104,6 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   /*--------------------------  constructors  ---------------------------*/
 
 
-  /**
-   * Create source position for given source file, line and column.
-   *
-   * @param sourceFile the source file
-   *
-   * @param l the line number, starting at 1
-   *
-   * @param c the column, starting at 1.
-   */
-  public SourcePosition(SourceFile sourceFile, int l, int c)
-  {
-    if (PRECONDITIONS) require
-      (sourceFile != null);
-
-    this._sourceFile = sourceFile;
-    this._line = l;
-    this._column = c;
-  }
-
 
   /**
    * Create source position for given source file and byte position.
@@ -130,11 +115,12 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   public SourcePosition(SourceFile sourceFile, int bytePos)
   {
     if (PRECONDITIONS) require
-      (sourceFile != null);
+      (sourceFile != null,
+       bytePos >= 0,
+       bytePos <= sourceFile._bytes.length);
 
     this._sourceFile = sourceFile;
-    this._line = sourceFile.lineNum(bytePos);
-    this._column = bytePos - sourceFile.lineStartPos(_line) + 1;
+    this._bytePos = bytePos;
   }
 
 
@@ -196,7 +182,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   {
     StringBuilder sb = new StringBuilder();
     sb.append(Terminal.BLUE);
-    sb.append(_sourceFile.line(_line));
+    sb.append(_sourceFile.line(line()));
 
     // add LF in case this is the last line of a file that does not end in a line break
     if (sb.length() > 0 && sb.charAt(sb.length()-1) != '\n')
@@ -204,7 +190,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         sb.append("\n");
       }
     sb.append(Terminal.YELLOW);
-    for (int j=0; j < _column-1; j++)
+    for (int j=0; j < column()-1; j++)
       {
         sb.append('-');
       }
@@ -212,6 +198,35 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     sb.append(Terminal.RESET);
     return sb.toString();
   }
+
+
+  /**
+   * @return the line of this source position,
+   * starting at 1, return 0 for empty file.
+   */
+  public int line()
+  {
+    if (_line == null)
+      {
+        _line = _sourceFile.lineNum(_bytePos);
+      }
+    return _line;
+  }
+
+
+  /**
+   * @return the column of this source position,
+   * starting at 1.
+   */
+  public int column()
+  {
+    if (_column == null)
+      {
+        _column = _sourceFile.codePointInLine(_bytePos);
+      }
+    return _column;
+  }
+
 
   /**
    * Return the name of the file that this source position refers to.
@@ -229,7 +244,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   String rawFileNameWithPosition()
   {
-    return fileName() + ":" + _line + ":" + _column;
+    return fileName() + ":" + line() + ":" + column();
   }
 
   /**
@@ -247,7 +262,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public int bytePos()
   {
-    return _sourceFile.lineStartPos(_line) + _column - 1;
+    return _bytePos;
   }
 
 
@@ -266,11 +281,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     int result = fileName().compareTo(o.fileName());
     if (result == 0)
       {
-        result = _line < o._line ? -1 : _line > o._line ? +1 : 0;
-      }
-    if (result == 0)
-      {
-        result = _column < o._column ? -1 : _column > o._column ? +1 : 0;
+        result = _bytePos - o._bytePos;
       }
     return result;
   }

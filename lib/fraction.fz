@@ -73,7 +73,7 @@ is
   redef infix *  (b fraction B) => fraction(num * b.num              , den * b.den).reduce
   redef infix /  (b fraction B) fraction B
     pre
-      safety: !(b ≟ zero)
+      safety: b != zero
   is fraction(num * b.den                  , den * b.num).reduce
 
   redef as_string => "" + num + "⁄" + den

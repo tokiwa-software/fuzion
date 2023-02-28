@@ -137,7 +137,7 @@ public class FormalGenerics extends ANY
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
-                                               HasSourcePosition pos,
+                                               SourcePosition pos,
                                                String detail1,
                                                String detail2)
   {
@@ -147,7 +147,7 @@ public class FormalGenerics extends ANY
         result = false;
         AstErrors.wrongNumberOfGenericArguments(this,
                                                 actualGenerics,
-                                                pos.pos(),
+                                                pos,
                                                 detail1,
                                                 detail2);
       }

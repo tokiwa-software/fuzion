@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -42,7 +41,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractType extends ANY implements Comparable<AbstractType>, HasSourcePosition
+public abstract class AbstractType extends ANY implements Comparable<AbstractType>
 {
 
 
@@ -150,7 +149,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * is this a formal generic argument that is open, i.e., the last argument in
    * a formal generic arguments list and followed by ... as A in
-   * Funtion<R,A...>.
+   * Function<R,A...>.
    *
    * This type needs very special treatment, it is allowed only as an argument
    * type of the last argument in an abstract feature declaration.  When
@@ -182,7 +181,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (isOpenGeneric())
       {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos(), genericArgument());
+        AstErrors.illegalUseOfOpenFormalGeneric(pos2BeRemoved(), genericArgument());
         result = false;
       }
     return result;
@@ -1001,18 +1000,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
 
     var result = this;
-    if (!featureOfType().isUniverse() && this != Types.t_ERROR)
+    var fot = featureOfType();
+    if (!fot.isUniverse() && this != Types.t_ERROR)
       {
-        var f = res == null ? featureOfType().typeFeature()
-                            : featureOfType().typeFeature(res);
-        var g = new List<AbstractType>(this);
-        g.addAll(generics());
-        result = Types.intern(new Type(f.pos(),
-                                       f.featureName().baseName(),
-                                       g,
-                                       outer().typeType(res),
-                                       f,
-                                       Type.RefOrVal.Value));
+        var f = fot.isTypeFeature() ? null
+              : res == null         ? fot.typeFeature()
+                                    : fot.typeFeature(res);
+        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features linke #anonymous. Neeed to check why.
+          {
+            result = Types.resolved.f_Type.thisType();
+          }
+        else
+          {
+            var g = new List<AbstractType>(this);
+            g.addAll(generics());
+            result = Types.intern(new Type(f.pos(),
+                                           f.featureName().baseName(),
+                                           g,
+                                           outer().typeType(res),
+                                           f,
+                                           Type.RefOrVal.Value));
+          }
       }
     return result;
   }
@@ -1112,13 +1120,70 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * For any type parameter g used in this, in cases these are type parameters
+   * of the origin of a type feature o, where o is f or an outer feature of f,
+   * replace g by the correspodinging type parameter of o.
+   *
+   * This is used to infer type parameter for a call to a feature declared in a
+   * type feature where the actual arguments are instances of the original
+   * (non-type) feature.
+   *
+   * @param f the outer feature this type is used in.
+   */
+  public AbstractType replace_type_parameters_of_type_feature_origin(AbstractFeature f)
+  {
+    var t = this;
+    if (!f.isUniverse() && f != Types.f_ERROR)
+      {
+        t = t.replace_type_parameters_of_type_feature_origin(f.outer());
+        if (f.isTypeFeature())
+          {
+            t = t.replace_type_parameter_of_type_origin(f);
+          }
+      }
+    return Types.intern(t);
+  }
+
+
+  /**
+   * Helper for replace_type_parameters_of_type_feature_origin working on a
+   * given outer type feature.
+   *
+   * @param outerTypeFeature one outer type feature this is used in.
+   */
+  private AbstractType replace_type_parameter_of_type_origin(AbstractFeature outerTypeFeature)
+  {
+    if (PRECONDITIONS) require
+      (outerTypeFeature.isTypeFeature());
+
+    AbstractType result;
+    if (isGenericArgument())
+      {
+        if (genericArgument().feature() == outerTypeFeature.typeFeatureOrigin())
+          {
+            result = new Type(this.pos2BeRemoved(), outerTypeFeature.generics().list.get(genericArgument().index() + 1));
+          }
+        else
+          {
+            result = this;
+          }
+      }
+    else
+      {
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_of_type_origin(outerTypeFeature));
+      }
+    return result;
+  }
+
+
+  /**
    * Apply given function recursively to generics and outer types in this type
    * to create a new type.
    *
    * @param f function to apply to generics and outer types
    *
    * @return in case f resulted in any changes, a new type with generics and
-   * outer types replaced by the corresponding results of f.appy.  this in case
+   * outer types replaced by the corresponding results of f.apply.  this in case
    * the were no changes.
    */
   private AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
@@ -1157,7 +1222,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isRef();
   public abstract AbstractType asThis();
   public abstract boolean isThisType();
-  public abstract SourcePosition pos();
+  public abstract SourcePosition pos2BeRemoved();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
@@ -1192,12 +1257,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               + featureOfType().featureName().baseName();
         for (var g : generics())
           {
-            var gs = g.asString();
-            if (gs.indexOf(" ") >= 0)
-              {
-                gs = "(" + gs + ")";
-              }
-            result = result + " " + gs;
+            result = result + " " + g.asStringWrapped();
           }
         if (isThisType())
           {
@@ -1209,7 +1269,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if contraints of this type are satisfied.
+   * wrap the result of toString in parentheses if necessary
+   */
+  public String toStringWrapped()
+  {
+    return toString().contains(" ")
+           ? "(" + toString() + ")"
+           : toString();
+  }
+
+
+  /**
+   * wrap the result of asString in parentheses if necessary
+   */
+  public String asStringWrapped()
+  {
+    var s = asString();
+    return s.contains(" ") ? "(" + s + ")"
+                           :       s      ;
+  }
+
+
+  /**
+   * Check if constraints of this type are satisfied.
    * Returns itself on success or t_ERROR if constraints are not met.
    */
   // NYI Can this result in an infinite recursion?

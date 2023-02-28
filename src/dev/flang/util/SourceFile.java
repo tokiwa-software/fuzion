@@ -191,7 +191,7 @@ public class SourceFile extends ANY
       }
     catch (IOException e)
       {
-        Errors.error(new SourcePosition(this, 1, 1),
+        Errors.error(new SourcePosition(this, 0),
                      "I/O Error: " + e.getMessage(),
                      "");
         sf = new byte[0];
@@ -448,7 +448,7 @@ public class SourceFile extends ANY
 
 
   /**
-   * Extract the codePont from the result of makeCodePointWithSize.
+   * Extract the codePoint from the result of makeCodePointWithSize.
    */
   private int codePointFromCpAndSize(int cpAndSz)
   {
@@ -542,7 +542,7 @@ public class SourceFile extends ANY
    * Check if lastCodePoint ends a line if followed by curCodePoint.
    *
    * New lines are started after code points CR, LF, VT, FF, NEL, LS and PF,
-   * with the exception that CR does not start a new line if followed by LF.
+   * with the exception that CR only starts a new line if followed by LF.
    * Additionally, BEGINNING_OF_FILE starts a new line since it is followed by
    * the first line of the file.
    *
@@ -610,7 +610,8 @@ public class SourceFile extends ANY
         IntStream.Builder b = IntStream.builder();
         b.add(-1);  // dummy line # 0 does not exist.
         int sz;
-        for (int pos = 0, curCodePoint  = BEGINNING_OF_FILE;
+        int curCodePoint  = BEGINNING_OF_FILE;
+        for (int pos = 0;
              _bytes != null && pos < _bytes.length;
              pos = pos + sz)
           {
@@ -622,6 +623,10 @@ public class SourceFile extends ANY
               {
                 b.add(pos);
               }
+          }
+        if (isNewLine(curCodePoint, END_OF_FILE))
+          {
+            b.add(_bytes.length);
           }
         _lines = b.build().toArray();
       }
@@ -751,7 +756,7 @@ public class SourceFile extends ANY
    *
    * @param pos a byte position
    *
-   * @return the line number, 1..lines().length.  return 0 for empty file.
+   * @return the line number, 1..lines().length.  return 1 for empty file.
    */
   public int lineNum(int pos)
   {
@@ -765,7 +770,7 @@ public class SourceFile extends ANY
 
     if (POSTCONDITIONS) ensure
       (lines().length == 1 || line >= 1,
-       _bytes.length != 0 || line == 0,
+       _bytes.length != 0 || line == 1,
        line <  lines().length);
 
     return line;
@@ -830,12 +835,7 @@ public class SourceFile extends ANY
    */
   public SourcePosition sourcePos(int pos)
   {
-    int line = lineNum(pos);
-    if (line == 0)
-      {
-        return new SourcePosition(this, 1, 1);
-      }
-    return new SourcePosition(this, line, codePointInLine(pos, line));
+    return new SourcePosition(this, pos);
   }
 
 

@@ -88,7 +88,7 @@ public class CFG extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   public final FUIR _fuir;
 
@@ -105,7 +105,7 @@ public class CFG extends ANY
   TreeSet<Integer> _calledClazzes = new TreeSet<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -506,7 +506,7 @@ public class CFG extends ANY
 
 
   /**
-   * Create call graph for calls made by statemnt s at index i in code block c
+   * Create call graph for calls made by statement s at index i in code block c
    * of clazz cl.
    *
    * @param cl clazz id
@@ -560,7 +560,7 @@ public class CFG extends ANY
       case Pop: break;
       default:
         {
-          Errors.fatal("Effects backend does not handle statments of type " + s);
+          Errors.fatal("Effects backend does not handle statements of type " + s);
         }
       }
   }

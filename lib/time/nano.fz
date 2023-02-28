@@ -72,7 +72,7 @@ nano(p Nano_Time_Provider, rr ()->unit) =>
 # short-hand for accessing time.nano effect in current environment
 #
 nano =>
-  nanos.installDefault
+  nano_type.installDefault
   nano.env
 
 
@@ -99,7 +99,7 @@ defaultNanoTime : Nano_Time_Provider is
 # unit type feature defining features related to time.nano but not requiring an
 # instance.
 #
-nanos is
+nano_type is
 
   # install default effect time using defaultTime
   installDefault unit is

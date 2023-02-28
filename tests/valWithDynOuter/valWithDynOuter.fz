@@ -31,11 +31,11 @@ valWithDynOuter is
 
   exit_code := mut 0
 
-  chck(s, expected String) =>
-    if s ≟ expected
-      say "PASSED: $s"
+  chck(str, expected String) =>
+    if str ≟ expected
+      say "PASSED: $str"
     else
-      say "FAILED: $s /= $expected"
+      say "FAILED: $str /= $expected"
       exit_code <- 1
 
   # test if e.y produces expected as result
@@ -45,13 +45,13 @@ valWithDynOuter is
   # by different other outer types producing
   #
   test(e v.e, expected String) =>
-    s := e.y
-    chck s expected
+    str := e.y
+    chck str expected
 
   test_mut(e v.e, expected String) =>
     e.mut
-    s := e.y
-    chck s expected
+    str := e.y
+    chck str expected
 
   v (f String) is
     a => "v"

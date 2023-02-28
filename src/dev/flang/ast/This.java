@@ -289,7 +289,7 @@ public class This extends ExprWithPos
 
 
   /**
-   * Resolve syntatictic suger. In this case, This is removed completely, it has
+   * Resolve syntactic sugar. In this case, This is removed completely, it has
    * been replaced during resolveTypes by calls to the outer reference this
    * refers to.
    *

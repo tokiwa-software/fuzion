@@ -26,12 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Set;
-
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -86,7 +80,7 @@ public class Type extends AbstractType
    * The sourcecode position of this type, used for error messages.
    */
   public final HasSourcePosition pos;
-  public SourcePosition pos() { return pos.pos(); }
+  public SourcePosition pos2BeRemoved() { return pos.pos(); }
 
 
   /**
@@ -189,7 +183,7 @@ public class Type extends AbstractType
    *
    * @param o
    */
-  public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
+  public Type(SourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }
@@ -207,7 +201,7 @@ public class Type extends AbstractType
    */
   public Type(Type t, List<AbstractType> g, AbstractType o)
   {
-    this((HasSourcePosition) t, t.name, g, o, t.feature, t._refOrVal);
+    this(t.pos2BeRemoved(), t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
@@ -230,7 +224,7 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
-    this((HasSourcePosition) t, t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
+    this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
          t.isRef() ? RefOrVal.Ref
                    : RefOrVal.Value);
@@ -295,7 +289,7 @@ public class Type extends AbstractType
    * the type of the outer reference within inner is feat<A, B, C>.  This
    * constructor is used to create A, B, C in this case.
    *
-   * @param g the formal generic this referes to
+   * @param g the formal generic this refers to
    */
   public Type(HasSourcePosition pos, Generic g)
   {
@@ -399,12 +393,12 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a clone of original that uses orignalOuterFeature as context to
+   * Create a clone of original that uses originalOuterFeature as context to
    * look up features the type is built from.
    *
    * @param original the original value type
    *
-   * @param origininalOuterFeature the original feature, which is not a type
+   * @param originalOuterFeature the original feature, which is not a type
    * feature.
    */
   private Type(Type original, AbstractFeature originalOuterFeature)
@@ -449,14 +443,14 @@ public class Type extends AbstractType
 
 
   /**
-   * Create a clone of this Type that uses orignalOuterFeature as context to
+   * Create a clone of this Type that uses originalOuterFeature as context to
    * look up features the type is built from.  Generics will be looked up in the
    * current context.
    *
    * This is used for type features that use types from the original feature,
    * but needs to replace generics by the type feature's generics.
    *
-   * @param origininalOuterFeature the original feature, which is not a type
+   * @param originalOuterFeature the original feature, which is not a type
    * feature.
    */
   Type clone(AbstractFeature originalOuterFeature)
@@ -694,7 +688,8 @@ public class Type extends AbstractType
       }
     if (_generics != NONE)
       {
-        result = result + "<" + _generics + ">";
+        result = result + _generics
+          .toString(" ", " ", "", (g) -> g.toStringWrapped());
       }
     return result;
   }
@@ -743,14 +738,12 @@ public class Type extends AbstractType
       }
     if (!_generics.isEmpty() && !(_generics instanceof FormalGenerics.AsActuals))
       {
-        var i = _generics.listIterator();
-        while (i.hasNext())
+        var result = this;
+        var g = generics();
+        var ng = g.map(gt -> gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
+        if (ng != g)
           {
-            var gt = i.next();
-            var ng = (gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
-            if (CHECKS) check
-              (gt == ng || _interned == null);
-            i.set(ng);
+            result = new Type(this, ng, outer());
           }
       }
     return v.action(this, outerfeat);
@@ -774,7 +767,7 @@ public class Type extends AbstractType
           {
             if (outer().isGenericArgument())
               {
-                AstErrors.formalGenericAsOuterType(pos(), this);
+                AstErrors.formalGenericAsOuterType(pos2BeRemoved(), this);
               }
           }
         else
@@ -789,7 +782,7 @@ public class Type extends AbstractType
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
+                AstErrors.formalGenericWithGenericArgs(pos2BeRemoved(), this, generic);
               }
           }
       }
@@ -849,7 +842,7 @@ public class Type extends AbstractType
       {
         if (isMatchingTypeFeature(o))
           {
-            result = new Type(pos(), new Generic(o.typeArguments().get(0)));
+            result = new Type(pos2BeRemoved(), new Generic(o.typeArguments().get(0)));
             o = null;
           }
         else
@@ -915,7 +908,7 @@ public class Type extends AbstractType
               }
             FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                                  this,
+                                                                  this.pos2BeRemoved(),
                                                                   "type",
                                                                   "Type: " + toString() + "\n"))
               {
@@ -957,7 +950,7 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            feature = res._module.lookupFeatureForType(pos(), name, of);
+            feature = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
           }
       }
     if (POSTCONDITIONS) ensure
@@ -987,22 +980,12 @@ public class Type extends AbstractType
   public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !isGenericArgument());
+      (Errors.count() > 0 || !isGenericArgument(),
+       Errors.count() > 0 || feature != null);
 
-    var result = feature;
-
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.count() > 0);
-
-        result = Types.f_ERROR;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return feature != null
+      ? feature
+      : Types.f_ERROR;
   }
 
 

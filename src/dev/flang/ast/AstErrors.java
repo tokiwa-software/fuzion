@@ -177,6 +177,25 @@ public class AstErrors extends ANY
     return sb.toString();
   }
 
+  /**
+   * Convert a list of FeatureAndOuter into a String of showing for each element
+   * the qualified name of the outer where it was found, the qualified name of
+   * the found feature and the position where it was declared.  If there are at
+   * least two elements, they are separated by "and".
+   *
+   * @param targets list of call or assignment target candidates
+   */
+  static String featuresAndOuterList(List<FeatureAndOuter> targets)
+  {
+    StringBuilder sb = new StringBuilder();
+    for (var f : targets)
+      {
+        sb.append(sb.length() > 0 ? "and " : "");
+        sb.append("in " + s(f._outer) + " found " + s(f._feature) + " defined at " + f._feature.pos().show() + "\n");
+      }
+    return sb.toString();
+  }
+
 
   public static void statementNotAllowedOutsideOfFeatureDeclaration(Stmnt s)
   {
@@ -282,9 +301,9 @@ public class AstErrors extends ANY
    *
    * @param pos the source code position
    *
-   * @param where location of the incompaible types, e.g, "in assignment".
+   * @param where location of the incompatible types, e.g, "in assignment".
    *
-   * @param detail detail on the use of incompatible types, e.g., "assignement to field abc.fgh\n".
+   * @param detail detail on the use of incompatible types, e.g., "assignment to field abc.fgh\n".
    *
    * @param target string representing the target of the assignment, e.g., "field abc.fgh".
    *
@@ -426,7 +445,7 @@ public class AstErrors extends ANY
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(typePar.pos(),
+    incompatibleType(typePar.pos2BeRemoved(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -476,7 +495,7 @@ public class AstErrors extends ANY
 
   /**
    * Create an error message for incompatible types when assigning an element e
-   * during array initilization of the form '[a, b, ..., e, ... ]'.
+   * during array initialization of the form '[a, b, ..., e, ... ]'.
    *
    * @param pos the source code position of the assignment.
    *
@@ -632,15 +651,19 @@ public class AstErrors extends ANY
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
-    error(redefinedFeature.pos(),
-          "Wrong result type in redefined feature",
-          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
-          // originalFeature.resultType() might be a type parameter that has been replaced by originalType:
-          typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
-          "Original feature declared at " + originalFeature.pos().show() + "\n" +
-          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                              : "To solve this, change type of result to " + s(originalType)));
+    if (count() == 0 || (originalType                  != Types.t_ERROR &&
+                         redefinedFeature.resultType() != Types.t_ERROR    ))
+      {
+        error(redefinedFeature.pos(),
+              "Wrong result type in redefined feature",
+              "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
+              "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
+              // originalFeature.resultType() might be a type parameter that has been replaced by originalType:
+              typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
+              "Original feature declared at " + originalFeature.pos().show() + "\n" +
+              (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                                  : "To solve this, change type of result to " + s(originalType)));
+      }
   }
 
   public static void constructorResultMustBeUnit(Expr res)
@@ -881,7 +904,7 @@ public class AstErrors extends ANY
           "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
-          "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
+          "To solve this, you could add a redefinition of " + sbn(f1) + " to " + s(heir) + ".");
   }
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -956,14 +979,34 @@ public class AstErrors extends ANY
           "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
   }
 
-  static void ambiguousCallTargets(SourcePosition pos,
-                                   FeatureName fn,
-                                   List<AbstractFeature> targets)
+  static void ambiguousTargets(SourcePosition pos,
+                               String operation,
+                               FeatureName fn,
+                               List<FeatureAndOuter> targets)
   {
+    if (PRECONDITIONS) require
+      (targets.size() > 1);
+
+    var qualifiedCalls = new StringBuilder();
+    var outerLevels = new TreeSet<AbstractFeature>();
+    for (var fo : targets)
+      {
+        var o = fo._outer;
+        outerLevels.add(o);
+        qualifiedCalls
+          .append(qualifiedCalls.length() > 0 ? " or " : "")
+          .append(code(o.qualifiedName() + ".this." + fn.baseName()));
+      }
     error(pos,
-          "Ambiguous call targets found for call to " + sbn(fn) + "",
-          "Found several possible targets that match this call:\n" +
-          featureList(targets));
+          "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
+          "Found several possible " + operation + " targets within the current feature at " +
+          (outerLevels.size() == 1 ? "the same outer level " : "different levels of outer features:\n") +
+          featuresAndOuterList(targets) +
+          (outerLevels.size() == 1 ? "To solve this, you may rename one of these features." /* NYI: check if this case could actually happen,
+                                                                                             * maybe recommend to call without type inference
+                                                                                             * for type parameters?
+                                                                                             */
+                                   : "To solve this, you may qualify the feature using " + qualifiedCalls + "."));
   }
 
   /**
@@ -1088,7 +1131,7 @@ public class AstErrors extends ANY
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
         error(f.pos(),
-              "Missing result type in field declaration with initializaton",
+              "Missing result type in field declaration with initialization",
               "Field declared: " + s(f) + "");
       }
   }
@@ -1122,7 +1165,7 @@ public class AstErrors extends ANY
           "Constraint for type parameter must not be a type parameter",
           "Affected type parameter: " + s(tp) + "\n" +
           "_constraint: " + s(tp.resultType()) + "\n" +
-          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
+          "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1354,7 +1397,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to its own value type as one of the choice alternatives",
           "Embedding a choice type in itself would result in an infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
   }
 
   static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
@@ -1362,7 +1405,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos().show());
+          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
@@ -1393,11 +1436,14 @@ public class AstErrors extends ANY
 
   static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
   {
-    error(pos,
-          "Use of selector requires call to feature whose type is an open type parameter",
-          "In call to " + s(f) + "\n" +
-          "Selected variant " + ss(name + "." + select) + "\n" +
-          "Type of called feature: " + s(t));
+    if (count() == 0 || t != Types.t_ERROR)
+      {
+        error(pos,
+              "Use of selector requires call to feature whose type is an open type parameter",
+              "In call to " + s(f) + "\n" +
+              "Selected variant " + ss(name + "." + select) + "\n" +
+              "Type of called feature: " + s(t));
+      }
   }
 
   static void selectorRange(SourcePosition pos, int sz, AbstractFeature f, String name, int select, List<AbstractType> types)
@@ -1623,7 +1669,7 @@ public class AstErrors extends ANY
           {
             for (var arg : args)
               {
-                var argtype = "--still unkown--";
+                var argtype = "--still unknown--";
                 if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
                   {
                     allUnknown = false;

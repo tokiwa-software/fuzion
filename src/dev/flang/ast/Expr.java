@@ -224,7 +224,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statment with several branches such as an "if" or a "match"
+   * this is a statement with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this
    * into a statement that does not produce a value.
    *
@@ -495,6 +495,17 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean producesResult()
   {
     return true;
+  }
+
+
+  /**
+   * wrap the result of toString in parentheses if necessary
+   */
+  public String toStringWrapped()
+  {
+    return toString().contains(" ")
+           ? "(" + toString() + ")"
+           : toString();
   }
 
 

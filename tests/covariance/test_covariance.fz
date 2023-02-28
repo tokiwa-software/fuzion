@@ -62,7 +62,7 @@ test_covariance is
       else
         0
 
-    # create string representation consiting of type, to_u32
+    # create string representation consisting of type, to_u32
     # and valueString
     #
     redef as_string => "num.this.type {to_u32} {to_u32_loop} '$valueString'"
@@ -217,8 +217,8 @@ test_this_type =>
   chck $z       "abcz"
   chck $Z       "vwxZ"
 
-  chck(s, t String) =>
-    say (if s ≟ t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
+  chck(s1, s2 String) =>
+    say (if s1 ≟ s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
 
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.

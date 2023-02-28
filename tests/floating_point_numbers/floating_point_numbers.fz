@@ -63,7 +63,7 @@ floating_point_numbers is
     # comparision operators
     chck (
       (zero ≟ zero) &&
-      !(zero ≟ one) &&
+      (zero != one) &&
       (one  ≥ zero) &&
       (zero ≤ one) &&
       (zero ≟ zero) &&

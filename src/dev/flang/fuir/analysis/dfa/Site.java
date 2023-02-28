@@ -69,7 +69,7 @@ public class Site extends ANY implements Comparable<Site>
   TreeSet<Integer> _accesses = new TreeSet<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

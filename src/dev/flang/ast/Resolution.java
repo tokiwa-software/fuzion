@@ -47,7 +47,7 @@ import dev.flang.util.FuzionOptions;
  *
  * Resolution starts with the universe, the outermost feature, and proceeds
  * forward further and further inside. This approach clearly does not scale to
- * large applications with big libraries, so it will be neccessary to revisit
+ * large applications with big libraries, so it will be necessary to revisit
  * this and implement a more on-demand approach once the language is more
  * stable (e.g., by adding singleton features lazily only when they are
  * referenced).
@@ -119,7 +119,7 @@ import dev.flang.util.FuzionOptions;
  *
  * 13. Now that all fields in f are layouted, perform the layout of (f,G) as a
  *     needed as a stack frame, value type, and a heap allocated object. For
- *     this, analyse the code for locations were fields accessible after the
+ *     this, analyze the code for locations were fields accessible after the
  *     feature call is done, e.g., since they are visible outside of f or they
  *     escape as part of the closure of an inner feature of f.
  *
@@ -258,7 +258,7 @@ public class Resolution extends ANY
   /**
    * Add a feature to the set of features schedule for type resolution
    */
-  void scheduleForTypeInteference(Feature f)
+  void scheduleForTypeInference(Feature f)
   {
     if (PRECONDITIONS) require
       (f.state() == Feature.State.RESOLVED_SUGAR1);

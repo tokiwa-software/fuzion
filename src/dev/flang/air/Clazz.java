@@ -651,7 +651,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return t.isThisType() ? findOuter(t.featureOfType(), t)
+    return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
   }
 
@@ -760,7 +760,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *    absurd (i i32, v void) is {}
    *
    * that has a field of type void is effectively a void type. This call will,
-   * however, return false for ushc user defined void types.
+   * however, return false for user defined void types.
    */
   public boolean isVoidType()
   {
@@ -778,7 +778,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos();
+        var tp = _type.pos2BeRemoved();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))
@@ -1178,7 +1178,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * When seen from this Clazz, is feature f effectively abstract? This is the
-   * case if f is abstract and if f is fixed to another outher feature than
+   * case if f is abstract and if f is fixed to another outer feature than
    * this.feature(), i.e. this clazz inherits f but not its implementation.
    */
   boolean isEffectivelyAbstract(AbstractFeature f)
@@ -1243,9 +1243,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName() + (this._type.generics().isEmpty()
-                                                 ? ""
-                                                 : "<" + this._type.generics() + ">"));
+         + feature().featureName().baseName()
+         + this._type.generics()
+         .toString(" ", " ", "", t -> t.asStringWrapped())
+        );
   }
 
 
@@ -1515,7 +1516,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is this a choice-type whose actual generics inlude ref?  If so, a field for
+   * Is this a choice-type whose actual generics include ref?  If so, a field for
    * all the refs will be needed.
    */
   public boolean isChoiceWithRefs()
@@ -1633,7 +1634,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * For a choice clazz, get the clazz that corresponds to the generic
    * argument to choice at index id (0..n-1).
    *
-   * @param id the index of the paramenter
+   * @param id the index of the parameter
    */
   public Clazz getChoiceClazz(int id)
   {
@@ -1685,8 +1686,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find clazzes required by intrinsic method that has been found be to called.
    *
-   * This includes results of intrinsic contructors are any specifc clazzes
-   * required for specific instrinsics, e.g., clazzes called from the intrinsic.
+   * This includes results of intrinsic constructors are any specific clazzes
+   * required for specific intrinsics, e.g., clazzes called from the intrinsic.
    *
    * @param at position that the intrinsic has been found to be called.
    */
@@ -1757,7 +1758,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
   /**
-   * Is this clazz absured, i.e., does it have any arguments of type void?
+   * Is this clazz absurd, i.e., does it have any arguments of type void?
    */
   public boolean isAbsurd()
   {
@@ -1803,7 +1804,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Flag to detetect endless recursion between isInstantiated() and
+   * Flag to detect endless recursion between isInstantiated() and
    * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
    * its outer clazz.
    */
@@ -2082,7 +2083,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
-      // NYI (see #282): Would be nice if this would not need special handlng but would
+      // NYI (see #282): Would be nice if this would not need special handling but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {

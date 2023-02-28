@@ -251,7 +251,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Find the outer feature of this festure.
+   * Find the outer feature of this feature.
    */
   public AbstractFeature outer()
   {
@@ -809,7 +809,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */

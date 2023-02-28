@@ -265,7 +265,7 @@ abstract class CStmnt extends ANY
    *
    * @param ident the name of the function
    *
-   * @param argsTypes the argument types
+   * @param argTypes the argument types
    *
    * @param argsIds the argument identifiers
    *
@@ -466,7 +466,7 @@ abstract class CStmnt extends ANY
    *
    * @param s the code to execute if cc is TRUE
    *
-   * @return the if statment
+   * @return the if statement
    */
   static CStmnt iff(CExpr cc, CStmnt s)
   {
@@ -495,7 +495,7 @@ abstract class CStmnt extends ANY
    *
    * @param l the label to go to
    *
-   * @return the goto statment
+   * @return the goto statement
    */
   static CStmnt gowto(String l)
   {
@@ -511,7 +511,7 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * Add labell l before this statement, such that is is posible to 'goto $l'.
+   * Add label l before this statement, such that is is possible to 'goto $l'.
    *
    * @param l identifier to be used as a label for this.
    */

@@ -78,7 +78,7 @@ public class COptions extends FuzionOptions
 
 
   /**
-   * Costructor initializing fields as given.
+   * Constructor initializing fields as given.
    */
   public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags)
   {

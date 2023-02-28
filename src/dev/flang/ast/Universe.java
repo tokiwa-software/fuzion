@@ -41,6 +41,15 @@ public class Universe extends Expr
 {
 
 
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * The sourcecode position of this expression, used for error messages.
+   */
+  private final SourcePosition _pos;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -49,6 +58,16 @@ public class Universe extends Expr
    */
   public Universe()
   {
+    this(SourcePosition.builtIn);
+  }
+
+
+  /**
+   * Constructor for a universeCall at the given position.
+   */
+  public Universe(SourcePosition pos)
+  {
+    this._pos = pos;
   }
 
 
@@ -60,7 +79,7 @@ public class Universe extends Expr
    */
   public SourcePosition pos()
   {
-    return SourcePosition.builtIn;
+    return _pos;
   }
 
 

@@ -34,9 +34,9 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     if is_empty
       nil
     else
-      count := (mapSequence N (_ -> first.one)).fold first.sum
+      cnt := (mapSequence N (_ -> first.one)).fold first.sum
       sum := fold first.sum
-      sum / count
+      sum / cnt
 
 
   # the variance of the sequence
@@ -45,9 +45,9 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     match average
       nil => nil
       avg N =>
-        count := (mapSequence N (_ -> first.one)).fold first.sum
+        cnt := (mapSequence N (_ -> first.one)).fold first.sum
         sum := (mapSequence N (x -> (x - avg)**first.two)).fold first.sum
-        sum / count
+        sum / cnt
 
 
   # minimum value in the sequence
