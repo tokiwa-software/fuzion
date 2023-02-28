@@ -47,7 +47,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   #
   next option (Linked_List T) is
     match n.get
-      ll Mutable_Linked_List LM T => ll
+      ll Mutable_Linked_List => ll
       nil => nil
 
 
@@ -56,7 +56,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   append(data T) =>
     match n.get
       nil => n <- Mutable_Linked_List LM T data
-      ll Mutable_Linked_List LM T => ll.append data
+      ll Mutable_Linked_List => ll.append data
 
 
   # append an entire list to this linked list
@@ -64,7 +64,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   concat(other Mutable_Linked_List LM T) =>
     match n.get
       nil => n <- other
-      ll Mutable_Linked_List LM T => ll.concat other
+      ll Mutable_Linked_List => ll.concat other
 
 
   # freeze this list, i.e., turn all references into immutable values
@@ -74,7 +74,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
       n.close
 
     match n.get
-      ll Mutable_Linked_List LM T => ll.freeze
+      ll Mutable_Linked_List => ll.freeze
       nil =>
 
 
