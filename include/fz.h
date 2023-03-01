@@ -68,4 +68,18 @@ int fzE_unsetenv(const char *name){
 }
 
 
+
+// \0-terminate a string that is given as an array plus length
+char * fzE_zero_terminate(const char *src, size_t n){
+#if GC_H
+  char *dest = GC_MALLOC(n + 1);
+#else
+  char *dest = malloc(n + 1);
+#endif
+  memcpy(dest, src, n);
+  dest[n + 1] = '\0';
+  return dest;
+}
+
+
 #endif /* fz.h  */

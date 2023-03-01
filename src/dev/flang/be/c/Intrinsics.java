@@ -147,13 +147,16 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
         {
+          var name = new CIdent("name");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
+            CExpr.decl("char *", name, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                   A1.castTo("size_t")))),
             // try delete as a file first
-            CExpr.decl("int", resultIdent, CExpr.call("unlink", new List<>(A0.castTo("char *")))),
+            CExpr.decl("int", resultIdent, CExpr.call("unlink", new List<>(name))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             // then try delete as a directory
-            resultIdent.assign(CExpr.call("rmdir", new List<>(A0.castTo("char *")))),
+            resultIdent.assign(CExpr.call("rmdir", new List<>(name))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
@@ -161,9 +164,16 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.move"         , (c,cl,outer,in) ->
         {
+          var A3 = new CIdent("arg3");
+          var old = new CIdent("old");
+          var new0 = new CIdent("new");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(A0.castTo("char *"), A1.castTo("char *")))),
+            CExpr.decl("char *", old, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                  A1.castTo("size_t")))),
+            CExpr.decl("char *", new0, CExpr.call("fzE_zero_terminate", new List<>(A2.castTo("char *"),
+                                                                                   A3.castTo("size_t")))),
+            CExpr.decl("int", resultIdent, CExpr.call("rename", new List<>(old, new0))),
             // Testing if rename was successful
             CExpr.iff(resultIdent.eq(CExpr.int8const(0)), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
@@ -172,24 +182,30 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.create_dir"   , (c,cl,outer,in) ->
         {
+          var name = new CIdent("name");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("fzE_mkdir", new List<>(A0.castTo("char *")))),
+            CExpr.decl("char *", name, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                   A1.castTo("size_t")))),
+            CExpr.decl("int", resultIdent, CExpr.call("fzE_mkdir", new List<>(name))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret());
         }
         );
     put("fuzion.sys.fileio.stats"   , (c,cl,outer,in) ->
         {
+          var name = new CIdent("name");
           var statIdent = new CIdent("statbuf");
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
+            CExpr.decl("char *", name, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                   A1.castTo("size_t")))),
             CExpr.decl("struct stat", statIdent),
             CExpr.decl("fzT_1i64 *", metadata),
-            metadata.assign(A1.castTo("fzT_1i64 *")),
+            metadata.assign(A2.castTo("fzT_1i64 *")),
             // write stats in metadata if stat was successful and return true
             CExpr.iff(
-              CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CExpr.call("stat", new List<>(name, statIdent.adrOf())).eq(CExpr.int8const(0)),
               CStmnt.seq(
                 metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
                 metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
@@ -209,15 +225,18 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
         {
+          var name = new CIdent("name");
           var statIdent = new CIdent("statbuf");
           var metadata = new CIdent("metadata");
           return CStmnt.seq(
+            CExpr.decl("char *", name, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                   A1.castTo("size_t")))),
             CExpr.decl("struct stat", statIdent),
             CExpr.decl("fzT_1i64 *", metadata),
-            metadata.assign(A1.castTo("fzT_1i64 *")),
+            metadata.assign(A2.castTo("fzT_1i64 *")),
             // write stats in metadata if lstat was successful and return true
             CExpr.iff(
-              CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
+              CExpr.call("lstat", new List<>(name, statIdent.adrOf())).eq(CExpr.int8const(0)),
               CStmnt.seq(
                 metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
                 metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
@@ -237,20 +256,24 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.open"   , (c,cl,outer,in) ->
         {
+          var A3 = new CIdent("arg3");
+          var name = new CIdent("name");
           var filePointer = new CIdent("fp");
           var openResults = new CIdent("open_results");
           return CStmnt.seq(
+            CExpr.decl("char *", name, CExpr.call("fzE_zero_terminate", new List<>(A0.castTo("char *"),
+                                                                                   A1.castTo("size_t")))),
             CExpr.decl("FILE *", filePointer),
             CExpr.decl("fzT_1i64 *", openResults),
-            openResults.assign(A1.castTo("fzT_1i64 *")),
+            openResults.assign(A2.castTo("fzT_1i64 *")),
             errno.assign(new CIdent("0")),
             CStmnt.suitch(
-              A2,
+              A3,
               new List<>(
                 CStmnt.caze(
                   new List<>(CExpr.int8const(0)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
+                    filePointer.assign(CExpr.call("fopen", new List<>(name, CExpr.string("rb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -259,7 +282,7 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(1)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
+                    filePointer.assign(CExpr.call("fopen", new List<>(name, CExpr.string("wb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -268,7 +291,7 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(2)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
+                    filePointer.assign(CExpr.call("fopen", new List<>(name, CExpr.string("ab")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -604,7 +627,11 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
+          var name = new CIdent("name");
+          return CStmnt.seq(CStmnt.decl("char *", name,
+                                        CExpr.call("fzE_zero_terminate",
+                                                   new List<>(A0.castTo("char *"), A1.castTo("size_t")))),
+                            CStmnt.iff(CExpr.call("getenv",new List<>(name)).ne(CNames.NULL),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
         });
@@ -612,16 +639,29 @@ public class Intrinsics extends ANY
         {
           var tmp = new CIdent("tmp");
           var str = new CIdent("str");
+          var name = new CIdent("name");
           var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(CStmnt.decl("char *", str),
-                            str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
+                            CStmnt.decl("char *", name,
+                                        CExpr.call("fzE_zero_terminate",
+                                                   new List<>(A0.castTo("char *"), A1.castTo("size_t")))),
+                            str.assign(CExpr.call("getenv",new List<>(name))),
                             c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("fzE_setenv",new List<>(A0.castTo("char*") /* name */,
-                                                                      A1.castTo("char*") /* value */,
+          var A3 = new CIdent("arg3");
+          var name = new CIdent("name");
+          var value = new CIdent("value");
+          return CStmnt.seq(CStmnt.decl("char *", name,
+                                        CExpr.call("fzE_zero_terminate",
+                                                   new List<>(A0.castTo("char *"), A1.castTo("size_t")))),
+                            CStmnt.decl("char *", value,
+                                        CExpr.call("fzE_zero_terminate",
+                                                   new List<>(A2.castTo("char *"), A3.castTo("size_t")))),
+                            CStmnt.iff(CExpr.call("fzE_setenv",new List<>(name /* name */,
+                                                                      value /* value */,
                                                                       CExpr.int32const(1) /* overwrite */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
@@ -629,7 +669,11 @@ public class Intrinsics extends ANY
         });
      put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
         {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("fzE_unsetenv",new List<>(A0.castTo("char*") /* name */))
+          var name = new CIdent("name");
+          return CStmnt.seq(CStmnt.decl("char *", name,
+                                        CExpr.call("fzE_zero_terminate",
+                                                   new List<>(A0.castTo("char *"), A1.castTo("size_t")))),
+                            CStmnt.iff(CExpr.call("fzE_unsetenv",new List<>(name /* name */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());

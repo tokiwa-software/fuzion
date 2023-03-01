@@ -162,14 +162,14 @@ public class Intrinsics extends ANY
 
 
   /**
-   * Create a Java string from 0-terminated given byte array.
+   * Create a Java string from given byte array.
    */
   private static String utf8ByteArrayDataToString(Value internalArray)
   {
     var strA = internalArray.arrayData();
     var ba = (byte[]) strA._array;
     var l = 0;
-    while (l < ba.length && ba[l] != 0)
+    while (l < ba.length)
       {
         l++;
       }
@@ -301,7 +301,7 @@ public class Intrinsics extends ANY
               Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
             }
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
+          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(3)));
           try
             {
               Files.move(oldPath, newPath);
@@ -336,10 +336,10 @@ public class Intrinsics extends ANY
               System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
               System.exit(1);
             }
-          var open_results = (long[])args.get(2).arrayData()._array;
+          var open_results = (long[])args.get(3).arrayData()._array;
           try
             {
-              switch (args.get(3).i8Value()) {
+              switch (args.get(4).i8Value()) {
                 case 0:
                   RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
                   open_results[0] = _openStreams_.add(fis);
@@ -387,7 +387,7 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          long[] stats = (long[])args.get(2).arrayData()._array;
+          long[] stats = (long[])args.get(3).arrayData()._array;
           var err = SystemErrNo.UNSPECIFIED;
           try
             {

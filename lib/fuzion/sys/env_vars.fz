@@ -32,56 +32,59 @@ private env_vars is
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  private has0(s Any) bool is intrinsic
+  private has0(s Any, sl i32) bool is intrinsic
 
 
   # intrinsic to get env var with given name
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  private get0(s Any) String
+  private get0(s Any, sl i32) String
   is intrinsic
 
   # intrinsic to set env var
-  private set0(s Any, t Any) bool is intrinsic
+  private set0(s Any, sl i32, t Any, tl i32) bool is intrinsic
 
   # intrinsic to unset env var
-  private unset0(s Any) bool is intrinsic
+  private unset0(s Any, sl i32) bool is intrinsic
 
 
   # check if env var with given name exists
   #
   has(s String) bool is
-    has0 (c_string s)
+    a := s.utf8.as_array
+    has0 a.internalArray.data a.length
 
 
   # intrinsic to get env var with given name
   #
   get(s String) option String is
-    a := c_string s
-    if has0 a then
-      get0 a
+    a := s.utf8.as_array
+    if has0 a.internalArray.data a.length then
+      get0 a.internalArray.data a.length
     else
       nil
 
   # set the value of the env var with given name to the given new value
   # will overwrite the current value, if it is set
   # NYI: #627: rename to set once set keyword is removed
+  #
   set1(name String, val String) outcome unit is
-    k := c_string name
-    v := c_string val
+    k := name.utf8.as_array
+    v := val.utf8.as_array
 
-    if set0 k v
+    if set0 k.internalArray.data k.length v.internalArray.data v.length
       unit
     else
       error "failed to set env var"
 
   # unset the env var with the given name
   # note this returns success (unit) if the given env var did not exist
+  #
   unset(name String) outcome unit is
-    k := c_string name
+    k := name.utf8.as_array
 
-    if unset0 k
+    if unset0 k.internalArray.data k.length
       unit
     else
       error "failed to unset env var"
