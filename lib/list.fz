@@ -489,7 +489,7 @@ list(T type, h T, t () -> list T) list T is
 # convenience routine to create a list from head h and tail t.
 # NYI: #1166, syntax sugar for lazy evaluation
 #
-list_of_non_lazy(T type, h T, t list T) list T is
+list_of_none_lazy(T type, h T, t list T) list T is
   ref : Cons T (list T)
     head => h
     tail => t
