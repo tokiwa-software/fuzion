@@ -305,7 +305,7 @@ public class InlineArray extends ExprWithPos
                                             new Actual(new NumLiteral(_elements.size())));
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
         var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
-        var sysArrayCall = new Call(pos(), sys , "internal_array", args).resolveTypes(res, outer);
+        var sysArrayCall = new Call(pos(), sys , "internal_array_init", args).resolveTypes(res, outer);
         var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
         var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
         var sysArrayT    = new Type(pos(), "internal_array", eT, sysT);

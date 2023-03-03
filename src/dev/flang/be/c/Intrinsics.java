@@ -582,7 +582,7 @@ public class Intrinsics extends ANY
                             res.castTo(c._types.clazz(rc)).ret());
         });
 
-    put("fuzion.sys.internal_array.alloc", (c,cl,outer,in) ->
+    put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call(c.malloc(),
