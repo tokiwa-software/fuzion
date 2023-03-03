@@ -2158,7 +2158,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   }
                 return res;
               }
-             else
+            else
               {
                 // NYI: This branch should never be taken when rebasing above is implemented correctly.
                 if (f.implKind() == Impl.Kind.FieldDef)
