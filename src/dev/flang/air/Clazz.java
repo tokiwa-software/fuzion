@@ -1039,6 +1039,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
+       !f.isUniverse(),
        !this.isVoidType());
 
     return lookup(f, -1, actualGenerics, p, false);
@@ -1079,6 +1080,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
+       !f.isUniverse(),
        !this.isVoidType());
 
     Clazz innerClazz = null;
@@ -2159,7 +2161,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
               {
-                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR
+                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
                   ? Clazzes.create(t, null)
                   : innerBase.lookup(t.featureOfType(), t.generics(), null);
                 if (t.isRef())
@@ -2278,7 +2280,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 // underlying type to avoid problems creating clazzes form
                 // this.types.
                 if (CHECKS) check
-                  (feature() == Types.resolved.f_Types_get);
+                  (Errors.count() > 0 || feature() == Types.resolved.f_Types_get);
 
                 gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }
