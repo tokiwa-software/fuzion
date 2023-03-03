@@ -1576,7 +1576,7 @@ public class Call extends AbstractCall
           }
       }
 
-    // report missing infered types only if there were no errors trying to find
+    // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
     if (!missing.isEmpty() &&
         (Errors.count() == 0 ||

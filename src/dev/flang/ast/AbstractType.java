@@ -1048,7 +1048,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fot.isTypeFeature() ? null
               : res == null         ? fot.typeFeature()
                                     : fot.typeFeature(res);
-        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features linke #anonymous. Neeed to check why.
+        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features like #anonymous. Need to check why.
           {
             result = Types.resolved.f_Type.thisType();
           }
@@ -1164,7 +1164,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For any type parameter g used in this, in cases these are type parameters
    * of the origin of a type feature o, where o is f or an outer feature of f,
-   * replace g by the correspodinging type parameter of o.
+   * replace g by the corresponding type parameter of o.
    *
    * This is used to infer type parameter for a call to a feature declared in a
    * type feature where the actual arguments are instances of the original

@@ -44,7 +44,7 @@ public class FeatureAndOuter extends ANY
 {
 
   /**
-   * The feature containeed in this instance.
+   * The feature contained in this instance.
    */
   public final AbstractFeature _feature;
 
@@ -114,7 +114,7 @@ public class FeatureAndOuter extends ANY
    * @param isCandidate predicate to decide if a feature is a candidate even
    * if its name is not an exact match.
    *
-   * @return if exaclty one match was found, that match, null if no match was
+   * @return if exactly one match was found, that match, null if no match was
    * found, an instance of FeatureAndOuter consisting of Types.f_ERROR for
    * feature and outer in case of several matches. An error is reported in this
    * case.
