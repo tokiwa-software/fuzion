@@ -156,10 +156,23 @@ public class AstErrors extends ANY
   {
     return ss(names.toString("", ".", ""));
   }
-  static String code(String s) { return "'" + Terminal.PURPLE + s + Terminal.REGULAR_COLOR + "'"; }
-  static String type(String s) { return "'" + Terminal.YELLOW + s + Terminal.REGULAR_COLOR + "'"; }
-  static String expr(String s) { return "'" + Terminal.CYAN   + s + Terminal.REGULAR_COLOR + "'"; }
+  static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
+  static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
+  static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
 
+  /**
+   * Enclose s in "'" unless s contains a new line. If s contains a new line,
+   * add new lines at the starts or the ends with not present already.
+   */
+  static String ticksOrNewLine(String s)
+  {
+    return
+      s.indexOf("\n") < 0                    ? "'"  + s + "'"  :
+      s.startsWith("\n") && s.endsWith("\n") ?        s        :
+      s.startsWith("\n")                     ?        s + "\n" :
+                            s.endsWith("\n") ? "\n" + s
+                                             : "\n" + s + "\n";
+  }
 
 
   /**
@@ -1691,6 +1704,38 @@ public class AstErrors extends ANY
           (at != null ? "expected argument types: " + at + "\n" : "" ) +
           "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
           "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
+  }
+
+  /**
+   * Produce error for the of issue #1186: A routine returns itself:
+   *
+   *   a => a.this
+   */
+  public static void routineCannotReturnItself(AbstractFeature f)
+  {
+    String n = f.featureName().baseName();
+    String args = f.arguments().size() > 0 ? "(..args..)" : "";
+    String old_code =
+      "\n" +
+      "  " + n + args + " =>\n" +
+      "    ..code..\n"+
+      "    " + n + ".this\n";
+    String new_code =
+      "\n" +
+      "  " + n + args + " is\n" +
+      "    ..code..\n";
+    String new_code_ref =
+      "\n" +
+      "  " + n + args + " Any is\n" +
+      "    ..code..\n"+
+      "    " + n + ".this\n";
+    error(f.pos(),
+          "A routine cannot return its own instance as its result",
+          "It is not possible for a routine to return its own instance as a result.  Since the result is stored in the implicit " +
+          sbn("result") + " field, this would produce cyclic field nesting.\n" +
+          "To solve this, you could convert this feature into a constructor, i.e., instead of " +
+          code(old_code) + "write " + code(new_code) + "since constructor implictly returns its own instance.  Alternatively, you can use " +
+          code(new_code_ref) + "to return a reference.");
   }
 
 
