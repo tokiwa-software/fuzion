@@ -1428,6 +1428,10 @@ public class Call extends AbstractCall
          * `this.type`.
          */
         _type = replace_type_parameter_used_for_this_type_in_type_feature(t);
+        if (!calledFeature().isOuterRef())
+          {
+            _type = _type.replace_this_type_by_actual_outer(_target.typeForCallTarget());
+          }
       }
   }
 

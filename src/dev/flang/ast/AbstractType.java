@@ -965,6 +965,48 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * This must be called on a call result type to replace `this.type` used in
+   * the result type by the actual type dictated by the target of the call
+   *
+   * example:
+   *
+   *   a is
+   *
+   *     l list a.this.type is [a.this].as_list
+   *
+   *   b : a is
+   *
+   *   say (type_of a.l)    # should print `list a`
+   *   say (type_of b.l)    # should print `list b`
+   *
+   * @param tf the type feature we are calling (`has_equality.type` in the example
+   * above).
+   *
+   * @param tc the target call (`T` in the example above).
+   */
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  {
+    var result = this;
+    if (isGenericArgument())
+      {
+      }
+    else if (isThisType())
+      {
+        var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
+        if (att.featureOfType().inheritsFrom(featureOfType()))
+          {
+            result = tt;
+          }
+      }
+    else
+      {
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer(tt));
+      }
+    return result;
+  }
+
+
+  /**
    * For a given type t, get the type of t's type feature. E.g., for t==string,
    * this will return the type of string.type.
    *
