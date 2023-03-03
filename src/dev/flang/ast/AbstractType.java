@@ -1251,7 +1251,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var o = outer();
-        String outer = o != null && !o.featureOfType().isUniverse() ? o.asString() + "." : "";
+        String outer = o != null && !o.featureOfType().isUniverse() ? o.asStringWrapped() + "." : "";
         result = outer
               + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
               + featureOfType().featureName().baseName();

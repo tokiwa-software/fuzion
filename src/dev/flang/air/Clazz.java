@@ -1234,11 +1234,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (this._type == Types.t_ERROR   ||
        this._type == Types.t_ADDRESS ||
        this._outer == null              )
-      ? this._type.toString() // error, address or universe
+      ? this._type.asString() // error, address or universe
       : (""
          + ((this._outer == Clazzes.universe.get())
             ? ""
-            : this._outer.toString() + ".")
+            : this._outer.toStringWrapped() + ".")
          + (this.isRef()
             ? "ref "
             : ""
@@ -1246,7 +1246,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
          + feature().featureName().baseName()
          + this._type.generics()
          .toString(" ", " ", "", t -> t.asStringWrapped())
-        );
+         );
+  }
+
+
+  /**
+   * wrap the result of toString in parentheses if necessary
+   */
+  public String toStringWrapped()
+  {
+    var s = toString();
+    return s.contains(" ")
+           ? "(" + s + ")"
+           : s;
   }
 
 
@@ -1257,7 +1269,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public String toString2()
   {
-    return "CLAZZ:" + this._type + (this._outer != null ? " in " + this._outer : "");
+    return "CLAZZ:" + this._type.asString() + (this._outer != null ? " in " + this._outer : "");
   }
 
 
