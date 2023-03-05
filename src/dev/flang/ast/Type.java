@@ -53,6 +53,7 @@ public class Type extends AbstractType
    * from "a.b()" (using Call.NO_GENERICS).
    */
   public static final List<AbstractType> NONE = new List<AbstractType>();
+  static { NONE.freeze(); }
 
 
   /**
@@ -204,8 +205,8 @@ public class Type extends AbstractType
     this(t.pos2BeRemoved(), t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
-       Errors.count() > 0 || !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
+      (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+       Errors.count() > 0 || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     checkedForGeneric = t.checkedForGeneric();
@@ -230,8 +231,8 @@ public class Type extends AbstractType
                    : RefOrVal.Value);
 
     if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
+      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     checkedForGeneric = t.checkedForGeneric();
@@ -263,6 +264,8 @@ public class Type extends AbstractType
     this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
+    this._generics.freeze();
+
     if (o instanceof Type ot && ot.isThisType())
       {
         // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
@@ -420,6 +423,7 @@ public class Type extends AbstractType
               : g;
             this._generics.add(gc);
           }
+        this._generics.freeze();
       }
     this._outer             = (original._outer instanceof Type ot) ? ot.clone(originalOuterFeature) : original._outer;
     this.feature            = original.feature;
@@ -903,8 +907,7 @@ public class Type extends AbstractType
           {
             if (isThisType() && _generics.isEmpty())
               {
-                var g = feature.generics().asActuals();
-                _generics = g.isEmpty() ? NONE : g;
+                this._generics = feature.generics().asActuals();
               }
             FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,

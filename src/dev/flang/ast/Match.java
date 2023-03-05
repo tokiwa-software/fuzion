@@ -166,15 +166,14 @@ public class Match extends AbstractMatch
       (cgs != null || Errors.count() > 0);
     if (cgs != null)
       {
-        var i = cgs.listIterator();
-        while (i.hasNext())
+        for (var i = 0; i < cgs.size(); i++)
           {
-            var n = i.next();
+            var n = cgs.get(i);
             if (CHECKS) check
               (Errors.count() > 0 || n != null);
             if (n != null)
               {
-                i.set(n.resolve(res, outer));
+                cgs = cgs.setOrClone(i, n.resolve(res, outer));
               }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];

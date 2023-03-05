@@ -473,7 +473,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = genericsToReplace;
     if (f != null && !genericsToReplace.isEmpty())
       {
-        if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
+        if (genericsToReplace instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f))  /* shortcut for properly handling open generics list */
           {
             result = actualGenerics;
           }
@@ -678,7 +678,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if type t depends on a formal generic parameter of this. If so,
+   * Check if this type depends on a formal generic parameter of f. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *

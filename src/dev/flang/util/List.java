@@ -420,10 +420,20 @@ public class List<T>
     var result = this;
     if (get(i) != x)
       {
-        result = isFrozen() ? new List<>(this) : this;
+        result = isFrozen() ? clone() : this;
         result.set(i, x);
       }
     return result;
+  }
+
+
+  /**
+   * Create a non-frozen clone of this list. This can be redefined in
+   * sub-classes to return an instance of the same sub-class of List.
+   */
+  public List<T> clone()
+  {
+    return new List<>(this);
   }
 
 

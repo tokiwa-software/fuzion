@@ -67,13 +67,10 @@ issue1183 is
   say (my_type_of a1.l1)    # should print `list issue1183.a1`
   say (my_type_of b1.l1)    # should print `list issue1183.b1`
 
-  # NYI: the following do not work yet and cause an error in a1.l1,
-  # need to check why, some caching error?
-  #
-  #say (type_of    a1.l2)    # should print `list issue1183.a1`
-  #say (type_of    b1.l2)    # should print `list issue1183.b1`
-  #say (my_type_of a1.l2)    # should print `list issue1183.a1`
-  #say (my_type_of b1.l2)    # should print `list issue1183.b1`
+  say (type_of    a1.l2)    # should print `list issue1183.a1`
+  say (type_of    b1.l2)    # should print `list issue1183.b1`
+  say (my_type_of a1.l2)    # should print `list issue1183.a1`
+  say (my_type_of b1.l2)    # should print `list issue1183.b1`
 
   # next level: using this.type as a type parameter to list:
 
@@ -84,10 +81,7 @@ issue1183 is
   # and a child of that
   b2 : a2 is
 
-  say (type_of    a2.l2)    # should print `list issue1183.a1`
-
-  # NYI: the following still fail, maybe related to #1135
-  #
-  #say (type_of    b2.l2)    # should print `list issue1183.b1`
-  #say (my_type_of a2.l2)    # should print `list issue1183.a1`
-  #say (my_type_of b2.l2)    # should print `list issue1183.b1`
+  say (type_of    a2.l2)    # should print `list issue1183.a2`
+  say (type_of    b2.l2)    # should print `list issue1183.b2`
+  say (my_type_of a2.l2)    # should print `list issue1183.a2`
+  say (my_type_of b2.l2)    # should print `list issue1183.b2`

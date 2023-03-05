@@ -238,7 +238,7 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    propagateExpectedType2(res, outer, t, false);
+    _type = propagateExpectedType2(res, outer, t, false);
     return this;
   }
 
@@ -257,18 +257,18 @@ public class Function extends ExprWithPos
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
-   * @return the result type provided that inferResultType and the result type
-   * could be inferred, null otherwise.
+   * @return if inferResultType, the result type inferred from this lambda, if
+   * !inferResultType, t. In any case Types.t_ERROR in case of an error.
    */
   public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
-    AbstractType result = null;
+    AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
         if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
-            t = Types.t_ERROR;
+            result = Types.t_ERROR;
           }
 
         /* We have an expression of the form
@@ -305,7 +305,7 @@ public class Function extends ExprWithPos
         if (t != Types.t_ERROR && i != gs.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-            t = Types.t_ERROR;
+            result = Types.t_ERROR;
           }
         if (t != Types.t_ERROR)
           {
@@ -316,7 +316,7 @@ public class Function extends ExprWithPos
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
-            _inheritsCall._generics = gs; // NYI: hack to set inferred result type, see below
+            _inheritsCall._generics = gs;
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
@@ -334,12 +334,11 @@ public class Function extends ExprWithPos
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(f);
                 result = f.resultType();
-                gs.set(0, result);   // NYI: hack to set inferred result type, this prevents performing freeze in Call.actualTypeParameters.
+                _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
-        _type = t;
       }
     return result;
   }

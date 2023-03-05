@@ -106,6 +106,7 @@ public class NormalType extends LibraryType
     this._feature = feature;
     this._valRefOrThis = valRefOrThis;
     this._generics = generics;
+    this._generics.freeze();
     this._outer = outer;
   }
 
