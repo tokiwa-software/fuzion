@@ -290,14 +290,20 @@ public class Types extends ANY
 
     if (at instanceof Type t)
       {
-        if (!t.isGenericArgument())
-          {
-            Types.intern(t.outer());
-          }
-        t._generics = t._generics.map(tt->intern(tt));
         Type existing = t._interned;
         if (existing == null)
           {
+            if (!t.isGenericArgument())
+              {
+                var o0 = t.outer();
+                var o1 = Types.intern(o0);
+                var g0 = t._generics;
+                var g1 = g0.map(tt -> intern(tt));
+                if (o1 != o0 || g1 != g0)
+                  {
+                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal);
+                  }
+              }
             existing = types.get(t);
             if (existing == null)
               {
