@@ -330,3 +330,26 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     new_map.root <- new_entry
 
     new_map
+
+
+  # initialize a map from an array of key value tuples
+  #
+  type.from_array(kvs array (tuple K V)) =>
+    from_array kvs false
+
+
+  # initialize a map from an array of key value tuples
+  #
+  # if the freeze argument is true, then the map is frozen
+  # after being populated with the entries from the array.
+  #
+  type.from_array(kvs array (tuple K V), freeze bool) mutable_tree_map LM K V is
+    new_map := mutable_tree_map LM K V
+    kvs.for_each (x ->
+      new_map.put x.values.0 x.values.1
+      unit)
+
+    if freeze
+      new_map.freeze
+
+    new_map
