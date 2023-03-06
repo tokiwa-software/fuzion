@@ -24,17 +24,7 @@
 
 # Entry -- an entry of a mutable tree map
 #
-private Entry(LM type : mutate, K type : has_total_order, V type, k K, v V) ref is
-
-
-  # the mutable key of this entry
-  #
-  private key := LM.env.new K k
-
-
-  # the mutable value stored at this entry
-  #
-  private val := LM.env.new V v
+private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) ref is
 
 
   # reference to the left subtree at this entry, or, if it is empty, nil
@@ -56,11 +46,11 @@ private Entry(LM type : mutate, K type : has_total_order, V type, k K, v V) ref 
   # in this submap
   #
   private get(k K) option V is
-    if k ⩻ key.get
+    if k ⩻ key
       left.get ? nil => nil
                | e Entry => e.get k
-    else if key.get ⩻ k
+    else if key ⩻ k
       right.get ? nil => nil
                 | e Entry => e.get k
     else
-      val.get
+      val

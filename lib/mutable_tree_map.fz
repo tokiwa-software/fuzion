@@ -46,7 +46,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # returns a string representation of the map
   #
   redef as_string String is
-    "\{" + (String.type.join (fold (lists.empty String) ((i, x) -> list_of_none_lazy "{x.key.get}={x.val.get}" i)) ", ") + "\}"
+    "\{" + (String.type.join (fold (lists.empty String) ((i, x) -> list_of_none_lazy "{x.key}={x.val}" i)) ", ") + "\}"
 
 
   # freeze the map, such that it is no longer mutable afterwards
@@ -56,12 +56,6 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
       root.close
 
     fold unit ((_, x) ->
-      if x.key.open
-        x.key.close
-
-      if x.val.open
-        x.val.close
-
       if x.left.open
         x.left.close
 
@@ -112,18 +106,20 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
           new_node := Entry LM K V k v
           (option new_node, option V nil)
         e Entry =>
-          if k < e.key.get
+          if k < e.key
             (node, old_val) := put_recursively e.left.get
             e.left <- node
             (option e, old_val)
-          else if e.key.get < k
+          else if e.key < k
             (node, old_val) := put_recursively e.right.get
             e.right <- node
             (option e, old_val)
           else
-            old_val := e.val.get
-            e.val <- v
-            (option e, option old_val)
+            old_val := e.val
+            new_node := Entry LM K V k v
+            new_node.left <- e.left.get
+            new_node.right <- e.right.get
+            (option new_node, option old_val)
 
 
     (new_root, old_val) := put_recursively root.get
@@ -173,16 +169,16 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
       match node
         nil => (option (Entry LM K V) nil, option V nil)
         e Entry =>
-          if k < e.key.get
+          if k < e.key
             (node, old_val) := remove_recursively k e.left.get
             e.left <- node
             (option e, old_val)
-          else if e.key.get < k
+          else if e.key < k
             (node, old_val) := remove_recursively k e.right.get
             e.right <- node
             (option e, old_val)
           else
-            old_val := e.val.get
+            old_val := e.val
             match e.left.get
               nil => (e.right.get, option old_val)
               l Entry =>
@@ -191,12 +187,12 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
                   r Entry =>
                     m := minimum e.right.get
 
-                    e.key <- m.get.key.get
-                    e.val <- m.get.val.get
+                    new_node := Entry LM K V m.get.key m.get.val
+                    new_node.left <- l
 
-                    (nr, old_val) := remove_recursively m.get.key.get e.right.get
-                    e.right <- nr
-                    (option e, option old_val)
+                    (nr, old_val) := remove_recursively m.get.key e.right.get
+                    new_node.right <- nr
+                    (option new_node, option old_val)
 
 
     (new_root, old_val) := remove_recursively k root.get
