@@ -893,8 +893,8 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return _forFun                                     /* a fun-declaration "fun a.b.f" */
-      || ff.arguments().size()==0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return _forFun                 /* a fun-declaration "fun a.b.f" */
+      || ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
 
@@ -1076,10 +1076,16 @@ public class Call extends AbstractCall
   {
     Call result = this;
     if (!_forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
+        (
         _type.isFunType() &&
         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
         _calledFeature.arguments().size() == 0 &&
         hasParentheses())
+        || (
+        _type.isLazyType() &&
+        _calledFeature != Types.resolved.f_Lazy &&
+        _calledFeature.arguments().size() == 0 &&
+        !hasParentheses()))
       {
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
