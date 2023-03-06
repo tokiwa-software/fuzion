@@ -1506,7 +1506,7 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.propagateExpectedType(res, outer, t);
+                    actual = actual.wrapInLazyAndThenPropagateExpectedType(res, outer, t);
                   }
               }
           }
@@ -2056,7 +2056,7 @@ public class Call extends AbstractCall
                frmlT != Types.t_ERROR || Errors.count() > 0);
             if (actl != null)
               {
-                var a = actl.propagateExpectedType(res, outer, frmlT);
+                var a = actl.wrapInLazyAndThenPropagateExpectedType(res, outer, frmlT);
                 if (CHECKS) check
                   (a != null);
                 i.set(a);
@@ -2069,7 +2069,7 @@ public class Call extends AbstractCall
             // NYI: Need to check why this is needed, it does not make sense to
             // propagate the target's type to target. But if removed,
             // tests/reg_issue16_chainedBool/ fails with C backend:
-            _target = _target.propagateExpectedType(res, outer, _target.typeIfKnown());
+            _target = _target.wrapInLazyAndThenPropagateExpectedType(res, outer, _target.typeIfKnown());
           }
       }
   }

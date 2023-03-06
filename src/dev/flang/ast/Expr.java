@@ -244,6 +244,28 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   }
 
 
+  public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    var result = this;
+
+    result = result.propagateExpectedType(res, outer, t);
+
+    if (t.isLazyType() && !type().isLazyType())
+      {
+        var fn = new Function(pos(),
+                              new List<String>(),
+                              Function.NO_CALLS,
+                              Contract.EMPTY_CONTRACT,
+                              result);
+
+        result = fn.propagateExpectedType(res, outer, t);
+        fn.resolveTypes(res, outer);
+      }
+
+    return result;
+  }
+
+
   /**
    * During type inference: Inform this expression that it is used in an
    * environment that expects the given type.  In particular, if this
