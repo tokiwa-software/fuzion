@@ -133,6 +133,7 @@ public class Call extends AbstractCall
    */
   private Expr _target;
   public Expr target() { return _target; }
+  private FeatureAndOuter _targetFrom = null;
 
 
   /**
@@ -673,6 +674,7 @@ public class Call extends AbstractCall
                     if (_target == null)
                       {
                         _target = fo.target(pos(), res, thiz);
+                        _targetFrom = fo;
                       }
                   }
                 if (_calledFeature == null)
@@ -2244,6 +2246,21 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ); }
       }
     return result;
+  }
+
+
+  /**
+   * When wrapping an expression into a Lazy feature, we need to "tell it" that its
+   * outer feature has changed. Otherwise, old information from previous results of
+   * type resolution might remain there.
+   */
+  public Call updateTarget(Resolution res, AbstractFeature outer)
+  {
+    if (_targetFrom != null)
+      {
+        _target = _targetFrom.target(pos(), res, outer);
+      }
+    return this;
   }
 
 }

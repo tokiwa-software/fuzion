@@ -244,6 +244,11 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   }
 
 
+  /**
+   * Before propagateExpectedType: if type inference up until now has figured
+   * out that a Lazy feature is expected, but the current expression is not
+   * a Lazy feature, then wrap this expression in a Lazy feature.
+   */
   public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
@@ -260,6 +265,14 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
         result = fn.propagateExpectedType(res, outer, t);
         fn.resolveTypes(res, outer);
+        visit(new FeatureVisitor()
+          {
+            public Expr action(Call c, AbstractFeature outer)
+            {
+              return c.updateTarget(res, outer);
+            }
+          },
+          fn._feature);
       }
 
     return result;
