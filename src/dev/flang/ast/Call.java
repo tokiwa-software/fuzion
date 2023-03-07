@@ -655,10 +655,10 @@ public class Call extends AbstractCall
                 res.resolveDeclarations(targetFeature);
                 var fos = res._module.lookup(targetFeature, _name, this, _target == null);
                 FeatureName calledName = FeatureName.get(_name, _actuals.size());
-                var fo = FeatureAndOuter.filter(fos, pos(), "call", calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
+                var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
                 if (fo == null)
                   { // handle `fun a.b.c` and implicit calls `f()` that expand to `f.call()`:
-                    fo = FeatureAndOuter.filter(fos, pos(), "call", calledName, ff -> isSpecialWrtArgs(ff));
+                    fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
                   }
                 else if (fo._feature != Types.f_ERROR &&
                          _generics.isEmpty() &&
@@ -776,7 +776,7 @@ public class Call extends AbstractCall
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(thiz, _name, this, true);
-        var foa = FeatureAndOuter.filter(fo, pos(), "call", calledName, ff -> mayMatchArgList(ff, true));
+        var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
             _calledFeature = foa._feature;

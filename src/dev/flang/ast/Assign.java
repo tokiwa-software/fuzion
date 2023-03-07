@@ -177,7 +177,7 @@ public class Assign extends AbstractAssign
                                                            _name,
                                                            destructure == null ? this : destructure,
                                                            true),
-                                        pos(), "assignment", FeatureName.get(_name, 0), __ -> false);
+                                        pos(), FeatureAndOuter.Operation.ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
             _target = fo.target(pos(), res, outer);
