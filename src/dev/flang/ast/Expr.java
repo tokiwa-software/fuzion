@@ -254,7 +254,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
       {
         var fn = new Function(pos(),
                               new List<String>(),
-                              Function.NO_CALLS,
+                              new List<>(),
                               Contract.EMPTY_CONTRACT,
                               result);
 
