@@ -284,6 +284,17 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
 
   /**
+   * Compare just the baseName of the given FeatureNames.
+   *
+   * This is used in AstErrors.solutionWrongArgumentNumber.
+   */
+  public boolean equalsBaseName(FeatureName o)
+  {
+    return _baseName.equals(o._baseName);
+  }
+
+
+  /**
    * Reset static fields
    */
   public static void reset()

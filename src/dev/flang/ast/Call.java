@@ -687,7 +687,10 @@ public class Call extends AbstractCall
                   }
                 if (_calledFeature == null) // nothing found, so flag error
                   {
-                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
+                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature,
+                                                    FeatureAndOuter.findExactOrCandidate(fos,
+                                                                                         (FeatureName fn) -> false,
+                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)));
                   }
               }
           }
