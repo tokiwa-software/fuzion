@@ -30,7 +30,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-has_partial_order : has_equality
+has_partial_order : equatable
 
 /* NYI: quantor intrinsics not supported yet:
 

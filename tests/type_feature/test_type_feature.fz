@@ -26,11 +26,11 @@
 hasTypeArg is
   type.showTypeArgs String is abstract
 
-ex(T, U type) : hasTypeArg, has_equality is
+ex(T, U type) : hasTypeArg, equatable is
   type.showTypeArgs => "T:$T U:$U"
   fixed type.equality(a, b ex T U) bool is false
 
-ex2(T, U type: has_equality, a, b T, c U) : hasTypeArg, has_equality is
+ex2(T, U type: equatable, a, b T, c U) : hasTypeArg, equatable is
   type.showTypeArgs => "T:$T U:$U"
   fixed type.equality(a, b ex2 T U) bool is
     (a.a ≟ b.a &&

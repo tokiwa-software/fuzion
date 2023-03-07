@@ -1206,11 +1206,11 @@ public class Call extends AbstractCall
                  *
                  * example:
                  *
-                 *   has_equality is
+                 *   equatable is
                  *
-                 *     type.equality(a, b has_equality.this.type) bool is abstract
+                 *     type.equality(a, b equatable.this.type) bool is abstract
                  *
-                 *   equals(T type : has_equality, x, y T) => T.equality x y
+                 *   equals(T type : equatable, x, y T) => T.equality x y
                  *
                  * For the call `T.equality x y`, we must replace the the formal argument type
                  * for `a` (and `b`) by `T`.
@@ -1442,11 +1442,11 @@ public class Call extends AbstractCall
    *
    * example:
    *
-   *   has_equality is
+   *   equatable is
    *
-   *     type.equality(a, b has_equality.this.type) bool is abstract
+   *     type.equality(a, b equatable.this.type) bool is abstract
    *
-   *   equals(T type : has_equality, x, y T) => T.equality x y
+   *   equals(T type : equatable, x, y T) => T.equality x y
    *
    * For the call `T.equality x y`, we must replace the the formal argument type
    * for `a` (and `b`) by `T`.
