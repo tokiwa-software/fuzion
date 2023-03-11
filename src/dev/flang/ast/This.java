@@ -249,7 +249,7 @@ public class This extends ExprWithPos
          * before outer is set up.
          */
         var cur = _cur == null ? outer : _cur;
-        getOuter = new Current(pos(), cur.thisType());
+        getOuter = new Current(pos(), cur.selfType());
         while (f != Types.f_ERROR && cur != f)
           {
             var or = cur.outerRef();
@@ -260,7 +260,7 @@ public class This extends ExprWithPos
                 Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    var t = cur.outer().thisType();
+                    var t = cur.outer().selfType();
                     if (cur.outer() == f &&
 
                         /* in code like

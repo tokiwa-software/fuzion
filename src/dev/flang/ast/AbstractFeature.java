@@ -132,10 +132,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * For a Feature that can be called and hasThisType() is true, this will be
-   * set to the frame type during resolution.  This type uses the formal
+   * set to concrete the frame type during resolution.  This type uses the formal
    * generics as actual generics. For a generic feature, these must be replaced.
+   *
+   * For a feature a.b.c, _selfType is a.b.c.
    */
-  protected AbstractType _thisType = null;
+  protected AbstractType _selfType = null;
 
 
   /**
@@ -472,24 +474,24 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * thisType returns the type of this feature's frame object.  This can be
+   * selfType returns the type of this feature's frame object.  This can be
    * called even if !hasThisType() since thisClazz() is used also for abstract
    * or intrinsic feature to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  public AbstractType thisType()
+  public AbstractType selfType()
   {
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
-    AbstractType result = _thisType;
+    AbstractType result = _selfType;
     if (result == null)
       {
         result = this == Types.f_ERROR
           ? Types.t_ERROR
           : createThisType();
-        _thisType = result;
+        _selfType = result;
       }
     if (state().atLeast(Feature.State.RESOLVED_TYPES))
       {
@@ -550,7 +552,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
-      : outer().typeCall(p, new List<>(outer().thisType()), res, that);
+      : outer().typeCall(p, new List<>(outer().selfType()), res, that);
     var tf = typeFeature(res);
     var args = new List<Actual>();
     var typeParameters2 = new List<AbstractType>();
@@ -566,20 +568,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     typeParameters2,
                     Expr.NO_EXPRS,
                     tf,
-                    tf.thisType());
+                    tf.selfType());
   }
 
 
   /**
    * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
-   * i.e., within 'a's type feature.  The difference between thisType() and
-   * thisTypeInTypeFeature() is that the type parameters in the former are the
+   * i.e., within 'a's type feature.  The difference between selfType() and
+   * selfTypeInTypeFeature() is that the type parameters in the former are the
    * type parameters of 'a', while in the latter they are the type parameter of
    * 'a.this' (who use the same name)..
    */
-  public AbstractType thisTypeInTypeFeature()
+  public AbstractType selfTypeInTypeFeature()
   {
-    var t0 = thisType();
+    var t0 = selfType();
     var tl = new List<AbstractType>();
     boolean first = true;
     for (var ta : typeFeature().typeArguments())
@@ -659,7 +661,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var typeArg = new Feature(p,
                                       visibility(),
                                       outer().isUniverse() && featureName().baseName().equals(FuzionConstants.OBJECT_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
-                                      thisType(),
+                                      selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.TYPE_PARAMETER);
@@ -681,11 +683,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             for (var pc: inherits())
               {
                 var iif = ii;
-                var thisType = new Type(pos(),
+                var selfType = new Type(pos(),
                                         FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                         new List<>(),
                                         null);
-                var tp = new List<AbstractType>(thisType);
+                var tp = new List<AbstractType>(selfType);
                 if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
                   {
                     for (var atp : pc.calledFeature().typeArguments())

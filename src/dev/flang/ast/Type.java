@@ -1032,7 +1032,7 @@ public class Type extends AbstractType
 
   /**
    * outer type, after type resolution. This provides the whole chain of types
-   * until Types.resolved.universe.thisType(), while the _outer field ends with
+   * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
   public AbstractType outer()
@@ -1052,7 +1052,7 @@ public class Type extends AbstractType
                   }
                 else
                   {
-                    result = of.thisType();
+                    result = of.selfType();
                   }
               }
             else if (generic != null)

@@ -128,7 +128,7 @@ public class MiddleEnd extends ANY
 
     Clazzes.init(_options);
 
-    Clazz cl = main != null ? Clazzes.clazz(main.thisType()) : null;
+    Clazz cl = main != null ? Clazzes.clazz(main.selfType()) : null;
     return cl;
   }
 

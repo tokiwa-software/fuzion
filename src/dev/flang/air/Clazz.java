@@ -489,7 +489,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = actualType(f.thisType()).asRef();
+        var t = actualType(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -502,7 +502,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var normalized = Clazzes.create(t, normalize2(f.outer().thisType()));
+        var normalized = Clazzes.create(t, normalize2(f.outer().selfType()));
         normalized._isNormalized = true;
         return normalized;
       }
@@ -1140,7 +1140,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 _abstractCalled.add(aaf);
               }
 
-            AbstractType t = aaf.thisType().actualType(aaf, actualGenerics);
+            AbstractType t = aaf.selfType().actualType(aaf, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
             if (actualGenerics.isEmpty())
@@ -2104,7 +2104,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             // find outer clazz corresponding to ft:
             var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
             // even if outer changed from ref to value or vice versa, keep it as it was:
-            return ft.featureOfType().thisType().isRef() ? res.asRef()
+            return ft.featureOfType().selfType().isRef() ? res.asRef()
                                                          : res.asValue();
           }
         else if (!t.dependsOnGenerics())

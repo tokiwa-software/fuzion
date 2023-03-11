@@ -556,7 +556,7 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-4);
       }
-    else if (t == Types.resolved.universe.thisType())
+    else if (t == Types.resolved.universe.selfType())
       {
         _data.writeInt(-3);
       }

@@ -533,8 +533,8 @@ public class Call extends AbstractCall
                               b.type(),
                               tmpName,
                               thiz);
-        Expr t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
-        Expr t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
+        Expr t1 = new Call(pos(), new Current(pos(), thiz.selfType()), tmp, -1);
+        Expr t2 = new Call(pos(), new Current(pos(), thiz.selfType()), tmp, -1);
         Expr result = new Call(pos(), t2, _name, _actualsNew)
           {
             boolean isChainedBoolRHS() { return true; }
@@ -1399,7 +1399,7 @@ public class Call extends AbstractCall
         var tptype = t.resolve(res, tt.featureOfType());
         if (!tptype.isGenericArgument())
           {
-            tptype = tptype.featureOfType().typeFeature(res).thisType();
+            tptype = tptype.featureOfType().typeFeature(res).selfType();
           }
         _type = tptype;
       }
@@ -1700,7 +1700,7 @@ public class Call extends AbstractCall
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
         if (!actualType.isGenericArgument() && actualType.featureOfType().isTypeFeature())
           {
-            actualType = Types.resolved.f_Type.thisType();
+            actualType = Types.resolved.f_Type.selfType();
           }
       }
     return actualType;

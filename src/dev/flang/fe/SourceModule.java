@@ -253,7 +253,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                                      f,
                                                      ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                                      Type.NONE,
-                                                     _universe.thisType());
+                                                     _universe.selfType());
                              },
                            _universe);
       }
@@ -1155,7 +1155,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
       /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.thisType.
+       * redefinition is fixed and tr is redefinition.selfType.
        */
       ((to.isThisType()                                        ) &&
        ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
@@ -1163,7 +1163,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
       /* original and redefinition are inner features of type features, to is
-       * THIS_TYPE and tr is the underlying non-type features thisType.
+       * THIS_TYPE and tr is the underlying non-type features selfType.
        *
        * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
        * numeric.this.type)
@@ -1175,7 +1175,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        !tr.isGenericArgument()                                                                                                         &&
        ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisTypeInTypeFeature()) == 0                                               );
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().selfTypeInTypeFeature()) == 0                                               );
   }
 
 

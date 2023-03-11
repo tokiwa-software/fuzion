@@ -1050,7 +1050,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                     : fot.typeFeature(res);
         if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features like #anonymous. Need to check why.
           {
-            result = Types.resolved.f_Type.thisType();
+            result = Types.resolved.f_Type.selfType();
           }
         else
           {
@@ -1149,7 +1149,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                               // from .fum file, need to support
                               // typeFeatureOrigin for fe.LibraryFeature!
               {
-                result = tfo.thisType().asThis();
+                result = tfo.selfType().asThis();
               }
           }
       }
