@@ -1430,16 +1430,18 @@ hw25 is
        codeAt(c, ix) == ExprKind.Call   ||
        codeAt(c, ix) == ExprKind.Assign    );
 
+    int[] result;
     if (accessIsDynamic(cl, c, ix))
       {
-        return accessedClazzesDynamic(cl, c, ix);
+        result = accessedClazzesDynamic(cl, c, ix);
       }
     else
       {
         var innerClazz = accessedClazz(cl, c, ix);
-        return clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
-                                          : new int[0];
+        result = clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
+                                            : new int[0];
       }
+    return result;
   }
 
 
