@@ -637,6 +637,24 @@ public class Type extends AbstractType
 
 
   /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    return Types.INTERNAL_NAMES.contains(name)
+      ? toString()         // internal types like Types.t_UNDEFINED, t_ERROR, t_ADDRESS
+      : super.asString();
+  }
+
+
+  /**
    * toString
    *
    * @return
@@ -647,7 +665,7 @@ public class Type extends AbstractType
 
     if (Types.INTERNAL_NAMES.contains(name))
       {
-        return name;
+        result = name;
       }
     else if (generic != null)
       {
@@ -667,7 +685,7 @@ public class Type extends AbstractType
       }
     else if (_outer != null)
       {
-        String outer = _outer.toString();
+        String outer = _outer.toStringWrapped();
         result = ""
           + (outer == "" ||
              outer == FuzionConstants.UNIVERSE_NAME ? ""
