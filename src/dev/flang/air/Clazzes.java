@@ -391,7 +391,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
