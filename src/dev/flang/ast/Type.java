@@ -754,6 +754,7 @@ public class Type extends AbstractType
                 if (CHECKS) check
                   (_interned == null);
 
+                var o = _outer;
                 _outer = _outer.visit(v, outerfeat);
               }
           }

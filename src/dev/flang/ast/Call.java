@@ -1330,6 +1330,7 @@ public class Call extends AbstractCall
     _whenInferredTypeParameters.add(r);
   }
 
+
   /**
    * Helper function for resolveTypes to determine the static result type of
    * this call.
