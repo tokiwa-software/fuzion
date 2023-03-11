@@ -1441,6 +1441,17 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is thie feature marked with the `fixed` modifier. If so, this feature is
+   * not inherited, i.e., we know that at runtime, the outher feature's type is
+   * outer().selfType() and not a heir of outer().  However, outer().outer()
+   * could might be a heir.
+   */
+  public boolean isFixed()
+  {
+    return (modifiers() & Consts.MODIFIER_FIXED) != 0;
+  }
+
+  /**
    * Get inner feature with given name, ignoring the argument count.
    *
    * @param name the name of the feature within this.

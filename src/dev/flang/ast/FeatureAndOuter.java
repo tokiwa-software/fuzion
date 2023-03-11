@@ -43,6 +43,21 @@ import java.util.function.Predicate;
 public class FeatureAndOuter extends ANY
 {
 
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * FeatureAndOuter instance returned in case of an error.
+   */
+  public static final FeatureAndOuter ERROR = new FeatureAndOuter(Types.f_ERROR,
+                                                                  Types.f_ERROR,
+                                                                  null);
+
+
+  /*----------------------------  variables  ----------------------------*/
+
+
   /**
    * The feature contained in this instance.
    */
@@ -57,6 +72,39 @@ public class FeatureAndOuter extends ANY
 
 
   /**
+   * if _outer is the outermost feature we where searching, _nextInner is
+   * null. Otherwise, _nextInner is the next inner feature, e.g. in
+   *
+   *    a is
+   *
+   *      p is
+   *
+   *      b is
+   *
+   *        q is
+   *
+   *        say p      -- _nextInner for p will be b
+   *        say q      -- _nextInner for q will be null
+   *
+   *        x is
+   *          say p    -- _nextInner for p will be b
+   *          say q    -- _nextInner for q will be x
+   *
+   *        fixed y is
+   *          say p    -- _nextInner for p will be b
+   *          say q    -- _nextInner for q will be y
+   *
+   * This is important since the type of `q` in `x` is
+   * `a.this.type.b.this.type.q`, while `q` in `fixed y` is `a.this.type.b.q`.
+   *
+   */
+  public final AbstractFeature _nextInner;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
    * Constructor for given feature and outer.
    *
    * @param f the feature
@@ -64,12 +112,26 @@ public class FeatureAndOuter extends ANY
    * @param o the outer feature f was found in.
    */
   public FeatureAndOuter(AbstractFeature f,
-                         AbstractFeature o)
+                         AbstractFeature o,
+                         AbstractFeature i)
   {
     this._feature = f;
     this._outer = o;
+    this._nextInner = i;
   }
 
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * check if _nextInner exists and is fixed. If this is the case, we know that
+   * the outer type is exact and cannot be a child (`.this.type`).
+   */
+  public boolean isNextInnerFixed()
+  {
+    return this._nextInner != null && this._nextInner.isFixed();
+  }
 
   /**
    * For an access (call to or assignment to field), create an expression to
@@ -163,10 +225,24 @@ public class FeatureAndOuter extends ANY
       default ->
         {
           AstErrors.ambiguousTargets(pos, operation, name, found);
-          yield new FeatureAndOuter(Types.f_ERROR, Types.f_ERROR);
+          yield ERROR;
         }
       };
   }
+
+
+  /**
+   * human readable string, for debugging
+   */
+  public String toString()
+  {
+    return
+      "[" + _feature.qualifiedName() +
+      " found in " + _outer.qualifiedName() +
+      (_nextInner == null ? " no next inner" : " next inner " + _nextInner.qualifiedName()) +
+      (isNextInnerFixed() ? " fixed" : " not fixed") + "]";
+  }
+
 
 }
 

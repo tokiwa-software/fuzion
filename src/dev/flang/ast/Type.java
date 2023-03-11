@@ -971,7 +971,8 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            feature = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
+            var fo = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
+            feature = fo._feature;
           }
       }
     if (POSTCONDITIONS) ensure

@@ -246,7 +246,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name, ref) ->
                              {
-                               var f = lookupType(SourcePosition.builtIn, _universe, name, false);
+                               var f = lookupType(SourcePosition.builtIn, _universe, name, false)._feature;
                                return new NormalType(stdlib,
                                                      -1,
                                                      SourcePosition.builtIn,
@@ -499,7 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -1041,7 +1041,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var v = e.getValue();
             if (!v.isField() || !foundFieldInScope)
               {
-                result.add(new FeatureAndOuter(v, curOuter));
+                result.add(new FeatureAndOuter(v, curOuter, inner));
                 foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
               }
           }
@@ -1074,12 +1074,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    */
-  public AbstractFeature lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
+  public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || outer != Types.f_ERROR);
 
-    AbstractFeature result = Types.f_ERROR;
+    FeatureAndOuter result = null;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
         _res.resolveDeclarations(outer);
@@ -1092,6 +1092,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var f = fo._feature;
             (f.definesType() ? type_fs
                              : nontype_fs).add(f);
+            if (f.definesType() && type_fs.size() == 1)
+              {
+                result = fo;
+              }
           }
         if (type_fs.size() > 1)
           {
@@ -1101,10 +1105,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             AstErrors.typeNotFound(pos, name, outer, nontype_fs);
           }
-        else
-          {
-            result = type_fs.get(0);
-          }
+      }
+    if (result == null)
+      {
+        result = FeatureAndOuter.ERROR;
       }
     return result;
   }
