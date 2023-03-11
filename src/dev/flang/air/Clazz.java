@@ -420,17 +420,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Check if this clazz has an outer ref that is used.
+   * Check if the given feature has an outer ref that is used.
    *
-   * if an outer ref is used (i.e., state is resolved) to access the outer
-   * instance, we must not normalize because we will need the exact type of the
-   * outer instance to specialize code or to access features that only exist in
-   * the specific version
+   * If an outer ref is used to access the outer instance, we must not normalize
+   * because we will need the exact type of the outer instance to specialize code
+   * or to access features that only exist in the specific version
+   *
+   * @param f the feature to check if it has an outer ref
    */
-  private boolean hasUsedOuterRef()
+  private boolean hasUsedOuterRef(AbstractFeature f)
   {
-    var or = feature().outerRef();
-    return !feature().isConstructor()  // do not specialize a constructor
+    var or = f.outerRef();
+    return !f.isConstructor()  // do not specialize a constructor
       && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
   }
 
@@ -450,7 +451,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
-    if (outer != null && !hasUsedOuterRef() && !feature().isField() && t != Types.t_ERROR)
+    var f = t.featureOfType();
+    if (outer != null && !hasUsedOuterRef(f) && !f.isField() && t != Types.t_ERROR)
       {
         outer = outer.normalize(t.featureOfType().outer());
       }
@@ -482,7 +484,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // outer instance, we must not normalize because we will need the
         // exact type of the outer instance to specialize code or to access
         // features that only exist in the specific version
-        hasUsedOuterRef()
+        hasUsedOuterRef(feature())
         )
       {
         return this;
