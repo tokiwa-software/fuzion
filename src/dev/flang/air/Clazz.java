@@ -2070,20 +2070,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz determineResultClazz()
   {
+    Clazz result;
     var f = feature();
     var of = _outer != null ? _outer.feature() : null;
 
     if (f.isConstructor())
       {
-        return this;
+        result = this;
       }
     else if (f.isOuterRef())
       {
-        return _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
+        result = _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
       }
     else if (f.isTypeParameter())
       {
-        return typeParameterActualType().typeClazz();
+        result = typeParameterActualType().typeClazz();
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
@@ -2092,7 +2093,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // of this type parameters as its result using '=>'.
       {
         var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
-        return ag[0].typeClazz();
+        result = ag[0].typeClazz();
       }
     else
       {
@@ -2104,8 +2105,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
             // find outer clazz corresponding to ft:
             var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
             // even if outer changed from ref to value or vice versa, keep it as it was:
-            return ft.featureOfType().selfType().isRef() ? res.asRef()
-                                                         : res.asValue();
+            result = ft.featureOfType().selfType().isRef() ? res.asRef()
+                                                           : res.asValue();
           }
         else if (!t.dependsOnGenerics())
           {
@@ -2169,30 +2170,34 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   {
                     res = res.asRef();
                   }
-                return res;
+                result = res;
               }
             else
               {
                 // NYI: This branch should never be taken when rebasing above is implemented correctly.
                 if (f.implKind() == Impl.Kind.FieldDef)
                   {
-                    return Clazzes.clazz(f.initialValue(), this._outer);
+                    result = Clazzes.clazz(f.initialValue(), this._outer);
                   }
-                else if (f.implKind() == Impl.Kind.RoutineDef)
+                else
                   {
+                    if (f.implKind() == Impl.Kind.RoutineDef)
+                      {
                     /* NYI: Do we need special handling for inferred routine result as well?
                      *
                      *   return Clazzes.clazz(f.initialValue(), this._outer);
                      */
+                      }
+                    result = actualClazz(t);
                   }
-                return actualClazz(t);
               }
           }
         else
           {
-            return actualClazz(t);
+            result = actualClazz(t);
           }
       }
+    return result;
   }
 
 
