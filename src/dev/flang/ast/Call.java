@@ -1367,49 +1367,8 @@ public class Call extends AbstractCall
             t = new Type(t, t.generics(), _target.type());
           }
       }
-    if (_calledFeature.isTypeParameter())
-      {
-        if (_select >= 0 || _calledFeature.isOpenTypeParameter())
-          {
-            throw new Error("NYI (see #283): Calling open type parameter");
-          }
-        var tptype = t.resolve(res, tt.featureOfType());
-        if (!tptype.isGenericArgument())
-          {
-            tptype = tptype.featureOfType().typeFeature(res).selfType();
-          }
-        _type = tptype;
-      }
-    else if (_calledFeature == Types.resolved.f_Types_get)
-      { // NYI (see #282): special handling could maybe be avoided? Maybe make
-        // this special handling the normal handling for all features whose
-        // result type depends on a generic that can be replaced by an actual
-        // generic given in the call?
-        var gt = _generics.get(0);
-        if (!gt.isGenericArgument())
-          {
-            gt = gt.typeType(res);
-          }
-        _type = gt.resolve(res, tt.featureOfType());
-        if (_type == null)
-          {
-            throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
-          }
-      }
-    else
-      {
-        t = t.resolve(res, tt.featureOfType());
-        /**
-         * For a call `T.f` on a type parameter whose result type contains
-         * `this.type`, make sure we replace the implicit type parameter to
-         * `this.type`.
-         */
-        _type = replace_type_parameter_used_for_this_type_in_type_feature(t);
-        if (!calledFeature().isOuterRef())
-          {
-            _type = _type.replace_this_type_by_actual_outer(_target.typeForCallTarget());
-          }
-      }
+    t = resolveForCalledFeature(res, t, tt);
+    _type = t;
   }
 
 
@@ -1479,6 +1438,68 @@ public class Call extends AbstractCall
         t = t.replace_type_parameter_used_for_this_type_in_type_feature
           (target.type().featureOfType(),
            tc);
+      }
+    return t;
+  }
+
+
+  /**
+   * Helper function for resolveType to adjust a result type depending on the
+   * kind of feature that is called.
+   *
+   * In particular, this contains special handling for calling type parameters,
+   * for Types.get, for outer refs and for constructors.
+   *
+   * @param res the resolution instance.
+   *
+   * @param t the result type of the called feature, adjustes for select, this type, etc.
+   *
+   * @param tt target type or constraint.
+   */
+  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt)
+  {
+    if (_calledFeature.isTypeParameter())
+      {
+        if (_select >= 0 || _calledFeature.isOpenTypeParameter())
+          {
+            throw new Error("NYI (see #283): Calling open type parameter");
+          }
+        var tptype = t.resolve(res, tt.featureOfType());
+        if (!tptype.isGenericArgument())
+          {
+            tptype = tptype.featureOfType().typeFeature(res).selfType();
+          }
+        t = tptype;
+      }
+    else if (_calledFeature == Types.resolved.f_Types_get)
+      { // NYI (see #282): special handling could maybe be avoided? Maybe make
+        // this special handling the normal handling for all features whose
+        // result type depends on a generic that can be replaced by an actual
+        // generic given in the call?
+        var gt = _generics.get(0);
+        if (!gt.isGenericArgument())
+          {
+            gt = gt.typeType(res);
+          }
+        t = gt.resolve(res, tt.featureOfType());
+        if (t == null)
+          {
+            throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
+          }
+      }
+    else
+      {
+        t = t.resolve(res, tt.featureOfType());
+        /**
+         * For a call `T.f` on a type parameter whose result type contains
+         * `this.type`, make sure we replace the implicit type parameter to
+         * `this.type`.
+         */
+        t = replace_type_parameter_used_for_this_type_in_type_feature(t);
+        if (!calledFeature().isOuterRef())
+          {
+            t = t.replace_this_type_by_actual_outer(_target.typeForCallTarget());
+          }
       }
     return t;
   }
