@@ -1360,8 +1360,8 @@ public class Call extends AbstractCall
     t = resolveSelect(t, tt);
     if (t != Types.t_ERROR)
       {
+        t = tt.actualType(t);
         t = t.resolve(res, tt.featureOfType());
-        t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
         t = resolveForCalledFeature(res, t, tt);
       }
     _type = Types.intern(t);
@@ -1460,7 +1460,6 @@ public class Call extends AbstractCall
           {
             throw new Error("NYI (see #283): Calling open type parameter");
           }
-        t = t.resolve(res, tt.featureOfType());
         if (!t.isGenericArgument())
           {
             t = t.featureOfType().typeFeature(res).selfType();
@@ -1488,7 +1487,6 @@ public class Call extends AbstractCall
       }
     else
       {
-        t = t.resolve(res, tt.featureOfType());
         /**
          * For a call `T.f` on a type parameter whose result type contains
          * `this.type`, make sure we replace the implicit type parameter to
