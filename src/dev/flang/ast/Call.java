@@ -1358,12 +1358,12 @@ public class Call extends AbstractCall
 
     var tt = targetTypeOrConstraint(res);
     t = resolveSelect(t, tt);
-    if (_select < 0)
+    if (t != Types.t_ERROR)
       {
         t = t.resolve(res, tt.featureOfType());
         t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
+        t = resolveForCalledFeature(res, t, tt);
       }
-    t = resolveForCalledFeature(res, t, tt);
     _type = Types.intern(t);
   }
 
