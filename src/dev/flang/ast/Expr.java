@@ -423,8 +423,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean needsBoxingForGenericOrThis(AbstractType frmlT)
   {
     return
-      frmlT.isGenericArgument() ||
-      frmlT.isThisType() && frmlT.featureOfType().isThisRef();
+      frmlT.isGenericArgument() || frmlT.isThisType();
   }
 
 

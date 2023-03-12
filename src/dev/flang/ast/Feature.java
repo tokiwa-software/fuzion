@@ -1543,7 +1543,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (Errors.count() > 0 || t != null);
         if (t != null && !t.isRef())
           {
-            if (t == selfType())
+            if (t.compareTo(thisType()) == 0)
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
                 _selfType = Types.t_ERROR;
@@ -1552,10 +1552,9 @@ public class Feature extends AbstractFeature implements Stmnt
             var o = outer();
             while (o != null)
               {
-                if (t == o.selfType())
+                if (t.compareTo(o.thisType()) == 0)
                   {
                     AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
-                    // o._selfType = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
                 o = o.outer();

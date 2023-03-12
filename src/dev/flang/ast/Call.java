@@ -1152,7 +1152,7 @@ public class Call extends AbstractCall
           {
             if (CHECKS) check
               (frmlT != null);
-            _resolvedFormalArgumentTypes[argnum] = frmlT;
+            _resolvedFormalArgumentTypes[argnum] = adjustThisTypeForTarget(frmlT);
           }
       }
     return result;
@@ -1200,22 +1200,6 @@ public class Call extends AbstractCall
               }
             else
               {
-                /*
-                 * Special handling for calling type feature with formal argument types that
-                 * are `this.type` of the original feature:
-                 *
-                 * example:
-                 *
-                 *   has_equality is
-                 *
-                 *     type.equality(a, b has_equality.this.type) bool is abstract
-                 *
-                 *   equals(T type : has_equality, x, y T) => T.equality x y
-                 *
-                 * For the call `T.equality x y`, we must replace the the formal argument type
-                 * for `a` (and `b`) by `T`.
-                 */
-                frmlT = replace_type_parameter_used_for_this_type_in_type_feature(frmlT);
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
@@ -1362,6 +1346,7 @@ public class Call extends AbstractCall
       {
         t = tt.actualType(t);
         t = t.resolve(res, tt.featureOfType());
+        t = adjustThisTypeForTarget(t);
         t = resolveForCalledFeature(res, t, tt);
       }
     _type = Types.intern(t);
@@ -1411,29 +1396,45 @@ public class Call extends AbstractCall
   }
 
 
-  /*
-   * Special handling for calling type feature with formal argument types that
-   * are `this.type` of the original feature:
+  /**
+   * Replace occurences of this.type in formal arg or result type depending on
+   * the target of the call.
    *
-   * example:
+   * @param t the formal type to be adjusted.
    *
-   *   has_equality is
-   *
-   *     type.equality(a, b has_equality.this.type) bool is abstract
-   *
-   *   equals(T type : has_equality, x, y T) => T.equality x y
-   *
-   * For the call `T.equality x y`, we must replace the the formal argument type
-   * for `a` (and `b`) by `T`.
+   * @return a type derived from t where `this.type` is replaced by actual types
+   * from the call's target where this is possible.
    */
-  AbstractType replace_type_parameter_used_for_this_type_in_type_feature(AbstractType t)
+  private AbstractType adjustThisTypeForTarget(AbstractType t)
   {
+    /**
+     * For a call `T.f` on a type parameter whose result type contains
+     * `this.type`, make sure we replace the implicit type parameter to
+     * `this.type`.
+     *
+     * example:
+     *
+     *   has_equality is
+     *
+     *     type.equality(a, b has_equality.this.type) bool is abstract
+     *
+     *   equals(T type : has_equality, x, y T) => T.equality x y
+     *
+     * For the call `T.equality x y`, we must replace the the formal argument type
+     * for `a` (and `b`) by `T`.
+     */
     var target = target();
     if (target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
       {
         t = t.replace_type_parameter_used_for_this_type_in_type_feature
           (target.type().featureOfType(),
            tc);
+      }
+    if (!calledFeature().isOuterRef())
+      {
+        var inner = new Type(calledFeature().selfType(),
+                             _target.typeForCallTarget());
+        t = t.replace_this_type_by_actual_outer(inner);
       }
     return t;
   }
@@ -1483,21 +1484,17 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature.isOuterRef())
       {
-        // nothing needs to be done at for now.
+        var o = t.featureOfType().outer();
+        t = o.isUniverse() ? t : new Type(t, o.thisType());
+        t = Types.intern(t).asThis();
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
-        t = new Type(t, t.generics(), _target.type());
+        t = new Type(t, _target.typeForCallTarget());
       }
     else
       {
-        /**
-         * For a call `T.f` on a type parameter whose result type contains
-         * `this.type`, make sure we replace the implicit type parameter to
-         * `this.type`.
-         */
-        t = replace_type_parameter_used_for_this_type_in_type_feature(t);
-        t = t.replace_this_type_by_actual_outer(_target.typeForCallTarget());
+        t = t.actualType(calledFeature(), _generics);
       }
     return t;
   }

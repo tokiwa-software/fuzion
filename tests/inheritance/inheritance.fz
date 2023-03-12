@@ -50,15 +50,15 @@ inheritance is
     redefine xb unit is say "E.xb"
     redefine xc unit is say "E.xc"
   bi B := B
-  ci inheritance.C := C
-  aa inheritance.A := bi
+  ci C := C
+  aa A := bi
   bi.x
   ci.x
   aa.x
   set aa := ci
   aa.x
-  di inheritance.D := D
-  ei inheritance.E := E
+  di D := D
+  ei E := E
   say "Calling non-redefed multiple"
   di.x
   di.xb

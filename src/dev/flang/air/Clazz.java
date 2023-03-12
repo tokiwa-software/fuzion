@@ -329,7 +329,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
        outer == null || outer._type != Types.t_ADDRESS,
-       !actualType.isThisType());
+       !actualType.containsThisType());
 
     if (actualType == Types.t_UNDEFINED)
       {
@@ -339,10 +339,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (CHECKS) check
       (Errors.count() > 0 || actualType != Types.t_ERROR);
 
-    this._type = actualType;
     this._select = select;
-    /* NYI: Handling of outer in Clazz is not done properly yet. There are two
-     * basic cases:
+    /* There are two basic cases for outer clazzes:
      *
      * 1. outer is a value type
      *
@@ -360,7 +358,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
      *    not with sub-clazzes with different actual generics.
      */
     this._outer = normalizeOuter(actualType, outer);
-
+    this._type = (actualType != Types.t_ERROR && this._outer != null)
+      ? Types.intern(new Type(actualType, this._outer._type))
+      : actualType;
     this._dynamicBinding = null;
 
     if(POSTCONDITIONS) ensure
@@ -654,8 +654,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
+    t = t.applyToGenericsAndOuter(x -> actualType(x));
     return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
+  }
+
+
+  /**
+   * In given type t, replace occurences of 'X.this.type' by the actual type
+   * from this Clazz.
+   *
+   * @param t a type
+   */
+  AbstractType replaceThisType(AbstractType t)
+  {
+    if (t.isThisType())
+      {
+        t = findOuter(t.featureOfType(), t.featureOfType())._type;
+      }
+    return t.applyToGenericsAndOuter(g -> replaceThisType(g));
   }
 
 
@@ -673,11 +690,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var result = this._type.replaceGenerics(generics);
 
     // Replace any `a.this.type` actual generics by the actual outer clazz:
-    if (result.stream().anyMatch(x->x.isThisType()))
-      {
-        result = result.map(g -> g.isThisType() ? findOuter(g.featureOfType(), SourcePosition.builtIn)._type
-                                                : g);
-      }
+    result = result.map(t->replaceThisType(t));
 
     if (this._outer != null)
       {
@@ -2165,6 +2178,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
               {
+                t = t.replace_this_type_by_actual_outer(this._type);
                 var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
                   ? Clazzes.create(t, null)
                   : innerBase.lookup(t.featureOfType(), t.generics(), null);

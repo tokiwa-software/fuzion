@@ -141,6 +141,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the abstract type referring to the instance, i.e., the actual value
+   * by be _selfType or the _selfType of any heir feature of this or the self
+   * type of this after it was inherited by any different outer type.
+   *
+   * For a feature a.b.c, _thisType is a.this.type.b.this.type.c.this.type.
+   */
+  protected AbstractType _thisType = null;
+
+
+  /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the abstract type referring to the instance.  Unlike _thisType, this
+   * does not permit this to be replaced by an inherited feature, but any outer
+   * feature might be.
+   *
+   * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
+   */
+  protected AbstractType _thisTypeFixed = null;
+
+
+  /**
    * Reserved fields to be used by dev.flang.air to find used features and to
    * mark features that are called dynamically.
    */
@@ -512,6 +534,49 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Create '.this.type' for this feature.
+   */
+  AbstractType thisType()
+  {
+    return thisType(false);
+  }
+
+
+  /**
+   * Create '.this.type' for this feature.
+   *
+   * @param innerFixed true iff the directly next inner feature for which this
+   * is created is fixed.  In this case. the type is exactly selfType(), and not
+   * a placeholder for any possible child's type.
+   */
+  AbstractType thisType(boolean innerFixed)
+  {
+    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
+
+    if (result == null)
+      {
+        result = selfType();
+        var of = outer();
+        if (!isUniverse() && of != null && !of.isUniverse())
+          {
+            result = new Type(result, of.thisType());
+          }
+        result = Types.intern(result);
+        if (innerFixed)
+          {
+            _thisTypeFixed = result;
+          }
+        else
+          {
+            result = Types.intern(result.asThis());
+            _thisType = result;
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Is this a type feature?
    */
   public boolean isTypeFeature()
@@ -836,7 +901,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
-    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+    var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
+    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
 
     if (POSTCONDITIONS) ensure
       (result != null,

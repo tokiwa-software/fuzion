@@ -61,7 +61,7 @@ public class Current extends AbstractCurrent
    */
   public Current(SourcePosition pos, AbstractFeature f)
   {
-    super(Types.intern(f.selfType()).asThis());
+    super(f.thisType());
 
     if (PRECONDITIONS) require
       (pos != null,
