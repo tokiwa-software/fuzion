@@ -1481,6 +1481,10 @@ public class Call extends AbstractCall
             throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
           }
       }
+    else if (_calledFeature.isOuterRef())
+      {
+        // nothing needs to be done at for now.
+      }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
         t = new Type(t, t.generics(), _target.type());
@@ -1493,10 +1497,7 @@ public class Call extends AbstractCall
          * `this.type`.
          */
         t = replace_type_parameter_used_for_this_type_in_type_feature(t);
-        if (!calledFeature().isOuterRef())
-          {
-            t = t.replace_this_type_by_actual_outer(_target.typeForCallTarget());
-          }
+        t = t.replace_this_type_by_actual_outer(_target.typeForCallTarget());
       }
     return t;
   }
