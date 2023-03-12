@@ -533,8 +533,8 @@ public class Call extends AbstractCall
                               b.type(),
                               tmpName,
                               thiz);
-        Expr t1 = new Call(pos(), new Current(pos(), thiz.selfType()), tmp, -1);
-        Expr t2 = new Call(pos(), new Current(pos(), thiz.selfType()), tmp, -1);
+        Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+        Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
         Expr result = new Call(pos(), t2, _name, _actualsNew)
           {
             boolean isChainedBoolRHS() { return true; }

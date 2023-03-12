@@ -337,7 +337,7 @@ public class Function extends ExprWithPos
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer.selfType()), _wrapper).resolveTypes(res, outer);
+            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer);
           }
       }
     return result;

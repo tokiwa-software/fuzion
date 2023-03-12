@@ -249,7 +249,7 @@ public class This extends ExprWithPos
          * before outer is set up.
          */
         var cur = _cur == null ? outer : _cur;
-        getOuter = new Current(pos(), cur.selfType());
+        getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f)
           {
             var or = cur.outerRef();
