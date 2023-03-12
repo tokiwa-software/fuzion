@@ -1357,38 +1357,14 @@ public class Call extends AbstractCall
       }
 
     var tt = targetTypeOrConstraint(res);
-    if (_select < 0 && t.isOpenGeneric())
-      {
-        AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
-        t = Types.t_ERROR;
-      }
-    else if (_select >= 0 && !t.isOpenGeneric())
-      {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, t);
-        t = Types.t_ERROR;
-      }
-    else if (_select < 0)
+    t = resolveSelect(t, tt);
+    if (_select < 0)
       {
         t = t.resolve(res, tt.featureOfType());
         t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
         if (_calledFeature.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
           {  /* specialize t for the target type here */
             t = new Type(t, t.generics(), _target.type());
-          }
-      }
-    else
-      {
-        var types = t.genericArgument().replaceOpen(tt.generics());
-        int sz = types.size();
-        if (_select >= sz)
-          {
-            AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-            _calledFeature = Types.f_ERROR;
-            t = Types.t_ERROR;
-          }
-        else
-          {
-            t = types.get(_select);
           }
       }
     if (_calledFeature.isTypeParameter())
@@ -1434,6 +1410,49 @@ public class Call extends AbstractCall
             _type = _type.replace_this_type_by_actual_outer(_target.typeForCallTarget());
           }
       }
+  }
+
+
+  /**
+   * Helper for resolveType to process _select, i.e., check that _select is < 0
+   * and t is not open generic, or else _select choses the actual open generic
+   * type.
+   *
+   * @param t the result type of the called feature, might be open genenric.
+   *
+   * @param tt target type or constraint.
+   *
+   * @return the actual, non open generic result type to Types.t_ERROR in case
+   * of an error.
+   */
+  private AbstractType resolveSelect(AbstractType t, AbstractType tt)
+  {
+    if (_select < 0 && t.isOpenGeneric())
+      {
+        AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
+        t = Types.t_ERROR;
+      }
+    else if (_select >= 0 && !t.isOpenGeneric())
+      {
+        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, t);
+        t = Types.t_ERROR;
+      }
+    else if (_select >= 0)
+      {
+        var types = t.genericArgument().replaceOpen(tt.generics());
+        int sz = types.size();
+        if (_select >= sz)
+          {
+            AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
+            _calledFeature = Types.f_ERROR;
+            t = Types.t_ERROR;
+          }
+        else
+          {
+            t = types.get(_select);
+          }
+      }
+    return t;
   }
 
 
