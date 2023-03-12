@@ -1464,12 +1464,11 @@ public class Call extends AbstractCall
           {
             throw new Error("NYI (see #283): Calling open type parameter");
           }
-        var tptype = t.resolve(res, tt.featureOfType());
-        if (!tptype.isGenericArgument())
+        t = t.resolve(res, tt.featureOfType());
+        if (!t.isGenericArgument())
           {
-            tptype = tptype.featureOfType().typeFeature(res).selfType();
+            t = t.featureOfType().typeFeature(res).selfType();
           }
-        t = tptype;
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
       { // NYI (see #282): special handling could maybe be avoided? Maybe make
