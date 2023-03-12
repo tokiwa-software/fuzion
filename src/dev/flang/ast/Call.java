@@ -1345,14 +1345,14 @@ public class Call extends AbstractCall
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
-    /* make sure '.type' features are declared for all actual generics: */
-    for (var g : _generics)
+    for (var i = 0; i < _generics.size(); i++)
       {
+        var g = _generics.get(i);
         if (CHECKS) check
           (Errors.count() > 0 || g != null);
         if (g != null)
           {
-            g.resolve(res, outer);
+            _generics = _generics.setOrClone(i, g.resolve(res, outer));
           }
       }
 
