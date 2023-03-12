@@ -987,10 +987,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
   {
     var result = this;
-    if (isGenericArgument())
-      {
-      }
-    else if (isThisType())
+    if (isThisType())
       {
         var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
         if (att.featureOfType().inheritsFrom(featureOfType()))
@@ -1231,13 +1228,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
   {
     var result = this;
-    var g = generics();
-    var ng = g.map(f);
-    var o = outer();
-    var no = o != null ? f.apply(o) : null;
-    if (ng != g || no != o)
+    if (!isGenericArgument())
       {
-        result = new Type(this, ng, no);
+        var g = generics();
+        var ng = g.map(f);
+        var o = outer();
+        var no = o != null ? f.apply(o) : null;
+        if (ng != g || no != o)
+          {
+            result = new Type(this, ng, no);
+          }
       }
     return result;
   }
