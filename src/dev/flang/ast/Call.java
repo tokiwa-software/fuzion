@@ -1362,13 +1362,9 @@ public class Call extends AbstractCall
       {
         t = t.resolve(res, tt.featureOfType());
         t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
-        if (_calledFeature.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
-          {  /* specialize t for the target type here */
-            t = new Type(t, t.generics(), _target.type());
-          }
       }
     t = resolveForCalledFeature(res, t, tt);
-    _type = t;
+    _type = Types.intern(t);
   }
 
 
@@ -1485,6 +1481,10 @@ public class Call extends AbstractCall
           {
             throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
           }
+      }
+    else if (_calledFeature.isConstructor())
+      {  /* specialize t for the target type here */
+        t = new Type(t, t.generics(), _target.type());
       }
     else
       {
