@@ -248,6 +248,16 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
+  # minimum
+  #
+  fixed type.min => u64 0
+
+
+  # maximum
+  #
+  fixed type.max => u64 0x_ffff_ffff_ffff_ffff
+
+
 
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
