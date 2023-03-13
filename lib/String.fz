@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : has_equality, has_hash, has_total_order is
+String ref : equatable, has_hash, has_total_order is
 
   # converting a string to a string is just returning string.this
   redef as_string String is String.this
