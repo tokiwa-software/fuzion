@@ -237,6 +237,16 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef type.all_bits_set => i64 -1
 
 
+  # minimum
+  #
+  fixed type.min => i64 -0x_8000_0000_0000_0000
+
+
+  # maximum
+  #
+  fixed type.max => i64 0x_7fff_ffff_ffff_ffff
+
+
 
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance

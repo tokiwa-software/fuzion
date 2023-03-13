@@ -248,6 +248,16 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   redef type.all_bits_set => u32 0x_ffff_ffff
 
 
+  # minimum
+  #
+  fixed type.min => u32 0
+
+
+  # maximum
+  #
+  fixed type.max => u32 0x_ffff_ffff
+
+
 
 # u32s -- unit type defining features related to u32 but not requiring an
 # instance
