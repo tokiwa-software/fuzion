@@ -533,8 +533,8 @@ public class Call extends AbstractCall
                               b.type(),
                               tmpName,
                               thiz);
-        Expr t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
-        Expr t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
+        Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+        Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
         Expr result = new Call(pos(), t2, _name, _actualsNew)
           {
             boolean isChainedBoolRHS() { return true; }
@@ -1152,7 +1152,7 @@ public class Call extends AbstractCall
           {
             if (CHECKS) check
               (frmlT != null);
-            _resolvedFormalArgumentTypes[argnum] = frmlT;
+            _resolvedFormalArgumentTypes[argnum] = adjustThisTypeForTarget(frmlT);
           }
       }
     return result;
@@ -1200,22 +1200,6 @@ public class Call extends AbstractCall
               }
             else
               {
-                /*
-                 * Special handling for calling type feature with formal argument types that
-                 * are `this.type` of the original feature:
-                 *
-                 * example:
-                 *
-                 *   equatable is
-                 *
-                 *     type.equality(a, b equatable.this.type) bool is abstract
-                 *
-                 *   equals(T type : equatable, x, y T) => T.equality x y
-                 *
-                 * For the call `T.equality x y`, we must replace the the formal argument type
-                 * for `a` (and `b`) by `T`.
-                 */
-                frmlT = replace_type_parameter_used_for_this_type_in_type_feature(frmlT);
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
@@ -1330,6 +1314,7 @@ public class Call extends AbstractCall
     _whenInferredTypeParameters.add(r);
   }
 
+
   /**
    * Helper function for resolveTypes to determine the static result type of
    * this call.
@@ -1344,18 +1329,44 @@ public class Call extends AbstractCall
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
-    /* make sure '.type' features are declared for all actual generics: */
-    for (var g : _generics)
+    for (var i = 0; i < _generics.size(); i++)
       {
+        var g = _generics.get(i);
         if (CHECKS) check
           (Errors.count() > 0 || g != null);
         if (g != null)
           {
-            g.resolve(res, outer);
+            _generics = _generics.setOrClone(i, g.resolve(res, outer));
           }
       }
 
     var tt = targetTypeOrConstraint(res);
+    t = resolveSelect(t, tt);
+    if (t != Types.t_ERROR)
+      {
+        t = tt.actualType(t);
+        t = t.resolve(res, tt.featureOfType());
+        t = adjustThisTypeForTarget(t);
+        t = resolveForCalledFeature(res, t, tt);
+      }
+    _type = Types.intern(t);
+  }
+
+
+  /**
+   * Helper for resolveType to process _select, i.e., check that _select is < 0
+   * and t is not open generic, or else _select choses the actual open generic
+   * type.
+   *
+   * @param t the result type of the called feature, might be open genenric.
+   *
+   * @param tt target type or constraint.
+   *
+   * @return the actual, non open generic result type to Types.t_ERROR in case
+   * of an error.
+   */
+  private AbstractType resolveSelect(AbstractType t, AbstractType tt)
+  {
     if (_select < 0 && t.isOpenGeneric())
       {
         AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
@@ -1366,16 +1377,7 @@ public class Call extends AbstractCall
         AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, t);
         t = Types.t_ERROR;
       }
-    else if (_select < 0)
-      {
-        t = t.resolve(res, tt.featureOfType());
-        t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
-        if (_calledFeature.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
-          {  /* specialize t for the target type here */
-            t = new Type(t, t.generics(), _target.type());
-          }
-      }
-    else
+    else if (_select >= 0)
       {
         var types = t.genericArgument().replaceOpen(tt.generics());
         int sz = types.size();
@@ -1390,18 +1392,79 @@ public class Call extends AbstractCall
             t = types.get(_select);
           }
       }
+    return t;
+  }
+
+
+  /**
+   * Replace occurences of this.type in formal arg or result type depending on
+   * the target of the call.
+   *
+   * @param t the formal type to be adjusted.
+   *
+   * @return a type derived from t where `this.type` is replaced by actual types
+   * from the call's target where this is possible.
+   */
+  private AbstractType adjustThisTypeForTarget(AbstractType t)
+  {
+    /**
+     * For a call `T.f` on a type parameter whose result type contains
+     * `this.type`, make sure we replace the implicit type parameter to
+     * `this.type`.
+     *
+     * example:
+     *
+     *   equatable is
+     *
+     *     type.equality(a, b equatable.this.type) bool is abstract
+     *
+     *   equals(T type : equatable, x, y T) => T.equality x y
+     *
+     * For the call `T.equality x y`, we must replace the the formal argument type
+     * for `a` (and `b`) by `T`.
+     */
+    var target = target();
+    if (target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
+      {
+        t = t.replace_type_parameter_used_for_this_type_in_type_feature
+          (target.type().featureOfType(),
+           tc);
+      }
+    if (!calledFeature().isOuterRef())
+      {
+        var inner = new Type(calledFeature().selfType(),
+                             _target.typeForCallTarget());
+        t = t.replace_this_type_by_actual_outer(inner);
+      }
+    return t;
+  }
+
+
+  /**
+   * Helper function for resolveType to adjust a result type depending on the
+   * kind of feature that is called.
+   *
+   * In particular, this contains special handling for calling type parameters,
+   * for Types.get, for outer refs and for constructors.
+   *
+   * @param res the resolution instance.
+   *
+   * @param t the result type of the called feature, adjustes for select, this type, etc.
+   *
+   * @param tt target type or constraint.
+   */
+  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt)
+  {
     if (_calledFeature.isTypeParameter())
       {
         if (_select >= 0 || _calledFeature.isOpenTypeParameter())
           {
             throw new Error("NYI (see #283): Calling open type parameter");
           }
-        var tptype = t.resolve(res, tt.featureOfType());
-        if (!tptype.isGenericArgument())
+        if (!t.isGenericArgument())
           {
-            tptype = tptype.featureOfType().typeFeature(res).thisType();
+            t = t.featureOfType().typeFeature(res).selfType();
           }
-        _type = tptype;
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
       { // NYI (see #282): special handling could maybe be avoided? Maybe make
@@ -1413,52 +1476,25 @@ public class Call extends AbstractCall
           {
             gt = gt.typeType(res);
           }
-        _type = gt.resolve(res, tt.featureOfType());
-        if (_type == null)
+        t = gt.resolve(res, tt.featureOfType());
+        if (t == null)
           {
             throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
           }
       }
+    else if (_calledFeature.isOuterRef())
+      {
+        var o = t.featureOfType().outer();
+        t = o.isUniverse() ? t : new Type(t, o.thisType());
+        t = Types.intern(t).asThis();
+      }
+    else if (_calledFeature.isConstructor())
+      {  /* specialize t for the target type here */
+        t = new Type(t, _target.typeForCallTarget());
+      }
     else
       {
-        t = t.resolve(res, tt.featureOfType());
-        /**
-         * For a call `T.f` on a type parameter whose result type contains
-         * `this.type`, make sure we replace the implicit type parameter to
-         * `this.type`.
-         */
-        _type = replace_type_parameter_used_for_this_type_in_type_feature(t);
-        if (!calledFeature().isOuterRef())
-          {
-            _type = _type.replace_this_type_by_actual_outer(_target.typeForCallTarget());
-          }
-      }
-  }
-
-
-  /*
-   * Special handling for calling type feature with formal argument types that
-   * are `this.type` of the original feature:
-   *
-   * example:
-   *
-   *   equatable is
-   *
-   *     type.equality(a, b equatable.this.type) bool is abstract
-   *
-   *   equals(T type : equatable, x, y T) => T.equality x y
-   *
-   * For the call `T.equality x y`, we must replace the the formal argument type
-   * for `a` (and `b`) by `T`.
-   */
-  AbstractType replace_type_parameter_used_for_this_type_in_type_feature(AbstractType t)
-  {
-    var target = target();
-    if (target instanceof AbstractCall tc && tc.calledFeature().isTypeParameter())
-      {
-        t = t.replace_type_parameter_used_for_this_type_in_type_feature
-          (target.type().featureOfType(),
-           tc);
+        t = t.actualType(calledFeature(), _generics);
       }
     return t;
   }
@@ -1700,7 +1736,7 @@ public class Call extends AbstractCall
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
         if (!actualType.isGenericArgument() && actualType.featureOfType().isTypeFeature())
           {
-            actualType = Types.resolved.f_Type.thisType();
+            actualType = Types.resolved.f_Type.selfType();
           }
       }
     return actualType;

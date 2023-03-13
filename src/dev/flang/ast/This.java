@@ -249,7 +249,7 @@ public class This extends ExprWithPos
          * before outer is set up.
          */
         var cur = _cur == null ? outer : _cur;
-        getOuter = new Current(pos(), cur.thisType());
+        getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f)
           {
             var or = cur.outerRef();
@@ -260,21 +260,7 @@ public class This extends ExprWithPos
                 Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
                 if (cur.isOuterRefAdrOfValue())
                   {
-                    var t = cur.outer().thisType();
-                    if (cur.outer() == f &&
-
-                        /* in code like
-                         *
-                         * fixed x is ... x.this ...
-                         *
-                         * we are sure that x will not be inherited or
-                         * redefined, so the type of 'x.this' can be 'x' instead
-                         * of 'x.this.type' (which includes all heirs of 'x').
-                         */
-                        (outer.modifiers() & Consts.MODIFIER_FIXED) == 0)
-                      {
-                        t = Types.intern(t).asThis();
-                      }
+                    var t = cur.outer().thisType(cur.isFixed());
                     c = new Unbox(c, t, cur.outer())
                       { public SourcePosition pos() { return This.this.pos(); } };
                   }

@@ -59,6 +59,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -1180,8 +1181,7 @@ hw25 is
       }
     if (result == null)
       {
-        Errors.fatal((e instanceof Stmnt s) ? s.pos() :
-                     (e instanceof Clazz z) ? z._type.pos2BeRemoved() : null,
+        Errors.fatal(codeAtAsPos(c, ix),
                      "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
@@ -1430,16 +1430,18 @@ hw25 is
        codeAt(c, ix) == ExprKind.Call   ||
        codeAt(c, ix) == ExprKind.Assign    );
 
+    int[] result;
     if (accessIsDynamic(cl, c, ix))
       {
-        return accessedClazzesDynamic(cl, c, ix);
+        result = accessedClazzesDynamic(cl, c, ix);
       }
     else
       {
         var innerClazz = accessedClazz(cl, c, ix);
-        return clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
-                                          : new int[0];
+        result = clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
+                                            : new int[0];
       }
+    return result;
   }
 
 
@@ -1830,6 +1832,27 @@ hw25 is
       case Pop     -> "Pop";
       case Unit    -> "Unit";
       };
+  }
+
+
+
+  /**
+   * Get the source code position of an expr at the given index if it is available.
+   *
+   * @param c the code block
+   *
+   * @param ix an index within the code block
+   *
+   * @return the source code position or null if not available.
+   */
+  public SourcePosition codeAtAsPos(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0, withinCode(c, ix));
+
+    var e = _codeIds.get(c).get(ix);
+    return (e instanceof Stmnt s) ? s.pos() :
+           (e instanceof Clazz z) ? z._type.pos2BeRemoved() : null;
   }
 
 

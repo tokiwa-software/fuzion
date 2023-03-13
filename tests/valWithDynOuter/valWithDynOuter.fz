@@ -48,7 +48,34 @@ valWithDynOuter is
     str := e.y
     chck str expected
 
+  testrv(e (ref v).e, expected String) =>
+    str := e.y
+    chck str expected
+
+  testw(e w.e, expected String) =>
+    str := e.y
+    chck str expected
+
+  tests(e s.e, expected String) =>
+    str := e.y
+    chck str expected
+
   test_mut(e v.e, expected String) =>
+    e.mut
+    str := e.y
+    chck str expected
+
+  testrv_mut(e (ref v).e, expected String) =>
+    e.mut
+    str := e.y
+    chck str expected
+
+  testw_mut(e w.e, expected String) =>
+    e.mut
+    str := e.y
+    chck str expected
+
+  tests_mut(e s.e, expected String) =>
     e.mut
     str := e.y
     chck str expected
@@ -89,12 +116,12 @@ valWithDynOuter is
   # heir features of the outer feature
   #
   test (v "v1").e ".v1-v:v.x."
-  test w.g ".w-w:w.x."
+  testw w.g ".w-w:w.x."
   rv ref v := v "v2"
-  test rv.g ".v2-v:v.x."
+  testrv rv.g ".v2-v:v.x."
   rw ref v := w
-  test rw.g ".w-w:w.x."
-  test s.g ".s-s:s.x."
+  testrv rw.g ".w-w:w.x."
+  tests s.g ".s-s:s.x."
 
   # extend 'outer's lifespan
   #
@@ -102,18 +129,18 @@ valWithDynOuter is
   #
   q1 v.e is (v "v1").e
   test q1 ".v1-v:v.x."
-  q2 v.e is w.g
-  test q2 ".w-w:w.x."
-  q3 v.e is
+  q2 w.e is w.g
+  testw q2 ".w-w:w.x."
+  q3 (ref v).e is
     rv ref v := v "v2"
     rv.g
-  test q3 ".v2-v:v.x."
-  q4 v.e is
+  testrv q3 ".v2-v:v.x."
+  q4 (ref v).e is
     rw ref v := w
     rw.g
-  test q4 ".w-w:w.x."
-  q5 v.e is s.g
-  test q5 ".s-s:s.x."
+  testrv q4 ".w-w:w.x."
+  q5 s.e is s.g
+  tests q5 ".s-s:s.x."
 
   # mutating test
   #
@@ -126,24 +153,24 @@ valWithDynOuter is
 
   o := w
   chck o.f "w"
-  test_mut o.g ".ww-w:w.x."
+  testw_mut o.g ".ww-w:w.x."
   chck o.f "ww"
 
   rv2 ref v := v "v2"
   o := rv2
   chck o.f "v2"
-  test_mut rv2.g ".v2v2-v:v.x."
+  testrv_mut rv2.g ".v2v2-v:v.x."
   chck o.f "v2v2"
 
   rw2 ref v := w
   o := rw2
   chck o.f "w"
-  test_mut rw2.g ".ww-w:w.x."
+  testrv_mut rw2.g ".ww-w:w.x."
   chck o.f "ww"
 
   o := s
   chck o.f "s"
-  test_mut o.g ".ss-s:s.x."
+  tests_mut o.g ".ss-s:s.x."
   chck o.f "ss"
 
   exit exit_code.get

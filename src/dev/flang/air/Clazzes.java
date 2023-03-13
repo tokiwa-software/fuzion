@@ -131,7 +131,7 @@ public class Clazzes extends ANY
         {
           if (_t == null)
             {
-              _clazz = create(Types.resolved.universe.thisType(), null);
+              _clazz = create(Types.resolved.universe.selfType(), null);
             }
           else
             {
@@ -157,8 +157,8 @@ public class Clazzes extends ANY
   public static final OnDemandClazz universe    = new OnDemandClazz(null, true);
   public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
-  public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .thisType() );
-  public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.thisType() );
+  public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
+  public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.selfType() );
   public static final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
   public static final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public static final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
@@ -391,7 +391,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;

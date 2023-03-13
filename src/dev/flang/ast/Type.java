@@ -202,7 +202,7 @@ public class Type extends AbstractType
    */
   public Type(Type t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos2BeRemoved(), t.name, g, o, t.feature, t._refOrVal);
+    this(t.pos2BeRemoved(), t.name, g, o, t.feature, t._refOrVal, false);
 
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
@@ -228,12 +228,36 @@ public class Type extends AbstractType
     this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
          t.isRef() ? RefOrVal.Ref
-                   : RefOrVal.Value);
+                   : RefOrVal.Value,
+         true);
 
     if (PRECONDITIONS) require
       ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
+
+    checkedForGeneric = t.checkedForGeneric();
+  }
+
+
+  /**
+   * Constructor to create a type from an existing type after formal generics
+   * have been replaced in the generics arguments and in the outer type.
+   *
+   * @param t the original type
+   *
+   * @param o the actual outer type, or null, that replaces t.outer
+   */
+  public Type(AbstractType t, AbstractType o)
+  {
+    this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), t.generics(), o, t.featureOfType(),
+         t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+         t.isRef()                                  ? RefOrVal.Ref
+                                                    : RefOrVal.Value,
+         false);
+
+    if (PRECONDITIONS) require
+      (t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     checkedForGeneric = t.checkedForGeneric();
   }
@@ -256,6 +280,27 @@ public class Type extends AbstractType
    */
   public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
+    this(pos, n, g, o, f, refOrVal, true);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param n
+   *
+   * @param g the actual generic arguments
+   *
+   * @param o
+   *
+   * @param f if this type corresponds to a feature, then this is the
+   * feature, else null.
+   *
+   * @param ref true iff this type should be a ref type, otherwise it will be a
+   * value type.
+   */
+  public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal, boolean fixOuterThisType)
+  {
     if (PRECONDITIONS) require
       (pos != null,
        n.length() > 0,
@@ -266,7 +311,7 @@ public class Type extends AbstractType
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     this._generics.freeze();
 
-    if (o instanceof Type ot && ot.isThisType())
+    if (fixOuterThisType && o instanceof Type ot && ot.isThisType())
       {
         // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
         // outer types. Is it possible to not create asThisType() in This.java
@@ -520,13 +565,13 @@ public class Type extends AbstractType
        !isGenericArgument());
 
     AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
+    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
         result = Types.intern(new Type(this, RefOrVal.ThisType));
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
+      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
        !(isThisType() || isChoice()) || result == this);
 
     return result;
@@ -637,6 +682,24 @@ public class Type extends AbstractType
 
 
   /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    return Types.INTERNAL_NAMES.contains(name)
+      ? toString()         // internal types like Types.t_UNDEFINED, t_ERROR, t_ADDRESS
+      : super.asString();
+  }
+
+
+  /**
    * toString
    *
    * @return
@@ -647,7 +710,7 @@ public class Type extends AbstractType
 
     if (Types.INTERNAL_NAMES.contains(name))
       {
-        return name;
+        result = name;
       }
     else if (generic != null)
       {
@@ -667,7 +730,7 @@ public class Type extends AbstractType
       }
     else if (_outer != null)
       {
-        String outer = _outer.toString();
+        String outer = _outer.toStringWrapped();
         result = ""
           + (outer == "" ||
              outer == FuzionConstants.UNIVERSE_NAME ? ""
@@ -736,6 +799,7 @@ public class Type extends AbstractType
                 if (CHECKS) check
                   (_interned == null);
 
+                var o = _outer;
                 _outer = _outer.visit(v, outerfeat);
               }
           }
@@ -953,7 +1017,12 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            feature = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
+            var fo = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
+            feature = fo._feature;
+            if (_outer == null && !fo._outer.isUniverse())
+              {
+                _outer = fo._outer.thisType(fo.isNextInnerFixed());
+              }
           }
       }
     if (POSTCONDITIONS) ensure
@@ -1014,7 +1083,7 @@ public class Type extends AbstractType
 
   /**
    * outer type, after type resolution. This provides the whole chain of types
-   * until Types.resolved.universe.thisType(), while the _outer field ends with
+   * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
   public AbstractType outer()
@@ -1034,7 +1103,7 @@ public class Type extends AbstractType
                   }
                 else
                   {
-                    result = of.thisType();
+                    result = of.selfType();
                   }
               }
             else if (generic != null)

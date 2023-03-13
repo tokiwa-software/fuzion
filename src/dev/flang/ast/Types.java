@@ -301,7 +301,7 @@ public class Types extends ANY
                 var g1 = g0.map(tt -> intern(tt));
                 if (o1 != o0 || g1 != g0)
                   {
-                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal);
+                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal, false);
                   }
               }
             existing = types.get(t);

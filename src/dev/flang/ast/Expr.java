@@ -307,7 +307,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
-                                                    new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+                                                    new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;
   }
@@ -423,8 +423,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean needsBoxingForGenericOrThis(AbstractType frmlT)
   {
     return
-      frmlT.isGenericArgument() ||
-      frmlT.isThisType() && frmlT.featureOfType().isThisRef();
+      frmlT.isGenericArgument() || frmlT.isThisType();
   }
 
 
