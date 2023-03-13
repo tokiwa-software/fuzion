@@ -106,6 +106,7 @@ public class NormalType extends LibraryType
     this._feature = feature;
     this._valRefOrThis = valRefOrThis;
     this._generics = generics;
+    this._generics.freeze();
     this._outer = outer;
   }
 
@@ -239,30 +240,6 @@ public class NormalType extends LibraryType
           }
         _asThis = result;
       }
-    return result;
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String result = "";
-
-    if (outer() != null && !outer().isGenericArgument() && !outer().featureOfType().isUniverse())
-      {
-        result = outer() + ".";
-      }
-    if (isRef() != featureOfType().isThisRef())
-      {
-        result = result + (isRef() ? "ref " : "value ");
-      }
-    result = result + (featureOfType().featureName().baseName());
-    result = result + generics()
-      .toString(" ", " ", "", t -> t.toStringWrapped());
     return result;
   }
 

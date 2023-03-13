@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion issue118
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+issue1183 is
+
+  # our own implementation of type_of for this test:
+  #
+  my_type_of(T type, _ T) => T
+
+  # the original example from #1183
+  a is
+    o => a.this
+  say (type_of a.o)
+
+  # modification using a child of a
+  b : a is
+  say (type_of b.o)
+
+  # using our own type_of implementation:
+  say (my_type_of a.o)
+  say (my_type_of b.o)
+
+  # next level: doing the same thing via a type parameter
+  q(T type : a, v T) =>
+    say (type_of    v.o)
+    say (my_type_of v.o)
+
+  q a a
+  q b b
+
+  # next level: using this.type as a type parameter to list:
+  a1 is
+
+    # using explicit result type
+    l1 list a1.this.type is [a1.this].as_list
+
+    # using inferred result type
+    l2 => [a1.this].as_list
+
+  # and a child of that
+  b1 : a1 is
+
+  say (type_of    a1.l1)    # should print `list issue1183.a1`
+  say (type_of    b1.l1)    # should print `list issue1183.b1`
+  say (my_type_of a1.l1)    # should print `list issue1183.a1`
+  say (my_type_of b1.l1)    # should print `list issue1183.b1`
+
+  say (type_of    a1.l2)    # should print `list issue1183.a1`
+  say (type_of    b1.l2)    # should print `list issue1183.b1`
+  say (my_type_of a1.l2)    # should print `list issue1183.a1`
+  say (my_type_of b1.l2)    # should print `list issue1183.b1`
+
+  # next level: using this.type as a type parameter to list:
+
+  a2 is
+    # using inferred result type
+    l2 => [a2.this].as_list
+
+  # and a child of that
+  b2 : a2 is
+
+  say (type_of    a2.l2)    # should print `list issue1183.a2`
+  say (type_of    b2.l2)    # should print `list issue1183.b2`
+  say (my_type_of a2.l2)    # should print `list issue1183.a2`
+  say (my_type_of b2.l2)    # should print `list issue1183.b2`

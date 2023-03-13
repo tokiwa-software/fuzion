@@ -64,7 +64,9 @@ mutate : simpleEffect is
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fuzion.sys.misc.unique_id
+  # NYI: #1129: u64 manually specified as a workaround, remove it
+  #
+  id u64 := fuzion.sys.misc.unique_id
 
   # 0 is used to indicate this is closed
   #
@@ -79,7 +81,7 @@ mutate : simpleEffect is
     # the mutable value was created with
     my_id := id
 
-    # check that this effect is intalled and replace it.
+    # check that this effect is installed and replace it.
     #
     private check_and_replace is
       if my_id != mutate.this.type.env.id
@@ -111,7 +113,7 @@ mutate : simpleEffect is
     # read the current value of this mutable value.
     #
     # If this is open, check that the mutate effect this was created with is still
-    # intalled in the current environment.
+    # installed in the current environment.
     #
     get ! mutate.this.type =>
       if open
@@ -131,7 +133,7 @@ mutate : simpleEffect is
     # update mutable field with new value
     #
     # Check that the mutate effect this was created with is still
-    # intalled in the current environment.
+    # installed in the current environment.
     #
     put (
       # the new value to be stored with 'h'

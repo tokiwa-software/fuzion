@@ -77,6 +77,15 @@ public class AstErrors extends ANY
   {
     return sbn(fn.baseName()) + fn.argCountAndIdString();
   }
+  static String slbn(List<FeatureName> l)
+  {
+    var sl = new List<String>();
+    for (var fn : l)
+      {
+        sl.add(sbn(fn));
+      }
+    return sl.toString();
+  }
   static String sbn(String s) // feature base name
   {
     return code(s);
@@ -156,10 +165,23 @@ public class AstErrors extends ANY
   {
     return ss(names.toString("", ".", ""));
   }
-  static String code(String s) { return "'" + Terminal.PURPLE + s + Terminal.REGULAR_COLOR + "'"; }
-  static String type(String s) { return "'" + Terminal.YELLOW + s + Terminal.REGULAR_COLOR + "'"; }
-  static String expr(String s) { return "'" + Terminal.CYAN   + s + Terminal.REGULAR_COLOR + "'"; }
+  static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
+  static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
+  static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
 
+  /**
+   * Enclose s in "'" unless s contains a new line. If s contains a new line,
+   * add new lines at the starts or the ends with not present already.
+   */
+  static String ticksOrNewLine(String s)
+  {
+    return
+      s.indexOf("\n") < 0                    ? "'"  + s + "'"  :
+      s.startsWith("\n") && s.endsWith("\n") ?        s        :
+      s.startsWith("\n")                     ?        s + "\n" :
+                            s.endsWith("\n") ? "\n" + s
+                                             : "\n" + s + "\n";
+  }
 
 
   /**
@@ -980,7 +1002,7 @@ public class AstErrors extends ANY
   }
 
   static void ambiguousTargets(SourcePosition pos,
-                               String operation,
+                               FeatureAndOuter.Operation operation,
                                FeatureName fn,
                                List<FeatureAndOuter> targets)
   {
@@ -1025,6 +1047,25 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  /**
+   * Suggest to a user that they might have called a feature with a wrong number of arguments,
+   * in the case that the called feature could not be found but there is a feature with the same
+   * name but a differing number of arguments.
+   */
+  static String solutionWrongArgumentNumber(List<FeatureAndOuter> candidates)
+  {
+    var solution = "";
+
+    if (!candidates.isEmpty())
+      {
+        solution = "To solve this, you might change the actual number of arguments to match " +
+                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
+                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+      }
+
+    return solution;
+  }
+
   static boolean errorInOuterFeatures(AbstractFeature f)
   {
     while (f != null && f != Types.f_ERROR)
@@ -1036,18 +1077,20 @@ public class AstErrors extends ANY
 
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
-                                    AbstractFeature targetFeature)
+                                    AbstractFeature targetFeature,
+                                    List<FeatureAndOuter> candidates)
   {
     if (count() == 0 || !errorInOuterFeatures(targetFeature))
       {
         var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                          calledName.argCount());
+        var solution2 = solutionWrongArgumentNumber(candidates);
         error(call.pos(),
               "Could not find called feature",
               "Feature not found: " + sbn(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
-              solution);
+              (solution == "" ? solution2 : solution));
       }
   }
 
@@ -1691,6 +1734,38 @@ public class AstErrors extends ANY
           (at != null ? "expected argument types: " + at + "\n" : "" ) +
           "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
           "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
+  }
+
+  /**
+   * Produce error for the of issue #1186: A routine returns itself:
+   *
+   *   a => a.this
+   */
+  public static void routineCannotReturnItself(AbstractFeature f)
+  {
+    String n = f.featureName().baseName();
+    String args = f.arguments().size() > 0 ? "(..args..)" : "";
+    String old_code =
+      "\n" +
+      "  " + n + args + " =>\n" +
+      "    ..code..\n"+
+      "    " + n + ".this\n";
+    String new_code =
+      "\n" +
+      "  " + n + args + " is\n" +
+      "    ..code..\n";
+    String new_code_ref =
+      "\n" +
+      "  " + n + args + " Any is\n" +
+      "    ..code..\n"+
+      "    " + n + ".this\n";
+    error(f.pos(),
+          "A routine cannot return its own instance as its result",
+          "It is not possible for a routine to return its own instance as a result.  Since the result is stored in the implicit " +
+          sbn("result") + " field, this would produce cyclic field nesting.\n" +
+          "To solve this, you could convert this feature into a constructor, i.e., instead of " +
+          code(old_code) + "write " + code(new_code) + "since constructor implictly returns its own instance.  Alternatively, you can use " +
+          code(new_code_ref) + "to return a reference.");
   }
 
 

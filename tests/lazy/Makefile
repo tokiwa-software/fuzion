@@ -17,26 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature has_equality
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# has_equality -- feature for immutable values that define an equality relation
-#
-has_equality is
-
-
-  # equality implements the default equality relation for values of this type.
-  #
-  # This relation must be
-  #
-  #  - reflexive (equality a b),
-  #  - symmetric (equality a b = equality b a), and
-  #  - transitive ((equality a b && equality b c) : equality a c).
-  #
-  # result is true iff 'a' is considered to represent the same abstract value
-  # as 'b'.
-  #
-  type.equality(a, b has_equality.this.type) bool is abstract
+override NAME = ex_lazy
+include ../simple.mk

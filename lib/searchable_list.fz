@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# searchable_list -- a list whose elements inherit from has_equality
+# searchable_list -- a list whose elements inherit from equatable
 #
 # In contrast to searchable_sequence, this uses choice type 'list' and not ref
 # type 'Sequence', so it is more efficient.
 #
 #
-searchable_list(A type : has_equality, from Sequence A) : Sequence A
+searchable_list(A type : equatable, from Sequence A) : Sequence A
 /* : list A -- NYI: we might allow inherting from a choice to get a choice
                     with more restrictions on the type arguments
 
@@ -37,7 +37,7 @@ searchable_list(A type : has_equality, from Sequence A) : Sequence A
   such as
 
     pre
-      A : has_equality
+      A : equatable
 
   Then, the inner features of searchableList could move to list.fz.
 

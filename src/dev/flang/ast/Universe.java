@@ -92,7 +92,7 @@ public class Universe extends Expr
    */
   AbstractType typeIfKnown()
   {
-    return Types.resolved.universe.thisType();
+    return Types.resolved.universe.selfType();
   }
 
 

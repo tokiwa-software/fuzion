@@ -90,7 +90,7 @@ public abstract class Unbox extends Expr
        );
 
     this._adr = adr;
-    this._type = Types.intern(type); // outer.thisType().resolve(outer);
+    this._type = Types.intern(type);
   }
 
 
