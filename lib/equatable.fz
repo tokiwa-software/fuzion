@@ -17,18 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue309
+#  Source code of Fuzion standard library feature equatable
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
+# equatable -- feature for immutable values that define an equality relation
+#
+equatable is
 
-issue309 is
-  a is
-  b Set a is abstract          // 1. should flag an error: Incompatible type parameter
 
-  b(T type) Set T is abstract  // 2. should flag an error: Incompatible type parameter
-
-  c(T type : equatable) is
-  d c a is abstract            // 3. should flag an error: Incompatible type parameter
+  # equality implements the default equality relation for values of this type.
+  #
+  # This relation must be
+  #
+  #  - reflexive (equality a b),
+  #  - symmetric (equality a b = equality b a), and
+  #  - transitive ((equality a b && equality b c) : equality a c).
+  #
+  # result is true iff 'a' is considered to represent the same abstract value
+  # as 'b'.
+  #
+  type.equality(a, b equatable.this.type) bool is abstract

@@ -967,7 +967,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *   say (type_of a.l)    # should print `list a`
    *   say (type_of b.l)    # should print `list b`
    *
-   * @param tt the type feature we are calling (`has_equality.type` in the example
+   * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
@@ -1078,22 +1078,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * example:
    *
-   *   has_equality is
+   *   equatable is
    *
-   *     type.equality(a, b has_equality.this.type) bool is abstract
+   *     type.equality(a, b equatable.this.type) bool is abstract
    *
-   *   equals(T type : has_equality, x, y T) => T.equality x y
+   *   equals(T type : equatable, x, y T) => T.equality x y
    *
    * For the call `T.equality x y` this will be called on the formal argument
    * type for `a` (and `b`).
    *
-   * The type of the formal arguments `a` and `b` is `has_equality.this.type`,
+   * The type of the formal arguments `a` and `b` is `equatable.this.type`,
    * which was replaced by the implicit first generic argument of
-   * `has_equality.type`.  This method will replaced it by `T` in the call
+   * `equatable.type`.  This method will replaced it by `T` in the call
    * `T.equality x y`, such that actual arguments of the same type are
    * assignment compatible to it.
    *
-   * @param tf the type feature we are calling (`has_equality.type` in the example
+   * @param tf the type feature we are calling (`equatable.type` in the example
    * above).
    *
    * @param tc the target call (`T` in the example above).

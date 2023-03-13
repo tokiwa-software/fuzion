@@ -469,7 +469,7 @@ lists is
     # equality
     #
     redef infix == (a, b list A) =>
-      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : has_equality"
+      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : equatable"
 
     # identity element
     #

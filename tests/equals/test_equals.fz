@@ -109,7 +109,7 @@ test_equals_types is
   # Has_color provides an equality relation for instances that provide
   # a 'col' feature
   #
-  Has_color ref : has_equality is
+  Has_color ref : equatable is
 
     # the color of this instance
     #
@@ -144,7 +144,7 @@ test_equals_types is
     # the string
     utf8 Sequence u8)
 
-   : Has_color, String, has_equality is
+   : Has_color, String, equatable is
 
     # equality relation comparing color and strings
     #

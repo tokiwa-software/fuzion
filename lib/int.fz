@@ -253,7 +253,7 @@ minus is
 #
 # this can be plus or minus
 #
-sign : choice plus minus, has_equality is
+sign : choice plus minus, equatable is
 
   is_plus =>
     match sign.this

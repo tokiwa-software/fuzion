@@ -35,7 +35,7 @@ nested_choice_negative =>
             nil nil => "inner nil"
             unit => "unit"
 
-  c my_choice := nil // 1. should flag an error: ambigous assignment
+  c my_choice := nil // 1. should flag an error: ambiguous assignment
 
   my_string : String is
   my_choice2 : choice String my_string is
