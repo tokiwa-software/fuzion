@@ -1507,7 +1507,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Is thie feature marked with the `fixed` modifier. If so, this feature is
+   * Is this feature marked with the `fixed` modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outher feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
    * could might be a heir.
