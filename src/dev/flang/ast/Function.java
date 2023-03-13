@@ -265,7 +265,7 @@ public class Function extends ExprWithPos
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
-        if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
+        if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function && t.featureOfType() != Types.resolved.f_Lazy)
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
             result = Types.t_ERROR;
@@ -315,7 +315,7 @@ public class Function extends ExprWithPos
             this._feature = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
+            _inheritsCall = new Call(pos(), null, (t.featureOfType() == Types.resolved.f_Lazy) ? Types.LAZY_NAME : Types.FUNCTION_NAME);
             _inheritsCall._generics = gs;
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;

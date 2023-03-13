@@ -133,6 +133,7 @@ public class Call extends AbstractCall
    */
   private Expr _target;
   public Expr target() { return _target; }
+  private FeatureAndOuter _targetFrom = null;
 
 
   /**
@@ -673,6 +674,7 @@ public class Call extends AbstractCall
                     if (_target == null)
                       {
                         _target = fo.target(pos(), res, thiz);
+                        _targetFrom = fo;
                       }
                   }
                 if (_calledFeature == null)
@@ -893,8 +895,8 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return _forFun                                     /* a fun-declaration "fun a.b.f" */
-      || ff.arguments().size()==0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return _forFun                 /* a fun-declaration "fun a.b.f" */
+      || ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
 
@@ -1076,10 +1078,16 @@ public class Call extends AbstractCall
   {
     Call result = this;
     if (!_forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
+        (
         _type.isFunType() &&
         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
         _calledFeature.arguments().size() == 0 &&
         hasParentheses())
+        || (
+        _type.isLazyType() &&
+        _calledFeature != Types.resolved.f_Lazy &&
+        _calledFeature.arguments().size() == 0 &&
+        !hasParentheses()))
       {
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
@@ -1536,7 +1544,7 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.propagateExpectedType(res, outer, t);
+                    actual = actual.wrapInLazyAndThenPropagateExpectedType(res, outer, t);
                   }
               }
           }
@@ -2086,7 +2094,7 @@ public class Call extends AbstractCall
                frmlT != Types.t_ERROR || Errors.count() > 0);
             if (actl != null)
               {
-                var a = actl.propagateExpectedType(res, outer, frmlT);
+                var a = actl.wrapInLazyAndThenPropagateExpectedType(res, outer, frmlT);
                 if (CHECKS) check
                   (a != null);
                 i.set(a);
@@ -2099,7 +2107,7 @@ public class Call extends AbstractCall
             // NYI: Need to check why this is needed, it does not make sense to
             // propagate the target's type to target. But if removed,
             // tests/reg_issue16_chainedBool/ fails with C backend:
-            _target = _target.propagateExpectedType(res, outer, _target.typeIfKnown());
+            _target = _target.wrapInLazyAndThenPropagateExpectedType(res, outer, _target.typeIfKnown());
           }
       }
   }
@@ -2274,6 +2282,21 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ); }
       }
     return result;
+  }
+
+
+  /**
+   * When wrapping an expression into a Lazy feature, we need to "tell it" that its
+   * outer feature has changed. Otherwise, old information from previous results of
+   * type resolution might remain there.
+   */
+  public Call updateTarget(Resolution res, AbstractFeature outer)
+  {
+    if (_targetFrom != null)
+      {
+        _target = _targetFrom.target(pos(), res, outer);
+      }
+    return this;
   }
 
 }

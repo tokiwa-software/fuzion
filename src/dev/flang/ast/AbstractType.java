@@ -807,6 +807,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * isLazyType checks if this is a lazy function type.
+   *
+   * @return true iff this is a lazy type
+   */
+  public boolean isLazyType()
+  {
+    return
+      !isGenericArgument() &&
+      featureOfType() == Types.resolved.f_Lazy;
+  }
+
+
+  /**
    * Find a type that is assignable from values of two types, this and t. If no
    * such type exists, return Types.t_UNDEFINED.
    *
