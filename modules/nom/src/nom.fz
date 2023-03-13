@@ -46,12 +46,12 @@ nom is
 
   # the result of parsing, if successful
   success(R, O type, rest R, out O) is
-    redef asString => $out
+    redef as_string => $out
 
 
   # the result of parser.parse
   parse_result(I, O type) : choice (success I O) error is
-    redef asString =>
+    redef as_string =>
       match parse_result.this
         s success => $s
         e error => $e
@@ -62,9 +62,9 @@ nom is
   branch is
 
     # return result of first succeeding parser
-    alt(I, R, O type, parsers array (parser I R O)) parser I R O is
+    alt(I, R, O type, p array (parser I R O)) parser I R O is
       parser I R O (input ->
-        parsers
+        p
           .mapSequence (p -> p.parse input)
           .filter (r -> match r
                           success => true
@@ -80,8 +80,8 @@ nom is
     tag(str String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
     is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        if (input.zip str.asCodepoints (a,b -> (a,b))) ∀ (x -> (a,b) := x; a=b)
-          success (input.drop str.codepointLength).as_seq str.asCodepoints
+        if (input.zip str.as_codepoint_sequence (a,b -> (a,b))) ∀ (x -> (a,b) := x; a=b)
+          success (input.drop str.codepoint_length).as_seq str.as_codepoint_sequence
         else
           error "tag ($str) not found"
       )
@@ -89,12 +89,12 @@ nom is
     # matches input as often as possible but at least m times and at most n times.
     take_while_m_n(m, n i32, cond (codepoint) -> bool) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        if input.isEmpty
+        if input.is_empty
           error "input is empty"
         else
           taken := input
             .take n
-            .takeWhile (x -> cond x)
+            .take_while (x -> cond x)
           if taken.count < m
             error "not enough codepoints matched, expected $m or more, got {taken.count}"
           else
@@ -104,7 +104,7 @@ nom is
     # match zero or more whitespace
     whitespace0 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        ws := input.takeWhile (x -> x.isBlank)
+        ws := input.take_while (x -> x.is_blank)
         success (input.drop ws.count).as_seq ws.as_seq
       )
 
@@ -117,17 +117,17 @@ nom is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
         match (sequence.take_while0 cond).parse input
           s success =>
-            if s.out.isEmpty then error "take_while1, no matches" else success s.rest s.out
+            if s.out.is_empty then error "take_while1, no matches" else success s.rest s.out
           e error => e
         )
 
     # convert a parser taking a sequence of codepoints to a parser that takes a string
     to_string_input(R, O type, p parser (Sequence codepoint) R O) parser String R O is
-      combinator.map_inp (Sequence codepoint) String R O p (str -> str.asCodepoints)
+      combinator.map_inp (Sequence codepoint) String R O p (str -> str.as_codepoint_sequence)
 
     # convert a parser returning a sequence of codepoints to a parser that returns a string
     to_string_output(I, R type, p parser I R (Sequence codepoint)) parser I R String is
-      p.map String (seq -> Strings.fromCodepoints seq)
+      p.map String (seq -> String.type.from_codepoint_sequence seq)
 
     # convert a parser taking and returning to codepoints to a parser taking and returning a string
     to_string_parser(R type, p parser (Sequence codepoint) R (Sequence codepoint)) parser String R String is
@@ -141,8 +141,8 @@ nom is
     # take while cond is satisfied
     take_while0(T type, cond T -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
       parser (Sequence T) (Sequence T) (Sequence T) (input ->
-        rest Sequence T := input.dropWhile cond
-        matched Sequence T := input.takeWhile cond
+        rest Sequence T := input.drop_while cond
+        matched Sequence T := input.take_while cond
         success rest matched
         )
 
@@ -286,12 +286,12 @@ nom is
 
     # NYI this is a workaround java.lang.Error: check-condition failed: dev.flang.me.MiddleEnd:findUsedFeatures:327
     # type feature for `map string json_value` is currently not created
-    Json_Object(data (map String json_value)) ref is
-      redef asString String is
+    Json_Object(data (Map String json_value)) ref is
+      redef as_string String is
         $data
 
     json_value : choice String i64 f64 bool nil (Sequence json_value) Json_Object is
-      redef asString String is
+      redef as_string String is
         match json_value.this
           s String => "\"$s\""
           i i64 => $i
@@ -316,7 +316,7 @@ nom is
             [(codepoint c)])
 
         parse_and_map(t, r String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
-          (tag t).map (Sequence codepoint) (_ -> r.asCodepoints)
+          (tag t).map (Sequence codepoint) (_ -> r.as_codepoint_sequence)
 
         parser_escapings :=
           alt [
@@ -332,13 +332,13 @@ nom is
             ]
 
         parser_regular_codepoint parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) :=
-          (take_while0 codepoint (c-> (c ≠ "\"") & (c ≠ "\\")))
+          (take_while0 codepoint (c-> (c != "\"") & (c != "\\")))
 
 
         p parser (Sequence codepoint) (Sequence codepoint) (Sequence (Sequence codepoint)) := many0 (alt [parser_regular_codepoint, parser_escapings])
         p2 := delimited (tag "\"") p (tag "\"")
 
-        p2.map String (x -> Strings.fromCodepoints (x.flatMapSequence codepoint (y -> y)))
+        p2.map String (x -> String.type.from_codepoint_sequence (x.flatMapSequence codepoint (y -> y)))
 
 
       # parser for a json string
@@ -353,11 +353,11 @@ nom is
         parser_digit := take_while0 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 
         parser_fraction :=
-          (preceded (tag ".") (many1 parser_digit)).map u64 (x -> (Strings.fromCodepoints (x.flatMapSequence codepoint (y -> y))).parse_u64.val)
+          (preceded (tag ".") (many1 parser_digit)).map u64 (x -> (String.type.from_codepoint_sequence (x.flatMapSequence codepoint (y -> y))).parse_u64.val)
 
         # parser_exponent := preceded (alt [tag "e", tag "E"]) parser_signed_digit
 
-        (take_while1 (c -> codepoint.type.ascii_digit.contains c.val)).map json_value (x -> (Strings.fromCodepoints x).parse_i64.val)
+        (take_while1 (c -> codepoint.type.ascii_digit.contains c.val)).map json_value (x -> (String.type.from_codepoint_sequence x).parse_i64.val)
 
       # parser for true
       parser_true :=
@@ -396,7 +396,7 @@ nom is
         parser_object_seq_tuple parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) :=
           delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
 
-        parser_object_seq_tuple.map json_value (x -> Json_Object (map_of x.asArray))
+        parser_object_seq_tuple.map json_value (x -> Json_Object (map_of x.as_array))
 
       # parser for a json_value: true, false, [], {}, numbers, strings etc.
       parser_json_value =>
