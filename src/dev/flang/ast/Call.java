@@ -1478,7 +1478,8 @@ public class Call extends AbstractCall
           }
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
-      { t = _generics.get(0);
+      {
+        t = _generics.get(0);
         if (!t.isGenericArgument())
           {
             t = t.typeType(res);
