@@ -177,6 +177,69 @@ public class FeatureAndOuter extends ANY
    * Filter the features in given list to find an exact match for name or
    * a candidate.
    *
+   * A predicate specifying what is an exact match is expected by this
+   * function.
+   *
+   * If one feature f matches exactly or there is exactly one for which
+   * isCandidate.test(f) holds, return that candidate. Otherwise, return null
+   * if no candidate was found, or create an error and return Types.f_ERROR if
+   * several candidates were found.
+   *
+   * @param l the list to filter
+   *
+   * @param isExact predicate to decide if a feature is an exact match.
+   *
+   * @param isCandidate predicate to decide if a feature is a candidate even
+   * if its name is not an exact match.
+   *
+   * @return the list of found candidates, empty if no match was found, a list
+   * of exactly one match, if an exact match was found, or, the list of all
+   * candidates.
+   */
+  static List<FeatureAndOuter> findExactOrCandidate(List<FeatureAndOuter> l,
+                                                    Predicate<FeatureName> isExact,
+                                                    Predicate<AbstractFeature> isCandidate)
+  {
+    var match = false;
+    var found = new List<FeatureAndOuter>();
+    for (var fo : l)
+      {
+        var f = fo._feature;
+        var fn = f.featureName();
+        if (f.isChoice() && !f.isBaseChoice())
+          {
+            /* suppress call to choice type (e.g. bool : choice TRUE FALSE),
+               except for (inheritance) calls to 'choice' */
+          }
+        else if (isExact.test(fn))  /* an exact match, so use it: */
+          {
+            if (CHECKS) check
+              (Errors.count() > 0 ||
+               !match ||
+               fn.argCount() == 0 /* we might have several exact matches for fields */ ||
+               found.get(0)._outer != fo._outer /* we might have several exact matches at different outer levels */
+               );
+            if (!match)
+              {
+                found = new List<>();
+                match = true;
+              }
+            found.add(fo);
+          }
+        else if (!match && isCandidate.test(f))
+          { /* no exact match, but we have a candidate to check later: */
+            found.add(fo);
+          }
+      }
+
+    return found;
+  }
+
+
+  /**
+   * Filter the features in given list to find an exact match for name or
+   * a candidate.
+   *
    * If one feature f matches exactly or there is exactly one for which
    * isCandidate.test(f) holds, return that candidate. Otherwise, return null
    * if no candidate was found, or create an error and return Types.f_ERROR if
@@ -204,37 +267,10 @@ public class FeatureAndOuter extends ANY
                                 FeatureName name,
                                 Predicate<AbstractFeature> isCandidate)
   {
-    var match = false;
-    var found = new List<FeatureAndOuter>();
-    for (var fo : l)
-      {
-        var f = fo._feature;
-        var fn = f.featureName();
-        if (f.isChoice() && !f.isBaseChoice())
-          {
-            /* suppress call to choice type (e.g. bool : choice TRUE FALSE),
-               except for (inheritance) calls to 'choice' */
-          }
-        else if (fn.equalsExceptId(name))  /* an exact match, so use it: */
-          {
-            if (CHECKS) check
-              (Errors.count() > 0 ||
-               !match ||
-               fn.argCount() == 0 /* we might have several exact matches for fields */ ||
-               found.get(0)._outer != fo._outer /* we might have several exact matches at different outer levels */
-               );
-            if (!match)
-              {
-                found = new List<>();
-                match = true;
-              }
-            found.add(fo);
-          }
-        else if (!match && isCandidate.test(f))
-          { /* no exact match, but we have a candidate to check later: */
-            found.add(fo);
-          }
-      }
+    var found = findExactOrCandidate(l,
+                                     (FeatureName fn) -> fn.equalsExceptId(name),
+                                     isCandidate);
+
     return switch (found.size())
       {
       case 0 -> null;
