@@ -1468,10 +1468,6 @@ public class Call extends AbstractCall
   {
     if (_calledFeature.isTypeParameter())
       {
-        if (_select >= 0 || _calledFeature.isOpenTypeParameter())
-          {
-            throw new Error("NYI (see #283): Calling open type parameter");
-          }
         if (!t.isGenericArgument())
           {
             t = t.featureOfType().typeFeature(res).selfType();
@@ -1485,10 +1481,6 @@ public class Call extends AbstractCall
             t = t.typeType(res);
           }
         t = t.resolve(res, tt.featureOfType());
-        if (t == null)
-          {
-            throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
-          }
       }
     else if (_calledFeature.isOuterRef())
       {
