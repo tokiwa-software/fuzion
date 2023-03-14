@@ -1474,16 +1474,13 @@ public class Call extends AbstractCall
           }
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
-      { // NYI (see #282): special handling could maybe be avoided? Maybe make
-        // this special handling the normal handling for all features whose
-        // result type depends on a generic that can be replaced by an actual
-        // generic given in the call?
-        var gt = _generics.get(0);
-        if (!gt.isGenericArgument())
+      {
+        t = _generics.get(0);
+        if (!t.isGenericArgument())
           {
-            gt = gt.typeType(res);
+            t = t.typeType(res);
           }
-        t = gt.resolve(res, tt.featureOfType());
+        t = t.resolve(res, tt.featureOfType());
       }
     else if (_calledFeature.isOuterRef())
       {

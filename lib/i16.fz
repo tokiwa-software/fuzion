@@ -180,6 +180,16 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   redef type.all_bits_set => i16 -1
 
 
+  # minimum
+  #
+  fixed type.min => i16 -0x8000
+
+
+  # maximum
+  #
+  fixed type.max => i16 0x7fff
+
+
 
 # i16s -- unit type defining features related to i16 but not requiring an
 # instance

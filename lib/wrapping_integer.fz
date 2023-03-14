@@ -66,8 +66,8 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   infix -° (other W) W is abstract
   infix *° (other W) W is abstract
 
-  isMin => thiz ≟ min
-  isMax => thiz ≟ max
+  isMin => wrapping_integer.this ≟ wrapping_integer.this.type.min
+  isMax => wrapping_integer.this ≟ wrapping_integer.this.type.max
 
   # check if this type of wrapping_integer is bounded
   #
@@ -216,6 +216,16 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   # how many bytes does this integer use?
   type.byte_size i32 is
     all_bits_set.ones_count / 8
+
+
+  # minimum
+  #
+  type.min wrapping_integer.this.type is abstract
+
+
+  # maximum
+  #
+  type.max wrapping_integer.this.type is abstract
 
 
 
