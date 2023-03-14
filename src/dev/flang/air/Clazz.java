@@ -2103,9 +2103,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
-      // NYI (see #282): Would be nice if this would not need special handling but would
-      // work in general for any feature with type parameters that returns one
-      // of this type parameters as its result using '=>'.
       {
         var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
         result = ag[0].typeClazz();
