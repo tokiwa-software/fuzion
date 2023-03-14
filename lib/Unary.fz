@@ -33,6 +33,7 @@ Unary(T, U type) ref : Function T U is
 
   # function composition
   #
-  infix ∘ (V type, other Unary U V) ref : Unary T V is
-    redef call (v V) T is
-      Unary.this.call (other.call v)
+  infix ∘ (V type, other Unary U V) Unary T V is
+    ref : Unary T V
+      redef call (v V) T is
+        Unary.this.call (other.call v)
