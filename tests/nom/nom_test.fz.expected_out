@@ -2,10 +2,17 @@
 r: 159, g: 58, b: 16
 error: not enough codepoints matched, expected 2 or more, got 1
 error: tag (#) not found
-error: input is empty
-I'm a utf-8 string 😀
-1234
+error: tag (#) not found
+error: alt: no parser successful
+error: alt: no parser successful
+{}
+42
+null
 true
-error: tag (true) not found
-"A string "
-(employee  => (name  => "sonoo"), (salary  => 56000), (married  => true))
+false
+[1,2,3]
+"hello
+world"
+{(name  => "sonoo")}
+{(name  => [1,true,false,null,"sonoo",{(name  => "sonoo")}])}
+{(employee  => {(name  => "sonoo"), (salary  => 56000), (married  => true)})}

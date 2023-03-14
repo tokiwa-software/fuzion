@@ -80,25 +80,10 @@ nom is
     tag(str String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
     is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        if (input.zip str.as_codepoint_sequence (a,b -> (a,b))) ∀ (x -> (a,b) := x; a=b)
+        if (String.type.from_codepoint_sequence input).starts_with str
           success (input.drop str.codepoint_length).as_seq str.as_codepoint_sequence
         else
           error "tag ($str) not found"
-      )
-
-    # matches input as often as possible but at least m times and at most n times.
-    take_while_m_n(m, n i32, cond (codepoint) -> bool) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
-      parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        if input.is_empty
-          error "input is empty"
-        else
-          taken := input
-            .take n
-            .take_while (x -> cond x)
-          if taken.count < m
-            error "not enough codepoints matched, expected $m or more, got {taken.count}"
-          else
-            success (input.drop taken.count).as_seq taken.as_seq
       )
 
     # match zero or more whitespace
@@ -110,16 +95,7 @@ nom is
 
     # match one or more digit
     digit1 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
-      take_while1 (c -> codepoint.type.ascii_digit.contains c.val)
-
-    # take while cond is satisfied, but at least one codepoint
-    take_while1(cond codepoint -> bool) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
-      parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
-        match (sequence.take_while0 cond).parse input
-          s success =>
-            if s.out.is_empty then error "take_while1, no matches" else success s.rest s.out
-          e error => e
-        )
+      sequence.take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 
     # convert a parser taking a sequence of codepoints to a parser that takes a string
     to_string_input(R, O type, p parser (Sequence codepoint) R O) parser String R O is
@@ -146,14 +122,40 @@ nom is
         success rest matched
         )
 
-    # return result of p1 and p2 as tuple, drop result of p_seq
-    separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 parser R2 R3 O3) parser I R3 (tuple O1 O3) is
+    # take while cond is satisfied, at least once
+    take_while1(T type, cond T -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
+      parser (Sequence T) (Sequence T) (Sequence T) (input ->
+        matched Sequence T := input.take_while cond
+        if matched.is_empty
+          error "expected at least one match in: $input"
+        else
+          rest Sequence T := input.drop_while cond
+          success rest matched
+        )
+
+    # matches input as often as possible but at least m times and at most n times.
+    take_while_m_n(T type, m, n i32, cond (T) -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
+      parser (Sequence T) (Sequence T) (Sequence T) (input ->
+        if input.is_empty
+          error "input is empty"
+        else
+          taken := input
+            .take n
+            .take_while (x -> cond x)
+          if taken.count < m
+            error "not enough codepoints matched, expected $m or more, got {taken.count}"
+          else
+            success (input.drop taken.count).as_seq taken.as_seq
+      )
+
+    # return result of p1 and p2 as tuple, drop result of p_sep
+    separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 () -> (parser R2 R3 O3)) parser I R3 (tuple O1 O3) is
       parser I R3 (tuple O1 O3) (input ->
         match p1.parse input
           s1 success =>
             match p_sep.parse s1.rest
               s2 success =>
-                match p2.parse s2.rest
+                match p2().parse s2.rest
                   s3 success => success s3.rest (s1.out, s3.out)
                   e3 error => e3
               e2 error => e2
@@ -197,11 +199,11 @@ nom is
       parser I I (Sequence O) (input -> parse input)
 
     # parse a separated list of values, one or more values
-    separated_list1(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
+    separated_list1(I, O, D type, p_sep parser I I D, p_value () -> (parser I I O)) parser I I (Sequence O) is
       parse(input I) parse_result I (Sequence O) is
-        match p_value.parse input
+        match p_value().parse input
           s1 success =>
-            match (many0 (combinator.preceded p_sep p_value)).parse s1.rest
+            match (many0 (combinator.preceded p_sep p_value())).parse s1.rest
               s2 success => success s2.rest ([s1.out]++s2.out).as_seq
               error => panic "invalid state, many always succeeds"
           e error => e
@@ -268,29 +270,10 @@ nom is
       parser I2 R O (input -> parse input)
 
 
-    # convert parser to lazy
-    as_lazy(I, R, O type, p () -> parser I R O) parser I R O is
-      op option (parser I R O) := nil
-      p_cached:= mut op
-      parse(input I) parse_result R O is
-        match p_cached.get
-          p parser I R O => p.parse input
-          nil =>
-            p_cached.put (p())
-            parse input
-      parser I R O (input -> parse input)
-
-
 
   parsers : combinator, string_parsers, sequence, branch, multi is
 
-    # NYI this is a workaround java.lang.Error: check-condition failed: dev.flang.me.MiddleEnd:findUsedFeatures:327
-    # type feature for `map string json_value` is currently not created
-    Json_Object(data (Map String json_value)) ref is
-      redef as_string String is
-        $data
-
-    json_value : choice String i64 f64 bool nil (Sequence json_value) Json_Object is
+    json_value : choice String i64 f64 bool nil (Sequence json_value) (Map String json_value) is
       redef as_string String is
         match json_value.this
           s String => "\"$s\""
@@ -299,21 +282,22 @@ nom is
           b bool => $b
           n nil => "null"
           seq Sequence => $seq
-          m Json_Object => $m
+          m (Map String json_value) => "\{$m}"
 
     json =>
 
-      parser_string0 =>
+      # parser for a json string
+      parser_string =>
 
         is_hex_digit(c codepoint) bool is
           codepoint.type.ascii_digit.contains c.val
             || (u32 0x41 .. 0x46).contains c.val
 
         parser_hex_unicode =>
-          a := preceded (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (tag "\\") (take_while_m_n 4 4 ((c) -> is_hex_digit c))
-          a.map (Sequence codepoint) (d ->
-            (c,_) := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
-            [(codepoint c)])
+          preceded (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (tag "\\") (take_while_m_n codepoint 4 4 ((c) -> is_hex_digit c))
+            .map (Sequence codepoint) (d ->
+              (c,_) := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+              [(codepoint c)])
 
         parse_and_map(t, r String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
           (tag t).map (Sequence codepoint) (_ -> r.as_codepoint_sequence)
@@ -332,17 +316,13 @@ nom is
             ]
 
         parser_regular_codepoint parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) :=
-          (take_while0 codepoint (c-> (c != "\"") & (c != "\\")))
+          (take_while1 codepoint (c-> (c != "\"") & (c != "\\")))
 
 
         p parser (Sequence codepoint) (Sequence codepoint) (Sequence (Sequence codepoint)) := many0 (alt [parser_regular_codepoint, parser_escapings])
-        p2 := delimited (tag "\"") p (tag "\"")
 
-        p2.map String (x -> String.type.from_codepoint_sequence (x.flatMapSequence codepoint (y -> y)))
-
-
-      # parser for a json string
-      parser_string := parser_string0
+        delimited (tag "\"") p (tag "\"")
+          .map String (x -> String.type.join (x.mapSequence String (y -> String.type.from_codepoint_sequence y)) "")
 
 
       # parser for a json number
@@ -357,7 +337,7 @@ nom is
 
         # parser_exponent := preceded (alt [tag "e", tag "E"]) parser_signed_digit
 
-        (take_while1 (c -> codepoint.type.ascii_digit.contains c.val)).map json_value (x -> (String.type.from_codepoint_sequence x).parse_i64.val)
+        (take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)).map json_value (x -> (String.type.from_codepoint_sequence x).parse_i64.val)
 
       # parser for true
       parser_true :=
@@ -377,26 +357,24 @@ nom is
           whitespace0.map (Sequence json_value) (x -> lists.empty json_value)
 
         parser_comma_sep_value parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
-          separated_list1 (tag ",") parser_json_value_delimited_lazy
+          separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
 
         tmp parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
         tmp.map json_value (x->x)
 
       # parser for json object
       parser_object =>
-        parser_key_value parser (Sequence codepoint) (Sequence codepoint) (tuple String json_value) :=
-          separated_pair (delimited whitespace0 parser_string whitespace0) (tag ":") parser_json_value_delimited_lazy
+        parser_key_value parser (Sequence codepoint) (Sequence codepoint) (tuple String json_value) is
+          separated_pair (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) String (Sequence codepoint) json_value (delimited whitespace0 parser_string whitespace0) (tag ":") ()->parser_json_value_delimited
 
-        parser_no_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) :=
+        parser_no_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) is
           whitespace0.map (Sequence (tuple String json_value)) (x -> lists.empty (tuple String json_value))
 
-        parser_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) :=
-          separated_list1 (tag ",") parser_key_value
+        parser_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) is
+          separated_list1 (Sequence codepoint) (tuple String json_value) (Sequence codepoint) (tag ",") ()->parser_key_value
 
-        parser_object_seq_tuple parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) :=
-          delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
-
-        parser_object_seq_tuple.map json_value (x -> Json_Object (map_of x.as_array))
+        delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
+          .map json_value (x -> map_of x.as_array)
 
       # parser for a json_value: true, false, [], {}, numbers, strings etc.
       parser_json_value =>
@@ -410,11 +388,9 @@ nom is
           parser_null]
 
       # parser for json_value which may be surrounded by whitespace
-      parser_json_value_delimited => delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_json_value whitespace0
+      parser_json_value_delimited parser (Sequence codepoint) (Sequence codepoint) json_value is
+        delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_json_value whitespace0
 
-      # parser for json_value which may be surrounded by whitespace, lazy flavour
-      # NYI if this is field leads to crashes
-      parser_json_value_delimited_lazy => as_lazy (Sequence codepoint) (Sequence codepoint) json_value ()->parser_json_value_delimited
 
       # map parser to take string input
       to_string_input parser_json_value_delimited

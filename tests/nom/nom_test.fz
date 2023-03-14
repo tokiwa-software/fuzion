@@ -35,8 +35,9 @@ nom_test =>
 
 
   hex_parser_test is
-    sp := nom.string_parsers
-    cp := nom.combinator
+    sp :=  nom.string_parsers
+    cp :=  nom.combinator
+    seq := nom.sequence
 
     hex_color(r,g,b u8) is
       redef as_string String is
@@ -47,7 +48,7 @@ nom_test =>
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (sp.take_while_m_n 2 2 (fun is_valid)).map u8 (o1 -> (String.type.from_codepoint_sequence o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (seq.take_while_m_n codepoint 2 2 (fun is_valid)).map u8 (o1 -> (String.type.from_codepoint_sequence o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := cp.preceded (sp.tag "#") (cp.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
@@ -56,14 +57,26 @@ nom_test =>
     # NYI: using this crashes in c backend currently
     parser_hex_color := sp.to_string_input parser_hex_color_seq_codepoints
 
-    say (parser_hex_color_seq_codepoints.parse "#9F3A10".as_codepoint_sequence).as_string   # NYI: as_codepoint_sequence, as_string necessary, see issue #486
-    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".as_codepoint_sequence).as_string   # NYI: as_codepoint_sequence, as_string necessary, see issue #486
-    say (parser_hex_color_seq_codepoints.parse "Hello".as_codepoint_sequence).as_string     # NYI: as_codepoint_sequence, as_string necessary, see issue #486
-    say (parser_hex_color_seq_codepoints.parse "".as_codepoint_sequence).as_string          # NYI: as_codepoint_sequence, as_string necessary, see issue #486
+    say (parser_hex_color_seq_codepoints.parse "#9F3A10".as_codepoint_sequence)
+    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".as_codepoint_sequence)
+    say (parser_hex_color_seq_codepoints.parse "Hello".as_codepoint_sequence)
+    say (parser_hex_color_seq_codepoints.parse "".as_codepoint_sequence)
 
 
   json_parser_test is
-    say (nom.parsers.json.parse "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }").as_string
+    say (nom.parsers.json.parse "")
+    say (nom.parsers.json.parse " ")
+    say (nom.parsers.json.parse "\{}")
+    say (nom.parsers.json.parse " 42 ")
+    say (nom.parsers.json.parse " null ")
+    say (nom.parsers.json.parse " true ")
+    say (nom.parsers.json.parse " false ")
+    say (nom.parsers.json.parse "[1, 2, 3]")
+    # say (nom.parsers.json.parse "[1.1,2.2,3.3]")
+    say (nom.parsers.json.parse "\"hello\\nworld\"")
+    say (nom.parsers.json.parse "\{ \"name \":  \"sonoo\" }")
+    say (nom.parsers.json.parse "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
+    say (nom.parsers.json.parse "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
 
   simple_parser_test
   hex_parser_test
