@@ -613,7 +613,7 @@ public class Type extends AbstractType
 
     // This is called during parsing, so Types.resolved.f_function is not set yet.
     return new Type(pos,
-                    Types.FUNCTION_NAME,
+                    arguments.size() == 1 ? Types.UNARY_NAME : Types.FUNCTION_NAME,
                     new List<AbstractType>(returnType, arguments),
                     null);
   }

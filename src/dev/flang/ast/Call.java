@@ -1852,7 +1852,8 @@ public class Call extends AbstractCall
   {
     var result = false;
     if (!formalType.isGenericArgument() &&
-        formalType.featureOfType() == Types.resolved.f_function &&
+        (formalType.featureOfType() == Types.resolved.f_function ||
+         formalType.featureOfType() == Types.resolved.f_Unary) &&
         formalType.generics().get(0).isGenericArgument()
         )
       {

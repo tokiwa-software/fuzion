@@ -414,7 +414,22 @@ public class Function extends ExprWithPos
 
     if (f != null)
       {
-        f = Types.resolved.f_function;
+        var t = typeIfKnown();
+        AbstractFeature tf = null;
+
+        if (t != null)
+          {
+            tf = t.featureOfType();
+          }
+
+        if (tf != null)
+          {
+            f = tf;
+          }
+        else
+          {
+            f = Types.resolved.f_function;
+          }
       }
     return f;
   }
