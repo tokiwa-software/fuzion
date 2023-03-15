@@ -92,7 +92,7 @@ hasInterval(H type : hasInterval H) : integer H is
           tail =>
             lower+?step ? nil => nil
                         | next H => (next..upper:step).as_list
-          list lower (fun tail)
+          list lower tail
         else
           nil
 

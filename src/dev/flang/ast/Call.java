@@ -1081,16 +1081,10 @@ public class Call extends AbstractCall
   {
     Call result = this;
     if (!_forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        (
         _type.isFunType() &&
         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
         _calledFeature.arguments().size() == 0 &&
         hasParentheses())
-        || (
-        _type.isLazyType() &&
-        _calledFeature != Types.resolved.f_Lazy &&
-        _calledFeature.arguments().size() == 0 &&
-        !hasParentheses()))
       {
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
@@ -2053,6 +2047,32 @@ public class Call extends AbstractCall
         )
       {
         _type = _type.replace_type_parameters_of_type_feature_origin(outer);
+
+        // replace lazy value `l` by `l.call`:
+        if (!_forFun                                &&   // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
+            _type.isLazyType()                      &&   // we are `Lazy T`
+            _calledFeature != Types.resolved.f_Lazy &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+            _calledFeature.arguments().size() == 0  &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+            _actualsNew.isEmpty()                   &&   // dto.
+            originalLazyValue() == this                ) // prevent repeated `l.call.call` wenn resolving the newly created Call to `call`.
+          {
+            result = new Call(pos(),
+                              this /* this becomes target of "call" */,
+                              "call",
+                              -1,
+                              _actualsNew,
+                              NO_GENERICS,
+                              _actuals,
+                              null,
+                              null)
+              {
+                Expr originalLazyValue()
+                {
+                  return Call.this;
+                }
+              }
+              .resolveTypes(res, outer);
+          }
       }
     return result;
   }
