@@ -1092,6 +1092,7 @@ public class Call extends AbstractCall
         _calledFeature.arguments().size() == 0 &&
         !hasParentheses()))
       {
+        var wasLazy = _type.isLazyType();
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
                           "call",
@@ -1101,6 +1102,12 @@ public class Call extends AbstractCall
                           _actuals,
                           null,
                           null)
+          {
+            Expr originalLazyValue()
+            {
+              return wasLazy ? Call.this : super.originalLazyValue();
+            }
+          }
           .resolveTypes(res, outer);
         _actualsNew = NO_PARENTHESES;
         _actuals = Expr.NO_EXPRS;
