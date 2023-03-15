@@ -802,7 +802,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       !isGenericArgument() &&
-      featureOfType() == Types.resolved.f_function;
+      (featureOfType() == Types.resolved.f_function ||
+       featureOfType() == Types.resolved.f_Unary);
   }
 
 
