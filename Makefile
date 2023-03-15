@@ -378,9 +378,12 @@ $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
-          | sed "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g"  \
-          | sed "s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" >$@
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
+ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
+	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
+else
+	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" $@
+endif
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)

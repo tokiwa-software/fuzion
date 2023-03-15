@@ -189,7 +189,23 @@ public abstract class Tool extends ANY
    */
   public String fullVersion()
   {
-    return Version.VERSION + " (" + Version.DATE + " GIT hash " + Version.GIT_HASH + " built by " + Version.BUILTBY + ")";
+    var result = Version.VERSION + " (";
+
+    if (!Version.DATE.isEmpty())
+      {
+        result = result + Version.DATE + " ";
+      }
+
+    result = result + "GIT hash " + Version.GIT_HASH;
+
+    if (!Version.BUILTBY.isEmpty())
+      {
+        result = result + " built by " + Version.BUILTBY;
+      }
+
+    result = result + ")";
+
+    return result;
   }
 
 
