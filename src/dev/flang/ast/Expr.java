@@ -245,6 +245,25 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * A lazy value v (one of type `Lazy T`) will automatically be replaced by
+   * `v.call` during type resolution, such that it behaves as if it was of type
+   * `T`.
+   *
+   * However, when `v` is passed to a value of type `Lazy T`, it does not make
+   * sence to wrap this call into `Lazy` again. Instead. we would like to pass
+   * the lazy value `v` directly.  So this method gives the original value for a
+   * lazy value `v` t was replaced by `v.call`.
+   *
+   * @return `this` in case this was not replaced by a `call` to a `Lazy` value,
+   * the original lazy value if it was.
+   */
+  Expr originalLazyValue()
+  {
+    return this;
+  }
+
+
+  /**
    * Before propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
@@ -254,8 +273,9 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
     var result = this;
 
     result = result.propagateExpectedType(res, outer, t);
+    result = t.isLazyType() ? result.originalLazyValue() : result;
 
-    if (t.isLazyType() && !type().isLazyType())
+    if (t.isLazyType() && !result.type().isLazyType())
       {
         var fn = new Function(pos(),
                               new List<String>(),
