@@ -34,9 +34,7 @@ Unary(T, U type) ref : Function T U is
   # function composition
   #
   compose(V type, other Unary U V) Unary T V is
-    ref : Unary T V
-      redef call (v V) T is
-        Unary.this.call (other v)
+    v -> Unary.this.call (other v)
 
 
   # function composition (Unicode alias)
