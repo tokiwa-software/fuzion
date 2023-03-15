@@ -50,9 +50,7 @@ public class FeatureAndOuter extends ANY
   /**
    * FeatureAndOuter instance returned in case of an error.
    */
-  public static final FeatureAndOuter ERROR = new FeatureAndOuter(Types.f_ERROR,
-                                                                  Types.f_ERROR,
-                                                                  null);
+  public static FeatureAndOuter ERROR;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -296,6 +294,16 @@ public class FeatureAndOuter extends ANY
       (isNextInnerFixed() ? " fixed" : " not fixed") + "]";
   }
 
+
+  /**
+   * Reset static fields such as the intern()ed types.
+   */
+  public static void reset()
+  {
+    ERROR = new FeatureAndOuter(Types.f_ERROR,
+                                Types.f_ERROR,
+                                null);
+  }
 
 }
 
