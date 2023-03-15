@@ -20,13 +20,12 @@ jobs:
         with:
           update: true
           path-type: minimal
-# NYI maybe use mingw64 here?
-          msystem: MSYS
+          msystem: CLANG64
 # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
           install: >-
             make
             git
-            mingw-w64-x86_64-clang
+            mingw-w64-ucrt-x86_64-clang
             diffutils
 
       - name: install choco packages
@@ -35,12 +34,14 @@ jobs:
 
       - uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6 # v2.6.0
 
-# NYI how can we set PATH???
+      - name: set PATH
+        run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" >> $GITHUB_PATH
+
       - name: echo PATH
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && echo "$PATH"
+        run: echo "$PATH"
 
       - name: echo versions
-        run:  export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
+        run: clang --version && javac --version
 
       - name: run tests
-        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && make run_tests
+        run: make run_tests
