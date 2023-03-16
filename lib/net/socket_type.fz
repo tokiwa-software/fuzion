@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.socket
+#
+# -----------------------------------------------------------------------
+
+socket_type is
+
+  # connection-based byte-stream
+  # this must be used for TCP
+  stream is
+    redef as_string => ""
+
+  # connection-less messages with fixed maximum length
+  # this must be used for UDP
+  datagram is
+    redef as_string => ""
+
+  # no tcp/udp, raw access to network protocol layer
+  raw is
+    redef as_string => ""
+
+
+  val : choice socket_type.stream datagram raw is
+    as_num i32 is
+      match val.this
+        socket_type.stream => 1
+        datagram => 2
+        raw => 3

@@ -562,6 +562,11 @@ public class C extends ANY
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-o", name, cname);
 
+    if (isWindows())
+      {
+        command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
+      }
+
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
@@ -1377,6 +1382,16 @@ public class C extends ANY
   String realloc()
   {
     return _options._useBoehmGC ? "GC_REALLOC" : "realloc";
+  }
+
+
+  /**
+   * Is the compiler running on windows?
+   * @return
+   */
+  boolean isWindows()
+  {
+    return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
 }

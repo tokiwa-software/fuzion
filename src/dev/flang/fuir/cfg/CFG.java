@@ -449,6 +449,16 @@ public class CFG extends ANY
     put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
+
+    put("fuzion.sys.net0.bind0"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.listen"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.accept"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.connect0"         , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.read"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.write"           , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.close0"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net0.set_blocking"    , (cfg, cl) -> { } );
+
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
