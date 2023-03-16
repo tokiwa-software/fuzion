@@ -32,6 +32,7 @@ on:
 env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
   run_tests:
@@ -42,9 +43,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: hostname
-        run: hostname
 
       - name: install dependencies
         run: |
