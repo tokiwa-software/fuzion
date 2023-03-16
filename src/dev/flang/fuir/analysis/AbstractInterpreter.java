@@ -125,7 +125,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * Perform a call of a feature with target instance tvalue with given
-     * arguments.. The type of tvalue might be dynamic (a refernce). See
+     * arguments.. The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
@@ -174,7 +174,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> tag(int cl, int valuecl, VALUE value, int newcl, int tagNum);
 
     /**
-     * Access the effect of type ecl that is installed in the environemnt.
+     * Access the effect of type ecl that is installed in the environment.
      */
     public abstract Pair<VALUE, RESULT> env(int ecl);
 
@@ -223,7 +223,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   public final ProcessStatement<VALUE, RESULT> _processor;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -354,7 +354,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
   /**
    * As part of the prolog of a clazz' code, perform the initialization of the
-   * calzz' outer ref and argument fields with the target and the actual
+   * clazz' outer ref and argument fields with the target and the actual
    * arguments.
    *
    * @param l list that will receive the result
@@ -658,7 +658,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         }
       default:
         {
-          Errors.fatal("AbstractInterpreter backend does not handle statments of type " + s);
+          Errors.fatal("AbstractInterpreter backend does not handle statements of type " + s);
           return null;
         }
       }

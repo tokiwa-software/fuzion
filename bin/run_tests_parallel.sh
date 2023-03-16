@@ -60,7 +60,7 @@ renice -n 19 $$ > /dev/null
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(echo "$BUILD_DIR"/tests/*/)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -68,6 +68,8 @@ rm -rf "$BUILD_DIR"/run_tests.failures
 
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
+
+echo "$(echo "$TESTS" | wc -l) tests."
 
 N=$(nproc --all || echo 1)
 open_sem "$N"

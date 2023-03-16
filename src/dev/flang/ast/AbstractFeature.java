@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -83,6 +81,38 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  // NYI The feature state should be part of the resolution.
+  public enum State {
+    LOADING,
+    FINDING_DECLARATIONS,
+    LOADED,
+    RESOLVING,
+    RESOLVING_INHERITANCE,
+    RESOLVED_INHERITANCE,
+    RESOLVING_DECLARATIONS,
+    RESOLVED_DECLARATIONS,
+    RESOLVING_TYPES,
+    RESOLVED_TYPES,
+    RESOLVING_SUGAR1,
+    RESOLVED_SUGAR1,
+    TYPES_INFERENCING,
+    TYPES_INFERENCED,
+    BOXING,
+    BOXED,
+    CHECKING_TYPES1,
+    CHECKED_TYPES1,
+    RESOLVING_SUGAR2,
+    RESOLVED_SUGAR2,
+    CHECKING_TYPES2,
+    RESOLVED,
+    ERROR;
+    public boolean atLeast(State s)
+    {
+      return this.ordinal() >= s.ordinal();
+    }
+  };
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -102,10 +132,34 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * For a Feature that can be called and hasThisType() is true, this will be
-   * set to the frame type during resolution.  This type uses the formal
+   * set to concrete the frame type during resolution.  This type uses the formal
    * generics as actual generics. For a generic feature, these must be replaced.
+   *
+   * For a feature a.b.c, _selfType is a.b.c.
+   */
+  protected AbstractType _selfType = null;
+
+
+  /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the abstract type referring to the instance, i.e., the actual value
+   * by be _selfType or the _selfType of any heir feature of this or the self
+   * type of this after it was inherited by any different outer type.
+   *
+   * For a feature a.b.c, _thisType is a.this.type.b.this.type.c.this.type.
    */
   protected AbstractType _thisType = null;
+
+
+  /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the abstract type referring to the instance.  Unlike _thisType, this
+   * does not permit this to be replaced by an inherited feature, but any outer
+   * feature might be.
+   *
+   * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
+   */
+  protected AbstractType _thisTypeFixed = null;
 
 
   /**
@@ -159,7 +213,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -234,7 +288,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * qualifiedName0 returns the qualified name of this feature without any special handling for type featurs.
+   * qualifiedName0 returns the qualified name of this feature without any special handling for type features.
    *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
@@ -442,24 +496,24 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * thisType returns the type of this feature's frame object.  This can be
+   * selfType returns the type of this feature's frame object.  This can be
    * called even if !hasThisType() since thisClazz() is used also for abstract
    * or intrinsic feature to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  public AbstractType thisType()
+  public AbstractType selfType()
   {
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
-    AbstractType result = _thisType;
+    AbstractType result = _selfType;
     if (result == null)
       {
         result = this == Types.f_ERROR
           ? Types.t_ERROR
           : createThisType();
-        _thisType = result;
+        _selfType = result;
       }
     if (state().atLeast(Feature.State.RESOLVED_TYPES))
       {
@@ -475,6 +529,49 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
        !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
        );
 
+    return result;
+  }
+
+
+  /**
+   * Create '.this.type' for this feature.
+   */
+  AbstractType thisType()
+  {
+    return thisType(false);
+  }
+
+
+  /**
+   * Create '.this.type' for this feature.
+   *
+   * @param innerFixed true iff the directly next inner feature for which this
+   * is created is fixed.  In this case. the type is exactly selfType(), and not
+   * a placeholder for any possible child's type.
+   */
+  AbstractType thisType(boolean innerFixed)
+  {
+    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
+
+    if (result == null)
+      {
+        result = selfType();
+        var of = outer();
+        if (!isUniverse() && of != null && !of.isUniverse())
+          {
+            result = new Type(result, of.thisType());
+          }
+        result = Types.intern(result);
+        if (innerFixed)
+          {
+            _thisTypeFixed = result;
+          }
+        else
+          {
+            result = Types.intern(result.asThis());
+            _thisType = result;
+          }
+      }
     return result;
   }
 
@@ -520,7 +617,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
-      : outer().typeCall(p, new List<>(outer().thisType()), res, that);
+      : outer().typeCall(p, new List<>(outer().selfType()), res, that);
     var tf = typeFeature(res);
     var args = new List<Actual>();
     var typeParameters2 = new List<AbstractType>();
@@ -536,20 +633,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     typeParameters2,
                     Expr.NO_EXPRS,
                     tf,
-                    tf.thisType());
+                    tf.selfType());
   }
 
 
   /**
    * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
-   * i.e., within 'a's type feature.  The difference between thisType() and
-   * thisTypeInTypeFeature() is that the type parameters in the former are the
+   * i.e., within 'a's type feature.  The difference between selfType() and
+   * selfTypeInTypeFeature() is that the type parameters in the former are the
    * type parameters of 'a', while in the latter they are the type parameter of
    * 'a.this' (who use the same name)..
    */
-  public AbstractType thisTypeInTypeFeature()
+  public AbstractType selfTypeInTypeFeature()
   {
-    var t0 = thisType();
+    var t0 = selfType();
     var tl = new List<AbstractType>();
     boolean first = true;
     for (var ta : typeFeature().typeArguments())
@@ -629,7 +726,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var typeArg = new Feature(p,
                                       visibility(),
                                       outer().isUniverse() && featureName().baseName().equals(FuzionConstants.OBJECT_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
-                                      thisType(),
+                                      selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.TYPE_PARAMETER);
@@ -651,11 +748,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             for (var pc: inherits())
               {
                 var iif = ii;
-                var thisType = new Type(pos(),
+                var selfType = new Type(pos(),
                                         FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                         new List<>(),
                                         null);
-                var tp = new List<AbstractType>(thisType);
+                var tp = new List<AbstractType>(selfType);
                 if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
                   {
                     for (var atp : pc.calledFeature().typeArguments())
@@ -765,11 +862,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public AbstractFeature typeFeature()
   {
     if (PRECONDITIONS) require
-      (hasTypeFeature());
+      (isTypeFeature() || hasTypeFeature());
 
     if (_typeFeature == null)
       {
-        _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
+        _typeFeature = this == Types.f_ERROR ? this :
+                       isTypeFeature()       ? Types.resolved.f_Type
+                                             : existingTypeFeature();
       }
     var result = _typeFeature;
 
@@ -802,7 +901,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
-    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+    var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
+    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -974,7 +1074,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the copy of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefCopyOfValue()
@@ -982,7 +1082,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (outer() != null);
 
-    // if outher is a small and immutable value type, we can copy it:
+    // if outer is a small and immutable value type, we can copy it:
     return this.outer().isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
   }
 
@@ -993,7 +1093,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * immutable.
    *
    * @return true iff outerRef is the address of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
+   * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
   public boolean isOuterRefAdrOfValue()
@@ -1080,7 +1180,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param module the main SrcModule if available (used for debugging only)
    *
-   * @param f a feature that is declared in or inherted by this feature
+   * @param f a feature that is declared in or inherited by this feature
    *
    * @param fn a feature name within this feature
    *
@@ -1119,7 +1219,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param a an array of types to be handed down
    *
-   * @param heir a feature that inhertis from outer()
+   * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
@@ -1206,7 +1306,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from
@@ -1244,7 +1344,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
+   * (wrt generic arguments) or renaming/selection of the preferred
    * implementation.
    *
    * @param ancestor the ancestor feature this inherits from
@@ -1405,6 +1505,17 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractFeature resultField();
   public abstract AbstractFeature outerRef();
 
+
+  /**
+   * Is this feature marked with the `fixed` modifier. If so, this feature is
+   * not inherited, i.e., we know that at runtime, the outher feature's type is
+   * outer().selfType() and not a heir of outer().  However, outer().outer()
+   * could might be a heir.
+   */
+  public boolean isFixed()
+  {
+    return (modifiers() & Consts.MODIFIER_FIXED) != 0;
+  }
 
   /**
    * Get inner feature with given name, ignoring the argument count.
@@ -1578,6 +1689,24 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         result++;
       }
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
+
+
+  /**
+   * this feature as a human readable string
+   */
+  public String toString()
+  {
+    return visibility() + " " +
+      Consts.modifierToString(modifiers()) +
+      featureName().baseName() +
+      (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
+      (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
+      (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
+      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
+       +  "is " + implKind().toString();
+
   }
 
 

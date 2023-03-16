@@ -64,8 +64,7 @@ is
   #
   redef index [ ] (i i32) T
     pre
-      safety: 0 ≤ i,
-      safety: i ⩻ length
+      safety: 0 ≤ i ⩻ length
   is
     data[i]
 
@@ -73,8 +72,7 @@ is
   #
   set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i,
-      safety: i ⩻ length
+      safety: 0 ≤ i ⩻ length
   # post   NYI: no '==' for Any yet
   #   marray.this[i] ≟ o
   is
@@ -90,7 +88,7 @@ is
   is
     d := if (data.length ⩼ length) data
       else
-        newData := fuzion.sys.internal_array T (8.max data.length*2)
+        newData := fuzion.sys.internal_array_init T (8.max data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData
@@ -145,16 +143,10 @@ is
       fold i+1 (m.op s marray.this[i]) m
 
 
-# marrays -- unit type feature declaring features related to marray
-#
-# NYI: move to marray.type
-#
-marrays(T type)  is
-
   # This feature provides a convenient constructor for marray T length,
   # fuzion.sys.internal_array T unit.
   #
-  new
+  type.new
    (# length of the marray to create
     length i32,
 
@@ -164,7 +156,7 @@ marrays(T type)  is
    ) marray T
 
   is
-    data := fuzion.sys.internal_array T length
+    data := fuzion.sys.internal_array_init T length
 
     for x in data.indices do
       data[x] := init

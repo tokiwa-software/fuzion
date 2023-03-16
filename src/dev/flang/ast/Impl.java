@@ -98,7 +98,25 @@ public class Impl extends ANY
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
-    Of            // Syntacitic sugar 'enum : choice of red, green, blue is', exists only during parsing
+    Of;           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
+
+    public String toString(){
+      return switch(this)
+        {
+          case FieldInit         : yield "field initialization";
+          case FieldDef          : yield "field definition";
+          case FieldActual       : yield "actual argument";
+          case FieldIter         : yield "iterator";
+          case Field             : yield "field";
+          case TypeParameter     : yield "type parameter";
+          case TypeParameterOpen : yield "open type parameter";
+          case RoutineDef        : yield "routine definition";
+          case Routine           : yield "routine";
+          case Abstract          : yield "abstract";
+          case Intrinsic         : yield "intrinsic";
+          case Of                : yield "choice of";
+        };
+    }
   };
 
   /**

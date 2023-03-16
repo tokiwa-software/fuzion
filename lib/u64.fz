@@ -55,11 +55,11 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # division and remainder with check for div-by-zero
   redef infix / (other u64)
     pre
-      safety: !(other ≟ u64 0)
+      safety: other != u64 0
    => div(other)
   redef infix %  (other u64)
     pre
-      safety: !(other ≟ u64 0)
+      safety: other != u64 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -198,20 +198,20 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   trailingZeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
-    (v1, s1) := if !((v0 & 0x_ffff_ffff) ≟ u64 0) (v0, s0) else (v0 >> 32, s0 + 32)
-    (v2, s2) := if !((v1 &      0x_ffff) ≟ u64 0) (v1, s1) else (v1 >> 16, s1 + 16)
-    (v3, s3) := if !((v2 &         0xff) ≟ u64 0) (v2, s2) else (v2 >>  8, s2 +  8)
-    (v4, s4) := if !((v3 &          0xf) ≟ u64 0) (v3, s3) else (v3 >>  4, s3 +  4)
-    (v5, s5) := if !((v4 &            3) ≟ u64 0) (v4, s4) else (v4 >>  2, s4 +  2)
-    (v6, s6) := if !((v5 &            1) ≟ u64 0) (v5, s5) else (v5 >>  1, s5 +  1)
-    s7       := if !((v6 &            1) ≟ u64 0)      s6  else                 64
+    (v1, s1) := if ((v0 & 0x_ffff_ffff) != u64 0) (v0, s0) else (v0 >> 32, s0 + 32)
+    (v2, s2) := if ((v1 &      0x_ffff) != u64 0) (v1, s1) else (v1 >> 16, s1 + 16)
+    (v3, s3) := if ((v2 &         0xff) != u64 0) (v2, s2) else (v2 >>  8, s2 +  8)
+    (v4, s4) := if ((v3 &          0xf) != u64 0) (v3, s3) else (v3 >>  4, s3 +  4)
+    (v5, s5) := if ((v4 &            3) != u64 0) (v4, s4) else (v4 >>  2, s4 +  2)
+    (v6, s6) := if ((v5 &            1) != u64 0) (v5, s5) else (v5 >>  1, s5 +  1)
+    s7       := if ((v6 &            1) != u64 0)      s6  else                 64
     s7
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
+  ones_count i32 is
     v := val;
     m := v & 0x_aaaaaaaa_aaaaaaaa; v := v - m + (m >> 1)
     m := v & 0x_cccccccc_cccccccc; v := v - m + (m >> 2)
@@ -244,6 +244,21 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   fixed type.lteq(a, b u64) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+
+
+  # minimum
+  #
+  fixed type.min => u64 0
+
+
+  # maximum
+  #
+  fixed type.max => u64 0x_ffff_ffff_ffff_ffff
+
+
+
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
@@ -257,8 +272,6 @@ u64s : wrapping_integers u64 is
   redef min => u64 0
   redef max => u64 0x_ffff_ffff_ffff_ffff
 
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
 # u64 -- returns value of unit type u64s

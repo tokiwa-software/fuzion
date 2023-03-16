@@ -84,7 +84,7 @@ public class DFA extends ANY
 
 
     /**
-     * The Call we are analysing.
+     * The Call we are analyzing.
      */
     final Call _call;
 
@@ -269,7 +269,9 @@ public class DFA extends ANY
       if (!found[0])
         {
           // NYI: proper error reporting
-          Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+          Errors.error(_fuir.codeAtAsPos(c, i),
+                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
+                       null);
         }
       return resf[0];
     }
@@ -515,7 +517,7 @@ public class DFA extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environemnt.
+     * Access the effect of type ecl that is installed in the environment.
      */
     public Pair<Value, Unit> env(int ecl)
     {
@@ -594,7 +596,7 @@ public class DFA extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   public final FUIR _fuir;
 
@@ -632,7 +634,7 @@ public class DFA extends ANY
 
   /**
    * Calls created during current sub-iteration of the DFA analysis.  These will
-   * be analysed at the end of the current iteration since they most likely add
+   * be analyzed at the end of the current iteration since they most likely add
    * new information.
    */
   TreeSet<Call> _newCalls = new TreeSet<>();
@@ -682,7 +684,7 @@ public class DFA extends ANY
   boolean _reportResults = false;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -711,7 +713,7 @@ public class DFA extends ANY
 
   /**
    * Create a new Instance of FUIR using the information collected during this
-   * DFA analyssis. In particular, Let 'clazzNeedsCode' return false for
+   * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
   public FUIR new_fuir()
@@ -887,7 +889,7 @@ public class DFA extends ANY
 
 
   /**
-   * Flag to detect and stop (endless) recursion within NYIintrinsiMissing.
+   * Flag to detect and stop (endless) recursion within NYIintrinsicMissing.
    */
   static boolean _recursion_in_NYIintrinsicMissing = false;
 
@@ -1145,7 +1147,7 @@ public class DFA extends ANY
 
     put("Any.hashCode"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.sys.internal_array.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
+    put("fuzion.sys.internal_array_init.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
           var array = cl._args.get(0);
@@ -1189,7 +1191,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new enviroment */, cl);
+          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new environment */, cl);
           return Value.UNIT;
         });
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
@@ -1219,7 +1221,7 @@ public class DFA extends ANY
               cl._dfa._defaultEffects.put(ecl, new_e);
               if (!cl._dfa._changed)
                 {
-                  cl._dfa._changedSetBy = "effect.defaut called: "+cl._dfa._fuir.clazzAsString(cl._cc);
+                  cl._dfa._changedSetBy = "effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc);
                 }
               cl._dfa._changed = true;
             }
@@ -1496,7 +1498,7 @@ public class DFA extends ANY
    *
    * @param cl the current clazz that installs a new effect
    *
-   * @param env the previous environemnt.
+   * @param env the previous environment.
    *
    * @param ecl the effect types
    *

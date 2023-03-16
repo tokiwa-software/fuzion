@@ -54,7 +54,7 @@ public class Value extends ANY
 
 
   /**
-   * Comparator instance to compare two Values of arbitrary tyes.
+   * Comparator instance to compare two Values of arbitrary types.
    */
   static Comparator<Value> COMPARATOR = new Comparator<>() {
       /**
@@ -163,7 +163,7 @@ public class Value extends ANY
   Value _adrOf;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -301,9 +301,9 @@ public class Value extends ANY
 
 
   /**
-   * Wrapp this value into a tagged untion type.
+   * Wrapp this value into a tagged union type.
    *
-   * @param dfa the current analysis conext
+   * @param dfa the current analysis context
    *
    * @param cl the current feature
    *

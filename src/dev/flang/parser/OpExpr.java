@@ -115,9 +115,9 @@ public class OpExpr extends ANY
 
 
   /**
-   * convert this to an expression using precendence, i.e., prefix,
+   * convert this to an expression using precedence, i.e., prefix,
    * postfix and infix that are ambiguous will be replaced in order of
-   * precendence, else left to right.
+   * precedence, else left to right.
    * <p>
    * Ex: -a* +b! --> -(a*(+(b!)))  -a*+(b!) -(a*)+(b!) (-(a*))+(b!) ((-(a*))+(b!))
    *
@@ -340,7 +340,7 @@ public class OpExpr extends ANY
 
 
   /**
-   * determine the precendence of operator op.
+   * determine the precedence of operator op.
    */
   int precedence(Operator op, Kind kind)
   {
@@ -403,7 +403,7 @@ public class OpExpr extends ANY
 
 
     /**
-     * Constructor for opeartor with given initial chars and equal precedence
+     * Constructor for operator with given initial chars and equal precedence
      * for prefix, infix, and postfix operator .
      *
      * @param p its precedence.
@@ -416,7 +416,7 @@ public class OpExpr extends ANY
     }
 
     /**
-     * Constructor for opeartor with given initial chars and given precedence
+     * Constructor for operator with given initial chars and given precedence
      * for prefix, infix, and postfix operator .
      *
      * @param prefix the precedence if used as a prefix operator
@@ -446,7 +446,7 @@ public class OpExpr extends ANY
   }
 
   /**
-   * Does the given operator bind to the rightt?
+   * Does the given operator bind to the right?
    */
   boolean isRightToLeft(Operator op)
   {

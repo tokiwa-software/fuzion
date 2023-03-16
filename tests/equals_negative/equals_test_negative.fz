@@ -50,7 +50,7 @@ equals_test_negative is
   say "c1 ≟ c2 is {c1 ≟ c2}"                # 3. should flag an error: equals_test_c does not implement equality
 
 # control test that should pass
-equals_test_ok(x i32) : has_equality is
+equals_test_ok(x i32) : equatable is
   equals_test_ok.type.equality(a, b equals_test_ok) => a.x = b.x
 
 # negative tests should fail

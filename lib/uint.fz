@@ -150,9 +150,9 @@ is
 
         (bits, rest, carry_over) := r
 
-        sum := t.as_u64 + rest.first.as_u64 + carry_over
+        s := t.as_u64 + rest.first.as_u64 + carry_over
 
-        ([sum.low32bits] ++ bits, (rest.drop 1), (sum>>32))
+        ([s.low32bits] ++ bits, (rest.drop 1), (s>>32))
       )
 
     uint d unit
@@ -208,7 +208,7 @@ is
 
   # divide these unsigned ints
   infix /  (other uint) uint
-  pre !(other ≟ uint.type.zero)
+  pre other != uint.type.zero
   is
     (quotient,_) := (divide_with_remainder other)
     quotient
@@ -267,7 +267,7 @@ is
   infix +! (other uint) bool is true
   infix -! (other uint) bool is thiz ≥ other
   infix *! (other uint) bool is true
-  infix /! (other uint) bool is !(other ≟ uint.type.zero)
+  infix /! (other uint) bool is other != uint.type.zero
   infix %! (other uint) bool is true
   infix **!(other uint) bool is true
 
@@ -305,6 +305,12 @@ is
   as_i64 i64
   is
     as_u64.as_i64
+
+
+  # this uint as an u8
+  as_u8 u8
+  is
+    as_u32.as_u8
 
 
   # this uint as an u32

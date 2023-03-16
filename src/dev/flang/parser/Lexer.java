@@ -191,6 +191,7 @@ public class Lexer extends SourceFile
     t_public("public"),
     t_of("of"),
     t_type("type"),
+    t_universe("universe"),
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
@@ -451,7 +452,7 @@ public class Lexer extends SourceFile
   /**
    * Token at this pos will be returned by current() even if its indentaion is
    * at <= _minIndent. If set to the first token of a statement that sets
-   * _minIntend, this ensures that we can still parse the first token of this
+   * _minIndent, this ensures that we can still parse the first token of this
    * statement.
    */
   private int _minIndentStartPos = -1;
@@ -605,7 +606,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Get the current minimun indentation.
+   * Get the current minimum indentation.
    *
    * @return the min indentation, -1 if none.
    */
@@ -645,7 +646,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Restrict parsing until the next occurence of white space.  Symbols after
+   * Restrict parsing until the next occurrence of white space.  Symbols after
    * fromPos that are preceded by white space will be replaced by t_spaceLimit.
    *
    * @param fromPos the position of the last token that is permitted to be
@@ -666,7 +667,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Restrict parsing until the next occurence of operator ":".  Operator ":"
+   * Restrict parsing until the next occurrence of operator ":".  Operator ":"
    * will be replaced by t_colonLimit.
    *
    * @param endAtColon true to enable, false to disable
@@ -683,7 +684,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Restrict parsing until the next occurence of operator "|".  Operator "|"
+   * Restrict parsing until the next occurrence of operator "|".  Operator "|"
    * will be replaced by t_barLimit.
    *
    * @param endAtBar true to enable, false to disable
@@ -842,9 +843,9 @@ public class Lexer extends SourceFile
    * @param spaceLimit the white space restriction (Integer.MAX_VALUE if none):
    * Any token after this position will be replaced by t_spaceLimit.
    *
-   * @param endAtColon true to replace opeartor ":" by t_colonLimit.
+   * @param endAtColon true to replace operator ":" by t_colonLimit.
    *
-   * @param endAtBar true to replace opeartor "|" by t_barLimit.
+   * @param endAtBar true to replace operator "|" by t_barLimit.
    */
   Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
   {
@@ -1595,7 +1596,7 @@ PLUSMINUS   : "+"
     public final boolean _negative;
 
     /**
-     * Did an error occure?  E.g., for "0x_de_ad.c0de", this will be
+     * Did an error occur?  E.g., for "0x_de_ad.c0de", this will be
      * false.
      */
     public boolean _hasError = false;
@@ -1831,7 +1832,7 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
     /**
-     * The value, ignoring '-' and ingoring decimal '.' position (i.e., value of '123.456' is
+     * The value, ignoring '-' and ignoring decimal '.' position (i.e., value of '123.456' is
      * 123456).
      */
     BigInteger absValue()
@@ -2063,7 +2064,7 @@ HEX_TAIL    : "." HEX_DIGITS
    *
    * @param t the token we want to see
    *
-   * @return true iff curent token matches
+   * @return true iff current token matches
    */
   boolean currentMatches(boolean atMinIndent, TokenOrOp to)
   {
@@ -2238,23 +2239,6 @@ PIPE        : "|"
       (current() == Token.t_ident);
 
     return identifier(false);
-  }
-
-
-  /**
-   * In case the current token is Token.t_ident, return the identifier, otherwise
-   * return Errors.ERROR_STRING.
-   */
-  String identifierOrError()
-  {
-    String result = Errors.ERROR_STRING;
-
-    if (current() == Token.t_ident)
-      {
-        result = identifier();
-      }
-
-    return result;
   }
 
 

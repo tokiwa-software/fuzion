@@ -28,5 +28,25 @@
 Any ref is
 
   hashCode i32 is intrinsic
+
+  # create a String from this instance.  Unless redefined, `a.as_string` will
+  # create `"instance[T]"` where `T` is the dynamic type of `a`
+  #
   as_string String is intrinsic
+
+
+  # convenience prefix operator to create a string from a value.
+  #
+  # This permits usage of `$` as a prefix operator in a similar way both
+  # inside and outside of constant strings: $x and "$x" will produce the
+  # same string.
+  #
   prefix $ => Any.this.as_string
+
+
+  # Get the dynamic type of this instance.  For value instances `x`, this is
+  # equal to `type_of x`, but for `x` with a  `ref` type `x.dynamic_type` gives
+  # the actual runtime type, while `type_of x` results in the static
+  # compile-time type.
+  #
+  dynamic_type => Any.this.type

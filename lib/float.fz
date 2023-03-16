@@ -83,6 +83,21 @@ float(redef F type : float F) : numeric F, floats F is
     else
       thiz - fract + one
 
+
+  # number of bits used for mantissa,
+  # including leading '1' that is not actually stored
+  #
+  type.significand_bits i32 is abstract
+
+  # number of bits used for exponent
+  #
+  type.exponent_bits i32 is abstract
+
+
+  # the amount of bits that are used to encode the mantissa
+  type.mantissa_bits => significand_bits - 1
+
+
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
@@ -96,14 +111,6 @@ floats(F type : float F) : numerics F is
   #
   size => 8*bytes
 
-  # number of bits used for mantissa, including leading '1' that is not actually
-  # stored
-  #
-  significandBits i32 is abstract
-
-  # number of bits used for exponent
-  #
-  exponentBits i32 is abstract
 
   exponentRange => -minExp..maxExp
 

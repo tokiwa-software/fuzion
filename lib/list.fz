@@ -28,7 +28,7 @@
 # list provides an abstract type for a sequence of elements of the same type.
 #
 # A list sequence may be empty and contain no element, or it may have a fixed
-# or even infitie number of elements.
+# or even an infinite number of elements.
 #
 # The core of the implementation of an actual list lies in the implementation
 # of the actual Cons cell a non-empty list consists of.
@@ -302,6 +302,24 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               head => c.head
               tail => c.tail.concat t
 
+
+  # Lazy list concatenation, O(1)
+  # t is evaluated only when this list is exhausted
+  # NYI: #1166 syntax sugar for lazy evaluation
+  #
+  # This is useful when doing buffered reading from an input
+  # source and the next buffer chunk, the tail should only
+  # be created when actually necessary.
+  #
+  concat_lazy (t () -> list A) list A is
+    match list.this
+      _ nil => t()
+      c Cons =>
+        ref : Cons A (list A)
+          head => c.head
+          tail => c.tail.concat_lazy t
+
+
   # infix operand synonym for concat
   #
   redef infix ++ (t Sequence A) => concat t.as_list
@@ -451,7 +469,7 @@ lists is
     # equality
     #
     redef infix == (a, b list A) =>
-      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : has_equality"
+      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : equatable"
 
     # identity element
     #
@@ -460,22 +478,24 @@ lists is
 
 
 # convenience routine to create a list from head h and lazy tail t.
+# NYI: #1166, syntax sugar for lazy evaluation
 #
-list(T type, h T, t () -> list T) list T is
+list(T type, h T, t Lazy (list T)) list T is
   ref : Cons T (list T)
     head => h
-    tail => t()
+    tail => t
 
 
 # infix operator to create a list from head h and lazy tail t.
 #
 # This is convenient to append an element before a list as in
 #
-#   0 : ()->[1,2,3,4].as_list
+#   0 : [1,2,3,4].as_list
 #
 # or to create lists by recursion, e.g., a an endless list containing
 # integer 1 repeatedly is
 #
-#   ones => 1 : ()->ones
+#   ones => 1 : ones
 #
-infix : (A type, h A, t ()->list A) => list h t
+infix : (A type, h A, t Lazy (list A)) =>
+  list h t

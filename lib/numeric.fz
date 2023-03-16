@@ -28,7 +28,7 @@
 numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
-  # of some features (e.g. prefix -, abs
+  # of some features (e.g. prefix -, abs)
   thiz T is abstract
 
   isZero => thiz ≟ zero
@@ -68,14 +68,14 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   infix /  (other T) T
     pre
       safety: thiz /! other,
-      safety: !(other ≟ zero)
+      safety: other != zero
   is abstract
 
   # basic operations: 'infix %' (division remainder)
   infix %  (other T) T
     pre
       safety: thiz %! other,
-      safety: !(other ≟ zero)
+      safety: other != zero
   is abstract
 
   # basic operations: 'infix **' (exponentiation)
@@ -132,12 +132,20 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 
   # the u32 value corresponding to this
   # note: potential fraction will be discarded
+  # NYI replace this by as_u32?
   to_u32 u32
     pre
       debug: thiz ≥ zero
   is
     if (thiz ≥ one) ((thiz - one).to_u32 + 1)
     else 0
+
+
+  # this numeric value as an u8
+  as_u8 u8
+    pre
+      debug: thiz ≥ zero
+  is abstract
 
 
   # find the highest power of b that is less or equal than thiz.
@@ -147,7 +155,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
       debug: thiz.sign ≥ 0
     post
       debug: (thiz ≟ zero: result ≟ one),
-      debug: (!(thiz ≟ zero): thiz / b ⩻ result ≤ thiz)
+      debug: (thiz != zero: thiz / b ⩻ result ≤ thiz)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
   # not of type T.

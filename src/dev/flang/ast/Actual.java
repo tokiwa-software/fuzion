@@ -86,7 +86,7 @@ public class Actual extends Expr
    */
   public Actual(AbstractType t)
   {
-    this(t.pos(), t, Expr.NO_VALUE);
+    this(t.pos2BeRemoved(), t, Expr.NO_VALUE);
 
     if (PRECONDITIONS) require
       (t != null);
@@ -112,7 +112,7 @@ public class Actual extends Expr
 
 
   /**
-   * The sourcecode position of this statment, used for error messages.
+   * The sourcecode position of this statement, used for error messages.
    */
   public SourcePosition pos()
   {

@@ -13,10 +13,10 @@ ex_tree is
 
     private smart (datum A, left, right tree A) tree A is
       ref : Node A (tree A) (tree A)
-        datum A is datum
-        count i32 is (1 + left.size + right.size)
-        left tree A is left
-        right tree A is right
+        datum A is smart.this.datum
+        count i32 is (1 + smart.this.left.size + smart.this.right.size)
+        left tree A is smart.this.left
+        right tree A is smart.this.right
 
   trees is
     empty(A type : has_total_order) tree A is

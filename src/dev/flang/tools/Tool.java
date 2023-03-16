@@ -189,7 +189,23 @@ public abstract class Tool extends ANY
    */
   public String fullVersion()
   {
-    return Version.VERSION + " (" + Version.DATE + " GIT hash " + Version.GIT_HASH + " built by " + Version.BUILTBY + ")";
+    var result = Version.VERSION + " (";
+
+    if (!Version.DATE.isEmpty())
+      {
+        result = result + Version.DATE + " ";
+      }
+
+    result = result + "GIT hash " + Version.GIT_HASH;
+
+    if (!Version.BUILTBY.isEmpty())
+      {
+        result = result + " built by " + Version.BUILTBY;
+      }
+
+    result = result + ")";
+
+    return result;
   }
 
 
@@ -305,7 +321,7 @@ public abstract class Tool extends ANY
    * @param defawlt value to be returned in case a does not specify an explicit
    * value.
    *
-   * @return defawlt or the values specifed in a after '='.
+   * @return defawlt or the values specified in a after '='.
    */
   protected int parsePositiveIntArg(String a, int defawlt)
   {
@@ -323,7 +339,7 @@ public abstract class Tool extends ANY
         catch (NumberFormatException e)
           {
             Errors.fatal("failed to parse number",
-                         "While analysing command line argument '" + a + "', encountered: '" + e + "'");
+                         "While analyzing command line argument '" + a + "', encountered: '" + e + "'");
           }
       }
     return result;
@@ -383,7 +399,7 @@ public abstract class Tool extends ANY
         default ->
         {
           Errors.fatal("Unsupported parameter to command line option '" + s[0] + "'",
-                       "While analysing command line argument '" + a + "'.  Parameter must be 'on' or 'off'");
+                       "While analyzing command line argument '" + a + "'.  Parameter must be 'on' or 'off'");
           yield true;
         }
         };

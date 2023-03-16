@@ -32,7 +32,7 @@
 array2(redef T type,
        length0, length1 i32,
        init2 (i32, i32) -> T)
- : array T (fuzion.sys.internal_array T length0*length1) unit unit unit
+ : array T (fuzion.sys.internal_array_init T length0*length1) unit unit unit
   pre
     safety: length0 ≥ 0,
     safety: length1 ≥ 0,
@@ -61,10 +61,8 @@ is
 
   index [ ] (i1, i2 i32) T
     pre
-      safety: 0 ≤ i1,
-      safety: i1 ⩻ length0,
-      safety: 0 ≤ i2,
-      safety: i2 ⩻ length1
+      safety: 0 ≤ i1 ⩻ length0,
+      safety: 0 ≤ i2 ⩻ length1
   is
     array2.this[i1 * length1 + i2]
 
@@ -96,10 +94,8 @@ is
   #
   enumerate2Cons (i, j i32) : Cons (i32, i32, T) (list (tuple i32 i32 T))
     pre
-      debug: 0 ≤ i,
-      debug: i ⩻ length0,
-      debug: 0 ≤ j,
-      debug: j ⩻ length1
+      debug: 0 ≤ i ⩻ length0,
+      debug: 0 ≤ j ⩻ length1
   is
     head => (i, j, index[] i j)
     tail list (tuple i32 i32 T) is

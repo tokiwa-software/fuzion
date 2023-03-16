@@ -52,7 +52,7 @@ public abstract class Constant extends AbstractConstant
 
 
   /**
-   * Constructor for a Constant at the given source code postition.
+   * Constructor for a Constant at the given source code position.
    *
    * @param pos the sourcecode position, used for error messages.
    */

@@ -36,8 +36,8 @@ inheritance_for_value_types is
 
   exit_code := mut 0
 
-  chck (msg String, b bool) unit is
-    if b
+  chck (msg String, b0 bool) unit is
+    if b0
       say "PASSED: $msg"
     else
       say "FAILED: $msg"

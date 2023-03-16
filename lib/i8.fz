@@ -55,11 +55,11 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   # division and remainder with check for div-by-zero
   redef infix / (other i8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => div(other)
   redef infix % (other i8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -142,8 +142,8 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u8.onesCount
+  ones_count i32 is
+    val.castTo_u8.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -171,6 +171,21 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   fixed type.lteq(a, b i8) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i8 -1
+
+
+  # minimum
+  #
+  fixed type.min => i8 -0x80
+
+
+  # maximum
+  #
+  fixed type.max => i8 0x7f
+
+
+
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #
@@ -183,9 +198,6 @@ i8s : wrapping_integers i8 is
 
   redef min => i8 -0x80
   redef max => i8  0x7f
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i8 -1
 
 
 # i8 -- returns value of unit type i8s

@@ -57,15 +57,15 @@ public class Current extends AbstractCurrent
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param t the result type
+   * @param f the feature whose current instance we try to obtain
    */
-  public Current(SourcePosition pos, AbstractType t)
+  public Current(SourcePosition pos, AbstractFeature f)
   {
-    super(Types.intern(t).asThis());
+    super(f.thisType());
 
     if (PRECONDITIONS) require
       (pos != null,
-       t != null);
+       f != null);
 
     this._pos = pos;
   }

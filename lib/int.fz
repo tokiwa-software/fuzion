@@ -98,7 +98,7 @@ is
 
   # divide this int by other
   infix /  (other int) int
-  pre !(other ≟ int.type.zero)
+  pre other != int.type.zero
   is
     s sign := result_sign_mul_div other
     int s n/other.n
@@ -131,7 +131,7 @@ is
   infix -! (other int) bool is true
   infix *! (other int) bool is true
   infix /! (other int) bool is
-    !(other ≟ int.type.zero)
+    other != int.type.zero
   infix %! (other int) bool is true
 
   infix **!(other int) bool is
@@ -179,7 +179,14 @@ is
     n.as_i64
 
 
-  # this int as an i64
+  # this int as an u8
+  as_u8 u8
+  pre s.is_plus
+  is
+      n.as_u8
+
+
+  # this int as an u32
   as_u32 u32
   pre s.is_plus
   is
@@ -246,7 +253,7 @@ minus is
 #
 # this can be plus or minus
 #
-sign : choice plus minus, has_equality is
+sign : choice plus minus, equatable is
 
   is_plus =>
     match sign.this

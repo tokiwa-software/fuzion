@@ -90,12 +90,6 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Path to the Fuzion home directory, never null.
-   */
-  final Path _fuzionHome;
-
-
-  /**
    * true to load base library (false if we are creating it)
    */
   final boolean _loadBaseLib;
@@ -118,7 +112,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Costructor initializing fields as given.
+   * Constructor initializing fields as given.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,
@@ -138,16 +132,15 @@ public class FrontEndOptions extends FuzionOptions
     super(verbose,
           fuzionDebugLevel,
           fuzionSafety,
-          enableUnsafeIntrinsics);
+          enableUnsafeIntrinsics,
+          fuzionHome);
 
     if (PRECONDITIONS) require
       (verbose >= 0,
-       fuzionHome != null,
        !readStdin || main == null,
        modules != null,
        moduleDirs != null);
 
-    _fuzionHome = fuzionHome;
     _loadBaseLib = loadBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
     _readStdin = readStdin;

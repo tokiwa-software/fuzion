@@ -44,7 +44,7 @@ int_test is
       chck (int m+n ≟ (int m + int n)) "int: m $m + n $n"
       chck (int m-n ≟ (int m - int n)) "int: m $m - n $n"
       chck (int m*n ≟ (int m * int n)) "int: m $m * n $n"
-      if !(n ≟ i64 0)
+      if n != i64 0
         chck (int m/n ≟ (int m / int n)) "int: m $m / n $n"
         chck (int m%n ≟ (int m % int n)) "int: m $m % n $n"
       if n ≥ i64 0
@@ -64,7 +64,7 @@ int_test is
       if m ≥ n
         chck (uint m-n ≟ (uint m - uint n)) "uint: m $m - n $n"
       chck (uint m*n ≟ (uint m * uint n)) "uint: m $m * n $n"
-      if !(n ≟ u64 0)
+      if n != u64 0
         chck (uint m/n ≟ (uint m / uint n)) "uint: m $m / n $n"
         chck (uint m%n ≟ (uint m % uint n)) "uint: m $m % n $n"
       chck (uint m**n ≟ (uint m ** uint n)) "uint: m $m ** n $n"
@@ -90,7 +90,7 @@ int_test is
       chck (uint m+n ≟ (uint m + uint n)) "uint: $m + n $n"
       if m ≥ n
         chck (uint m-n ≟ (uint m - uint n)) "uint: m $m - n $n"
-      if !(n ≟ u64 0)
+      if n != u64 0
         chck (uint m/n ≟ (uint m / uint n)) "uint: m $m / n $n"
         chck (uint m%n ≟ (uint m % uint n)) "uint: m $m % n $n"
 

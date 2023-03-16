@@ -70,7 +70,7 @@ public class Escape extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   public final FUIR _fuir;
 
@@ -81,7 +81,7 @@ public class Escape extends ANY
   private final TreeMap<Integer, Boolean> _doesEscapeCache = new TreeMap<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -147,7 +147,7 @@ public class Escape extends ANY
    * @param stack an originally empty stack that contains true for all current
    * instances on the stack, false for any other instance.
    *
-   * @param c the code block to analyse.
+   * @param c the code block to analyze.
    *
    * @return true iff the current instance cannot be proven not to escape, i.e.,
    * we have to assume that it may escape.
@@ -335,7 +335,7 @@ public class Escape extends ANY
             }
           default:
             {
-              Errors.fatal("C backend does not handle statments of type " + s);
+              Errors.fatal("C backend does not handle statements of type " + s);
             }
           }
       }

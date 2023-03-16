@@ -58,7 +58,7 @@ public class CTypes extends ANY
   private final CNames _names;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -273,7 +273,7 @@ public class CTypes extends ANY
     CStmnt result = CStmnt.EMPTY;
     if (needsTypeDeclaration(cl))
       {
-        var l = new List<CStmnt>(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
+        var l = new List<CStmnt>(CStmnt.lineComment("for " + _fuir.clazzAsStringNew(cl)));
         var els = new List<CStmnt>();
         if (_fuir.clazzIsRef(cl))
           {

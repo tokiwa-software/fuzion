@@ -429,7 +429,7 @@ public class LibraryModule extends Module
           }
         else if (k == -3)
           {
-            return _fe._universe.thisType();
+            return _fe._universe.selfType();
           }
         else if (k == -2)
           {
@@ -2269,7 +2269,7 @@ SourceFile
         if (sf == null)
           {
             var bb = sourceFileBytes(at);
-            var ba = new byte[bb.limit()]; // NYI: Would be better if SoureFile could use bb directly.
+            var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
             sf = new SourceFile(Path.of(sourceFileName(at)), ba);
             _sourceFiles.set(i, sf);
@@ -2315,7 +2315,7 @@ SourceFile
 
 
   /**
-   * Helper for dump to recursivle annotate hex dump for features
+   * Helper for dump to recursively annotate hex dump for features
    *
    * @param hd the hex dump instance
    *

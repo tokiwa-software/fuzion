@@ -1,5 +1,8 @@
 # <img src="assets/logo.svg" alt="fuzion logo" width="25" /> Fuzion
 
+[![OpenSSF
+Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion/badge)](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion)
+
 ## A language with a focus on simplicity, safety and correctness.
 
 > Please note that this language is work in progress.

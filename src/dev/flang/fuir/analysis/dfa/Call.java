@@ -110,7 +110,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

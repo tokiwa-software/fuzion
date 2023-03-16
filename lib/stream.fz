@@ -72,7 +72,7 @@ stream(redef T type) ref : Sequence T is
   #
   redef take (n i32) =>
     for
-      a := marray 0 (fuzion.sys.internal_array T 0), a.add x
+      a := marray 0 (fuzion.sys.internal_array_init T 0), a.add x
       i in (1..n)
     while has_next
       x := next
@@ -179,7 +179,7 @@ stream(redef T type) ref : Sequence T is
   #
   redef as_array array T is
     for
-      a := marray 0 (fuzion.sys.internal_array T 0), a.add x
+      a := marray 0 (fuzion.sys.internal_array_init T 0), a.add x
     while has_next
       x := next
     else

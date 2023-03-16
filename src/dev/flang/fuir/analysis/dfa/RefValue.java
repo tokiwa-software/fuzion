@@ -55,7 +55,7 @@ public class RefValue extends Value
   Value _original;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -65,7 +65,7 @@ public class RefValue extends Value
    * value instance (so we need to clone original) or a reference to a value
    * instance (so original is the same instance).
    *
-   * @param orignal the unboxed value
+   * @param original the unboxed value
    */
   public RefValue(DFA dfa, Value original, int vc, int rc)
   {
@@ -115,7 +115,7 @@ public class RefValue extends Value
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {

@@ -575,7 +575,7 @@ class ForClass extends ANY
     var fn0= "new";
     var fn = fuzionName(fn0, jp);
     data_static.append("\n" +
-                       "  # short-hand to call Java consctructor '" + co + "':\n" +
+                       "  # short-hand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  " + fn0 + fp + " (" + fr + ") is\n" +
                        "    " + fn + parametersList(pa) + "\n");
@@ -604,9 +604,9 @@ class ForClass extends ANY
    * preferred for a short-hand call: the first one (pa1, true), or the second
    * one (pa2, false) or none (null)
    *
-   * @param pa1 paramaters of first cantidate
+   * @param pa1 parameters of first candidate
    *
-   * @param pa2 paramaters of second cantidate
+   * @param pa2 parameters of second candidate
    *
    * @return true, false or null.
    */
@@ -652,9 +652,9 @@ class ForClass extends ANY
    * for a short-hand call: the first one (pa1, true), or the second one (pa2,
    * false).
    *
-   * @param m1 first cantidate
+   * @param m1 first candidate
    *
-   * @param m2 second cantidate
+   * @param m2 second candidate
    *
    * @return true iff m1 is preferred.
    */
@@ -680,9 +680,9 @@ class ForClass extends ANY
    * preferred for a short-hand call: the first one (c1, true), or the second
    * one (c2, false).
    *
-   * @param c1 first cantidate
+   * @param c1 first candidate
    *
-   * @param c2 second cantidate
+   * @param c2 second candidate
    *
    * @return true iff c1 is preferred.
    */
@@ -809,7 +809,7 @@ class ForClass extends ANY
 
 
   /**
-   * Get a string containing code to create a Fuzion array containting Java
+   * Get a string containing code to create a Fuzion array constraining Java
    * objects corresponding to all the parameters.
    *
    * @param pa array of parameters
