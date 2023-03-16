@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ex_nested_lazy
+#
+# -----------------------------------------------------------------------
+
+ex_nested_lazy is
+  lazy_evaluator(T type, lv Lazy T) T is lv
+
+  f Function bool i32 := x -> x = 0
+
+  say (lazy_evaluator bool (f 42))
+  say (lazy_evaluator bool (f 0))
+
+  say (f (lazy_evaluator i32 42))
+  say (f (lazy_evaluator i32 0))
+
+  lazy0(l Lazy (Function i32)) i32 is
+    l.call
+
+  # NYI: does not work:
+  say (lazy0 ()->42)
+  x Function i32 := ()->42
+  say (lazy0 x)
+
+  lazy1(f Function (Lazy i32)) i32 is
+    f().call
+
+  # NYI: does not work:
+  say (lazy1 ()->42)
+  x1 Lazy i32 := ()->42
+  say (lazy1 x1)
