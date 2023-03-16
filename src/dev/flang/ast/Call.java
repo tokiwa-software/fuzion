@@ -1080,17 +1080,20 @@ public class Call extends AbstractCall
   private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
   {
     Call result = this;
-    if (!_forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        (
-        _type.isFunType() &&
-        _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
-        _calledFeature.arguments().size() == 0 &&
-        hasParentheses())
-        || (
-        _type.isLazyType() &&
-        _calledFeature != Types.resolved.f_Lazy &&
-        _calledFeature.arguments().size() == 0 &&
-        !hasParentheses()))
+
+    // replace Function or Lazy value `l` by `l.call`:
+    if (!_forFun                                     && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
+        (_type.isFunType() &&
+         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+         _calledFeature.arguments().size() == 0      &&
+         hasParentheses()
+         ||
+         _type.isLazyType()                          &&   // we are `Lazy T`
+         _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+         _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+         _actualsNew.isEmpty()                       &&   // dto.
+         originalLazyValue() == this                      // prevent repeated `l.call.call` wenn resolving the newly created Call to `call`.
+         ))
       {
         var wasLazy = _type.isLazyType();
         result = new Call(pos(),
@@ -1971,6 +1974,19 @@ public class Call extends AbstractCall
 
 
   /**
+   * Field used to detect and avoid repeated calls to resolveTypes for the same
+   * outer feature.  resolveTypes may be called repeatedly when types are
+   * determined on demand for type inference for type parameters in a call. This
+   * field will record that resolveTypes was called for a given outer feature.
+   * This is used to not perform resolveTypes repeatedly.
+   *
+   * However, moving an expression into a lambda or a lazy value will change its
+   * outer feature and resolve will have to be repeated.
+   */
+  private AbstractFeature _resolvedFor;
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
@@ -1980,6 +1996,11 @@ public class Call extends AbstractCall
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
     Call result = this;
+    if (_resolvedFor == outer)
+      {
+        return this;
+      }
+    _resolvedFor = outer;
     loadCalledFeature(res, outer);
     FormalGenerics.resolve(res, _generics, outer);
 
