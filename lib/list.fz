@@ -245,7 +245,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # and ']'.
   #
   redef as_string =>
-    "[{list.this.as_string ","}]"
+    "[{as_string ","}]"
 
 
   # create a string representation of this list including all the string
