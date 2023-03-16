@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# searchable_sequence -- a Sequence whose elements inherit from has_equality
+# searchable_sequence -- a Sequence whose elements inherit from equatable
 #
 # In contrast to searchable_list, this uses ref type 'Sequence' and not choice
 # type 'list', so it is more flexible.
 #
 #
-searchable_sequence(A type : has_equality, from Sequence A) : Sequence A, has_equality
+searchable_sequence(A type : equatable, from Sequence A) : Sequence A, equatable
 is
 
   # create a list from this Sequence.
@@ -85,7 +85,7 @@ is
     (searchable_list as_list).count_matches l.as_list
 
 
-  # equality check implementation for inherited has_equality
+  # equality check implementation for inherited equatable
   #
   fixed type.equality(a, b searchable_sequence A) bool is
     aa := a.as_array

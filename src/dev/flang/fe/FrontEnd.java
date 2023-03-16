@@ -43,6 +43,7 @@ import dev.flang.mir.MIR;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 
@@ -144,6 +145,7 @@ public class FrontEnd extends ANY
   {
     _options = options;
     Types.reset();
+    FeatureAndOuter.reset();
     Errors.reset();
     FeatureName.reset();
     var universe = new Universe();

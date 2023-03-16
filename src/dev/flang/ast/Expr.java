@@ -245,6 +245,61 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * A lazy value v (one of type `Lazy T`) will automatically be replaced by
+   * `v.call` during type resolution, such that it behaves as if it was of type
+   * `T`.
+   *
+   * However, when `v` is passed to a value of type `Lazy T`, it does not make
+   * sence to wrap this call into `Lazy` again. Instead. we would like to pass
+   * the lazy value `v` directly.  So this method gives the original value for a
+   * lazy value `v` t was replaced by `v.call`.
+   *
+   * @return `this` in case this was not replaced by a `call` to a `Lazy` value,
+   * the original lazy value if it was.
+   */
+  Expr originalLazyValue()
+  {
+    return this;
+  }
+
+
+  /**
+   * Before propagateExpectedType: if type inference up until now has figured
+   * out that a Lazy feature is expected, but the current expression is not
+   * a Lazy feature, then wrap this expression in a Lazy feature.
+   */
+  public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    var result = this;
+
+    result = result.propagateExpectedType(res, outer, t);
+    result = t.isLazyType() ? result.originalLazyValue() : result;
+
+    if (t.isLazyType() && !result.type().isLazyType())
+      {
+        var fn = new Function(pos(),
+                              new List<String>(),
+                              new List<>(),
+                              Contract.EMPTY_CONTRACT,
+                              result);
+
+        result = fn.propagateExpectedType(res, outer, t);
+        fn.resolveTypes(res, outer);
+        visit(new FeatureVisitor()
+          {
+            public Expr action(Call c, AbstractFeature outer)
+            {
+              return c.updateTarget(res, outer);
+            }
+          },
+          fn._feature);
+      }
+
+    return result;
+  }
+
+
+  /**
    * During type inference: Inform this expression that it is used in an
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
@@ -307,7 +362,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
-                                                    new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+                                                    new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;
   }
@@ -423,8 +478,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean needsBoxingForGenericOrThis(AbstractType frmlT)
   {
     return
-      frmlT.isGenericArgument() ||
-      frmlT.isThisType() && frmlT.featureOfType().isThisRef();
+      frmlT.isGenericArgument() || frmlT.isThisType();
   }
 
 

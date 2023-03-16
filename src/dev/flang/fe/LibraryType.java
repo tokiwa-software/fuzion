@@ -62,7 +62,7 @@ public abstract class LibraryType extends AbstractType
 
   /**
    * Position in _libModule that declares this type. Maybe -1 for
-   * _feature.thisType().
+   * _feature.selfType().
    */
   public final int _at;
 

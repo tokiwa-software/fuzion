@@ -436,7 +436,7 @@ public class LibraryFeature extends AbstractFeature
       (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
-    var ot = o == null ? null : o.thisType();
+    var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this, this,
                                          isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                                      : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
@@ -464,7 +464,7 @@ public class LibraryFeature extends AbstractFeature
   {
     if (isConstructor())
       {
-        return thisType();
+        return selfType();
       }
     else if (isChoice())
       {
@@ -654,7 +654,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(thisType())
+              x = new AbstractCurrent(selfType())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }

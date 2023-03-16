@@ -269,7 +269,9 @@ public class DFA extends ANY
       if (!found[0])
         {
           // NYI: proper error reporting
-          Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+          Errors.error(_fuir.codeAtAsPos(c, i),
+                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
+                       null);
         }
       return resf[0];
     }

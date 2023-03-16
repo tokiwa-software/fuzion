@@ -1,0 +1,18 @@
+true
+false
+should not eval mtrue
+should eval mtrue
+eval mtrue!
+x
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+eval ones!
+[1,1,1,1,1,1,1,1,1,1]
+y

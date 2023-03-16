@@ -25,7 +25,7 @@
 
 # numeric_sequence -- a Sequence whose elements inherit from numeric
 #
-numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequence N from, has_equality is
+numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequence N from, equatable is
 
 
   # the arithmetic mean of the sequence
@@ -79,7 +79,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
         (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
 
 
-  # equality check implementation for inherited has_equality
+  # equality check implementation for inherited equatable
   #
   fixed type.equality(a, b numeric_sequence N) bool is
     aa := a.as_array

@@ -175,6 +175,16 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   redef type.all_bits_set => i8 -1
 
 
+  # minimum
+  #
+  fixed type.min => i8 -0x80
+
+
+  # maximum
+  #
+  fixed type.max => i8 0x7f
+
+
 
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance

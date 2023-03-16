@@ -224,5 +224,19 @@ floating_point_numbers is
   chck (f32s.isNaN f64s.NaN.as_f32)                                           "f64: NaN as_f32 isNaN "
 
 
+  # f32.fract
+  chck ((f32 1.5)   .fract  =   0.5)                                          "f32.fraction of  1.5 equals expected"
+  chck ((f32 -0.5)  .fract  =  -0.5)                                          "f32.fraction of -0.5 equals expected"
+  chck ((f32 0.0)   .fract  =   0.0)                                          "f32.fraction of  0.0 equals expected"
+  chck ((-(f32 0.0)).fract  =  -0.0)                                          "f32.fraction of -0.0 equals expected"
+  chck ((f32 1.0)   .fract  =   0.0)                                          "f32.fraction of  1.0 equals expected"
+
+  # f64.fract
+  chck ((f64 1.5)   .fract  =   0.5)                                          "f64.fraction of  1.5 equals expected"
+  chck ((f64 -0.5)  .fract  =  -0.5)                                          "f64.fraction of -0.5 equals expected"
+  chck ((f64 0.0)   .fract  =   0.0)                                          "f64.fraction of  0.0 equals expected"
+  chck ((-(f64 0.0)).fract  =  -0.0)                                          "f64.fraction of -0.0 equals expected"
+  chck ((f64 1.0)   .fract  =   0.0)                                          "f64.fraction of  1.0 equals expected"
+
 
   exit exit_code.get

@@ -177,6 +177,16 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef type.all_bits_set => u16 0xffff
 
 
+  # minimum
+  #
+  fixed type.min => u16 0
+
+
+  # maximum
+  #
+  fixed type.max => u16 0xffff
+
+
 
 # u16s -- unit type defining features related to u16 but not requiring an
 # instance

@@ -429,7 +429,7 @@ public class LibraryModule extends Module
           }
         else if (k == -3)
           {
-            return _fe._universe.thisType();
+            return _fe._universe.selfType();
           }
         else if (k == -2)
           {

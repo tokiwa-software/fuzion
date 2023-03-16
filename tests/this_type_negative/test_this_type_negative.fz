@@ -37,13 +37,13 @@ test_this_type_negative is
 
   b ref is
     x is
-      bx0       := b.this
-      bx1 b     := b.this
-      bx2 ref b := b.this
+      bx0             := b.this
+      bx1 b.this.type := b.this
+      bx2 ref b       := b.this
 
-    b0       := b.this
-    b1 b     := b.this
-    b2 ref b := b.this
+    b0             := b.this
+    b1 b.this.type := b.this
+    b2 ref b       := b.this
 
 
   xa is
@@ -53,14 +53,30 @@ test_this_type_negative is
   xb(val String) : xa is
     op0(v xb.this.type) xb.this.type is xb.this
 
+  xc : xb "cx" is
+
+  xa1 := xa
+
+  _ := xa1.op0 xa
+  _ := xa1.op0 (xb "xb")   # 3. should flag an error: incompatible type
+  _ := xa1.op0 xc          # 4. should flag an error: incompatible type
+
+
   xb1 := xb "1"
   xb2 := xb "2"
 
-  # even though xb1 and xb2 are both of type xb and xb is not a ref type, it is
-  # currently not permitted to pass anything that is not of type xb.this.type as
-  # an argument of that type:
-  #
-  _ := xb1.op0 xb2  # 3. should flag an error: incompatible type
+  # xb1 and xb2 are both of type xb, so it is permitted to pass an instance of
+  # xb to an argument of type xb.this.type:
+  _ := xb1.op0 xb1
+  _ := xb1.op0 xb2
+  _ := xb2.op0 xb1
+  _ := xb2.op0 xb2
+
+  # but it is not ok to pass a super of sub-type
+  _ := xb1.op0 xa   # 5. should flag an error: incompatible type
+  _ := xb1.op0 xc   # 6. should flag an error: incompatible type
 
   # well, void is allowed:
+  _ := xa.op0  (panic "creating void result")
   _ := xb1.op0 (panic "creating void result")
+  _ := xc.op0  (panic "creating void result")

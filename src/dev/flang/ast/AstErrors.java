@@ -77,6 +77,15 @@ public class AstErrors extends ANY
   {
     return sbn(fn.baseName()) + fn.argCountAndIdString();
   }
+  static String slbn(List<FeatureName> l)
+  {
+    var sl = new List<String>();
+    for (var fn : l)
+      {
+        sl.add(sbn(fn));
+      }
+    return sl.toString();
+  }
   static String sbn(String s) // feature base name
   {
     return code(s);
@@ -993,7 +1002,7 @@ public class AstErrors extends ANY
   }
 
   static void ambiguousTargets(SourcePosition pos,
-                               String operation,
+                               FeatureAndOuter.Operation operation,
                                FeatureName fn,
                                List<FeatureAndOuter> targets)
   {
@@ -1038,6 +1047,25 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  /**
+   * Suggest to a user that they might have called a feature with a wrong number of arguments,
+   * in the case that the called feature could not be found but there is a feature with the same
+   * name but a differing number of arguments.
+   */
+  static String solutionWrongArgumentNumber(List<FeatureAndOuter> candidates)
+  {
+    var solution = "";
+
+    if (!candidates.isEmpty())
+      {
+        solution = "To solve this, you might change the actual number of arguments to match " +
+                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
+                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+      }
+
+    return solution;
+  }
+
   static boolean errorInOuterFeatures(AbstractFeature f)
   {
     while (f != null && f != Types.f_ERROR)
@@ -1049,18 +1077,20 @@ public class AstErrors extends ANY
 
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
-                                    AbstractFeature targetFeature)
+                                    AbstractFeature targetFeature,
+                                    List<FeatureAndOuter> candidates)
   {
     if (count() == 0 || !errorInOuterFeatures(targetFeature))
       {
         var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                          calledName.argCount());
+        var solution2 = solutionWrongArgumentNumber(candidates);
         error(call.pos(),
               "Could not find called feature",
               "Feature not found: " + sbn(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
-              solution);
+              (solution == "" ? solution2 : solution));
       }
   }
 

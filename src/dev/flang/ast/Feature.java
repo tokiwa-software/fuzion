@@ -1310,8 +1310,8 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (hasThisType())
           {
-            var tt = thisType();
-            _thisType = tt.resolve(res, this);
+            var tt = selfType();
+            _selfType = tt.resolve(res, this);
           }
 
         if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeIfKnown() == null))
@@ -1543,19 +1543,18 @@ public class Feature extends AbstractFeature implements Stmnt
           (Errors.count() > 0 || t != null);
         if (t != null && !t.isRef())
           {
-            if (t == thisType())
+            if (t.compareTo(thisType()) == 0)
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
-                _thisType = Types.t_ERROR;
+                _selfType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
             var o = outer();
             while (o != null)
               {
-                if (t == o.thisType())
+                if (t.compareTo(o.thisType()) == 0)
                   {
                     AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
-                    // o._thisType = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
                 o = o.outer();
@@ -1563,7 +1562,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
 
-    thisType().checkChoice(_pos);
+    selfType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
@@ -2179,12 +2178,12 @@ public class Feature extends AbstractFeature implements Stmnt
             !result.isGenericArgument() &&
             result.featureOfType().isTypeFeature())
           {
-            result = Types.resolved.f_Type.thisType();
+            result = Types.resolved.f_Type.selfType();
           }
       }
     else if (_returnType.isConstructorType())
       {
-        result = thisType();
+        result = selfType();
       }
     else if (_returnType == NoType.INSTANCE)
       {
@@ -2349,7 +2348,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (hasOuterRef())
       {
         var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                  : this._outer.thisType();
+                                                  : this._outer.selfType();
         _outerRef = new Feature(res,
                                 _pos,
                                 Visi.PRIVATE,

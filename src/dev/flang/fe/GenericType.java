@@ -192,12 +192,6 @@ public class GenericType extends LibraryType
     throw new Error("GenericType.asThis() not defined");
   }
 
-
-  public String toString()
-  {
-    return genericArgument().feature().qualifiedName() + "." + genericArgument().name() + (this.isRef() ? " (boxed)" : "");
-  }
-
 }
 
 /* end of file */

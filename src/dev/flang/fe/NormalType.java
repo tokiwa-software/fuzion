@@ -244,30 +244,6 @@ public class NormalType extends LibraryType
   }
 
 
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String result = "";
-
-    if (outer() != null && !outer().isGenericArgument() && !outer().featureOfType().isUniverse())
-      {
-        result = outer() + ".";
-      }
-    if (isRef() != featureOfType().isThisRef())
-      {
-        result = result + (isRef() ? "ref " : "value ");
-      }
-    result = result + (featureOfType().featureName().baseName());
-    result = result + generics()
-      .toString(" ", " ", "", t -> t.toStringWrapped());
-    return result;
-  }
-
-
 }
 
 /* end of file */

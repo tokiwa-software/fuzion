@@ -118,7 +118,7 @@ private container_node(CTK type : has_hash, CTV type, bmp u32, array array (bran
 
 
 # a container, tomb or linked list node
-private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : has_equality is
+private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : equatable is
 
   # a previous node that gets set during a generational aware compare and set
   prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
@@ -159,7 +159,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
 private failed_node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) is
 
 # an indirection node
-private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_Node CTK CTV)) ref : has_equality is
+private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_Node CTK CTV)) ref : equatable is
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is

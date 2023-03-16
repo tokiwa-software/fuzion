@@ -191,6 +191,16 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   redef type.all_bits_set => i32 -1
 
 
+  # minimum
+  #
+  fixed type.min => i32 -0x_8000_0000
+
+
+  # maximum
+  #
+  fixed type.max => i32 0x_7fff_ffff
+
+
 
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance

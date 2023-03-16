@@ -58,6 +58,16 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+  /**
+   * Name of abstract features for lazy types:
+   */
+  public static final String LAZY_NAME = "Lazy";
+
+  /**
+   * Name of abstract features for unary function types:
+   */
+  public static final String UNARY_NAME = "Unary";
+
   public static Resolved resolved = null;
 
   /**
@@ -167,6 +177,8 @@ public class Types extends ANY
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
+    public final AbstractFeature f_Lazy;
+    public final AbstractFeature f_Unary;
     public static interface CreateType
     {
       AbstractType type(String name, boolean isRef);
@@ -225,6 +237,8 @@ public class Types extends ANY
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
+      f_Lazy                       = universe.get(mod, LAZY_NAME);
+      f_Unary                      = universe.get(mod, UNARY_NAME);
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
@@ -301,7 +315,7 @@ public class Types extends ANY
                 var g1 = g0.map(tt -> intern(tt));
                 if (o1 != o0 || g1 != g0)
                   {
-                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal);
+                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal, false);
                   }
               }
             existing = types.get(t);

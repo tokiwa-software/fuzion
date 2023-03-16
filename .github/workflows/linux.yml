@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+name: run tests on linux
+
 permissions:
   contents: read
 

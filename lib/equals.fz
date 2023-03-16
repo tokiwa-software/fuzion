@@ -26,22 +26,22 @@
 # equals -- feature that compares two values using the equality relation
 # defined in their type
 #
-equals(T type : has_equality, a, b T) => T.equality a b
+equals(T type : equatable, a, b T) => T.equality a b
 
 
 # infix ≟ -- infix operation as short-hand for 'equals'
 #
-infix ≟(T type : has_equality, a, b T) => equals T a b
+infix ≟(T type : equatable, a, b T) => equals T a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-infix =(T type : has_equality, a, b T) => equals T a b
+infix =(T type : equatable, a, b T) => equals T a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-infix !=(T type : has_equality, a, b T) => !equals T a b
+infix !=(T type : equatable, a, b T) => !equals T a b
 
 
 # lteq -- feature that compares two values using the lteq relation

@@ -246,6 +246,16 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
+  # minimum
+  #
+  fixed type.min => u128 0 0
+
+
+  # maximum
+  #
+  fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+
 
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance

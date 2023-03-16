@@ -265,7 +265,10 @@ public class Function extends ExprWithPos
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
-        if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
+        if (t != Types.t_ERROR &&
+            t.featureOfType() != Types.resolved.f_function &&
+            t.featureOfType() != Types.resolved.f_Lazy &&
+            t.featureOfType() != Types.resolved.f_Unary)
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
             result = Types.t_ERROR;
@@ -314,8 +317,18 @@ public class Function extends ExprWithPos
             var f = new Feature(pos(), rt, new List<String>("call"), a, _inherits, _contract, new Impl(_expr.pos(), _expr, im));
             this._feature = f;
 
+            var inheritsName = Types.FUNCTION_NAME;
+            if (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2)
+              {
+                inheritsName = Types.UNARY_NAME;
+              }
+            else if (t.featureOfType() == Types.resolved.f_Lazy && gs.size() == 1)
+              {
+                inheritsName = Types.LAZY_NAME;
+              }
+
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), null, Types.FUNCTION_NAME);
+            _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
@@ -337,7 +350,7 @@ public class Function extends ExprWithPos
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
+            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer);
           }
       }
     return result;
@@ -401,7 +414,22 @@ public class Function extends ExprWithPos
 
     if (f != null)
       {
-        f = Types.resolved.f_function;
+        var t = typeIfKnown();
+        AbstractFeature tf = null;
+
+        if (t != null)
+          {
+            tf = t.featureOfType();
+          }
+
+        if (tf != null)
+          {
+            f = tf;
+          }
+        else
+          {
+            f = Types.resolved.f_function;
+          }
       }
     return f;
   }

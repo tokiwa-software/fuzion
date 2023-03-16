@@ -1,0 +1,351 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutable_tree_map
+#
+# -----------------------------------------------------------------------
+
+
+# mutable_tree_map -- a mutable map using an AVL tree
+#
+mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
+
+
+  # the root entry of this map
+  #
+  # mutable because this might change, for example when the key stored at the root
+  # is removed.
+  #
+  # if this map is entry, this is nil
+  #
+  private root := LM.env.new (option (Entry LM K V)) nil
+
+
+  # returns the size of the map, i.e. the number of elements it contains
+  #
+  size u32 is
+    fold u32 0 ((i, _) -> i + 1)
+
+
+  # returns a string representation of the map
+  #
+  redef as_string String is
+    "\{" + (String.type.join (fold (lists.empty String) ((i, x) -> list_of_none_lazy "{x.key}={x.val}" i)) ", ") + "\}"
+
+
+  # freeze the map, such that it is no longer mutable afterwards
+  #
+  freeze =>
+    if root.open
+      root.close
+
+    fold unit ((_, x) ->
+      if x.left.open
+        x.left.close
+
+      if x.right.open
+        x.right.close
+
+      unit)
+
+
+  # get the value stored in this map at key k, nil if k is not
+  # contained in this map
+  #
+  get(k K) option V is
+    root.get ? nil => nil
+             | e Entry => e.get k
+
+
+  # add the mapping k -> v as a new entry to this map
+  #
+  # returns the value that k previously mapped to, or nil if
+  # k was not yet contained in this map
+  #
+  put(k K, v V) option V is
+    # helper feature to add a mapping to this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns any new node, or the reference to the existing
+    # node that was worked on.
+    #
+    # in this step, the helper feature to actually add the mapping
+    # is called first. then the AVL rebalancing is done
+    #
+    private put_recursively(node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+      (new_node, old_val) := insert_or_modify_entries node
+      (rebalance new_node, old_val)
+
+
+    # helper feature to add a mapping to this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns any new node, or the reference to the existing
+    # node that was worked on.
+    #
+    # in this step, the actual addition of the mapping to the binary
+    # tree is done, but this might violate the AVL invariants.
+    #
+    private insert_or_modify_entries(node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+      match node
+        nil =>
+          new_node := Entry LM K V k v
+          (option new_node, option V nil)
+        e Entry =>
+          if k < e.key
+            (node, old_val) := put_recursively e.left.get
+            e.left <- node
+            (option e, old_val)
+          else if e.key < k
+            (node, old_val) := put_recursively e.right.get
+            e.right <- node
+            (option e, old_val)
+          else
+            old_val := e.val
+            new_node := Entry LM K V k v
+            new_node.left <- e.left.get
+            new_node.right <- e.right.get
+            (option new_node, option old_val)
+
+
+    (new_root, old_val) := put_recursively root.get
+    root <- new_root
+    old_val
+
+
+  # remove the mapping from k to some value from this map
+  #
+  # returns the value that k previously mapped to, or nil if
+  # no mapping was actually removed
+  #
+  remove(k K) option V is
+    # helper feature to remove a mapping from this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns the reference to the node that was worked on.
+    #
+    # in this step, the helper feature to actually remove the
+    # mapping is called first. then the AVL rebalancing is done
+    #
+    private remove_recursively(k K, node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+      (new_node, old_val) := remove_or_modify_entries k node
+      (rebalance new_node, old_val)
+
+
+    # search the subtree whose root is the given node for its minimal
+    # node and return it
+    #
+    # minimal here means the node with the smallest key, by the given
+    # ordering of the keys
+    #
+    minimum(node option (Entry LM K V)) option (Entry LM K V) is
+      node ? nil => nil
+           | e Entry =>
+             e.left.get ? nil => e
+                        | l Entry => minimum l
+
+
+    # helper feature to remove a mapping from this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns the reference to the node that was worked on.
+    #
+    # in this step, the actual removal of the mapping from the binary
+    # tree is done, but this might violate the AVL invariants.
+    #
+    private remove_or_modify_entries(k K, node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+      match node
+        nil => (option (Entry LM K V) nil, option V nil)
+        e Entry =>
+          if k < e.key
+            (node, old_val) := remove_recursively k e.left.get
+            e.left <- node
+            (option e, old_val)
+          else if e.key < k
+            (node, old_val) := remove_recursively k e.right.get
+            e.right <- node
+            (option e, old_val)
+          else
+            old_val := e.val
+            match e.left.get
+              nil => (e.right.get, option old_val)
+              l Entry =>
+                match e.right.get
+                  nil => (option l, option old_val)
+                  r Entry =>
+                    m := minimum e.right.get
+
+                    new_node := Entry LM K V m.get.key m.get.val
+                    new_node.left <- l
+
+                    (nr, old_val) := remove_recursively m.get.key e.right.get
+                    new_node.right <- nr
+                    (option new_node, option old_val)
+
+
+    (new_root, old_val) := remove_recursively k root.get
+    root <- new_root
+    old_val
+
+
+  # rebalances a tree whose AVL invariants might be violated
+  #
+  # this determines the balance factor of the given node and applies
+  # the appropriate rotations
+  #
+  private rebalance(node option (Entry LM K V)) option (Entry LM K V) is
+    # returns the height of the subtree whose root is the given
+    # node, or -1 if an empty subtree is given
+    #
+    private height(node option (Entry LM K V)) i32 is
+      match node
+        nil => -1
+        e Entry => e.height.get
+
+
+    # returns the (AVL) balance factor of the given node, or
+    # 0 if a nil node is given
+    #
+    private balance_factor(node option (Entry LM K V)) i32 is
+      match node
+        nil => 0
+        e Entry => (height e.right.get) - (height e.left.get)
+
+
+    # recalculates and updates the heights of the subtrees in the
+    # subtree whose root is the given node
+    #
+    private fix_height(node option (Entry LM K V)) =>
+      match node
+        nil =>
+        e Entry =>
+          lh := height e.left.get
+          rh := height e.right.get
+
+          e.height <- (if lh > rh then lh else rh) + 1
+
+
+    # rotate right at the given node
+    #
+    private rotate_right(node option (Entry LM K V)) option (Entry LM K V) is
+      # because this feature is only called when the tree is out of balance,
+      # i.e. the left subtree has more nodes than the right one, we can safely
+      # assume here that node and node.left are not nil.
+      l := node.get.left.get
+
+      node.get.left <- l.get.right.get
+      l.get.right <- node
+
+      fix_height node
+      fix_height l
+
+      l
+
+
+    # rotate left at the given node
+    #
+    private rotate_left(node option (Entry LM K V)) option (Entry LM K V) is
+      # because this feature is only called when the tree is out of balance,
+      # i.e. the right subtree has more nodes than the left one, we can safely
+      # assume here that node and node.right are not nil.
+      r := node.get.right.get
+
+      node.get.right <- r.get.left.get
+      r.get.left <- node
+
+      fix_height node
+      fix_height r
+
+      r
+
+
+    # rebalance is called when nodes might have been inserted or deleted.
+    # this means that the heights of the nodes potentially changed, thus
+    # we need to recalculate them.
+    fix_height node
+
+    bf := balance_factor node
+
+    if bf < -1
+      # we can safely do node.get here because if node was empty,
+      # its balance factor would be 0.
+      if balance_factor node.get.left.get <= 0
+        rotate_right node
+      else
+        node.get.left <- rotate_left node.get.left.get
+        rotate_right node
+    else if bf > 1
+      # we can safely do node.get here because if node was empty,
+      # its balance factor would be 0.
+      if balance_factor node.get.right.get >= 0
+        rotate_left node
+      else
+        node.get.right <- rotate_right node.get.right.get
+        rotate_left node
+    else
+      # do nothing
+      node
+
+
+  # perform an in-order traversal of the tree and process the entries
+  # encountered using the initial value init and the combinator feature
+  # f. the latter takes the last result of the computation and the node
+  # currently visited and combines this information in some way.
+  #
+  fold(B type, init B, f (B, Entry LM K V) -> B) B is
+    private fold0(init B, node option (Entry LM K V)) B is
+      node ? nil => init
+           | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
+
+    fold0 init root.get
+
+
+  # returns an empty tree of elements of type A.
+  #
+  type.empty mutable_tree_map LM K V is
+    mutable_tree_map LM K V
+
+
+  # returns a tree of elements of type A that contains just the element a.
+  #
+  type.singleton(k K, v V) mutable_tree_map LM K V is
+    new_map := mutable_tree_map LM K V
+    new_entry := Entry LM K V k v
+    new_map.root <- new_entry
+
+    new_map
+
+
+  # initialize a map from an array of key value tuples
+  #
+  type.from_array(kvs array (tuple K V)) =>
+    from_array kvs false
+
+
+  # initialize a map from an array of key value tuples
+  #
+  # if the freeze argument is true, then the map is frozen
+  # after being populated with the entries from the array.
+  #
+  type.from_array(kvs array (tuple K V), freeze bool) mutable_tree_map LM K V is
+    new_map := mutable_tree_map LM K V
+    kvs.for_each (x ->
+      new_map.put x.values.0 x.values.1
+      unit)
+
+    if freeze
+      new_map.freeze
+
+    new_map

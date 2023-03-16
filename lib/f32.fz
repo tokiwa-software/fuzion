@@ -60,6 +60,58 @@ f32(val f32) : float f32, f32s is
     castTo_u32.hash
 
 
+
+  # is the sign bit set?
+  is_sign_bit_set bool is
+    castTo_u32 >= 1P31
+
+
+  # number of bits used for mantissa,
+  # including leading '1' that is not actually stored
+  #
+  type.significand_bits => 24
+
+
+  # number of bits used for exponent
+  #
+  type.exponent_bits => 8
+
+
+  # mask for the the bits that encode the mantissa
+  type.mantissa_mask => u32 1P23 - 1
+
+
+  # mask for the the bits that encode the exponent
+  # (the mask is not shifted to the correct position)
+  type.exponent_mask => u32 1P8 - 1
+
+
+  # the exponent bias (the zero offset of the exponent)
+  type.exponent_bias => 127
+
+
+  # the biased exponent
+  exponent_biased => ((castTo_u32 >> f32.type.mantissa_bits.as_u32) & f32.type.exponent_mask).as_i32
+
+
+  # the normalized exponent
+  exponent =>
+    if exponent_biased = 0
+      1 - f32.type.exponent_bias
+    else
+      exponent_biased - f32.type.exponent_bias
+
+
+  # the normalized mantissa
+  mantissa =>
+    m := castTo_u32 & f32.type.mantissa_mask
+    if exponent_biased = 0
+      m
+    else
+      (u32 1 << f32.type.mantissa_bits.as_u32) | m
+
+
+
   # the fraction of the floating point number
   redef fract f32 is
     if f32s.isNaN val
@@ -69,14 +121,10 @@ f32(val f32) : float f32, f32s is
     else if val ⩻ (f32 1)
       val
     else
-      bits := castTo_u32
-      fract_bits := significandBits.as_u32 - 1
-      bias := (u32 2 ** (exponentBits.as_u32 - 1) - 1)
-      mask := u32 2 ** exponentBits.as_u32 - 1
-      e := ((bits >> fract_bits) & mask) - bias
-      if (e ⩻ fract_bits)
-        x := bits & (u32s.max << (fract_bits - e))
-        val - x.castTo_f32
+      shift := (f32.type.mantissa_bits - exponent)
+      if (shift > 0)
+        whole := castTo_u32 & (u32s.max << shift.as_u32)
+        val - whole.castTo_f32
       else
         0.0
 
@@ -122,8 +170,6 @@ f32s : floats f32 is
   redef one  => f32 1
 
   redef bytes => 4
-  significandBits => 24
-  exponentBits => 8
 
 
   redef isNaN(val f32) bool is intrinsic
