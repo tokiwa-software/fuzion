@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to check fuzion idioms.
+#
+# -----------------------------------------------------------------------
+
+name: check idioms
+
+on:
+  workflow_dispatch:
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgc1 libgc-dev
+
+      - name: clone idioms
+        run: git clone https://github.com/tokiwa-software/fuzion-idioms/
+
+      - name: build (no-java)
+        run: make no-java
+
+      - name: update $PATH
+        run: echo "PATH=$PWD/build/bin:$PATH" >> $GITHUB_ENV
+
+      - name: check idioms interpreter
+        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./bin/check_example.sh
+
+      - name: check idioms c backend
+        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./bin/check_example_c.sh
+
