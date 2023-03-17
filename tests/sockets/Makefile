@@ -55,11 +55,11 @@ start_servers_c:
 
 int: start_servers_int
 	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
-	pkill sockets_test_server
+	pkill sockets_test_server || true
 
 c: start_servers_c
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
-	pkill server
+	pkill server || true
 
 record: start_servers_int
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
