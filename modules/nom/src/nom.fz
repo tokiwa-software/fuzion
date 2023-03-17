@@ -34,6 +34,9 @@ nom is
   # and produces either an error
   # or a result of type O and a rest of type R
   parser(I, R, O type, parse I -> parse_result R O) is
+
+    # return parser that maps the output of this
+    # parser to another type
     map(OM type, mapper O -> outcome OM) parser I R OM is
       parser I R OM (i ->
         match parse i
@@ -73,6 +76,7 @@ nom is
       )
 
 
+
   # string parsers
   string_parsers is
 
@@ -86,6 +90,7 @@ nom is
           error "tag ($str) not found"
       )
 
+
     # match zero or more whitespace
     whitespace0 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
       parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
@@ -93,17 +98,21 @@ nom is
         success (input.drop ws.count).as_seq ws.as_seq
       )
 
+
     # match one or more digit
     digit1 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
       sequence.take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
+
 
     # convert a parser taking a sequence of codepoints to a parser that takes a string
     to_string_input(R, O type, p parser (Sequence codepoint) R O) parser String R O is
       combinator.map_inp (Sequence codepoint) String R O p (str -> str.as_codepoint_sequence)
 
+
     # convert a parser returning a sequence of codepoints to a parser that returns a string
     to_string_output(I, R type, p parser I R (Sequence codepoint)) parser I R String is
       p.map String (seq -> String.type.from_codepoint_sequence seq)
+
 
     # convert a parser taking and returning to codepoints to a parser taking and returning a string
     to_string_parser(R type, p parser (Sequence codepoint) R (Sequence codepoint)) parser String R String is
@@ -122,6 +131,7 @@ nom is
         success rest matched
         )
 
+
     # take while cond is satisfied, at least once
     take_while1(T type, cond T -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
       parser (Sequence T) (Sequence T) (Sequence T) (input ->
@@ -132,6 +142,7 @@ nom is
           rest Sequence T := input.drop_while cond
           success rest matched
         )
+
 
     # matches input as often as possible but at least m times and at most n times.
     take_while_m_n(T type, m, n i32, cond (T) -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
@@ -148,6 +159,7 @@ nom is
             success (input.drop taken.count).as_seq taken.as_seq
       )
 
+
     # return result of p1 and p2 as tuple, drop result of p_sep
     separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 () -> (parser R2 R3 O3)) parser I R3 (tuple O1 O3) is
       parser I R3 (tuple O1 O3) (input ->
@@ -161,6 +173,7 @@ nom is
               e2 error => e2
           e1 error => e1
         )
+
 
 
   # parsers applied multiple times
@@ -178,6 +191,7 @@ nom is
           error => success input (lists.empty O).as_seq
       parser I I (Sequence O) (input -> parse input)
 
+
     # apply parser at least once, return results as sequence
     many1 (I, O type, p parser I I O) parser I I (Sequence O) is
       parse(input I) parse_result I (Sequence O) is
@@ -186,6 +200,28 @@ nom is
           e error => e
       parser I I (Sequence O) (input -> parse input)
 
+
+    # apply parser between m and n times, return results as sequence
+    many_m_n (I, O type, m, n i32, p parser I I O) parser I I (Sequence O)
+    pre m<=n,
+        n>0
+    is
+      parser I I (Sequence O) (input ->
+        (rest, acc) := (1..n)
+          .reduce (input, (Sequence O).type.empty) (r, t ->
+            (rest, acc) := r
+            match p.parse rest
+              s success =>
+                (s.rest, (acc ++ [s.out]).as_seq)
+              error =>
+                abort (rest, acc)
+          )
+        if acc.count < m
+          error "matched only {acc.count} times"
+        else
+          success rest acc)
+
+
     # parse a separated list of values, zero or more values
     separated_list0(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
       parse(input I) parse_result I (Sequence O) is
@@ -193,7 +229,7 @@ nom is
           s1 success =>
             match (many0 (combinator.preceded p_sep p_value)).parse s1.rest
               s2 success => success s2.rest ([s1.out]++s2.out).as_seq
-              e error => panic "invalid state, many always succeeds"
+              e error => panic "invalid state, many0 always succeeds"
           # NYI type inference should infer correct type of empty array
           error => success input (lists.empty O).as_seq
       parser I I (Sequence O) (input -> parse input)
@@ -205,7 +241,7 @@ nom is
           s1 success =>
             match (many0 (combinator.preceded p_sep p_value())).parse s1.rest
               s2 success => success s2.rest ([s1.out]++s2.out).as_seq
-              error => panic "invalid state, many always succeeds"
+              error => panic "invalid state, many0 always succeeds"
           e error => e
       parser I I (Sequence O) (input -> parse input)
 
@@ -226,6 +262,7 @@ nom is
           e1 error => e1
       parser I I (tuple O1 O2) (input -> parse input)
 
+
     # apply p1 then p2 then p3 and return their results as a tuple.
     tuple3(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I (tuple O1 O2 O3) is
       parse(input I) parse_result I (tuple O1 O2 O3) is
@@ -240,6 +277,30 @@ nom is
           e1 error => e1
       parser I I (tuple O1 O2 O3) (input -> parse input)
 
+
+    # apply p1 then p2 then p3, then p4 and return their results as a tuple.
+    tuple4(I, O1, O2, O3, O4 type,
+      p1 parser I I O1,
+      p2 parser I I O2,
+      p3 parser I I O3,
+      p4 parser I I O4
+      ) parser I I (tuple O1 O2 O3 O4) is
+      parse(input I) parse_result I (tuple O1 O2 O3 O4) is
+        match p1.parse(input)
+          s1 success I O1 =>
+            match p2.parse s1.rest
+              s2 success I O2 =>
+                match p3.parse s2.rest
+                  s3 success I O3 =>
+                    match p4.parse s3.rest
+                      s4 success I O4 => success s4.rest (s1.out, s2.out, s3.out, s4.out)
+                      e4 error => e4
+                  e3 error => e3
+              e2 error => e2
+          e1 error => e1
+      parser I I (tuple O1 O2 O3 O4) (input -> parse input)
+
+
     # discard the output of the first parser, return the result of the second parser
     preceded(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I O2 is
       parse(input I) parse_result I O2 is
@@ -248,6 +309,7 @@ nom is
             p2.parse s1.rest
           e1 error => e1
       parser I I O2 (input -> parse input)
+
 
     # discard p1 and p3, return result of p2
     delimited(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I O2 is
@@ -263,6 +325,7 @@ nom is
           e1 error => e1
       parser I I O2 (input -> parse input)
 
+
     # map input to parser p
     map_inp(I1, I2, R, O type, p parser I1 R O, mapper1 I2 -> I1) parser I2 R O is
       parse(input I2) parse_result R O is
@@ -273,17 +336,19 @@ nom is
 
   parsers : combinator, string_parsers, sequence, branch, multi is
 
-    json_value : choice String i64 f64 bool nil (Sequence json_value) (Map String json_value) is
+    json_value : choice String f64 bool nil (Sequence json_value) (Map String json_value) is
       redef as_string String is
         match json_value.this
           s String => "\"$s\""
-          i i64 => $i
-          f f64 => $f
+          f f64 =>
+            # NYI: interpreter and c backend produce different outputs for float.as_string currently
+            "{f.as_i64}.{f.fract != 0}"
           b bool => $b
           n nil => "null"
           seq Sequence => $seq
           m (Map String json_value) => "\{$m}"
 
+    # create parser for p
     json =>
 
       # parser for a json string
@@ -326,18 +391,54 @@ nom is
 
 
       # parser for a json number
-      # NYI fraction, negative numbers, exponents
       parser_number =>
 
-        parser_digit_1_9 := take_while0 codepoint (c -> (u32 0x31 .. 0x39).contains c.val)
-        parser_digit := take_while0 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
+        parser_minus := many_m_n 0 1 (tag "-")
+          .map f64 (x -> if x.count = 1 then -1.0 else 1.0)
 
-        parser_fraction :=
-          (preceded (tag ".") (many1 parser_digit)).map u64 (x -> (String.type.from_codepoint_sequence (x.flatMapSequence codepoint (y -> y))).parse_u64.val)
+        parser_digits := take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 
-        # parser_exponent := preceded (alt [tag "e", tag "E"]) parser_signed_digit
+        parser_whole := alt [tag "0", parser_digits]
+          .map f64 (x -> (String.type.from_codepoint_sequence x)
+                            .parse_u64
+                            .val 1
+                            .as_f64)
 
-        (take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)).map json_value (x -> (String.type.from_codepoint_sequence x).parse_i64.val)
+        parser_fraction := many_m_n 0 1 (preceded (tag ".") parser_digits)
+          .map f64 (x ->
+            if x.is_empty
+              0.0
+            else
+              (String.type.from_codepoint_sequence x.first)
+                .parse_u64
+                .val 0
+                .as_f64 / (10.0*x.count.as_f64))
+
+        parser_sign := many_m_n 0 1 (alt [tag "+", tag "-"])
+          .map f64 (x ->
+            if x.is_empty
+              1.0
+            else if x.first.first = "+"
+              1.0
+            else
+              -1.0
+          )
+
+        parser_signed_digit := tuple2 parser_sign parser_whole
+
+        parser_exponent :=  many_m_n 0 1 (preceded (alt [tag "e", tag "E"]) parser_signed_digit)
+          .map f64 (x ->
+            if x.is_empty
+              1.0
+            else
+              (s, n) := x.first
+              10.0 ** (s*n))
+
+        (tuple4 parser_minus parser_whole parser_fraction parser_exponent)
+          .map json_value (x ->
+            (s, w, f, e) := x
+            s*(w+f)*e)
+
 
       # parser for true
       parser_true :=

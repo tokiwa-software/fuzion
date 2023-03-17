@@ -6,13 +6,15 @@ error: tag (#) not found
 error: alt: no parser successful
 error: alt: no parser successful
 {}
-42
+42.false
 null
 true
 false
-[1,2,3]
+[1.false,2.false,3.false]
+[1.true,2.true,3.true]
+[-1.true,250.false,0.true]
 "hello
 world"
 {(name  => "sonoo")}
-{(name  => [1,true,false,null,"sonoo",{(name  => "sonoo")}])}
-{(employee  => {(name  => "sonoo"), (salary  => 56000), (married  => true)})}
+{(name  => [1.false,true,false,null,"sonoo",{(name  => "sonoo")}])}
+{(employee  => {(name  => "sonoo"), (salary  => 56000.false), (married  => true)})}
