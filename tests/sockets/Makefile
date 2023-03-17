@@ -55,7 +55,7 @@ start_servers_c:
 
 int: start_servers_int
 	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
-	pkill java
+	pkill sockets_test_server
 
 c: start_servers_c
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
