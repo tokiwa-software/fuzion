@@ -35,9 +35,10 @@ nom_test =>
 
 
   hex_parser_test is
-    sp :=  nom.string_parsers
-    cp :=  nom.combinator
-    seq := nom.sequence
+    sp   := nom.string_parsers
+    cp   := nom.combinator
+    seq  := nom.sequence
+    seqs := nom.sequences
 
     hex_color(r,g,b u8) is
       redef as_string String is
@@ -48,9 +49,9 @@ nom_test =>
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (seq.take_while_m_n codepoint 2 2 (fun is_valid)).map u8 (o1 -> (String.type.from_codepoint_sequence o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (seqs.take_while_m_n codepoint 2 2 (fun is_valid)).map u8 (o1 -> (String.type.from_codepoint_sequence o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
-    parser_hex_tuple := cp.preceded (sp.tag "#") (cp.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
+    parser_hex_tuple := seq.preceded (sp.tag "#") (seq.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
     parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> (r,g,b) := t; hex_color r g b)
     # convert parser to take string not codepoints as input
@@ -64,20 +65,21 @@ nom_test =>
 
 
   json_parser_test is
-    say (nom.parsers.json.parse "")
-    say (nom.parsers.json.parse " ")
-    say (nom.parsers.json.parse "\{}")
-    say (nom.parsers.json.parse " 42 ")
-    say (nom.parsers.json.parse " null ")
-    say (nom.parsers.json.parse " true ")
-    say (nom.parsers.json.parse " false ")
-    say (nom.parsers.json.parse "[1, 2, 3]")
-    say (nom.parsers.json.parse "[1.5,2.5,3.5]")
-    say (nom.parsers.json.parse "[-1.5,2.5E2,5.0e-1]")
-    say (nom.parsers.json.parse "\"hello\\nworld\"")
-    say (nom.parsers.json.parse "\{ \"name \":  \"sonoo\" }")
-    say (nom.parsers.json.parse "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
-    say (nom.parsers.json.parse "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
+    json_parser := nom.parsers.json
+    say (json_parser.parse "")
+    say (json_parser.parse " ")
+    say (json_parser.parse "\{}")
+    say (json_parser.parse " 42 ")
+    say (json_parser.parse " null ")
+    say (json_parser.parse " true ")
+    say (json_parser.parse " false ")
+    say (json_parser.parse "[1, 2, 3]")
+    say (json_parser.parse "[1.5,2.5,3.5]")
+    say (json_parser.parse "[-1.5,2.5E2,5.0e-1]")
+    say (json_parser.parse "\"hello\\nworld\"")
+    say (json_parser.parse "\{ \"name \":  \"sonoo\" }")
+    say (json_parser.parse "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
+    say (json_parser.parse "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
 
   simple_parser_test
   hex_parser_test

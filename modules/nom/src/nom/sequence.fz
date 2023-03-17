@@ -1,0 +1,109 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# nom.sequence -- parsers applied in sequence
+#
+sequence is
+
+  # apply p1 then p2 and return their results as a tuple.
+  tuple2(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I (tuple O1 O2) is
+    parse(input I) parse_result I (tuple O1 O2) is
+      match p1.parse(input)
+        s1 success I O1 =>
+          match p2.parse s1.rest
+            s2 success I O2 =>
+              success s2.rest (s1.out, s2.out)
+            e2 error => e2
+        e1 error => e1
+    parser I I (tuple O1 O2) (input -> parse input)
+
+
+  # apply p1 then p2 then p3 and return their results as a tuple.
+  tuple3(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I (tuple O1 O2 O3) is
+    parse(input I) parse_result I (tuple O1 O2 O3) is
+      match p1.parse(input)
+        s1 success I O1 =>
+          match p2.parse s1.rest
+            s2 success I O2 =>
+              match p3.parse s2.rest
+                s3 success I O3 => success s3.rest (s1.out, s2.out, s3.out)
+                e3 error => e3
+            e2 error => e2
+        e1 error => e1
+    parser I I (tuple O1 O2 O3) (input -> parse input)
+
+
+  # apply p1 then p2 then p3, then p4 and return their results as a tuple.
+  tuple4(I, O1, O2, O3, O4 type,
+    p1 parser I I O1,
+    p2 parser I I O2,
+    p3 parser I I O3,
+    p4 parser I I O4
+    ) parser I I (tuple O1 O2 O3 O4) is
+    parse(input I) parse_result I (tuple O1 O2 O3 O4) is
+      match p1.parse(input)
+        s1 success I O1 =>
+          match p2.parse s1.rest
+            s2 success I O2 =>
+              match p3.parse s2.rest
+                s3 success I O3 =>
+                  match p4.parse s3.rest
+                    s4 success I O4 => success s4.rest (s1.out, s2.out, s3.out, s4.out)
+                    e4 error => e4
+                e3 error => e3
+            e2 error => e2
+        e1 error => e1
+    parser I I (tuple O1 O2 O3 O4) (input -> parse input)
+
+
+  # discard the output of the first parser, return the result of the second parser
+  preceded(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I O2 is
+    parse(input I) parse_result I O2 is
+      match p1.parse input
+        s1 success I O1 =>
+          p2.parse s1.rest
+        e1 error => e1
+    parser I I O2 (input -> parse input)
+
+
+  # discard p1 and p3, return result of p2
+  delimited(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I O2 is
+    parse(input I) parse_result I O2 is
+      match p1.parse(input)
+        s1 success I O1 =>
+          match p2.parse s1.rest
+            s2 success I O2 =>
+              match p3.parse s2.rest
+                s3 success I O3 => success s3.rest s2.out
+                e3 error => e3
+            e2 error => e2
+        e1 error => e1
+    parser I I O2 (input -> parse input)
+
+
+  # return result of p1 and p2 as tuple, drop result of p_sep
+  separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 () -> (parser R2 R3 O3)) parser I R3 (tuple O1 O3) is
+    parser I R3 (tuple O1 O3) (input ->
+      match p1.parse input
+        s1 success =>
+          match p_sep.parse s1.rest
+            s2 success =>
+              match p2().parse s2.rest
+                s3 success => success s3.rest (s1.out, s3.out)
+                e3 error => e3
+            e2 error => e2
+        e1 error => e1
+      )
+
