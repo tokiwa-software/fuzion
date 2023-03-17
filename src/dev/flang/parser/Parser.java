@@ -464,9 +464,9 @@ field       : returnType
       }
     p.skipEffects();
     return
-      p.isInheritPrefix   () ||
-      p.isContractPrefix  () ||
-      p.isImplPrefix      ();
+      p.skipInherits() &&
+      (p.isContractPrefix  () ||
+       p.isImplPrefix      ());
   }
 
 
@@ -1237,35 +1237,6 @@ EXCLAMATION : "!"
 
 
   /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'.  Does not change the position of the parser.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean isReturnTypeFollowedByColon()
-  {
-    return
-      isOperator(':') ||
-      isNonFuncReturnTypePrefix() && fork().skipReturnTypeFollowedByColonPrefix();
-  }
-
-
-  /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'. Skip an unspecified part of it.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean skipReturnTypeFollowedByColonPrefix()
-  {
-    return
-      isOperator(':') ||
-      skipNonFuncReturnType() && isOperator(':') ||
-      isTypeFollowedByColon();
-  }
-
-
-  /**
    * Parse optional inherits clause
    *
 inherits    : inherit
@@ -1275,6 +1246,19 @@ inherits    : inherit
   List<AbstractCall> inherits()
   {
     return isInheritPrefix() ? inherit() : new List<>();
+  }
+
+
+  /**
+   * Check if the current position is a, possibly empty, inherits. If so, skip
+   * it.
+   *
+   * @return true iff the next token(s) are an inherits clause and were skipped.
+   *
+   */
+  boolean skipInherits()
+  {
+    return !skipColon() || skipCallList();
   }
 
 
@@ -1317,6 +1301,29 @@ callList    : call ( COMMA callList
     while (skipComma())
       {
         result.add(call(null));
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is a callList.  If so, skip it.
+   *
+   * Since a call may contain code that is arbitrarily complex (actual args may
+   * contain lambdas that declare arbitrary inner features etc.), this will just
+   * parse the call list and, as a side effect, produce errors in case this
+   * parsing fails.  This should be OK since this is used in `skipInherits` if a
+   * colon was found.  If this turns out not to be an inherits clause, the colon
+   * is an infix operator followed by a call, that needs to be parsed anyway.
+   *
+   * @return true iff the next token(s) are a callList.
+   */
+  boolean skipCallList()
+  {
+    var result = isNamePrefix();
+    if (result)
+      {
+        var ignore = callList();
       }
     return result;
   }
@@ -3203,7 +3210,7 @@ universeCall      : "universe" dot "this" dot call
   /**
    * Parse anonymous
    *
-anonymous   : returnType
+anonymous   : "ref"
               inherit
               contract
               block
@@ -3213,7 +3220,9 @@ anonymous   : returnType
   {
     var sl = sameLine(line());
     SourcePosition pos = posObject();
-    ReturnType r = returnType();
+    if (CHECKS) check
+      (current() == Token.t_ref);
+    ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
     Contract   c = contract();
     Block      b = block();
@@ -3238,7 +3247,7 @@ anonymous   : returnType
    */
   boolean isAnonymousPrefix()
   {
-    return isReturnTypeFollowedByColon();
+    return current() == Token.t_ref;
   }
 
 

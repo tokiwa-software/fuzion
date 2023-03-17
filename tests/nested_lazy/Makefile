@@ -17,10 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Lazy
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Lazy
-#
-Lazy(T type) ref : Function T is
+override NAME = ex_nested_lazy
+include ../simple.mk

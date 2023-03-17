@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.Pair;
 
 
 /**
@@ -1080,18 +1081,22 @@ public class Call extends AbstractCall
   private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
   {
     Call result = this;
-    if (!_forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        (
-        _type.isFunType() &&
-        _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
-        _calledFeature.arguments().size() == 0 &&
-        hasParentheses())
-        || (
-        _type.isLazyType() &&
-        _calledFeature != Types.resolved.f_Lazy &&
-        _calledFeature.arguments().size() == 0 &&
-        !hasParentheses()))
+
+    // replace Function or Lazy value `l` by `l.call`:
+    if (!_forFun                                     && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
+        (_type.isFunType() &&
+         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+         _calledFeature.arguments().size() == 0      &&
+         hasParentheses()
+         ||
+         _type.isLazyType()                          &&   // we are `Lazy T`
+         _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+         _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+         _actualsNew.isEmpty()                       &&   // dto.
+         originalLazyValue() == this                      // prevent repeated `l.call.call` wenn resolving the newly created Call to `call`.
+         ))
       {
+        var wasLazy = _type.isLazyType();
         result = new Call(pos(),
                           this /* this becomes target of "call" */,
                           "call",
@@ -1101,6 +1106,12 @@ public class Call extends AbstractCall
                           _actuals,
                           null,
                           null)
+          {
+            Expr originalLazyValue()
+            {
+              return wasLazy ? Call.this : super.originalLazyValue();
+            }
+          }
           .resolveTypes(res, outer);
         _actualsNew = NO_PARENTHESES;
         _actuals = Expr.NO_EXPRS;
@@ -1572,7 +1583,11 @@ public class Call extends AbstractCall
     var cf = _calledFeature;
     int sz = cf.generics().list.size();
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
-    String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
+    var foundAt  = new List<List<Pair<SourcePosition, AbstractType>>>(); // generics that were found will get the type and pos found stored here, null while not found
+    for (var i = 0; i<sz ; i++)
+      {
+        foundAt.add(null);
+      }
 
     _generics = actualTypeParameters();
     var va = cf.valueArguments();
@@ -1594,7 +1609,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        if ( g.isOpen() && foundAt[i] == null ||
+        if ( g.isOpen() && foundAt.get(i) == null ||
             !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
@@ -1607,7 +1622,7 @@ public class Call extends AbstractCall
           }
         else if (conflict[i])
           {
-            AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
+            AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
             _generics = _generics.setOrClone(i, Types.t_ERROR);
           }
       }
@@ -1642,7 +1657,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
+  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
@@ -1667,7 +1682,7 @@ public class Call extends AbstractCall
                     if (pass == 1)
                       {
                         checked[vai] = true;
-                        foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
+                        foundAt.set(g.index(), new List<>()); // set to something not null to avoid missing argument error below
                         while (aargs.hasNext())
                           {
                             count++;
@@ -1744,6 +1759,30 @@ public class Call extends AbstractCall
 
 
   /**
+   * Helper for inferGeneric and inferGenericLambdaResult to add a type that was
+   * found to the list of found positions and types.
+   *
+   * @param foundAt list with one entry for each generic that is either null or
+   * a list of the position/type pairs found so far.  This list will be created
+   * if it does not exist and the new pair will be added.
+   *
+   * @param i index of the generic in foundAt
+   *
+   * @param pos the position to add
+   *
+   * @param t the type to add.
+   */
+  private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
+  {
+    if (foundAt.get(i) == null)
+      {
+        foundAt.set(i, new List<>());
+      }
+    foundAt.get(i).add(new Pair<SourcePosition, AbstractType>(pos, t));
+  }
+
+
+  /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
    *
    * @param res the resolution instance.
@@ -1759,7 +1798,13 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Resolution res, AbstractFeature outer, AbstractType formalType, AbstractType actualType, SourcePosition pos, boolean[] conflict, String[] foundAt)
+  private void inferGeneric(Resolution res,
+                            AbstractFeature outer,
+                            AbstractType formalType,
+                            AbstractType actualType,
+                            SourcePosition pos,
+                            boolean[] conflict,
+                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_type_feature_origin(outer)) == 0);
@@ -1779,7 +1824,7 @@ public class Call extends AbstractCall
                 nt = Types.t_ERROR;
               }
             _generics = _generics.setOrClone(i, nt);
-            foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
+            addPair(foundAt, i, pos, actualType);
           }
       }
     else
@@ -1848,18 +1893,19 @@ public class Call extends AbstractCall
                                            Function af,
                                            SourcePosition pos,
                                            boolean[] conflict,
-                                           String[] foundAt)
+                                           List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
     if (!formalType.isGenericArgument() &&
-        formalType.featureOfType() == Types.resolved.f_function &&
+        (formalType.featureOfType() == Types.resolved.f_function ||
+         formalType.featureOfType() == Types.resolved.f_Unary) &&
         formalType.generics().get(0).isGenericArgument()
         )
       {
         var rg = formalType.generics().get(0).genericArgument();
         var ri = rg.index();
         var cf = _calledFeature;
-        if (rg.feature() == cf && foundAt[ri] == null)
+        if (rg.feature() == cf && foundAt.get(ri) == null)
           {
             var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, _generics);
             if (!at.containsUndefined(true))
@@ -1869,7 +1915,7 @@ public class Call extends AbstractCall
                   {
                     _generics = _generics.setOrClone(ri, rt);
                   }
-                foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
+                addPair(foundAt, ri, pos, rt);
                 result = true;
               }
           }
@@ -1963,6 +2009,19 @@ public class Call extends AbstractCall
 
 
   /**
+   * Field used to detect and avoid repeated calls to resolveTypes for the same
+   * outer feature.  resolveTypes may be called repeatedly when types are
+   * determined on demand for type inference for type parameters in a call. This
+   * field will record that resolveTypes was called for a given outer feature.
+   * This is used to not perform resolveTypes repeatedly.
+   *
+   * However, moving an expression into a lambda or a lazy value will change its
+   * outer feature and resolve will have to be repeated.
+   */
+  private AbstractFeature _resolvedFor;
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
@@ -1972,6 +2031,11 @@ public class Call extends AbstractCall
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
     Call result = this;
+    if (_resolvedFor == outer)
+      {
+        return this;
+      }
+    _resolvedFor = outer;
     loadCalledFeature(res, outer);
     FormalGenerics.resolve(res, _generics, outer);
 

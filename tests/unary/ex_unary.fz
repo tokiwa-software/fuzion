@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ex_unary
+#
+# -----------------------------------------------------------------------
+
+ex_unary is
+
+  g ref : Unary i32 i32 is
+    redef call (x i32) i32 is 2*x
+
+
+  f ref : Unary i32 i32 is
+    redef call (y i32) i32 is y+2
+
+  x := (f ∘ g).call 3
+  say x
+
+  y := (g ∘ f).call 3
+  say y
+
+
+  g0 Unary i32 i32 := x -> 2*x
+  f0 Unary i32 i32 := y -> y+2
+
+  x0 := (f0 ∘ g0).call 3
+  say x0
+
+  y0 := (g0 ∘ f0).call 3
+  say y0
+
+  f0_after_g0 := f0 ∘ g0
+  say (f0_after_g0 3)
+
+  g1 i32 -> i32 := x -> 2*x
+  f1 i32 -> i32 := y -> y+2
+
+  f1_after_g1 := f1 ∘ g1
+  x1 := f1_after_g1 3
+  say x1
+
+  g1_after_f1 := g1 ∘ f1
+  y1 := g1_after_f1 3
+  say y1
+
+  bool_to_letters bool -> list String := (b ->
+    b ? TRUE => ["T", "r", "u", "e"].as_list
+      | FALSE => ["F", "a", "l", "s", "e" ].as_list)
+
+  join_list list String -> String := l -> String.type.join(l, "")
+
+  bool_to_string := join_list ∘ bool_to_letters
+
+  say (bool_to_string true)
+  say (bool_to_string false)

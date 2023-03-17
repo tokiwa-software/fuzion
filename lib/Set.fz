@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Set -- an abstract set of values V
+# Set -- an abstract set of values
 #
 Set(E type : equatable) ref : Sequence E is
 

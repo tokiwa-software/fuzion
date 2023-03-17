@@ -38,6 +38,7 @@ import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Terminal;
 
@@ -1510,12 +1511,14 @@ public class AstErrors extends ANY
           "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
-  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)
+  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, List<Pair<SourcePosition, AbstractType>> foundAt)
   {
     error(pos,
           "Incompatible types found during type inference for type parameters",
           "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
-          foundAt);
+          foundAt.stream()
+                 .map(p -> s(p._v1) + " found at " + p._v0.show() + "\n")
+                 .collect(Collectors.joining()));
   }
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
