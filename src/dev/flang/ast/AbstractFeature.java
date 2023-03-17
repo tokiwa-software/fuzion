@@ -704,7 +704,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       !isUniverse(),
+       Errors.count() > 0 || !isUniverse(),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -712,6 +712,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         if (hasTypeFeature())
           {
             _typeFeature = typeFeature();
+          }
+        else if (isUniverse())
+          {
+            if (CHECKS) check
+              (Errors.count() > 0);
+            _typeFeature = Types.f_ERROR;
           }
         else
           {
