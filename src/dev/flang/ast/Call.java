@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.Pair;
 
 
 /**
@@ -1582,7 +1583,11 @@ public class Call extends AbstractCall
     var cf = _calledFeature;
     int sz = cf.generics().list.size();
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
-    String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
+    var foundAt  = new List<List<Pair<SourcePosition, AbstractType>>>(); // generics that were found will get the type and pos found stored here, null while not found
+    for (var i = 0; i<sz ; i++)
+      {
+        foundAt.add(null);
+      }
 
     _generics = actualTypeParameters();
     var va = cf.valueArguments();
@@ -1604,7 +1609,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        if ( g.isOpen() && foundAt[i] == null ||
+        if ( g.isOpen() && foundAt.get(i) == null ||
             !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
@@ -1617,7 +1622,7 @@ public class Call extends AbstractCall
           }
         else if (conflict[i])
           {
-            AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
+            AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
             _generics = _generics.setOrClone(i, Types.t_ERROR);
           }
       }
@@ -1652,7 +1657,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
+  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
@@ -1677,7 +1682,7 @@ public class Call extends AbstractCall
                     if (pass == 1)
                       {
                         checked[vai] = true;
-                        foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
+                        foundAt.set(g.index(), new List<>()); // set to something not null to avoid missing argument error below
                         while (aargs.hasNext())
                           {
                             count++;
@@ -1754,6 +1759,30 @@ public class Call extends AbstractCall
 
 
   /**
+   * Helper for inferGeneric and inferGenericLambdaResult to add a type that was
+   * found to the list of found positions and types.
+   *
+   * @param foundAt list with one entry for each generic that is either null or
+   * a list of the position/type pairs found so far.  This list will be created
+   * if it does not exist and the new pair will be added.
+   *
+   * @param i index of the generic in foundAt
+   *
+   * @param pos the position to add
+   *
+   * @param t the type to add.
+   */
+  private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
+  {
+    if (foundAt.get(i) == null)
+      {
+        foundAt.set(i, new List<>());
+      }
+    foundAt.get(i).add(new Pair<SourcePosition, AbstractType>(pos, t));
+  }
+
+
+  /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
    *
    * @param res the resolution instance.
@@ -1769,7 +1798,13 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Resolution res, AbstractFeature outer, AbstractType formalType, AbstractType actualType, SourcePosition pos, boolean[] conflict, String[] foundAt)
+  private void inferGeneric(Resolution res,
+                            AbstractFeature outer,
+                            AbstractType formalType,
+                            AbstractType actualType,
+                            SourcePosition pos,
+                            boolean[] conflict,
+                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_type_feature_origin(outer)) == 0);
@@ -1789,7 +1824,7 @@ public class Call extends AbstractCall
                 nt = Types.t_ERROR;
               }
             _generics = _generics.setOrClone(i, nt);
-            foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
+            addPair(foundAt, i, pos, actualType);
           }
       }
     else
@@ -1858,7 +1893,7 @@ public class Call extends AbstractCall
                                            Function af,
                                            SourcePosition pos,
                                            boolean[] conflict,
-                                           String[] foundAt)
+                                           List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
     if (!formalType.isGenericArgument() &&
@@ -1870,7 +1905,7 @@ public class Call extends AbstractCall
         var rg = formalType.generics().get(0).genericArgument();
         var ri = rg.index();
         var cf = _calledFeature;
-        if (rg.feature() == cf && foundAt[ri] == null)
+        if (rg.feature() == cf && foundAt.get(ri) == null)
           {
             var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, _generics);
             if (!at.containsUndefined(true))
@@ -1880,7 +1915,7 @@ public class Call extends AbstractCall
                   {
                     _generics = _generics.setOrClone(ri, rt);
                   }
-                foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
+                addPair(foundAt, ri, pos, rt);
                 result = true;
               }
           }
