@@ -21,6 +21,48 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = sockets_test
+
+# A simple tests compares the actual output with the expected output
+#
+# expected variables
+#
+#  NAME -- the name of the main feature to be tested
+#  FUZION -- the fz command
+#  FUZION_OPTIONS -- options to be passed to $(FUZION)
+NAME=sockets_test_client
 FUZION_OPTIONS = -unsafeIntrinsics=on
-include ../simple.mk
+FUZION = ../../bin/fz
+FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
+FILE = $(NAME).fz
+ENV = \
+  $(if $(FUZION_HOME)           , FUZION_HOME=$(FUZION_HOME)                      ,) \
+  $(if $(FUZION_JAVA)           , FUZION_JAVA=$(FUZION_JAVA)                      ,) \
+  $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
+  $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
+
+start_servers_int:
+	$(FUZION_RUN) sockets_test_server.fz ipv4 tcp & \
+	$(FUZION_RUN) sockets_test_server.fz ipv4 udp & \
+	$(FUZION_RUN) sockets_test_server.fz ipv6 tcp & \
+	$(FUZION_RUN) sockets_test_server.fz ipv6 udp & \
+	sleep 10s
+
+start_servers_c:
+	rm -f server
+	$(FUZION_RUN) -c -o=server sockets_test_server.fz && \
+	(./server ipv4 tcp & ./server ipv4 udp & ./server ipv6 tcp & ./server ipv6 udp) & \
+	sleep 1s
+
+int: start_servers_int
+	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	pkill java
+
+c: start_servers_c
+	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	pkill server
+
+record: start_servers_int
+	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+
+record_c: start_servers_c
+	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
