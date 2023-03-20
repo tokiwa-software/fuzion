@@ -46,7 +46,7 @@ is
   public read(max_bytes i32) outcome (array u8) is
     # close channel on certain read errors?
     replace (match desc
-      d i64 => fuzion.sys.net0.read d max_bytes
+      d i64 => fuzion.sys.net.read d max_bytes
       e error => e)
 
 
@@ -71,7 +71,7 @@ is
   public write(data Sequence u8) outcome unit is
     # close channel on certain write errors?
     match desc
-      d i64 => replace (fuzion.sys.net0.write d data.as_array)
+      d i64 => replace (fuzion.sys.net.write d data.as_array)
       e error => e
 
 
@@ -81,7 +81,7 @@ is
     if auto_close
       match desc
         d i64 =>
-          match fuzion.sys.net0.close d
+          match fuzion.sys.net.close d
             unit =>
               channel T (error "not initialized") false effectMode.repl
             e error =>

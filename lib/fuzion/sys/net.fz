@@ -39,7 +39,7 @@
 #
 # NYI: use error codes coming from backend
 #
-net0 is
+net is
 
 
   # bind a name to a socket

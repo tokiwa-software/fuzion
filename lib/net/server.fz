@@ -44,7 +44,7 @@ is
     (channel server).close
     match state
       d i64 =>
-        match fuzion.sys.net0.close d
+        match fuzion.sys.net.close d
           unit =>
             server (error "not initialized") nil effectMode.repl unit
           error error =>
@@ -62,7 +62,7 @@ is
       d i64 =>
         match p
           protocol.tcp =>
-            ar := fuzion.sys.net0.accept d
+            ar := fuzion.sys.net.accept d
             channel server ar true
             ar.bind unit d->unit
           * =>
@@ -82,7 +82,7 @@ is
         concur.thread.spawn ()->
           match p
             protocol.tcp =>
-              channel server (fuzion.sys.net0.accept d) true
+              channel server (fuzion.sys.net.accept d) true
               code()
             * =>
               channel server state true
@@ -134,15 +134,15 @@ private init_ip_server(f family.val, p protocol.val, port u16) outcome i64 is
     )
 
   # bind to port
-  match fuzion.sys.net0.bind f.as_num s.as_num p.as_num any_addr port
+  match fuzion.sys.net.bind f.as_num s.as_num p.as_num any_addr port
     err error => err
     sd i64  =>
       match p
         protocol.tcp =>
           # listen
-          listen_res := fuzion.sys.net0.listen sd backlog
+          listen_res := fuzion.sys.net.listen sd backlog
           if listen_res != 0
-            fuzion.sys.net0.close sd
+            fuzion.sys.net.close sd
             error "listening on socket failed with error $listen_res."
           else
             sd

@@ -37,7 +37,7 @@ is
       net.protocol.udp => net.socket_type.datagram
       *   => net.socket_type.raw
     )
-  match fuzion.sys.net0.connect f.as_num s.as_num p.as_num host port
+  match fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
     desc i64 =>
       channel T desc true
       unit

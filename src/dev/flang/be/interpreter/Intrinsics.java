@@ -761,7 +761,7 @@ public class Intrinsics extends ANY
         });
 
 
-    putUnsafe("fuzion.sys.net0.bind0"    , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.bind0"    , (interpreter, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
       var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
@@ -802,11 +802,11 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net0.listen"  , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
       return new i32Value(0);
     });
 
-    putUnsafe("fuzion.sys.net0.accept"  , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
       try
         {
           var asc = _openStreams_.get(args.get(1).i64Value());
@@ -829,7 +829,7 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net0.connect0" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.connect0" , (interpreter, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
       var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
@@ -865,7 +865,7 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net0.read" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.read" , (interpreter, innerClazz) -> args -> {
       try
         {
           byte[] buff = (byte[])args.get(2).arrayData()._array;
@@ -898,7 +898,7 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net0.write" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.write" , (interpreter, innerClazz) -> args -> {
       try
         {
           var fileContent = (byte[])args.get(2).arrayData()._array;
@@ -912,14 +912,14 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net0.close0" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.close0" , (interpreter, innerClazz) -> args -> {
       long fd = args.get(1).i64Value();
       return _openStreams_.remove(fd)
         ? new i32Value(0)
         : new i32Value(-1);
     });
 
-    putUnsafe("fuzion.sys.net0.set_blocking" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.set_blocking" , (interpreter, innerClazz) -> args -> {
       var asc = (AbstractSelectableChannel)_openStreams_.get(args.get(1).i64Value());
       var blocking = args.get(2).i32Value();
       try

@@ -734,7 +734,7 @@ public class Intrinsics extends ANY
       });
 
 
-    put("fuzion.sys.net0.bind0",    (c,cl,outer,in) ->
+    put("fuzion.sys.net.bind0",    (c,cl,outer,in) ->
       CExpr.call("fzE_bind", new List<CExpr>(
         A0.castTo("int"),       // family
         A1.castTo("int"),       // socktype
@@ -744,16 +744,16 @@ public class Intrinsics extends ANY
         A5.castTo("int64_t *")  // result
     )).ret());
 
-    put("fuzion.sys.net0.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
+    put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
       A0.castTo("int"), // socket descriptor
       A1.castTo("int")  // size of backlog
     )).ret());
 
-    put("fuzion.sys.net0.accept",  (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_accept", new List<CExpr>(
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_accept", new List<CExpr>(
       A0.castTo("int") // socket descriptor
     )), A1));
 
-    put("fuzion.sys.net0.connect0",    (c,cl,outer,in) ->
+    put("fuzion.sys.net.connect0",    (c,cl,outer,in) ->
     CExpr.call("fzE_connect", new List<CExpr>(
       A0.castTo("int"),       // family
       A1.castTo("int"),       // socktype
@@ -763,23 +763,23 @@ public class Intrinsics extends ANY
       A5.castTo("int64_t *")  // result (err or descriptor)
   )).ret());
 
-    put("fuzion.sys.net0.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
+    put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
       A0.castTo("int"),    // socket descriptor
       A1.castTo("void *"), // buffer
       A2.castTo("size_t")  // buffer length
     )), A3));
 
-    put("fuzion.sys.net0.write", (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
+    put("fuzion.sys.net.write", (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
       A0.castTo("int"),    // socket descriptor
       A1.castTo("void *"), // buffer
       A2.castTo("size_t")  // buffer length
     )).ret());
 
-    put("fuzion.sys.net0.close0", (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
+    put("fuzion.sys.net.close0", (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
       A0.castTo("int") // socket descriptor
     )).ret());
 
-    put("fuzion.sys.net0.set_blocking", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
+    put("fuzion.sys.net.set_blocking", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
       A0.castTo("int"), // socket descriptor
       A1.castTo("int")  // blocking
     )).ret());
