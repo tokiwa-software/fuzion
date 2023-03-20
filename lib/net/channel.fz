@@ -22,8 +22,19 @@
 # -----------------------------------------------------------------------
 
 
-# a network channel that can be read from and written to
-# NYI target of the channel
+# a channel encapsulates an open network resource
+# that can be read from and written to.
+# channels are usually installed by a successfully connected client
+# or a by a newly accepted server connection.
+#
+# Note that even though UDP is a connection-less protocol its
+# usage in fuzion does not differ from TCP except for the following
+# caveats.
+# 1) Reading a Datagram with a buffer not large enough to hold
+# all data will lead to the rest of the datagram being dropped.
+# 2) writing to a channel installed by `server.accept` will result in an error.
+# 3) reading from a channel installed by `client ...` will block indefinitely.
+#
 private channel(T type, desc outcome i64, auto_close bool, m effectMode.val) : effect m
 is
 
@@ -76,7 +87,6 @@ is
 
 
   # close the channel
-  # NYI should be automatically done
   close is
     if auto_close
       match desc
@@ -92,14 +102,14 @@ is
 
 
 
-# short hand to install new channel
+# short hand to install a new channel of type T
 channel(T type, desc outcome i64, auto_close bool) =>
   (channel T).close
   channel T desc auto_close effectMode.repl
 
 
 
-# short hand to get current channel
+# short hand to get the currently installed channel of type T
 channel(T type) =>
   if !effects.exists (channel T)
     channel T (error "not initialized") false effectMode.default

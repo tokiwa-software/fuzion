@@ -21,6 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
+# defines constants for network protocols that
+# can be used for network communication.
+# usually there is only one possible protocol
+# for each pair of family and socket type.
+#
 protocol is
 
   tcp is
@@ -29,29 +34,16 @@ protocol is
   udp is
     redef as_string => "UDP"
 
-  local is
-
-  ipv4 is
-    redef as_string => "IPv4"
-
-  ipv6 is
-    redef as_string => "IPv6"
-
-
-  val : choice tcp udp ipv4 ipv6 nil is
+  val : choice tcp udp nil is
     as_num i32 is
       match val.this
         tcp  => 6
         udp  => 17
-        ipv4 => 0
-        ipv6 => 41
         nil  => -1
 
     redef as_string =>
       match val.this
         t tcp   => t.as_string
         u udp   => u.as_string
-        i4 ipv4 => i4.as_string
-        i6 ipv6 => i6.as_string
         nil     => "none"
 

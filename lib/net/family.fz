@@ -21,6 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
+
+# defines constants for protocol families which
+# can be used for network communication.
+#
 family is
 
   # Internet Protocol Version 4

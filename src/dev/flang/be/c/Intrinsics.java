@@ -779,7 +779,7 @@ public class Intrinsics extends ANY
       A0.castTo("int") // socket descriptor
     )).ret());
 
-    put("fuzion.sys.net.set_blocking", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
+    put("fuzion.sys.net.set_blocking0", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
       A0.castTo("int"), // socket descriptor
       A1.castTo("int")  // blocking
     )).ret());

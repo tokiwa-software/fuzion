@@ -925,7 +925,7 @@ public class Intrinsics extends ANY
         : new i32Value(-1);
     });
 
-    putUnsafe("fuzion.sys.net.set_blocking" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.set_blocking0" , (interpreter, innerClazz) -> args -> {
       var asc = (AbstractSelectableChannel)_openStreams_.get(args.get(1).i64Value());
       var blocking = args.get(2).i32Value();
       try

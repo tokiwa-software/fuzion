@@ -21,6 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
+# defines constants for socket types which
+# specify the communication semantics to
+# used in a socket.
+#
 socket_type is
 
   # connection-based byte-stream
