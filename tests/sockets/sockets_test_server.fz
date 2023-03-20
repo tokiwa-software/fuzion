@@ -23,12 +23,6 @@
 
 sockets_test_server =>
 
-  localhost(f net.family.val) String is
-    match f
-      net.family.ipv4 => "127.0.0.1"
-      net.family.ipv6 => "::1"
-
-
   # server handles one connection at a time
   start_server(family net.family.val, protocol net.protocol.val, port u16) =>
     # install server in env

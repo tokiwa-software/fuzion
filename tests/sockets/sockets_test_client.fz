@@ -23,12 +23,6 @@
 
 sockets_test_client is
 
-  localhost(f net.family.val) String is
-    match f
-      net.family.ipv4 => "127.0.0.1"
-      net.family.ipv6 => "::1"
-
-
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) is
     match net.client sockets_test_client family protocol host port
       err error =>
@@ -75,4 +69,4 @@ sockets_test_client is
 
       # write request to server and read response
       for i in 1..2 do
-        client f p (localhost f) port i
+        client f p (net.family.localhost f) port i

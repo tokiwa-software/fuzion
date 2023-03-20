@@ -135,12 +135,7 @@ private init_ip_server(f family.val, p protocol.val, port u16) outcome i64 is
       family.ipv6 => "0:0:0:0:0:0:0:0"
   )
   backlog := 10
-  s net.socket_type.val := (
-    match p
-      protocol.tcp => net.socket_type.stream
-      protocol.udp => net.socket_type.datagram
-      *   => net.socket_type.raw
-    )
+  s := socket_type.by_protocol p
 
   # bind to port
   match fuzion.sys.net.bind f.as_num s.as_num p.as_num any_addr port

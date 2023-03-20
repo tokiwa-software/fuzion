@@ -48,3 +48,10 @@ family is
       match val.this
         i4 ipv4  => i4.as_string
         i6 ipv6  => i6.as_string
+
+
+  # convenience feature to get the localhost address of a family
+  localhost(f net.family.val) String is
+    match f
+      net.family.ipv4 => "127.0.0.1"
+      net.family.ipv6 => "::1"
