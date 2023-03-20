@@ -774,21 +774,24 @@ public class Intrinsics extends ANY
         }
       try
         {
-          if (protocol == 6)
-          {
-            var ss = ServerSocketChannel.open();
-            ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
-            result[0] = _openStreams_.add(ss);
-            return new i32Value(0);
-          }
-          else if (protocol == 17)
-          {
-            var ss = DatagramChannel.open();
-            ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
-            result[0] = _openStreams_.add(ss);
-            return new i32Value(0);
-          }
-          throw new RuntimeException("NYI");
+          return switch (protocol)
+            {
+              case 6 ->
+                {
+                  var ss = ServerSocketChannel.open();
+                  ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              case 17 ->
+                {
+                  var ss = DatagramChannel.open();
+                  ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              default -> throw new RuntimeException("NYI");
+            };
         }
       catch(BindException e)
         {
@@ -842,21 +845,24 @@ public class Intrinsics extends ANY
         }
       try
         {
-          if (protocol == 6)
-          {
-            var socket = SocketChannel.open();
-            socket.connect(new InetSocketAddress(host, Integer.parseInt(port)));
-            result[0] = _openStreams_.add(socket);
-            return new i32Value(0);
-          }
-          else if (protocol == 17)
-          {
-            var ss = DatagramChannel.open();
-            ss.connect(new InetSocketAddress(host, Integer.parseInt(port)));
-            result[0] = _openStreams_.add(ss);
-            return new i32Value(0);
-          }
-          throw new RuntimeException("NYI");
+          return switch (protocol)
+            {
+              case 6 ->
+                {
+                  var socket = SocketChannel.open();
+                  socket.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(socket);
+                  yield new i32Value(0);
+                }
+              case 17 ->
+                {
+                  var ss = DatagramChannel.open();
+                  ss.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              default -> throw new RuntimeException("NYI");
+            };
         }
       catch(IOException e)
         {
