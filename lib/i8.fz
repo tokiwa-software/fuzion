@@ -35,16 +35,16 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i8) => thiz ⩼ zero && max -° thiz ⩻ other
-  redef underflowOnAdd(other i8) => thiz ⩻ zero && min -° thiz ⩼ other
+  redef overflowOnAdd (other i8) => thiz ⩼ zero && i8.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i8) => thiz ⩻ zero && i8.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i8) => thiz ⩼ zero && thiz -° max ⩼ other
-  redef underflowOnSub(other i8) => thiz ⩻ zero && thiz -° min ⩻ other
+  redef overflowOnSub (other i8) => thiz ⩼ zero && thiz -° i8.type.max ⩼ other
+  redef underflowOnSub(other i8) => thiz ⩻ zero && thiz -° i8.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i8) => as_i32 *° other.as_i32 ⩼ max.as_i32
-  redef underflowOnMul(other i8) => as_i32 *° other.as_i32 ⩻ min.as_i32
+  redef overflowOnMul (other i8) => as_i32 *° other.as_i32 ⩼ i8.type.max.as_i32
+  redef underflowOnMul(other i8) => as_i32 *° other.as_i32 ⩻ i8.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i8 is intrinsic
@@ -195,9 +195,6 @@ i8s : wrapping_integers i8 is
 
   redef zero => i8 0
   redef one  => i8 1
-
-  redef min => i8 -0x80
-  redef max => i8  0x7f
 
 
 # i8 -- returns value of unit type i8s

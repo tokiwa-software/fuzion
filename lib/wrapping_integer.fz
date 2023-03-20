@@ -111,10 +111,10 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrappedOnNeg if thiz ⩼ zero then min else max else - thiz
-  redef infix +^ (other W) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
-  redef infix -^ (other W) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
-  redef infix *^ (other W) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
+  redef prefix -^          => if wrappedOnNeg if thiz ⩼ zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
+  redef infix +^ (other W) => if overflowOnAdd(other) then wrapping_integer.this.type.max.thiz else if underflowOnAdd(other) then wrapping_integer.this.type.min.thiz else thiz + other
+  redef infix -^ (other W) => if overflowOnSub(other) then wrapping_integer.this.type.max.thiz else if underflowOnSub(other) then wrapping_integer.this.type.min.thiz else thiz - other
+  redef infix *^ (other W) => if overflowOnMul(other) then wrapping_integer.this.type.max.thiz else if underflowOnMul(other) then wrapping_integer.this.type.min.thiz else thiz * other
 
 
   # exponentiation for positive exponent
@@ -180,9 +180,9 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
   is
     if overflowOnExp other
       if (thiz ≥ zero) || (other %% two)
-        max
+        wrapping_integer.this.type.max.thiz
       else
-        min
+        wrapping_integer.this.type.min.thiz
     else
       thiz ** other
 
@@ -233,7 +233,3 @@ wrapping_integer(redef W type : wrapping_integer W) : integer W, wrapping_intege
 # but not requiring an instance
 #
 wrapping_integers(W type : wrapping_integer W) : numerics W is
-
-  min W is abstract
-  max W is abstract
-

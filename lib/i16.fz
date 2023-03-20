@@ -35,16 +35,16 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i16) => thiz ⩼ zero && max -° thiz ⩻ other
-  redef underflowOnAdd(other i16) => thiz ⩻ zero && min -° thiz ⩼ other
+  redef overflowOnAdd (other i16) => thiz ⩼ zero && i16.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i16) => thiz ⩻ zero && i16.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° max ⩼ other
-  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° min ⩻ other
+  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° i16.type.max ⩼ other
+  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° i16.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ max.as_i32
-  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ min.as_i32
+  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ i16.type.max.as_i32
+  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ i16.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i16 is intrinsic
@@ -78,8 +78,8 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
-      thiz ≥ i8.min.as_i16,
-      thiz ≤ i8.max.as_i16
+      thiz ≥ i8.type.min.as_i16,
+      thiz ≤ i8.type.max.as_i16
     is
       low8bits.castTo_i8
   as_i32 i32 is intrinsic
@@ -88,12 +88,12 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
 
   as_u8 u8
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.max.as_i16)
+      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
     is
       low8bits
   as_u16 u16
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.max.as_i16)
+      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
     is
       castTo_u16
   as_u32 u32
@@ -200,9 +200,6 @@ i16s : wrapping_integers i16 is
 
   redef zero => i16 0
   redef one  => i16 1
-
-  redef min => i16 -0x8000
-  redef max => i16  0x7fff
 
 
 # i16 -- returns value of unit type i16s

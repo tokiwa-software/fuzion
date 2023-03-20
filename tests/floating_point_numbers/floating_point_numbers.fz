@@ -209,8 +209,8 @@ floating_point_numbers is
   # as_i64
   chck (f64s.π.as_i64 ≟ i64 3)                                                "f64:  π  as_i64        =  3"
   chck ((-f64s.π).as_i64 ≟ i64 -3)                                            "f64: -π  as_i64        = -3"
-  chck (f64s.positiveInfinity.as_i64_lax ≟ i64.max)                           "f64:  ∞  as_i64_lax    = i64.max"
-  chck (f64s.negativeInfinity.as_i64_lax ≟ i64.min)                           "f64: -∞  as_i64_lax    = i64.min"
+  chck (f64s.positiveInfinity.as_i64_lax ≟ i64.type.max)                      "f64:  ∞  as_i64_lax    = i64.type.max"
+  chck (f64s.negativeInfinity.as_i64_lax ≟ i64.type.min)                      "f64: -∞  as_i64_lax    = i64.type.min"
   chck (f64s.NaN.as_i64_lax ≟ i64 0)                                          "f64: NaN as_i64_lax    = 0"
 
   # as_f64
