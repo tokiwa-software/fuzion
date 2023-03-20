@@ -27,7 +27,6 @@ sockets_test_client is
     match f
       net.family.ipv4 => "127.0.0.1"
       net.family.ipv6 => "::1"
-      net.family.local => panic "NYI"
 
 
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) is

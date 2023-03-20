@@ -123,7 +123,6 @@ private init_ip_server(f family.val, p protocol.val, port u16) outcome i64 is
     match f
       family.ipv4 => "0.0.0.0"
       family.ipv6 => "0:0:0:0:0:0:0:0"
-      family.local => panic "NYI"
   )
   backlog := 10
   s net.socket_type.val := (

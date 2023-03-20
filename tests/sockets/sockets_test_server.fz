@@ -27,7 +27,6 @@ sockets_test_server =>
     match f
       net.family.ipv4 => "127.0.0.1"
       net.family.ipv6 => "::1"
-      net.family.local => panic "NYI"
 
 
   # server handles one connection at a time
