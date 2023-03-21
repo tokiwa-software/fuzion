@@ -264,8 +264,6 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 #
 u64s : numerics u64 is
 
-  redef name => "u64"
-
   redef zero => u64 0
   redef one  => u64 1
 

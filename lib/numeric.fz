@@ -225,10 +225,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 #
 numerics(T type : numeric T) is
 
-  # name of this numeric type, e.g., "u64"
-  #
-  name String is abstract
-
   # identity element for 'infix +'
   #
   zero T is abstract # NYI: #706: T.zero

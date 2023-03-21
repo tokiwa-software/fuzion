@@ -188,8 +188,6 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
 #
 u8s : numerics u8 is
 
-  redef name => "u8"
-
   redef zero => u8 0
   redef one  => u8 1
 

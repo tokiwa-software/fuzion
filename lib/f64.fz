@@ -175,8 +175,6 @@ f64(val f64) : float f64, f64s is
 #
 f64s : floats f64 is
 
-  redef name => "f64"
-
   redef zero => f64 0
   redef one  => f64 1
 

@@ -55,8 +55,6 @@ i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
 #
 i128s : numerics i128 is
 
-  redef name => "i128"
-
   redef zero => i128 0 0
   redef one  => i128 0 1
 

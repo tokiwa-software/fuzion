@@ -264,8 +264,6 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
 #
 u32s : numerics u32 is
 
-  redef name => "u32"
-
   redef zero => u32 0
   redef one  => u32 1
 

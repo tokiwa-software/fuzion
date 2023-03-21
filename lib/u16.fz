@@ -193,8 +193,6 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 #
 u16s : numerics u16 is
 
-  redef name => "u16"
-
   redef zero => u16 0
   redef one  => u16 1
 

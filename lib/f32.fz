@@ -164,8 +164,6 @@ f32(val f32) : float f32, f32s is
 #
 f32s : floats f32 is
 
-  redef name => "f32"
-
   redef zero => f32 0
   redef one  => f32 1
 

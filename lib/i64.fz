@@ -253,8 +253,6 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 #
 i64s : numerics i64 is
 
-  redef name => "i64"
-
   redef zero => i64 0
   redef one  => i64 1
 
