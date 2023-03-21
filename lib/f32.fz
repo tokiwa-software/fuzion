@@ -162,6 +162,12 @@ f32(val f32) : float f32, f32s is
   fixed type.bytes => 4
 
 
+  fixed type.ℇ => f32 2.7182818284590452354
+
+
+  fixed type.π => f32 3.14159265358979323846
+
+
 # f32s -- unit type defining features related to f32 but not requiring an
 # instance
 #
@@ -171,10 +177,6 @@ f32s : floats f32 is
   redef one  => f32 1
 
   redef isNaN(val f32) bool is intrinsic
-
-  redef ℇ => f32 2.7182818284590452354
-
-  redef π => f32 3.14159265358979323846
 
   redef minExp i32 is intrinsic
   redef maxExp i32 is intrinsic

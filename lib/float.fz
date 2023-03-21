@@ -108,6 +108,17 @@ float(redef F type : float F) : numeric F, floats F is
   type.size => 8*bytes
 
 
+  # eulers number 2.72..
+  #
+  type.ℇ float.this.type is abstract
+
+
+  # pi 3.14...
+  #
+  type.π float.this.type is abstract
+
+
+
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
@@ -131,12 +142,6 @@ floats(F type : float F) : numerics F is
 
   # infinity
   infinity => positiveInfinity
-
-  # eulers number 2.72..
-  ℇ F is abstract
-
-  # pi 3.14...
-  π F is abstract
 
   minExp i32 is abstract
   maxExp i32 is abstract
