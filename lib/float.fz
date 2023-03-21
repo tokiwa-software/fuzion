@@ -118,6 +118,17 @@ float(redef F type : float F) : numeric F, floats F is
   type.π float.this.type is abstract
 
 
+  # conversion
+  #
+
+  # convert an i64 value to a floating point value
+  #
+  # if the value cannot be represented exactly, the result is either
+  # the nearest higher or nearest lower value
+  #
+  type.from_i64(val i64) float.this.type is abstract
+
+
 
 # floats -- unit type defining features related to float but not requiring
 # an instance
@@ -148,15 +159,6 @@ floats(F type : float F) : numerics F is
   minPositive F is abstract
   max F is abstract
   epsilon F is abstract
-
-
-  # conversion
-
-  # convert an i64 value to a floating point value
-  #
-  # if the value cannot be represented exactly, the result is either
-  # the nearest higher or nearest lower value
-  from_i64(val i64) F is abstract
 
 
   squareRoot(val F) F is abstract
