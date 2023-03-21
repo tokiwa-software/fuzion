@@ -53,7 +53,7 @@ f64(val f64) : float f64, f64s is
 
 
   fits_in_i64 =>
-    (thiz ≥ i64s.min.as_f64) && (thiz ≤ i64s.max.as_f64)
+    (thiz ≥ i64.type.min.as_f64) && (thiz ≤ i64.type.max.as_f64)
 
 
   redef as_i64
@@ -134,7 +134,7 @@ f64(val f64) : float f64, f64s is
     else
       shift := (f64.type.mantissa_bits - exponent)
       if (shift > 0)
-        whole := castTo_u64 & (u64s.max << shift.as_u64)
+        whole := castTo_u64 & (u64.type.max << shift.as_u64)
         val - whole.castTo_f64
       else
         0.0

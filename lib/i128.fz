@@ -53,15 +53,12 @@ i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
 # i128s -- unit type defining features related to i128 but not requiring an
 # instance
 #
-i128s : wrapping_integers i128 is
+i128s : numerics i128 is
 
   redef name => "i128"
 
   redef zero => i128 0 0
   redef one  => i128 0 1
-
-  redef min => i128 -0x_8000_0000_0000_0000 0
-  redef max => i128  0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
 

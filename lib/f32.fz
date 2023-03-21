@@ -123,7 +123,7 @@ f32(val f32) : float f32, f32s is
     else
       shift := (f32.type.mantissa_bits - exponent)
       if (shift > 0)
-        whole := castTo_u32 & (u32s.max << shift.as_u32)
+        whole := castTo_u32 & (u32.type.max << shift.as_u32)
         val - whole.castTo_f32
       else
         0.0
