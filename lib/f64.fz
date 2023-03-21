@@ -170,6 +170,9 @@ f64(val f64) : float f64, f64s is
   fixed type.lteq(a, b f64) bool is intrinsic
 
 
+  fixed type.bytes => 8
+
+
 # f64s -- unit type defining features related to f64 but not requiring an
 # instance
 #
@@ -177,8 +180,6 @@ f64s : floats f64 is
 
   redef zero => f64 0
   redef one  => f64 1
-
-  redef bytes => 8
 
 
   redef isNaN(val f64) bool is intrinsic

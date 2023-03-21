@@ -98,18 +98,20 @@ float(redef F type : float F) : numeric F, floats F is
   type.mantissa_bits => significand_bits - 1
 
 
+  # number of bytes required to store this value
+  #
+  type.bytes i32 is abstract
+
+
+  # number of bits required to store this value
+  #
+  type.size => 8*bytes
+
+
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
 floats(F type : float F) : numerics F is
-
-  # number of bytes required to store this value
-  #
-  bytes i32 is abstract
-
-  # number of bits required to store this value
-  #
-  size => 8*bytes
 
 
   exponentRange => -minExp..maxExp

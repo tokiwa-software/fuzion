@@ -159,6 +159,9 @@ f32(val f32) : float f32, f32s is
   fixed type.lteq(a, b f32) bool is intrinsic
 
 
+  fixed type.bytes => 4
+
+
 # f32s -- unit type defining features related to f32 but not requiring an
 # instance
 #
@@ -166,9 +169,6 @@ f32s : floats f32 is
 
   redef zero => f32 0
   redef one  => f32 1
-
-  redef bytes => 4
-
 
   redef isNaN(val f32) bool is intrinsic
 
