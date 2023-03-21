@@ -262,7 +262,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrapping_integers u64 is
+u64s : numerics u64 is
 
   redef name => "u64"
 

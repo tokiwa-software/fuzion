@@ -189,7 +189,7 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #
-i8s : wrapping_integers i8 is
+i8s : numerics i8 is
 
   redef name => "i8"
 

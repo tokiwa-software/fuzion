@@ -205,7 +205,7 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
-i32s : wrapping_integers i32 is
+i32s : numerics i32 is
 
   redef name => "i32"
 

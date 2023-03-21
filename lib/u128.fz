@@ -260,7 +260,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
 #
-u128s : wrapping_integers u128 is
+u128s : numerics u128 is
 
   redef name => "u128"
 

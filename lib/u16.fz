@@ -191,7 +191,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 # u16s -- unit type defining features related to u16 but not requiring an
 # instance
 #
-u16s : wrapping_integers u16 is
+u16s : numerics u16 is
 
   redef name => "u16"
 

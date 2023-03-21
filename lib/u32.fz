@@ -262,7 +262,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
 # u32s -- unit type defining features related to u32 but not requiring an
 # instance
 #
-u32s : wrapping_integers u32 is
+u32s : numerics u32 is
 
   redef name => "u32"
 
