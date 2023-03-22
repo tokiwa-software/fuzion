@@ -62,4 +62,4 @@ sum0(
   l Sequence T
   )
   =>
-  l.fold n.sum
+  l.fold (numeric T).type.sum

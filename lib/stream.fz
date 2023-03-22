@@ -172,7 +172,7 @@ stream(redef T type) ref : Sequence T is
   redef count i32 is
     # NYI: check if this works: (map i32 x->1).fold i32.sum
     as_list.map i32 x->1
-          .fold i32.sum
+          .fold i32.type.sum
 
 
   # collect all items from this stream into an array
