@@ -225,7 +225,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.sum : Monoid T is
     redef infix ∙ (a, b T) => a + b
-    redef infix == (a, b T) => a = b
     redef e => zero.thiz
 
 
@@ -234,7 +233,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.product : Monoid T is
     redef infix ∙ (a, b T) => a * b
-    redef infix == (a, b T) => a = b
     redef e => one.thiz
 
 
@@ -243,7 +241,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.sumSaturating : Monoid T is
     redef infix ∙ (a, b T) => a +^ b
-    redef infix == (a, b T) => a = b
     redef e => zero.thiz
 
 
@@ -252,7 +249,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.productSaturating : Monoid T is
     redef infix ∙ (a, b T) => a *^ b
-    redef infix == (a, b T) => a = b
     redef e => one.thiz
 
 

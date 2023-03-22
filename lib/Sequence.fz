@@ -439,11 +439,6 @@ Sequence(T type) ref is
     #
     infix ∙ (a, b Sequence T) Sequence T is a.concat_sequences b
 
-    # equality
-    #
-    redef infix == (a, b Sequence T) =>
-      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : equatable"
-
     # identity element
     #
     e => (Sequence T).type.empty
