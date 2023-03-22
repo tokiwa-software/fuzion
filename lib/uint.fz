@@ -203,7 +203,7 @@ is
           )
         )
       .flatMapSequence uint (x -> x)
-      .fold sum
+      .fold uint.type.sum
 
 
   # divide these unsigned ints
