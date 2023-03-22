@@ -207,8 +207,6 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 #
 i32s : numerics i32 is
 
-  redef name => "i32"
-
   redef zero => 0
   redef one  => 1
 

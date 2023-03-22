@@ -97,8 +97,6 @@ is
 #
 complexes(E type : numeric E) : numerics (complex E) is
 
-  redef name => "complex"
-
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.
   #

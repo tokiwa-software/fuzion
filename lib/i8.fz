@@ -191,8 +191,6 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
 #
 i8s : numerics i8 is
 
-  redef name => "i8"
-
   redef zero => i8 0
   redef one  => i8 1
 
