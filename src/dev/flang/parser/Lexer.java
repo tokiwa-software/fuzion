@@ -1200,11 +1200,11 @@ IDENT     : ( 'a'..'z'
   Token checkWhiteSpace(int p1, int p2)
   {
     var result = Token.t_ws;
-    if (isNewLine(p1, p2))
+    if (isNewLine(p1))
       {
         _curLine++;
       }
-    else if (p1 != ' ')
+    else if (p1 != ' ' && !(p1 == CR && p2 == LF))
       {
         Errors.error(sourcePos(),
                      "Unexpected white space character \\u" + Integer.toHexString(0x1000000+p1).substring(1).toUpperCase() + " found",
@@ -1871,12 +1871,11 @@ HEX_TAIL    : "." HEX_DIGITS
     boolean done = false;
     do
       {
-        int last = p;
-        p = curCodePoint();
-        if (isNewLine(last, p))
+        if (isNewLine(p))
           {
             _curLine++;
           }
+        p = curCodePoint();
         if (p == SourceFile.END_OF_FILE)
           {
             Errors.error(sourcePos(startPos),
@@ -1935,7 +1934,7 @@ HEX_TAIL    : "." HEX_DIGITS
             l = p;
             p = curCodePoint();
           }
-        while (p != SourceFile.END_OF_FILE && !isNewLine(l, p));
+        while (p != SourceFile.END_OF_FILE && !isNewLine(l));
         _curLine++;
       }
     return Token.t_comment;
@@ -2508,7 +2507,6 @@ PIPE        : "|"
                 {
                   c = p;
                 }
-              var l = p;
               if (pos < 0)
                 {
                   nextCodePoint();
@@ -2517,12 +2515,12 @@ PIPE        : "|"
                 {
                   pos = pos + codePointSize(pos);
                 }
-              p = raw(pos);
-              if (isNewLine(l, p))
+              if (isNewLine(p))
                 {
                   Errors.unexpectedEndOfLineInString(sourcePos(bytePos()-1), sourcePos(_stringStart));
                   t = Token.t_error;
                 }
+              p = raw(pos);
             }
           if (c >= 0 && sb != null)
             {
