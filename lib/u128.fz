@@ -152,50 +152,50 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
 
   as_i8 i8
     pre
-      thiz ≤ i8.max.as_u128
+      thiz ≤ i8.type.max.as_u128
     is
       lo.as_i8
   as_i16 i16
     pre
-      thiz ≤ i16.max.as_u128
+      thiz ≤ i16.type.max.as_u128
     is
       lo.as_i16
   as_i32 i32
     pre
-      thiz ≤ i32.max.as_u128
+      thiz ≤ i32.type.max.as_u128
     is
       lo.as_i32
   as_i64 i64
     pre
-      thiz ≤ i64.max.as_u128
+      thiz ≤ i64.type.max.as_u128
     post
       analysis: result.as_u128 ≟ thiz
     is
       lo.as_i64
   as_u8 u8
     pre
-      thiz ≤ u8.max.as_u128
+      thiz ≤ u8.type.max.as_u128
     post
       analysis: result.as_u128 ≟ thiz
     is
       lo.as_u8
   as_u16 u16
     pre
-      thiz ≤ u16.max.as_u128
+      thiz ≤ u16.type.max.as_u128
     post
       analysis: result.as_u128 ≟ thiz
     is
       lo.as_u16
   as_u32 u32
     pre
-      thiz ≤ u32.max.as_u128
+      thiz ≤ u32.type.max.as_u128
     post
       analysis: result.as_u128 ≟ thiz
     is
       lo.as_u32
   as_u64 u64
     pre
-      thiz ≤ u64.max.as_u128
+      thiz ≤ u64.type.max.as_u128
     post
       analysis: result.as_u128 ≟ thiz
     is
@@ -260,15 +260,10 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
 #
-u128s : wrapping_integers u128 is
-
-  redef name => "u128"
+u128s : numerics u128 is
 
   redef zero => u128 0 0
   redef one  => u128 0 1
-
-  redef min => u128 0 0
-  redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
 # u128 -- returns value of unit type u128s

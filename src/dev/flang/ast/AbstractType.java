@@ -211,7 +211,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g = featureOfType().choiceGenerics();
         if (g != null)
           {
-            return replaceGenerics(g);
+            return replaceGenerics(g)
+              .map(t -> t.replace_this_type_by_actual_outer(this));
           }
       }
     return null;
@@ -363,17 +364,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument() && featureOfType() != null || Errors.count() > 0);
 
     boolean result = false;
-    if (!isGenericArgument() && !isRef())
+    if (!isGenericArgument() && !isRef() && featureOfType().isChoice())
       {
-        var g = featureOfType().choiceGenerics();
-        if (g != null)
+        for (var t : choiceGenerics())
           {
-            for (var t : actualTypes(this, featureOfType(), g, generics()))
-              {
-                if (CHECKS) check
-                  (Errors.count() > 0 || t != null);
-                result = result || t != null && Types.intern(t).isAssignableFrom(actual);
-              }
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || t != null && Types.intern(t).isAssignableFrom(actual);
           }
       }
     return result;
@@ -452,9 +449,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Replace generic types used in given List of types by the actual generic arguments
    * given as actualGenerics.
    *
-   * @param thiz if not-null, thiz gives a type to be used replace 'this.type'
-   * by an actual type, ignored if null.
-   *
    * @param f the feature the generics belong to.
    *
    * @param genericsToReplace a list of possibly generic types
@@ -465,27 +459,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  static List<AbstractType> actualTypes(AbstractType thiz, AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
+  private static List<AbstractType> actualTypes(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||
        f.generics().sizeMatches(actualGenerics));
 
-    var result = genericsToReplace;
-    if (f != null && !genericsToReplace.isEmpty())
+    List<AbstractType> result;
+    if (genericsToReplace instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f))  /* shortcut for properly handling open generics list */
       {
-        if (genericsToReplace instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f))  /* shortcut for properly handling open generics list */
-          {
-            result = actualGenerics;
-          }
-        else
-          {
-            result = result.map(t -> t.actualType(f, actualGenerics));
-          }
-        if (thiz != null)
-          {
-            result = result.map(t -> t.replace_this_type_by_actual_outer(thiz));
-          }
+        result = actualGenerics;
+      }
+    else
+      {
+        result = genericsToReplace.map(t -> t.actualType(f, actualGenerics));
       }
     return result;
   }
@@ -503,9 +490,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (featureOfType().generics().sizeMatches(generics()));
+      (Errors.count() > 0 ||
+       featureOfType().generics().sizeMatches(generics()));
 
-    return actualTypes(this, featureOfType(), genericsToReplace, generics());
+    return actualTypes(featureOfType(), genericsToReplace, generics());
   }
 
 
@@ -706,7 +694,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        var g2 = actualTypes(null, f, result.generics(), actualGenerics);
+        var g2 = actualTypes(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
         if (g2 != result.generics() ||
             o2 != result.outer()       )

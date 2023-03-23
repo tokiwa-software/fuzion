@@ -35,16 +35,16 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i32) => thiz ⩼ 0 && max -° thiz ⩻ other
-  redef underflowOnAdd(other i32) => thiz ⩻ 0 && min -° thiz ⩼ other
+  redef overflowOnAdd (other i32) => thiz ⩼ 0 && i32.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i32) => thiz ⩻ 0 && i32.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i32) => thiz ⩼ 0 && thiz -° max ⩼ other
-  redef underflowOnSub(other i32) => thiz ⩻ 0 && thiz -° min ⩻ other
+  redef overflowOnSub (other i32) => thiz ⩼ 0 && thiz -° i32.type.max ⩼ other
+  redef underflowOnSub(other i32) => thiz ⩻ 0 && thiz -° i32.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 ⩼ max.as_i64
-  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 ⩻ min.as_i64
+  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 ⩼ i32.type.max.as_i64
+  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 ⩻ i32.type.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i32 is intrinsic
@@ -78,28 +78,28 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
-      thiz ≥ i8.min.as_i32,
-      thiz ≤ i8.max.as_i32
+      thiz ≥ i8.type.min.as_i32,
+      thiz ≤ i8.type.max.as_i32
     is
       low8bits.castTo_i8
   as_i16 i16
     pre
-      thiz ≥ i16.min.as_i32,
-      thiz ≤ i16.max.as_i32
+      thiz ≥ i16.type.min.as_i32,
+      thiz ≤ i16.type.max.as_i32
     is
       low16bits.castTo_i16
   as_i64 i64 is intrinsic
 # as_i128 NYI
   as_u8 u8
     pre
-      thiz ≥ u8.min.as_i32,
-      thiz ≤ u8.max.as_i32
+      thiz ≥ u8.type.min.as_i32,
+      thiz ≤ u8.type.max.as_i32
     is
       low8bits
   as_u16 u16
     pre
-      thiz ≥ u16.min.as_i32,
-      thiz ≤ u16.max.as_i32
+      thiz ≥ u16.type.min.as_i32,
+      thiz ≤ u16.type.max.as_i32
     is
       low16bits
   as_u32 u32
@@ -205,15 +205,10 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
-i32s : wrapping_integers i32 is
-
-  redef name => "i32"
+i32s : numerics i32 is
 
   redef zero => 0
   redef one  => 1
-
-  redef min => -0x_8000_0000
-  redef max =>  0x_7fff_ffff
 
 
 

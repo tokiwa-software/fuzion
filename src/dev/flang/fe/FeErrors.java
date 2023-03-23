@@ -124,7 +124,7 @@ public class FeErrors extends AstErrors
                                         byte[] expected_version,
                                         byte[] found_version)
   {
-    error("Incompatible module version encountered",
+    fatal("Incompatible module version encountered",
           "Module " + user + " references module " + m + "\n" +
           "Expected version: " + versionString(expected_version) + "\n" +
           "Actual version  : " + versionString(found_version));

@@ -72,7 +72,7 @@ int_test is
     chck ("$m" ≟ "{uint m}") "uint: $m as string"
 
 
-  u32_max := u32s.max.as_u64
+  u32_max := u32.type.max.as_u64
 
 
   # test int/uint as_string around first overflow

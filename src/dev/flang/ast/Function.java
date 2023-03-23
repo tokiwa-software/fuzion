@@ -266,11 +266,13 @@ public class Function extends ExprWithPos
     if (_call == null)
       {
         if (t != Types.t_ERROR &&
-            t.featureOfType() != Types.resolved.f_function &&
-            t.featureOfType() != Types.resolved.f_Lazy &&
-            t.featureOfType() != Types.resolved.f_Unary)
+            (t.isGenericArgument() ||
+             t.featureOfType() != Types.resolved.f_function &&
+             t.featureOfType() != Types.resolved.f_Lazy     &&
+             t.featureOfType() != Types.resolved.f_Unary       ))
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
+            t = Types.t_ERROR;
             result = Types.t_ERROR;
           }
 

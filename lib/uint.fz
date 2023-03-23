@@ -55,7 +55,7 @@ is
 
   # shift right
   infix >> (other uint) uint
-  pre other ≤ uint i32s.max.as_u64
+  pre other ≤ uint i32.type.max.as_u64
   is
     if other ≟ uint.type.zero
       thiz
@@ -75,7 +75,7 @@ is
 
   # shift left
   infix << (other uint) uint
-  pre other ≤ uint i32s.max.as_u64
+  pre other ≤ uint i32.type.max.as_u64
   is
     if other ≟ uint.type.zero
       thiz
@@ -203,7 +203,7 @@ is
           )
         )
       .flatMapSequence uint (x -> x)
-      .fold sum
+      .fold uint.type.sum
 
 
   # divide these unsigned ints
@@ -296,7 +296,7 @@ is
 
   # this uint as an i32
   as_i32 i32
-  pre as_u32 ≤ i32s.max.as_u32
+  pre as_u32 ≤ i32.type.max.as_u32
   is
     as_u32.as_i32
 

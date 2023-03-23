@@ -35,7 +35,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u64) => max -° thiz ⩻ other
+  redef overflowOnAdd (other u64) => u64.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u64) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -78,7 +78,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i8
   as_i8 i8
     pre
-      thiz ≤ i8.max.as_u64
+      thiz ≤ i8.type.max.as_u64
     is
       low8bits.as_i8
 
@@ -86,7 +86,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i16
   as_i16 i16
     pre
-      thiz ≤ i16.max.as_u64
+      thiz ≤ i16.type.max.as_u64
     is
       low16bits.as_i16
 
@@ -94,7 +94,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i32
   as_i32 i32
     pre
-      thiz ≤ i32.max.as_u64
+      thiz ≤ i32.type.max.as_u64
     is
       low32bits.as_i32
 
@@ -102,7 +102,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i64
   as_i64 i64
     pre
-      thiz ≤ i64.max.as_u64
+      thiz ≤ i64.type.max.as_u64
 #    post
 #      analysis:  result.as_u64 == thiz
     is
@@ -113,7 +113,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u8
   as_u8 u8
 #    pre
-#      thiz ≤ u8.max.as_i64
+#      thiz ≤ u8.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -123,7 +123,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u16
   as_u16 u16
 #    pre
-#      thiz ≤ u16.max.as_i64
+#      thiz ≤ u16.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -133,7 +133,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u32
   as_u32 u32
 #    pre
-#      thiz ≤ u32.max.as_i64
+#      thiz ≤ u32.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -262,15 +262,10 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrapping_integers u64 is
-
-  redef name => "u64"
+u64s : numerics u64 is
 
   redef zero => u64 0
   redef one  => u64 1
-
-  redef min => u64 0
-  redef max => u64 0x_ffff_ffff_ffff_ffff
 
 
 

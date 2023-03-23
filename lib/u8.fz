@@ -35,7 +35,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u8) => max -° thiz ⩻ other
+  redef overflowOnAdd (other u8) => u8.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u8) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -43,7 +43,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   redef underflowOnSub(other u8) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u8) => as_i32 *° other.as_i32 ⩼ max.as_i32
+  redef overflowOnMul (other u8) => as_i32 *° other.as_i32 ⩼ u8.type.max.as_i32
   redef underflowOnMul(other u8) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -77,7 +77,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
 
   as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u8
+      debug: thiz ≤ i8.type.max.as_u8
     is
       castTo_i8
   as_i16 => as_i32.as_i16
@@ -186,15 +186,10 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
 # u8s -- unit type defining features related to u8 but not requiring an
 # instance
 #
-u8s : wrapping_integers u8 is
-
-  redef name => "u8"
+u8s : numerics u8 is
 
   redef zero => u8 0
   redef one  => u8 1
-
-  redef min => zero
-  redef max => u8 0xff
 
 
 # u8 -- returns value of unit type u8s

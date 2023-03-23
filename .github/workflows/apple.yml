@@ -17,28 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#  GitHub Actions workflow to build and test Fuzion on MacOS.
 #
 # -----------------------------------------------------------------------
 
-name: run tests on linux
+name: run tests on macOS
 
 permissions:
   contents: read
 
 on:
-  push:
-    branches:
-      - 'main'
-  pull_request: {}
+  workflow_dispatch:
 
 env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
   run_tests:
-    runs-on: ubuntu-22.04
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
       - uses: actions/setup-java@3f07048e3d294f56e9b90ac5ea2c6f74e9ad0f98 # v3.10.0
@@ -48,11 +46,14 @@ jobs:
 
       - name: install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev shellcheck
+          brew install bdw-gc gnu-sed make
+          echo "/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
-      - name: check shell scripts
-        run: make shellcheck
+      - name: sed version
+        run: sed --version
+
+      - name: make version
+        run: make --version
 
       - name: build java code
         run: make javac
@@ -61,4 +62,4 @@ jobs:
         run: make no-java
 
       - name: run tests
-        run: make run_tests_parallel
+        run: make run_tests

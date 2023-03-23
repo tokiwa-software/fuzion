@@ -96,8 +96,6 @@ is
 #
 matrices(M type : numeric M) : numerics (matrix M) is
 
-  redef name => "matrix"
-
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.
   #
