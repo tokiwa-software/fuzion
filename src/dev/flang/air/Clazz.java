@@ -655,6 +655,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || !t.isOpenGeneric());
 
     t = t.applyToGenericsAndOuter(x -> actualType(x));
+    t = replaceThisType(t);
+
     return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
   }
@@ -668,11 +670,53 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t)
   {
+    t = replaceThisTypeForTypeFeature(t);
     if (t.isThisType())
       {
         t = findOuter(t.featureOfType(), t.featureOfType())._type;
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
+  }
+
+
+
+  /**
+   * Special handling for features whose outer features are type features: Any
+   * references to x.this.type have to be replaced by the correspondig
+   * original. See example from #1260:
+   *
+   *   t is
+   *     h(B type) is
+   *     i : h i is
+   *     x := i.type
+   *
+   * Here, in the inherits call to `h i`, the type parameter is
+   * `t.this.type.i`. So in the corresponding type feature has two
+   *
+   *   t.type.h.type t.i t.this.type.i
+   *
+   * the second type parameter for `B` has to get it's `this.type` types
+   * replaced by the actual types given in the first type parameter
+   */
+  AbstractType replaceThisTypeForTypeFeature(AbstractType t)
+  {
+    if (feature().isTypeFeature() && !t.isGenericArgument())
+      {
+        var g = t.generics();
+        if (t.featureOfType().isTypeFeature())
+          {
+            var this_type = g.get(0);
+            g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
+                                          : x.replace_this_type_by_actual_outer(this_type));
+          }
+        var o = t.outer();
+        if (o != null)
+          {
+            o = replaceThisTypeForTypeFeature(o);
+          }
+        t = Types.intern(new Type(t, g, o));
+      }
+    return t;
   }
 
 
