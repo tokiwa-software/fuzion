@@ -179,7 +179,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
       safety: other ≥ zero
   is
     if overflowOnExp other
-      if (thiz ≥ zero) || (other %% two)
+      if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% two)
         wrapping_integer.this.type.max.thiz
       else
         wrapping_integer.this.type.min.thiz
