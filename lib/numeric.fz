@@ -31,8 +31,8 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   # of some features (e.g. prefix -, abs)
   thiz T is abstract
 
-  isZero => thiz ≟ zero
-  isOne  => thiz ≟ one
+  isZero => numeric.this = numeric.this.type.zero
+  isOne  => numeric.this = numeric.this.type.one
 
   # basic operations: 'prefix +' (identity)
   prefix + T
@@ -117,7 +117,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   infix **^(other T) T is abstract
 
 
-  sign => if thiz ≟ zero then 0 else if thiz ⩼ zero then 1 else -1
+  sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
 
   abs => if sign ≥ 0 then thiz else -thiz
 
@@ -135,16 +135,16 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   # NYI replace this by as_u32?
   to_u32 u32
     pre
-      debug: thiz ≥ zero
+      debug: numeric.this ≥ numeric.this.type.zero
   is
-    if (thiz ≥ one) ((thiz - one).to_u32 + 1)
+    if (numeric.this ≥ numeric.this.type.one) ((thiz - one).to_u32 + 1)
     else 0
 
 
   # this numeric value as an u8
   as_u8 u8
     pre
-      debug: thiz ≥ zero
+      debug: numeric.this ≥ numeric.this.type.zero
   is abstract
 
 
@@ -154,8 +154,8 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
     pre
       debug: thiz.sign ≥ 0
     post
-      debug: (thiz ≟ zero: result ≟ one),
-      debug: (thiz != zero: thiz / b ⩻ result ≤ thiz)
+      debug: (numeric.this ≟ numeric.this.type.zero: result ≟ one),
+      debug: (numeric.this != numeric.this.type.zero: thiz / b ⩻ result ≤ thiz)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
   # not of type T.
