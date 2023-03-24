@@ -17,7 +17,7 @@
 #
 string_parsers is
 
-  # matches the of str
+  # match str
   tag(str String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
   is
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
@@ -36,7 +36,7 @@ string_parsers is
     )
 
 
-  # match one or more digit
+  # match one or more digits
   digit1 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
     sequences.take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 

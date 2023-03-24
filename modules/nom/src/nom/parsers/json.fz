@@ -34,6 +34,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
   # parser for a json string
   parser_string =>
 
+    # is this codepoint a valid hex digit: a-f or A-F
     is_hex_digit(c codepoint) bool is
       codepoint.type.ascii_digit.contains c.val
         || (u32 0x41 .. 0x46).contains c.val
@@ -64,13 +65,19 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
       (take_while1 codepoint (c-> (c != "\"") & (c != "\\")))
 
 
-    p parser (Sequence codepoint) (Sequence codepoint) (Sequence (Sequence codepoint)) := many0 (alt [parser_regular_codepoint, parser_escapings])
+    p parser (Sequence codepoint) (Sequence codepoint) (Sequence (Sequence codepoint)) :=
+      many0 (alt [parser_regular_codepoint, parser_escapings])
 
     delimited (tag "\"") p (tag "\"")
       .map String (x -> String.type.join (x.mapSequence String (y -> String.type.from_codepoint_sequence y)) "")
 
 
   # parser for a json number
+  # examples:
+  # - 10
+  # - 10.0
+  # - 1.0E+1
+  # - 1e1
   parser_number =>
 
     parser_minus := many_m_n 0 1 (tag "-")
@@ -111,26 +118,29 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
         if x.is_empty
           1.0
         else
-          (s, n) := x.first
-          10.0 ** (s*n))
+          (sign, exp) := x.first
+          10.0 ** (sign*exp))
 
     (tuple4 parser_minus parser_whole parser_fraction parser_exponent)
       .map json_value (x ->
-        (s, w, f, e) := x
-        s*(w+f)*e)
+        (sign, whole, fraction, exponent) := x
+        sign*(whole+fraction)*exponent)
 
 
   # parser for true
   parser_true :=
     (tag "true").map json_value (x -> true)
 
+
   # parser for false
   parser_false :=
     (tag "false").map json_value (x -> false)
 
+
   # parser for null
   parser_null :=
     (tag "null").map json_value (x -> nil)
+
 
   # parser for json array
   parser_array =>
@@ -142,6 +152,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
 
     tmp parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
     tmp.map json_value (x->x)
+
 
   # parser for json object
   parser_object =>
@@ -157,6 +168,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
     delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
       .map json_value (x -> map_of x.as_array)
 
+
   # parser for a json_value: true, false, [], {}, numbers, strings etc.
   parser_json_value =>
     alt (Sequence codepoint) (Sequence codepoint) json_value [
@@ -168,10 +180,11 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
       parser_false,
       parser_null]
 
+
   # parser for json_value which may be surrounded by whitespace
   parser_json_value_delimited parser (Sequence codepoint) (Sequence codepoint) json_value is
     delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_json_value whitespace0
 
 
-  # map parser to take string input
+  # map parser to take string input instead of Sequence of codepoints
   to_string_input parser_json_value_delimited
