@@ -24,24 +24,23 @@
 
 # defines effect map_of_total_order
 # this allows creating a map from a keys and values array
-map_of_total_order (
+private map_of_total_order (
   K type : has_total_order, V type,
   # the provider this effect uses to create a Map
   public new (array K, array V) -> Map K V,
-  private em effectMode.val
+  private em effectMode.val,
+  _ unit
   ) : effect em
 is
   type.install_default =>
     if !effects.exists (map_of_total_order K V)
-      _ := map_of_total_order K V (ks,vs -> ordered_map ks vs) effectMode.default
+      _ := map_of_total_order K V (ks,vs -> ordered_map ks vs) effectMode.default unit
 
 
 
-# shorthand to install a new provider for effect map_of_total_order.
-map_of_total_order(K type : has_total_order, V type, p (array K, array V) -> Map K V) =>
-  (map_of_total_order K V).type.install_default
-  _ := map_of_total_order K V p effectMode.repl
-
+# shorthand to run code with custom map initializer.
+map_of_total_order(K type : has_total_order, V type, map_init (array K, array V) -> Map K V, code () -> unit) =>
+  _ := map_of_total_order K V map_init (effectMode.inst code) unit
 
 
 
