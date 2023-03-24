@@ -2554,10 +2554,13 @@ PIPE        : "|"
             {
               if (c == LF && !sb.isEmpty())
               {
-                var previousCodepoint = codePointAt(getPos(pos)-1);
-                if (previousCodepoint != LF && kind(previousCodepoint) == K_WS)
+                var posBeforeLineBreak = (byteAt(getPos(pos)-2) & 0xff )== CR
+                                            ? getPos(pos) - 3
+                                            : getPos(pos) - 2;
+                var previousCodepoint = byteAt(posBeforeLineBreak) & 0xff;
+                if (kind(previousCodepoint) == K_WS && !isCRorLF(previousCodepoint))
                   {
-                    Errors.trailingWhiteSpaceInMultiLineString(sourcePos(getPos(pos)-1));
+                    Errors.trailingWhiteSpaceInMultiLineString(sourcePos(posBeforeLineBreak));
                   }
               }
               sb.appendCodePoint(c);
