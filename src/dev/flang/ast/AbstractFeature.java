@@ -312,9 +312,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public String qualifiedName()
   {
     var n = featureName().baseName();
+    var tfo = outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? outer().typeFeatureOrigin().qualifiedName() + ".this.type" :
+      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
@@ -680,7 +681,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           {
             var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
             tl.add(ta);
-            }
+          }
         t = t.actualType(this, tl);
       }
     t = t instanceof Type tt ? tt.clone(this) : t;
