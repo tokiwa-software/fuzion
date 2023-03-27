@@ -312,7 +312,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public String qualifiedName()
   {
     var n = featureName().baseName();
-    var tfo = outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
+    var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
       n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
