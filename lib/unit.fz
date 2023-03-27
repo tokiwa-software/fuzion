@@ -100,5 +100,4 @@ unit is
   # and the identity element of this monoid are canonically defined.
   type.monoid : Monoid unit is
     redef infix ∙ (a, b unit) unit is unit
-    redef infix == (a, b unit) bool is true
     redef e unit is unit

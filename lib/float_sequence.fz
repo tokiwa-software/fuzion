@@ -49,4 +49,4 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
   #
   euclidean_norm F is
     # NYI #500: sqrt,two and sum should be accessed via type
-    first.sqrt ((mapSequence (x)->x**first.two).fold first.sum)
+    first.sqrt ((mapSequence (x)->x**first.two).fold (float F).type.sum)

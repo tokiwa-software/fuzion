@@ -92,5 +92,5 @@ choicetest is
   say sum
 
   say "summing array using monoid: {a.map  (c -> c.value_in_cents)
-                                     .fold i32.sum
+                                     .fold i32.type.sum
                                    }"

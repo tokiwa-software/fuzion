@@ -113,5 +113,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   type.union : Monoid bitset is
     redef infix ∙ (a, b bitset) => a ∪ b
-    redef infix == (a, b bitset) => a == b
     redef e bitset is bitset.type.empty
