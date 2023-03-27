@@ -225,10 +225,14 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
-         t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-         t.isRef() ? RefOrVal.Ref
-                   : RefOrVal.Value,
+    this(t.pos2BeRemoved(),
+         t.name(),
+         g,
+         o,
+         t instanceof Type tt ? tt.feature   : t.featureOfType(),
+         t instanceof Type tt ? tt._refOrVal : (t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+                                                t.isRef() ? RefOrVal.Ref
+                                                : RefOrVal.Value),
          true);
 
     if (PRECONDITIONS) require
@@ -960,6 +964,10 @@ public class Type extends AbstractType
         ensureNotOpen();
       }
     var result = this;
+    if (!checkedForGeneric)
+      {
+        findGenerics(outerfeat);
+      }
     if (!isGenericArgument())
       {
         resolveFeature(res, outerfeat);
@@ -1058,6 +1066,19 @@ public class Type extends AbstractType
     return feature != null
       ? feature
       : Types.f_ERROR;
+  }
+
+
+  /**
+   * Is this the type of a type feature, e.g., the type of `(list
+   * i32).type`. false is this is unknown since type was not resolved yet.
+   *
+   * This is redefined here since `feature` might still be null while this type
+   * was not resolved yet.
+   */
+  boolean isTypeType()
+  {
+    return feature != null && feature.isTypeFeature();
   }
 
 

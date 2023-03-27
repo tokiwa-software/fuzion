@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -654,6 +655,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is this the type of a type feature, e.g., the type of `(list
+   * i32).type`. false is this is unknown since type was not resolved yet.
+   */
+  boolean isTypeType()
+  {
+    return !isGenericArgument() && featureOfType().isTypeFeature();
+  }
+
+
+  /**
    * Check if this type depends on a formal generic parameter of f. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
@@ -696,6 +707,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var g2 = actualTypes(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
+
+        if (isTypeType())
+          {
+            var this_type = g2.get(0);
+            g2 = g2.map(x -> x == this_type ? x   // leave first type parameter unchanged
+                                            : x.actualTypeType(this_type));
+          }
+
         if (g2 != result.generics() ||
             o2 != result.outer()       )
           {
@@ -708,6 +727,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+
+  /**
+   * Helper for actualType_ to determine the actual type of a type feature's
+   * type. This needs special handling since the the type feature has one
+   * additional first type parameter --the underlying type: this_type--, and all
+   * other type parameters need converted to the actual type relative to that.
+   *
+   * @param this_type the first type parameter that contains the actual type.
+   */
+  private AbstractType actualTypeType(AbstractType this_type)
+  {
+    var t = replace_this_type_by_actual_outer(this_type);
+    if (!this_type.isGenericArgument() && !this_type.featureOfType().isUniverse())
+      {
+        t = t.actualTypeType(this_type.outer());
+        t = t.actualType(this_type.featureOfType(), this_type.generics());
+      }
+    return t;
   }
 
 
@@ -1049,9 +1089,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var fot = featureOfType();
     if (!fot.isUniverse() && this != Types.t_ERROR)
       {
-        var f = fot.isTypeFeature() ? null
-              : res == null         ? fot.typeFeature()
-                                    : fot.typeFeature(res);
+        var f =
+          fot.isTypeFeature()  ? null                 :
+          fot.hasTypeFeature() ? fot.typeFeature()    :
+          res != null          ? fot.typeFeature(res)
+                               : null;
         if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features like #anonymous. Need to check why.
           {
             result = Types.resolved.f_Type.selfType();
@@ -1302,9 +1344,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var o = outer();
         String outer = o != null && !o.featureOfType().isUniverse() ? o.asStringWrapped() + "." : "";
+        var f = featureOfType();
+        var fn = f.featureName();
+        // for a feature that does not define a type itself, the name is not
+        // unique due to overloading with different argument counts. So we add
+        // the argument count to get a unique name.
+        var fname = fn.baseName() + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
         result = outer
               + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
-              + featureOfType().featureName().baseName();
+              + fname;
         if (isThisType())
           {
             result = result + ".this.type";
