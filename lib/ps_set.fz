@@ -128,8 +128,14 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   union : Monoid (ps_set K) is
     redef infix ∙ (a, b ps_set K) => a ∪ b
-    redef infix == (a, b ps_set K) => (a ∪ b).size ≟ a.size  # NYI: a bit expensive
     redef e => empty
+
+
+  # equality
+  #
+  fixed type.equality(a, b ps_set K) bool is
+    # NYI: a bit expensive
+    (a ∪ b).size = a.size
 
 
 # ps_sets -- unit type feature declaring features related to ps_set
