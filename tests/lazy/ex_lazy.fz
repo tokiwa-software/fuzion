@@ -52,9 +52,7 @@ ex_lazy is
   say (ones.take 10)
   say "y"
 
-/*
- * NYI: should work but currently does not.
   type_of2(W type, x Lazy W) Type is W
-  say (type_of2 42)
+  # NYI: should work but currently does not:
+  # say (type_of2 42)
   say (type_of2 ()->42)
- */
