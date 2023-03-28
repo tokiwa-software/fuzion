@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# simple example calling `dynamic_type?`
+# simple example calling `dynamic_type`
 #
 test1 is
   H ref is
