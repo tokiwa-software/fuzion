@@ -655,7 +655,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || !t.isOpenGeneric());
 
     t = t.applyToGenericsAndOuter(x -> actualType(x));
-    t = replaceThisTypeForTypeFeature(t);
     t = replaceThisType(t);
 
     return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
