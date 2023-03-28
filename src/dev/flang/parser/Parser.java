@@ -2506,7 +2506,8 @@ block       : stmnts
    */
   Block block()
   {
-    SourcePosition pos1 = posObject();
+    var p1 = pos();
+    var pos1 = posObject();
     if (current() == Token.t_semicolon)
       { // we have code like
         //
@@ -2525,6 +2526,17 @@ block       : stmnts
       {
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        if (pos1 == pos2 && current() == Token.t_indentationLimit)
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` n
+             *
+             *   x i32 is
+             *   y u8 is
+             *
+             * so we set start and end pos to the position after `x i32 is`.
+             */
+            pos1 = posObject(lineEndPos(lineNum(p1)-1));
+            pos2 = pos1;
+          }
         return new Block(pos1, pos2, l);
       }
     else
