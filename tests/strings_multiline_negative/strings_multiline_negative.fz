@@ -43,3 +43,9 @@ strings_multiline_negative is
   hello
   """
   //   ^  5. should NYI flag NYI an NYI error: (error in line 43) Illegal trailing whitespace in multiline string.
+
+
+  f := """
+  A string 'ending' in four quotes, essentially ending the multiline
+  string and immediately starting a new string.
+  """"  // 6. should flag an error: Found unexpected control sequence 'LF '

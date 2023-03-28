@@ -70,3 +70,10 @@ if true
 else
   "?"
     }"""
+
+
+  # multiline string containing " and ""
+  say """
+    "hell😀 world"!
+    ""hell😀 world""!
+  """
