@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import dev.flang.ast.*;
 
@@ -2131,7 +2132,7 @@ simpleterm  : bracketTerm
           default          :
             if (isStartedString(current()))
               {
-                result = stringTerm(null);
+                result = stringTerm(null, Optional.empty());
               }
             else
               {
@@ -2175,19 +2176,23 @@ stringTermB : '}any chars&quot;'
             | '}any chars{' block stringTermB
             ;
   */
-  Expr stringTerm(Expr leftString)
+  Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string());
+            var ps = string(multiLineIndentation);
+            var str = new StrConst(posObject(), ps._v0);
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block()));
+                var old = minIndent(-1);
+                var b = block();
+                minIndent(old);
+                result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
         else
