@@ -678,7 +678,8 @@ public class Errors extends ANY
   {
     syntaxError(sourcePos,
                 "Found codepoint at less indentation than expected in multiline string.",
-                "To solve this, indent offending line by at least " + indentation + " spaces.");
+                "To solve this, indent offending line by at least " + indentation + " spaces." + "\n" +
+                "Alternatively decrease indentation of first line. One way to do this is by using the \\s escape code which equals a space.");
   }
 
   public static void trailingWhiteSpaceInMultiLineString(SourcePosition sourcePos)

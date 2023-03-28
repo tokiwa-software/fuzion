@@ -2385,6 +2385,10 @@ PIPE        : "|"
     private StringState _state;
 
 
+    /**
+     * If this is changed, https://flang.dev/tutorial/string_constants
+     * must be changed as well.
+     */
     char[][] escapeChars = new char[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
