@@ -1124,7 +1124,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * This is the case for constructors and choice features.
    *
    * Type features and any features declared within type features do not declare
-   * types.  Allowing this would open up the pandora tin of having instances of
+   * types.  Allowing this would open up Pandora's box of having instances of
    * the f.type.type, f.type.type.type, f.type.type.type.type, ...
    */
   public boolean definesType()
