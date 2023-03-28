@@ -2189,9 +2189,9 @@ stringTermB : '}any chars&quot;'
             next();
             if (isPartialString(t))
               {
-                var old = minIndent(-1);
+                var old = setMinIndent(-1);
                 var b = block();
-                minIndent(old);
+                setMinIndent(old);
                 result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
@@ -2673,7 +2673,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = minIndent(pos());
+      oldIndentPos = setMinIndent(pos());
     }
 
 
@@ -2700,7 +2700,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(okPos);
+              setMinIndent(okPos);
               okLineNum = lineNum(okPos);
             }
         }
@@ -2716,7 +2716,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (firstIndent != -1)
         {
           endAtSpace(oldEAS);
-          minIndent(oldIndentPos);
+          setMinIndent(oldIndentPos);
         }
     }
   }
@@ -2894,12 +2894,12 @@ nextValue   : COMMA exprInLine
    */
   boolean isIndexVarPrefix()
   {
-    var mi = minIndent(-1);
+    var mi = setMinIndent(-1);
     var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
-    minIndent(mi);
+    setMinIndent(mi);
     return result;
   }
 
