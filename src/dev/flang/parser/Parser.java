@@ -2527,7 +2527,7 @@ block       : stmnts
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
         if (pos1 == pos2 && current() == Token.t_indentationLimit)
-          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` n
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
              *
              *   x i32 is
              *   y u8 is
