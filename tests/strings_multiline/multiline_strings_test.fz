@@ -17,42 +17,63 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test ex_lazy
+#  Source code of Fuzion test multiline_strings_test
 #
 # -----------------------------------------------------------------------
 
-ex_lazy is
-  and(a bool, b Lazy bool) bool is
-    if a
-      b
-    else
-      false
+# A small test for multiline strings with embedded identifiers and expressions
+#
+multiline_strings_test is
 
-  x := and true true
-  y := and true ()->false
+  # world with multibyte unicode character
+  world := "w😀rld"
 
-  say x
-  say y
+  # simple multi line string
+  say """
+    hell😀
+    w😀rld"""
 
-  say "should not eval mtrue"
-  x0 := and !true mtrue
-  say "should eval mtrue"
-  y0 := and true mtrue
+  # multiline string ending with new line
+  # using interpolation
+  say """
+    hell😀
+    $world
+    """
 
-  mtrue => say "eval mtrue!"; true
+  # multiline string with empty lines and
+  # escape codes
+  say """
+    hell😀\sw😀rld\s!
 
-  lst(T type, h T, t Lazy (list T)) list T is
-    ref : Cons T (list T)
-      head => h
-      tail => t
+     {   world   }\s
+    """
 
-  ones => say "eval ones!"; lst 1 ones
 
-  say "x"
-  say (ones.take 10)
-  say "y"
+  # nested multiline string
+  say """
+    hell😀 {
+if true
+  """
+{world}"""
+else
+  "?"
+    }"""
 
-  type_of2(W type, x Lazy W) Type is W
-  # NYI: should work but currently does not:
-  # say (type_of2 42)
-  say (type_of2 ()->42)
+
+  # nested multiline string using braces and dollar interpolation
+  say """
+    hell😀 {
+if true
+  """
+{"""
+  $world"""}"""
+else
+  "?"
+    }"""
+
+
+  # multiline string containing " and ""
+  say """
+    "hell😀 world"!
+    ""hell😀 world""!
+  """

@@ -75,6 +75,9 @@ public class SourceFile extends ANY
   protected static final int PF  = 0x2029;   // Paragraph Separator, U+2029
 
 
+  protected static final int SP  = 0x0020;   // Space character, U+0020
+
+
   /**
    * Quick byte -> hex conversion table:
    */

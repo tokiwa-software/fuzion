@@ -17,42 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test ex_lazy
+#  Source code of Fuzion test Makefile
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-ex_lazy is
-  and(a bool, b Lazy bool) bool is
-    if a
-      b
-    else
-      false
-
-  x := and true true
-  y := and true ()->false
-
-  say x
-  say y
-
-  say "should not eval mtrue"
-  x0 := and !true mtrue
-  say "should eval mtrue"
-  y0 := and true mtrue
-
-  mtrue => say "eval mtrue!"; true
-
-  lst(T type, h T, t Lazy (list T)) list T is
-    ref : Cons T (list T)
-      head => h
-      tail => t
-
-  ones => say "eval ones!"; lst 1 ones
-
-  say "x"
-  say (ones.take 10)
-  say "y"
-
-  type_of2(W type, x Lazy W) Type is W
-  # NYI: should work but currently does not:
-  # say (type_of2 42)
-  say (type_of2 ()->42)
+override NAME = issue1236
+include ../simple.mk

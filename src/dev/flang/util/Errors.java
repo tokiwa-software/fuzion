@@ -666,6 +666,29 @@ public class Errors extends ANY
                 "Found " + token + " instead.");
   }
 
+  public static void expectedIndentedStringInFirstLineAfterFatQuotation(SourcePosition start,
+    SourcePosition multiLineStringStart)
+  {
+    syntaxError(start,
+                "Expected multiline string to start in first line following fat quotation '\"\"\"'",
+                "Found start at " + multiLineStringStart.show() + " instead.");
+  }
+
+  public static void notEnoughIndentationInMultiLineString(SourcePosition sourcePos, int indentation)
+  {
+    syntaxError(sourcePos,
+                "Found codepoint at less indentation than expected in multiline string.",
+                "To solve this, indent offending line by at least " + indentation + " spaces." + "\n" +
+                "Alternatively decrease indentation of first line. One way to do this is by using the \\s escape code which equals a space.");
+  }
+
+  public static void trailingWhiteSpaceInMultiLineString(SourcePosition sourcePos)
+  {
+    syntaxError(sourcePos,
+                "Illegal trailing whitespace in multiline string.",
+                "To solve this, remove this whitespace or replace it by escape codes.");
+  }
+
 
   /*
    * get copy of current errors

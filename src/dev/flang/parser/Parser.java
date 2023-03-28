@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import dev.flang.ast.*;
 
@@ -2131,7 +2132,7 @@ simpleterm  : bracketTerm
           default          :
             if (isStartedString(current()))
               {
-                result = stringTerm(null);
+                result = stringTerm(null, Optional.empty());
               }
             else
               {
@@ -2175,19 +2176,23 @@ stringTermB : '}any chars&quot;'
             | '}any chars{' block stringTermB
             ;
   */
-  Expr stringTerm(Expr leftString)
+  Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string());
+            var ps = string(multiLineIndentation);
+            var str = new StrConst(posObject(), ps._v0);
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block()));
+                var old = setMinIndent(-1);
+                var b = block();
+                setMinIndent(old);
+                result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
         else
@@ -2668,7 +2673,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = minIndent(pos());
+      oldIndentPos = setMinIndent(pos());
     }
 
 
@@ -2695,7 +2700,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(okPos);
+              setMinIndent(okPos);
               okLineNum = lineNum(okPos);
             }
         }
@@ -2711,7 +2716,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (firstIndent != -1)
         {
           endAtSpace(oldEAS);
-          minIndent(oldIndentPos);
+          setMinIndent(oldIndentPos);
         }
     }
   }
@@ -2889,12 +2894,12 @@ nextValue   : COMMA exprInLine
    */
   boolean isIndexVarPrefix()
   {
-    var mi = minIndent(-1);
+    var mi = setMinIndent(-1);
     var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
-    minIndent(mi);
+    setMinIndent(mi);
     return result;
   }
 
