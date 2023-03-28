@@ -607,7 +607,7 @@ public class Lexer extends SourceFile
    *
    * @return the previous min indentation, -1 if none.
    */
-  int minIndent(int startPos)
+  int setMinIndent(int startPos)
   {
     int result = _minIndentStartPos;
     _minIndent = startPos >= 0 ? codePointInLine(startPos) : -1;
