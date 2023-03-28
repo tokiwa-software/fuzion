@@ -1071,7 +1071,8 @@ public class Type extends AbstractType
 
   /**
    * Is this the type of a type feature, e.g., the type of `(list
-   * i32).type`. false is this is unknown since type was not resolved yet.
+   * i32).type`. Will return false for an instance of Type for which this is
+   * still unknown since Type.resolve() was not called yet.
    *
    * This is redefined here since `feature` might still be null while this type
    * was not resolved yet.
