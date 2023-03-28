@@ -1154,7 +1154,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {
@@ -1185,7 +1185,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {
