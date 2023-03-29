@@ -323,8 +323,7 @@ public class InlineArray extends ExprWithPos
                                                    new Actual(e));
             var readSysArrayVar = new Call(e.pos(), null           , sysArrayName     ).resolveTypes(res, outer);
             var setElement      = new Call(e.pos(), readSysArrayVar,
-                                           // NYI workaround for performance issue in DFA #990
-                                           "set_no_pre_condition",
+                                           FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
                                            setArgs                                    ).resolveTypes(res, outer);
             stmnts.add(setElement);
           }
