@@ -804,7 +804,7 @@ ryū is
       dm := mul_pow5_inv_div_pow2 mm q i
 
       if q <= 21
-        if mv % 5 == 0
+        if mv % 5 = 0
           (dv, dp, dm, false, (multiple_of_power_of_5 mv q), q)
         else if rounding_mode.accept_upper_bound is_even
           (dv, dp, dm, (multiple_of_power_of_5 mm q), false,  q)
@@ -831,7 +831,7 @@ ryū is
         else
           (dv, dp -  1, dm, false, true, e10)
       else if q < 63
-        (dv, dp, dm, false, (mv & (((i64 1) << (q - 1)) - 1)) == 0, e10)
+        (dv, dp, dm, false, (mv & (((i64 1) << (q - 1)) - 1)) = 0, e10)
       else
         (dv, dp, dm, false, false, e10)
 
@@ -882,13 +882,13 @@ ryū is
       else
         t := dm_is_trailing_zeros && rounding_mode.accept_lower_bound even
 
-        for dv_is_trailing_zeros := dv_is_trailing_zeros, dv_is_trailing_zeros & last_removed_digit == 0
+        for dv_is_trailing_zeros := dv_is_trailing_zeros, dv_is_trailing_zeros & last_removed_digit = 0
             last_removed_digit := last_removed_digit, dv % 10
             dp := dp, dp / 10
             dv := dv, dv / 10
             dm := dm, dm / 10
             removed := removed, removed+1
-        while t && (dm % 10 == 0) && require_more_digits dp
+        while t && (dm % 10 = 0) && require_more_digits dp
         else
 
           outside_bounds => dv = dm && !(dm_is_trailing_zeros && rounding_mode.accept_lower_bound even)
@@ -911,7 +911,7 @@ ryū is
       while ((dp / 10 > dm / 10) && require_more_digits dp)
       else
         # output
-        (dv + (if dv == dm || (last_removed_digit >= 5) then 1 else 0),
+        (dv + (if dv = dm || (last_removed_digit >= 5) then 1 else 0),
         # output length
          vplength - removed,
          exponent)
@@ -947,7 +947,7 @@ ryū is
         "{output_as_string output output_length}{"0" * (exp+1-output_length).as_i32}.0"
       else
         for idx in i64 0 .. output_length
-            is_dot_pos := false, output_length - idx - 1 == exp
+            is_dot_pos := false, output_length - idx - 1 = exp
             output := output, if is_dot_pos then output else output / 10
             str := "{output % 10}", (if is_dot_pos then "." else "{output % 10}") + str
         else
