@@ -256,6 +256,15 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
+  # identity element for 'infix +'
+  #
+  fixed type.zero => u128 0 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one => u128 0 1
+
 
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
