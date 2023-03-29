@@ -1486,7 +1486,7 @@ public class DFA extends ANY
 
 
   /**
-   * Helper for newCall to analyse a newly created call immediately. This helps
+   * Helper for newCall to analyze a newly created call immediately. This helps
    * to avoid quadratic performance when analysing a sequence of calls as in
    *
    *  a 1; a 2; a 3; a 4; a 5; ...
@@ -1494,8 +1494,8 @@ public class DFA extends ANY
    * Since a new call das not return, the analysis would stop for each iteration
    * after the fist new call.
    *
-   * However, we cannot analyse all calls immediately since a recursive call
-   * would result in an unbounded recursion during DFA.  So this analyses the
+   * However, we cannot analyze all calls immediately since a recursive call
+   * would result in an unbounded recursion during DFA.  So this analyzes the
    * call immediately unless it is part of a recursion or there are already
    * MAX_NEW_CALL_RECURSION new calls being analyzed right now.
    *
