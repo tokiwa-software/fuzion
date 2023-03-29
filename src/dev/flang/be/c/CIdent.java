@@ -55,7 +55,7 @@ class CIdent extends CExpr
   final String _name;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

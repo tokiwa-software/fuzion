@@ -25,17 +25,7 @@
 
 # numeric_sequence -- a Sequence whose elements inherit from numeric
 #
-numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality is
-
-  # create a list from this Sequence.
-  #
-  redef as_list => from.as_list
-
-
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  redef finite => from.finite
+numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequence N from, equatable is
 
 
   # the arithmetic mean of the sequence
@@ -44,9 +34,9 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
     if is_empty
       nil
     else
-      count := (mapSequence N (_ -> first.one)).fold first.sum
-      sum := fold first.sum
-      sum / count
+      cnt := (mapSequence N (_ -> first.one)).fold (numeric N).type.sum
+      sum := fold (numeric N).type.sum
+      sum / cnt
 
 
   # the variance of the sequence
@@ -55,9 +45,9 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
     match average
       nil => nil
       avg N =>
-        count := (mapSequence N (_ -> first.one)).fold first.sum
-        sum := (mapSequence N (x -> (x - avg)**first.two)).fold first.sum
-        sum / count
+        cnt := (mapSequence N (_ -> first.one)).fold (numeric N).type.sum
+        sum := (mapSequence N (x -> (x - avg)**first.two)).fold (numeric N).type.sum
+        sum / cnt
 
 
   # minimum value in the sequence
@@ -89,8 +79,10 @@ numeric_sequence(N type : numeric N, from Sequence N) : Sequence N, has_equality
         (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
 
 
-  # are these numeric sequences equal?
-  # i.e. do they only contain equal numbers
+  # equality check implementation for inherited equatable
+  #
   fixed type.equality(a, b numeric_sequence N) bool is
-    ((a.zip b (c,d->equals N c d)) ∀ x->x)
-      & a.count ≟ b.count
+    aa := a.as_array
+    ba := b.as_array
+    aa.count ≟ ba.count
+      && ((0..(a.count - 1)) ∀ (i -> aa[i] = ba[i]))

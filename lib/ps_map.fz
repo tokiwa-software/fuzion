@@ -166,7 +166,7 @@ O(n log n).
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
     if (nsize & size) ≟ 0
-      set ndata := fuzion.sys.internal_array (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+      set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1 nfill 1
@@ -196,9 +196,9 @@ O(n log n).
         sz0 := sz / 2
         nt := (tail - sz0) / 2
         at0 := (at
-                + (if !((size & sz0) ≟ 0) nt else 0)
-                + (if !((size & sz ) ≟ 0) sz else 0))
-        if !((size & sz) ≟ 0)
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        if (size & sz) != 0
           match binarySearch at at+sz-1
             v V => v
             nil => get at0 sz0 nt
@@ -220,13 +220,13 @@ O(n log n).
   # create sorted array of all keys in this map
   #
   asKeyArray array PK is
-    r := fuzion.sys.internal_array PK size
+    r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz ≤ size
-        if !((size & sz) ≟ 0)
+        if (size & sz) != 0
           tmp := array PK rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
@@ -240,7 +240,7 @@ O(n log n).
         else
           join ole-sz 2*sz rsz (skip + sz + skip)
 
-    if !(size ≟ 0)
+    if size != 0
       join fill-1 1 0 0
     array r unit unit unit
 
@@ -268,9 +268,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          m0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
               min m at at+sz-1
             else
               m
@@ -297,9 +297,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          m0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
               max m at at+sz-1
             else
               m
@@ -342,9 +342,9 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if !((size & sz0) ≟ 0) nt else 0)
-                  + (if !((size & sz ) ≟ 0) sz else 0))
-          a0 := if !((size & sz) ≟ 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          a0 := if (size & sz) != 0
               addAll a at at+sz-1
             else
               a
@@ -368,7 +368,7 @@ ps_maps(PK type : has_total_order, V type) is
   #
   # This feature creates an empty instance of ps_map.
   #
-  empty => ps_map (fuzion.sys.internal_array (tuple PK V) 0) 0 0
+  empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
 # ps_map -- routine to initialize a partially sorted map from two Sequences

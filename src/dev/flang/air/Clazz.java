@@ -329,7 +329,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
        outer == null || outer._type != Types.t_ADDRESS,
-       !actualType.isThisType());
+       !actualType.containsThisType());
 
     if (actualType == Types.t_UNDEFINED)
       {
@@ -339,10 +339,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (CHECKS) check
       (Errors.count() > 0 || actualType != Types.t_ERROR);
 
-    this._type = actualType;
     this._select = select;
-    /* NYI: Handling of outer in Clazz is not done properly yet. There are two
-     * basic cases:
+    /* There are two basic cases for outer clazzes:
      *
      * 1. outer is a value type
      *
@@ -360,7 +358,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
      *    not with sub-clazzes with different actual generics.
      */
     this._outer = normalizeOuter(actualType, outer);
-
+    this._type = (actualType != Types.t_ERROR && this._outer != null)
+      ? Types.intern(new Type(actualType, this._outer._type))
+      : actualType;
     this._dynamicBinding = null;
 
     if(POSTCONDITIONS) ensure
@@ -420,17 +420,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Check if this clazz has an outer ref that is used.
+   * Check if the given feature has an outer ref that is used.
    *
-   * if an outer ref is used (i.e., state is resolved) to access the outer
-   * instance, we must not normalize because we will need the exact type of the
-   * outer instance to specialize code or to access features that only exist in
-   * the specific version
+   * If an outer ref is used to access the outer instance, we must not normalize
+   * because we will need the exact type of the outer instance to specialize code
+   * or to access features that only exist in the specific version
+   *
+   * @param f the feature to check if it has an outer ref
    */
-  private boolean hasUsedOuterRef()
+  private boolean hasUsedOuterRef(AbstractFeature f)
   {
-    var or = feature().outerRef();
-    return !feature().isConstructor()  // do not specialize a constructor
+    var or = f.outerRef();
+    return !f.isConstructor()  // do not specialize a constructor
       && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
   }
 
@@ -450,7 +451,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
-    if (outer != null && !hasUsedOuterRef() && !feature().isField() && t != Types.t_ERROR)
+    var f = t.featureOfType();
+    if (outer != null && !hasUsedOuterRef(f) && !f.isField() && t != Types.t_ERROR)
       {
         outer = outer.normalize(t.featureOfType().outer());
       }
@@ -482,14 +484,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // outer instance, we must not normalize because we will need the
         // exact type of the outer instance to specialize code or to access
         // features that only exist in the specific version
-        hasUsedOuterRef()
+        hasUsedOuterRef(feature())
         )
       {
         return this;
       }
     else
       {
-        var t = actualType(f.thisType()).asRef();
+        var t = actualType(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -502,7 +504,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var normalized = Clazzes.create(t, normalize2(f.outer().thisType()));
+        var normalized = Clazzes.create(t, normalize2(f.outer().selfType()));
         normalized._isNormalized = true;
         return normalized;
       }
@@ -630,6 +632,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     t = this._type.actualType(t);
+    t = t.replace_this_type_by_actual_outer(_type);
     if (this._outer != null)
       {
         t = this._outer.actualType(t);
@@ -651,8 +654,68 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return t.isThisType() ? findOuter(t.featureOfType(), t)
+    t = t.applyToGenericsAndOuter(x -> actualType(x));
+    t = replaceThisType(t);
+
+    return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
+  }
+
+
+  /**
+   * In given type t, replace occurences of 'X.this.type' by the actual type
+   * from this Clazz.
+   *
+   * @param t a type
+   */
+  AbstractType replaceThisType(AbstractType t)
+  {
+    t = replaceThisTypeForTypeFeature(t);
+    if (t.isThisType())
+      {
+        t = findOuter(t.featureOfType(), t.featureOfType())._type;
+      }
+    return t.applyToGenericsAndOuter(g -> replaceThisType(g));
+  }
+
+
+  /**
+   * Special handling for features whose outer features are type features: Any
+   * references to x.this.type have to be replaced by the correspondig
+   * original. See example from #1260:
+   *
+   *   t is
+   *     h(B type) is
+   *     i : h i is
+   *     x := i.type
+   *
+   * Here, in the inherits call to `h i`, the type parameter is
+   * `t.this.type.i`. So in the corresponding type feature has two
+   *
+   *   t.type.h.type t.i t.this.type.i
+   *
+   * the second type parameter for `B` has to get it's `this.type` types
+   * replaced by the actual types given in the first type parameter
+   */
+  AbstractType replaceThisTypeForTypeFeature(AbstractType t)
+  {
+    if (feature().isTypeFeature() && !t.isGenericArgument())
+      {
+        var g = t.generics();
+        if (t.featureOfType().isTypeFeature())
+          {
+            var this_type = g.get(0);
+            g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
+                                          : x.replace_this_type_by_actual_outer(this_type));
+          }
+        var o = t.outer();
+        if (o != null)
+          {
+            o = replaceThisTypeForTypeFeature(o);
+          }
+        t = Types.intern(new Type(t, g, o));
+      }
+    return t;
   }
 
 
@@ -670,11 +733,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var result = this._type.replaceGenerics(generics);
 
     // Replace any `a.this.type` actual generics by the actual outer clazz:
-    if (result.stream().anyMatch(x->x.isThisType()))
-      {
-        result = result.map(g -> g.isThisType() ? findOuter(g.featureOfType(), SourcePosition.builtIn)._type
-                                                : g);
-      }
+    result = result.map(t->replaceThisType(t));
 
     if (this._outer != null)
       {
@@ -760,7 +819,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *    absurd (i i32, v void) is {}
    *
    * that has a field of type void is effectively a void type. This call will,
-   * however, return false for ushc user defined void types.
+   * however, return false for user defined void types.
    */
   public boolean isVoidType()
   {
@@ -778,7 +837,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos();
+        var tp = _type.pos2BeRemoved();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))
@@ -1039,6 +1098,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
+       !f.isUniverse(),
        !this.isVoidType());
 
     return lookup(f, -1, actualGenerics, p, false);
@@ -1079,6 +1139,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
+       !f.isUniverse(),
        !this.isVoidType());
 
     Clazz innerClazz = null;
@@ -1137,7 +1198,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 _abstractCalled.add(aaf);
               }
 
-            AbstractType t = aaf.thisType().actualType(aaf, actualGenerics);
+            AbstractType t = aaf.selfType().actualType(aaf, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
             if (actualGenerics.isEmpty())
@@ -1178,7 +1239,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * When seen from this Clazz, is feature f effectively abstract? This is the
-   * case if f is abstract and if f is fixed to another outher feature than
+   * case if f is abstract and if f is fixed to another outer feature than
    * this.feature(), i.e. this clazz inherits f but not its implementation.
    */
   boolean isEffectivelyAbstract(AbstractFeature f)
@@ -1234,18 +1295,31 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (this._type == Types.t_ERROR   ||
        this._type == Types.t_ADDRESS ||
        this._outer == null              )
-      ? this._type.toString() // error, address or universe
+      ? this._type.asString() // error, address or universe
       : (""
          + ((this._outer == Clazzes.universe.get())
             ? ""
-            : this._outer.toString() + ".")
+            : this._outer.toStringWrapped() + ".")
          + (this.isRef()
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName() + (this._type.generics().isEmpty()
-                                                 ? ""
-                                                 : "<" + this._type.generics() + ">"));
+         + feature().featureName().baseName()
+         + this._type.generics()
+         .toString(" ", " ", "", t -> t.asStringWrapped())
+         );
+  }
+
+
+  /**
+   * wrap the result of toString in parentheses if necessary
+   */
+  public String toStringWrapped()
+  {
+    var s = toString();
+    return s.contains(" ")
+           ? "(" + s + ")"
+           : s;
   }
 
 
@@ -1256,7 +1330,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public String toString2()
   {
-    return "CLAZZ:" + this._type + (this._outer != null ? " in " + this._outer : "");
+    return "CLAZZ:" + this._type.asString() + (this._outer != null ? " in " + this._outer : "");
   }
 
 
@@ -1515,7 +1589,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is this a choice-type whose actual generics inlude ref?  If so, a field for
+   * Is this a choice-type whose actual generics include ref?  If so, a field for
    * all the refs will be needed.
    */
   public boolean isChoiceWithRefs()
@@ -1633,7 +1707,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * For a choice clazz, get the clazz that corresponds to the generic
    * argument to choice at index id (0..n-1).
    *
-   * @param id the index of the paramenter
+   * @param id the index of the parameter
    */
   public Clazz getChoiceClazz(int id)
   {
@@ -1685,8 +1759,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find clazzes required by intrinsic method that has been found be to called.
    *
-   * This includes results of intrinsic contructors are any specifc clazzes
-   * required for specific instrinsics, e.g., clazzes called from the intrinsic.
+   * This includes results of intrinsic constructors are any specific clazzes
+   * required for specific intrinsics, e.g., clazzes called from the intrinsic.
    *
    * @param at position that the intrinsic has been found to be called.
    */
@@ -1757,7 +1831,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
   /**
-   * Is this clazz absured, i.e., does it have any arguments of type void?
+   * Is this clazz absurd, i.e., does it have any arguments of type void?
    */
   public boolean isAbsurd()
   {
@@ -1803,7 +1877,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Flag to detetect endless recursion between isInstantiated() and
+   * Flag to detect endless recursion between isInstantiated() and
    * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
    * its outer clazz.
    */
@@ -2054,29 +2128,27 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz determineResultClazz()
   {
+    Clazz result;
     var f = feature();
     var of = _outer != null ? _outer.feature() : null;
 
     if (f.isConstructor())
       {
-        return this;
+        result = this;
       }
     else if (f.isOuterRef())
       {
-        return _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
+        result = _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
       }
     else if (f.isTypeParameter())
       {
-        return typeParameterActualType().typeClazz();
+        result = typeParameterActualType().typeClazz();
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
-      // NYI (see #282): Would be nice if this would not need special handlng but would
-      // work in general for any feature with type parameters that returns one
-      // of this type parameters as its result using '=>'.
       {
         var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
-        return ag[0].typeClazz();
+        result = ag[0].typeClazz();
       }
     else
       {
@@ -2088,8 +2160,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
             // find outer clazz corresponding to ft:
             var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
             // even if outer changed from ref to value or vice versa, keep it as it was:
-            return ft.featureOfType().thisType().isRef() ? res.asRef()
-                                                         : res.asValue();
+            result = ft.featureOfType().selfType().isRef() ? res.asRef()
+                                                           : res.asValue();
           }
         else if (!t.dependsOnGenerics())
           {
@@ -2146,37 +2218,42 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
               {
-                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR
+                t = t.replace_this_type_by_actual_outer(this._type);
+                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
                   ? Clazzes.create(t, null)
                   : innerBase.lookup(t.featureOfType(), t.generics(), null);
                 if (t.isRef())
                   {
                     res = res.asRef();
                   }
-                return res;
+                result = res;
               }
             else
               {
                 // NYI: This branch should never be taken when rebasing above is implemented correctly.
                 if (f.implKind() == Impl.Kind.FieldDef)
                   {
-                    return Clazzes.clazz(f.initialValue(), this._outer);
+                    result = Clazzes.clazz(f.initialValue(), this._outer);
                   }
-                else if (f.implKind() == Impl.Kind.RoutineDef)
+                else
                   {
+                    if (f.implKind() == Impl.Kind.RoutineDef)
+                      {
                     /* NYI: Do we need special handling for inferred routine result as well?
                      *
                      *   return Clazzes.clazz(f.initialValue(), this._outer);
                      */
+                      }
+                    result = actualClazz(t);
                   }
-                return actualClazz(t);
               }
           }
         else
           {
-            return actualClazz(t);
+            result = actualClazz(t);
           }
       }
+    return result;
   }
 
 
@@ -2265,7 +2342,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 // underlying type to avoid problems creating clazzes form
                 // this.types.
                 if (CHECKS) check
-                  (feature() == Types.resolved.f_Types_get);
+                  (Errors.count() > 0 || feature() == Types.resolved.f_Types_get);
 
                 gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }

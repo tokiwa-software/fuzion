@@ -82,25 +82,17 @@ hasInterval(H type : hasInterval H) : integer H is
     #
     infix : (step H) : Set H is
 
-      # create a stream of all the elements of this interval, in order.
-      redef as_stream ref : stream H is
-        x := num_option lower
-        redef has_next bool is
-          ((step ⩼ zero) && x.exists && (x.val ≤ upper) ||
-           (step ⩻ zero) && x.exists && (x.val ≥ upper)    )
-        redef next H is res := x.val; set x := x +? step; res
-
-
       # list representation of values in this interval
       #
       redef as_list list H is
-        cons (head H) :  Cons H (list H) is
-          tail list H is
-            (lower+?step ? nil    => nil
-                         | next H => (next..upper:step).as_list)
-        if ((step ⩼ zero) && (lower ≤ upper) ||
-            (step ⩻ zero) && (lower ≥ upper)    )
-          cons lower
+        has_next_step => ((step ⩼ zero) && (lower ≤ upper) ||
+                          (step ⩻ zero) && (lower ≥ upper))
+
+        if has_next_step
+          tail =>
+            lower+?step ? nil => nil
+                        | next H => (next..upper:step).as_list
+          list lower tail
         else
           nil
 
@@ -112,7 +104,7 @@ hasInterval(H type : hasInterval H) : integer H is
 
       # use map implementation from Sequence:
       #
-      map(B type, f H -> B)  => mapSequence f
+      map(B type, f H -> B)  => infix : .this.mapSequence f
 
 
     # create a list from this interval

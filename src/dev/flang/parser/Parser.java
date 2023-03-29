@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import dev.flang.ast.*;
 
@@ -257,7 +258,7 @@ modAndNames : visibility
    * Parse routOrField:
    *
    * Note that this fork()s the parser repeatedly in case several feature names
-   * are declared given as parament n.
+   * are declared given as parameter n.
    *
    *
 routOrField : routine
@@ -366,7 +367,7 @@ field       : returnType
    * @param s the statements containing the feature declarations to be added, in
    * this case "x, y, z."
    *
-   * @param g the list of type to be callected, will be added as generic
+   * @param g the list of type to be collected, will be added as generic
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
@@ -401,7 +402,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
           }
       }
     else
@@ -464,9 +465,9 @@ field       : returnType
       }
     p.skipEffects();
     return
-      p.isInheritPrefix   () ||
-      p.isContractPrefix  () ||
-      p.isImplPrefix      ();
+      p.skipInherits() &&
+      (p.isContractPrefix  () ||
+       p.isImplPrefix      ());
   }
 
 
@@ -806,7 +807,7 @@ modifier    : "lazy"
             Errors.error(posObject(pos),
                          "Syntax error: modifier '"+current().keyword()+"' specified repeatedly.",
                          "Within one feature declaration, each modifier may at most appear once.\n" +
-                         "Second occurence of modifier at " + posObject(p2) + "\n" +
+                         "Second occurrence of modifier at " + posObject(p2) + "\n" +
                          "Parse stack: " + parseStack());
           }
         ms = ms | m;
@@ -817,7 +818,7 @@ modifier    : "lazy"
 
 
   /**
-   * Check if the current position starts non-empty modifieres flags.  Does not
+   * Check if the current position starts non-empty modifiers flags.  Does not
    * change the position of the parser.
    *
    * @return true iff the next token(s) start a name
@@ -1049,12 +1050,8 @@ typeType    : "type"
                       }
                     result[0] = FormalOrActual.formal;
                   }
-                else if (!skipType())
-                  {
-                    result[0] = FormalOrActual.actual;
-                    return false;
-                  }
-                else if (skipDot())
+                // tolerate missing type here
+                else if ((skipType() || true) && skipDot())
                   {
                     if (!skip(Token.t_type))
                       {
@@ -1197,7 +1194,7 @@ EXCLAMATION : "!"
 
   /**
    * Check if the current position starts a returnType that is not a
-   * FunctioNReturnType.  Does not change the position of the parser.
+   * FunctionReturnType.  Does not change the position of the parser.
    *
    * @return true iff the next token(s) start a constructor return type.
    */
@@ -1241,35 +1238,6 @@ EXCLAMATION : "!"
 
 
   /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'.  Does not change the position of the parser.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean isReturnTypeFollowedByColon()
-  {
-    return
-      isOperator(':') ||
-      isNonFuncReturnTypePrefix() && fork().skipReturnTypeFollowedByColonPrefix();
-  }
-
-
-  /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'. Skip an unspecified part of it.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean skipReturnTypeFollowedByColonPrefix()
-  {
-    return
-      isOperator(':') ||
-      skipNonFuncReturnType() && isOperator(':') ||
-      isTypeFollowedByColon();
-  }
-
-
-  /**
    * Parse optional inherits clause
    *
 inherits    : inherit
@@ -1279,6 +1247,19 @@ inherits    : inherit
   List<AbstractCall> inherits()
   {
     return isInheritPrefix() ? inherit() : new List<>();
+  }
+
+
+  /**
+   * Check if the current position is a, possibly empty, inherits. If so, skip
+   * it.
+   *
+   * @return true iff the next token(s) are an inherits clause and were skipped.
+   *
+   */
+  boolean skipInherits()
+  {
+    return !skipColon() || skipCallList();
   }
 
 
@@ -1321,6 +1302,29 @@ callList    : call ( COMMA callList
     while (skipComma())
       {
         result.add(call(null));
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is a callList.  If so, skip it.
+   *
+   * Since a call may contain code that is arbitrarily complex (actual args may
+   * contain lambdas that declare arbitrary inner features etc.), this will just
+   * parse the call list and, as a side effect, produce errors in case this
+   * parsing fails.  This should be OK since this is used in `skipInherits` if a
+   * colon was found.  If this turns out not to be an inherits clause, the colon
+   * is an infix operator followed by a call, that needs to be parsed anyway.
+   *
+   * @return true iff the next token(s) are a callList.
+   */
+  boolean skipCallList()
+  {
+    var result = isNamePrefix();
+    if (result)
+      {
+        var ignore = callList();
       }
     return result;
   }
@@ -1519,7 +1523,7 @@ actualArgs  : actualsList
    *
    * @param in the indentation used for the actuals, null if none.
    *
-   * @return true if the next symbold ends actual arguments or in!=null and the
+   * @return true if the next symbol ends actual arguments or in!=null and the
    * next symbol is not properly indented.
    */
   boolean endsActuals(boolean atMinIndent)
@@ -2128,7 +2132,7 @@ simpleterm  : bracketTerm
           default          :
             if (isStartedString(current()))
               {
-                result = stringTerm(null);
+                result = stringTerm(null, Optional.empty());
               }
             else
               {
@@ -2172,19 +2176,23 @@ stringTermB : '}any chars&quot;'
             | '}any chars{' block stringTermB
             ;
   */
-  Expr stringTerm(Expr leftString)
+  Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string());
+            var ps = string(multiLineIndentation);
+            var str = new StrConst(posObject(), ps._v0);
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block()));
+                var old = setMinIndent(-1);
+                var b = block();
+                setMinIndent(old);
+                result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
         else
@@ -2478,7 +2486,7 @@ caseBlock   : ARROW          // if followed by '|'
    * Check if the current position is starts caze and not an expr and skip an
    * unspecified part of it.
    *
-   * @return true iff a caue was found
+   * @return true iff a cause was found
    */
   boolean skipCazePrefix()
   {
@@ -2498,7 +2506,8 @@ block       : stmnts
    */
   Block block()
   {
-    SourcePosition pos1 = posObject();
+    var p1 = pos();
+    var pos1 = posObject();
     if (current() == Token.t_semicolon)
       { // we have code like
         //
@@ -2517,6 +2526,17 @@ block       : stmnts
       {
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        if (pos1 == pos2 && current() == Token.t_indentationLimit)
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
+             *
+             *   x i32 is
+             *   y u8 is
+             *
+             * so we set start and end pos to the position after `x i32 is`.
+             */
+            pos1 = posObject(lineEndPos(lineNum(p1)-1));
+            pos2 = pos1;
+          }
         return new Block(pos1, pos2, l);
       }
     else
@@ -2665,7 +2685,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = minIndent(pos());
+      oldIndentPos = setMinIndent(pos());
     }
 
 
@@ -2692,7 +2712,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(okPos);
+              setMinIndent(okPos);
               okLineNum = lineNum(okPos);
             }
         }
@@ -2708,7 +2728,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (firstIndent != -1)
         {
           endAtSpace(oldEAS);
-          minIndent(oldIndentPos);
+          setMinIndent(oldIndentPos);
         }
     }
   }
@@ -2730,7 +2750,7 @@ stmnt       : feature
             | assign
             | destructure
             | exprInLine
-            | checkstmt
+            | checkstmnt
             ;
    */
   Stmnt stmnt()
@@ -2886,12 +2906,12 @@ nextValue   : COMMA exprInLine
    */
   boolean isIndexVarPrefix()
   {
-    var mi = minIndent(-1);
+    var mi = setMinIndent(-1);
     var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
-    minIndent(mi);
+    setMinIndent(mi);
     return result;
   }
 
@@ -3009,9 +3029,9 @@ elseBlock   : "else" ( ifstmnt
 
 
   /**
-   * Parse checksmnt
+   * Parse checkstmnt
    *
-checkstmt   : "check" cond
+checkstmnt   : "check" cond
             ;
    */
   Stmnt checkstmnt()
@@ -3139,7 +3159,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Check if the current position starts a destructr and skip an unspecified part
    * of it.
    *
-   * @return true iff the next token(s) start a destructroe.
+   * @return true iff the next token(s) start a destructure.
    */
   boolean skipDestructrPrefix()
   {
@@ -3168,24 +3188,46 @@ callOrFeatOrThis  : anonymous
                   | qualThis
                   | plainLambda
                   | call
+                  | universeCall
                   ;
    */
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
-      isThistype()          ? thistypeAsExpr() : // starts with type followed by 'this.type'
-      isQualThisPrefix()    ? qualThisAsThis() : // starts with name
-      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()        ? call(null)         // starts with name
-                            : null;
+      isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
+      isThistype()                  ? thistypeAsExpr() : // starts with type followed by 'this.type'
+      isQualThisPrefix()            ? qualThisAsThis() : // starts with name
+      isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isNamePrefix()                ? call(null)       : // starts with name
+      current() == Token.t_universe ? universeCall()
+                                    : null;
+  }
+
+
+  /**
+   * Parse universeCall
+   *
+   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
+   * is not possible to get the value of the `universe`.
+   *
+universeCall      : "universe" dot "this" dot call
+                  ;
+   */
+  Expr universeCall()
+  {
+    var pos = posObject();
+    match(Token.t_universe, "universeCall");
+    matchOperator(".",      "universeCall");
+    match(Token.t_this,     "universeCall");
+    matchOperator(".",      "universeCall");
+    return call(new Universe(pos));
   }
 
 
   /**
    * Parse anonymous
    *
-anonymous   : returnType
+anonymous   : "ref"
               inherit
               contract
               block
@@ -3195,7 +3237,9 @@ anonymous   : returnType
   {
     var sl = sameLine(line());
     SourcePosition pos = posObject();
-    ReturnType r = returnType();
+    if (CHECKS) check
+      (current() == Token.t_ref);
+    ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
     Contract   c = contract();
     Block      b = block();
@@ -3206,7 +3250,7 @@ anonymous   : returnType
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
     // does not work yet, probably because of too much that is done explicitly
-    // for anonymsous featues.
+    // for anonymous features.
     //
     // return new Block(pos, b.closingBracePos_, new List<>(f, ca));
   }
@@ -3220,7 +3264,7 @@ anonymous   : returnType
    */
   boolean isAnonymousPrefix()
   {
-    return isReturnTypeFollowedByColon();
+    return current() == Token.t_ref;
   }
 
 
@@ -3422,8 +3466,11 @@ contract    : require
    */
   Contract contract(boolean atMinIndent)
   {
-    return new Contract(requir   (atMinIndent),
-                        ensur    (atMinIndent));
+    var pre  = requir(atMinIndent);
+    var post = ensur (atMinIndent);
+    return pre == null && post == null
+      ? Contract.EMPTY_CONTRACT
+      : new Contract(pre, post);
   }
 
 
@@ -3646,7 +3693,7 @@ type        : thistype
               {
                 l.add(onetype());
               }
-            result = new Type(result.pos(), "choice", l, null);
+            result = new Type(result.pos2BeRemoved(), "choice", l, null);
           }
       }
     return result;
@@ -3749,7 +3796,7 @@ thistype    : qualThis dot "type"
   Expr thistypeAsExpr()
   {
     var result = thistype();
-    return new DotType(result.pos(), result);
+    return new DotType(result.pos2BeRemoved(), result);
   }
 
 
@@ -4108,7 +4155,7 @@ typeInParens: "(" typeInParens ")"
   /**
    * Check if the current position has typeInParens and skip them.
    *
-   * @return true if a typeInPaens was skipped
+   * @return true if a typeInParens was skipped
    */
   boolean skipTypeInParens()
   {
@@ -4276,7 +4323,7 @@ dot         : "."      // either preceded by white space or not followed by whit
 fullStop    : "."        // not following white space but followed by white space
             ;
    *
-   * @return true iff a "." follwed by white space was found and skipped.
+   * @return true iff a "." followed by white space was found and skipped.
    */
   boolean skipFullStop()
   {

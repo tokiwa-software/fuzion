@@ -47,7 +47,7 @@ public class InlineArray extends ExprWithPos
 
   /**
    * quick-and-dirty way to make unique names for temporary variables needed for
-   * array initializtion.
+   * array initialization.
    */
   static private long _id_ = 0;
 
@@ -122,7 +122,7 @@ public class InlineArray extends ExprWithPos
         if (_type == null)
           {
             _type =
-              t == null ? Types.t_ERROR :
+              t == null ? null :
               Types.intern(new Type(pos(),
                                   "array",
                                   new List<>(t),
@@ -305,7 +305,7 @@ public class InlineArray extends ExprWithPos
                                             new Actual(new NumLiteral(_elements.size())));
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
         var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
-        var sysArrayCall = new Call(pos(), sys , "internal_array", args).resolveTypes(res, outer);
+        var sysArrayCall = new Call(pos(), sys , "internal_array_init", args).resolveTypes(res, outer);
         var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
         var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
         var sysArrayT    = new Type(pos(), "internal_array", eT, sysT);
@@ -323,8 +323,7 @@ public class InlineArray extends ExprWithPos
                                                    new Actual(e));
             var readSysArrayVar = new Call(e.pos(), null           , sysArrayName     ).resolveTypes(res, outer);
             var setElement      = new Call(e.pos(), readSysArrayVar,
-                                           // NYI workaround for performance issue in DFA #990
-                                           "set_no_pre_condition",
+                                           FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
                                            setArgs                                    ).resolveTypes(res, outer);
             stmnts.add(setElement);
           }

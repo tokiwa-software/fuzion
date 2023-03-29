@@ -70,7 +70,7 @@ is
   # result will never be equal to f32 1
   #
   next_f32 =>
-    max := u64 1 << f32s.significandBits.as_u64
+    max := u64 1 << f32.type.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
 
@@ -78,7 +78,7 @@ is
   # result will never be equal to f64 1
   #
   next_f64 =>
-    max := u64 1 << f64s.significandBits.as_u64
+    max := u64 1 << f64.type.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 

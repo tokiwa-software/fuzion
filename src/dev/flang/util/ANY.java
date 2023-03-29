@@ -60,7 +60,7 @@ public class ANY
     var st = (new Throwable()).getStackTrace();
     if (st.length < 3)
       {
-        return "Unkown origin.";
+        return "Unknown origin.";
       }
     return st[2].getClassName() + ":" + st[2].getMethodName() + ":" + st[2].getLineNumber();
   }

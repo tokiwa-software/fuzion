@@ -40,7 +40,7 @@ public abstract class AbstractConstant extends Expr
 
 
   /**
-   * Constructor for a Constant at the given source code postition.
+   * Constructor for a Constant at the given source code position.
    */
   public AbstractConstant()
   {

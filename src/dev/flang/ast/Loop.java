@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
 /**
  * Loops are very generic in Fuzion.  The basic loop structure consists of a
  * list of index variables, a loop failure condition, a loop body, a loop
- * success condition and a loop epilog consiting of a branch executed after
+ * success condition and a loop epilog consisting of a branch executed after
  * successful loop termination and one after failed loop termination.
  *
  * In general, this is
@@ -233,7 +233,7 @@ public class Loop extends ANY
   /**
    * Constructor for a loop
    *
-   * @param pos Position of the intial keyword ("for", "variant", "while")
+   * @param pos Position of the initial keyword ("for", "variant", "while")
    * introducing this loop.
    *
    * @param iv index vars of this loop
@@ -394,7 +394,7 @@ public class Loop extends ANY
 
 
   /**
-   * Does this loop implicitly produce a boolean result that indicates successul
+   * Does this loop implicitly produce a boolean result that indicates successful
    * (until condition holds) or failed (while condition is false or iteration
    * ended) execution.
    *

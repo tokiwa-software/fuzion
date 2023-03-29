@@ -58,6 +58,16 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+  /**
+   * Name of abstract features for lazy types:
+   */
+  public static final String LAZY_NAME = "Lazy";
+
+  /**
+   * Name of abstract features for unary function types:
+   */
+  public static final String UNARY_NAME = "Unary";
+
   public static Resolved resolved = null;
 
   /**
@@ -71,7 +81,7 @@ public class Types extends ANY
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference.  Examples are the result of union of distinct types on different
-   * branches of an if or match, or the type of the result var befure type
+   * branches of an if or match, or the type of the result var before type
    * inference has determined the result type.
    */
   static final String UNDEFINED_NAME = "--UNDEFINED--";
@@ -85,7 +95,7 @@ public class Types extends ANY
 
 
   /**
-   * Names if internal types that are not backed by physical feature defintions.
+   * Names if internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
@@ -167,6 +177,8 @@ public class Types extends ANY
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
+    public final AbstractFeature f_Lazy;
+    public final AbstractFeature f_Unary;
     public static interface CreateType
     {
       AbstractType type(String name, boolean isRef);
@@ -225,6 +237,8 @@ public class Types extends ANY
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
+      f_Lazy                       = universe.get(mod, LAZY_NAME);
+      f_Unary                      = universe.get(mod, UNARY_NAME);
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
@@ -290,20 +304,27 @@ public class Types extends ANY
 
     if (at instanceof Type t)
       {
-        if (!t.isGenericArgument())
-          {
-            Types.intern(t.outer());
-          }
-        t._generics = t._generics.map(tt->intern(tt));
         Type existing = t._interned;
         if (existing == null)
           {
+            if (!t.isGenericArgument())
+              {
+                var o0 = t.outer();
+                var o1 = Types.intern(o0);
+                var g0 = t._generics;
+                var g1 = g0.map(tt -> intern(tt));
+                if (o1 != o0 || g1 != g0)
+                  {
+                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal, false);
+                  }
+              }
             existing = types.get(t);
             if (existing == null)
               {
                 types.put(t,t);
                 existing = t;
               }
+            t._generics.freeze();
             t._interned = existing;
           }
         at = existing;

@@ -17,34 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature comparable_sequence
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test ex_nested_lazy
 #
 # -----------------------------------------------------------------------
 
-# comparable_sequence -- a Sequence that inherits from has_equality
-#
-comparable_sequence(A type : has_equality, from Sequence A) : Sequence A, has_equality
-is
+ex_nested_lazy is
+  lazy_evaluator(T type, lv Lazy T) T is lv
 
-  # create a list from this Sequence.
-  #
-  redef as_list => from.as_list
+  f Function bool i32 := x -> x = 0
 
+  say (lazy_evaluator bool (f 42))
+  say (lazy_evaluator bool (f 0))
 
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  redef finite => from.finite
+  say (f (lazy_evaluator i32 42))
+  say (f (lazy_evaluator i32 0))
 
+  lazy0(l Lazy (Function i32)) i32 is
+    l.call
 
-  # equality check implementation for inherited has_equality
-  #
-  fixed type.equality(a, b comparable_sequence A) bool is
-    aa := a.as_array
-    ba := b.as_array
-    if aa.count ≟ ba.count
-      (0..(a.count - 1)) ∀ (i -> equals A aa[i] ba[i])
-    else
-      false
+  # NYI: does not work:
+  say (lazy0 ()->42)
+  x Function i32 := ()->42
+  say (lazy0 x)
+
+  lazy1(f Function (Lazy i32)) i32 is
+    f().call
+
+  # NYI: does not work:
+  say (lazy1 ()->42)
+  x1 Lazy i32 := ()->42
+  say (lazy1 x1)

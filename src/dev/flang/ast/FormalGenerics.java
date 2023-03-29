@@ -137,7 +137,7 @@ public class FormalGenerics extends ANY
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
-                                               HasSourcePosition pos,
+                                               SourcePosition pos,
                                                String detail1,
                                                String detail2)
   {
@@ -147,7 +147,7 @@ public class FormalGenerics extends ANY
         result = false;
         AstErrors.wrongNumberOfGenericArguments(this,
                                                 actualGenerics,
-                                                pos.pos(),
+                                                pos,
                                                 detail1,
                                                 detail2);
       }
@@ -210,6 +210,44 @@ public class FormalGenerics extends ANY
    */
   class AsActuals extends List<AbstractType>
   {
+    /**
+     * create AsActuals from FormalGenerics.this.list and freeze it.
+     */
+    AsActuals()
+    {
+      // NYI: This is a bit ugly, can we avoid adding all these types
+      // here?  They should never be used since AsActuals is only a
+      // placeholder for the actual generics.
+      for (Generic g : list)
+        {
+          add(new Type((HasSourcePosition) g.typeParameter(), g));
+        }
+      freeze();
+    }
+
+    /**
+     * Create non-frozen clone of from.
+     */
+    AsActuals(AsActuals from)
+    {
+      super(from);
+    }
+
+    /**
+     * Create non-frozen clone of this.
+     */
+    public List<AbstractType> clone()
+    {
+      return new AsActuals(this);
+    }
+
+    /**
+     * Check if this are the formal generics of f used as actuals.
+     */
+    boolean actualsOf(AbstractFeature f) {
+      return f.generics() == FormalGenerics.this;
+    }
+
     public boolean sizeMatches(List<AbstractType> actualGenerics)
     {
       return FormalGenerics.this.sizeMatches(actualGenerics);
@@ -225,23 +263,16 @@ public class FormalGenerics extends ANY
    */
   public List<AbstractType> asActuals()
   {
-    List<AbstractType> result = _asActuals;
+    var result = _asActuals;
     if (result == null)
       {
         if (this == FormalGenerics.NONE)
           {
-            result = Call.NO_GENERICS;
+            result = Type.NONE;
           }
         else
           {
-            result = new AsActuals();// new List<Type>();
-            // NYI: This is a bit ugly, can we avoid adding all these types
-            // here?  They should never be used since AsActuals is only a
-            // placeholder for the actual generics.
-            for (Generic g : list)
-              {
-                result.add(new Type((HasSourcePosition) g.typeParameter(), g));
-              }
+            result = new AsActuals();
           }
         _asActuals = result;
       }

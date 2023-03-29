@@ -44,13 +44,13 @@ int_test is
       chck (int m+n ≟ (int m + int n)) "int: m $m + n $n"
       chck (int m-n ≟ (int m - int n)) "int: m $m - n $n"
       chck (int m*n ≟ (int m * int n)) "int: m $m * n $n"
-      if !(n ≟ i64 0)
+      if n != i64 0
         chck (int m/n ≟ (int m / int n)) "int: m $m / n $n"
         chck (int m%n ≟ (int m % int n)) "int: m $m % n $n"
       if n ≥ i64 0
         chck (int m**n ≟ (int m ** int n)) "int: m $m ** n $n"
 
-    chck ("$m" ≟ "{ints.from_i64 m}")  "int:  $m as string"
+    chck ("$m" ≟ "{int m}")  "int:  $m as string"
 
   # test basic uint operations with small numbers
   for m in (u64 0)..5 do
@@ -64,7 +64,7 @@ int_test is
       if m ≥ n
         chck (uint m-n ≟ (uint m - uint n)) "uint: m $m - n $n"
       chck (uint m*n ≟ (uint m * uint n)) "uint: m $m * n $n"
-      if !(n ≟ u64 0)
+      if n != u64 0
         chck (uint m/n ≟ (uint m / uint n)) "uint: m $m / n $n"
         chck (uint m%n ≟ (uint m % uint n)) "uint: m $m % n $n"
       chck (uint m**n ≟ (uint m ** uint n)) "uint: m $m ** n $n"
@@ -72,12 +72,12 @@ int_test is
     chck ("$m" ≟ "{uint m}") "uint: $m as string"
 
 
-  u32_max := u32s.max.as_u64
+  u32_max := u32.type.max.as_u64
 
 
   # test int/uint as_string around first overflow
   for m in (u32_max - 3)..(u32_max + 3) do
-    chck ("$m" ≟ "{ints.from_u64 m}")  "int:  $m as string"
+    chck ("$m" ≟ "{int.type.from_u64 m}")  "int:  $m as string"
     chck ("$m" ≟ "{uint m}") "uint: $m as string"
 
 
@@ -90,7 +90,7 @@ int_test is
       chck (uint m+n ≟ (uint m + uint n)) "uint: $m + n $n"
       if m ≥ n
         chck (uint m-n ≟ (uint m - uint n)) "uint: m $m - n $n"
-      if !(n ≟ u64 0)
+      if n != u64 0
         chck (uint m/n ≟ (uint m / uint n)) "uint: m $m / n $n"
         chck (uint m%n ≟ (uint m % uint n)) "uint: m $m % n $n"
 

@@ -42,9 +42,24 @@ ordered_map(OK type : has_total_order,
 is
 
 
+  # entry represents the pair of key and value at the given
+  # index i of the ordered map.
+  #
+  entry(i i32) : has_total_order is
+
+
+    key => ks[i]
+    val => vs[i]
+
+
+    # total order over entries.
+    #
+    fixed type.lteq(a, b entry.this.type) => a.key ≤ b.key
+
+
   # a sorted array of entries of this map
   #
-  sortedEntries := sorted_array_of (ks.indices.mapSequence (entry OK V) (i -> entry ordered_map.this i)).as_array
+  sortedEntries := sorted_array_of (ks.indices.mapSequence (i -> entry i)).as_array
 
 
   # number of entries in this map
@@ -91,30 +106,8 @@ is
       r
 
 
-# ordered_maps -- unit type feature declaring features related to ordered_map
-#
-# NYI: move to ordered_map.type
-#
-ordered_maps (OK type : has_total_order, V type) is
-
-
   # create an empty instance of ordered_map
   #
-  empty => (ordered_map
-            ((Sequence OK).type.empty).as_array
-            ((Sequence V).type.empty).as_array)
-
-
-# entry is an index in ks/vs
-#
-entry(OK type : has_total_order,
-      V type,
-      om ref ordered_map OK V,
-      i i32) : has_total_order is
-
-
-  key => om.ks[i]
-  val => om.vs[i]
-
-
-  fixed type.lteq(a, b entry OK V) => a.om.ks[a.i] ≤ b.om.ks[b.i]
+  type.empty => (ordered_map
+                 ((Sequence OK).type.empty).as_array
+                 ((Sequence V).type.empty).as_array)

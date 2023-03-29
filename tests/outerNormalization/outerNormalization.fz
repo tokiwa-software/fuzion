@@ -148,7 +148,7 @@ outerNormalization is
     for i in 0.. do
       say $i
     until i ⩼ 3
-    unit # NYI: This has to be added since the loop result is bool. A loop should not force the bool result upon us if we do not need it.
+    unit # NYI #1066: This has to be added since the loop result is bool. A loop should not force the bool result upon us if we do not need it.
 
   testInterval
 

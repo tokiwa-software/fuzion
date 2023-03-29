@@ -96,20 +96,7 @@ array(redef T type,
     array T length.max(i+1) (ix -> if (ix ≟ i) v else if (ix ≥ length) z else array.this[ix])
 
 
-  # create a stream from this array
-  #
-  redef as_stream ref : stream T is
-
-    # NYI: we create heap allocated instance of array explicitly, needed while
-    # issue #30 is not fixed.  Once issue is fixed, array.this can be used instead.
-    # See idiom40ex.fz for a test case
-    #
-    array_this ref array T := array.this
-
-    x := 0
-    redef has_next => x ⩻ array_this.length
-    redef next => set x := x + 1; array_this[x-1]
-
+  # apply f to all elements in this array
   redef for_each (f T -> unit) unit is
     for i in indices do
       f index[](i)
@@ -150,9 +137,7 @@ array(redef T type,
   #
   arrayCons (i, to i32) : Cons T (list T)
     pre
-      debug: 0 ≤ i,
-      debug: i⩻ to,
-      debug: to ≤ length
+      debug: 0 ≤ i ⩻ to ≤ length
   is
     head => array.this[i]
     tail => slice i+1 to
@@ -240,7 +225,7 @@ is
 # private:
   indices => 0..length-1
 
-  internal := fuzion.sys.internal_array T length
+  internal := fuzion.sys.internal_array_init T length
   for x in indices do
     internal[x] := init x
 

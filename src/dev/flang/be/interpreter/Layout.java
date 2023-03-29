@@ -111,7 +111,7 @@ class Layout extends ANY
   Map<AbstractFeature, Object> _offsets0 = new TreeMap<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   Layout(Clazz cl)
@@ -302,7 +302,7 @@ class Layout extends ANY
 
   /**
    * For choice clazz, this gives the offset of the memory reserved for choice
-   * vlues of reference type.  Unlike non-references, that might be layouted
+   * values of reference type.  Unlike non-references, that might be layouted
    * differently according to alignment constraints or not mixing reference with
    * non-references to avoid GC trouble, values of reference type are always
    * using one single shared slot.

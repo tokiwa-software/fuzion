@@ -30,5 +30,5 @@ issue309 is
 
   b(T type) Set T is abstract  // 2. should flag an error: Incompatible type parameter
 
-  c(T type : has_equality) is
+  c(T type : equatable) is
   d c a is abstract            // 3. should flag an error: Incompatible type parameter

@@ -54,16 +54,16 @@ public class TailCall extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   final FUIR _fuir;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Create TaiCall for given intermediate code.
+   * Create TailCall for given intermediate code.
    *
    * @param fuir the intermediate code.
    */
@@ -88,7 +88,7 @@ public class TailCall extends ANY
    *
    * The back-end might be able to replace a tail call by a jump.  In
    * particular, a tail call might call the current clazz cl (tail recursion),
-   * in which case the call can be replaced by assiging the arguments to the
+   * in which case the call can be replaced by assigning the arguments to the
    * current clazz' arguments and performing a goto to the beginning of the
    * current clazz's code.
    *
@@ -173,7 +173,7 @@ public class TailCall extends ANY
    *
    * @param ix index of the call
    *
-   * @param mustAssignTo -1 iff the result shouldbe the last expr in the code
+   * @param mustAssignTo -1 iff the result should be the last expr in the code
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
@@ -223,7 +223,7 @@ public class TailCall extends ANY
           yield false;
         }
 
-      // any other code resuts in failure to detect a tail call:
+      // any other code results in failure to detect a tail call:
       default -> false;
       };
   }

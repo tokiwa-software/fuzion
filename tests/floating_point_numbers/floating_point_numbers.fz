@@ -36,60 +36,136 @@ floating_point_numbers is
       "FAILED: "
     say (s + msg)
 
-  generic_tests(T type: float T, a T) is
 
-    zero := a.zero
-    one := a.one
+  # shared tests for f32/f64
+  generic_tests(T type: float T) is
+    zero := T.zero
+    one := T.one
     two := one + one
     three := one + one + one
 
     # serialize floating point numbers
     # NYI serialization will be done in fuzion and then we won't have
     # different results for interpreter- / c- backend
-    chck ("{a.quietNaN}" ≟  "nan" || "{a.quietNaN}" ≟  "NaN")              "{a.name}: quiet nan serializes correctly"
-    chck ("{a.negativeInfinity}"
+    chck ("{one.quietNaN}" ≟  "nan" || "{one.quietNaN}" ≟  "NaN")          "{T.name}: quiet nan serializes correctly"
+    chck ("{one.negativeInfinity}"
       .replace("I", "i")
-      .substring(0, 4) ≟  "-inf")                                          "{a.name}: neg inf serializes correctly"
-    chck ("{a.positiveInfinity}"
+      .substring(0, 4) ≟  "-inf")                                          "{T.name}: neg inf serializes correctly"
+    chck ("{one.positiveInfinity}"
       .replace("I", "i")
-      .substring(0, 3) ≟  "inf")                                           "{a.name}: pos inf serializes correctly"
-    chck ("{zero}".starts_with "0")                                        "{a.name}: 0 serializes to string"
-    chck ("{-zero}".starts_with "-0")                                      "{a.name}: -0 serializes to string"
-    chck ("{one}".starts_with "1")                                         "{a.name}: 1 serializes to string"
-    chck ("{one / two}" ≟ "0.5")                                           "{a.name}: 0.5 serializes to string"
-    chck ("{one / three}".starts_with "0.3333333")                         "{a.name}: 1/3 serializes to string"
+      .substring(0, 3) ≟  "inf")                                           "{T.name}: pos inf serializes correctly"
+    chck ("{zero}".starts_with "0")                                        "{T.name}: 0 serializes to string"
+    chck ("{-zero}".starts_with "-0")                                      "{T.name}: -0 serializes to string"
+    chck ("{one}".starts_with "1")                                         "{T.name}: 1 serializes to string"
+    chck ("{one / two}" ≟ "0.5")                                           "{T.name}: 0.5 serializes to string"
+    chck ("{one / three}".starts_with "0.3333333")                         "{T.name}: 1/3 serializes to string"
 
     # comparision operators
     chck (
       (zero ≟ zero) &&
-      !(zero ≟ one) &&
+      (zero != one) &&
       (one  ≥ zero) &&
       (zero ≤ one) &&
       (zero ≟ zero) &&
       (one  ⩼  zero) &&
-      (zero ⩻  one))                                                         "{a.name}: comparison operators work as expected"
+      (zero ⩻  one))                                                       "{T.name}: comparison operators work as expected"
 
     # negation operator
     chck ((-(-zero) ≟ zero) &&
           (-(-one) ≟ one) &&
-          (-(-a.positiveInfinity) ≟ a.positiveInfinity) &&
-          (-(-a.negativeInfinity) ≟ a.negativeInfinity))                  "{a.name}: double negation is same number"
+          (-(-one.positiveInfinity) ≟ one.positiveInfinity) &&
+          (-(-one.negativeInfinity) ≟ one.negativeInfinity))               "{T.name}: double negation is same number"
 
     # operator +,-,*,/ test
-    chck (zero + one ≟ one)                                               "{a.name}: plus operator"
-    chck (zero - one ≟ -one)                                              "{a.name}: minus operator"
-    chck (zero * one ≟ zero)                                              "{a.name}: product operator"
-    chck (zero / one ≟ zero)                                              "{a.name}: division operator"
+    chck (zero + one ≟ one)                                                "{T.name}: plus operator"
+    chck (zero - one ≟ -one)                                               "{T.name}: minus operator"
+    chck (zero * one ≟ zero)                                               "{T.name}: product operator"
+    chck (zero / one ≟ zero)                                               "{T.name}: division operator"
 
     # modulo
-    chck (three % two ≟ one)                                              "{a.name}: 3 modulo 2 equals 1"
+    chck (three % two ≟ one)                                               "{T.name}: 3 modulo 2 equals 1"
 
     # power
-    chck (two ** three ≟ three + three + two)                             "{a.name}: 2 to the power 3 equals 8"
-    chck (three ** two ≟ three + three + three)                           "{a.name}: 3 to the power 2 equals 9"
+    chck (two ** three ≟ three + three + two)                              "{T.name}: 2 to the power 3 equals 8"
+    chck (three ** two ≟ three + three + three)                            "{T.name}: 3 to the power 2 equals 9"
 
-  generic_tests f32s.zero
-  generic_tests f64s.zero
+    # isNaN
+    chck (one.isNaN one.NaN)                                               "{T.name}: isNaN NaN"
+    chck (!one.isNaN zero  )                                               "{T.name}: isNaN 0"
+    chck (!one.isNaN T.π)                                                  "{T.name}: isNaN π"
+    chck (!one.isNaN one.infinity)                                         "{T.name}: isNaN infinity"
+
+    # sqrt
+    chck (one.sqrt (two * two) ≟ two)                                      "{T.name}: sqrt (2*2) = 2"
+
+    # exponentation / logarithm
+    chck (one.exp zero     ≟ one  )                                        "{T.name}: exp 0 = 1"
+    chck (one.exp one      ≟ T.ℇ)                                          "{T.name}: exp 1 = ℇ"
+    chck (one.log one      ≟ zero  )                                       "{T.name}: log 1 = 0"
+
+    # trigonometric
+    chck (one.sin zero     ≟ zero  )                                       "{T.name}: sin 0  = 0"
+    chck (one.sin T.π    ⩻  one.epsilon)                                   "{T.name}: sin π  ~= 0"
+    chck (one.cos zero     ≟ one  )                                        "{T.name}: cos 0  = 1"
+    chck (one.cos T.π      ≟ -one  )                                       "{T.name}: cos π  = -1"
+    chck (one.tan zero     ≟ zero  )                                       "{T.name}: tan 0  = 0"
+    chck (one.asin zero    ≟ zero  )                                       "{T.name}: asin 0 = 0"
+    chck (one.acos one     ≟ zero  )                                       "{T.name}: acos 1 = 0"
+    chck (one.atan zero    ≟ zero  )                                       "{T.name}: atan 0 = 0"
+
+    # atan2
+    chck (one.isNaN (one.atan2 one.NaN one  ))                                                 "{T.name}: atan2 NaN 1            = NaN        "
+    chck (one.isNaN (one.atan2 one   one.NaN))                                                 "{T.name}: atan2 1 NaN            = NaN        "
+    chck (one.atan2 +zero   one               ≟ +zero  )                                       "{T.name}: atan2 +0 1             = +0         "
+    chck (one.atan2 -zero   one               ≟ -zero  )                                       "{T.name}: atan2 -0 1             = -0         "
+    chck (one.atan2 +zero   -one              ≟ +T.π)                                          "{T.name}: atan2 +0 -1            = +π         "
+    chck (one.atan2 -zero   -one              ≟ -T.π)                                          "{T.name}: atan2 -0 -1            = -π         "
+    chck (one.atan2 one   zero                ≟ +T.π/two)                                      "{T.name}: atan2 1 0              = +π/two     "
+    chck (one.atan2 -one   zero               ≟ -T.π/two)                                      "{T.name}: atan2 -1 0             = -π/two     "
+    chck (one.atan2 +one.infinity +one.infinity   ≟ +T.π/one.from_u32(4))                      "{T.name}: atan2 +infinity +infinity   = +π/4  "
+    chck (one.atan2 -one.infinity +one.infinity   ≟ -T.π/one.from_u32(4))                      "{T.name}: atan2 -infinity +infinity   = -π/4  "
+    chck (one.atan2 +one.infinity -one.infinity   ≟ one.from_u32(3)*T.π/one.from_u32(4))       "{T.name}: atan2 +infinity -infinity   = 3*π/4 "
+    chck (one.atan2 -one.infinity -one.infinity   ≟ -one.from_u32(3)*T.π/one.from_u32(4))      "{T.name}: atan2 -infinity -infinity   = -3*π/4"
+    chck (one.atan2 one   +one.infinity         ≟ zero  )                                      "{T.name}: atan2 1 +infinity         = 0       "
+    chck (one.atan2 one   -one.infinity         ≟ +T.π)                                        "{T.name}: atan2 1 -infinity         = +π      "
+    chck (one.atan2 -one   -one.infinity        ≟ -T.π)                                        "{T.name}: atan2 -1 -infinity        = -π      "
+    chck (one.atan2 +one.infinity one           ≟ +T.π/two)                                    "{T.name}: atan2 +infinity 1         = +π/two  "
+    chck (one.atan2 -one.infinity one           ≟ -T.π/two)                                    "{T.name}: atan2 -infinity 1         = -π/two  "
+
+    # hyperbolicus
+    chck (one.sinh zero     ≟ zero  )                                           "{T.name}: sinh  0 = 0"
+    chck (one.cosh zero     ≟ one  )                                            "{T.name}: cosh  0 = 1"
+    chck (one.tanh zero     ≟ zero  )                                           "{T.name}: tanh  0 = 0"
+    chck (one.asinh zero    ≟ zero  )                                           "{T.name}: asinh 0 = 0"
+    chck (one.acosh one     ≟ zero  )                                           "{T.name}: acosh 1 = 0"
+    chck (one.atanh zero    ≟ zero  )                                           "{T.name}: atanh 0 = 0"
+
+    # round
+    a_half := one   / two
+    chck (a_half.round             ≟  one  )                                      "{T.name}: round  1/2 =  1"
+    chck (-a_half.round            ≟ -one  )                                      "{T.name}: round -1/2 = -1"
+    chck (-(one   + a_half).round  ≟ -two)                                        "{T.name}: round -3/2 = -2"
+
+    # floor
+    chck (zero  .floor ≟ zero  )                                               "{T.name}: floor 0 = 0"
+    chck (one  .floor  ≟ one  )                                                "{T.name}: floor 1 = 1"
+    chck (T.ℇ.floor    ≟ two)                                                  "{T.name}: floor ℇ = 2"
+
+    # ceil
+    chck (zero  .ceil ≟ zero  )                                                "{T.name}: ceil 0 = 0"
+    chck (one  .ceil  ≟ one  )                                                 "{T.name}: ceil 1 = 1"
+    chck (T.ℇ.ceil    ≟ two + one  )                                           "{T.name}: ceil ℇ = 3"
+
+
+
+  # run generic test for f32
+  generic_tests f32
+
+
+  # run generic test for f64
+  generic_tests f64
+
+
 
   # castTo_f32, 0, -∞, ∞
   chck ((u32 0x_8000_0000).castTo_f32 ≟ (-f32s.zero))                 "castTo_f32 works, bit representation for 0 is correct"
@@ -122,5 +198,45 @@ floating_point_numbers is
   chck (f32s.max ≟ (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
   chck (f64s.minPositive ≟ f64 0x1P-1022)                                "f64: minPositive is correct"
   chck (f64s.max ≟ (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
+
+
+  # fits_in_i64
+  chck !f64s.positiveInfinity.fits_in_i64                                      "f64: ∞    not representable by i64"
+  chck !f64s.negativeInfinity.fits_in_i64                                      "f64: -∞   not representable by i64"
+  chck !f64s.NaN.fits_in_i64                                                   "f64: NaN  not representable by i64"
+  chck f64s.zero.fits_in_i64                                                   "f64: 0    is  representable by i64"
+
+  # as_i64
+  chck (f64.type.π.as_i64 ≟ i64 3)                                            "f64:  π  as_i64        =  3"
+  chck ((-f64.type.π).as_i64 ≟ i64 -3)                                        "f64: -π  as_i64        = -3"
+  chck (f64s.positiveInfinity.as_i64_lax ≟ i64.type.max)                      "f64:  ∞  as_i64_lax    = i64.type.max"
+  chck (f64s.negativeInfinity.as_i64_lax ≟ i64.type.min)                      "f64: -∞  as_i64_lax    = i64.type.min"
+  chck (f64s.NaN.as_i64_lax ≟ i64 0)                                          "f64: NaN as_i64_lax    = 0"
+
+  # as_f64
+  chck ((f32.type.π.as_f64.as_f32 ≟ f32.type.π))                              "f32:  π  as_f64.as_f32 = f32.type.π"
+  chck (f32s.positiveInfinity.as_f64 ≟ f64s.positiveInfinity)                 "f32:  ∞  as_f64        = f64s.∞ "
+  chck (f64s.isNaN f32s.NaN.as_f64)                                           "f32: NaN as_f64 isNaN "
+
+  # as_f32
+  chck (f64.type.π.as_f32 ≟ f32.type.π)                                       "f64:  π  as_f32        = f32.type.π "
+  chck (f64s.positiveInfinity.as_f32 ≟ f32s.positiveInfinity)                 "f64:  ∞  as_f32        = f32s.∞ "
+  chck (f32s.isNaN f64s.NaN.as_f32)                                           "f64: NaN as_f32 isNaN "
+
+
+  # f32.fract
+  chck ((f32 1.5)   .fract  =   0.5)                                          "f32.fraction of  1.5 equals expected"
+  chck ((f32 -0.5)  .fract  =  -0.5)                                          "f32.fraction of -0.5 equals expected"
+  chck ((f32 0.0)   .fract  =   0.0)                                          "f32.fraction of  0.0 equals expected"
+  chck ((-(f32 0.0)).fract  =  -0.0)                                          "f32.fraction of -0.0 equals expected"
+  chck ((f32 1.0)   .fract  =   0.0)                                          "f32.fraction of  1.0 equals expected"
+
+  # f64.fract
+  chck ((f64 1.5)   .fract  =   0.5)                                          "f64.fraction of  1.5 equals expected"
+  chck ((f64 -0.5)  .fract  =  -0.5)                                          "f64.fraction of -0.5 equals expected"
+  chck ((f64 0.0)   .fract  =   0.0)                                          "f64.fraction of  0.0 equals expected"
+  chck ((-(f64 0.0)).fract  =  -0.0)                                          "f64.fraction of -0.0 equals expected"
+  chck ((f64 1.0)   .fract  =   0.0)                                          "f64.fraction of  1.0 equals expected"
+
 
   exit exit_code.get

@@ -89,8 +89,7 @@ public fuzion.java is
     #
     private arrayCons (i i32) : Cons T (list T)
       pre
-        debug: 0 ≤ i,
-        debug: i ⩻ length
+        debug: 0 ≤ i ⩻ length
     is
       head => Array.this[i]
       tail => as_list i+1

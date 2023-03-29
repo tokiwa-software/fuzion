@@ -170,7 +170,7 @@ class Fuzion extends Tool
       boolean runsCode() { return false; }
       void process(FuzionOptions options, FUIR fuir)
       {
-        fuir.dumpCode(fuir.mainClazzId());
+        fuir.dumpCode();
       }
     },
 
@@ -503,7 +503,7 @@ class Fuzion extends Tool
    * The standard options that come with every tool.  May be redefined to add
    * more standard options to be used in different configurations.
    *
-   * @param xtra include extra options such as -Xhelp, -XjavaPof, etc.
+   * @param xtra include extra options such as -Xhelp, -XjavaProf, etc.
    */
   protected String STANDARD_OPTIONS(boolean xtra)
   {

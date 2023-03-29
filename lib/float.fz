@@ -83,27 +83,58 @@ float(redef F type : float F) : numeric F, floats F is
     else
       thiz - fract + one
 
+
+  # number of bits used for mantissa,
+  # including leading '1' that is not actually stored
+  #
+  type.significand_bits i32 is abstract
+
+  # number of bits used for exponent
+  #
+  type.exponent_bits i32 is abstract
+
+
+  # the amount of bits that are used to encode the mantissa
+  type.mantissa_bits => significand_bits - 1
+
+
+  # number of bytes required to store this value
+  #
+  type.bytes i32 is abstract
+
+
+  # number of bits required to store this value
+  #
+  type.size => 8*bytes
+
+
+  # eulers number 2.72..
+  #
+  type.ℇ float.this.type is abstract
+
+
+  # pi 3.14...
+  #
+  type.π float.this.type is abstract
+
+
+  # conversion
+  #
+
+  # convert an i64 value to a floating point value
+  #
+  # if the value cannot be represented exactly, the result is either
+  # the nearest higher or nearest lower value
+  #
+  type.from_i64(val i64) float.this.type is abstract
+
+
+
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
 floats(F type : float F) : numerics F is
 
-  # number of bytes required to store this value
-  #
-  bytes i32 is abstract
-
-  # number of bits required to store this value
-  #
-  size => 8*bytes
-
-  # number of bits used for mantissa, including leading '1' that is not actually
-  # stored
-  #
-  significandBits i32 is abstract
-
-  # number of bits used for exponent
-  #
-  exponentBits i32 is abstract
 
   exponentRange => -minExp..maxExp
 
@@ -123,26 +154,11 @@ floats(F type : float F) : numerics F is
   # infinity
   infinity => positiveInfinity
 
-  # eulers number 2.72..
-  ℇ F is abstract
-
-  # pi 3.14...
-  π F is abstract
-
   minExp i32 is abstract
   maxExp i32 is abstract
   minPositive F is abstract
   max F is abstract
   epsilon F is abstract
-
-
-  # conversion
-
-  # convert an i64 value to a floating point value
-  #
-  # if the value cannot be represented exactly, the result is either
-  # the nearest higher or nearest lower value
-  from_i64(val i64) F is abstract
 
 
   squareRoot(val F) F is abstract

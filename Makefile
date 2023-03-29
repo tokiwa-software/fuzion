@@ -334,8 +334,20 @@ FUZION_JAVA_MODULES = \
 FUZION_FILES = \
 			 $(BUILD_DIR)/tests \
 			 $(BUILD_DIR)/examples \
+			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md
+
+# files required for fz command with interpreter backend
+FZ_INT = \
+			 $(BUILD_DIR)/bin/fz \
+			 $(MOD_BASE)
+
+# files required for fz command with C backend
+FZ_C = \
+			 $(BUILD_DIR)/bin/fz \
+			 $(BUILD_DIR)/include \
+			 $(MOD_BASE)
 
 DOCUMENTATION = \
 	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
@@ -366,9 +378,12 @@ $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
-          | sed "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g"  \
-          | sed "s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" >$@
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
+ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
+	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
+else
+	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" $@
+endif
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
@@ -952,6 +967,11 @@ $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	cp -rf $^ $@
 	chmod +x $@/*.sh
 
+$(BUILD_DIR)/include: $(FZ_SRC)/include
+	mkdir -p $(@D)
+	rm -rf $@
+	cp -rf $^ $@
+
 $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	mkdir -p $(@D)
 	cp -rf $^ $@
@@ -1010,13 +1030,13 @@ run_tests: run_tests_int run_tests_c
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
@@ -1026,13 +1046,13 @@ run_tests_parallel: run_tests_int_parallel run_tests_c_parallel
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
@@ -1060,3 +1080,8 @@ show_readme:
 .PHONY: show_release_notes
 show_release_notes:
 	grip -b release_notes.md
+
+# do spell checking of comments and strings in java source code.
+.PHONY: spellcheck
+spellcheck:
+	bin/spell_check_java.sh

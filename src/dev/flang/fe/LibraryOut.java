@@ -396,10 +396,10 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
-   *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
+   *   |        |        |               |           v = visibility                      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -556,7 +556,7 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-4);
       }
-    else if (t == Types.resolved.universe.thisType())
+    else if (t == Types.resolved.universe.selfType())
       {
         _data.writeInt(-3);
       }

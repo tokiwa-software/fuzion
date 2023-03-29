@@ -35,7 +35,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u32) => max -° thiz ⩻ other
+  redef overflowOnAdd (other u32) => u32.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u32) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -43,7 +43,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   redef underflowOnSub(other u32) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u32) => as_i64 *° other.as_i64 ⩼ max.as_i64
+  redef overflowOnMul (other u32) => as_i64 *° other.as_i64 ⩼ u32.type.max.as_i64
   redef underflowOnMul(other u32) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -55,11 +55,11 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # division and remainder with check for div-by-zero
   redef infix / (other u32)
     pre
-      safety: !(other ≟ u32 0)
+      safety: other != u32 0
    => div(other)
   redef infix % (other u32)
     pre
-      safety: !(other ≟ u32 0)
+      safety: other != u32 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -78,7 +78,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # this u32 as an i8
   as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u32
+      debug: thiz ≤ i8.type.max.as_u32
     is
       castTo_i32.as_i8
 
@@ -86,7 +86,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # this u32 as an i16
   as_i16 i16
     pre
-      debug: thiz ≤ i16.max.as_u32
+      debug: thiz ≤ i16.type.max.as_u32
     is
       castTo_i32.as_i16
 
@@ -94,7 +94,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # this u32 as an i32
   as_i32 i32
     pre
-      debug: thiz ≤ i32.max.as_u32
+      debug: thiz ≤ i32.type.max.as_u32
     is
       castTo_i32
 
@@ -112,7 +112,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # this u32 as an u8
   as_u8 u8
     pre
-      debug: thiz ≤ u8.max.as_u32
+      debug: thiz ≤ u8.type.max.as_u32
     is
       castTo_i32.as_u8
 
@@ -120,7 +120,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # this u32 as an u16
   as_u16 u16
     pre
-      debug: thiz ≤ u16.max.as_u32
+      debug: thiz ≤ u16.type.max.as_u32
     is
       castTo_i32.as_u16
 
@@ -199,19 +199,19 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   trailingZeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
-    (v1, s1) := if !((v0 &     0xffff)≟ u32 0) (v0, s0) else (v0 >> 16, s0 + 16)
-    (v2, s2) := if !((v1 &       0xff)≟ u32 0) (v1, s1) else (v1 >>  8, s1 +  8)
-    (v3, s3) := if !((v2 &        0xf)≟ u32 0) (v2, s2) else (v2 >>  4, s2 +  4)
-    (v4, s4) := if !((v3 &          3)≟ u32 0) (v3, s3) else (v3 >>  2, s3 +  2)
-    (v5, s5) := if !((v4 &          1)≟ u32 0) (v4, s4) else (v4 >>  1, s4 +  1)
-    s6       := if !((v5 &          1)≟ u32 0)      s5  else                 32
+    (v1, s1) := if ((v0 &     0xffff) != u32 0) (v0, s0) else (v0 >> 16, s0 + 16)
+    (v2, s2) := if ((v1 &       0xff) != u32 0) (v1, s1) else (v1 >>  8, s1 +  8)
+    (v3, s3) := if ((v2 &        0xf) != u32 0) (v2, s2) else (v2 >>  4, s2 +  4)
+    (v4, s4) := if ((v3 &          3) != u32 0) (v3, s3) else (v3 >>  2, s3 +  2)
+    (v5, s5) := if ((v4 &          1) != u32 0) (v4, s4) else (v4 >>  1, s4 +  1)
+    s6       := if ((v5 &          1) != u32 0)      s5  else                 32
     s6
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
+  ones_count i32 is
     v := val;
     m := v & 0xaaaaaaaa; v := v - m + (m >> 1)
     m := v & 0xcccccccc; v := v - m + (m >> 2)
@@ -244,21 +244,28 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   fixed type.lteq(a, b u32) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u32 0x_ffff_ffff
+
+
+  # minimum
+  #
+  fixed type.min => u32 0
+
+
+  # maximum
+  #
+  fixed type.max => u32 0x_ffff_ffff
+
+
+
 # u32s -- unit type defining features related to u32 but not requiring an
 # instance
 #
-u32s : wrapping_integers u32 is
-
-  redef name => "u32"
+u32s : numerics u32 is
 
   redef zero => u32 0
   redef one  => u32 1
-
-  redef min => u32 0
-  redef max => u32 0x_ffff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u32 0x_ffff_ffff
 
 
 # u32 -- returns value of unit type u32s

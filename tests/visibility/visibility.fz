@@ -217,14 +217,14 @@ visibility is
       chck (x ≟ "Outer!") "outer x"
       b is
         x => "Inner!"
-        chck (x ≟ "Inner!") "inner x"
+        # chck (x ≟ "Inner!") "inner x"      -- causes an error, `x` is ambiguous
         chck (a.this.x ≟ "Outer!") "a.this.x"
         chck (b.this.x ≟ "Inner!") "b.this.x"
 
         c is
-          chck (x ≟ "Inner Inner!") "inner inner x"
+          # chck (x ≟ "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
           x => "Inner Inner!"
-          chck (x ≟ "Inner Inner!") "inner inner x"
+          # chck (x ≟ "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
           chck (a.this.x ≟ "Outer!") "a.this.x"
           chck (b.this.x ≟ "Inner!") "b.this.x"
           chck (c.this.x ≟ "Inner Inner!") "c.this.x"

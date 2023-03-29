@@ -26,11 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 
 /**
- * FrontEndOptions specify the configuration of the front end
+ * FuzionOptions specify shared configuration of front- and back-end
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -66,6 +67,12 @@ public class FuzionOptions extends ANY
   final boolean _enableUnsafeIntrinsics;
 
 
+  /**
+   * Path to the Fuzion home directory, never null.
+   */
+  final Path _fuzionHome;
+
+
   /*
    * Array that can be set to pass arbitrary arguments to the backend. Currently used
    * for passing arguments given to the interpreter to the fuzion.std.args intrinsics.
@@ -84,30 +91,32 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Costructor initializing fields as given.
+   * Constructor initializing fields as given.
    */
-  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome)
   {
     if (PRECONDITIONS) require
-      (verbose >= 0);
+      (verbose >= 0,
+       fuzionHome != null);
 
     _verbose = verbose;
     _fuzionDebugLevel = fuzionDebugLevel;
     _fuzionSafety = fuzionSafety;
     _enableUnsafeIntrinsics = enableUnsafeIntrinsics;
-
+    _fuzionHome = fuzionHome;
   }
 
 
   /**
-   * Costructor initializing fields from existing FuzionOptions instance
+   * Constructor initializing fields from existing FuzionOptions instance
    */
   public FuzionOptions(FuzionOptions fo)
   {
     this(fo.verbose(),
          fo.fuzionDebugLevel(),
          fo.fuzionSafety(),
-         fo.enableUnsafeIntrinsics());
+         fo.enableUnsafeIntrinsics(),
+         fo.fuzionHome());
   }
 
 
@@ -115,7 +124,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Check if verbose output at the given leven is enabled.
+   * Check if verbose output at the given level is enabled.
    */
   public boolean verbose(int level)
   {
@@ -177,6 +186,11 @@ public class FuzionOptions extends ANY
   public boolean enableUnsafeIntrinsics()
   {
     return _enableUnsafeIntrinsics;
+  }
+
+  public Path fuzionHome()
+  {
+    return _fuzionHome;
   }
 
 

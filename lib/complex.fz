@@ -51,16 +51,20 @@ is
   redef infix *  (b complex C) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
   redef infix /  (b complex C) complex C
     pre
-      safety: !(b ≟ zero)
+      safety: b != zero
   is
     n := b.real*b.real+b.imag*b.imag
     complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
 
-  # comparison
+  # equality
+  #
   fixed type.equality(a, b complex C) bool is
     a.real ≟ b.real && a.imag ≟ b.imag
 
-  # NYI: total order ignoring imag
+  # total order ignoring imag
+  #
+  # NYI: Does this make sense mathematically?
+  #
   fixed type.lteq(a, b complex C) bool is
     a.real ≤ b.real
 
@@ -92,8 +96,6 @@ is
 # use complexes.
 #
 complexes(E type : numeric E) : numerics (complex E) is
-
-  redef name => "complex"
 
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.

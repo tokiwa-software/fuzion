@@ -35,7 +35,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u8) => max -° thiz ⩻ other
+  redef overflowOnAdd (other u8) => u8.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u8) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -43,7 +43,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   redef underflowOnSub(other u8) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u8) => as_i32 *° other.as_i32 ⩼ max.as_i32
+  redef overflowOnMul (other u8) => as_i32 *° other.as_i32 ⩼ u8.type.max.as_i32
   redef underflowOnMul(other u8) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -55,11 +55,11 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   # division and remainder with check for div-by-zero
   redef infix / (other u8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => div(other)
   redef infix % (other u8)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -77,13 +77,14 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
 
   as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u8
+      debug: thiz ≤ i8.type.max.as_u8
     is
       castTo_i8
   as_i16 => as_i32.as_i16
   as_i32 i32 is intrinsic
   as_i64  => as_i32.as_i64
 # as_i128 => as_i32.as_i128
+  as_u8   => val
   as_u16  => as_i32.as_u16
   as_u32  => as_i32.as_u32
   as_u64  => as_i32.as_u64
@@ -119,22 +120,27 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   trailingZeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
-    (v1, s1) := if !((v0 & 0xf) ≟ u8 0) then (v0, s0) else (v0 >> 4, s0 + 4)
-    (v2, s2) := if !((v1 &   3) ≟ u8 0) then (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if !((v2 &   1) ≟ u8 0) then (v2, s2) else (v2 >> 1, s2 + 1)
-    s4       := if !((v3 &   1) ≟ u8 0) then      s3  else                8
+    (v1, s1) := if (v0 & 0xf) != u8 0 then (v0, s0) else (v0 >> 4, s0 + 4)
+    (v2, s2) := if (v1 &   3) != u8 0 then (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 &   1) != u8 0 then (v2, s2) else (v2 >> 1, s2 + 1)
+    s4       := if (v3 &   1) != u8 0 then      s3  else                8
     s4
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
+  ones_count i32 is
     v := val.as_i32
     m := v & 0xaa; v := v - m + (m >> 1)
     m := v & 0xcc; v := v - m + (m >> 2)
     m := v & 0xf0; v := v - m + (m >> 4)
     v
+
+
+  # the least significant byte of this integer
+  low8bits u8 is val
+
 
 
   # -----------------------------------------------------------------------
@@ -162,21 +168,28 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   fixed type.lteq(a, b u8) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u8 0xff
+
+
+  # minimum
+  #
+  fixed type.min => u8 0
+
+
+  # maximum
+  #
+  fixed type.max => u8 0xff
+
+
+
 # u8s -- unit type defining features related to u8 but not requiring an
 # instance
 #
-u8s : wrapping_integers u8 is
-
-  redef name => "u8"
+u8s : numerics u8 is
 
   redef zero => u8 0
   redef one  => u8 1
-
-  redef min => zero
-  redef max => u8 0xff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u8 0xff
 
 
 # u8 -- returns value of unit type u8s

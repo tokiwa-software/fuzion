@@ -35,16 +35,16 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i16) => thiz ⩼ zero && max -° thiz ⩻ other
-  redef underflowOnAdd(other i16) => thiz ⩻ zero && min -° thiz ⩼ other
+  redef overflowOnAdd (other i16) => thiz ⩼ zero && i16.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i16) => thiz ⩻ zero && i16.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° max ⩼ other
-  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° min ⩻ other
+  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° i16.type.max ⩼ other
+  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° i16.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ max.as_i32
-  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ min.as_i32
+  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ i16.type.max.as_i32
+  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ i16.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i16 is intrinsic
@@ -55,11 +55,11 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # division and remainder with check for div-by-zero
   redef infix / (other i16)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => div(other)
   redef infix % (other i16)
     pre
-      safety: !(other ≟ zero)
+      safety: other != zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -78,8 +78,8 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
-      thiz ≥ i8.min.as_i16,
-      thiz ≤ i8.max.as_i16
+      thiz ≥ i8.type.min.as_i16,
+      thiz ≤ i8.type.max.as_i16
     is
       low8bits.castTo_i8
   as_i32 i32 is intrinsic
@@ -88,12 +88,12 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
 
   as_u8 u8
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.max.as_i16)
+      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
     is
       low8bits
   as_u16 u16
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.max.as_i16)
+      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
     is
       castTo_u16
   as_u32 u32
@@ -147,8 +147,8 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u16.onesCount
+  ones_count i32 is
+    val.castTo_u16.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -176,21 +176,28 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   fixed type.lteq(a, b i16) bool is intrinsic
 
 
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i16 -1
+
+
+  # minimum
+  #
+  fixed type.min => i16 -0x8000
+
+
+  # maximum
+  #
+  fixed type.max => i16 0x7fff
+
+
+
 # i16s -- unit type defining features related to i16 but not requiring an
 # instance
 #
-i16s : wrapping_integers i16 is
-
-  redef name => "i16"
+i16s : numerics i16 is
 
   redef zero => i16 0
   redef one  => i16 1
-
-  redef min => i16 -0x8000
-  redef max => i16  0x7fff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i16 -1
 
 
 # i16 -- returns value of unit type i16s

@@ -17,7 +17,7 @@ sources_only:
 	$(FZ) -sourceDirs=./src_a,./src_b,./src                          test_modules $(CHECK)
 
 # compile src_a into a.fum
-modules/a.fum:
+modules/a.fum: ../../modules/base.fum
 	mkdir -p $(@D)
 	$(FZ) -sourceDirs=./src_a                                        -saveLib=$@  $(CHECK)
 

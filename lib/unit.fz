@@ -77,7 +77,7 @@
 #
 # The memory required to store a value of unit type is 0 bits, so you can use
 # plenty without worrying about space constraints.  The Fuzion code generators
-# typically will not generate any code for returning or assiging a value of unit
+# typically will not generate any code for returning or assigning a value of unit
 # type, so these are very efficient as well.
 #
 #
@@ -100,5 +100,4 @@ unit is
   # and the identity element of this monoid are canonically defined.
   type.monoid : Monoid unit is
     redef infix ∙ (a, b unit) unit is unit
-    redef infix == (a, b unit) bool is true
     redef e unit is unit

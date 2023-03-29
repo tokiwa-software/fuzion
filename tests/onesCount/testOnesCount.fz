@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# A simple test for integer onesCount, highestOneBit and trailingZeros
+# A simple test for integer ones_count, highestOneBit and trailingZeros
 #
 # The test should be run and its output should be compared to the expected
 # output.
@@ -31,8 +31,8 @@
 testOnesCount is
 
   show(x u64) =>
-    yak ((x.bin 64) + ": " + x.onesCount+" "+x.castTo_i64.onesCount+" "+x.low32bits.onesCount+" "+x.low32bits.castTo_i32.onesCount + " ")
-    yak ($x.low16bits.onesCount+" "+x.low16bits.castTo_i16.onesCount+" "+x.low8bits.onesCount+" "+x.low8bits.castTo_i8.onesCount + " ")
+    yak ((x.bin 64) + ": " + x.ones_count+" "+x.castTo_i64.ones_count+" "+x.low32bits.ones_count+" "+x.low32bits.castTo_i32.ones_count + " ")
+    yak ($x.low16bits.ones_count+" "+x.low16bits.castTo_i16.ones_count+" "+x.low8bits.ones_count+" "+x.low8bits.castTo_i8.ones_count + " ")
     yak ($x.highestOneBit+" "+x.castTo_i64.highestOneBit+" "+x.low32bits.highestOneBit+" "+x.low32bits.castTo_i32.highestOneBit + " ")
     yak ($x.low16bits.highestOneBit+" "+x.low16bits.castTo_i16.highestOneBit+" "+x.low8bits.highestOneBit+" "+x.low8bits.castTo_i8.highestOneBit + " ")
     yak ($x.trailingZeros+" "+x.castTo_i64.trailingZeros+" "+x.low32bits.trailingZeros+" "+x.low32bits.castTo_i32.trailingZeros + " ")

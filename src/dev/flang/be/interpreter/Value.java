@@ -46,7 +46,7 @@ public abstract class Value extends ANY
 
   /**
    * Dummy value to be returned by Expr.execute for the case that the
-   * exression does not produce a value
+   * expression does not produce a value
    */
   public static Value NO_VALUE = new Value() { };
 

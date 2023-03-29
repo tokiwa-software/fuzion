@@ -36,10 +36,14 @@ fuzion.std is
   #
   panic(msg String) void is
     fuzion.sys.err.println "*** panic: $msg"
-    exit 1
+    std.this.exit 1
 
   # no guarantee can be given for precision nor resolution
   nano_time u64 is intrinsic
 
   # no guarantee can be given for precision nor resolution
   nano_sleep(n u64) is intrinsic
+
+
+  # fills arg with current UTC date time
+  private date_time(array_of_i32 Any) is intrinsic

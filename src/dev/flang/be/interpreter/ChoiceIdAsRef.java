@@ -170,7 +170,7 @@ public class ChoiceIdAsRef extends Value
    */
   public String toString()
   {
-    return "choiceidasref["+_id+"]";
+    return "choiceIdAsRef["+_id+"]";
   }
 
 }

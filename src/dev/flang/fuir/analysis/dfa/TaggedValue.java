@@ -63,7 +63,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   int _tag;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -73,7 +73,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    *
    * @param nc the new clazz of this value after a tagging.
    *
-   * @param orignal the untagged value
+   * @param original the untagged value
    *
    * @param tag the tag value.  Unlike some C backends, the tag is never left
    * out during analysis.
@@ -106,7 +106,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {

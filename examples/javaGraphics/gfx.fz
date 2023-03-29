@@ -28,8 +28,10 @@
 #
 # See Makefile for how to start fuzion to run this example.
 #
-gfx : Java  # inheriting Java makes Java packages visible
+gfx
 is
+
+  java  => Java.java   # handy shortcut to access Java code
 
   /* the following two values are geometry values that may be modified to alter
    * the appearance:
@@ -38,7 +40,7 @@ is
   // Width of black lines as percentage of main radius
   BLACK_LINE_WIDTH := 1000 / 15              # NYI: floats: 1.0D/15
 
-  // size of three small cicles relative to their surrounding circles
+  // size of three small circles relative to their surrounding circles
   SMALL_CIRCLE_PERCENTAGE := 250             # NYI: floats: 0.25D
 
 
@@ -66,7 +68,7 @@ is
   //
   //  h = r - r2 - b               -- using radius r
   //
-  //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonomy
+  //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
   //
   // so we get for r2
   //
@@ -98,12 +100,12 @@ is
   sin240 := -866
 
 
-  G2D (g java.awt.Graphics, tx, ty, rot0 i32) ref is  # NYI: #167: 'ref' due to lack of 'like this'
+  G2D (g Java.java.awt.Graphics, tx, ty, rot0 i32) ref is  # NYI: #167: 'ref' due to lack of 'like this'
     rot := if rot0 >= 0 rot0 % 360 else rot0 % 360 + 360
 
     rotate (d i32) => G2D g tx ty rot+d
 
-    threeTimes(d (G2D, java.awt.Color) -> unit) unit is
+    threeTimes(d (G2D, Java.java.awt.Color) -> unit) unit is
       d  G2D.this              C1
       d (G2D.this.rotate -120) C2
       d (G2D.this.rotate -240) C3
@@ -111,7 +113,7 @@ is
     # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
     # start and extending of len degrees.
     #
-    arc(c java.awt.Color, x, y, r, start, len i32) unit is
+    arc(c Java.java.awt.Color, x, y, r, start, len i32) unit is
       g.setColor c
       # NYI: rotation hard coded for 0°/120°/240°
       (rx, ry) := if      rot % 360 = 0   then (x, y)
@@ -127,7 +129,7 @@ is
 
     # Draw a filled circle of color c, center at (x,y), radius r
     #
-    cir(c java.awt.Color, x, y, r i32) unit is
+    cir(c Java.java.awt.Color, x, y, r i32) unit is
       arc c x y r 0 360
 
     # Draw the Fuzion logo
@@ -152,19 +154,19 @@ is
       (rotate -120).threeTimes (g, c -> g.cir c 0 -r+b+r2 r3)
 
 
-  gfx // : java.lang.Thread_static    # NYI: causes NullPointerException in fz
+  gfx
   is
     match java.awt.Frame.new
       e error => say "error: $e"
-      f java.awt.Frame =>
+      f Java.java.awt.Frame =>
         f.setSize 800 800
         f.setTitle "Fuzion's first window!"
 
-        b := Java.java.lang.System.getenv "BUTTON"
+        b := java.lang.System.getenv "BUTTON"
         if !b.isNull && b = "TRUE"  # show a button
           match java.awt.Button.new "If you like Fuzion, click here!"
             e error => say "error: $e"
-            b java.awt.Button =>
+            b Java.java.awt.Button =>
               b.setBounds 50 50 50 50
               f.add_Ljava_7_awt_7_Component_s_ b
               f.setVisible true
@@ -181,8 +183,9 @@ is
           java.lang.Thread.sleep 200
           (G2D f.getGraphics 400 400 0).drawLogo
 
-        java.lang.Thread.sleep 50000
+        timeout := ((envir.args.nth 1).get "50000").parse_i64.val 0
+        java.lang.Thread.sleep timeout
         f.setVisible false
 
-  gfx
+  gfx.this.gfx
   exit 0   # explicitly exit since JVM would otherwise keep us alive

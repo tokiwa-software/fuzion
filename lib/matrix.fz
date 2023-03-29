@@ -60,7 +60,8 @@ is
   is
     panic "'matrix.infix /' not defined."
 
-  # comparison
+  # equality
+  #
   fixed type.equality(a, b matrix M) =>
     for
       x in a.e
@@ -71,6 +72,7 @@ is
       true
 
   # NYI: total order
+  #
   fixed type.lteq(a, b matrix M) =>
     panic "matrix does not define a total order"
 
@@ -93,8 +95,6 @@ is
 # requiring an instance.
 #
 matrices(M type : numeric M) : numerics (matrix M) is
-
-  redef name => "matrix"
 
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.

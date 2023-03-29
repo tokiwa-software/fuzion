@@ -73,7 +73,7 @@ public abstract class ReturnType extends ANY
     if (PRECONDITIONS) require
       (!isConstructorType());
 
-    throw new Error(); // this is redefined for FuncionReturnType
+    throw new Error(); // this is redefined for FunctionReturnType
   }
 
 

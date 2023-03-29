@@ -58,7 +58,7 @@ public class Effects extends CFG
   Graph<Integer> _effects = new Graph<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
