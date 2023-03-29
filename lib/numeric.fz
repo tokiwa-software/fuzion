@@ -121,14 +121,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 
   abs => if sign ≥ 0 then thiz else -thiz
 
-  # minimum of numeric.this and other
-  #
-  min(other T) T is if (thiz ≤ other) thiz else other
-
-  # maximum of numeric.this and other
-  #
-  max(other T) T is if (thiz ≥ other) thiz else other
-
 
   # the u32 value corresponding to this
   # note: potential fraction will be discarded
