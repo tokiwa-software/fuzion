@@ -2944,7 +2944,7 @@ ifstmnt      : "if" exprInLine thenPart elseBlock
         Block b = thenPart(false);
         If result = new If(pos, e, b);
         var els = elseBlock();
-        if (els._statements.size() > 0)
+        if (els != null && els._statements.size() > 0)
           { // do no set empty blocks as else blocks since the source position
             // of those block might be somewhere unexpected.
             result.setElse(els);
