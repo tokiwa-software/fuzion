@@ -137,6 +137,7 @@ public class If extends ExprWithPos
       }
     else
       {
+        b._newScope = true;
         elseBlock = b;
       }
   }
