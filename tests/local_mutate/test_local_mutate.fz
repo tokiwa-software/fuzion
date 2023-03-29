@@ -40,7 +40,7 @@ test_local_mutate is
 
       # define a local type `m` to identify the mutate effect:
       #
-      m : local_mutate m is
+      m : mutate is
 
       # count using a locally mutable variable:
       #
@@ -59,19 +59,17 @@ test_local_mutate is
 
       # run code within an instance of m
       #
-      m.use (()->
-
+      m.go (()->
         s := m.env.new 0
 
         for e in l do
           s.update a->a+e
 
-        say "inside m.use: s.get = {s.get}"
-        say "inside m.use: count = {count}")
+        say "inside m.go: s.get = {s.get}"
+        say "inside m.go: count = {count}"
+        )
 
-      say "using m.run and count: {m.run ()->count (unit)->(-1)}"
-
-#       say (m.go i32 ()->count)     # NY: m.go does not work yet
+      say "using m.go and count: {m.go ()->count}"
 
       count2 =>
         s := m.env.new 0
@@ -80,30 +78,38 @@ test_local_mutate is
         option s
 
       # NYI: move this into negative test
-      if envir.args.count == 2
+      if envir.args.count ≟ 2
         say count    # *** will cause an error, requires m to be installed
 
       # NYI: move this into negative test
-      if envir.args.count == 3
-        s := (m.run ()->count2 (unit)->nil).get
+      if envir.args.count ≟ 3
+        s := m.go ()->count2
         say s        # *** will cause an error, requires m to be installed
 
-/* NYI: check this, causes error:
+      # handler for negative tests that cause panic:
+      #
+      myPanic : Panic_Provider is
+        do_panic(msg String) =>
+          say "*** got '$msg' ***"
 
-      if envir.args.count == 4
-        s := m.run ()->count2 (unit)->nil
-        m.use (() ->
-          s <- -12    # *** will cause an error, m has changed!
-          say s)
-*/
+      say (myPanic.use ()->neg_test4 ()->"ok")
 
-      # NYI: move this into negative test
-      if envir.args.count == 4
+      neg_test4 =>
+        s := m.go ()->count2
+        m.go ()->
+          s.get <- -12    # *** will cause an error, m has changed!
+          say s
+        "** failed, did not panic **"
+
+      say (myPanic.use ()->neg_test5 ()->"ok")
+
+      neg_test5 =>
         q =>
-          s1 := m.run ()->count2 (unit)->nil
-          m.use (() ->
-            s1.get <- -12    # *** will cause an error, m has changed!  NYI: does not work yet!!!
-            say s1)
+          s1 := m.go ()->count2
+          m.go ()->
+            s1.get <- -12    # *** will cause an error, m has changed!
+            say s1
+          "** failed, did not panic **"
         q
 
     sum l
@@ -111,68 +117,19 @@ test_local_mutate is
   test_sum
 
 
-  # quicksort using old marray, just for reference
-  #
-  # NYI: remove this case, this does not use mutate effect!
-  #
-  test_quicksort0 =>
-
-    quicksort(T type: ordered T, data Sequence T) array T is
-      c := data.count
-      if c = 0
-        []
-      else
-        arr := (marrays T).new c data[0]
-        for i in arr.indices do
-          arr[i] := data[i]
-
-        swap(i,j i32) =>
-          t := arr[i]
-          arr[i] := arr[j]
-          arr[j] := t
-
-        partition(l, r, pivot i32) =>
-          pv := arr[pivot]
-          swap pivot r
-          for
-            a := l, a + (sw ? 0 : 1)
-            b := r, b - (sw ? 1 : 0)
-            sw := arr[a] > pv
-          while a < b
-            if sw
-              swap a b-1
-          else
-            swap b r
-            b
-
-        qs(l, r i32) unit is # =>  does not work
-          if l < r
-            pi := partition l r (l + r)/2
-            qs l pi-1
-            qs pi+1 r
-
-        qs 0 c-1
-        arr.as_array
-
-    say (quicksort [0, 8, 15, 47, 11])
-    say (quicksort 0..10)
-    say (quicksort (10..0 : -1))
-
-  test_quicksort0
-
-
   # quicksort using array created via local mutate effect
   #
   test_quicksort =>
 
-    quicksort(T type: ordered T, data Sequence T) array T is
+    quicksort(T type: has_total_order, data Sequence T) array T is
       c := data.count
-      if c = 0
+      if c ≟ 0
         []
       else
-        m : local_mutate m is
+        m : mutate is
 
-        # wrap code into iqs (NYI: use m.go with inline code)
+        # execute code with mutate effect `m`:
+        # m.go (()->         --- NYI go does not work yet
         iqs =>
           swap(i,j i32) =>
             t := arr[i]
@@ -185,8 +142,8 @@ test_local_mutate is
             for
               a := l, a + (sw ? 0 : 1)
               b := r, b - (sw ? 1 : 0)
-              sw := arr[a] > pv
-            while a < b
+              sw := arr[a] ⩼ pv
+            while a ⩻ b
               if sw
                 swap a b-1
             else
@@ -194,7 +151,7 @@ test_local_mutate is
               b
 
           qs(l, r i32) unit is # =>  does not work
-            if l < r
+            if l ⩻ r
               pi := partition l r (l + r)/2
               qs l pi-1
               qs pi+1 r
@@ -206,7 +163,7 @@ test_local_mutate is
           qs 0 c-1
           arr.as_array
 
-        m.run ()->iqs (unit)->(panic "*** unexpected abort ***")
+        m.go ()->iqs
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
@@ -220,11 +177,10 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    cell(T type, LM type : local_mutate LM, data T) ref is
-      me cell T LM := cell.this
-      n := LM.env.new me #  cell.this   -- NYI: cell.this causes crash!
-      p := LM.env.new me
-      link(ne, pr ref cell T LM) is
+    cell(T type, LM type : mutate, data T) ref is
+      n := LM.env.new (cell T LM) cell.this
+      p := LM.env.new (cell T LM) cell.this
+      link(ne, pr cell T LM) is
         n <- ne
         p <- pr
 
@@ -235,17 +191,17 @@ test_local_mutate is
       pre
         !from.is_empty
      =>
-      m : local_mutate m is
+      m : mutate is
 
       ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
         c := cell T m from.head.get
         match from.tail
           nil    => c
           t Cons => f := ring2 t
-                    l := f.prev
+                    l := f.p.get
                     c.link f l
-                    f.link f.next c
-                    l.link c l.prev
+                    f.link f.n.get c
+                    l.link c l.p.get
         c
 
       ring3(from list T) cell T m is
@@ -253,7 +209,7 @@ test_local_mutate is
 
         for
           i in 1..10
-          e := r, e.next
+          e := r, e.n.get
         do
           say "$i: {e.data}"
 
@@ -263,8 +219,8 @@ test_local_mutate is
           cur.p.close
         r
 
-      r := m.run ()->(ring3 from.as_list) (unit)->(panic "*** unexpected abort ***")
-      say "left local_mutate environment m"
+      r := m.go ()->(ring3 from.as_list)
+      say "left mutate environment m"
       for
         i in 1..10
         e := r, e.next
@@ -291,7 +247,7 @@ test_local_mutate is
       redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
-          # e2 := r, e2.next    # causes crash!
+          # e2 := r, e2.next    # NYI causes crash!
           e ring T := ring.this, e.next
           i in 0..3
         else
@@ -304,7 +260,7 @@ test_local_mutate is
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
     mut_ring(# mutate effect to be used to create mutable variables
-             LM type : local_mutate LM,
+             LM type : mutate,
 
              # type of data stored in ring cells
              redef T type,
@@ -370,8 +326,8 @@ test_local_mutate is
       #
       merge(n mut_ring LM T) =>
         a := mut_ring.this
-        m := a.prev
-        z := n.prev
+        m := a.p.get
+        z := n.n.get
         a.p <- z
         z.n <- a
         m.n <- n
@@ -392,7 +348,7 @@ test_local_mutate is
         !from.is_empty
      =>
       # define mutate context to be used
-      m : local_mutate m is
+      m : mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
@@ -402,9 +358,8 @@ test_local_mutate is
         c.freeze
         c
 
-      # NYI: use m.go, not m.run()
-      r := m.run ()->(create_ring2 from.as_list) (unit)->(panic "*** unexpected abort ***")
-      say "left local_mutate environment m"
+      r := m.go ()->(create_ring2 from.as_list)
+      say "left mutate environment m"
       say r
       for
         i in 1..10

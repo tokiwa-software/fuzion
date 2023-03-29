@@ -115,7 +115,7 @@ public class Interpreter extends ANY
    *
    * @param frame the clazz of the previous entry
    *
-   * @param call the call of the pevious entry
+   * @param call the call of the previous entry
    */
   private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, AbstractCall call)
   {
@@ -174,7 +174,7 @@ public class Interpreter extends ANY
   public final FUIR _fuir;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -245,7 +245,7 @@ public class Interpreter extends ANY
   }
 
 
-  /*----------------  methods to execute statments  ----------------*/
+  /*----------------  methods to execute statements  ----------------*/
 
 
   /**
@@ -290,7 +290,7 @@ public class Interpreter extends ANY
     if (s instanceof AbstractCall c)
       {
         if (PRECONDITIONS) require
-          (!c.isInheritanceCall(),  // inheritance calls are handled in Fature.callOnInstance
+          (!c.isInheritanceCall(),  // inheritance calls are handled in Feature.callOnInstance
            c._sid >= 0);
 
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);

@@ -43,7 +43,6 @@ is
 
   # enable generic features in ancestors
   redef thiz => a
-  redef orderedThis => a
 
   # basic operations
   redef prefix + => a
@@ -57,18 +56,17 @@ is
     n := b.real*b.real+b.imag*b.imag
     complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
 
-  # comparison
-  redef infix == (b complex C) => a.real  = b.real && a.imag  = b.imag
-  redef infix != (b complex C) => a.real != b.real || a.imag != b.imag
-
+  # equality
+  #
   fixed type.equality(a, b complex C) bool is
     a.real ≟ b.real && a.imag ≟ b.imag
 
-  # NYI: total order ignoring imag
-  redef infix <  (b complex C) => a.real <  b.real
-  redef infix <= (b complex C) => a.real <= b.real
-  redef infix >  (b complex C) => a.real >  b.real
-  redef infix >= (b complex C) => a.real >= b.real
+  # total order ignoring imag
+  #
+  # NYI: Does this make sense mathematically?
+  #
+  fixed type.lteq(a, b complex C) bool is
+    a.real ≤ b.real
 
   abs² => real*real+imag*imag
 
@@ -98,8 +96,6 @@ is
 # use complexes.
 #
 complexes(E type : numeric E) : numerics (complex E) is
-
-  redef name => "complex"
 
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.

@@ -56,7 +56,7 @@ public class FuzionConstants extends ANY
   public static final String UNIVERSE_NAME    = INTERNAL_NAME_PREFIX + "universe";
 
   /**
-   * Prefix of artifically generated name of outer refs.
+   * Prefix of artificially generated name of outer refs.
    */
   public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
 

@@ -49,7 +49,7 @@ public class AirErrors extends AstErrors
   /*--------------------------  static fields  --------------------------*/
 
   /**
-   * Error count of only those errors that occured in the IR.
+   * Error count of only those errors that occurred in the IR.
    */
   static int count = 0;
 
@@ -94,7 +94,7 @@ public class AirErrors extends AstErrors
       foundFixed                  ? "fixed"             : Errors.ERROR_STRING;
     for (var af : abstractFeature)
       {
-        abs.append(abs.length() == 0 ? "" : ", ").append(af.featureName().baseName());
+        abs.append(abs.length() == 0 ? "" : ", ").append(s(af));
         var afKind = af.isAbstract() ? "abstract" : "fixed";
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
@@ -102,7 +102,7 @@ public class AirErrors extends AstErrors
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),
-          "Used " + kind + " " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
+          "Used " + kind + " " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented by "+s(featureThatDoesNotImplementAbstract),
           "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
           "instantiated at " + instantiatedAt.pos().show() + "\n" +
           abstracts);

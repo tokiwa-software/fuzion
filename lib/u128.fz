@@ -36,21 +36,21 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u128) => max -° thiz < other
+  redef overflowOnAdd (other u128) => max -° thiz ⩻ other
   redef underflowOnAdd(other u128) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u128) => false
-  redef underflowOnSub(other u128) => thiz < other
+  redef underflowOnSub(other u128) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u128) => if (other = zero) false else (thiz *° other / other) != thiz
+  redef overflowOnMul (other u128) => if (other ≟ zero) false else !((thiz *° other / other) ≟ thiz)
   redef underflowOnMul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
-  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
-  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
+  redef prefix -°             u128 is carry u64 := { if (lo ⩼ u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo ⩻ lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
+  redef infix -° (other u128) u128 is carry u64 := { if (lo ⩻ other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
   redef infix *° (other u128) u128 is
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
@@ -93,7 +93,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
-    if thiz < other
+    if thiz ⩻ other
       zero
     else
       ob := other.highestOneBit.trailingZeros
@@ -101,12 +101,12 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
         rem := thiz, rem - s
         bit := rem.highestOneBit >> ob.as_u128, bit >> one
         d := other << bit.trailingZeros.as_u128, d >> one
-        s := if (rem < d) zero else d
-        p := if (rem < d) zero else bit
+        s := if (rem ⩻ d) zero else d
+        p := if (rem ⩻ d) zero else bit
         res := p, res + p
-      until bit = zero
+      until bit ≟ zero
         check
-          debug: res *° other + rem = thiz
+          debug: res *° other + rem ≟ thiz
         res
 
   private mod (other u128) u128 is
@@ -120,88 +120,84 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # shift operations (unsigned)
   redef infix >> (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
-    if n >= 128
+    if n ≥ u64 128
       u128 0 0
-    else if n >= 64
+    else if n ≥ u64 64
       u128 0 (hi >> (n - 64))
-    else if n > 0
+    else if n ⩼ u64 0
       u128 (hi >> n) ((lo >> n) | (hi << (u64 64 - n)))
     else
       thiz
 
   redef infix << (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
-    if n >= 128
+    if n ≥ u64 128
       u128 0 0
-    else if n >= 64
+    else if n ≥ u64 64
       u128 (lo << (n-64)) 0
-    else if n > 0
+    else if n ⩼ u64 0
       u128 ((hi << n) | (lo >> (u64 64 - n))) (lo << n)
     else
       thiz
 
-  # comparison
-  redef infix == (other u128) bool is hi == other.hi && lo == other.lo
-  redef infix != (other u128) bool is !(thiz == other)
-  redef infix <  (other u128) bool is hi < other.hi || hi = other.hi && lo <  other.lo
-  redef infix <= (other u128) bool is hi < other.hi || hi = other.hi && lo <= other.lo
-  redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
-  redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
-
+  # equality
+  #
   fixed type.equality(a, b u128) =>
     a.hi ≟ b.hi && a.lo ≟ b.lo
 
-  redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
-  redef infix /= (other u128) bool is !(thiz = other)
+  # total order
+  #
+  fixed type.lteq(a, b u128) =>
+    a.hi ⩻ b.hi || (a.hi ≟ b.hi) && (a.lo ≤ b.lo)
 
   as_i8 i8
     pre
-      thiz <= i8.max.as_u128
+      thiz ≤ i8.type.max.as_u128
     is
       lo.as_i8
   as_i16 i16
     pre
-      thiz <= i16.max.as_u128
+      thiz ≤ i16.type.max.as_u128
     is
       lo.as_i16
   as_i32 i32
     pre
-      thiz <= i32.max.as_u128
+      thiz ≤ i32.type.max.as_u128
     is
       lo.as_i32
   as_i64 i64
     pre
-      thiz <= i64.max.as_u128
+      thiz ≤ i64.type.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 ≟ thiz
     is
       lo.as_i64
   as_u8 u8
     pre
-      thiz <= u8.max.as_u128
+      thiz ≤ u8.type.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 ≟ thiz
     is
       lo.as_u8
   as_u16 u16
     pre
-      thiz <= u16.max.as_u128
+      thiz ≤ u16.type.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 ≟ thiz
     is
       lo.as_u16
   as_u32 u32
     pre
-      thiz <= u32.max.as_u128
+      thiz ≤ u32.type.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 ≟ thiz
     is
       lo.as_u32
   as_u64 u64
     pre
-      thiz <= u64.max.as_u128
+      thiz ≤ u64.type.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 ≟ thiz
     is
       lo
 
@@ -224,7 +220,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # this single bit set or 0 if this is 0.
   #
   highestOneBit u128 is
-    if hi = 0
+    if hi ≟ u64 0
       u128 0 lo.highestOneBit
     else
       u128 hi.highestOneBit 0
@@ -233,7 +229,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # count the number of trailing zeros in this integer.
   #
   trailingZeros i32 is
-    if lo = 0
+    if lo ≟ u64 0
       64 + hi.trailingZeros
     else
       lo.trailingZeros
@@ -242,25 +238,32 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    hi.onesCount + lo.onesCount
+  ones_count i32 is
+    hi.ones_count + lo.ones_count
+
+
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+
+  # minimum
+  #
+  fixed type.min => u128 0 0
+
+
+  # maximum
+  #
+  fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
 
 
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
 #
-u128s : wrapping_integers u128 is
-
-  redef name => "u128"
+u128s : numerics u128 is
 
   redef zero => u128 0 0
   redef one  => u128 0 1
-
-  redef min => u128 0 0
-  redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
 # u128 -- returns value of unit type u128s

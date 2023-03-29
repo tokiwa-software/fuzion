@@ -66,7 +66,7 @@ public class CFile extends ANY
   private int _c_col = 0;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -175,7 +175,7 @@ public class CFile extends ANY
 
 
   /**
-   * Print the given C string, indenting new lines _c_indentation times, follwed
+   * Print the given C string, indenting new lines _c_indentation times, followed
    * by LF.
    *
    * @param s the string to print, may contain '\n'.

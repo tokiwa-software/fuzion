@@ -84,7 +84,7 @@ public class DFA extends ANY
 
 
     /**
-     * The Call we are analysing.
+     * The Call we are analyzing.
      */
     final Call _call;
 
@@ -269,7 +269,9 @@ public class DFA extends ANY
       if (!found[0])
         {
           // NYI: proper error reporting
-          Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+          Errors.error(_fuir.codeAtAsPos(c, i),
+                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
+                       null);
         }
       return resf[0];
     }
@@ -515,7 +517,7 @@ public class DFA extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environemnt.
+     * Access the effect of type ecl that is installed in the environment.
      */
     public Pair<Value, Unit> env(int ecl)
     {
@@ -545,7 +547,7 @@ public class DFA extends ANY
 
 
   /**
-   * For debugging: dump stack when _chaned is set, for debugging when fix point
+   * For debugging: dump stack when _changed is set, for debugging when fix point
    * is not reached.
    */
   static boolean SHOW_STACK_ON_CHANGE = false;
@@ -561,6 +563,13 @@ public class DFA extends ANY
    * DFA's intrinsics.
    */
   static TreeMap<String, IntrinsicDFA> _intrinsics_ = new TreeMap<>();
+
+
+  /**
+   * Maximun recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * details.
+   */
+  private static int MAX_NEW_CALL_RECURSION = 20;
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -594,7 +603,7 @@ public class DFA extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   public final FUIR _fuir;
 
@@ -632,10 +641,24 @@ public class DFA extends ANY
 
   /**
    * Calls created during current sub-iteration of the DFA analysis.  These will
-   * be analysed at the end of the current iteration since they most likely add
+   * be analyzed at the end of the current iteration since they most likely add
    * new information.
    */
   TreeSet<Call> _newCalls = new TreeSet<>();
+
+
+  /**
+   * Current number of recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * details.
+   */
+  private int _newCallRecursiveAnalyzeCalls = 0;
+
+
+  /**
+   * Clazz ids for clazzes for of newly created calls for which recursive analysis is performed,
+   * see `analyzeNewCall` for details.
+   */
+  private int[] _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
 
 
   /**
@@ -682,7 +705,7 @@ public class DFA extends ANY
   boolean _reportResults = false;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -711,8 +734,8 @@ public class DFA extends ANY
 
   /**
    * Create a new Instance of FUIR using the information collected during this
-   * DFA analyssis. In particular, Let 'clazzNeedsCode' return false for
-   * routines that were found never to be caled.
+   * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
+   * routines that were found never to be called.
    */
   public FUIR new_fuir()
   {
@@ -887,7 +910,7 @@ public class DFA extends ANY
 
 
   /**
-   * Flag to detect and stop (endless) recursion within NYIintrinsiMissing.
+   * Flag to detect and stop (endless) recursion within NYIintrinsicMissing.
    */
   static boolean _recursion_in_NYIintrinsicMissing = false;
 
@@ -988,34 +1011,14 @@ public class DFA extends ANY
     put("i32.infix ^"                    , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i64.infix ^"                    , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
 
-    put("i8.infix =="                    , cl -> cl._dfa._bool );
-    put("i16.infix =="                   , cl -> cl._dfa._bool );
-    put("i32.infix =="                   , cl -> cl._dfa._bool );
-    put("i64.infix =="                   , cl -> cl._dfa._bool );
     put("i8.type.equality"               , cl -> cl._dfa._bool );
     put("i16.type.equality"              , cl -> cl._dfa._bool );
     put("i32.type.equality"              , cl -> cl._dfa._bool );
     put("i64.type.equality"              , cl -> cl._dfa._bool );
-    put("i8.infix !="                    , cl -> cl._dfa._bool );
-    put("i16.infix !="                   , cl -> cl._dfa._bool );
-    put("i32.infix !="                   , cl -> cl._dfa._bool );
-    put("i64.infix !="                   , cl -> cl._dfa._bool );
-    put("i8.infix >"                     , cl -> cl._dfa._bool );
-    put("i16.infix >"                    , cl -> cl._dfa._bool );
-    put("i32.infix >"                    , cl -> cl._dfa._bool );
-    put("i64.infix >"                    , cl -> cl._dfa._bool );
-    put("i8.infix >="                    , cl -> cl._dfa._bool );
-    put("i16.infix >="                   , cl -> cl._dfa._bool );
-    put("i32.infix >="                   , cl -> cl._dfa._bool );
-    put("i64.infix >="                   , cl -> cl._dfa._bool );
-    put("i8.infix <"                     , cl -> cl._dfa._bool );
-    put("i16.infix <"                    , cl -> cl._dfa._bool );
-    put("i32.infix <"                    , cl -> cl._dfa._bool );
-    put("i64.infix <"                    , cl -> cl._dfa._bool );
-    put("i8.infix <="                    , cl -> cl._dfa._bool );
-    put("i16.infix <="                   , cl -> cl._dfa._bool );
-    put("i32.infix <="                   , cl -> cl._dfa._bool );
-    put("i64.infix <="                   , cl -> cl._dfa._bool );
+    put("i8.type.lteq"                   , cl -> cl._dfa._bool );
+    put("i16.type.lteq"                  , cl -> cl._dfa._bool );
+    put("i32.type.lteq"                  , cl -> cl._dfa._bool );
+    put("i64.type.lteq"                  , cl -> cl._dfa._bool );
 
     put("u8.prefix -°"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("u16.prefix -°"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1062,34 +1065,14 @@ public class DFA extends ANY
     put("u32.infix ^"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("u64.infix ^"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("u8.infix =="                    , cl -> cl._dfa._bool );
-    put("u16.infix =="                   , cl -> cl._dfa._bool );
-    put("u32.infix =="                   , cl -> cl._dfa._bool );
-    put("u64.infix =="                   , cl -> cl._dfa._bool );
     put("u8.type.equality"               , cl -> cl._dfa._bool );
     put("u16.type.equality"              , cl -> cl._dfa._bool );
     put("u32.type.equality"              , cl -> cl._dfa._bool );
     put("u64.type.equality"              , cl -> cl._dfa._bool );
-    put("u8.infix !="                    , cl -> cl._dfa._bool );
-    put("u16.infix !="                   , cl -> cl._dfa._bool );
-    put("u32.infix !="                   , cl -> cl._dfa._bool );
-    put("u64.infix !="                   , cl -> cl._dfa._bool );
-    put("u8.infix >"                     , cl -> cl._dfa._bool );
-    put("u16.infix >"                    , cl -> cl._dfa._bool );
-    put("u32.infix >"                    , cl -> cl._dfa._bool );
-    put("u64.infix >"                    , cl -> cl._dfa._bool );
-    put("u8.infix >="                    , cl -> cl._dfa._bool );
-    put("u16.infix >="                   , cl -> cl._dfa._bool );
-    put("u32.infix >="                   , cl -> cl._dfa._bool );
-    put("u64.infix >="                   , cl -> cl._dfa._bool );
-    put("u8.infix <"                     , cl -> cl._dfa._bool );
-    put("u16.infix <"                    , cl -> cl._dfa._bool );
-    put("u32.infix <"                    , cl -> cl._dfa._bool );
-    put("u64.infix <"                    , cl -> cl._dfa._bool );
-    put("u8.infix <="                    , cl -> cl._dfa._bool );
-    put("u16.infix <="                   , cl -> cl._dfa._bool );
-    put("u32.infix <="                   , cl -> cl._dfa._bool );
-    put("u64.infix <="                   , cl -> cl._dfa._bool );
+    put("u8.type.lteq"                   , cl -> cl._dfa._bool );
+    put("u16.type.lteq"                  , cl -> cl._dfa._bool );
+    put("u32.type.lteq"                  , cl -> cl._dfa._bool );
+    put("u64.type.lteq"                  , cl -> cl._dfa._bool );
 
     put("i8.as_i32"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("i16.as_i32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1132,20 +1115,10 @@ public class DFA extends ANY
     put("f64.infix %"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.infix =="                   , cl -> cl._dfa._bool );
-    put("f64.infix =="                   , cl -> cl._dfa._bool );
     put("f32.type.equality"              , cl -> cl._dfa._bool );
     put("f64.type.equality"              , cl -> cl._dfa._bool );
-    put("f32.infix !="                   , cl -> cl._dfa._bool );
-    put("f64.infix !="                   , cl -> cl._dfa._bool );
-    put("f32.infix <"                    , cl -> cl._dfa._bool );
-    put("f64.infix <"                    , cl -> cl._dfa._bool );
-    put("f32.infix <="                   , cl -> cl._dfa._bool );
-    put("f64.infix <="                   , cl -> cl._dfa._bool );
-    put("f32.infix >"                    , cl -> cl._dfa._bool );
-    put("f64.infix >"                    , cl -> cl._dfa._bool );
-    put("f32.infix >="                   , cl -> cl._dfa._bool );
-    put("f64.infix >="                   , cl -> cl._dfa._bool );
+    put("f32.type.lteq"                  , cl -> cl._dfa._bool );
+    put("f64.type.lteq"                  , cl -> cl._dfa._bool );
     put("f32.as_f64"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1195,7 +1168,7 @@ public class DFA extends ANY
 
     put("Any.hashCode"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.sys.internal_array.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
+    put("fuzion.sys.internal_array_init.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
           var array = cl._args.get(0);
@@ -1228,6 +1201,7 @@ public class DFA extends ANY
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.env_vars.set0"       , cl -> cl._dfa._bool );
     put("fuzion.sys.env_vars.unset0"     , cl -> cl._dfa._bool );
+    put("fuzion.sys.misc.unique_id"      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
@@ -1238,11 +1212,13 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new enviroment */, cl);
+          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new environment */, cl);
           return Value.UNIT;
         });
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+
+    put("fuzion.std.date_time"           , cl -> Value.UNIT );
 
     put("effect.replace"                 , cl ->
         {
@@ -1266,7 +1242,7 @@ public class DFA extends ANY
               cl._dfa._defaultEffects.put(ecl, new_e);
               if (!cl._dfa._changed)
                 {
-                  cl._dfa._changedSetBy = "effect.defaut called: "+cl._dfa._fuir.clazzAsString(cl._cc);
+                  cl._dfa._changedSetBy = "effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc);
                 }
               cl._dfa._changed = true;
             }
@@ -1485,7 +1461,7 @@ public class DFA extends ANY
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    *
-   * @return cl a new or exsiting call to cl (or its precondition) with the
+   * @return cl a new or existing call to cl (or its precondition) with the
    * given target, args and environment.
    */
   Call newCall(int cl, boolean pre, Value tvalue, List<Value> args, Env env, Context context)
@@ -1503,8 +1479,48 @@ public class DFA extends ANY
             _changedSetBy = "DFA.newCall to "+e;
           }
         _changed = true;
+        analyzeNewCall(r);
       }
     return e;
+  }
+
+
+  /**
+   * Helper for newCall to analyze a newly created call immediately. This helps
+   * to avoid quadratic performance when analysing a sequence of calls as in
+   *
+   *  a 1; a 2; a 3; a 4; a 5; ...
+   *
+   * Since a new call das not return, the analysis would stop for each iteration
+   * after the fist new call.
+   *
+   * However, we cannot analyze all calls immediately since a recursive call
+   * would result in an unbounded recursion during DFA.  So this analyzes the
+   * call immediately unless it is part of a recursion or there are already
+   * MAX_NEW_CALL_RECURSION new calls being analyzed right now.
+   *
+   * This might run into quadratic performance for code like the code above if
+   * `a` would itself perform a new call to `b`, and `b` to `c`, etc. to a depth
+   * that exceeds MAX_NEW_CALL_RECURSION.
+   */
+  private void analyzeNewCall(Call e)
+  {
+    var cnt = _newCallRecursiveAnalyzeCalls;
+    if (cnt < _newCallRecursiveAnalyzeClazzes.length)
+      {
+        var rec = false;
+        for (var i = 0; i<cnt; i++)
+          {
+            rec = rec || _newCallRecursiveAnalyzeClazzes[i] == e._cc;
+          }
+        if (!rec)
+          {
+            _newCallRecursiveAnalyzeClazzes[cnt] = e._cc;
+            _newCallRecursiveAnalyzeCalls = cnt + 1;
+            analyze(e);
+            _newCallRecursiveAnalyzeCalls = cnt ;
+          }
+      }
   }
 
 
@@ -1529,7 +1545,7 @@ public class DFA extends ANY
    *
    * @param cl the current clazz that installs a new effect
    *
-   * @param env the previous environemnt.
+   * @param env the previous environment.
    *
    * @param ecl the effect types
    *

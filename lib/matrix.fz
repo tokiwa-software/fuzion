@@ -39,7 +39,6 @@ is
 
   # enable generic features in ancestors
   redef thiz => a
-  redef orderedThis => a
 
   # basic operations
   redef prefix + => a
@@ -61,16 +60,8 @@ is
   is
     panic "'matrix.infix /' not defined."
 
-  # comparison
-  redef infix == (b matrix M) =>
-    for
-      x in e
-      y in a.e
-    until x /= y
-      false
-    else
-      true
-
+  # equality
+  #
   fixed type.equality(a, b matrix M) =>
     for
       x in a.e
@@ -80,13 +71,10 @@ is
     else
       true
 
-  redef infix != (b matrix M) => !(a = b)
-
   # NYI: total order
-  redef infix <  (b matrix M) => panic "matrix does not define a total order"
-  redef infix <= (b matrix M) => panic "matrix does not define a total order"
-  redef infix >  (b matrix M) => panic "matrix does not define a total order"
-  redef infix >= (b matrix M) => panic "matrix does not define a total order"
+  #
+  fixed type.lteq(a, b matrix M) =>
+    panic "matrix does not define a total order"
 
   transpose matrix M is
     matrix (array2 M e.length1 e.length0 i,j->e[j,i])
@@ -107,8 +95,6 @@ is
 # requiring an instance.
 #
 matrices(M type : numeric M) : numerics (matrix M) is
-
-  redef name => "matrix"
 
   # NYI: There is currently no easy way to get hold of an instance of the unit
   # type corresponding to E.

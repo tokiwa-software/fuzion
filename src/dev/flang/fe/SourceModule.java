@@ -53,7 +53,7 @@ import dev.flang.ast.Consts;
 import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FeaturesAndOuter;
+import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
@@ -108,7 +108,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * The universe is the implicit root of all features that
-   * themeselves do not have their own root.
+   * themselves do not have their own root.
    */
   final Feature _universe;
 
@@ -246,14 +246,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name, ref) ->
                              {
-                               var f = lookupFeatureForType(SourcePosition.builtIn, name, _universe);
+                               var f = lookupType(SourcePosition.builtIn, _universe, name, false)._feature;
                                return new NormalType(stdlib,
                                                      -1,
                                                      SourcePosition.builtIn,
                                                      f,
                                                      ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                                      Type.NONE,
-                                                     _universe.thisType());
+                                                     _universe.selfType());
                              },
                            _universe);
       }
@@ -329,7 +329,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param f a feature
    *
    * @return a path from root, via the base names of f's outer features to a
-   * directory wtih f's base name, null if this does not exist.
+   * directory with f's base name, null if this does not exist.
    */
   private SourceDir dirExists(SourceDir root, AbstractFeature f) throws IOException, UncheckedIOException
   {
@@ -499,7 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupFeatureForType(inner.pos(), n, outer)
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -609,8 +609,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Add type new feature.
    *
-   * This is somewhat ugly since it addes typeFeature to the declaredFeatures or
-   * decalredOrInheritedFeatures of the outer types even after those had been
+   * This is somewhat ugly since it adds typeFeature to the declaredFeatures or
+   * declaredOrInheritedFeatures of the outer types even after those had been
    * determined already.
    *
    * @param outerType the static outer type of universe.
@@ -660,7 +660,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
-  /*-----------------------  attachng data to AST  ----------------------*/
+  /*-----------------------  attaching data to AST  ----------------------*/
 
 
   /**
@@ -690,7 +690,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        // NYI: cleanup: See #462: Remove once sub-directries are loaded
+        // NYI: cleanup: See #462: Remove once sub-directories are loaded
         // directly, not implicitly when outer feature is found
         for (var inner : s.values())
           {
@@ -800,6 +800,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         f.redefines().add(existing);
       }
+    if (f     instanceof Feature ff &&
+        outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
+    if (f instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        ff._addedLate = true;
+      }
     doi.put(fn, f);
   }
 
@@ -889,7 +898,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         for (var h : d._heirs)
           {
-            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
+            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
             addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
             addToHeirs(h, fn, f);
           }
@@ -937,48 +946,22 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring or inheriting feature
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
-    return declaredOrInheritedFeatures(outer).get(name);
-  }
+    var result = declaredOrInheritedFeatures(outer).get(name);
 
-
-  /**
-   * Get all declared or inherited features with the given base name,
-   * independent of the number of arguments or the id.
-   *
-   * @param outer the declaring or inheriting feature
-   *
-   * @param name the name of the feature
-   */
-  public SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name)
-  {
-    if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
-
-    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
-  }
-
-
-  /**
-   * Get all declared or inherited features with the given base name and
-   * argument count, independent of the id.
-   *
-   * @param outer the declaring or inheriting feature
-   *
-   * @param name the name of the feature
-   *
-   * @param argCount the argument count
-   */
-  SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name, int argCount)
-  {
-    if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
-
-    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
+    /* Was feature f added to the declared features of its outer features late,
+     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
+     * currently not added to the sets of declared or inherited features by
+     * children of their outer clazz.
+     *
+     * This is a fix for #978 but it might need to be removed when fixing #932.
+     */
+    return result == null && original instanceof Feature of && of._addedLate ? original
+                                                                             : result;
   }
 
 
@@ -991,32 +974,35 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param name the name of the feature
    *
-   * @param call the call we are trying to resolve, or null when not resolving a
-   * call.
+   * @param use the call, assign or destructure we are trying to resolve, used
+   * to find field in scope, or null if fields should not be checked for scope
    *
-   * @param assign the assign we are trying to resolve, or null when not resolving an
-   * assign
-   *
-   * @param destructure the destructure we are strying to resolve, or null when not
-   * resolving a destructure.
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public FeaturesAndOuter lookupNoTarget(AbstractFeature outer, String name, Call call, AbstractAssign assign, Destructure destructure)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
-    var result = new FeaturesAndOuter();
+    List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
     AbstractFeature inner = null;
+    var foundFieldInScope = false;
     do
       {
-        var fs = assign != null ? lookupFeatures(curOuter, name, 0)
-                                : lookupFeatures(curOuter, name);
-        if (fs.size() >= 1)
-          {
+        var foundFieldInThisScope = foundFieldInScope;
+        var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
+        if (fs.size() >= 1 && use != null && traverseOuter)
+          { // try to disambiguate fields as in
+            //
+            //  x := a
+            //  x := x + 1
+            //  x := 2 * x
             List<FeatureName> fields = new List<>();
             for (var e : fs.entrySet())
               {
@@ -1030,7 +1016,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (!fields.isEmpty())
               {
                 var f = curOuter instanceof Feature of /* NYI: AND cutOuter loaded by this module */
-                  ? of.findFieldDefInScope(name, call, assign, destructure, inner)
+                  ? of.findFieldDefInScope(name, use, inner)
                   : null;
                 fs = new TreeMap<>(fs);
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
@@ -1045,23 +1031,32 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 if (f != null)
                   {
                     fs.put(f.featureName(), f);
+                    foundFieldInThisScope = true;
                   }
               }
           }
-        result.features = fs;
-        result.outer = curOuter;
+
+        for (var e : fs.entrySet())
+          {
+            var v = e.getValue();
+            if (!v.isField() || !foundFieldInScope)
+              {
+                result.add(new FeatureAndOuter(v, curOuter, inner));
+                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+              }
+          }
+
         inner = curOuter;
         curOuter = curOuter.outer();
       }
-    while ((result.features.isEmpty()) && (curOuter != null));
-
+    while (traverseOuter && curOuter != null);
     return result;
   }
 
 
   /**
    * Lookup the feature that is referenced in a non-generic type.  There might
-   * be several features with the given name and different argumentn counts.
+   * be several features with the given name and different argument counts.
    * Then, only the feature that is a constructor defines the type.
    *
    * If there are several such constructors, the type is ambiguous and an error
@@ -1071,58 +1066,49 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param pos the position of the type.
    *
+   * @param outer the outer feature of the type
+   *
    * @param name the name of the type
    *
-   * @param o the outer feature of the type
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
    */
-  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o)
+  public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || o != Types.f_ERROR);
+      (Errors.count() > 0 || outer != Types.f_ERROR);
 
-    AbstractFeature result = null;
-    if (o == Types.f_ERROR)
+    FeatureAndOuter result = null;
+    if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
-        result = Types.f_ERROR;
-      }
-    else
-      {
+        _res.resolveDeclarations(outer);
+        var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var orig_o = o;
-        _res.resolveDeclarations(o);
-        do
+        var fs = lookup(outer, name, null, traverseOuter);
+        for (var fo : fs)
           {
-            var fs = lookupFeatures(o, name).values();
-            for (var f : fs)
+            var f = fo._feature;
+            (f.definesType() ? type_fs
+                             : nontype_fs).add(f);
+            if (f.definesType() && type_fs.size() == 1)
               {
-                if (f.isConstructor() || f.isChoice())
-                  {
-                    type_fs.add(f);
-                    result = f;
-                  }
-                else
-                  {
-                    nontype_fs.add(f);
-                  }
-              }
-            if (type_fs.size() > 1)
-              {
-                AstErrors.ambiguousType(pos, name, type_fs);
-                result = Types.f_ERROR;
-              }
-            o = o.outer();
-          }
-        while (result == null && o != null);
-
-        if (result == null)
-          {
-            result = Types.f_ERROR;
-            if (name != Types.ERROR_NAME)
-              {
-                AstErrors.typeNotFound(pos, name, orig_o, nontype_fs);
+                result = fo;
               }
           }
+        if (type_fs.size() > 1)
+          {
+            AstErrors.ambiguousType(pos, name, type_fs);
+          }
+        else if (type_fs.size() < 1)
+          {
+            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+          }
+      }
+    if (result == null)
+      {
+        result = FeatureAndOuter.ERROR;
       }
     return result;
   }
@@ -1153,7 +1139,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param to original argument type in 'original'.
    *
-   * @param tr new argument type in 'redefinitiion'.
+   * @param tr new argument type in 'redefinition'.
    *
    * @return true if 'to' may be replaced with 'tr'.
    */
@@ -1173,15 +1159,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
       /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.thisType.
+       * redefinition is fixed and tr is redefinition.selfType.
        */
       ((to.isThisType()                                        ) &&
        ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
        (to.featureOfType() == original    .outer()             ) &&
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
-      /* original and redefinition are inner featurs of type features, to is
-       * THIS_TYPE and tr is the underlying non-type features thisType.
+      /* original and redefinition are inner features of type features, to is
+       * THIS_TYPE and tr is the underlying non-type features selfType.
        *
        * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
        * numeric.this.type)
@@ -1193,7 +1179,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
        original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
        !tr.isGenericArgument()                                                                                                         &&
        ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().thisTypeInTypeFeature()) == 0                                               );
+       tr.compareTo(redefinition.outer().typeFeatureOrigin().selfTypeInTypeFeature()) == 0                                               );
   }
 
 
@@ -1245,7 +1231,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
         var t2 = f.resultType();
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
-          { // NYI: CLEANUP: #706: allow redefintion of THIS_TYPE in type features for now, these are created internally.
+          { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
         else if ((t1.isChoice()
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine

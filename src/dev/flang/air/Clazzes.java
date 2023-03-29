@@ -131,7 +131,7 @@ public class Clazzes extends ANY
         {
           if (_t == null)
             {
-              _clazz = create(Types.resolved.universe.thisType(), null);
+              _clazz = create(Types.resolved.universe.selfType(), null);
             }
           else
             {
@@ -157,8 +157,8 @@ public class Clazzes extends ANY
   public static final OnDemandClazz universe    = new OnDemandClazz(null, true);
   public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
-  public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .thisType() );
-  public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.thisType() );
+  public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
+  public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.selfType() );
   public static final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
   public static final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public static final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
@@ -234,7 +234,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Initilize Clazzes with given Options.
+   * Initialize Clazzes with given Options.
    */
   public static void init(FuzionOptions options)
   {
@@ -292,7 +292,7 @@ public class Clazzes extends ANY
    * @param actualType the type of the clazz, must be free from generics
    *
    * @param select in case actualType is a field with open generic result, this
-   * choses the actual field from outer's actual generics. -1 otherwise.
+   * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param clazz the runtime clazz of the outer feature of
    * actualType.featureOfType.
@@ -304,7 +304,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.dependsOnGenerics());
+       Errors.count() > 0 || !actualType.dependsOnGenerics(),
+       Errors.count() > 0 || !actualType.containsThisType());
 
     Clazz result = null;
     Clazz o = outer;
@@ -329,17 +330,17 @@ public class Clazzes extends ANY
                 // NYI: recursive chain of value types should be detected during
                 // types checking phase!
                 StringBuilder chain = new StringBuilder();
-                chain.append("1: "+actualType+" at "+actualType.pos().show()+"\n");
+                chain.append("1: "+actualType+" at "+actualType.pos2BeRemoved().show()+"\n");
                 int i = 2;
                 Clazz c = outer;
                 while (c._type != actualType)
                   {
-                    chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
+                    chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
                     c = c._outer;
                     i++;
                   }
-                chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
-                Errors.error(actualType.pos(),
+                chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
+                Errors.error(actualType.pos2BeRemoved(),
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
@@ -390,7 +391,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -543,7 +544,10 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || isUsedAtAll(f),
+      (Errors.count() > 0 || isUsedAtAll(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
+                                                     * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
+                                                     * in types differently.
+                                                     */,
        f.generics().list.isEmpty());
 
     if (!_calledDynamically_.contains(f))
@@ -565,7 +569,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Has f been found to be caled dynamically?
+   * Has f been found to be called dynamically?
    */
   static boolean isCalledDynamically(AbstractFeature f)
   {
@@ -906,7 +910,6 @@ public class Clazzes extends ANY
         if (f.kind() == AbstractFeature.Kind.TypeParameter)
           {
             var tpc = innerClazz.resultClazz();
-            tpc._typeType = innerClazz.typeParameterActualType()._type;
             do
               {
                 addUsedFeature(tpc.feature(), c.pos());
@@ -989,7 +992,7 @@ public class Clazzes extends ANY
   {
     if (m._runtimeClazzId < 0)
       {
-        // NYI: Check if this works for a match that is part of a inhertis clause, do
+        // NYI: Check if this works for a match that is part of a inherits clause, do
         // we need to store in outerClazz.outer?
         m._runtimeClazzId = getRuntimeClazzIds(1);
       }
@@ -1089,16 +1092,7 @@ public class Clazzes extends ANY
                                       outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
-            if (!Clazz.NYI_UNDER_DEVELOPMENT_EAGERLY_REPLACE_THIS_TYPE &&
-                c.calledFeature() == Types.resolved.f_Types_get &&
-                c.actualTypeParameters().get(0).isThisType())
-              {
-                result = outerClazz.findOuter(c.actualTypeParameters().get(0).featureOfType(), c).typeClazz();
-              }
-            else
-              {
-                result = inner.resultClazz();
-              }
+            result = inner.resultClazz();
           }
         else
           {
@@ -1131,7 +1125,7 @@ public class Clazzes extends ANY
         if (result == string.get())
           { /* this is a bit tricky: in the front end, the type of a string
              * constant is 'string'.  However, for the back end, the type is
-             * 'consstring' such that the backend can create an instance of
+             * 'conststring' such that the backend can create an instance of
              * 'constString' and see the correct type (and create proper type
              * conversion code to 'string' if this is needed).
              */
@@ -1218,7 +1212,7 @@ public class Clazzes extends ANY
    * @param thiz the type of the clazz, must be free from generics
    *
    * @param select in case thiz is a field with open generic result, this
-   * choses the actual field from outer's actual generics. -1 otherwise.
+   * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param outerClazz the outer clazz
    *
@@ -1279,7 +1273,7 @@ public class Clazzes extends ANY
    *
    *   For a feature f that inherits from a generic feature g.h, the inherits
    *   clause specifies actual generic arguments to g and g.h and these actual
-   *   generic argument may contain only the formal genric arguments of
+   *   generic argument may contain only the formal generic arguments of
    *   a.b.c.f.  Consequently, the presence of generics in the parent feature
    *   does not add any new clazzes.
    *
@@ -1288,7 +1282,7 @@ public class Clazzes extends ANY
    * a call.
    *
    * Note that a generic signature <V,W>,<X>,<Y,Z> cannot be flattened to
-   * <V,W,X,Y,Z> since formal genric lists can be open, i.e, they do not have
+   * <V,W,X,Y,Z> since formal generic lists can be open, i.e, they do not have
    * a fixed length.
    *
    * So, essentially, we need one clazz for each (f,s) where f is a feature

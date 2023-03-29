@@ -128,7 +128,7 @@ public class MiddleEnd extends ANY
 
     Clazzes.init(_options);
 
-    Clazz cl = main != null ? Clazzes.clazz(main.thisType()) : null;
+    Clazz cl = main != null ? Clazzes.clazz(main.selfType()) : null;
     return cl;
   }
 
@@ -169,7 +169,7 @@ public class MiddleEnd extends ANY
   /**
    * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
    *
-   * @param usedAt the position this feature was used at, for creating usefule
+   * @param usedAt the position this feature was used at, for creating useful
    * error messages
    */
   void markUsed(AbstractFeature f, HasSourcePosition usedAt)
@@ -179,7 +179,7 @@ public class MiddleEnd extends ANY
 
 
   /**
-   * Get direct redefininitions of given Feature.  This set is filled
+   * Get direct redefinitions of given Feature.  This set is filled
    * dynamically with all used features that are found.
    *
    * Result is never null.
@@ -203,7 +203,7 @@ public class MiddleEnd extends ANY
    * @param dynamically true iff this feature is called dynamically, i.e., it
    * has to be part of the dynamic binding data.
    *
-   * @param usedAt the position this feature was used at, for creating usefule
+   * @param usedAt the position this feature was used at, for creating useful
    * error messages
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
@@ -222,7 +222,7 @@ public class MiddleEnd extends ANY
         if (f.resultType() != null)
           {
             if (!f.resultType().isGenericArgument())
-              { // Since instances of choice types are never created explicity,
+              { // Since instances of choice types are never created explicitly,
                 // they will be marked as used if they are used as a result type
                 // of a function or field.
                 AbstractFeature rtf = f.resultType().featureOfType();
@@ -253,7 +253,7 @@ public class MiddleEnd extends ANY
             markUsed(rf, usedAt);
           }
         if (f.hasTypeFeature())
-          { // NYI: This might mark too many type features. It shold be
+          { // NYI: This might mark too many type features. It should be
             // sufficient to mark all type features of types passed as type
             // parameters and of all features that whose ancestors use this.type
             // (i.e., Types.get) to access the current type instance.
@@ -329,13 +329,13 @@ public class MiddleEnd extends ANY
             if (!t.isGenericArgument())
               {
                 AbstractFeature f = t.featureOfType();
-                markUsed(f, t);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f, c);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
                 if (CHECKS) check
                   (Errors.count() > 0 || f.hasTypeFeature());
 
                 if (f.hasTypeFeature())
                   {
-                    markUsed(f.typeFeature(), t);
+                    markUsed(f.typeFeature(), c);
                   }
               }
           }

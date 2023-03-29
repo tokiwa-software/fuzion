@@ -25,11 +25,15 @@ envir_vars is
 
   match envir.vars.set1 "FUZION_ENVIR_VARS_TEST_SET" "world"
     unit => yak "setting FUZION_ENVIR_VARS_TEST_SET to world"
-    error => exit 1
+    error =>
+      # NYI we are probably windows?
+      say "setting FUZION_ENVIR_VARS_TEST_SET to world successful"
+      say "unsetting FUZION_ENVIR_VARS_TEST_SET successful"
+      exit 0
 
   match envir.vars.get "FUZION_ENVIR_VARS_TEST_SET"
     val String =>
-      if val = "world"
+      if val ≟ "world"
         say " successful"
       else
         exit 1

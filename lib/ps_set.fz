@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 ps_set
-  (K type : ordered K,
+  (K type : has_total_order,
    psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
@@ -128,15 +128,21 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   union : Monoid (ps_set K) is
     redef infix ∙ (a, b ps_set K) => a ∪ b
-    redef infix == (a, b ps_set K) => (a ∪ b).size = a.size  # NYI: a bit expensive
     redef e => empty
+
+
+  # equality
+  #
+  fixed type.equality(a, b ps_set K) bool is
+    # NYI: a bit expensive
+    (a ∪ b).size = a.size
 
 
 # ps_sets -- unit type feature declaring features related to ps_set
 #
 # NYI: move to ps_set.type
 #
-ps_sets(K type : ordered K) is
+ps_sets(K type : has_total_order) is
 
   # ps_set -- a partially sorted set based on ps_map
   #
@@ -149,4 +155,4 @@ ps_sets(K type : ordered K) is
 #
 # This feature creates a pre-initialized instance of ps_set.
 #
-ps_set(K type : ordered K, vs Sequence K) => (ps_sets K).empty.addAll vs
+ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.addAll vs

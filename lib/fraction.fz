@@ -40,7 +40,7 @@ fraction(B type : integer B,
          den B   # denominatior
         ) : numeric (fraction B)
   pre
-    safety: den.sign > 0 # denominator must be positive
+    safety: den.sign ⩼ 0 # denominator must be positive
 is
 
 # private:
@@ -56,7 +56,7 @@ is
   # reduce numerator and denominator by their gcd:
   reduce =>
     gcd := num.abs.gcd(den)
-    if gcd == num.one
+    if gcd ≟ num.one
       a
     else
       fraction(num / gcd,
@@ -76,15 +76,31 @@ is
       safety: b != zero
   is fraction(num * b.den                  , den * b.num).reduce
 
-  # comparison
-  redef infix == (b fraction B) =>  (a - b).num.isZero
-  redef infix != (b fraction B) => !(a - b).num.isZero
-  redef infix <  (b fraction B) =>  (a - b).num.sign <  0
-  redef infix <= (b fraction B) =>  (a - b).num.sign <= 0
-  redef infix >  (b fraction B) =>  (a - b).num.sign >  0
-  redef infix >= (b fraction B) =>  (a - b).num.sign >= 0
+  redef as_string => "" + num + "⁄" + den
 
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero => B.zero ⁄ B.one
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one => B.one ⁄ B.one
+
+
+  # equality
+  #
   fixed type.equality(a, b fraction B) =>
     (a - b).num.isZero
 
-  redef as_string => "" + num + "⁄" + den
+
+  # total order
+  #
+  fixed type.lteq(a, b fraction B) =>
+    (a - b).num.sign ≤ 0

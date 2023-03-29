@@ -25,79 +25,63 @@
 
 # envir.vars -- effect providing access to environment variables
 #
-private vars (
-
-  # the provider this effect uses to read env vars
-  p Vars_Provider,
-
-  # action to be taken: plain, install or replace?
-  redef r effectMode.val,
-
-  _ unit
-  ) : effect r
-is
+vars (p Vars_Provider) : simpleEffect is
 
   # If set, get the environment variable corresponding to v.
   #
-  get(v String) => p.get v
+  get(v String) =>
+    vars.this.type.env.replace
+    p.get v
 
 
   # If set, get the environment variable corresponding to v.
   # Otherwise, return default
   #
-  get(v String, default String) => (get v).get default
+  get(v String, default String) =>
+    (get v).get get.this.default
 
   # Set the environment variable corresponding to n to have the
   # value v.
   #
   # This will overwrite the value of the environment variable, if
   # it is set already.
-  set1(n String, v String) => p.set1 n v
+  set1(n String, v String) =>
+    vars.this.type.env.replace
+    p.set1 n v
 
   # Unset the environment variable corresponding to n.
   #
   # This will also return success (unit) if the variable was not
   # set anyway.
-  unset(n String) => p.unset n
+  unset(n String) =>
+    vars.this.type.env.replace
+    p.unset n
 
 
-# short-hand for creating and installing vars effect using
-# given provider and running code rr
-#
-vars(p Vars_Provider, rr ()->unit) =>
-  _ := vars p (effectMode.inst rr) unit
-
-
-# short-hand for accessing envir.args effect in current environment
-#
-vars =>
-  vars_type.installDefault
-  envir.vars.env
-
-
-# unit type feature defining features related to envir.vars but not
-# requiring an instance.
-#
-vars_type is
-
-  # install default effect using fuzion.sys.env_vars
+  # install default instance of vars
   #
-  installDefault unit is
-    if !(effects.exists envir.vars)
-      _ := vars defaultVarsProvider effectMode.default unit
+  type.installDefault =>
+    (envir.vars default_vars_provider).default
 
 
   # default provider using fuzion.sys.env_vars
   #
-  private defaultVarsProvider : Vars_Provider is
+  type.default_vars_provider : envir.Vars_Provider is
     get(v String) => fuzion.sys.env_vars.get v
     set1(n String, v String) => fuzion.sys.env_vars.set1 n v
     unset(n String) => fuzion.sys.env_vars.unset n
 
 
+# short-hand for accessing envir.args effect in current environment
+#
+vars =>
+  vars.type.installDefault
+  envir.vars.env
+
+
 # Vars_Provider -- abstract source of environment vars
 #
-# Different heirs of this feature may provided different sources for environemnt
+# Different heirs of this feature may provided different sources for environment
 # variables
 #
 Vars_Provider ref is

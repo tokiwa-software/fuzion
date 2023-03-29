@@ -110,7 +110,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -124,7 +124,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param target is the target value of the call
    *
-   * @param args are the acutal arguments passed to the call
+   * @param args are the actual arguments passed to the call
    *
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.

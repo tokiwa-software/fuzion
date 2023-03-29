@@ -25,14 +25,14 @@
 
 looptest_negative is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (msg String, b bool) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
 
@@ -138,4 +138,4 @@ looptest_negative is
   testBooleanUntil7 { do { } until !false }; testBooleanUntil7  // ok
   testBooleanUntil8 { do { } until !true  }; testBooleanUntil8  // ok
 
-  exit exitCode
+  exit exit_code.get

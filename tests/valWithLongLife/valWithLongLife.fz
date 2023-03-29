@@ -29,14 +29,14 @@
 #
 valWithLongLife is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck(s, expected String) =>
-    if s = expected
+    if s ≟ expected
       say "PASSED: $s"
     else
       say "FAILED: $s /= $expected"
-      set exitCode := 1
+      exit_code <- 1
 
 
   v (f String, id i32) is
@@ -52,4 +52,4 @@ valWithLongLife is
 
   chck "a1-11 b2-22 c3-33" "$a $b $c"
 
-  exit exitCode
+  exit exit_code.get

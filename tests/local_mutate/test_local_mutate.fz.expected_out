@@ -1,9 +1,10 @@
-inside m.use: s.get = 81
-inside m.use: count = 81
-using m.run and count: 81
-[0,8,11,15,47]
-[0,1,2,3,4,5,6,7,8,9,10]
-[0,1,2,3,4,5,6,7,8,9,10]
+inside m.go: s.get = 81
+inside m.go: count = 81
+using m.go and count: 81
+*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum#0.sum#1.m'' ***
+ok
+*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum#0.sum#1.m'' ***
+ok
 [0,8,11,15,47]
 []
 []
@@ -39,7 +40,7 @@ using m.run and count: 81
 8: 3
 9: 0
 10: 1
-left local_mutate environment m
+left mutate environment m
 1: 0
 2: 1
 3: 2
@@ -50,7 +51,7 @@ left local_mutate environment m
 8: 3
 9: 0
 10: 1
-left local_mutate environment m
+left mutate environment m
 [ 0 <-> 1 <-> 2 <-> 3 <->  ... ]
 1: 0 0
 2: 1 3

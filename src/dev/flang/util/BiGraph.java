@@ -33,7 +33,7 @@ import java.util.Set;
  * BiGraph contains a directed bi-partite graph with edges from A to B and
  * efficient lookup for backwards edges from B to A.
  *
- * For the special case that A == B, this Bi-Graph degenerats to a plain graph.
+ * For the special case that A == B, this Bi-Graph degenerates to a plain graph.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

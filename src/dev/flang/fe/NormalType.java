@@ -106,6 +106,7 @@ public class NormalType extends LibraryType
     this._feature = feature;
     this._valRefOrThis = valRefOrThis;
     this._generics = generics;
+    this._generics.freeze();
     this._outer = outer;
   }
 
@@ -117,7 +118,7 @@ public class NormalType extends LibraryType
    * Dummy visit() for types.
    *
    * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FaetureVisitor.
+   * replaced by a different mechanism not using FeatureVisitor.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
@@ -238,32 +239,6 @@ public class NormalType extends LibraryType
             result = new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
           }
         _asThis = result;
-      }
-    return result;
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String result = "";
-
-    if (outer() != null && !outer().isGenericArgument() && !outer().featureOfType().isUniverse())
-      {
-        result = outer() + ".";
-      }
-    if (isRef() != featureOfType().isThisRef())
-      {
-        result = result + (isRef() ? "ref " : "value ");
-      }
-    result = result + (featureOfType().featureName().baseName());
-    if (generics() != Type.NONE)
-      {
-        result = result + "<" + generics() + ">";
       }
     return result;
   }

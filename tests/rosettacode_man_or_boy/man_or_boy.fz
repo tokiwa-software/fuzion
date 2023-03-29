@@ -48,7 +48,7 @@ man_or_boy is
       set k := k - 1
       a k (fun b) x1 x2 x3 x4
 
-    if (k <= 0) x4() + x5() else b
+    if (k ≤ 0) x4() + x5() else b
     // k <= 0 ? x4() + x5() : b
 
   // a(k i32, x1, x2, x3, x4, x5 fun () i32) => { b => { k = k - 1

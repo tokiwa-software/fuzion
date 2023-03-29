@@ -36,7 +36,9 @@ is
 
   # panic with the given message
   #
-  panic(msg String) => p.panic msg
+  panic(msg String) =>
+    p.do_panic msg
+    abort
 
 
 # panic with no argument returns panic.env, the currently installed
@@ -59,7 +61,21 @@ Panic_Provider ref is
 
   # panic with the given message
   #
-  panic(msg String) void is abstract
+  # NYI: The result of do_panic should be returend by `use`, but there is
+  # currently no way we could do this.  One way would be to add a local
+  # variable of type `Any` to `panic` and store the result there and then
+  # cast it to the correct type in `use` (see
+  # https://flang.dev/design/type_casts_ref)
+  #
+  do_panic(msg String) unit is abstract
+
+  # Install this panic provider using a new instance of panic an run
+  # `code` on it. In case of an abort, return `def()` (NYI: def should be
+  # removed and the result of do_panic should be returned instead).
+  #
+  use(R type, code, def ()->R) =>
+    p := panic Panic_Provider.this effectMode.plain
+    p.run code unit->def()
 
 
 # type related to panic declaring features not requiring an instance of panic
@@ -76,6 +92,6 @@ panic_type is
 
     # panic with the given message and exit with return code 1
     #
-    panic(msg String) =>
+    do_panic(msg String) =>
       io.err.println "*** panic: $msg"
       exit 1

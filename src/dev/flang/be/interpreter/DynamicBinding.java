@@ -145,7 +145,7 @@ public class DynamicBinding extends ANY
    *
    * @param calledFeature the static feature that is called.
    *
-   * @return the innr class stored for calledFeature using add, null if none
+   * @return the inner class stored for calledFeature using add, null if none
    */
   public Clazz inner(AbstractFeature calledFeature)
   {
@@ -154,7 +154,7 @@ public class DynamicBinding extends ANY
 
 
   /**
-   * Look up the value stored for outner using add
+   * Look up the value stored for outer using add
    *
    * @param calledFeature the static feature that is called.
    *

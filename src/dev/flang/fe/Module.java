@@ -86,13 +86,13 @@ public abstract class Module extends ANY
 
     /**
      * All features that have been found to directly redefine this feature. This
-     * does not include redefintions of redefinitions.  This set is collected
+     * does not include redefinitions of redefinitions.  This set is collected
      * during RESOLVING_DECLARATIONS.
      */
     Set<AbstractFeature> _redefinitions = null;
 
     /**
-     * Cached result of SourceModule.allInnerandinheritedfeatures().
+     * Cached result of SourceModule.allInnerAndInheritedFeatures().
      */
     Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
 
@@ -164,7 +164,7 @@ public abstract class Module extends ANY
    * During resolution, load all inner features of f that are defined in
    * separate files within this module.
    *
-   * NYI: cleanup: See #462: Remove once sub-directries are loaded
+   * NYI: cleanup: See #462: Remove once sub-directories are loaded
    * directly, not implicitly when outer feature is found
    *
    * @param f the outer feature whose inner features should be loaded from
@@ -294,7 +294,7 @@ public abstract class Module extends ANY
       {
         if (outer instanceof LibraryFeature olf)
           {
-            // NYI: cleanup: See #462: Remove once sub-directries are loaded
+            // NYI: cleanup: See #462: Remove once sub-directories are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
 

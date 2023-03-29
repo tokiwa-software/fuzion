@@ -33,10 +33,10 @@
 bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
   start := fuzion.std.nano_time
 
-  is_warmup => fuzion.std.nano_time - start < warm_up_nano_seconds
+  is_warmup => fuzion.std.nano_time - start ⩻ warm_up_nano_seconds
 
   for iter := (u64 0), if (is_warmup) iter else iter + 1
-  while fuzion.std.nano_time - start < warm_up_nano_seconds + nano_seconds
+  while fuzion.std.nano_time - start ⩻ warm_up_nano_seconds + nano_seconds
   do
     f.call
   else

@@ -59,7 +59,7 @@ public class ValueSet extends Value
   Value[] _componentsArray;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -88,7 +88,7 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on wether this < other, this == other or
+   * @return -1, 0, or +1 depending on whether this < other, this == other or
    * this > other by some order.
    */
   public int compareTo(ValueSet other)
@@ -145,7 +145,7 @@ public class ValueSet extends Value
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {

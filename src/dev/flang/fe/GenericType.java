@@ -100,7 +100,7 @@ public class GenericType extends LibraryType
    * Dummy visit() for types.
    *
    * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FaetureVisitor.
+   * replaced by a different mechanism not using FeatureVisitor.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
@@ -152,7 +152,7 @@ public class GenericType extends LibraryType
       case Ref -> true;
       case Value -> false;
       case LikeUnderlyingFeature -> false;
-      case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpeted ThisType for GenericType '"+this+"'");
+      case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpected ThisType for GenericType '"+this+"'");
       };
   }
 
@@ -190,12 +190,6 @@ public class GenericType extends LibraryType
   public AbstractType asThis()
   {
     throw new Error("GenericType.asThis() not defined");
-  }
-
-
-  public String toString()
-  {
-    return genericArgument().feature().qualifiedName() + "." + genericArgument().name() + (this.isRef() ? " (boxed)" : "");
   }
 
 }

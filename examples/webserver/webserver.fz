@@ -32,7 +32,7 @@ webserver is
 
    # declare short hands to access Java net and io packages
    net := Java.java.net
-   io  := Java.java.io
+   jio := Java.java.io
 
    # open socket
    port := 8080
@@ -53,11 +53,11 @@ webserver is
      accept outcome unit is
        # accept and handle connection
        s := serversocket.accept?
-       input  := io.BufferedReader.new (io.InputStreamReader.new s.getInputStream?)
-       output := io.DataOutputStream.new s.getOutputStream?
+       input  := jio.BufferedReader.new (jio.InputStreamReader.new s.getInputStream?)
+       output := jio.DataOutputStream.new s.getOutputStream?
 
        req := read?
-       say "got request ({req.byteLength} bytes): $req"
+       say "got request ({req.byte_length} bytes): $req"
        if req.starts_with "GET "
          (send200 "<html>Hello Fuzion $n!</html>")?
 
@@ -81,7 +81,7 @@ webserver is
          output.writeBytes ( "HTTP/1.1 200 OK\n"
                            + "Connection: close\n"
                            + "Server: Fuzion demo WebServer v0.01\n"
-                           + "Content-Length: " + data.byteLength + "\n"
+                           + "Content-Length: " + data.byte_length + "\n"
                            + "Content-Type: text/html\n"
                            + "\n"
                            + data)?
@@ -97,14 +97,14 @@ webserver is
                match s.getInputStream
                  e error => e
                  i Java.java.io.InputStream =>
-                   input  := io.BufferedReader.new (io.InputStreamReader.new i)
+                   input  := jio.BufferedReader.new (jio.InputStreamReader.new i)
                    match s.getOutputStream
                      e error => e
                      o Java.java.io.OutputStream =>
-                       output := io.DataOutputStream.new o
+                       output := jio.DataOutputStream.new o
 
                        req := read
-                       say "got request ({req.byteLength} bytes): $req"
+                       say "got request ({req.byte_length} bytes): $req"
                        if req.starts_with "GET "
                          send200 "<html>Hello Fuzion $n!</html>"
 
@@ -133,7 +133,7 @@ webserver is
                          ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
                                            + "Connection: close\n"
                                            + "Server: Fuzion demo WebServer v0.01\n"
-                                           + "Content-Length: " + data.byteLength + "\n"
+                                           + "Content-Length: " + data.byte_length + "\n"
                                            + "Content-Type: text/html\n"
                                            + "\n"
                                            + data)

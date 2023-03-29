@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature has_hash
+#
+# -----------------------------------------------------------------------
+
+# has_hash -- feature for immutable values that have a hash function
+#
+# NYI: the compiler should check that features inheriting from this are
+# actually immutable.
+#
+has_hash : equatable
+
+/* NYI: quantor intrinsics not supported yet:
+
+  inv
+    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
+    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
+*/
+
+is
+
+  # create hash code for this instance
+  hash u64 is abstract

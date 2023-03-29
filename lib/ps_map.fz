@@ -48,7 +48,7 @@
 ps_map
   (
    # key type
-   PK type : ordered PK,
+   PK type : has_total_order,
 
    # value type
    redef V type,
@@ -151,22 +151,22 @@ O(n log n).
     # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
     #
     join (ole i32, dest i32, sz i32) ps_map PK V is
-      if (size & sz) = 0
+      if (size & sz) ≟ 0
         ps_map ndata nsize dest+sz
       else
         tmp := array (tuple PK V) sz (i -> ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
-          use1 := i1 < sz && (i2 >= sz || data[ole + i1].values.0 < tmp[i2].values.0)
+          use1 := i1 ⩻ sz && ((i2 ≥ sz) || data[ole + i1].values.0 ⩻ tmp[i2].values.0)
           e := if use1 then data[ole + i1] else tmp[i2]
         do
           ndata[dest + i1 + i2] := e
-        until i1 + i2 = 2*sz-1
+        until i1 + i2 ≟ 2*sz-1
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
-    if (nsize & size) = 0
-      set ndata := fuzion.sys.internal_array (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+    if (nsize & size) ≟ 0
+      set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1 nfill 1
@@ -178,19 +178,19 @@ O(n log n).
 
     binarySearch(l, r i32) option V is
       m := (l + r) / 2
-      if l > r
+      if l ⩼ r
         nil
       else
         (mk,mv) := data[m]
-        c := (mk) <> k
-        if      c < 0 then binarySearch m+1 r
-        else if c > 0 then binarySearch l m-1
+        c := (mk) ⋄ k
+        if      c ⩻ 0 then binarySearch m+1 r
+        else if c ⩼ 0 then binarySearch l m-1
         else               mv
 
     # find k in sub-arrays starting at data[at]
     #
     get (at i32, sz i32, tail i32) option V is
-      if sz = 0
+      if sz ≟ 0
         nil
       else
         sz0 := sz / 2
@@ -220,27 +220,27 @@ O(n log n).
   # create sorted array of all keys in this map
   #
   asKeyArray array PK is
-    r := fuzion.sys.internal_array PK size
+    r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
     join (ole i32, sz i32, rsz i32, skip i32) unit is
-      if sz <= size
-        if (size & sz) /= 0
+      if sz ≤ size
+        if (size & sz) != 0
           tmp := array PK rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 < sz && (i2 >= rsz || data[ole + i1].values.0 < tmp[i2])
+            use1 := i1 ⩻ sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 ⩻ tmp[i2]))
             e := if (use1) data[ole + i1].values.0 else tmp[i2]
           do
             r[i1 + i2] := e
-          until i1 + i2 = sz+rsz-1
+          until i1 + i2 ≟ sz+rsz-1
           join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
         else
           join ole-sz 2*sz rsz (skip + sz + skip)
 
-    if size /= 0
+    if size != 0
       join fill-1 1 0 0
     array r unit unit unit
 
@@ -254,15 +254,15 @@ O(n log n).
   # get the lowest key in this map
   #
   min option PK is
-    if size = 0
+    if size ≟ 0
       nil
     else
       min (m PK, l i32, r i32) PK is
         (lk, _) := data[l]
-        if (m <= lk) m else lk
+        if (m ≤ lk) m else lk
 
       min (m PK, at i32, sz i32, tail i32) PK is
-        if sz = 0
+        if sz ≟ 0
           m
         else
           sz0 := sz / 2
@@ -283,23 +283,23 @@ O(n log n).
   # get the highest key in this map
   #
   max option PK is
-    if size = 0
+    if size ≟ 0
       nil
     else
       max (m PK, l i32, r i32) PK is
         (rk, _) := data[r]
-        if (m >= rk) m else rk
+        if (m ≥ rk) m else rk
 
       max (m PK, at i32, sz i32, tail i32) PK is
-        if sz = 0
+        if sz ≟ 0
           m
         else
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if (size & sz0) /= 0 nt else 0)
-                  + (if (size & sz ) /= 0 sz else 0))
-          m0 := if ((size & sz) != 0)
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
+          m0 := if (size & sz) != 0
               max m at at+sz-1
             else
               m
@@ -317,14 +317,14 @@ O(n log n).
   # but it is undefined to which of these two.
   #
   union (other ref ps_map PK V) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-    if other.size < size
+    if other.size ⩻ size
       other ∪ ps_map.this
     else
 
       # helper to add 'ps_map.this.data[l..r]' to 'a' and return the resulting map.
       #
       addAll (a ref ps_map PK V, l i32, r i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-        if l > r
+        if l ⩼ r
           a
         else
           kv := data[l]
@@ -336,14 +336,14 @@ O(n log n).
       # well.
       #
       addAll (a ref ps_map PK V, at i32, sz i32, tail i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-        if sz = 0
+        if sz ≟ 0
           a
         else
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + (if (size & sz0) /= 0 nt else 0)
-                  + (if (size & sz ) /= 0 sz else 0))
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
           a0 := if (size & sz) != 0
               addAll a at at+sz-1
             else
@@ -362,13 +362,13 @@ O(n log n).
 #
 # NYI: move to ps_map.type
 #
-ps_maps(PK type : ordered PK, V type) is
+ps_maps(PK type : has_total_order, V type) is
 
   # empty -- an empty partially sorted map
   #
   # This feature creates an empty instance of ps_map.
   #
-  empty => ps_map (fuzion.sys.internal_array (tuple PK V) 0) 0 0
+  empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
 # ps_map -- routine to initialize a partially sorted map from two Sequences
@@ -376,7 +376,7 @@ ps_maps(PK type : ordered PK, V type) is
 # This feature creates a pre-initialized instance of ps_map.
 #
 ps_map(
-    PK type : ordered PK,
+    PK type : has_total_order,
     V type,
     # list of keys in the map
     ks Sequence PK,

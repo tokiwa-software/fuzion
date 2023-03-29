@@ -90,7 +90,7 @@ is
    *
    * so use until .. then .. else instead, which works, but repeats 'x'
    */
-    until nf = 0 || nanos / nf < 10 then
+    until nf ≟ u64 0 || nanos / nf ⩻ u64 10 then
       x
     else
       x
@@ -102,31 +102,31 @@ is
 durations : units is
 
   # max value for a duration given in nanos
-  max_duration_nanos   => u64.max
+  max_duration_nanos   => u64.type.max
 
   # max value for a duration given in micros
-  max_duration_micros  => u64.max / nanos_per_micro
+  max_duration_micros  => u64.type.max / nanos_per_micro
 
   # max value for a duration given in millis
-  max_duration_millis  => u64.max / nanos_per_milli
+  max_duration_millis  => u64.type.max / nanos_per_milli
 
   # max value for a duration given in seconds
-  max_duration_seconds => u64.max / nanos_per_second
+  max_duration_seconds => u64.type.max / nanos_per_second
 
   # max value for a duration given in minutes
-  max_duration_minutes => u64.max / nanos_per_minute
+  max_duration_minutes => u64.type.max / nanos_per_minute
 
   # max value for a duration given in hours
-  max_duration_hours   => u64.max / nanos_per_hour
+  max_duration_hours   => u64.type.max / nanos_per_hour
 
   # max value for a duration given in days
-  max_duration_days    => u64.max / nanos_per_day
+  max_duration_days    => u64.type.max / nanos_per_day
 
   # max value for a duration given in weeks
-  max_duration_weeks   => u64.max / nanos_per_week
+  max_duration_weeks   => u64.type.max / nanos_per_week
 
   # max value for a duration given in years
-  max_duration_years   => u64.max / nanos_per_year
+  max_duration_years   => u64.type.max / nanos_per_year
 
 
   # create duration of n ns
@@ -135,7 +135,7 @@ durations : units is
   #
   ns (n u64)
   pre
-    debug: n <= max_duration_nanos
+    debug: n ≤ max_duration_nanos
    => duration n
 
 
@@ -145,7 +145,7 @@ durations : units is
   #
   µs (n u64)
   pre
-    debug: n <= max_duration_micros
+    debug: n ≤ max_duration_micros
    => duration n*nanos_per_micro
 
 
@@ -155,7 +155,7 @@ durations : units is
   #
   ms (n u64)
   pre
-    debug: n <= max_duration_millis
+    debug: n ≤ max_duration_millis
    => duration n*nanos_per_milli
 
 
@@ -165,7 +165,7 @@ durations : units is
   #
   s (n u64)
   pre
-    debug: n <= max_duration_seconds
+    debug: n ≤ max_duration_seconds
    => duration n*nanos_per_second
 
 
@@ -175,7 +175,7 @@ durations : units is
   #
   seconds (n u64)
   pre
-    debug: n <= max_duration_seconds
+    debug: n ≤ max_duration_seconds
    => s n
 
 
@@ -185,7 +185,7 @@ durations : units is
   #
   min (n u64)
   pre
-    debug: n <= max_duration_minutes
+    debug: n ≤ max_duration_minutes
    => duration n*nanos_per_minute
 
 
@@ -195,7 +195,7 @@ durations : units is
   #
   minutes (n u64)
   pre
-    debug: n <= max_duration_minutes
+    debug: n ≤ max_duration_minutes
    => min n
 
 
@@ -205,7 +205,7 @@ durations : units is
   #
   h (n u64)
   pre
-    debug: n <= max_duration_hours
+    debug: n ≤ max_duration_hours
    => duration n*nanos_per_hour
 
 
@@ -215,7 +215,7 @@ durations : units is
   #
   hours (n u64)
   pre
-    debug: n <= max_duration_hours
+    debug: n ≤ max_duration_hours
    => h n
 
 
@@ -225,7 +225,7 @@ durations : units is
   #
   days  (n u64)
   pre
-    debug: n <= max_duration_days
+    debug: n ≤ max_duration_days
    => duration n*nanos_per_day
 
 
@@ -235,7 +235,7 @@ durations : units is
   #
   weeks (n u64)
   pre
-    debug: n <= max_duration_weeks
+    debug: n ≤ max_duration_weeks
    => duration n*nanos_per_week
 
 
@@ -245,7 +245,7 @@ durations : units is
   #
   a (n u64)
   pre
-    debug: n <= max_duration_years
+    debug: n ≤ max_duration_years
    => duration n*nanos_per_year
 
 
@@ -255,7 +255,7 @@ durations : units is
   #
   years (n u64)
   pre
-    debug: n <= max_duration_years
+    debug: n ≤ max_duration_years
    => a n
 
 

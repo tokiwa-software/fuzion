@@ -62,7 +62,7 @@ choicetest is
       Quarter => 25
 
   say "creating array:"
-  a := (marrays Coin).new 10 Penny
+  a := (marray Coin).type.new 10 Penny
   a[0] := Penny
   a[1] := Penny
   a[2] := Penny
@@ -77,7 +77,7 @@ choicetest is
   yak "summing array using loop: "
   sum := { for i := -1, i+1
                s := 0, s + value_in_cents a[i]
-           until i >= a.length-1
+           until i ≥ a.length-1
          }
   say sum
 
@@ -92,5 +92,5 @@ choicetest is
   say sum
 
   say "summing array using monoid: {a.map  (c -> c.value_in_cents)
-                                     .fold i32.sum
+                                     .fold i32.type.sum
                                    }"

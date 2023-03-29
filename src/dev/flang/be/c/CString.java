@@ -68,7 +68,7 @@ class CString extends ANY
   private CString _indent;
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**

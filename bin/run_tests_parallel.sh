@@ -60,7 +60,7 @@ renice -n 19 $$ > /dev/null
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(echo "$BUILD_DIR"/tests/*/)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -68,6 +68,8 @@ rm -rf "$BUILD_DIR"/run_tests.failures
 
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
+
+echo "$(echo "$TESTS" | wc -l) tests."
 
 N=$(nproc --all || echo 1)
 open_sem "$N"
@@ -95,9 +97,16 @@ for test in $TESTS; do
 done
 wait
 
-echo -n " $(grep --count ok$ "$BUILD_DIR"/run_tests.results || true)/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true) skipped,"
-echo    " $(grep --count failed$ "$BUILD_DIR"/run_tests.results || true) failed."
-if grep failed$ "$BUILD_DIR"/run_tests.results; then
+OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
+SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
+FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
+
+echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
+echo -n " $SKIPPED skipped,"
+echo    " $FAILED failed."
+grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
+
+if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
+  exit 1;
 fi

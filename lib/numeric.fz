@@ -25,14 +25,14 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
+numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
-  # of some features (e.g. prefix -, abs
+  # of some features (e.g. prefix -, abs)
   thiz T is abstract
 
-  isZero => numeric.this == zero
-  isOne  => numeric.this == one
+  isZero => numeric.this = numeric.this.type.zero
+  isOne  => numeric.this = numeric.this.type.one
 
   # basic operations: 'prefix +' (identity)
   prefix + T
@@ -82,7 +82,7 @@ numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
   infix ** (other T) T
     pre
       safety: thiz **! other,
-      safety: other >= zero
+      safety: other ≥ zero
   is abstract
 
 
@@ -116,43 +116,46 @@ numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
   infix *^ (other T) T is thiz * other
   infix **^(other T) T is abstract
 
-  # comparison
-  infix == (other T) bool is abstract   // NYI: #498: remove, replace by 'infix ='
-  redef infix = (other T) bool is thiz == other
-  infix != (other T) bool is   // NYI: #498: remove, replace by 'infix /='
-    !(thiz == other)
 
-  sign => if numeric.this == zero then 0 else if numeric.this > zero then 1 else -1
+  sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
 
-  abs => if sign >= 0 then thiz else -thiz
+  abs => if sign ≥ 0 then thiz else -thiz
 
   # minimum of numeric.this and other
   #
-  min(other T) T is if (numeric.this <= other) thiz else other
+  min(other T) T is if (thiz ≤ other) thiz else other
 
   # maximum of numeric.this and other
   #
-  max(other T) T is if (numeric.this >= other) thiz else other
+  max(other T) T is if (thiz ≥ other) thiz else other
 
 
   # the u32 value corresponding to this
   # note: potential fraction will be discarded
+  # NYI replace this by as_u32?
   to_u32 u32
     pre
-      debug: thiz >= zero
+      debug: numeric.this ≥ numeric.this.type.zero
   is
-    if (thiz >= one) ((thiz - one).to_u32 + 1)
+    if (numeric.this ≥ numeric.this.type.one) ((thiz - one).to_u32 + 1)
     else 0
+
+
+  # this numeric value as an u8
+  as_u8 u8
+    pre
+      debug: numeric.this ≥ numeric.this.type.zero
+  is abstract
 
 
   # find the highest power of b that is less or equal than thiz.
   #
   private highest(b T) T
     pre
-      debug: thiz.sign >= 0
+      debug: thiz.sign ≥ 0
     post
-      debug: (thiz == zero: result == one),
-      debug: (thiz != zero: thiz / b < result <= thiz)
+      debug: (numeric.this ≟ numeric.this.type.zero: result ≟ one),
+      debug: (numeric.this != numeric.this.type.zero: thiz / b ⩻ result ≤ thiz)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
   # not of type T.
@@ -161,7 +164,7 @@ numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
   is
     for
       bs := one, bs * b
-    while thiz / b >= bs
+    while thiz / b ≥ bs
 
 
   # is this part of given set
@@ -202,17 +205,57 @@ numeric(redef T type : numeric T) : hasHash T, ordered T, numerics T is
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
   type.from_u32(v u32) numeric.this.type is
-    if v == 0 zero else one # NYI: #706: (from_u32 v-1) +^ one
+    if v ≟ (u32 0) zero else one # NYI: #706: (from_u32 v-1) +^ one
+
+
+  # equality
+  #
+  fixed type.equality(a, b numeric T) bool is
+    T.equality a b
+
+
+  # total order
+  #
+  fixed type.lteq(a, b numeric T) bool is
+    T.lteq a b
+
+
+  # monoid of numeric with infix + operation.  Will create sum of all elements it
+  # is applied to.
+  #
+  type.sum : Monoid T is
+    redef infix ∙ (a, b T) => a + b
+    redef e => zero.thiz
+
+
+  # monoid of numeric with infix * operation.  Will create product of all elements
+  # it is applied to.
+  #
+  type.product : Monoid T is
+    redef infix ∙ (a, b T) => a * b
+    redef e => one.thiz
+
+
+  # monoid of numeric with infix +^ operation.  Will create sum of all elements it
+  # is applied to, stopping at max/min value in case of overflow.
+  #
+  type.sumSaturating : Monoid T is
+    redef infix ∙ (a, b T) => a +^ b
+    redef e => zero.thiz
+
+
+  # monoid of numeric with infix *^ operation.  Will create product of all elements
+  # it is applied to, stopping at max/min value in case of overflow.
+  #
+  type.productSaturating : Monoid T is
+    redef infix ∙ (a, b T) => a *^ b
+    redef e => one.thiz
 
 
 # numerics -- unit type defining features related to numeric but not
 # requiring an instance
 #
 numerics(T type : numeric T) is
-
-  # name of this numeric type, e.g., "u64"
-  #
-  name String is abstract
 
   # identity element for 'infix +'
   #
@@ -230,36 +273,4 @@ numerics(T type : numeric T) is
 
   # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
   from_u32(v u32) T is # T.from_u32 v
-    if v == 0 zero else (from_u32 v-1) +^ one
-
-  # monoid of numeric with infix + operation.  Will create sum of all elements it
-  # is applied to.
-  #
-  sum : Monoid T is
-    redef infix ∙ (a, b T) T is a + b
-    redef infix == (a, b T) bool is a == b
-    redef e T is zero
-
-  # monoid of numeric with infix * operation.  Will create product of all elements
-  # it is applied to.
-  #
-  product : Monoid T is
-    redef infix ∙ (a, b T) T is a * b
-    redef infix == (a, b T) bool is a == b
-    redef e T is one
-
-  # monoid of numeric with infix +^ operation.  Will create sum of all elements it
-  # is applied to, stopping at max/min value in case of overflow.
-  #
-  sumSaturating : Monoid T is
-    redef infix ∙ (a, b T) T is a +^ b
-    redef infix == (a, b T) bool is a == b
-    redef e T is zero
-
-  # monoid of numeric with infix *^ operation.  Will create product of all elements
-  # it is applied to, stopping at max/min value in case of overflow.
-  #
-  productSaturating : Monoid T is
-    redef infix ∙ (a, b T) T is a *^ b
-    redef infix == (a, b T) bool is a == b
-    redef e T is one
+    if v ≟ (u32 0) zero else (from_u32 v-1) +^ one

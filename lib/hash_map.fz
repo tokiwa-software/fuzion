@@ -25,12 +25,12 @@
 
 # hash_map -- an immutable hash map from keys HK to values V
 #
-hash_map(HK type : hasHash HK,
+hash_map(HK type : has_hash,
         redef V type,
         ks array HK,
         vs array V) : Map HK V
   pre
-    ks.length == vs.length
+    ks.length ≟ vs.length
 
 is
 
@@ -63,7 +63,8 @@ is
   /* NYI: local */
   contents :=
     for
-      mcontents := (marrays (option (tuple HK V))).new allocatedSize nil, mcontents
+      mi := mutate.type.installDefault
+      mcontents := mutate.env.array (option (tuple HK V)) allocatedSize nil, mcontents
       k in ks
       v in vs
     do
@@ -78,7 +79,7 @@ is
 
           t tuple =>     # we have a conflict
             (ek, _) := t
-            if ek = k    # no conflict, but remapping of k
+            if ek ≟ k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
             else         # conflict
               store (collision at)
@@ -103,7 +104,7 @@ is
         nil     => nil
         t tuple =>
           (ek, v) := t
-          if ek = k
+          if ek ≟ k
             v
           else
             retrieve (collision at)
@@ -121,15 +122,16 @@ is
                             t tuple => t)
 
 
-# hash_maps -- unit type feature declaring features related to haspMap
-#
-# NYI: move to hash_map.type
-#
-hash_maps(HK type : hasHash HK, V type) is
+  # this hash map as a human readable string
+  # example: [(0,a),(1,b),(2,c),(3,d)]
+  #
+  redef as_string =>
+    items
+      .mapSequence (t -> "({t.values.0},{t.values.1})")
+      .as_string
 
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  empty => (hash_map
-            ((Sequence HK).type.empty).as_array
-            ((Sequence V).type.empty).as_array)
+  type.empty => hash_map HK V [] []
+

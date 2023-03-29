@@ -251,7 +251,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Find the outer feature of this festure.
+   * Find the outer feature of this feature.
    */
   public AbstractFeature outer()
   {
@@ -436,7 +436,7 @@ public class LibraryFeature extends AbstractFeature
       (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
-    var ot = o == null ? null : o.thisType();
+    var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this, this,
                                          isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                                      : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
@@ -464,7 +464,7 @@ public class LibraryFeature extends AbstractFeature
   {
     if (isConstructor())
       {
-        return thisType();
+        return selfType();
       }
     else if (isChoice())
       {
@@ -654,7 +654,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(thisType())
+              x = new AbstractCurrent(selfType())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
@@ -809,7 +809,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefintions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */

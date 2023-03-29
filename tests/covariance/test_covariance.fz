@@ -62,7 +62,7 @@ test_covariance is
       else
         0
 
-    # create string representation consiting of type, to_u32
+    # create string representation consisting of type, to_u32
     # and valueString
     #
     redef as_string => "num.this.type {to_u32} {to_u32_loop} '$valueString'"
@@ -92,7 +92,7 @@ test_covariance is
     fixed o => intM5 1
     fixed type.zero => test_covariance.intM5 0
     fixed type.one => test_covariance.intM5 1
-    fixed lessThan(other intM5) => v < other.v
+    fixed lessThan(other intM5) => v ⩻ other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed minus(other intM5) => intM5 (v - other.v)%5
     redef valueString => "$v mod 5"
@@ -217,8 +217,8 @@ test_this_type =>
   chck $z       "abcz"
   chck $Z       "vwxZ"
 
-  chck(s, t String) =>
-    say (if s = t then "PASS: $s = $t" else "*** FAIL ***: $s /= $t")
+  chck(s1, s2 String) =>
+    say (if s1 ≟ s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
 
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.
@@ -229,16 +229,16 @@ test_this_type_in_type_feature =>
     def(s String) is
       ghi is
         jkl(val i32, msg String) is
-          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
-          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
-          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
 
           type.choose1L(a, b     def.this.type)     def.this.type is a
           type.choose1R(a, b     def.this.type)     def.this.type is b

@@ -28,7 +28,6 @@
 u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 
   redef thiz => u64.this.val
-  redef orderedThis => u64.this.val
 
   # overflow checking
 
@@ -36,15 +35,15 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u64) => max -° thiz < other
+  redef overflowOnAdd (other u64) => u64.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u64) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u64) => false
-  redef underflowOnSub(other u64) => thiz < other
+  redef underflowOnSub(other u64) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u64) => if other == 0 false else (thiz *° other / other) != thiz
+  redef overflowOnMul (other u64) => if other ≟ (u64 0) false else !((thiz *° other / other) ≟ thiz)
   redef underflowOnMul(other u64) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -56,11 +55,11 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # division and remainder with check for div-by-zero
   redef infix / (other u64)
     pre
-      safety: other != 0
+      safety: other != u64 0
    => div(other)
   redef infix %  (other u64)
     pre
-      safety: other != 0
+      safety: other != u64 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -76,21 +75,10 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   redef infix >> (other u64) u64 is intrinsic
   redef infix << (other u64) u64 is intrinsic
 
-  # comparison
-  redef infix == (other u64) bool is intrinsic
-  redef infix != (other u64) bool is intrinsic
-  redef infix <  (other u64) bool is intrinsic
-  redef infix <= (other u64) bool is intrinsic
-  redef infix >  (other u64) bool is intrinsic
-  redef infix >= (other u64) bool is intrinsic
-
-  fixed type.equality(a, b u64) bool is intrinsic
-
-
   # this u64 as an i8
   as_i8 i8
     pre
-      thiz <= i8.max.as_u64
+      thiz ≤ i8.type.max.as_u64
     is
       low8bits.as_i8
 
@@ -98,7 +86,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i16
   as_i16 i16
     pre
-      thiz <= i16.max.as_u64
+      thiz ≤ i16.type.max.as_u64
     is
       low16bits.as_i16
 
@@ -106,7 +94,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i32
   as_i32 i32
     pre
-      thiz <= i32.max.as_u64
+      thiz ≤ i32.type.max.as_u64
     is
       low32bits.as_i32
 
@@ -114,7 +102,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an i64
   as_i64 i64
     pre
-      thiz <= i64.max.as_u64
+      thiz ≤ i64.type.max.as_u64
 #    post
 #      analysis:  result.as_u64 == thiz
     is
@@ -125,7 +113,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u8
   as_u8 u8
 #    pre
-#      thiz <= u8.max.as_i64
+#      thiz ≤ u8.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -135,7 +123,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u16
   as_u16 u16
 #    pre
-#      thiz <= u16.max.as_i64
+#      thiz ≤ u16.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -145,7 +133,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # this u64 as an u32
   as_u32 u32
 #    pre
-#      thiz <= u32.max.as_i64
+#      thiz ≤ u32.type.max.as_i64
 #    post
 #      analysis: result.as_u64 == thiz
     is
@@ -161,14 +149,13 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
 
 
   # this u64 as an int
-  as_int  => ints.from_u64 val
+  as_int  => int.type.from_u64 val
 
 
   # this u64 as an uint
   as_uint uint
-  pre val >= 0
   is
-    uints.from_u64 val
+    uint val
 
 
   low8bits   u8  is intrinsic
@@ -197,12 +184,12 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   highestOneBit u64 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u64 0)
-    (v1, s1) := if (v0 < 0x1_0000_0000) (v0, s0) else (v0 >> 32, s0 + 32)
-    (v2, s2) := if (v1 <      0x1_0000) (v1, s1) else (v1 >> 16, s1 + 16)
-    (v3, s3) := if (v2 <         0x100) (v2, s2) else (v2 >>  8, s2 +  8)
-    (v4, s4) := if (v3 <          0x10) (v3, s3) else (v3 >>  4, s3 +  4)
-    (v5, s5) := if (v4 <             4) (v4, s4) else (v4 >>  2, s4 +  2)
-    (v6, s6) := if (v5 <             2) (v5, s5) else (v5 >>  1, s5 +  1)
+    (v1, s1) := if (v0 ⩻ u64 0x1_0000_0000) (v0, s0) else (v0 >> 32, s0 + 32)
+    (v2, s2) := if (v1 ⩻      u64 0x1_0000) (v1, s1) else (v1 >> 16, s1 + 16)
+    (v3, s3) := if (v2 ⩻         u64 0x100) (v2, s2) else (v2 >>  8, s2 +  8)
+    (v4, s4) := if (v3 ⩻          u64 0x10) (v3, s3) else (v3 >>  4, s3 +  4)
+    (v5, s5) := if (v4 ⩻             u64 4) (v4, s4) else (v4 >>  2, s4 +  2)
+    (v6, s6) := if (v5 ⩻             u64 2) (v5, s5) else (v5 >>  1, s5 +  1)
     v6 << s6
 
 
@@ -211,20 +198,20 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   trailingZeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
-    (v1, s1) := if (v0 & 0x_ffff_ffff)/=0 (v0, s0) else (v0 >> 32, s0 + 32)
-    (v2, s2) := if (v1 &      0x_ffff)/=0 (v1, s1) else (v1 >> 16, s1 + 16)
-    (v3, s3) := if (v2 &         0xff)/=0 (v2, s2) else (v2 >>  8, s2 +  8)
-    (v4, s4) := if (v3 &          0xf)/=0 (v3, s3) else (v3 >>  4, s3 +  4)
-    (v5, s5) := if (v4 &            3)/=0 (v4, s4) else (v4 >>  2, s4 +  2)
-    (v6, s6) := if (v5 &            1)/=0 (v5, s5) else (v5 >>  1, s5 +  1)
-    s7       := if (v6 &            1)/=0      s6  else                 64
+    (v1, s1) := if ((v0 & 0x_ffff_ffff) != u64 0) (v0, s0) else (v0 >> 32, s0 + 32)
+    (v2, s2) := if ((v1 &      0x_ffff) != u64 0) (v1, s1) else (v1 >> 16, s1 + 16)
+    (v3, s3) := if ((v2 &         0xff) != u64 0) (v2, s2) else (v2 >>  8, s2 +  8)
+    (v4, s4) := if ((v3 &          0xf) != u64 0) (v3, s3) else (v3 >>  4, s3 +  4)
+    (v5, s5) := if ((v4 &            3) != u64 0) (v4, s4) else (v4 >>  2, s4 +  2)
+    (v6, s6) := if ((v5 &            1) != u64 0) (v5, s5) else (v5 >>  1, s5 +  1)
+    s7       := if ((v6 &            1) != u64 0)      s6  else                 64
     s7
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
+  ones_count i32 is
     v := val;
     m := v & 0x_aaaaaaaa_aaaaaaaa; v := v - m + (m >> 1)
     m := v & 0x_cccccccc_cccccccc; v := v - m + (m >> 2)
@@ -232,21 +219,54 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
     (v *° 0x_01010101_01010101 >> 56).as_i32
 
 
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero u64 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  u64 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b u64) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b u64) bool is intrinsic
+
+
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+
+
+  # minimum
+  #
+  fixed type.min => u64 0
+
+
+  # maximum
+  #
+  fixed type.max => u64 0x_ffff_ffff_ffff_ffff
+
+
+
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrapping_integers u64 is
-
-  redef name => "u64"
+u64s : numerics u64 is
 
   redef zero => u64 0
   redef one  => u64 1
 
-  redef min => u64 0
-  redef max => u64 0x_ffff_ffff_ffff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
 # u64 -- returns value of unit type u64s

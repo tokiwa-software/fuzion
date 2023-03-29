@@ -33,6 +33,7 @@ import java.util.SortedMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -263,19 +264,33 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
     return _argCount;
   }
 
+
   public String argCountAndIdString()
   {
     return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
   }
+
 
   public String toString()
   {
     return _baseName + argCountAndIdString();
   }
 
+
   public boolean equalsExceptId(FeatureName o)
   {
     return _baseName.equals(o._baseName) && _argCount == o._argCount;
+  }
+
+
+  /**
+   * Compare just the baseName of the given FeatureNames.
+   *
+   * This is used in AstErrors.solutionWrongArgumentNumber.
+   */
+  public boolean equalsBaseName(FeatureName o)
+  {
+    return _baseName.equals(o._baseName);
   }
 
 
@@ -286,6 +301,26 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   {
     _all_.clear();
     _allBaseNames_.clear();
+  }
+
+
+  /**
+   * Returns true iff the name of the feature is an internal name, i.e. it starts with the
+   * internal name prefix.
+   */
+  public boolean isInternal()
+  {
+    return baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+  }
+
+
+  /**
+   * Returns true if this FeatureName is unspecified, i.e. an "@"-name would be generated
+   * by baseName above.
+   */
+  public boolean isNameless()
+  {
+    return _baseNameId < 0;
   }
 
 }

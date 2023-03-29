@@ -74,12 +74,12 @@ is
     ) array T
 
     pre
-      debug: heap_size >= 0,
-      debug: (heap_size & (heap_size-1)) = 0
+      debug: heap_size ≥ 0,
+      debug: (heap_size & (heap_size-1)) ≟ 0
       # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
   is
     # check if the array is fully sorted
-    if heap_size >= a.length
+    if heap_size ≥ a.length
       a.as_array  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
     else
       # h1 is the mutable index within the current first heap, this is updated
@@ -93,7 +93,7 @@ is
         # index in current pair of heaps
         hi := i & (heap_size*2-1)
         # reset h1 in case we start new pair of heaps
-        set h1 := if (hi = 0) 0 else h1
+        set h1 := if (hi ≟ 0) 0 else h1
         # index within second heap
         h2 := hi - h1
 
@@ -102,8 +102,8 @@ is
         i2 := i - hi + heap_size + h2;
 
         # did we reach end of first or second heap?
-        heap1_empty := h1 >= heap_size
-        heap2_empty := h2 >= heap_size || i2 >= a.length
+        heap1_empty := h1 ≥ heap_size
+        heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
 
         # check if next element comes from first heap
         if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
@@ -135,11 +135,11 @@ is
                  # use less_or_equal instead:
                  #
                  less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
-        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
   is
     binary_search(l, r i32) option i32 is
       m := (l + r) / 2
-      if l > r                                     then nil
+      if l ⩼ r                                     then nil
       else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
       else if !less_or_equal sorted_array.this[m] key then binary_search l m-1
       else                                                 m
@@ -168,17 +168,17 @@ is
 
     post
       match result
-        i i32 => (cmp sorted_array.this[i]) = 0
+        i i32 => (cmp sorted_array.this[i]) ≟ 0
         nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
   is
     binary_search(l, r i32) option i32 is
       m := (l + r) / 2
-      if l > r
+      if l ⩼ r
         nil
       else
         c := cmp sorted_array.this[m]
-        if      c < 0 then binary_search m+1 r
-        else if c > 0 then binary_search l m-1
+        if      c ⩻ 0 then binary_search m+1 r
+        else if c ⩼ 0 then binary_search l m-1
         else               m
 
     binary_search 0 length-1
@@ -193,10 +193,10 @@ is
 #
 sorted_array_of
   (
-  T type : ordered T,
+  T type : has_total_order,
   # orginal, unsorted Sequence
   from Sequence T
   ) sorted_array T
 
 is
-  sorted_array T from (a,b -> a <= b)
+  sorted_array T from (a,b -> a ≤ b)

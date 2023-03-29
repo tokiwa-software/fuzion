@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 
@@ -103,6 +106,30 @@ public class FeErrors extends AstErrors
           "there are no calls to features that end up reading this field before it is "+
           "initialized.\n");
   }
+
+
+  static String versionString(byte[] v)
+  {
+    return
+      v == null     ? "-- null --" :
+      v.length == 0 ? "-- empty version --"
+                    : IntStream.range(0, v.length)
+                        .map(j -> v[j] & 0xff)
+                        .mapToObj(x -> Integer.toHexString(0x100 + x).substring(1))
+                        .collect(Collectors.joining());
+  }
+
+  static void incompatibleModuleVersion(LibraryModule user,
+                                        LibraryModule m,
+                                        byte[] expected_version,
+                                        byte[] found_version)
+  {
+    fatal("Incompatible module version encountered",
+          "Module " + user + " references module " + m + "\n" +
+          "Expected version: " + versionString(expected_version) + "\n" +
+          "Actual version  : " + versionString(found_version));
+  }
+
 
 }
 

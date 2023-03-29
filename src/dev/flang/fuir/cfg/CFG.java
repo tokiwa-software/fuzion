@@ -88,7 +88,7 @@ public class CFG extends ANY
 
 
   /**
-   * The intermediate code we are analysing.
+   * The intermediate code we are analyzing.
    */
   public final FUIR _fuir;
 
@@ -105,7 +105,7 @@ public class CFG extends ANY
   TreeSet<Integer> _calledClazzes = new TreeSet<>();
 
 
-  /*---------------------------  consructors  ---------------------------*/
+  /*---------------------------  constructors  ---------------------------*/
 
 
   /**
@@ -283,34 +283,14 @@ public class CFG extends ANY
     put("i32.infix ^"                    , (cfg, cl) -> { } );
     put("i64.infix ^"                    , (cfg, cl) -> { } );
 
-    put("i8.infix =="                    , (cfg, cl) -> { } );
-    put("i16.infix =="                   , (cfg, cl) -> { } );
-    put("i32.infix =="                   , (cfg, cl) -> { } );
-    put("i64.infix =="                   , (cfg, cl) -> { } );
     put("i8.type.equality"               , (cfg, cl) -> { } );
     put("i16.type.equality"              , (cfg, cl) -> { } );
     put("i32.type.equality"              , (cfg, cl) -> { } );
     put("i64.type.equality"              , (cfg, cl) -> { } );
-    put("i8.infix !="                    , (cfg, cl) -> { } );
-    put("i16.infix !="                   , (cfg, cl) -> { } );
-    put("i32.infix !="                   , (cfg, cl) -> { } );
-    put("i64.infix !="                   , (cfg, cl) -> { } );
-    put("i8.infix >"                     , (cfg, cl) -> { } );
-    put("i16.infix >"                    , (cfg, cl) -> { } );
-    put("i32.infix >"                    , (cfg, cl) -> { } );
-    put("i64.infix >"                    , (cfg, cl) -> { } );
-    put("i8.infix >="                    , (cfg, cl) -> { } );
-    put("i16.infix >="                   , (cfg, cl) -> { } );
-    put("i32.infix >="                   , (cfg, cl) -> { } );
-    put("i64.infix >="                   , (cfg, cl) -> { } );
-    put("i8.infix <"                     , (cfg, cl) -> { } );
-    put("i16.infix <"                    , (cfg, cl) -> { } );
-    put("i32.infix <"                    , (cfg, cl) -> { } );
-    put("i64.infix <"                    , (cfg, cl) -> { } );
-    put("i8.infix <="                    , (cfg, cl) -> { } );
-    put("i16.infix <="                   , (cfg, cl) -> { } );
-    put("i32.infix <="                   , (cfg, cl) -> { } );
-    put("i64.infix <="                   , (cfg, cl) -> { } );
+    put("i8.type.lteq"                   , (cfg, cl) -> { } );
+    put("i16.type.lteq"                  , (cfg, cl) -> { } );
+    put("i32.type.lteq"                  , (cfg, cl) -> { } );
+    put("i64.type.lteq"                  , (cfg, cl) -> { } );
 
     put("u8.prefix -°"                   , (cfg, cl) -> { } );
     put("u16.prefix -°"                  , (cfg, cl) -> { } );
@@ -357,34 +337,14 @@ public class CFG extends ANY
     put("u32.infix ^"                    , (cfg, cl) -> { } );
     put("u64.infix ^"                    , (cfg, cl) -> { } );
 
-    put("u8.infix =="                    , (cfg, cl) -> { } );
-    put("u16.infix =="                   , (cfg, cl) -> { } );
-    put("u32.infix =="                   , (cfg, cl) -> { } );
-    put("u64.infix =="                   , (cfg, cl) -> { } );
     put("u8.type.equality"               , (cfg, cl) -> { } );
     put("u16.type.equality"              , (cfg, cl) -> { } );
     put("u32.type.equality"              , (cfg, cl) -> { } );
     put("u64.type.equality"              , (cfg, cl) -> { } );
-    put("u8.infix !="                    , (cfg, cl) -> { } );
-    put("u16.infix !="                   , (cfg, cl) -> { } );
-    put("u32.infix !="                   , (cfg, cl) -> { } );
-    put("u64.infix !="                   , (cfg, cl) -> { } );
-    put("u8.infix >"                     , (cfg, cl) -> { } );
-    put("u16.infix >"                    , (cfg, cl) -> { } );
-    put("u32.infix >"                    , (cfg, cl) -> { } );
-    put("u64.infix >"                    , (cfg, cl) -> { } );
-    put("u8.infix >="                    , (cfg, cl) -> { } );
-    put("u16.infix >="                   , (cfg, cl) -> { } );
-    put("u32.infix >="                   , (cfg, cl) -> { } );
-    put("u64.infix >="                   , (cfg, cl) -> { } );
-    put("u8.infix <"                     , (cfg, cl) -> { } );
-    put("u16.infix <"                    , (cfg, cl) -> { } );
-    put("u32.infix <"                    , (cfg, cl) -> { } );
-    put("u64.infix <"                    , (cfg, cl) -> { } );
-    put("u8.infix <="                    , (cfg, cl) -> { } );
-    put("u16.infix <="                   , (cfg, cl) -> { } );
-    put("u32.infix <="                   , (cfg, cl) -> { } );
-    put("u64.infix <="                   , (cfg, cl) -> { } );
+    put("u8.type.lteq"                   , (cfg, cl) -> { } );
+    put("u16.type.lteq"                  , (cfg, cl) -> { } );
+    put("u32.type.lteq"                  , (cfg, cl) -> { } );
+    put("u64.type.lteq"                  , (cfg, cl) -> { } );
 
     put("i8.as_i32"                      , (cfg, cl) -> { } );
     put("i16.as_i32"                     , (cfg, cl) -> { } );
@@ -427,20 +387,10 @@ public class CFG extends ANY
     put("f64.infix %"                    , (cfg, cl) -> { } );
     put("f32.infix **"                   , (cfg, cl) -> { } );
     put("f64.infix **"                   , (cfg, cl) -> { } );
-    put("f32.infix =="                   , (cfg, cl) -> { } );
-    put("f64.infix =="                   , (cfg, cl) -> { } );
     put("f32.type.equality"              , (cfg, cl) -> { } );
     put("f64.type.equality"              , (cfg, cl) -> { } );
-    put("f32.infix !="                   , (cfg, cl) -> { } );
-    put("f64.infix !="                   , (cfg, cl) -> { } );
-    put("f32.infix <"                    , (cfg, cl) -> { } );
-    put("f64.infix <"                    , (cfg, cl) -> { } );
-    put("f32.infix <="                   , (cfg, cl) -> { } );
-    put("f64.infix <="                   , (cfg, cl) -> { } );
-    put("f32.infix >"                    , (cfg, cl) -> { } );
-    put("f64.infix >"                    , (cfg, cl) -> { } );
-    put("f32.infix >="                   , (cfg, cl) -> { } );
-    put("f64.infix >="                   , (cfg, cl) -> { } );
+    put("f32.type.lteq"                  , (cfg, cl) -> { } );
+    put("f64.type.lteq"                  , (cfg, cl) -> { } );
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
@@ -490,16 +440,18 @@ public class CFG extends ANY
 
     put("Any.hashCode"                   , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.alloc", (cfg, cl) -> { } );
+    put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
+    put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
+    put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
     put("effect.replace"                 , (cfg, cl) -> { } );
     put("effect.default"                 , (cfg, cl) -> { } );
@@ -554,7 +506,7 @@ public class CFG extends ANY
 
 
   /**
-   * Create call graph for calls made by statemnt s at index i in code block c
+   * Create call graph for calls made by statement s at index i in code block c
    * of clazz cl.
    *
    * @param cl clazz id
@@ -608,7 +560,7 @@ public class CFG extends ANY
       case Pop: break;
       default:
         {
-          Errors.fatal("Effects backend does not handle statments of type " + s);
+          Errors.fatal("Effects backend does not handle statements of type " + s);
         }
       }
   }

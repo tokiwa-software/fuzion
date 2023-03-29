@@ -86,23 +86,17 @@ private read_line0 outcome String : character_encodings is
     .reduce_or_error "" (r, t ->
       match t
         c codepoint =>
-          if c.val = ascii.lf.as_u32 || c.val = ascii.cr.as_u32
+          if c.val ≟ ascii.lf.as_u32 || c.val ≟ ascii.cr.as_u32
             if r.is_empty # we read nothing yet, so we just skip the lf/cr
               r
             else
-              # NYI explicit tagging should not be necessary #671
-              tmp outcome String := r
-              abort tmp
+              abort (outcome r)
           else
             r + c
         end_of_file =>
-          # NYI explicit tagging should not be necessary #671
-          tmp outcome String := r
-          abort tmp
+          abort (outcome r)
         e error =>
-          # NYI explicit tagging should not be necessary #671
-          tmp outcome String := e
-          abort tmp
+          abort (outcome String) e
     )
 
 
@@ -110,7 +104,7 @@ private read_line0 outcome String : character_encodings is
 # may return less than n bytes if end of file is reached
 # or error if stdin can not be read right now
 private read0(n i32) outcome String
-pre n >= 0
+pre n ≥ 0
 is
   (1..n)
     .reduce_or_error "" (r, t ->
@@ -118,13 +112,9 @@ is
         c codepoint =>
           r + c
         end_of_file =>
-          # NYI explicit tagging should not be necessary #671
-          tmp outcome String := r
-          abort tmp // return what we read so far
+          abort (outcome r) // return what we read so far
         e error =>
-          # NYI explicit tagging should not be necessary #671
-          o outcome String := e
-          abort o   // return only the error, discarding what we read so far
+          abort (outcome String) e   // return only the error, discarding what we read so far
       )
 
 
@@ -142,13 +132,9 @@ private codepoint0 choice codepoint end_of_file error is
                   match stdin.byte
                     b u8 => seq ++ [b]
                     end_of_file =>
-                      # NYI explicit tagging should not be necessary #671
-                      tmp choice (Sequence u8) end_of_file error := end_of_file
-                      abort tmp
+                      abort (choice (Sequence u8) end_of_file error) end_of_file
                     e error =>
-                      # NYI explicit tagging should not be necessary #671
-                      tmp choice (Sequence u8) end_of_file error := e
-                      abort tmp
+                      abort (choice (Sequence u8) end_of_file error) e
                 * => fuzion.std.panic "should not be possible"
               )
           match rest
@@ -200,9 +186,9 @@ defaultInputHandler(r choice u8 end_of_file error) : Byte_Input_Handler is
 
   next Byte_Input_Handler is
     v := fuzion.sys.stdin.next_byte
-    if v = -1
+    if v ≟ -1
       defaultInputHandler end_of_file
-    else if v < -1
+    else if v ⩻ -1
       defaultInputHandler (error "an error occurred while reading stdin")
     else
       defaultInputHandler v.as_u8

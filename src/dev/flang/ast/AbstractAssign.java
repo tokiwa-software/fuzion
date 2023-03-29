@@ -238,7 +238,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
           }
 
         if (CHECKS) check
-          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName()) == f || Errors.count() > 0);
+          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.count() > 0);
       }
   }
 

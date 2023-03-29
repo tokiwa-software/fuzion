@@ -76,7 +76,6 @@ public class MIR extends IR
     _universe = universe;
     _main = main;
     _module = module;
-    addFeatures();
   }
 
 
@@ -89,32 +88,6 @@ public class MIR extends IR
   public AbstractFeature main()
   {
     return _main;
-  }
-
-
-  /**
-   * Create the mapping from Features to integers exists.
-   */
-  private void addFeatures()
-  {
-    if (_featureIds.size() == 0)
-      {
-        var u = universe();
-        addFeatures(u);
-      }
-  }
-
-
-  /**
-   * Helper to addFeatures() to add feature f and all features declared within f.
-   */
-  private void addFeatures(AbstractFeature f)
-  {
-    _featureIds.add(f);
-    for (var i : _module.declaredFeatures(f).values())
-      {
-        addFeatures(i);
-      }
   }
 
 
@@ -184,7 +157,7 @@ public class MIR extends IR
       {
         /*
 NYI: Any side-effects in p.target or p.actuals() will be executed twice, once for
-     the precondition and once for the inlinded call! See this example:
+     the precondition and once for the inlined call! See this example:
 
 hw25 is
   A (a i32)
@@ -283,7 +256,7 @@ hw25 is
 
 
   /**
-   * Get a string representatin of a a given feature, for debugging only
+   * Get a string representation of a a given feature, for debugging only
    *
    * @param f a feature index
    *
@@ -323,7 +296,7 @@ hw25 is
     var af =
       (s instanceof AbstractCall   call) ? call.calledFeature() :
       (s instanceof AbstractAssign a   ) ? a._assignedField :
-      (AbstractFeature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
+      (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);
   }

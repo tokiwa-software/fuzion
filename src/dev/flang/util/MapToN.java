@@ -32,7 +32,7 @@ import java.util.TreeSet;
 
 
 /**
- * MapToN mapes comparable objects to a set of comparable objects
+ * MapToN maps comparable objects to a set of comparable objects
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

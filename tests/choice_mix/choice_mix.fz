@@ -153,8 +153,8 @@ choice_mix is
 
   for
     i := 0, i + 1
-  while i < 6
-    if i > 0 say "-------------"
+  while i ⩻ 6
+    if i ⩼ 0 say "-------------"
     yak "show_a : "; show_a
     yak "show_v : "; show_v
     yak "show_i : "; show_i
@@ -179,7 +179,7 @@ choice_mix is
     black   : color is redefine rgb => u32 0
     white   : color is redefine rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha >= 0, alpha <= 255
+      pre alpha ≥ u32 0, alpha ≤ u32 255
     is
       redefine rgb => alpha * 256*256*256
 
@@ -233,7 +233,7 @@ choice_mix is
     black   : color is redefine rgb => u32 0
     white   : color is redefine rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha >= 0, alpha <= 255
+      pre alpha ≥ u32 0, alpha ≤ u32 255
     is
       redefine rgb => alpha * 256*256*256
 
@@ -278,12 +278,12 @@ choice_mix is
 
   alternatives1 unit is // use pipe for choice result type
     f(i i32) i32 | bool | String is
-      if i < 10 { i }
-      else if i < 20 { i > 15 }
+      if i ⩻ 10 { i }
+      else if i ⩻ 20 { i ⩼ 15 }
       else { "Large" }
     for
       i := 0, i + 1
-    while i<25
+    while i ⩻ 25
       yak "$i ==> "
       match f(i)
         x i32 => yak x
@@ -297,20 +297,20 @@ choice_mix is
   alternatives1
 
   alternatives2 unit is // use pipe for choice argument type
-    Nil is
-    MyRef (a,b,c i32) ref is
+    Nil2 is
+    MyRef2 (a,b,c i32) ref is
 
-    test(p i32 | bool | String | Nil | MyRef) unit is
+    test(p i32 | bool | String | Nil2 | MyRef2) unit is
       match p
         i i32    => say "i32:    $i"
         b bool   => say "bool:   $b"
         s String => say "string: $s"
-        n Nil    => say "Nil:    $n"
-        m MyRef  => say "MyRef:  $m"
+        n Nil2   => say "Nil:    $n"
+        m MyRef2 => say "MyRef:  $m"
 
     test 3
     test true
     test "string"
-    test Nil
-    test (MyRef 3 4 5)
+    test Nil2
+    test (MyRef2 3 4 5)
   alternatives2

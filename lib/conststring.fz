@@ -28,7 +28,7 @@
 # conststring cannot be called directly, instances are created implicitly by the
 # backend.
 #
-conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array u8 -1) unit unit unit is
+conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
 
   redef utf8 Sequence u8 is conststring.this
 
@@ -38,4 +38,4 @@ conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_
   # array.as_string
   #
   redef as_string String is conststring.this
-  redef is_empty => length = 0
+  redef is_empty => length ≟ 0

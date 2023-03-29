@@ -25,29 +25,29 @@
 
 transducertest : transducers is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
-  xf_filter := filter (Sequence i32) i32 (x -> x > 3)
+  xf_filter := filter (Sequence i32) i32 (x -> x ⩼ 3)
   r := (1..5).into xf_filter
-  chck ((comparable_sequence r) = (comparable_sequence [4, 5]))                            "filter transducer"
+  chck ((searchable_sequence r) ≟ (searchable_sequence [4, 5]))                            "filter transducer"
 
 
-  xf_map := map (Sequence bool) i32 bool (x -> x > 3)
+  xf_map := map (Sequence bool) i32 bool (x -> x ⩼ 3)
   r := (1..5).into xf_map
-  chck ((comparable_sequence r) = (comparable_sequence [false, false, false, true, true])) "map transducer"
+  chck ((searchable_sequence r) ≟ (searchable_sequence [false, false, false, true, true])) "map transducer"
 
 
   human(age i32) is
   ages := map (Sequence i32) human i32 (x -> x.age)
-  gt_ten := filter (Sequence i32) i32 (x -> x > 10)
+  gt_ten := filter (Sequence i32) i32 (x -> x ⩼ 10)
   r := [human(4), human(12), human(30)].into (ages ∘ gt_ten)
-  chck ((comparable_sequence r) = (comparable_sequence [12, 30]))                          "compose transducers"
+  chck ((searchable_sequence r) ≟ (searchable_sequence [12, 30]))                          "compose transducers"
 
-  exit exitCode
+  exit exit_code.get

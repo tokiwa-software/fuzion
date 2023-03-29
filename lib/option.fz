@@ -115,18 +115,15 @@ is
 
   # unwraps an option if it exists, returns default value otherwise.
   #
-  get(default T)
+  get(default Lazy T)
     =>
       option.this ? v T => v
                   | nil => default
 
-  # unwraps an option if it exists, returns default value otherwise. default
-  # is evaluated lazily.
+
+  # return function
   #
-  lazyGet(default ()->T)
-    =>
-      option.this ? v T => v
-                  | nil => default()
+  fixed type.return (a T) => option a
 
 
 # option with 1 argument provides an short-hand to wrap a value into an option
@@ -140,13 +137,3 @@ is
 #   o option TypeOfX := x
 #
 option(T type, o option T) => o
-
-
-# type related to option declaring features not requiring an instance of option
-#
-options(redef A type) : monads A (option A) is
-
-
-  # return function
-  #
-  return (a A) => option a

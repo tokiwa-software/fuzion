@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# Set -- an abstract set of values V
+# Set -- an abstract set of values
 #
-Set(E type : hasEquals E) ref : Sequence E is
+Set(E type : equatable) ref : Sequence E is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like

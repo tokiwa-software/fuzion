@@ -50,25 +50,25 @@ hasInterval(H type : hasInterval H) : integer H is
     lower H is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
 
-    size H is if lower <= upper then upper - lower + one else zero
+    size H is if lower ≤ upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
     redef for_each(f H -> unit) unit is
       for
         x := lower, x + one
-      while x <= upper
+      while x ≤ upper
         f x
 
     # create a stream of all the elements of this interval, in order.
     redef as_stream ref : stream H is
       x := num_option lower
-      redef has_next bool is x.exists && x.val <= upper
+      redef has_next bool is x.exists && (x.val ≤ upper)
       redef next H is res := x.val; set x := x +? one; res
 
 
     # does this range contain the given value?
     #
-    contains (e H) => lower <= e <= upper
+    contains (e H) => lower ≤ e ≤ upper
 
 
     # Create a Sequence that is stepping through this interval skipping values. For a
@@ -82,37 +82,29 @@ hasInterval(H type : hasInterval H) : integer H is
     #
     infix : (step H) : Set H is
 
-      # create a stream of all the elements of this interval, in order.
-      redef as_stream ref : stream H is
-        x := num_option lower
-        redef has_next bool is
-          (step > zero && x.exists && x.val <= upper ||
-           step < zero && x.exists && x.val >= upper    )
-        redef next H is res := x.val; set x := x +? step; res
-
-
       # list representation of values in this interval
       #
       redef as_list list H is
-        cons (head H) :  Cons H (list H) is
-          tail list H is
-            (lower+?step ? nil    => nil
-                         | next H => (next..upper:step).as_list)
-        if (step > zero && lower <= upper ||
-            step < zero && lower >= upper    )
-          cons lower
+        has_next_step => ((step ⩼ zero) && (lower ≤ upper) ||
+                          (step ⩻ zero) && (lower ≥ upper))
+
+        if has_next_step
+          tail =>
+            lower+?step ? nil => nil
+                        | next H => (next..upper:step).as_list
+          list lower tail
         else
           nil
 
 
       # does this range contain the given value?
       #
-      contains (e H) => lower <= e <= upper && ((e - lower) %% step)
+      contains (e H) => (lower ≤ e ≤ upper) && ((e - lower) %% step)
 
 
       # use map implementation from Sequence:
       #
-      map(B type, f H -> B)  => mapSequence f
+      map(B type, f H -> B)  => infix : .this.mapSequence f
 
 
     # create a list from this interval
@@ -120,8 +112,8 @@ hasInterval(H type : hasInterval H) : integer H is
     redef as_list list H is
       cons (head H) : Cons H (list H) is
         tail list H is
-          if (head >= upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.
-      if (lower > upper) nil else cons lower
+          if (head ≥ upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.
+      if (lower ⩼ upper) nil else cons lower
 
 
     # use map implementation from Sequence:

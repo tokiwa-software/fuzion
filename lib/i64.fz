@@ -28,7 +28,6 @@
 i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 
   redef thiz => i64.this.val
-  redef orderedThis => i64.this.val
 
   # overflow checking
 
@@ -36,16 +35,16 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i64) => thiz > 0 && max -° thiz < other
-  redef underflowOnAdd(other i64) => thiz < 0 && min -° thiz > other
+  redef overflowOnAdd (other i64) => thiz ⩼ i64 0 && i64.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i64) => thiz ⩻ i64 0 && i64.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i64) => thiz > 0 && thiz -° max > other
-  redef underflowOnSub(other i64) => thiz < 0 && thiz -° min < other
+  redef overflowOnSub (other i64) => thiz ⩼ i64 0 && thiz -° i64.type.max ⩼ other
+  redef underflowOnSub(other i64) => thiz ⩻ i64 0 && thiz -° i64.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i64) => if sign *° other.sign <= 0 false else (thiz *° other / other) != thiz
-  redef underflowOnMul(other i64) => if sign *° other.sign >= 0 false else (thiz *° other / other) != thiz
+  redef overflowOnMul (other i64) => if sign *° other.sign ≤ 0 false else !((thiz *° other / other) ≟ thiz)
+  redef underflowOnMul(other i64) => if sign *° other.sign ≥ 0 false else !((thiz *° other / other) ≟ thiz)
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i64 is intrinsic
@@ -56,11 +55,11 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # division and remainder with check for div-by-zero
   redef infix / (other i64)
     pre
-      safety: other != 0
+      safety: other != i64 0
    => div other
   redef infix % (other i64)
     pre
-      safety: other != 0
+      safety: other != i64 0
    => mod other
 
   # private division and remainder with crash in case of div-by-zero
@@ -76,22 +75,11 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef infix >> (other i64) i64 is intrinsic
   redef infix << (other i64) i64 is intrinsic
 
-  # comparison
-  redef infix == (other i64) bool is intrinsic
-  redef infix != (other i64) bool is intrinsic
-  redef infix <  (other i64) bool is intrinsic
-  redef infix <= (other i64) bool is intrinsic
-  redef infix >  (other i64) bool is intrinsic
-  redef infix >= (other i64) bool is intrinsic
-
-  fixed type.equality(a, b i64) bool is intrinsic
-
-
   # this i64 as an i8
   as_i8 i8
     pre
-      thiz >= i8.min.as_i64,
-      thiz <= i8.max.as_i64
+      thiz ≥ i8.type.min.as_i64,
+      thiz ≤ i8.type.max.as_i64
     is
       low8bits.as_i8
 
@@ -99,8 +87,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i16
   as_i16 i16
     pre
-      thiz <= i16.max.as_i64,
-      thiz <= i16.max.as_i64
+      # NYI: fix?
+      thiz ≤ i16.type.max.as_i64,
+      thiz ≤ i16.type.max.as_i64
     is
       low16bits.as_i16
 
@@ -108,8 +97,8 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i32
   as_i32 i32
     pre
-      thiz >= i32.min.as_i64,
-      thiz <= i32.max.as_i64
+      thiz ≥ i32.type.min.as_i64,
+      thiz ≤ i32.type.max.as_i64
     is
       low32bits.castTo_i32
 
@@ -117,10 +106,10 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an u8
   as_u8 u8
     pre
-      thiz >= 0
-#      thiz <= u8.max.as_i64
+      thiz ≥ (i64 0)
+#      thiz ≤ u8.type.max.as_i64
 #    post
-#      analysis: result.as_u64 == thiz
+#      analysis: result.as_u64 ≟ thiz
     is
       low8bits
 
@@ -128,10 +117,10 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an u16
   as_u16 u16
      pre
-      thiz >= 0
-#      thiz <= u16max.as_i64
+      thiz ≥ (i64 0)
+#      thiz ≤ u16.type.max.as_i64
 #    post
-#      analysis: result.as_u64 == thiz
+#      analysis: result.as_u64 ≟ thiz
     is
       low16bits
 
@@ -139,10 +128,10 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an u32
   as_u32 u32
     pre
-      thiz >= 0
-#      thiz <= u32.max.as_i64
+      thiz ≥ (i64 0)
+#      thiz ≤ u32.type.max.as_i64
 #    post
-#      analysis:  result.as_i64 == thiz
+#      analysis:  result.as_i64 ≟ thiz
     is
       low32bits
 
@@ -150,9 +139,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an u64
   as_u64 u64
     pre
-      thiz >= 0
+      thiz ≥ (i64 0)
 #    post
-#      analysis:  result.as_i64 == thiz
+#      analysis:  result.as_i64 ≟ thiz
     is
       castTo_u64
 
@@ -160,9 +149,9 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an u128
   as_u128 u128
     pre
-      thiz >= 0
+      thiz ≥ (i64 0)
     post
-      analysis:  result.as_i64 == thiz
+      analysis:  result.as_i64 ≟ thiz
     is
       u128 0 castTo_u64
 
@@ -174,7 +163,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
 
   # this i64 as an uint
   as_uint uint
-  pre val >= 0
+  pre val ≥ i64 0
   is
     uint val.as_u64
 
@@ -215,25 +204,58 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u64.onesCount
+  ones_count i32 is
+    val.castTo_u64.ones_count
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero i64 is 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one  i64 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b i64) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b i64) bool is intrinsic
+
+
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i64 -1
+
+
+  # minimum
+  #
+  fixed type.min => i64 -0x_8000_0000_0000_0000
+
+
+  # maximum
+  #
+  fixed type.max => i64 0x_7fff_ffff_ffff_ffff
+
 
 
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
-i64s : wrapping_integers i64 is
-
-  redef name => "i64"
+i64s : numerics i64 is
 
   redef zero => i64 0
   redef one  => i64 1
 
-  redef min => -0x_8000_0000_0000_0000
-  redef max =>  0x_7fff_ffff_ffff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i64 -1
 
 
 # i64 -- returns value of unit type i64s

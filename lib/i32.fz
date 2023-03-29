@@ -28,7 +28,6 @@
 i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
   redef thiz => i32.this.val
-  redef orderedThis => i32.this.val
 
   # overflow checking
 
@@ -36,16 +35,16 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i32) => thiz > 0 && max -° thiz < other
-  redef underflowOnAdd(other i32) => thiz < 0 && min -° thiz > other
+  redef overflowOnAdd (other i32) => thiz ⩼ 0 && i32.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i32) => thiz ⩻ 0 && i32.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i32) => thiz > 0 && thiz -° max > other
-  redef underflowOnSub(other i32) => thiz < 0 && thiz -° min < other
+  redef overflowOnSub (other i32) => thiz ⩼ 0 && thiz -° i32.type.max ⩼ other
+  redef underflowOnSub(other i32) => thiz ⩻ 0 && thiz -° i32.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 > max.as_i64
-  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 < min.as_i64
+  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 ⩼ i32.type.max.as_i64
+  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 ⩻ i32.type.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i32 is intrinsic
@@ -76,56 +75,46 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   redef infix >> (other i32) i32 is intrinsic
   redef infix << (other i32) i32 is intrinsic
 
-  # comparison
-  redef infix == (other i32) bool is intrinsic
-  redef infix != (other i32) bool is intrinsic
-  redef infix <  (other i32) bool is intrinsic
-  redef infix <= (other i32) bool is intrinsic
-  redef infix >  (other i32) bool is intrinsic
-  redef infix >= (other i32) bool is intrinsic
-
-  fixed type.equality(a, b i32) bool is intrinsic
-
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
-      thiz >= i8.min.as_i32,
-      thiz <= i8.max.as_i32
+      thiz ≥ i8.type.min.as_i32,
+      thiz ≤ i8.type.max.as_i32
     is
       low8bits.castTo_i8
   as_i16 i16
     pre
-      thiz >= i16.min.as_i32,
-      thiz <= i16.max.as_i32
+      thiz ≥ i16.type.min.as_i32,
+      thiz ≤ i16.type.max.as_i32
     is
       low16bits.castTo_i16
   as_i64 i64 is intrinsic
 # as_i128 NYI
   as_u8 u8
     pre
-      thiz >= u8.min.as_i32,
-      thiz <= u8.max.as_i32
+      thiz ≥ u8.type.min.as_i32,
+      thiz ≤ u8.type.max.as_i32
     is
       low8bits
   as_u16 u16
     pre
-      thiz >= u16.min.as_i32,
-      thiz <= u16.max.as_i32
+      thiz ≥ u16.type.min.as_i32,
+      thiz ≤ u16.type.max.as_i32
     is
       low16bits
   as_u32 u32
     pre
-      debug: thiz >= 0
+      debug: thiz ≥ 0
     is
       castTo_u32
   as_u64 u64
     pre
-      debug: thiz >= 0
+      debug: thiz ≥ 0
     is
       as_i64.as_u64
   as_u128 u128
     pre
-      debug: thiz >= 0
+      debug: thiz ≥ 0
     is
       u128 0 as_i64.as_u64
   as_int int is
@@ -169,8 +158,8 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  onesCount i32 is
-    val.castTo_u32.onesCount
+  ones_count i32 is
+    val.castTo_u32.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -180,29 +169,47 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
   # identity element for 'infix +'
   #
-  fixed type.zero => 0
+  fixed type.zero i32 is 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  => 1
+  fixed type.one  i32 is 1
+
+
+  # equality
+  #
+  fixed type.equality(a, b i32) bool is intrinsic
+
+
+  # total order
+  #
+  fixed type.lteq(a, b i32) bool is intrinsic
+
+
+  # returns the number in whose bit representation all bits are ones
+  redef type.all_bits_set => i32 -1
+
+
+  # minimum
+  #
+  fixed type.min => i32 -0x_8000_0000
+
+
+  # maximum
+  #
+  fixed type.max => i32 0x_7fff_ffff
+
 
 
 # i32s -- unit type defining features related to i32 but not requiring an
 # instance
 #
-i32s : wrapping_integers i32 is
-
-  redef name => "i32"
+i32s : numerics i32 is
 
   redef zero => 0
   redef one  => 1
 
-  redef min => -0x_8000_0000
-  redef max =>  0x_7fff_ffff
-
-  # returns the number in whose bit representation all bits are ones
-  redef all_bits_set => i32 -1
 
 
 # i32 -- returns value of unit type i32s

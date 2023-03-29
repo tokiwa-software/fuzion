@@ -291,7 +291,7 @@ class FixUps extends DataOut
 
 
   /**
-   * Get the offset that was previously recored for type t, or -1 if no offset
+   * Get the offset that was previously recorded for type t, or -1 if no offset
    * was record (i.e., t has not been written yet).
    */
   int offset(AbstractType t)

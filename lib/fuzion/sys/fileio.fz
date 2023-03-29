@@ -37,9 +37,9 @@ public fileio is
     buf := array n.as_i32 i->(u8 0)
     res := read fd buf.internalArray.data buf.length
 
-    if res < 0
+    if res ⩻ i64 0
       error "unspecified read error: {res}"
-    else if res < n.as_i64 || res = n.as_i64
+    else if res ⩻ n.as_i64 || res ≟ n.as_i64
       (buf.slice 0 res.as_i32).as_array
     else
       error "read more than expected"
@@ -75,7 +75,7 @@ public fileio is
   public write(fd i64, content array u8) outcome unit is
     res := write fd content.internalArray.data content.length
 
-    if res == 0
+    if res ≟ i8 0
       unit
     else
       error "write error: {res}"
@@ -168,6 +168,9 @@ public fileio is
   # returns TRUE in case the operation was successful and FALSE in case of failure
   # in case the path refers to a symbolic link it resolves it and returns info about the actual file
   #
+  # in case an error is returned (the result of this feature is false), then the size field of
+  # the meta_data array will contain the errno for the stat call.
+  #
   stats(
         # the internal array data representing the file/dir path in bytes
         path Any,
@@ -177,6 +180,9 @@ public fileio is
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
   # returns TRUE in case the operation was successful and FALSE in case of failure
   # in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
+  #
+  # in case an error is returned (the result of this feature is false), then the size field of
+  # the meta_data array will contain the errno for the lstat call.
   #
   lstats(path Any, meta_data Any) bool is intrinsic # NYI behaves the same as stats in the interpreter
 
@@ -192,7 +198,7 @@ public fileio is
               flag i8) outcome i64 is
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
     open (fuzion.sys.c_string path) open_results.internalArray.data flag
-    if open_results[1]==0
+    if open_results[1] ≟ i64 0
       open_results[0]
     else
       error "error number: {open_results[1]}"
@@ -216,7 +222,7 @@ public fileio is
                # file descriptor
                fd i64) outcome unit is
     closing_result := close fd unit
-    if closing_result == 0
+    if closing_result ≟ i8 0
       unit
     else
       error "error number: $closing_result"
@@ -243,7 +249,7 @@ public fileio is
               offset i64) outcome i64 is
     arr := array 2 (i -> i64 0)
     seek fd offset arr.internalArray.data
-    if arr[1]==0
+    if arr[1] ≟ i64 0
       arr[0]
     else
       error "error number: {arr[1]}"
@@ -271,7 +277,7 @@ public fileio is
                        fd i64) outcome i64 is
     arr := array 2 (i -> i64 0)
     file_position fd arr.internalArray.data
-    if arr[1]==0
+    if arr[1] ≟ i64 0
       arr[0]
     else
       error "error number: {arr[1]}"

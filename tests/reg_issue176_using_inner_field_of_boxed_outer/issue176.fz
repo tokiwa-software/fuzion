@@ -35,4 +35,4 @@ issue176 is
 
   match v.o
     e v.e => say e.i
-    nil nil => say nil
+    nil   => say nil

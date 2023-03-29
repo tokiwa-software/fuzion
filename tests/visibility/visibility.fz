@@ -25,21 +25,21 @@
 
 visibility is
 
-  exitCode := 0
+  exit_code := mut 0
 
   chck (b bool, msg String) unit is
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      set exitCode := 1
+      exit_code <- 1
 
   chck (a,b i32, msg String) unit is
-    if a == b
+    if a ≟ b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
-      set exitCode := 1
+      exit_code <- 1
 
   visi1 is
     a1 is
@@ -71,12 +71,12 @@ visibility is
           if b { a1; a2; b3; c5 false; c6 false }
           66
 
-    chck (a1.b1.c1(true) = 11) "call a1.b1.c1"
-    chck (a1.b1.c2(true) = 22) "call a1.b1.c2"
-    chck (a1.b2.c3(true) = 33) "call a1.b2.c3"
-    chck (a1.b2.c4(true) = 44) "call a1.b2.c4"
-    chck (a2.b3.c5(true) = 55) "call a2.b3.c5"
-    chck (a2.b3.c6(true) = 66) "call a2.b3.c6"
+    chck (a1.b1.c1(true) ≟ 11) "call a1.b1.c1"
+    chck (a1.b1.c2(true) ≟ 22) "call a1.b1.c2"
+    chck (a1.b2.c3(true) ≟ 33) "call a1.b2.c3"
+    chck (a1.b2.c4(true) ≟ 44) "call a1.b2.c4"
+    chck (a2.b3.c5(true) ≟ 55) "call a2.b3.c5"
+    chck (a2.b3.c6(true) ≟ 66) "call a2.b3.c6"
   visi1
 
 
@@ -86,59 +86,59 @@ visibility is
 
     a1 is
       f1 := expr
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+      chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
       b1 is
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
         f2 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
         c1 is
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
           f3 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
           chck f3 55 "can access f3"
           f4 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
           chck f3 55 "can access f3"
           chck f4 66 "can access f4"
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
 
         c2 is
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
           f5 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
-          chck (f5 == 55 || f5 == 121) "can access f5"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
+          chck (f5 ≟ 55 || f5 ≟ 121) "can access f5"
           f6 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
-          chck (f5 == 55 || f5 == 121) "can access f5"
-          chck (f6 == 66 || f6 == 132) "can access f6"
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+          chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
+          chck (f5 ≟ 55 || f5 ≟ 121) "can access f5"
+          chck (f6 ≟ 66 || f6 ≟ 132) "can access f6"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
         f7 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
-        chck (f7 == 44 || f7 == 110) "can access f7"
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f2 ≟ 33 || f2 ≟ 99) "can access f2"
+        chck (f7 ≟ 44 || f7 ≟ 110) "can access f7"
+      chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
       f8 := expr
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+      chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+      chck (f8 ≟ 22 || f8 ≟ 88 || f8 ≟ 154) "can access f8"
 
       b2 is
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f8 ≟ 22 || f8 ≟ 88 || f8 ≟ 154) "can access f8"
         f9 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
-        chck (f9 == 99 || f9 == 165) "can access f9"
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+        chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+        chck (f8 ≟ 22 || f8 ≟ 88 || f8 ≟ 154) "can access f8"
+        chck (f9 ≟ 99 || f9 ≟ 165) "can access f9"
+      chck (f1 ≟ 11 || f1 ≟ 77 || f1 ≟ 143) "can access f1"
+      chck (f8 ≟ 22 || f8 ≟ 88 || f8 ≟ 154) "can access f8"
     a1.b1.c1
     a1.b1.c2
     a1.b2
@@ -152,59 +152,59 @@ visibility is
 
     a1 is
       f1 := expr
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+      set f1 := 111; chck (f1 ≟ 111) "can assign f1"
       b1 is
-        set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
         f2 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f2 := 222; chck (f2 ≟ 222) "can assign f2"
         c1 is
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
           f3 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f3 := 333; chck (f3 == 333) "can assign f3"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
+          set f3 := 333; chck (f3 ≟ 333) "can assign f3"
           f4 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f3 := 333; chck (f3 == 333) "can assign f3"
-          set f4 := 444; chck (f4 == 444) "can assign f4"
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
+          set f3 := 333; chck (f3 ≟ 333) "can assign f3"
+          set f4 := 444; chck (f4 ≟ 444) "can assign f4"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f2 := 222; chck (f2 ≟ 222) "can assign f2"
 
         c2 is
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
           f5 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f5 := 555; chck (f5 == 555) "can assign f5"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
+          set f5 := 555; chck (f5 ≟ 555) "can assign f5"
           f6 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f5 := 555; chck (f5 == 555) "can assign f5"
-          set f6 := 666; chck (f6 == 666) "can assign f6"
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+          set f2 := 222; chck (f2 ≟ 222) "can assign f2"
+          set f5 := 555; chck (f5 ≟ 555) "can assign f5"
+          set f6 := 666; chck (f6 ≟ 666) "can assign f6"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f2 := 222; chck (f2 ≟ 222) "can assign f2"
         f7 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
-        set f7 := 777; chck (f7 == 777) "can assign f7"
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f2 := 222; chck (f2 ≟ 222) "can assign f2"
+        set f7 := 777; chck (f7 ≟ 777) "can assign f7"
+      set f1 := 111; chck (f1 ≟ 111) "can assign f1"
       f8 := expr
-      set f1 := 111; chck (f1 == 111) "can assign f1"
-      set f8 := 888; chck (f8 == 888) "can assign f8"
+      set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+      set f8 := 888; chck (f8 ≟ 888) "can assign f8"
 
       b2 is
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f8 := 888; chck (f8 == 888) "can assign f8"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f8 := 888; chck (f8 ≟ 888) "can assign f8"
         f9 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f8 := 888; chck (f8 == 888) "can assign f8"
-        set f9 := 999; chck (f9 == 999) "can assign f9"
-      set f1 := 111; chck (f1 == 111) "can assign f1"
-      set f8 := 888; chck (f8 == 888) "can assign f8"
+        set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+        set f8 := 888; chck (f8 ≟ 888) "can assign f8"
+        set f9 := 999; chck (f9 ≟ 999) "can assign f9"
+      set f1 := 111; chck (f1 ≟ 111) "can assign f1"
+      set f8 := 888; chck (f8 ≟ 888) "can assign f8"
     a1.b1.c1
     a1.b1.c2
     a1.b2
@@ -214,20 +214,20 @@ visibility is
   visi4 is
     a is
       x => "Outer!"
-      chck (x == "Outer!") "outer x"
+      chck (x ≟ "Outer!") "outer x"
       b is
         x => "Inner!"
-        chck (x == "Inner!") "inner x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"
+        # chck (x ≟ "Inner!") "inner x"      -- causes an error, `x` is ambiguous
+        chck (a.this.x ≟ "Outer!") "a.this.x"
+        chck (b.this.x ≟ "Inner!") "b.this.x"
 
         c is
-          chck (x == "Inner Inner!") "inner inner x"
+          # chck (x ≟ "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
           x => "Inner Inner!"
-          chck (x == "Inner Inner!") "inner inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x"
+          # chck (x ≟ "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
+          chck (c.this.x ≟ "Inner Inner!") "c.this.x"
     a.b.c
     unit
   visi4
@@ -235,25 +235,25 @@ visibility is
   visi5 is
     a is
       x := "Outer!"
-      chck (x == "Outer!") "outer x"
-      chck (a.this.x == "Outer!") "a.this.x"
+      chck (x ≟ "Outer!") "outer x"
+      chck (a.this.x ≟ "Outer!") "a.this.x"
       b is
-        chck (x == "Outer!") "outer x"
-        chck (a.this.x == "Outer!") "a.this.x"
+        chck (x ≟ "Outer!") "outer x"
+        chck (a.this.x ≟ "Outer!") "a.this.x"
         x := "Inner!"
-        chck (x == "Inner!") "inner x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"
+        chck (x ≟ "Inner!") "inner x"
+        chck (a.this.x ≟ "Outer!") "a.this.x"
+        chck (b.this.x ≟ "Inner!") "b.this.x"
 
         c is
-          chck (x == "Inner!") "inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
+          chck (x ≟ "Inner!") "inner x"
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
           x := "Inner Inner!"
-          chck (x == "Inner Inner!") "inner inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x"
+          chck (x ≟ "Inner Inner!") "inner inner x"
+          chck (a.this.x ≟ "Outer!") "a.this.x"
+          chck (b.this.x ≟ "Inner!") "b.this.x"
+          chck (c.this.x ≟ "Inner Inner!") "c.this.x"
     a.b.c
     unit
 // NYI:   visi5
@@ -270,18 +270,18 @@ visibility is
     x := x*x*x*x;    g () -> String := () -> "x is "+x+""
     x := x.as_string; h () -> String := () -> "x is "+x+""
     x := x * 5;      i () -> String := () -> "x is "+x+""
-    chck (f.call() == "x is 2") "x is 2"
-    chck (g.call() == "x is 16") "x is 16"
-    chck (h.call() == "x is 16") "x is 16"
-    chck (i.call() == "x is 1616161616") "x is 1616161616"
+    chck (f.call() ≟ "x is 2") "x is 2"
+    chck (g.call() ≟ "x is 16") "x is 16"
+    chck (h.call() ≟ "x is 16") "x is 16"
+    chck (i.call() ≟ "x is 1616161616") "x is 1616161616"
     x := 2;          f1 => r := "x is "+x+""; r
     x := x*x*x*x;    g1 => r := "x is "+x+""; r
     x := x.as_string; h1 => r := "x is "+x+""; r
     x := x * 5;      i1 => r := "x is "+x+""; r
-    chck (f1 == "x is 2") "x is 2"
-    chck (g1 == "x is 16") "x is 16"
-    chck (h1 == "x is 16") "x is 16"
-    chck (i1 == "x is 1616161616") "x is 1616161616"
+    chck (f1 ≟ "x is 2") "x is 2"
+    chck (g1 ≟ "x is 16") "x is 16"
+    chck (h1 ≟ "x is 16") "x is 16"
+    chck (i1 ≟ "x is 1616161616") "x is 1616161616"
   visi7
 
   visi8(cond bool) is
@@ -307,10 +307,10 @@ visibility is
       it1 in ix1..(ix2+a)                // can make unqualified call to a, ix1, ix2 ..
       it2 in it1..2*it1                  // can make unqualified call to a, ix1, ix2, it1 ..
       ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
-    while a + ix1 + ix2 + it1 + it2 + ix3 < 10000
+    while a + ix1 + ix2 + it1 + it2 + ix3 ⩻ 10000
       b => 6
       q := a + ix1 + ix2 + it1 + it2 + ix3 + b
-    until a * (ix1 + ix2 + it1 + it2 + ix3 + b) > 1000000
+    until a * (ix1 + ix2 + it1 + it2 + ix3 + b) ⩼ 1000000
       r := a + ix1 + ix2 + it1 + it2 + ix3 + b
     else
       // s := a + ix1 + ix2   // NYI: field declaration in else clause does not work yet
@@ -337,4 +337,4 @@ visibility is
     r := red magenta; say "red magenta is $r"
   visiB
 
-  exit exitCode
+  exit exit_code.get

@@ -175,6 +175,11 @@ is
                  | e error => e
 
 
+  # return function
+  #
+  fixed type.return (a T) => outcome a
+
+
 # outcome with 1 argument provides an short-hand to wrap a value into a
 # outcome
 #
@@ -187,13 +192,3 @@ is
 #   o outcome TypeOfX := x
 #
 outcome(T type, o outcome T) => o
-
-
-# type related to outcome declaring features not requiring an instance of outcome
-#
-outcomes(redef A type) : monads A (outcome A) is
-
-
-  # return function
-  #
-  return (a A) => outcome a

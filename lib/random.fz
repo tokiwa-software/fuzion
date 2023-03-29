@@ -45,14 +45,14 @@ is
   # return next random number of type i32 in the range 0..max-1
   #
   next_i32(max i32)
-  pre max >= 0
+  pre max ≥ 0
    => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
   next_i64(max i64)
-  pre max >= 0
+  pre max ≥ i64 0
    => (next.get max.as_u64).as_i64
 
 
@@ -70,7 +70,7 @@ is
   # result will never be equal to f32 1
   #
   next_f32 =>
-    max := u64 1 << f32s.significandBits.as_u64
+    max := u64 1 << f32.type.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
 
@@ -78,7 +78,7 @@ is
   # result will never be equal to f64 1
   #
   next_f64 =>
-    max := u64 1 << f64s.significandBits.as_u64
+    max := u64 1 << f64.type.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 

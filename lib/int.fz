@@ -29,7 +29,7 @@ int (s sign, n uint) : hasInterval int
 is
 
   # normalize the sign => no minus zero
-  ns := if n = n.zero then plus else s
+  ns := if n ≟ uint.type.zero then plus else s
 
   max int is
     panic "invalid, there is no max int."
@@ -39,6 +39,13 @@ is
 
   name String is
     "int"
+
+  fixed type.zero int is
+    int plus uint.type.zero
+
+  fixed type.one int is
+    int plus uint.type.one
+
 
   redef zero int is
     int plus n.zero
@@ -55,7 +62,7 @@ is
 
   # add this int to other
   infix +  (other int) int is
-    if ns = other.ns
+    if ns ≟ other.ns
       int ns n+other.n
     else
       match ns
@@ -69,7 +76,7 @@ is
       plus =>
         match ns
           plus =>
-            if n >= other.n
+            if n ≥ other.n
               int plus (n - other.n)
             else
               int minus (other.n - n)
@@ -81,7 +88,7 @@ is
   # the sign of the result of the
   # multiplication or division of thiz and other
   private result_sign_mul_div(other int) sign is
-    if ns = other.ns then plus else minus
+    if ns ≟ other.ns then plus else minus
 
 
   # multiply this int by other
@@ -91,7 +98,7 @@ is
 
   # divide this int by other
   infix /  (other int) int
-  pre other != zero
+  pre other != int.type.zero
   is
     s sign := result_sign_mul_div other
     int s n/other.n
@@ -106,7 +113,7 @@ is
   # exponentation operator:
   # this int to the power of other
   infix ** (other int) int
-  pre other >= zero
+  pre other ≥ int.type.zero
   is
     match s
       plus => int plus (n ** other.n)
@@ -124,11 +131,11 @@ is
   infix -! (other int) bool is true
   infix *! (other int) bool is true
   infix /! (other int) bool is
-    other != zero
+    other != int.type.zero
   infix %! (other int) bool is true
 
   infix **!(other int) bool is
-    other >= zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
+    other ≥ int.type.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
   infix **?(other int) num_option int is
     match other.ns
@@ -140,26 +147,23 @@ is
       plus => thiz ** other
       minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
-  # are these two ints equal?
-  infix == (other int) bool is
-    ns = other.ns & n = other.n
-
+  # equality: are these two ints equal?
+  #
   fixed type.equality(a, b int) bool is
     (a.ns ≟ b.ns) & (a.n ≟ b.n)
 
-  orderedThis int is int ns n
-
-  # is less or equal
-  infix <= (other int) bool is
-    match ns
+  # total order
+  #
+  fixed type.lteq(a, b int) bool is
+    match a.ns
       plus =>
-        match other.ns
-          plus => n <= other.n
+        match b.ns
+          plus => a.n ≤ b.n
           minus => false
       minus =>
-        match other.ns
+        match b.ns
           plus => true
-          minus => other.n <= n
+          minus => b.n ≤ a.n
 
   redef as_string String is
     s.as_string + n.as_string
@@ -175,7 +179,14 @@ is
     n.as_i64
 
 
-  # this int as an i64
+  # this int as an u8
+  as_u8 u8
+  pre s.is_plus
+  is
+      n.as_u8
+
+
+  # this int as an u32
   as_u32 u32
   pre s.is_plus
   is
@@ -196,28 +207,32 @@ is
     n
 
 
-int (val i64) int is
-  ints.from_i64 val
-
-
-ints is
   # helper feature to init int via an i64
-  from_i64(val i64) int is
-    s sign := if val < 0 then minus else plus
-    n u64 := if val = i64s.min
-               i64.max.as_u64 + 1
-             else if val < 0
+  type.from_i64(val i64) int is
+    s sign := if val ⩻ (i64 0) then minus else plus
+    n u64 := if val ≟ i64.type.min
+               i64.type.max.as_u64 + 1
+             else if val ⩻ (i64 0)
                (-val).as_u64
              else val.as_u64
-    int s (uints.from_u64 n)
+    int s (uint n)
+
 
   # helper feature to init int via a u64
-  from_u64(val u64) int is
-    int plus (uints.from_u64 val)
+  type.from_u64(val u64) int is
+    int plus (uint val)
+
 
   # helper feature to init int via an i32
-  from_i32(val i32) int is
+  type.from_i32(val i32) int is
     from_i64 val.as_i64
+
+
+
+# shorthand to create an int via an i64
+int (val i64) int is
+  int.type.from_i64 val
+
 
 
 # positive sign of a number
@@ -238,24 +253,15 @@ minus is
 #
 # this can be plus or minus
 #
-sign : choice plus minus, has_equality, hasEquals sign is
+sign : choice plus minus, equatable is
 
   is_plus =>
     match sign.this
       plus => true
       minus => false
 
-  infix = (o sign) bool is
-    match sign.this
-      plus =>
-        match o
-          plus => true
-          minus => false
-      minus =>
-        match o
-          plus => false
-          minus => true
-
+  # equality: are these signs equal?
+  #
   fixed type.equality(a, b sign) bool is
     match a
       plus =>
