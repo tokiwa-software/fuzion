@@ -131,26 +131,14 @@ public class If extends ExprWithPos
       (elseBlock == null,
        elseIf == null);
 
-    elseBlock = b;
-    if (this.elseBlock != null)
+    if (b._statements.size() == 1 && b._statements.get(0) instanceof If i)
       {
-        this.elseBlock._newScope = true;
+        elseIf = i;
       }
-  }
-
-
-  /**
-   * setElse
-   *
-   * @param f
-   */
-  public void setElse(If f)
-  {
-    if (PRECONDITIONS) require
-      (elseBlock == null,
-       elseIf == null);
-
-    elseIf = f;
+    else
+      {
+        elseBlock = b;
+      }
   }
 
 
