@@ -57,10 +57,7 @@ outside.
 ```
 ex_gcd is
   max(a, b i32) i32 is
-    if a > b
-      a
-    else
-      b
+    if a > b then a else b
 
   common_divisors_of(a, b i32) list i32 is
     x := max a.abs b.abs
@@ -82,7 +79,7 @@ ex_gcd is
     if b = 0
       a
     else
-      gcd(b, a % b)
+      gcd b (a % b)
 
 
   say (gcd 8 12)
