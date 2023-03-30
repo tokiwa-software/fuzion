@@ -2518,7 +2518,14 @@ PIPE        : "|"
                     }
                   if (c < 0)
                     {
-                      Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
+                      if (p == (int) '\n')
+                        {
+                          // codepoint is skipped
+                        }
+                      else
+                        {
+                          Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
+                        }
                     }
                   escaped = false;
                 }
