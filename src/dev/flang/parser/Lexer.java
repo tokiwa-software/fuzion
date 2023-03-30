@@ -2718,7 +2718,7 @@ PIPE        : "|"
     {
       return (pos < 0 || pos+2 >= byteLength())
         ? false
-        : codePoint(pos) == '"' && codePoint(pos+1) == '"' && codePoint(pos+2) == '"';
+        : byteAt(pos) == '"' && byteAt(pos+1) == '"' && byteAt(pos+2) == '"';
     }
 
 
