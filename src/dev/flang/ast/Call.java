@@ -2038,7 +2038,7 @@ public class Call extends AbstractCall
       }
     _resolvedFor = outer;
     loadCalledFeature(res, outer);
-    FormalGenerics.resolve(res, _generics, outer);
+    _generics = FormalGenerics.resolve(res, _generics, outer);
 
     if (CHECKS) check
       (Errors.count() > 0 || _calledFeature != null);
