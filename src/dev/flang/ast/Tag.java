@@ -77,6 +77,8 @@ public class Tag extends Expr
   {
     super();
 
+    taggedType.checkChoice(value.pos());
+
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
