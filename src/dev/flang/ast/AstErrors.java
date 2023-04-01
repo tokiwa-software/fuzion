@@ -984,6 +984,14 @@ public class AstErrors extends ANY
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
+  public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
+  {
+    cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",
+                   "To solve this, re-think what you want to do.  Choice types are fairly static and not extensible. " +
+                   "If you need an extensible type, an abstract "+code("ref")+" feature with children for each case " +
+                   "might fit better. ");
+  }
+
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
