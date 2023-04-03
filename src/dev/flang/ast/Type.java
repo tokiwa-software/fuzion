@@ -981,7 +981,7 @@ public class Type extends AbstractType
               {
                 this._generics = feature.generics().asActuals();
               }
-            FormalGenerics.resolve(res, _generics, outerfeat);
+            _generics = FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                   this.pos2BeRemoved(),
                                                                   "type",

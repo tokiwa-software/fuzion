@@ -1265,11 +1265,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                       }
                     else
                       {
+                        var actualTypes = c.actualTypeParameters();
                         if (res != null)
                           {
-                            FormalGenerics.resolve(res, c.actualTypeParameters(), heir);
+                            actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                           }
-                        ti = ti.actualType(c.calledFeature(), c.actualTypeParameters());
+                        ti = ti.actualType(c.calledFeature(), actualTypes);
                         a[i] = Types.intern(ti);
                       }
                   }
