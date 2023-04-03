@@ -1,9 +1,9 @@
 inside m.go: s.get = 81
 inside m.go: count = 81
 using m.go and count: 81
-*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum.m'' ***
+*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum#0.sum#1.m'' ***
 ok
-*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum.m'' ***
+*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum#0.sum#1.m'' ***
 ok
 [0,8,11,15,47]
 []

@@ -35,12 +35,12 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i64) => thiz ⩼ i64 0 && max -° thiz ⩻ other
-  redef underflowOnAdd(other i64) => thiz ⩻ i64 0 && min -° thiz ⩼ other
+  redef overflowOnAdd (other i64) => thiz ⩼ i64 0 && i64.type.max -° thiz ⩻ other
+  redef underflowOnAdd(other i64) => thiz ⩻ i64 0 && i64.type.min -° thiz ⩼ other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i64) => thiz ⩼ i64 0 && thiz -° max ⩼ other
-  redef underflowOnSub(other i64) => thiz ⩻ i64 0 && thiz -° min ⩻ other
+  redef overflowOnSub (other i64) => thiz ⩼ i64 0 && thiz -° i64.type.max ⩼ other
+  redef underflowOnSub(other i64) => thiz ⩻ i64 0 && thiz -° i64.type.min ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other i64) => if sign *° other.sign ≤ 0 false else !((thiz *° other / other) ≟ thiz)
@@ -78,8 +78,8 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i8
   as_i8 i8
     pre
-      thiz ≥ i8.min.as_i64,
-      thiz ≤ i8.max.as_i64
+      thiz ≥ i8.type.min.as_i64,
+      thiz ≤ i8.type.max.as_i64
     is
       low8bits.as_i8
 
@@ -88,8 +88,8 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   as_i16 i16
     pre
       # NYI: fix?
-      thiz ≤ i16.max.as_i64,
-      thiz ≤ i16.max.as_i64
+      thiz ≤ i16.type.max.as_i64,
+      thiz ≤ i16.type.max.as_i64
     is
       low16bits.as_i16
 
@@ -97,8 +97,8 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i32
   as_i32 i32
     pre
-      thiz ≥ i32.min.as_i64,
-      thiz ≤ i32.max.as_i64
+      thiz ≥ i32.type.min.as_i64,
+      thiz ≤ i32.type.max.as_i64
     is
       low32bits.castTo_i32
 
@@ -107,7 +107,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   as_u8 u8
     pre
       thiz ≥ (i64 0)
-#      thiz ≤ u8.max.as_i64
+#      thiz ≤ u8.type.max.as_i64
 #    post
 #      analysis: result.as_u64 ≟ thiz
     is
@@ -118,7 +118,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   as_u16 u16
      pre
       thiz ≥ (i64 0)
-#      thiz ≤ u16max.as_i64
+#      thiz ≤ u16.type.max.as_i64
 #    post
 #      analysis: result.as_u64 ≟ thiz
     is
@@ -129,7 +129,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   as_u32 u32
     pre
       thiz ≥ (i64 0)
-#      thiz ≤ u32.max.as_i64
+#      thiz ≤ u32.type.max.as_i64
 #    post
 #      analysis:  result.as_i64 ≟ thiz
     is
@@ -237,19 +237,24 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   redef type.all_bits_set => i64 -1
 
 
+  # minimum
+  #
+  fixed type.min => i64 -0x_8000_0000_0000_0000
+
+
+  # maximum
+  #
+  fixed type.max => i64 0x_7fff_ffff_ffff_ffff
+
+
 
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
-i64s : wrapping_integers i64 is
-
-  redef name => "i64"
+i64s : numerics i64 is
 
   redef zero => i64 0
   redef one  => i64 1
-
-  redef min => -0x_8000_0000_0000_0000
-  redef max =>  0x_7fff_ffff_ffff_ffff
 
 
 

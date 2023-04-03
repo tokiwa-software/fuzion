@@ -565,6 +565,13 @@ public class DFA extends ANY
   static TreeMap<String, IntrinsicDFA> _intrinsics_ = new TreeMap<>();
 
 
+  /**
+   * Maximun recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * details.
+   */
+  private static int MAX_NEW_CALL_RECURSION = 20;
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -638,6 +645,20 @@ public class DFA extends ANY
    * new information.
    */
   TreeSet<Call> _newCalls = new TreeSet<>();
+
+
+  /**
+   * Current number of recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * details.
+   */
+  private int _newCallRecursiveAnalyzeCalls = 0;
+
+
+  /**
+   * Clazz ids for clazzes for of newly created calls for which recursive analysis is performed,
+   * see `analyzeNewCall` for details.
+   */
+  private int[] _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
 
 
   /**
@@ -1458,8 +1479,48 @@ public class DFA extends ANY
             _changedSetBy = "DFA.newCall to "+e;
           }
         _changed = true;
+        analyzeNewCall(r);
       }
     return e;
+  }
+
+
+  /**
+   * Helper for newCall to analyze a newly created call immediately. This helps
+   * to avoid quadratic performance when analysing a sequence of calls as in
+   *
+   *  a 1; a 2; a 3; a 4; a 5; ...
+   *
+   * Since a new call das not return, the analysis would stop for each iteration
+   * after the fist new call.
+   *
+   * However, we cannot analyze all calls immediately since a recursive call
+   * would result in an unbounded recursion during DFA.  So this analyzes the
+   * call immediately unless it is part of a recursion or there are already
+   * MAX_NEW_CALL_RECURSION new calls being analyzed right now.
+   *
+   * This might run into quadratic performance for code like the code above if
+   * `a` would itself perform a new call to `b`, and `b` to `c`, etc. to a depth
+   * that exceeds MAX_NEW_CALL_RECURSION.
+   */
+  private void analyzeNewCall(Call e)
+  {
+    var cnt = _newCallRecursiveAnalyzeCalls;
+    if (cnt < _newCallRecursiveAnalyzeClazzes.length)
+      {
+        var rec = false;
+        for (var i = 0; i<cnt; i++)
+          {
+            rec = rec || _newCallRecursiveAnalyzeClazzes[i] == e._cc;
+          }
+        if (!rec)
+          {
+            _newCallRecursiveAnalyzeClazzes[cnt] = e._cc;
+            _newCallRecursiveAnalyzeCalls = cnt + 1;
+            analyze(e);
+            _newCallRecursiveAnalyzeCalls = cnt ;
+          }
+      }
   }
 
 

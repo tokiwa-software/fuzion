@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test multiline_strings_test
+#
+# -----------------------------------------------------------------------
+
+# A small test for multiline strings with embedded identifiers and expressions
+#
+multiline_strings_test is
+
+  # world with multibyte unicode character
+  world := "w😀rld"
+
+  # simple multi line string
+  say """
+    hell😀
+    w😀rld"""
+
+  # multiline string ending with new line
+  # using interpolation
+  say """
+    hell😀
+    $world
+    """
+
+  # multiline string with empty lines and
+  # escape codes
+  say """
+    hell😀\sw😀rld\s!
+
+     {   world   }\s
+    """
+
+
+  # nested multiline string
+  say """
+    hell😀 {
+if true
+  """
+{world}"""
+else
+  "?"
+    }"""
+
+
+  # nested multiline string using braces and dollar interpolation
+  say """
+    hell😀 {
+if true
+  """
+{"""
+  $world"""}"""
+else
+  "?"
+    }"""
+
+
+  # multiline string containing " and ""
+  say """
+    "hell😀 world"!
+    ""hell😀 world""!
+  """

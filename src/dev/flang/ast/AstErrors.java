@@ -38,6 +38,7 @@ import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Terminal;
 
@@ -983,6 +984,14 @@ public class AstErrors extends ANY
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
+  public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
+  {
+    cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",
+                   "To solve this, re-think what you want to do.  Choice types are fairly static and not extensible. " +
+                   "If you need an extensible type, an abstract "+code("ref")+" feature with children for each case " +
+                   "might fit better. ");
+  }
+
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
@@ -1510,12 +1519,14 @@ public class AstErrors extends ANY
           "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
-  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)
+  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, List<Pair<SourcePosition, AbstractType>> foundAt)
   {
     error(pos,
           "Incompatible types found during type inference for type parameters",
           "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
-          foundAt);
+          foundAt.stream()
+                 .map(p -> s(p._v1) + " found at " + p._v0.show() + "\n")
+                 .collect(Collectors.joining()));
   }
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)

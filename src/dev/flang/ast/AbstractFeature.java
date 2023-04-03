@@ -312,9 +312,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public String qualifiedName()
   {
     var n = featureName().baseName();
+    var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? outer().typeFeatureOrigin().qualifiedName() + ".this.type" :
+      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
@@ -680,7 +681,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           {
             var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
             tl.add(ta);
-            }
+          }
         t = t.actualType(this, tl);
       }
     t = t instanceof Type tt ? tt.clone(this) : t;
@@ -704,7 +705,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       !isUniverse(),
+       Errors.count() > 0 || !isUniverse(),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -712,6 +713,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         if (hasTypeFeature())
           {
             _typeFeature = typeFeature();
+          }
+        else if (isUniverse())
+          {
+            if (CHECKS) check
+              (Errors.count() > 0);
+            _typeFeature = Types.f_ERROR;
           }
         else
           {
@@ -1117,7 +1124,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * This is the case for constructors and choice features.
    *
    * Type features and any features declared within type features do not declare
-   * types.  Allowing this would open up the pandora tin of having instances of
+   * types.  Allowing this would open up Pandora's box of having instances of
    * the f.type.type, f.type.type.type, f.type.type.type.type, ...
    */
   public boolean definesType()
@@ -1258,11 +1265,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                       }
                     else
                       {
+                        var actualTypes = c.actualTypeParameters();
                         if (res != null)
                           {
-                            FormalGenerics.resolve(res, c.actualTypeParameters(), heir);
+                            actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                           }
-                        ti = ti.actualType(c.calledFeature(), c.actualTypeParameters());
+                        ti = ti.actualType(c.calledFeature(), actualTypes);
                         a[i] = Types.intern(ti);
                       }
                   }

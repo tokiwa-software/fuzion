@@ -1,0 +1,175 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion issue1236
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# simple example calling `dynamic_type`
+#
+test1 is
+  H ref is
+  hello : H is
+  h H is hello
+  ex =>
+    x H := h;
+    xt := x.dynamic_type
+    say "xt is $xt"
+    say "h.dynamic_type: "+h.dynamic_type
+  ex
+
+# calling `show` with ref to different dynamic types, using
+# `dt`, which is a lokal implementation of Any.dynamic_type.
+#
+test2 is
+  a ref is
+    dt => a.this.type
+    redef as_string => "a"
+    b : c is
+      redef as_string => "b"
+      say a.this.type
+
+  c : a is
+    redef as_string => "c"
+
+  ex_1236b =>
+    _ := a.b
+    say c
+    show a
+    show a.b
+    show c
+
+  show(x a) => say "$x: {x.dt}"
+
+  ex_1236b
+
+# calling `show` with ref to different dynamic types, using
+# `Any.dt0`, which is an additional implementation of
+# Any.dynamic_type.
+#
+test3 is
+  Any.dt0 => Any.this.type
+  a ref is
+    b : c is
+
+  c : a is
+
+  ex_1236c =>
+    show a
+    show a.b
+    show c
+
+  show(x a) => say x.dt0
+
+  ex_1236c
+
+# same as test2, but w/o as_strings
+#
+test4 is
+  a ref is
+    dt : a => a.this.type
+    b : c is
+
+  c : a is
+
+  ex_1236d =>
+    show a
+    show a.b
+    show c
+
+  show(x a) => say x.dt
+
+  ex_1236d
+
+# reproduction of a tricky generic args replacement: `A` has to be replaced by
+# `u8` via `T`.
+#
+test5 is
+  s(T type) is
+  l(A type) is
+    as : s A is
+
+  say (l u8).as.type
+
+# more tricky generic args replacement
+#
+test6 is
+  s(T type) is
+  l(A type) is
+    as : s A is
+
+  say (l u8).as.type
+
+  h(B type) is
+    dd : l B is
+  i3 : h i3 is
+
+  say i3.dd.as.type
+
+# adding our own version of Any.dynamic_type and calling it on "hello"
+#
+test7 is
+  Any.dynamic_type2 Type is Any.this.type
+  ex =>
+    "hello".dynamic_type2
+
+  _ := ex
+
+# adding our own version of Any.dynamic_type and calling it on "hello"
+#
+test8 is
+
+  Any.dynamic_type1 Type is Any.this.type
+
+  ex =>
+    "hello".dynamic_type1
+
+  e := ex
+  say e
+
+# using Any.dynamic_type on "hello"
+#
+test9 is
+
+  ex =>
+    "hello".dynamic_type
+
+  e := ex
+  say e
+
+# using Any.dynamic_type on a list of i32
+#
+test10 is
+  h Any is
+    42 : nil
+  x := h.dynamic_type
+  say x
+
+_ := test1
+_ := test2
+_ := test3
+_ := test4
+_ := test5
+_ := test6
+_ := test7
+_ := test8
+_ := test9
+_ := test10

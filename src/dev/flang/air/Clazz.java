@@ -655,6 +655,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || !t.isOpenGeneric());
 
     t = t.applyToGenericsAndOuter(x -> actualType(x));
+    t = replaceThisType(t);
+
     return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
                           : Clazzes.clazz(actualType(t, -1));
   }
@@ -668,11 +670,52 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t)
   {
+    t = replaceThisTypeForTypeFeature(t);
     if (t.isThisType())
       {
         t = findOuter(t.featureOfType(), t.featureOfType())._type;
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
+  }
+
+
+  /**
+   * Special handling for features whose outer features are type features: Any
+   * references to x.this.type have to be replaced by the correspondig
+   * original. See example from #1260:
+   *
+   *   t is
+   *     h(B type) is
+   *     i : h i is
+   *     x := i.type
+   *
+   * Here, in the inherits call to `h i`, the type parameter is
+   * `t.this.type.i`. So in the corresponding type feature has two
+   *
+   *   t.type.h.type t.i t.this.type.i
+   *
+   * the second type parameter for `B` has to get it's `this.type` types
+   * replaced by the actual types given in the first type parameter
+   */
+  AbstractType replaceThisTypeForTypeFeature(AbstractType t)
+  {
+    if (feature().isTypeFeature() && !t.isGenericArgument())
+      {
+        var g = t.generics();
+        if (t.featureOfType().isTypeFeature())
+          {
+            var this_type = g.get(0);
+            g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
+                                          : x.replace_this_type_by_actual_outer(this_type));
+          }
+        var o = t.outer();
+        if (o != null)
+          {
+            o = replaceThisTypeForTypeFeature(o);
+          }
+        t = Types.intern(new Type(t, g, o));
+      }
+    return t;
   }
 
 
@@ -2080,11 +2123,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o && i.outerRef() != null)
+    while (i != o)
       {
-        res = res.lookup(i.outerRef(), pos).resultClazz();
+        res =  i.hasOuterRef() ? res.lookup(i.outerRef(), pos).resultClazz()
+                               : res._outer;
         i = i.outer();
       }
+
+    if (CHECKS) check
+      (i == o);
+
     return res;
   }
 
@@ -2114,9 +2162,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f  == Types.resolved.f_Types_get                          ||
              of == Types.resolved.f_Types_get && f == of.resultField()   )
-      // NYI (see #282): Would be nice if this would not need special handling but would
-      // work in general for any feature with type parameters that returns one
-      // of this type parameters as its result using '=>'.
       {
         var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
         result = ag[0].typeClazz();

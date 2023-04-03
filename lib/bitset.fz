@@ -50,7 +50,7 @@ is
     else
       match bitset.this
         _ nil   => bit
-        x u64   => array bool bit.max(x).as_i32+1 (i -> i.as_u64 ≟ bit || i.as_u64 ≟ x)
+        x u64   => array bool (max bit x).as_i32+1 (i -> i.as_u64 ≟ bit || i.as_u64 ≟ x)
         a array => a.put bit.as_i32 true false
 
   # union of two bitsets
@@ -64,7 +64,7 @@ is
           _ nil   => bitset.this
           x u64   => bitset.this.put x
           b array =>
-            array bool a.length.max(b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
+            array bool (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
 
   # get the highest bit in this bitset
   #
@@ -77,7 +77,7 @@ is
   # equality
   #
   fixed type.equality(a, b bitset) bool is
-     h := a.highest >>= i -> b.highest >>= j -> i.max j
+     h := a.highest >>= i -> b.highest >>= j -> max i j
      match h
        _ nil => a.highest!! && b.highest!!
        m u64 =>
@@ -113,5 +113,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   type.union : Monoid bitset is
     redef infix ∙ (a, b bitset) => a ∪ b
-    redef infix == (a, b bitset) => a == b
     redef e bitset is bitset.type.empty

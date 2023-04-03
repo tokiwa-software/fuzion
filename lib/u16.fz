@@ -35,7 +35,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u16) => max -° thiz ⩻ other
+  redef overflowOnAdd (other u16) => u16.type.max -° thiz ⩻ other
   redef underflowOnAdd(other u16) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -43,7 +43,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef underflowOnSub(other u16) => thiz ⩻ other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 ⩼ max.as_i32
+  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 ⩼ u16.type.max.as_i32
   redef underflowOnMul(other u16) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -77,12 +77,12 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 
   as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u16
+      debug: thiz ≤ i8.type.max.as_u16
     is
       castTo_i16.as_i8
   as_i16 i16
     pre
-      debug: thiz ≤ i16.max.as_u16
+      debug: thiz ≤ i16.type.max.as_u16
     is
       castTo_i16
   as_i32 i32 is intrinsic
@@ -90,7 +90,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 # as_i128 => thiz.as_i32.as_i128
   as_u8 u8
     pre
-      thiz ≤ u8.max.as_u16
+      thiz ≤ u8.type.max.as_u16
     is
       low8bits
   as_u32  => thiz.as_i32.as_u32
@@ -177,19 +177,24 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef type.all_bits_set => u16 0xffff
 
 
+  # minimum
+  #
+  fixed type.min => u16 0
+
+
+  # maximum
+  #
+  fixed type.max => u16 0xffff
+
+
 
 # u16s -- unit type defining features related to u16 but not requiring an
 # instance
 #
-u16s : wrapping_integers u16 is
-
-  redef name => "u16"
+u16s : numerics u16 is
 
   redef zero => u16 0
   redef one  => u16 1
-
-  redef min => u16 0
-  redef max => u16 0xffff
 
 
 

@@ -66,13 +66,16 @@ public class SourceFile extends ANY
   /**
    * code points that start a new line:
    */
-  static final int LF  = 0x000a;   // Line Feed, U+000A
-  static final int VT  = 0x000b;   // Vertical Tab, U+000B
-  static final int FF  = 0x000c;   // Form Feed, U+000C
-  static final int CR  = 0x000d;   // Carriage Return, U+000D
-  static final int NEL = 0x0085;   // Next Line, U+0085
-  static final int LS  = 0x2028;   // Line Separator, U+2028
-  static final int PF  = 0x2029;   // Paragraph Separator, U+2029
+  protected static final int LF  = 0x000a;   // Line Feed, U+000A
+  protected static final int VT  = 0x000b;   // Vertical Tab, U+000B
+  protected static final int FF  = 0x000c;   // Form Feed, U+000C
+  protected static final int CR  = 0x000d;   // Carriage Return, U+000D
+  protected static final int NEL = 0x0085;   // Next Line, U+0085
+  protected static final int LS  = 0x2028;   // Line Separator, U+2028
+  protected static final int PF  = 0x2029;   // Paragraph Separator, U+2029
+
+
+  protected static final int SP  = 0x0020;   // Space character, U+0020
 
 
   /**
@@ -539,23 +542,17 @@ public class SourceFile extends ANY
 
 
   /**
-   * Check if lastCodePoint ends a line if followed by curCodePoint.
+   * Check if codepoint ends a line.
    *
-   * New lines are started after code points CR, LF, VT, FF, NEL, LS and PF,
-   * with the exception that CR only starts a new line if followed by LF.
+   * New lines are started after code points LF, VT, FF, NEL, LS and PF.
    * Additionally, BEGINNING_OF_FILE starts a new line since it is followed by
    * the first line of the file.
-   *
-   * @param true iff there lastCodePoint causes curCodePoint to start a new
-   * line.
    */
-  public boolean isNewLine(int lastCodePoint, int curCodePoint)
+  public boolean isNewLine(int codePoint)
   {
     // line break, taken from https://en.wikipedia.org/wiki/Newline#Unicode
-    return switch (lastCodePoint)
+    return switch (codePoint)
       {
-      case
-        CR -> curCodePoint == LF;
       case
         LF,
         VT,
@@ -615,16 +612,15 @@ public class SourceFile extends ANY
              _bytes != null && pos < _bytes.length;
              pos = pos + sz)
           {
-            int lastCodePoint = curCodePoint;
-            int cpAndSz  = decodeCodePointAndSize(pos);
-            curCodePoint = codePointFromCpAndSize(cpAndSz);
-            sz           = sizeFromCpAndSize     (cpAndSz);
-            if (isNewLine(lastCodePoint, curCodePoint))
+            if (isNewLine(curCodePoint))
               {
                 b.add(pos);
               }
+            int cpAndSz  = decodeCodePointAndSize(pos);
+            curCodePoint = codePointFromCpAndSize(cpAndSz);
+            sz           = sizeFromCpAndSize     (cpAndSz);
           }
-        if (isNewLine(curCodePoint, END_OF_FILE))
+        if (isNewLine(curCodePoint))
           {
             b.add(_bytes.length);
           }

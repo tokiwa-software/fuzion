@@ -16,3 +16,4 @@ eval ones!
 eval ones!
 [1,1,1,1,1,1,1,1,1,1]
 y
+Type of 'i32'

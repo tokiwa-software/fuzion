@@ -180,14 +180,14 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (isOpen(),
-       formalGenerics().sizeMatches(actuals));
+      Errors.count() >= 0 || formalGenerics().sizeMatches(actuals));
 
     if (CHECKS) check
       (formalGenerics().list.getLast() == this);
 
-    var result = new List<AbstractType>();
-    result.addAll(actuals.subList(formalGenerics().list.size()-1, actuals.size()));
-    return result;
+    return formalGenerics().sizeMatches(actuals)
+      ? new List<>(actuals.subList(formalGenerics().list.size()-1, actuals.size()).iterator())
+      : new List<AbstractType>(Types.t_ERROR);
   }
 
 

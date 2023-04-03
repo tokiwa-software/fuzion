@@ -245,7 +245,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # and ']'.
   #
   redef as_string =>
-    "[{list.this.as_string ","}]"
+    "[{as_string ","}]"
 
 
   # create a string representation of this list including all the string
@@ -466,11 +466,6 @@ lists is
     #
     infix ∙ (a, b list A) list A is a.concat b
 
-    # equality
-    #
-    redef infix == (a, b list A) =>
-      fuzion.std.panic "NYI: lists.concat_monoid.infix ==, requires A : equatable"
-
     # identity element
     #
     e list A is
@@ -480,16 +475,7 @@ lists is
 # convenience routine to create a list from head h and lazy tail t.
 # NYI: #1166, syntax sugar for lazy evaluation
 #
-list(T type, h T, t () -> list T) list T is
-  ref : Cons T (list T)
-    head => h
-    tail => t()
-
-
-# convenience routine to create a list from head h and tail t.
-# NYI: #1166, syntax sugar for lazy evaluation
-#
-list_of_none_lazy(T type, h T, t list T) list T is
+list(T type, h T, t Lazy (list T)) list T is
   ref : Cons T (list T)
     head => h
     tail => t
@@ -499,11 +485,12 @@ list_of_none_lazy(T type, h T, t list T) list T is
 #
 # This is convenient to append an element before a list as in
 #
-#   0 : ()->[1,2,3,4].as_list
+#   0 : [1,2,3,4].as_list
 #
 # or to create lists by recursion, e.g., a an endless list containing
 # integer 1 repeatedly is
 #
-#   ones => 1 : ()->ones
+#   ones => 1 : ones
 #
-infix : (A type, h A, t ()->list A) => list h t
+infix : (A type, h A, t Lazy (list A)) =>
+  list h t

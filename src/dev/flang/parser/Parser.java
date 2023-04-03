@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import dev.flang.ast.*;
 
@@ -366,7 +367,7 @@ field       : returnType
    * @param s the statements containing the feature declarations to be added, in
    * this case "x, y, z."
    *
-   * @param g the list of type to be collected, will be added as generic
+   * @param g the list of types to be collected, will be added as generic
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
@@ -401,7 +402,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
           }
       }
     else
@@ -464,9 +465,9 @@ field       : returnType
       }
     p.skipEffects();
     return
-      p.isInheritPrefix   () ||
-      p.isContractPrefix  () ||
-      p.isImplPrefix      ();
+      p.skipInherits() &&
+      (p.isContractPrefix  () ||
+       p.isImplPrefix      ());
   }
 
 
@@ -1237,35 +1238,6 @@ EXCLAMATION : "!"
 
 
   /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'.  Does not change the position of the parser.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean isReturnTypeFollowedByColon()
-  {
-    return
-      isOperator(':') ||
-      isNonFuncReturnTypePrefix() && fork().skipReturnTypeFollowedByColonPrefix();
-  }
-
-
-  /**
-   * Check if the current position is a, possibly empty, returnType followed by
-   * a ':'. Skip an unspecified part of it.
-   *
-   * @return true iff the next token(s) are a returnType followed by ':'
-   */
-  boolean skipReturnTypeFollowedByColonPrefix()
-  {
-    return
-      isOperator(':') ||
-      skipNonFuncReturnType() && isOperator(':') ||
-      isTypeFollowedByColon();
-  }
-
-
-  /**
    * Parse optional inherits clause
    *
 inherits    : inherit
@@ -1275,6 +1247,19 @@ inherits    : inherit
   List<AbstractCall> inherits()
   {
     return isInheritPrefix() ? inherit() : new List<>();
+  }
+
+
+  /**
+   * Check if the current position is a, possibly empty, inherits. If so, skip
+   * it.
+   *
+   * @return true iff the next token(s) are an inherits clause and were skipped.
+   *
+   */
+  boolean skipInherits()
+  {
+    return !skipColon() || skipCallList();
   }
 
 
@@ -1317,6 +1302,29 @@ callList    : call ( COMMA callList
     while (skipComma())
       {
         result.add(call(null));
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is a callList.  If so, skip it.
+   *
+   * Since a call may contain code that is arbitrarily complex (actual args may
+   * contain lambdas that declare arbitrary inner features etc.), this will just
+   * parse the call list and, as a side effect, produce errors in case this
+   * parsing fails.  This should be OK since this is used in `skipInherits` if a
+   * colon was found.  If this turns out not to be an inherits clause, the colon
+   * is an infix operator followed by a call, that needs to be parsed anyway.
+   *
+   * @return true iff the next token(s) are a callList.
+   */
+  boolean skipCallList()
+  {
+    var result = isNamePrefix();
+    if (result)
+      {
+        var ignore = callList();
       }
     return result;
   }
@@ -2124,7 +2132,7 @@ simpleterm  : bracketTerm
           default          :
             if (isStartedString(current()))
               {
-                result = stringTerm(null);
+                result = stringTerm(null, Optional.empty());
               }
             else
               {
@@ -2168,19 +2176,23 @@ stringTermB : '}any chars&quot;'
             | '}any chars{' block stringTermB
             ;
   */
-  Expr stringTerm(Expr leftString)
+  Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string());
+            var ps = string(multiLineIndentation);
+            var str = new StrConst(posObject(), ps._v0);
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block()));
+                var old = setMinIndent(-1);
+                var b = block();
+                setMinIndent(old);
+                result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
         else
@@ -2494,7 +2506,8 @@ block       : stmnts
    */
   Block block()
   {
-    SourcePosition pos1 = posObject();
+    var p1 = pos();
+    var pos1 = posObject();
     if (current() == Token.t_semicolon)
       { // we have code like
         //
@@ -2513,6 +2526,17 @@ block       : stmnts
       {
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        if (pos1 == pos2 && current() == Token.t_indentationLimit)
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
+             *
+             *   x i32 is
+             *   y u8 is
+             *
+             * so we set start and end pos to the position after `x i32 is`.
+             */
+            pos1 = posObject(lineEndPos(lineNum(p1)-1));
+            pos2 = pos1;
+          }
         return new Block(pos1, pos2, l);
       }
     else
@@ -2661,7 +2685,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = minIndent(pos());
+      oldIndentPos = setMinIndent(pos());
     }
 
 
@@ -2688,7 +2712,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(okPos);
+              setMinIndent(okPos);
               okLineNum = lineNum(okPos);
             }
         }
@@ -2704,7 +2728,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (firstIndent != -1)
         {
           endAtSpace(oldEAS);
-          minIndent(oldIndentPos);
+          setMinIndent(oldIndentPos);
         }
     }
   }
@@ -2756,8 +2780,8 @@ loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart elseBlockOpt
-            |                             elseBlock
+loopEpilog  : "until" exprInLine thenPart elseBlock
+            |                             "else" Block
             ;
    */
   Expr loop()
@@ -2773,8 +2797,8 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
-                                                    var els1 =               fork().elseBlockOpt();
-                                                    var els =                       elseBlockOpt();
+                                                    var els1= fork().elseBlock();
+                                                    var els =        elseBlock();
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2882,12 +2906,12 @@ nextValue   : COMMA exprInLine
    */
   boolean isIndexVarPrefix()
   {
-    var mi = minIndent(-1);
+    var mi = setMinIndent(-1);
     var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
-    minIndent(mi);
+    setMinIndent(mi);
     return result;
   }
 
@@ -2908,7 +2932,7 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmnt      : "if" exprInLine thenPart elseBlockOpt
+ifstmnt      : "if" exprInLine thenPart elseBlock
             ;
    */
   If ifstmnt()
@@ -2919,22 +2943,11 @@ ifstmnt      : "if" exprInLine thenPart elseBlockOpt
         Expr e = exprInLine();
         Block b = thenPart(false);
         If result = new If(pos, e, b);
-        Expr els = elseBlockOpt();
-        if (els instanceof If i)
-          {
-            result.setElse(i);
-          }
-        else if (els instanceof Block blk
-                // do no set empty blocks as else blocks since the source position
-                // of those block might be somewhere unexpected.
-                 && !blk._statements.isEmpty())
-          {
-            result.setElse(blk);
-          }
-        else
-          {
-            if (CHECKS) check
-              (els == null || (els instanceof Block blk && blk._statements.isEmpty()));
+        var els = elseBlock();
+        if (els != null && els._statements.size() > 0)
+          { // do no set empty blocks as else blocks since the source position
+            // of those block might be somewhere unexpected.
+            result.setElse(els);
           }
         return result;
       });
@@ -2958,34 +2971,19 @@ thenPart    : "then" block
 
 
   /**
-   * Parse elseBlockOpt
+   * Parse elseBlock
    *
-elseBlockOpt: elseBlock
+elseBlock   : "else" block
             |
             ;
-elseBlock   : "else" ( ifstmnt
-                     | block
-                     )
-            ;
    */
-  Expr elseBlockOpt()
+  Block elseBlock()
   {
-    Expr result = null;
-    if (skip(true, Token.t_else))
-      {
-        if (isIfPrefix())
-          {
-            result = ifstmnt();
-          }
-        else
-          {
-            result = block();
-          }
-      }
+    var result = skip(true, Token.t_else) ? block()
+                                          : null;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
-       result instanceof If    ||
        result instanceof Block    );
 
     return result;
@@ -3203,7 +3201,7 @@ universeCall      : "universe" dot "this" dot call
   /**
    * Parse anonymous
    *
-anonymous   : returnType
+anonymous   : "ref"
               inherit
               contract
               block
@@ -3213,7 +3211,9 @@ anonymous   : returnType
   {
     var sl = sameLine(line());
     SourcePosition pos = posObject();
-    ReturnType r = returnType();
+    if (CHECKS) check
+      (current() == Token.t_ref);
+    ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
     Contract   c = contract();
     Block      b = block();
@@ -3238,7 +3238,7 @@ anonymous   : returnType
    */
   boolean isAnonymousPrefix()
   {
-    return isReturnTypeFollowedByColon();
+    return current() == Token.t_ref;
   }
 
 
