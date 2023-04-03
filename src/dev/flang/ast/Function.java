@@ -483,7 +483,7 @@ public class Function extends ExprWithPos
         var fr = functionOrRoutine();
         var generics = generics(res);
         FormalGenerics.resolve(res, generics, outer);
-        _type = fr != null ? new Type(pos(), fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
+        _type = fr != null ? new Type(fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else

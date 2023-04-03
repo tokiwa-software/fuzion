@@ -653,7 +653,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         if (!first)
           {
-            tl.add(new Type(pos(), new Generic(ta)));
+            tl.add(new Type(new Generic(ta)));
           }
         first = false;
       }
@@ -678,7 +678,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var tl = new List<AbstractType>();
         for (var ta0 : typeArguments())
           {
-            var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
+            var ta = new Type(ta0.featureName().baseName(), Type.NONE, null);
             tl.add(ta);
             }
         t = t.actualType(this, tl);
@@ -754,8 +754,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             for (var pc: inherits())
               {
                 var iif = ii;
-                var selfType = new Type(pos(),
-                                        FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                var selfType = new Type(FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                         new List<>(),
                                         null);
                 var tp = new List<AbstractType>(selfType);
@@ -908,7 +907,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
-    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
+    var result = new Type(featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
 
     if (POSTCONDITIONS) ensure
       (result != null,

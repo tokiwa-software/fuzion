@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -42,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
+public abstract class Expr extends ANY implements Stmnt
 {
 
   /*----------------------------  constants  ----------------------------*/

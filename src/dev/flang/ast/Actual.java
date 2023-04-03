@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
@@ -44,7 +45,7 @@ public class Actual extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
-  private final SourcePosition _pos;
+  private final HasSourcePosition _pos;
 
 
   /**
@@ -67,7 +68,7 @@ public class Actual extends Expr
    *
    * t must be non-null or e must not be NO_VALUE.
    */
-  public Actual(SourcePosition pos, AbstractType t, Expr e)
+  public Actual(HasSourcePosition pos, AbstractType t, Expr e)
   {
     if (PRECONDITIONS) require
       (t != null || e != Expr.NO_VALUE,
@@ -86,7 +87,13 @@ public class Actual extends Expr
    */
   public Actual(AbstractType t)
   {
-    this(t.pos2BeRemoved(), t, Expr.NO_VALUE);
+    this(new HasSourcePosition() {
+      @Override
+      public SourcePosition pos()
+      {
+        return t.pos();
+      }
+    }, t, Expr.NO_VALUE);
 
     if (PRECONDITIONS) require
       (t != null);
@@ -99,7 +106,7 @@ public class Actual extends Expr
    */
   public Actual(Expr e)
   {
-    this(e.pos(), null, e);
+    this(e, null, e);
 
     if (PRECONDITIONS) require
       (e != Expr.NO_VALUE,
@@ -116,7 +123,7 @@ public class Actual extends Expr
    */
   public SourcePosition pos()
   {
-    return _pos;
+    return _pos.pos();
   }
 
 

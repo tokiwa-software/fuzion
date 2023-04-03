@@ -1852,7 +1852,7 @@ hw25 is
 
     var e = _codeIds.get(c).get(ix);
     return (e instanceof Stmnt s) ? s.pos() :
-           (e instanceof Clazz z) ? z._type.pos2BeRemoved() : null;
+           (e instanceof Clazz z) ? z._type.pos() : null;
   }
 
 

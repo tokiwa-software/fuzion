@@ -220,7 +220,7 @@ public class FormalGenerics extends ANY
       // placeholder for the actual generics.
       for (Generic g : list)
         {
-          add(new Type((HasSourcePosition) g.typeParameter(), g));
+          add(new Type(g));
         }
       freeze();
     }

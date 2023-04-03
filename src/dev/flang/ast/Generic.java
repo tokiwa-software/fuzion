@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -39,7 +38,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Generic extends ANY
+public class Generic extends ANY implements HasSourcePosition
 {
 
 
@@ -208,6 +207,15 @@ public class Generic extends ANY
   public String toString()
   {
     return name();
+  }
+
+
+  /**
+   * The sourcecode position of this statement, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return _typeParameter.pos();
   }
 
 

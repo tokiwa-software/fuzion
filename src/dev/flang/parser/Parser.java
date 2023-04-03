@@ -401,7 +401,13 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
+            g.add(new Type(f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature){
+              @Override
+              public SourcePosition pos()
+              {
+                return f.pos();
+              }
+            });
           }
       }
     else
@@ -3285,13 +3291,20 @@ qualThis    : name ( dot name )* dot "this"
         done = skip(Token.t_this);
         if (asType)
           {
-            result = new Type(pos,
-                              n,
+            var p = pos;
+            result = new Type(n,
                               Call.NO_GENERICS,
                               result,
                               null,
                               done ? Type.RefOrVal.ThisType
-                                   : Type.RefOrVal.LikeUnderlyingFeature);
+                                   : Type.RefOrVal.LikeUnderlyingFeature)
+                        {
+                          @Override
+                          public SourcePosition pos()
+                          {
+                            return p;
+                          }
+                        };
           }
         else
           {
@@ -3676,7 +3689,7 @@ type        : thistype
               {
                 l.add(onetype());
               }
-            result = new Type(result.pos2BeRemoved(), "choice", l, null);
+            result = new Type("choice", l, null);
           }
       }
     return result;
@@ -3778,8 +3791,9 @@ thistype    : qualThis dot "type"
    */
   Expr thistypeAsExpr()
   {
+    var pos = posObject();
     var result = thistype();
-    return new DotType(result.pos2BeRemoved(), result);
+    return new DotType(pos, result);
   }
 
 
@@ -3861,7 +3875,7 @@ typeOpt     : type
           }
         else
           {
-            result = new Type(pos, "tuple", a, null);
+            result = new Type("tuple", a, null);
           }
       }
     else
@@ -3957,7 +3971,13 @@ simpletype  : name typePars typeTail
     var p = posObject();
     var n = name();
     var a = typePars();
-    lhs = new Type(p, n, a, lhs);
+    lhs = new Type(n, a, lhs){
+      @Override
+      public SourcePosition pos()
+      {
+        return p;
+      }
+    };
     return typeTail(lhs);
   }
 

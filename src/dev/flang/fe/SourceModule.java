@@ -249,7 +249,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                var f = lookupType(SourcePosition.builtIn, _universe, name, false)._feature;
                                return new NormalType(stdlib,
                                                      -1,
-                                                     SourcePosition.builtIn,
                                                      f,
                                                      ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                                      Type.NONE,

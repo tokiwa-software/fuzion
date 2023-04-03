@@ -181,7 +181,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (isOpenGeneric())
       {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos2BeRemoved(), genericArgument());
+        AstErrors.illegalUseOfOpenFormalGeneric(pos(), genericArgument());
         result = false;
       }
     return result;
@@ -1060,8 +1060,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             var g = new List<AbstractType>(this);
             g.addAll(generics());
-            result = Types.intern(new Type(f.pos(),
-                                           f.featureName().baseName(),
+            result = Types.intern(new Type(f.featureName().baseName(),
                                            g,
                                            outer().typeType(res),
                                            f,
@@ -1109,7 +1108,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = new Type(tc.pos(), new Generic(tc.calledFeature()));
+            result = new Type(new Generic(tc.calledFeature()));
           }
       }
     else
@@ -1207,7 +1206,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (genericArgument().feature() == outerTypeFeature.typeFeatureOrigin())
           {
-            result = new Type(this.pos2BeRemoved(), outerTypeFeature.generics().list.get(genericArgument().index() + 1));
+            result = new Type(outerTypeFeature.generics().list.get(genericArgument().index() + 1));
           }
         else
           {
@@ -1272,7 +1271,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isRef();
   public abstract AbstractType asThis();
   public abstract boolean isThisType();
-  public abstract SourcePosition pos2BeRemoved();
   public abstract List<AbstractType> generics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
@@ -1390,6 +1388,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  public SourcePosition pos()
+  {
+    // NYI can we do this better somehow?
+    if (this instanceof Type t && t.generic == null && t.feature == null)
+      {
+        return SourcePosition.builtIn;
+      }
+    return isGenericArgument()
+      ? genericArgument().pos()
+      : featureOfType().pos();
   }
 
 

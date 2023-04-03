@@ -330,17 +330,17 @@ public class Clazzes extends ANY
                 // NYI: recursive chain of value types should be detected during
                 // types checking phase!
                 StringBuilder chain = new StringBuilder();
-                chain.append("1: "+actualType+" at "+actualType.pos2BeRemoved().show()+"\n");
+                chain.append("1: "+actualType+" at "+actualType.pos().show()+"\n");
                 int i = 2;
                 Clazz c = outer;
                 while (c._type != actualType)
                   {
-                    chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
+                    chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
                     c = c._outer;
                     i++;
                   }
-                chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
-                Errors.error(actualType.pos2BeRemoved(),
+                chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
+                Errors.error(actualType.pos(),
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+

@@ -878,7 +878,7 @@ public class Call extends AbstractCall
             g.add(a.asType(outer, tp));
           }
       }
-    AbstractType result = new Type(pos(), _name, g,
+    AbstractType result = new Type(_name, g,
                                    _target == null             ||
                                    _target instanceof Universe ||
                                    _target instanceof Current     ? null

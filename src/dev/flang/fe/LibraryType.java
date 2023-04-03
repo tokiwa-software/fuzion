@@ -26,19 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
-
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.Generic;
-import dev.flang.ast.Type;
-
-import dev.flang.util.List;
-
-import dev.flang.util.HasSourcePosition;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -66,11 +54,6 @@ public abstract class LibraryType extends AbstractType
    */
   public final int _at;
 
-  /**
-   * The sourcecode position of this type, used for error messages.
-   */
-  public final HasSourcePosition _pos;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -78,21 +61,15 @@ public abstract class LibraryType extends AbstractType
   /**
    * Constructor to set common fields.
    */
-  LibraryType(LibraryModule mod, int at, HasSourcePosition pos)
+  LibraryType(LibraryModule mod, int at)
   {
     this._libModule = mod;
     this._at = at;
-    this._pos = pos;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
-
-  public SourcePosition pos2BeRemoved()
-  {
-    return _pos.pos();
-  }
 
 }
 

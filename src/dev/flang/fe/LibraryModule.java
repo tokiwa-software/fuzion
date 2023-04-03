@@ -442,7 +442,7 @@ public class LibraryModule extends Module
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
+            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
           }
         else
           {
@@ -463,7 +463,7 @@ public class LibraryModule extends Module
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, DUMMY_POS, feature,
+            result = new NormalType(this, at, feature,
                                     typeValRefOrThis(at),
                                     generics, outer);
           }

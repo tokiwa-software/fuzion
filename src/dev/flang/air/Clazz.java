@@ -838,7 +838,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos2BeRemoved();
+        var tp = _type.pos();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))

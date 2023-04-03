@@ -95,13 +95,12 @@ public class NormalType extends LibraryType
    */
   NormalType(LibraryModule mod,
              int at,
-             HasSourcePosition pos,
              AbstractFeature feature,
              int valRefOrThis,
              List<AbstractType> generics,
              AbstractType outer)
   {
-    super(mod, at, pos);
+    super(mod, at);
 
     this._feature = feature;
     this._valRefOrThis = valRefOrThis;
@@ -143,7 +142,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, _valRefOrThis, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _valRefOrThis, g2, o2);
   }
 
 
@@ -208,7 +207,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -219,7 +218,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        result = !isRef() && !isThisType() ? this :  new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
+        result = !isRef() && !isThisType() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
         _asValue = result;
       }
     return result;
@@ -236,7 +235,7 @@ public class NormalType extends LibraryType
           }
         else
           {
-            result = new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
+            result = new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
           }
         _asThis = result;
       }
