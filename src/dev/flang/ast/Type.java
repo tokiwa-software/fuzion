@@ -397,7 +397,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, String n, AbstractFeature universe)
+  public static AbstractType type(Resolution res, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -412,7 +412,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, boolean ref, String n, AbstractFeature universe)
+  public static AbstractType type(Resolution res, boolean ref, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -952,7 +952,7 @@ public class Type extends AbstractType
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  Type resolve(Resolution res, AbstractFeature outerfeat)
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -963,7 +963,7 @@ public class Type extends AbstractType
       {
         ensureNotOpen();
       }
-    var result = this;
+    AbstractType result = this;
     if (!checkedForGeneric)
       {
         findGenerics(outerfeat);
@@ -981,7 +981,7 @@ public class Type extends AbstractType
               {
                 this._generics = feature.generics().asActuals();
               }
-            FormalGenerics.resolve(res, _generics, outerfeat);
+            _generics = FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                   this.pos2BeRemoved(),
                                                                   "type",
@@ -991,7 +991,7 @@ public class Type extends AbstractType
               }
           }
       }
-    return (Type) Types.intern(result);
+    return Types.intern(result);
   }
 
 
@@ -1154,7 +1154,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {
@@ -1185,7 +1185,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {

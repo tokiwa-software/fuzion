@@ -76,7 +76,6 @@ public class MIR extends IR
     _universe = universe;
     _main = main;
     _module = module;
-    addFeatures();
   }
 
 
@@ -89,32 +88,6 @@ public class MIR extends IR
   public AbstractFeature main()
   {
     return _main;
-  }
-
-
-  /**
-   * Create the mapping from Features to integers exists.
-   */
-  private void addFeatures()
-  {
-    if (_featureIds.size() == 0)
-      {
-        var u = universe();
-        addFeatures(u);
-      }
-  }
-
-
-  /**
-   * Helper to addFeatures() to add feature f and all features declared within f.
-   */
-  private void addFeatures(AbstractFeature f)
-  {
-    _featureIds.add(f);
-    for (var i : _module.declaredFeatures(f).values())
-      {
-        addFeatures(i);
-      }
   }
 
 

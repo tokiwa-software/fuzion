@@ -655,7 +655,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.count() > 0 || !t.isOpenGeneric());
 
     t = t.applyToGenericsAndOuter(x -> actualType(x));
-    t = replaceThisTypeForTypeFeature(t);
     t = replaceThisType(t);
 
     return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
@@ -2113,11 +2112,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o && i.outerRef() != null)
+    while (i != o)
       {
-        res = res.lookup(i.outerRef(), pos).resultClazz();
+        res =  i.hasOuterRef() ? res.lookup(i.outerRef(), pos).resultClazz()
+                               : res._outer;
         i = i.outer();
       }
+
+    if (CHECKS) check
+      (i == o);
+
     return res;
   }
 

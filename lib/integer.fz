@@ -149,7 +149,7 @@ integer(I type : integer I) : numeric I is
     (sgn, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
-    zeros := "0" * 0.max (len - n.byte_length)
+    zeros := "0" * (max 0 (len - n.byte_length))
 
     # put it all together
     sgn + zeros + digits

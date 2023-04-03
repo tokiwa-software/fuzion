@@ -27,19 +27,13 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 hello_world is
   # read someone's name from standard input
   #
-  get_name String
-    post
-      result != "Fuzion"
-  is
+  get_name String is
     io.stdin.read_line ? name String => name
                        | e error => panic "Could not get your name!"
 
   # greet someone with the name given
   #
-  greet(name String)
-    pre
-      name != "World"
-  is
+  greet(name String) is
     say "Hello, {name}!"
 
   # greet the user
@@ -60,10 +54,43 @@ programmer does not need to care and the compiler will do this work. As you can
 see, it is even possible to access the argument features of some feature from
 outside.
 
-The example also demonstrates pre- and postconditions in Fuzion. The result of
-the `get_name` feature should not be `Fuzion`, and the name given to `greet`
-should not be `World`. Pre- or postcondition failures will cause the program to
-panic.
+```
+ex_gcd is
+  max(a, b i32) i32 is
+    if a > b then a else b
+
+  common_divisors_of(a, b i32) list i32 is
+    x := max a.abs b.abs
+    y := 1..x
+    y.as_list.flatMap i32 (i->
+      if (a % i = 0) && (b % i = 0)
+        [-i, i].as_list
+      else
+        lists.empty i32)
+
+  gcd(a, b i32) i32
+    pre
+      safety: (a != 0 || b != 0)
+    post
+      safety: a % result = 0,
+      safety: b % result = 0,
+      pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (gcd.this.result % cur = 0))
+  is
+    if b = 0
+      a
+    else
+      gcd b (a % b)
+
+
+  say (gcd 8 12)
+  say (gcd -8 12)
+  say (gcd 28 0)
+```
+
+This example implements a simple variant of an algorithm that finds the greatest
+common divisor of two numbers. However, it also demonstrates one of Fuzion's
+notable features: design by contract. By specifying pre- and postconditions for
+features, correctness checks are made possible.
 
 ```
 generator_effect is

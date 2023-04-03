@@ -56,9 +56,3 @@ internal_array(T type, data Any, private length i32) is
     #array.this[i] == o
   is
     setel T data i o
-
-
-  # NYI workaround for performance issue in DFA #990
-  private set_no_pre_condition (i i32, o T) unit
-  is
-    setel T data i o

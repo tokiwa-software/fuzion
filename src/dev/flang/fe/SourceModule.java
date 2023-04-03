@@ -1233,6 +1233,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
+        else if (o.isChoice())
+          {
+            AstErrors.cannotRedefineChoice(f, o);
+          }
         else if ((t1.isChoice()
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&

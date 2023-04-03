@@ -25,41 +25,16 @@
 
 # envir.args -- effect providing access to command line args
 #
-private args (
-  all array String,
+args (all array String) : searchable_list String all.as_list, simpleEffect is
 
-  # action to be taken: plain, install or replace?
-  redef r effectMode.val,
-
-  _ unit
-  ) : searchable_list all.as_list, effect r
-is
-
-
-# short-hand for creating and installing args effect and run rr
-#
-args(rr ()->unit) => args fuzion.sys.args rr
-
-
-# short-hand for creating and installing args effect
-#
-args(a array String, rr ()->unit) =>
-  _ := args a (effectMode.inst rr) unit
+  # install default effect args using fuzion.sys.args
+  #
+  type.install_default =>
+    (envir.args fuzion.sys.args).default
 
 
 # short-hand for accessing envir.args effect in current environment
 #
 args =>
-  argses.installDefault
+  args.type.install_default
   envir.args.env
-
-
-# unit type feature defining features related to envir.args but not
-# requiring an instance.
-#
-argses is
-
-  # install default effect args using fuzion.sys.args
-  installDefault unit is
-    if !(effects.exists envir.args)
-      _ := args fuzion.sys.args effectMode.default unit
