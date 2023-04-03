@@ -367,7 +367,7 @@ field       : returnType
    * @param s the statements containing the feature declarations to be added, in
    * this case "x, y, z."
    *
-   * @param g the list of type to be collected, will be added as generic
+   * @param g the list of types to be collected, will be added as generic
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
@@ -402,7 +402,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
           }
       }
     else
