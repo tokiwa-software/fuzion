@@ -367,7 +367,7 @@ field       : returnType
    * @param s the statements containing the feature declarations to be added, in
    * this case "x, y, z."
    *
-   * @param g the list of type to be collected, will be added as generic
+   * @param g the list of types to be collected, will be added as generic
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
@@ -402,7 +402,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null, f, Type.RefOrVal.LikeUnderlyingFeature));
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
           }
       }
     else
@@ -2780,8 +2780,8 @@ loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart elseBlockOpt
-            |                             elseBlock
+loopEpilog  : "until" exprInLine thenPart elseBlock
+            |                             "else" Block
             ;
    */
   Expr loop()
@@ -2797,8 +2797,8 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
-                                                    var els1 =               fork().elseBlockOpt();
-                                                    var els =                       elseBlockOpt();
+                                                    var els1= fork().elseBlock();
+                                                    var els =        elseBlock();
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2932,7 +2932,7 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmnt      : "if" exprInLine thenPart elseBlockOpt
+ifstmnt      : "if" exprInLine thenPart elseBlock
             ;
    */
   If ifstmnt()
@@ -2943,22 +2943,11 @@ ifstmnt      : "if" exprInLine thenPart elseBlockOpt
         Expr e = exprInLine();
         Block b = thenPart(false);
         If result = new If(pos, e, b);
-        Expr els = elseBlockOpt();
-        if (els instanceof If i)
-          {
-            result.setElse(i);
-          }
-        else if (els instanceof Block blk
-                // do no set empty blocks as else blocks since the source position
-                // of those block might be somewhere unexpected.
-                 && !blk._statements.isEmpty())
-          {
-            result.setElse(blk);
-          }
-        else
-          {
-            if (CHECKS) check
-              (els == null || (els instanceof Block blk && blk._statements.isEmpty()));
+        var els = elseBlock();
+        if (els != null && els._statements.size() > 0)
+          { // do no set empty blocks as else blocks since the source position
+            // of those block might be somewhere unexpected.
+            result.setElse(els);
           }
         return result;
       });
@@ -2982,34 +2971,19 @@ thenPart    : "then" block
 
 
   /**
-   * Parse elseBlockOpt
+   * Parse elseBlock
    *
-elseBlockOpt: elseBlock
+elseBlock   : "else" block
             |
             ;
-elseBlock   : "else" ( ifstmnt
-                     | block
-                     )
-            ;
    */
-  Expr elseBlockOpt()
+  Block elseBlock()
   {
-    Expr result = null;
-    if (skip(true, Token.t_else))
-      {
-        if (isIfPrefix())
-          {
-            result = ifstmnt();
-          }
-        else
-          {
-            result = block();
-          }
-      }
+    var result = skip(true, Token.t_else) ? block()
+                                          : null;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
-       result instanceof If    ||
        result instanceof Block    );
 
     return result;
