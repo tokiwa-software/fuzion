@@ -2781,7 +2781,7 @@ loopBody    : "while" exprInLine      block
             |                    "do" block
             ;
 loopEpilog  : "until" exprInLine thenPart elseBlock
-            |                             "else" Block
+            |                             "else" block
             ;
    */
   Expr loop()
