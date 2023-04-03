@@ -17,42 +17,63 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys.internal_array
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test multiline_strings_test
 #
 # -----------------------------------------------------------------------
 
-# helper to allocate memory for an internal_array.
-# returns an internal_array.
+# A small test for multiline strings with embedded identifiers and expressions
 #
-internal_array_init(T type, private length i32) =>
+multiline_strings_test is
 
-  private alloc(X type, l i32) Any is intrinsic
+  # world with multibyte unicode character
+  world := "w😀rld"
 
-  internal_array T (alloc T length) length
+  # simple multi line string
+  say """
+    hell😀
+    w😀rld"""
+
+  # multiline string ending with new line
+  # using interpolation
+  say """
+    hell😀
+    $world
+    """
+
+  # multiline string with empty lines and
+  # escape codes
+  say """
+    hell😀\sw😀rld\s!
+
+     {   world   }\s
+    """
 
 
+  # nested multiline string
+  say """
+    hell😀 {
+if true
+  """
+{world}"""
+else
+  "?"
+    }"""
 
-# fuzion.sys.internal_array_init -- one-dimensional low-level array
-internal_array(T type, data Any, private length i32) is
 
-  private get  (X type, d Any, i i32) X is intrinsic
-  private setel(X type, d Any, i i32, o X) unit is intrinsic
+  # nested multiline string using braces and dollar interpolation
+  say """
+    hell😀 {
+if true
+  """
+{"""
+  $world"""}"""
+else
+  "?"
+    }"""
 
 
-  indices => 0..length-1
-
-  index [ ] (i i32) T
-    pre
-      safety: 0 ≤ i ⩻ length
-  is
-    get T data i
-
-  set [ ] (i i32, o T) unit
-    pre
-      safety: 0 ≤ i ⩻ length
-  # post   NYI
-    #array.this[i] == o
-  is
-    setel T data i o
+  # multiline string containing " and ""
+  say """
+    "hell😀 world"!
+    ""hell😀 world""!
+  """

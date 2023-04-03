@@ -689,7 +689,6 @@ String ref : equatable, has_hash, has_total_order is
   #
   type.concat : Monoid String is
     redef infix ∙ (a, b String) => a + b
-    redef infix == (a, b String) => a == b
     redef e => ""
 
 
@@ -698,7 +697,6 @@ String ref : equatable, has_hash, has_total_order is
   #
   type.concat(sep String) : Monoid String is
     redef infix ∙ (a, b String) String is if (a.is_empty || b.is_empty) a + b else a + sep + b
-    redef infix == (a, b String) => a == b
     redef e => ""
 
 

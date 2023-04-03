@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import dev.flang.ast.*;
 
@@ -2137,7 +2138,7 @@ simpleterm  : bracketTerm
           default          :
             if (isStartedString(current()))
               {
-                result = stringTerm(null);
+                result = stringTerm(null, Optional.empty());
               }
             else
               {
@@ -2181,19 +2182,23 @@ stringTermB : '}any chars&quot;'
             | '}any chars{' block stringTermB
             ;
   */
-  Expr stringTerm(Expr leftString)
+  Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string());
+            var ps = string(multiLineIndentation);
+            var str = new StrConst(posObject(), ps._v0);
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block()));
+                var old = setMinIndent(-1);
+                var b = block();
+                setMinIndent(old);
+                result = stringTerm(concatString(posObject(), result, b), ps._v1);
               }
           }
         else
@@ -2507,7 +2512,8 @@ block       : stmnts
    */
   Block block()
   {
-    SourcePosition pos1 = posObject();
+    var p1 = pos();
+    var pos1 = posObject();
     if (current() == Token.t_semicolon)
       { // we have code like
         //
@@ -2526,6 +2532,17 @@ block       : stmnts
       {
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        if (pos1 == pos2 && current() == Token.t_indentationLimit)
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
+             *
+             *   x i32 is
+             *   y u8 is
+             *
+             * so we set start and end pos to the position after `x i32 is`.
+             */
+            pos1 = posObject(lineEndPos(lineNum(p1)-1));
+            pos2 = pos1;
+          }
         return new Block(pos1, pos2, l);
       }
     else
@@ -2674,7 +2691,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = minIndent(pos());
+      oldIndentPos = setMinIndent(pos());
     }
 
 
@@ -2701,7 +2718,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(okPos);
+              setMinIndent(okPos);
               okLineNum = lineNum(okPos);
             }
         }
@@ -2717,7 +2734,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (firstIndent != -1)
         {
           endAtSpace(oldEAS);
-          minIndent(oldIndentPos);
+          setMinIndent(oldIndentPos);
         }
     }
   }
@@ -2769,8 +2786,8 @@ loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart elseBlockOpt
-            |                             elseBlock
+loopEpilog  : "until" exprInLine thenPart elseBlock
+            |                             "else" Block
             ;
    */
   Expr loop()
@@ -2786,8 +2803,8 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
-                                                    var els1 =               fork().elseBlockOpt();
-                                                    var els =                       elseBlockOpt();
+                                                    var els1= fork().elseBlock();
+                                                    var els =        elseBlock();
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2895,12 +2912,12 @@ nextValue   : COMMA exprInLine
    */
   boolean isIndexVarPrefix()
   {
-    var mi = minIndent(-1);
+    var mi = setMinIndent(-1);
     var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
-    minIndent(mi);
+    setMinIndent(mi);
     return result;
   }
 
@@ -2921,7 +2938,7 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmnt      : "if" exprInLine thenPart elseBlockOpt
+ifstmnt      : "if" exprInLine thenPart elseBlock
             ;
    */
   If ifstmnt()
@@ -2932,22 +2949,11 @@ ifstmnt      : "if" exprInLine thenPart elseBlockOpt
         Expr e = exprInLine();
         Block b = thenPart(false);
         If result = new If(pos, e, b);
-        Expr els = elseBlockOpt();
-        if (els instanceof If i)
-          {
-            result.setElse(i);
-          }
-        else if (els instanceof Block blk
-                // do no set empty blocks as else blocks since the source position
-                // of those block might be somewhere unexpected.
-                 && !blk._statements.isEmpty())
-          {
-            result.setElse(blk);
-          }
-        else
-          {
-            if (CHECKS) check
-              (els == null || (els instanceof Block blk && blk._statements.isEmpty()));
+        var els = elseBlock();
+        if (els != null && els._statements.size() > 0)
+          { // do no set empty blocks as else blocks since the source position
+            // of those block might be somewhere unexpected.
+            result.setElse(els);
           }
         return result;
       });
@@ -2971,34 +2977,19 @@ thenPart    : "then" block
 
 
   /**
-   * Parse elseBlockOpt
+   * Parse elseBlock
    *
-elseBlockOpt: elseBlock
+elseBlock   : "else" block
             |
             ;
-elseBlock   : "else" ( ifstmnt
-                     | block
-                     )
-            ;
    */
-  Expr elseBlockOpt()
+  Block elseBlock()
   {
-    Expr result = null;
-    if (skip(true, Token.t_else))
-      {
-        if (isIfPrefix())
-          {
-            result = ifstmnt();
-          }
-        else
-          {
-            result = block();
-          }
-      }
+    var result = skip(true, Token.t_else) ? block()
+                                          : null;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
-       result instanceof If    ||
        result instanceof Block    );
 
     return result;

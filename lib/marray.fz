@@ -88,7 +88,7 @@ is
   is
     d := if (data.length ⩼ length) data
       else
-        newData := fuzion.sys.internal_array_init T (8.max data.length*2)
+        newData := fuzion.sys.internal_array_init T (max 8 data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData

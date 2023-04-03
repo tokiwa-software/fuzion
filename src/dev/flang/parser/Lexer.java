@@ -28,10 +28,12 @@ package dev.flang.parser;
 
 import java.math.BigInteger;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import dev.flang.util.Callable;
 import dev.flang.util.Errors;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.UnicodeData;
@@ -139,12 +141,29 @@ public class Lexer extends SourceFile
     t_numliteral,  // 123
     t_ident,       // abc
     t_stringQQ,    // "abc"
+                   // OR multiline string
+                   // """
+                   //   abc"""
     t_stringQD,    // '"x is $'   in "x is $x.".
+                   // OR multiline string
+                   // '"""
+                   //   x is $'   in
+                   // '"""
+                   //   x is $x."""'
     t_stringQB,    // '"a+b is {' in "a+b is {a+b}."
+                   // OR multiline string
+                   // '"""
+                   //   a+b is {' in
+                   // '"""
+                   //   a+b is {a+b}."""'
     t_StringDQ,    // '+-*"'      in "abc$x+-*"
+                   //     ^--- fat quotations (""") instead of single
+                   //          quotation if part of multiline string
     t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
     t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
     t_stringBQ,    // '}+-*"'     in "abc{x}+-*"
+                   //      ^--- fat quotations (""") instead of single
+                   //           quotation if part of multiline string
     t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
     t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
     t_this("this"),
@@ -430,12 +449,6 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Line number of the current token
-   */
-  private int _curLine = 1;
-
-
-  /**
    * Position of the previous token, -1 if none
    */
   private int _lastPos = -1;
@@ -520,7 +533,6 @@ public class Lexer extends SourceFile
 
     _curToken = original._curToken;
     _curPos = original._curPos;
-    _curLine = original._curLine;
     _lastPos = original._lastPos;
     _minIndent = original._minIndent;
     _minIndentStartPos = original._minIndentStartPos;
@@ -595,7 +607,7 @@ public class Lexer extends SourceFile
    *
    * @return the previous min indentation, -1 if none.
    */
-  int minIndent(int startPos)
+  int setMinIndent(int startPos)
   {
     int result = _minIndentStartPos;
     _minIndent = startPos >= 0 ? codePointInLine(startPos) : -1;
@@ -850,7 +862,7 @@ public class Lexer extends SourceFile
   Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
-    int l = _curLine;
+    int l = line();
     int p = _curPos;
     return
       t == Token.t_eof                                     ? t                        :
@@ -959,7 +971,7 @@ public class Lexer extends SourceFile
    */
   int line()
   {
-    return _curLine;
+    return this.lineNum(_curPos);
   }
 
 
@@ -1200,11 +1212,7 @@ IDENT     : ( 'a'..'z'
   Token checkWhiteSpace(int p1, int p2)
   {
     var result = Token.t_ws;
-    if (isNewLine(p1))
-      {
-        _curLine++;
-      }
-    else if (p1 != ' ' && !(p1 == CR && p2 == LF))
+    if (p1 != ' ' && !isNewLine(p1) && !(p1 == CR && p2 == LF))
       {
         Errors.error(sourcePos(),
                      "Unexpected white space character \\u" + Integer.toHexString(0x1000000+p1).substring(1).toUpperCase() + " found",
@@ -1871,10 +1879,6 @@ HEX_TAIL    : "." HEX_DIGITS
     boolean done = false;
     do
       {
-        if (isNewLine(p))
-          {
-            _curLine++;
-          }
         p = curCodePoint();
         if (p == SourceFile.END_OF_FILE)
           {
@@ -1935,7 +1939,6 @@ HEX_TAIL    : "." HEX_DIGITS
             p = curCodePoint();
           }
         while (p != SourceFile.END_OF_FILE && !isNewLine(l));
-        _curLine++;
       }
     return Token.t_comment;
   }
@@ -2270,7 +2273,7 @@ PIPE        : "|"
    */
   public enum StringEnd
   {
-    QUOTE,   // A normal string starting with '"' as in "normal string...
+    QUOTE,   // A string starting with '"' or '"""' as in "normal string...
     DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
     BRACE;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
 
@@ -2358,10 +2361,10 @@ PIPE        : "|"
 
 
     /**
-     * -1 if this string is being read from the underlying SourceFile directly.
+     * Empty if this string is being read from the underlying SourceFile directly.
      * Otherwise, the character start position in the underlying source file.
      */
-    final int _pos;
+    final Optional<Integer> _pos;
 
     int _braceCount;
 
@@ -2382,12 +2385,17 @@ PIPE        : "|"
     private StringState _state;
 
 
+    /**
+     * If this is changed, https://flang.dev/tutorial/string_constants
+     * must be changed as well.
+     */
     char[][] escapeChars = new char[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
         { 'f', '\f'  },  // FF 0x0c
         { 'r', '\r'  },  // CR 0x0d
+        { 's', ' '   },  // SP 0x20
         { '\"', '\"' },  // "  0x22
         { '$',  '$'  },  // $  0x24
         { '\'', '\'' },  // '  0x27
@@ -2395,6 +2403,13 @@ PIPE        : "|"
         { '{',  '{'  },  // {  0x7b
         { '}',  '}'  },  // }  0x7d
       };
+
+
+    /**
+     * Store the indentation of multiline strings.
+     * Empty if single line string.
+     */
+    private Optional<Integer> _multiLineIndentation; // NYI mark as final?
 
 
     /**
@@ -2406,8 +2421,9 @@ PIPE        : "|"
     StringLexer()
     {
       _stringStart = Lexer.this.pos();
-      _pos = -1;
+      _pos = Optional.empty();
       _beginning = StringEnd.QUOTE;
+      _multiLineIndentation = Optional.empty();
     }
 
 
@@ -2417,15 +2433,17 @@ PIPE        : "|"
      * lexing step has finished.
      *
      * @param sb a StringBuilder to receive the code points of this string.
+     * @param multiLineIndentation if in multiline string, contains the indentation
      */
-    StringLexer(StringBuilder sb)
+    StringLexer(StringBuilder sb, Optional<Integer> multiLineIndentation)
     {
       if (PRECONDITIONS) require
         (isString(current()));
 
       _stringStart = Lexer.this.pos();
-      _pos =  Lexer.this.pos() + (beginning(current()) == StringEnd.DOLLAR ? 0 : 1);
+      _pos = Optional.of(Lexer.this.pos() + (beginning(current()) == StringEnd.DOLLAR ? 0 : 1));
       _beginning = StringEnd.QUOTE;
+      _multiLineIndentation = multiLineIndentation;
       iterateCodePoints(sb);
     }
 
@@ -2436,7 +2454,7 @@ PIPE        : "|"
     StringLexer(StringLexer original)
     {
       if (PRECONDITIONS) require
-        (original._pos == -1  /* should happen only during lexing, not when retrieving via string() */);
+        (original._pos.isEmpty()  /* should happen only during lexing, not when retrieving via string() */);
 
       this._stringStart = original._stringStart;
       this._pos = original._pos;
@@ -2444,15 +2462,18 @@ PIPE        : "|"
       this._beginning = original._beginning;
       this._state = original._state;
       this._outer = original._outer == null ? null : new StringLexer(original._outer);
+      this._multiLineIndentation = original._multiLineIndentation;
     }
 
 
     /**
      * Return the current raw code point, not processing any escapes.
      */
-    private int raw(int pos)
+    private int raw(Optional<Integer> pos)
     {
-      return pos < 0 ? curCodePoint() : codePointAt(pos);
+      return pos
+        .map(p -> codePoint(p))
+        .orElse(curCodePoint());
     }
 
 
@@ -2462,7 +2483,7 @@ PIPE        : "|"
     private Token iterateCodePoints(StringBuilder sb)
     {
       var t = Token.t_undefined;
-      var pos = _pos;
+      var pos = startOfStringContent();
 
       var escaped = false;
       while (t == Token.t_undefined)
@@ -2474,13 +2495,18 @@ PIPE        : "|"
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
               t = Token.t_error;
             }
-          else if (p < _asciiControlName.length && _asciiControlName[p] != null)
+          else if (
+                p < _asciiControlName.length
+            && _asciiControlName[p] != null
+            && !(_multiLineIndentation.isPresent() && isCRorLF(p))
+          )
             {
               Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
               t = Token.t_error;
             }
           else
             {
+              checkIndentation(pos);
               if (escaped)
                 {
                   for (var i = 0; i < escapeChars.length && c < 0; i++)
@@ -2500,34 +2526,199 @@ PIPE        : "|"
                 {
                   escaped = true;
                 }
-              else if (p == '"') { t = _beginning.token(StringEnd.QUOTE);  }
+              else if (_multiLineIndentation.isPresent() && atMultiLineStringDelimitor(getPos(pos)))
+                {
+                  pos = advance(pos, 2); // skip fat quotation
+                  t = _beginning.token(StringEnd.QUOTE);
+                }
+              // single or double '"' are allowed in multiline strings
+              else if (p == '"' && _multiLineIndentation.isEmpty())
+                {
+                  t = _beginning.token(StringEnd.QUOTE);
+                }
               else if (p == '$') { t = _beginning.token(StringEnd.DOLLAR); }
               else if (p == '{') { t = _beginning.token(StringEnd.BRACE);  }
-              else
+              else if (!skipped(pos))
                 {
                   c = p;
                 }
-              if (pos < 0)
-                {
-                  nextCodePoint();
-                }
               else
                 {
-                  pos = pos + codePointSize(pos);
+                  // codepoint is skipped
                 }
-              if (isNewLine(p))
+              if (isNewLine(p) && _multiLineIndentation.isEmpty())
                 {
                   Errors.unexpectedEndOfLineInString(sourcePos(bytePos()-1), sourcePos(_stringStart));
                   t = Token.t_error;
                 }
+              pos = advance(pos, 1);
               p = raw(pos);
             }
           if (c >= 0 && sb != null)
             {
+              if (c == LF && !sb.isEmpty())
+              {
+                var posBeforeLineBreak = (byteAt(getPos(pos)-2) & 0xff )== CR
+                                            ? getPos(pos) - 3
+                                            : getPos(pos) - 2;
+                var previousCodepoint = byteAt(posBeforeLineBreak) & 0xff;
+                if (kind(previousCodepoint) == K_WS && !isCRorLF(previousCodepoint))
+                  {
+                    Errors.trailingWhiteSpaceInMultiLineString(sourcePos(posBeforeLineBreak));
+                  }
+              }
               sb.appendCodePoint(c);
             }
         }
       return t;
+    }
+
+
+    /**
+     * In multiline strings check if indentation is at least
+     * as much as reference the indentation of the first line.
+     *
+     * @param curPos
+     */
+    private void checkIndentation(Optional<Integer> curPos)
+    {
+      _multiLineIndentation.ifPresent(indentation ->
+        {
+          var codePoint = raw(curPos);
+          if (   !atMultiLineStringDelimitor(getPos(curPos))
+              && codePoint != SP
+              // empty lines are allowed
+              && codePoint != CR
+              && codePoint != LF
+              && column(curPos) < indentation
+            )
+            {
+              Errors.notEnoughIndentationInMultiLineString(sourcePos(getPos(curPos)), indentation-1);
+            }
+        });
+    }
+
+
+    /**
+     * Is this codepoint a carriage return or line feed?
+     * @param cp
+     * @return
+     */
+    private boolean isCRorLF(int cp)
+    {
+      return cp == CR || cp == LF;
+    }
+
+
+    /**
+     * get the start of this strings content.
+     * if in single line string this returns _pos,
+     * in multi line string the first character belonging
+     * to the multiline string.
+     *
+     * NYI cleanup: don't set multiLineIndentation here... but in constructor
+     * @return
+     */
+    private Optional<Integer> startOfStringContent()
+    {
+      var pos = _pos;
+      if (atMultiLineStringDelimitor(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
+        {
+          pos = advance(pos, 2); // skip fat quotation
+          while(raw(pos) != END_OF_FILE && (isCRorLF(raw(pos)) || raw(pos) == SP))
+            {
+              pos = advance(pos, 1);
+            }
+          if (raw(pos) == END_OF_FILE)
+            {
+              Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
+            }
+          if (lineNum(getPos(pos)) != lineNum(_stringStart) + 1)
+            {
+              Errors.expectedIndentedStringInFirstLineAfterFatQuotation(sourcePos(_stringStart), sourcePos(getPos(pos)));
+            }
+          _multiLineIndentation = Optional.of(column(pos));
+        }
+      return pos;
+    }
+
+
+    /**
+     * convenience method to get the byte position of
+     * this string lexer as an int.
+     *
+     * @param pos
+     * @return the byte position
+     */
+    private int getPos(Optional<Integer> pos)
+    {
+      return pos.orElse(bytePos());
+    }
+
+
+    /**
+     * Advance the StringLexer by n codepoints.
+     *
+     * @param pos
+     * @param n
+     * @return
+     */
+    private Optional<Integer> advance(Optional<Integer> pos, int n)
+    {
+      for (int i = 0; i < n; i++)
+        {
+          if (pos.isEmpty())
+          {
+            nextCodePoint();
+          }
+          pos = pos.map(p -> p + codePointSize(p));
+        }
+      return pos;
+    }
+
+
+    /**
+     * get the column of this pos.
+     */
+    int column(Optional<Integer> pos)
+    {
+      return codePointInLine(getPos(pos));
+    }
+
+
+    /**
+     * In multiline strings any space before multiLineIndentation is ignored.
+     *
+     * @param pos
+     * @return
+     */
+    private boolean skipped(Optional<Integer> pos)
+    {
+      return _multiLineIndentation
+        .map(indentation ->
+          {
+            var codepoint = raw(pos);
+            var isIgnoredSpace = (codepoint == SP && column(pos) < indentation);
+            return
+              isIgnoredSpace
+              // newlines are normalized to LF in multiline strings.
+              || codepoint == CR;
+          }
+        ).orElse(false);
+    }
+
+
+    /**
+     * At start or end of a multiline string?
+     *
+     * @param pos
+     * @return
+     */
+    private boolean atMultiLineStringDelimitor(int pos)
+    {
+      return (pos < 0 || pos+2 >= byteLength())
+        ? false
+        : byteAt(pos) == '"' && byteAt(pos+1) == '"' && byteAt(pos+2) == '"';
     }
 
 
@@ -2541,7 +2732,7 @@ PIPE        : "|"
     {
       if (CHECKS) check
         (_stringLexer == this,
-         _pos == -1);
+         _pos.isEmpty());
 
       int p = curCodePoint();
       switch (_state)
@@ -2699,15 +2890,17 @@ PIPE        : "|"
   /**
    * Return the actual string constant of the current t_string* token as a
    * string.
+   *
+   * @param multiLineIndentation
    */
-  String string()
+  Pair<String, Optional<Integer>> string(Optional<Integer> multiLineIndentation)
   {
     if (PRECONDITIONS) require
       (isString(current()));
 
     var sb = new StringBuilder();
-    var s = new StringLexer(sb);
-    return sb.toString();
+    var s = new StringLexer(sb, multiLineIndentation);
+    return new Pair<>(sb.toString(), s._multiLineIndentation);
   }
 
 

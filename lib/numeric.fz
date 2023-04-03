@@ -121,14 +121,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
 
   abs => if sign ≥ 0 then thiz else -thiz
 
-  # minimum of numeric.this and other
-  #
-  min(other T) T is if (thiz ≤ other) thiz else other
-
-  # maximum of numeric.this and other
-  #
-  max(other T) T is if (thiz ≥ other) thiz else other
-
 
   # the u32 value corresponding to this
   # note: potential fraction will be discarded
@@ -225,7 +217,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.sum : Monoid T is
     redef infix ∙ (a, b T) => a + b
-    redef infix == (a, b T) => a = b
     redef e => zero.thiz
 
 
@@ -234,7 +225,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.product : Monoid T is
     redef infix ∙ (a, b T) => a * b
-    redef infix == (a, b T) => a = b
     redef e => one.thiz
 
 
@@ -243,7 +233,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.sumSaturating : Monoid T is
     redef infix ∙ (a, b T) => a +^ b
-    redef infix == (a, b T) => a = b
     redef e => zero.thiz
 
 
@@ -252,7 +241,6 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   type.productSaturating : Monoid T is
     redef infix ∙ (a, b T) => a *^ b
-    redef infix == (a, b T) => a = b
     redef e => one.thiz
 
 

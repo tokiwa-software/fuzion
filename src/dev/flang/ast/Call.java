@@ -688,7 +688,11 @@ public class Call extends AbstractCall
                   { // nothing found, try if we can built operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
-                if (_calledFeature == null) // nothing found, so flag error
+                if (_calledFeature == null && !fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+                  { // give a more specific error when trying to call a choice feature
+                    AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
+                  }
+                else if (_calledFeature == null) // nothing found, so flag error
                   {
                     AstErrors.calledFeatureNotFound(this, calledName, targetFeature,
                                                     FeatureAndOuter.findExactOrCandidate(fos,
@@ -1898,7 +1902,8 @@ public class Call extends AbstractCall
     var result = false;
     if (!formalType.isGenericArgument() &&
         (formalType.featureOfType() == Types.resolved.f_function ||
-         formalType.featureOfType() == Types.resolved.f_Unary) &&
+         formalType.featureOfType() == Types.resolved.f_Unary ||
+         formalType.featureOfType() == Types.resolved.f_Lazy) &&
         formalType.generics().get(0).isGenericArgument()
         )
       {
@@ -2037,7 +2042,7 @@ public class Call extends AbstractCall
       }
     _resolvedFor = outer;
     loadCalledFeature(res, outer);
-    FormalGenerics.resolve(res, _generics, outer);
+    _generics = FormalGenerics.resolve(res, _generics, outer);
 
     if (CHECKS) check
       (Errors.count() > 0 || _calledFeature != null);

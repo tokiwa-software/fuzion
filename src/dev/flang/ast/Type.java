@@ -218,10 +218,13 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
-         t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-         t.isRef() ? RefOrVal.Ref
-                   : RefOrVal.Value,
+    this(t.name(),
+         g,
+         o,
+         t instanceof Type tt ? tt.feature   : t.featureOfType(),
+         t instanceof Type tt ? tt._refOrVal : (t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+                                                t.isRef() ? RefOrVal.Ref
+                                                : RefOrVal.Value),
          true);
 
     if (PRECONDITIONS) require
@@ -946,6 +949,10 @@ public class Type extends AbstractType
         ensureNotOpen();
       }
     var result = this;
+    if (!checkedForGeneric)
+      {
+        findGenerics(outerfeat);
+      }
     if (!isGenericArgument())
       {
         resolveFeature(res, outerfeat);
@@ -959,7 +966,7 @@ public class Type extends AbstractType
               {
                 this._generics = feature.generics().asActuals();
               }
-            FormalGenerics.resolve(res, _generics, outerfeat);
+            _generics = FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                   this.pos(),
                                                                   "type",
@@ -1048,6 +1055,20 @@ public class Type extends AbstractType
 
 
   /**
+   * Is this the type of a type feature, e.g., the type of `(list
+   * i32).type`. Will return false for an instance of Type for which this is
+   * still unknown since Type.resolve() was not called yet.
+   *
+   * This is redefined here since `feature` might still be null while this type
+   * was not resolved yet.
+   */
+  boolean isTypeType()
+  {
+    return feature != null && feature.isTypeFeature();
+  }
+
+
+  /**
    * genericArgument gives the Generic instance of a type defined by a generic
    * argument.
    *
@@ -1118,7 +1139,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {
@@ -1149,7 +1170,7 @@ public class Type extends AbstractType
       {
         result = true;
       }
-    else if (!_generics.isEmpty())
+    else
       {
         for (var t: _generics)
           {

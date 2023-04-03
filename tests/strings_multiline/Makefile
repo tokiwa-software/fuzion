@@ -17,42 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys.internal_array
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# helper to allocate memory for an internal_array.
-# returns an internal_array.
-#
-internal_array_init(T type, private length i32) =>
-
-  private alloc(X type, l i32) Any is intrinsic
-
-  internal_array T (alloc T length) length
-
-
-
-# fuzion.sys.internal_array_init -- one-dimensional low-level array
-internal_array(T type, data Any, private length i32) is
-
-  private get  (X type, d Any, i i32) X is intrinsic
-  private setel(X type, d Any, i i32, o X) unit is intrinsic
-
-
-  indices => 0..length-1
-
-  index [ ] (i i32) T
-    pre
-      safety: 0 ≤ i ⩻ length
-  is
-    get T data i
-
-  set [ ] (i i32, o T) unit
-    pre
-      safety: 0 ≤ i ⩻ length
-  # post   NYI
-    #array.this[i] == o
-  is
-    setel T data i o
+override NAME = multiline_strings_test
+include ../simple.mk

@@ -544,7 +544,10 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || isUsedAtAll(f),
+      (Errors.count() > 0 || isUsedAtAll(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
+                                                     * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
+                                                     * in types differently.
+                                                     */,
        f.generics().list.isEmpty());
 
     if (!_calledDynamically_.contains(f))

@@ -30,7 +30,7 @@
 # (string/concat/""), etc.
 #
 #
-Monoid(T type) ref
+Monoid(T type /* : equatable */) ref
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -56,10 +56,5 @@ is
   #
   e T is abstract
 
-  # equality operation
-  #
-  infix == (a, b T) bool is abstract
-
   # alternative names for infix operators
   op(a, b T) => infix ∙  a b
-  eq(a, b T) => infix == a b
