@@ -385,7 +385,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, String n, AbstractFeature universe)
+  public static AbstractType type(Resolution res, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -400,7 +400,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, boolean ref, String n, AbstractFeature universe)
+  public static AbstractType type(Resolution res, boolean ref, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -937,7 +937,7 @@ public class Type extends AbstractType
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  Type resolve(Resolution res, AbstractFeature outerfeat)
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -948,7 +948,7 @@ public class Type extends AbstractType
       {
         ensureNotOpen();
       }
-    var result = this;
+    AbstractType result = this;
     if (!checkedForGeneric)
       {
         findGenerics(outerfeat);
@@ -976,7 +976,7 @@ public class Type extends AbstractType
               }
           }
       }
-    return (Type) Types.intern(result);
+    return Types.intern(result);
   }
 
 
