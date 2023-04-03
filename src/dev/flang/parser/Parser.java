@@ -3675,12 +3675,20 @@ type        : thistype
         result = onetype();
         if (isOperator('|'))
           {
+            var pos = result.pos();
             List<AbstractType> l = new List<>(result);
             while (skip('|'))
               {
                 l.add(onetype());
               }
-            result = new Type("choice", l, null);
+            result = new Type("choice", l, null)
+            {
+              @Override
+              public SourcePosition pos()
+              {
+                return pos;
+              }
+            };
           }
       }
     return result;
