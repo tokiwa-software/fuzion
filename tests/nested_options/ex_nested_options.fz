@@ -65,4 +65,32 @@ ex_nested_options is
   chk "option (option i32): T 42"      (test ooo)
   chk "option (option i32): T --nil--" (test ooon)
 
+  chk "String: nil --nil--" (test String nil)
+  chk "String: T foo" (test String "foo")
+  chk "String: T foo" (test "foo")
+  so := option "foo"
+  chk "Type of 'option String'" $(type_of so)
+  son option String := nil
+  chk "option String: nil --nil--" (test (option String) nil)
+  chk "option String: T foo" (test (option String) so)
+  chk "option String: T --nil--" (test (option String) son)
+  chk "String: T foo" (test so)
+  chk "String: nil --nil--" (test son)
+  soo  := option (option String) so
+  soon := option (option String) son
+  chk "Type of 'option (option String)'" $(type_of soo)
+  chk "option (option String): nil --nil--" (test (option (option String)) nil)
+  chk "option (option String): T foo" (test (option (option String)) soo)
+  chk "option (option String): T --nil--" (test (option (option String)) soon)
+  chk "option String: T foo" (test soo)
+  chk "option String: T --nil--" (test soon)
+  sooo  := option (option (option String)) soo
+  sooon := option (option (option String)) soon
+  chk "Type of 'option (option (option String))'" $(type_of sooo)
+  chk "option (option (option String)): nil --nil--" (test (option (option (option String))) nil)
+  chk "option (option (option String)): T foo"        (test (option (option (option String))) sooo)
+  chk "option (option (option String)): T --nil--"   (test (option (option (option String))) sooon)
+  chk "option (option String): T foo"      (test sooo)
+  chk "option (option String): T --nil--" (test sooon)
+
   exit exitCode.get
