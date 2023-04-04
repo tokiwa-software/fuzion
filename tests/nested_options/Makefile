@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = test_option_nil
+override NAME = ex_nested_options
 include ../positive.mk
