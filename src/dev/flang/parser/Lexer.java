@@ -2389,7 +2389,7 @@ PIPE        : "|"
      * If this is changed, https://flang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    char[][] escapeChars = new char[][] {
+    int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -2402,6 +2402,8 @@ PIPE        : "|"
         { '\\', '\\' },  // \  0x5c
         { '{',  '{'  },  // {  0x7b
         { '}',  '}'  },  // }  0x7d
+        { '\n', -1   },
+        { '\r', -1   },
       };
 
 
@@ -2509,25 +2511,24 @@ PIPE        : "|"
               checkIndentation(pos);
               if (escaped)
                 {
-                  for (var i = 0; i < escapeChars.length && c < 0; i++)
+                  var i = 0;
+                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
                     {
-                      if (p == (int) escapeChars[i][0])
-                        {
-                          c = (int) escapeChars[i][1];
-                        }
+                      i++;
                     }
-                  if (c < 0)
+                  if (i < escapeChars.length)
                     {
-                      if (p == (int) '\n')
-                        {
-                          // codepoint is skipped
-                        }
-                      else
-                        {
-                          Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
-                        }
+                      c = (int) escapeChars[i][1];
                     }
-                  escaped = false;
+                  else
+                    {
+                      Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
+                    }
+                  if (p != (int) '\r')
+                    {
+                      // if carriage return is encountered, wait for line feed
+                      escaped = false;
+                    }
                 }
               else if (p == '\\')
                 {
