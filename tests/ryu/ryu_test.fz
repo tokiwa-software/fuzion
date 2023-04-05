@@ -1,51 +1,52 @@
 ryu_test =>
 
-  exitCode := 0
-
-  chck (b bool, msg String) unit is
-    if b
-      say "PASSED: $msg"
-    else
-      say "FAILED: $msg"
-      set exitCode := 1
-
-  # special cases
-  chck ((ryū.as_string 0.0                    false ryū.rounding_conservative) = "0.0")        "special case: 0.0"
-  chck ((ryū.as_string -f64s.zero             false ryū.rounding_conservative) = "-0.0")       "special case: -0.0"
-  chck ((ryū.as_string f64s.positiveInfinity  false ryū.rounding_conservative) = "Infinity")   "special case: Infinity"
-  chck ((ryū.as_string f64s.negativeInfinity  false ryū.rounding_conservative) = "-Infinity")  "special case: -Infinity"
-  chck ((ryū.as_string f64s.quietNaN          false ryū.rounding_conservative) = "NaN")        "special case: NaN"
-
-
-  # simple number full / scientific
-  chck ((ryū.as_string 1.0 false ryū.rounding_conservative) = "1.0")                           "1.0: full"
-  chck ((ryū.as_string 1.0 true ryū.rounding_conservative) = "1.0E0")                          "1.0: scientific"
-
-
-  # .5 exactly full / scientific
-  chck ((ryū.as_string 1.5 false ryū.rounding_conservative) = "1.5")                           ".5 exactly rounding conservative"
-  chck ((ryū.as_string 1.5 false ryū.rounding_even) = "1.5")                                   ".5 exactly rounding even"
-
-
-  # π full / scientific
-  chck ((ryū.as_string f64s.π false ryū.rounding_conservative) = "3.141592653589793")          "π full matches"
-  chck ((ryū.as_string f64s.π true  ryū.rounding_conservative) = "3.141592653589793E0")        "π scientific matches"
-
-
   min_subnormal := 4.9406564584124654E-324
   max_subnormal := 2.2250738585072009E-308
   min_positive  := 2.2250738585072014E-308
   max_positive  := 1.7976931348623157E308
 
+  numbers := [ 0.0,
+              -f64s.zero,
+              f64s.positiveInfinity,
+              f64s.negativeInfinity,
+              f64s.quietNaN,
+              0.3,
+              1.0,
+              1.5,
+              f64.type.π,
+              min_subnormal,
+              max_subnormal,
+              min_positive,
+              max_positive,
 
-  chck ((ryū.as_string min_subnormal true ryū.rounding_conservative) = "4.9406564584124654E-324") "min/max (sub)-normal, scientific: min_subnormal"
-  chck ((ryū.as_string max_subnormal true ryū.rounding_conservative) = "2.2250738585072009E-308") "min/max (sub)-normal, scientific: max_subnormal"
-  chck ((ryū.as_string min_positive  true ryū.rounding_conservative) = "2.2250738585072014E-308") "min/max (sub)-normal, scientific: min_positive"
-  chck ((ryū.as_string max_positive  true ryū.rounding_conservative) = "1.7976931348623157E308")  "min/max (sub)-normal, scientific: max_positive"
+              # these numbers are taken from test cases in
+              # https://github.com/ulfjack/ryu
 
-  chck ((ryū.as_string min_subnormal false ryū.rounding_conservative) = "4.9406564584124654E-324") "min/max (sub)-normal, full: min_subnormal"
-  chck ((ryū.as_string max_subnormal false ryū.rounding_conservative) = "2.2250738585072009E-308") "min/max (sub)-normal, full: max_subnormal"
-  chck ((ryū.as_string min_positive  false ryū.rounding_conservative) = "2.2250738585072014E-308") "min/max (sub)-normal, full: min_positive"
-  chck ((ryū.as_string max_positive  false ryū.rounding_conservative) = "1.7976931348623157E308") "min/max (sub)-normal, full: max_positive"
+              4.940656E-318,
+              1.18575755E-316,
+              2.989102097996E-312,
+              9.0608011534336E15,
+              4.708356024711512E18,
+              9.409340012568248E18,
+              1.8531501765868567E21,
+              -3.347727380279489E33,
+              1.9430376160308388E16,
+              -6.9741824662760956E19,
+              4.3816050601147837E18,
+              -2.1098088986959632E16,
+              -2.109808898695963E16,
+              4.940656E-318,
+              1.18575755E-316,
+              2.989102097996E-312,
+              9.0608011534336E15,
+              4.708356024711512E18,
+              9.409340012568248E18,
+              ]
 
-  exit exitCode
+  for num in numbers
+  do
+    for is_scientific in [true, false] do
+      for rounding_mode in [("conservative", ryū.rounding_conservative), ("even", ryū.rounding_even)] do
+        (rm_name, rm) := rounding_mode
+        say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {ryū.as_string num is_scientific rm}"
+    say "--"

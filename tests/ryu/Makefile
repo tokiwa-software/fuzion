@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = ryu_test
-include ../positive.mk
+include ../simple.mk

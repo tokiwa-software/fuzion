@@ -41,7 +41,7 @@ ryū is
 
 
   # convert f64 to string
-  as_string(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
+  public as_string(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
     # trivial cases first
     if (f64s.isNaN val) then "NaN"
     else if (val = f64s.positiveInfinity) then "Infinity"
@@ -78,9 +78,10 @@ ryū is
   # step 3: convert to decimal power base
   private step_3(exponent, mv, mp, mm, mm_shift i64, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
 
-    # NYI document
+    # calculates: ceil(log_2(5^e))
     private pow5bits(e i64)
-    pre e >= 0
+    pre e >= 0,
+        e <= 3528
       =>
       ((e * 1217359) >> 19) + 1
 
@@ -788,14 +789,14 @@ ryū is
     # NYI document
     multiple_of_power_of_5(val i64, q i64) =>
       for pow5_factor := i64 0, pow5_factor+1
-          mod := i64 5, mod*5
-      while val % mod != 0
+          mod         := i64 5, mod*5
+      while val % mod != 0 && mod*!5
       else
         pow5_factor >= q
 
 
     if (exponent >= 0)
-      q := (i64 0).max (exponent*78913 >> 18)-1
+      q := max (i64 0) (exponent*78913 >> 18)-1
       k := pow5_inv_bitcount + pow5bits q - 1
       i := -exponent + q + k
 
@@ -815,7 +816,7 @@ ryū is
       else
         (dv, dp, dm, false, false, q)
     else
-      q := (i64 0).max (-exponent*732923 >> 20)-1
+      q := max (i64 0) (-exponent*732923 >> 20)-1
       i := -exponent - q
       k := pow5bits i - pow5_bitcount
       j := q - k
