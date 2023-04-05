@@ -445,13 +445,13 @@ public class Lexer extends SourceFile
   /**
    * Position of the current token
    */
-  private int _curPos = -1;
+  private int _tokenPos = -1;
 
 
   /**
    * Position of the previous token, -1 if none
    */
-  private int _lastPos = -1;
+  private int _lastTokenPos = -1;
 
 
   /**
@@ -532,8 +532,8 @@ public class Lexer extends SourceFile
     super(original);
 
     _curToken = original._curToken;
-    _curPos = original._curPos;
-    _lastPos = original._lastPos;
+    _tokenPos = original._tokenPos;
+    _lastTokenPos = original._lastTokenPos;
     _minIndent = original._minIndent;
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
@@ -772,7 +772,7 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = pos() == _minIndentStartPos;
+    var startsIndent = tokenPos() == _minIndentStartPos;
     match(true, start, rule);
     V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
@@ -807,7 +807,7 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = pos() == _minIndentStartPos;
+    var startsIndent = tokenPos() == _minIndentStartPos;
     var result = skip(false, start) && relaxLineAndSpaceLimit(c);
     if (result)
       {
@@ -831,7 +831,7 @@ public class Lexer extends SourceFile
    */
   public void next()
   {
-    _lastPos = _curPos;
+    _lastTokenPos = _tokenPos;
     _ignoredTokenBefore = false;
     nextRaw();
     while (ignore(currentNoLimit()))
@@ -863,7 +863,7 @@ public class Lexer extends SourceFile
   {
     var t = _curToken;
     int l = line();
-    int p = _curPos;
+    int p = _tokenPos;
     return
       t == Token.t_eof                                     ? t                        :
       sameLine  >= 0 && l != sameLine                      ? Token.t_lineLimit        :
@@ -923,9 +923,9 @@ public class Lexer extends SourceFile
   /**
    * The byte position in the source file.
    */
-  public int pos()
+  public int tokenPos()
   {
-    return _curPos;
+    return _tokenPos;
   }
 
 
@@ -933,34 +933,25 @@ public class Lexer extends SourceFile
    * The byte position of the previous non-skip token in the source file.  -1 if
    * this does not exist.
    */
-  int lastPos()
+  int lastTokenPos()
   {
-    return _lastPos;
+    return _lastTokenPos;
   }
 
 
   /**
-   * The current position as a SourcePosition instance
+   * The current lexer position as a SourcePosition instance
    */
-  SourcePosition posObject()
+  SourcePosition tokenSourcePos()
   {
-    return posObject(pos());
-  }
-
-
-  /**
-   * The given position as a SourcePosition instance
-   */
-  SourcePosition posObject(int pos)
-  {
-    return sourcePos(pos);
+    return sourcePos(tokenPos());
   }
 
 
   /**
    * Position of the first byte in source file after the current token.
    */
-  private int endPos()
+  private int tokenEndPos()
   {
     return bytePos();
   }
@@ -971,7 +962,7 @@ public class Lexer extends SourceFile
    */
   int line()
   {
-    return this.lineNum(_curPos);
+    return this.lineNum(_tokenPos);
   }
 
 
@@ -981,7 +972,7 @@ public class Lexer extends SourceFile
    */
   public void nextRaw()
   {
-    _curPos = bytePos();
+    _tokenPos = bytePos();
     int p = curCodePoint();
     var token = Token.t_undefined;
     if (p == SourceFile.END_OF_FILE)
@@ -1013,7 +1004,7 @@ public class Lexer extends SourceFile
               boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
-                codePointInLine(_curPos) == 1      ? skipUntilEOL() // comment until end of line
+                codePointInLine(_tokenPos) == 1      ? skipUntilEOL() // comment until end of line
                                                    : skipOp(Token.t_op);
               break;
             }
@@ -1257,7 +1248,7 @@ IDENT     : ( 'a'..'z'
       {
         int m = (l + r) / 2;
         Token t = Token._keywords[m];
-        int c = compareToString(pos(), endPos(), t._keyword);
+        int c = compareToString(tokenPos(), tokenEndPos(), t._keyword);
         if (c == 0)
           {
             result = t;
@@ -1868,7 +1859,7 @@ HEX_TAIL    : "." HEX_DIGITS
   private Token skipComment()
   {
     int nestedStartPos = -1, nestedEndPos = -1;
-    int startPos = _curPos;
+    int startPos = _tokenPos;
     int p = curCodePoint();
 
     if (CHECKS) check
@@ -1981,9 +1972,9 @@ HEX_TAIL    : "." HEX_DIGITS
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceLimit       -> Errors.whiteSpaceNotAllowedHere(sourcePos(pos()), detail);
-      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(pos()), detail);
-      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(pos()), detail);
+      case t_spaceLimit       -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
+      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
+      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
   }
@@ -2000,7 +1991,7 @@ HEX_TAIL    : "." HEX_DIGITS
    */
   void syntaxError(String expected, String currentRule)
   {
-    syntaxError(pos(), expected, currentRule);
+    syntaxError(tokenPos(), expected, currentRule);
   }
 
 
@@ -2144,8 +2135,8 @@ PIPE        : "|"
   {
     return
       current() == Token.t_op &&
-      codePointAt(_curPos) == codePoint &&
-      endPos() - pos() == 1;
+      codePointAt(_tokenPos) == codePoint &&
+      tokenEndPos() - tokenPos() == 1;
   }
 
 
@@ -2178,7 +2169,7 @@ PIPE        : "|"
   {
     if (current() == Token.t_op && operator().startsWith(op))
       {
-        setPos(_curPos);
+        setPos(_tokenPos);
         for (int i = 0; i < op.length(); i++)
           {
             if (CHECKS) check
@@ -2420,7 +2411,7 @@ PIPE        : "|"
      */
     StringLexer()
     {
-      _stringStart = Lexer.this.pos();
+      _stringStart = Lexer.this.tokenPos();
       _pos = Optional.empty();
       _beginning = StringEnd.QUOTE;
       _multiLineIndentation = Optional.empty();
@@ -2440,8 +2431,8 @@ PIPE        : "|"
       if (PRECONDITIONS) require
         (isString(current()));
 
-      _stringStart = Lexer.this.pos();
-      _pos = Optional.of(Lexer.this.pos() + (beginning(current()) == StringEnd.DOLLAR ? 0 : 1));
+      _stringStart = Lexer.this.tokenPos();
+      _pos = Optional.of(Lexer.this.tokenPos() + (beginning(current()) == StringEnd.DOLLAR ? 0 : 1));
       _beginning = StringEnd.QUOTE;
       _multiLineIndentation = multiLineIndentation;
       iterateCodePoints(sb);
@@ -2912,7 +2903,7 @@ PIPE        : "|"
     if (PRECONDITIONS) require
       (currentNoLimit() != Token.t_eof);
 
-    return asString(pos(), endPos());
+    return asString(tokenPos(), tokenEndPos());
   }
 
 
