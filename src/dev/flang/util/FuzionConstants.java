@@ -61,10 +61,17 @@ public class FuzionConstants extends ANY
   public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
 
   /**
-   * Name of Object feature, i.e., the implicit parent feature of all other
+   * Name of Any feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String OBJECT_NAME          = "Any";
+  public static final String ANY_NAME             = "Any";
+
+
+  /**
+   * Name of unit feature. The feature is used throughout the base library
+   * to indicate that no result is returned.
+   */
+  public static final String UNIT_NAME            = "unit";
 
 
   /**

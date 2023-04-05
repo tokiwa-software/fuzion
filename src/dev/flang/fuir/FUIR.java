@@ -736,7 +736,7 @@ public class FUIR extends IR
    */
   public int clazzObject()
   {
-    return id(Clazzes.object.get());
+    return id(Clazzes.any.get());
   }
 
 

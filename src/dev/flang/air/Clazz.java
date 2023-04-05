@@ -1867,7 +1867,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      _outer == Clazzes.object.getIfCreated() ||
+      _outer == Clazzes.any.getIfCreated()    ||
       _outer == Clazzes.string.getIfCreated() ||
 
       _outer._isNormalized ||

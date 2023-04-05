@@ -575,19 +575,26 @@ public class Errors extends ANY
                 detail);
   }
 
-  private static String legalEscapes(char[][] escapes)
+  private static String legalEscapes(int[][] escapes)
   {
     var legal = new StringBuilder();
     var comma = "";
     for (var c : escapes)
       {
-        legal.append(comma).append("'\\" + c[0] + "'");
+        if (c[1] < 0)
+          {
+            legal.append(comma).append("'\\<ASCII " + c[0] + ">'");
+          }
+        else
+          {
+            legal.append(comma).append("'\\" + (char) c[0] + "'");
+          }
         comma = ", ";
       }
     return legal.toString();
   }
 
-  public static void unknownEscapedChar(SourcePosition pos, int found, char[][] escapes)
+  public static void unknownEscapedChar(SourcePosition pos, int found, int[][] escapes)
   {
     syntaxError(pos,
                 "Unknown escaped character found in constant string.",

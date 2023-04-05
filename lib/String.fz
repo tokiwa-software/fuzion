@@ -590,8 +590,8 @@ String ref : equatable, has_hash, has_total_order is
   trim String is
     s0 := utf8
 
-    s1 := (s0.drop_while (fun is_ascii_white_space)).reverse
-    s2 := (s1.drop_while (fun is_ascii_white_space)).reverse
+    s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
+    s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
 
 # NYI: This causes fz to crash:
 #   from_bytes s2
@@ -604,7 +604,7 @@ String ref : equatable, has_hash, has_total_order is
   trim_start =>
 # NYI: This causes fz to crash:
 #   from_bytes ...
-    String.type.from_bytes (utf8.drop_while (fun is_ascii_white_space))
+    String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
 
 
   # remove trailing white space from this string
@@ -612,7 +612,7 @@ String ref : equatable, has_hash, has_total_order is
   trim_end =>
 # NYI: This causes fz to crash:
 #   from_bytes ...
-    String.type.from_bytes (utf8.as_list.reverse.drop_while (fun is_ascii_white_space)).reverse
+    String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
 
 
   # is this part of given set

@@ -772,7 +772,6 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = tokenPos() == _minIndentStartPos;
     match(true, start, rule);
     V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
@@ -1728,7 +1727,6 @@ HEX_TAIL    : "." HEX_DIGITS
             }
         }
       var d = curCodePoint();
-      var start = sourcePos();
       var end = false;
       while (isDigit(d) || d == '_' || !end)
         {
@@ -2380,7 +2378,7 @@ PIPE        : "|"
      * If this is changed, https://flang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    char[][] escapeChars = new char[][] {
+    int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -2393,6 +2391,8 @@ PIPE        : "|"
         { '\\', '\\' },  // \  0x5c
         { '{',  '{'  },  // {  0x7b
         { '}',  '}'  },  // }  0x7d
+        { '\n', -1   },
+        { '\r', -1   },
       };
 
 
@@ -2500,18 +2500,24 @@ PIPE        : "|"
               checkIndentation(pos);
               if (escaped)
                 {
-                  for (var i = 0; i < escapeChars.length && c < 0; i++)
+                  var i = 0;
+                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
                     {
-                      if (p == (int) escapeChars[i][0])
-                        {
-                          c = (int) escapeChars[i][1];
-                        }
+                      i++;
                     }
-                  if (c < 0)
+                  if (i < escapeChars.length)
+                    {
+                      c = (int) escapeChars[i][1];
+                    }
+                  else
                     {
                       Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
                     }
-                  escaped = false;
+                  if (p != (int) '\r')
+                    {
+                      // if carriage return is encountered, wait for line feed
+                      escaped = false;
+                    }
                 }
               else if (p == '\\')
                 {
