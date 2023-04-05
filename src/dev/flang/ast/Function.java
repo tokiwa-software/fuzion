@@ -118,44 +118,6 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Constructor defining a function by referring to a feature, e.g.,
-   *
-   *   x(fun a.b.f);
-   *
-   * where f is defined in a.b as
-   *
-   *   f(o Object, i int) int { result = o.hashCode + i; };
-   *
-   * then the "fun f" is syntactic sugar for
-   *
-   *  a.b._anonymous<#>_f_: Function<int,Object,int>
-   *   {
-   *     redefine call(o Object, i int) int
-   *     {
-   *       result = f(o,i);
-   *     };
-   *   }
-   *  x(a.b._anonymous<#>_f_());
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param c the call after the fun keyword
-   */
-  public Function(SourcePosition pos,
-                  Call c)
-  {
-    super(pos);
-
-    if (PRECONDITIONS) require
-      (c._actuals.size() == 0);
-
-    this._call = c;
-    c._forFun = true;
-    this._wrapper = null;
-  }
-
-
-  /**
    * Constructor for a lambda of the form
    *
    *   (x,y) pre y != 0 -> x*y
@@ -566,7 +528,6 @@ public class Function extends ExprWithPos
              * [..]
              */
             Call call = this._call;
-            call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors or special cases
