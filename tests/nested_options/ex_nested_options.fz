@@ -1,0 +1,96 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ex_nested_options
+#
+# -----------------------------------------------------------------------
+
+ex_nested_options is
+
+  exitCode := mut 0
+
+  chk(exp, act String) unit is
+    if exp = act
+      say "PASSED: $exp = $act"
+    else
+      say "FAILED: $exp /= $act"
+      exitCode <- 1
+
+  test(T type, v option T) =>
+    match v
+      x T   => "{T.name}: T $x"
+      n nil => "{T.name}: nil $n"
+
+  chk "i32: nil --nil--" (test i32 nil)
+  chk "i32: T 42" (test i32 42)
+  chk "i32: T 42" (test 42)
+  o := option 42
+  chk "Type of 'option i32'" $(type_of o)
+  on option i32 := nil
+  chk "option i32: nil --nil--" (test (option i32) nil)
+  chk "option i32: T 42" (test (option i32) o)
+  chk "option i32: T --nil--" (test (option i32) on)
+  chk "i32: T 42" (test o)
+  chk "i32: nil --nil--" (test on)
+  oo  := option (option i32) o
+  oon := option (option i32) on
+  chk "Type of 'option (option i32)'" $(type_of oo)
+  chk "option (option i32): nil --nil--" (test (option (option i32)) nil)
+  chk "option (option i32): T 42" (test (option (option i32)) oo)
+  chk "option (option i32): T --nil--" (test (option (option i32)) oon)
+  chk "option i32: T 42" (test oo)
+  chk "option i32: T --nil--" (test oon)
+  ooo  := option (option (option i32)) oo
+  ooon := option (option (option i32)) oon
+  chk "Type of 'option (option (option i32))'" $(type_of ooo)
+  chk "option (option (option i32)): nil --nil--" (test (option (option (option i32))) nil)
+  chk "option (option (option i32)): T 42"        (test (option (option (option i32))) ooo)
+  chk "option (option (option i32)): T --nil--"   (test (option (option (option i32))) ooon)
+  chk "option (option i32): T 42"      (test ooo)
+  chk "option (option i32): T --nil--" (test ooon)
+
+  chk "String: nil --nil--" (test String nil)
+  chk "String: T foo" (test String "foo")
+  chk "String: T foo" (test "foo")
+  so := option "foo"
+  chk "Type of 'option String'" $(type_of so)
+  son option String := nil
+  chk "option String: nil --nil--" (test (option String) nil)
+  chk "option String: T foo" (test (option String) so)
+  chk "option String: T --nil--" (test (option String) son)
+  chk "String: T foo" (test so)
+  chk "String: nil --nil--" (test son)
+  soo  := option (option String) so
+  soon := option (option String) son
+  chk "Type of 'option (option String)'" $(type_of soo)
+  chk "option (option String): nil --nil--" (test (option (option String)) nil)
+  chk "option (option String): T foo" (test (option (option String)) soo)
+  chk "option (option String): T --nil--" (test (option (option String)) soon)
+  chk "option String: T foo" (test soo)
+  chk "option String: T --nil--" (test soon)
+  sooo  := option (option (option String)) soo
+  sooon := option (option (option String)) soon
+  chk "Type of 'option (option (option String))'" $(type_of sooo)
+  chk "option (option (option String)): nil --nil--" (test (option (option (option String))) nil)
+  chk "option (option (option String)): T foo"        (test (option (option (option String))) sooo)
+  chk "option (option (option String)): T --nil--"   (test (option (option (option String))) sooon)
+  chk "option (option String): T foo"      (test sooo)
+  chk "option (option String): T --nil--" (test sooon)
+
+  exit exitCode.get
