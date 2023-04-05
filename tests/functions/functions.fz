@@ -88,7 +88,7 @@ functions is
         say "here f1 o i !!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         o.hashCode + i
     say "here x0 (fun f1)---------------"
-    x0 (fun f1)
+    x0 ((o, i)->f1 o i)
     say "here x (fun f1)---------------"
-    x (fun f1)
+    x ((o, i)->f1 o i)
     unit
