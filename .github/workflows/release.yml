@@ -1,8 +1,5 @@
 name: github release
 
-permissions:
-  id-token: read
-
 on:
   workflow_dispatch:
 
