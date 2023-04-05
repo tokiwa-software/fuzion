@@ -772,7 +772,6 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = pos() == _minIndentStartPos;
     match(true, start, rule);
     V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
@@ -1737,7 +1736,6 @@ HEX_TAIL    : "." HEX_DIGITS
             }
         }
       var d = curCodePoint();
-      var start = sourcePos();
       var end = false;
       while (isDigit(d) || d == '_' || !end)
         {
