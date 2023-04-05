@@ -139,7 +139,7 @@ public class Types extends ANY
     public final AbstractType t_ref_f32 ;
     public final AbstractType t_ref_f64 ;
     public final AbstractType t_bool;
-    public final AbstractType t_object;
+    public final AbstractType t_any;
     private final AbstractType t_fuzion;
     public final AbstractType t_string;
     public final AbstractType t_conststring;
@@ -210,8 +210,8 @@ public class Types extends ANY
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type(FuzionConstants.STRING_NAME, false);
       t_conststring   = ct.type("conststring" , false);
-      t_object        = ct.type(FuzionConstants.OBJECT_NAME, false);
-      t_unit          = ct.type("unit"        , false);
+      t_any           = ct.type(FuzionConstants.ANY_NAME, false);
+      t_unit          = ct.type(FuzionConstants.UNIT_NAME, false);
       t_void          = ct.type("void"        , false);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
@@ -240,7 +240,7 @@ public class Types extends ANY
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
+      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
@@ -263,7 +263,7 @@ public class Types extends ANY
         t_fuzion     ,
         t_string     ,
         t_conststring,
-        t_object     ,
+        t_any        ,
         t_unit       ,
         t_void       };
 

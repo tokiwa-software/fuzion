@@ -631,9 +631,9 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
-                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
+                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME))
+      ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
       : i;
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
@@ -1119,7 +1119,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME));
+    i.set(new Call(_pos, FuzionConstants.ANY_NAME));
   }
 
 

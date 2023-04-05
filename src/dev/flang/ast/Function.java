@@ -453,7 +453,7 @@ public class Function extends ExprWithPos
       {
         generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
                      ? ff.resultTypeForTypeInference(pos(), res, Type.NONE)
-                     : new Type("unit"));
+                     : new Type(FuzionConstants.UNIT_NAME));
         for (var a : f.arguments())
           {
             res.resolveTypes(a);

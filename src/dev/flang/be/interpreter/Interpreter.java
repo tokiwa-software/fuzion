@@ -982,7 +982,7 @@ public class Interpreter extends ANY
         if (!staticTypeOfValue.isRef())
           { // the value is a stateless value type, so we store the tag as a reference.
             v = ChoiceIdAsRef.get(choiceClazz, tag);
-            vclazz = Clazzes.object.get();
+            vclazz = Clazzes.any.get();
             staticTypeOfValue = vclazz._type;
             valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
           }
@@ -1013,7 +1013,7 @@ public class Interpreter extends ANY
        choice != null);
 
     int offset  = Layout.get(choiceClazz).choiceRefValOffset();
-    LValue slot = choice.at(Clazzes.object.get(), offset);
+    LValue slot = choice.at(Clazzes.any.get(), offset);
     return loadRefField(thiz, slot, false);
   }
 

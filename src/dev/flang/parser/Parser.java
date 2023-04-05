@@ -924,7 +924,7 @@ argType     : type
                                       {
                                         i = typeType();
                                         t = skipColon() ? type()
-                                                        : new Type(FuzionConstants.OBJECT_NAME);
+                                                        : new Type(FuzionConstants.ANY_NAME);
                                       }
                                     else
                                       {
