@@ -91,8 +91,6 @@ exit_type is
 # delayed_exit -- effect that runs some code that can set an exit code, but
 # only exits after all the code has been run
 #
-# this is intended for use in tests
-#
 delayed_exit (_ unit) : effect effectMode.plain is
 
 
@@ -101,10 +99,19 @@ delayed_exit (_ unit) : effect effectMode.plain is
   exit_code := mut 0
 
 
-  # update the exit code to the given value
+  # if the exit code currently stored is 0, update the exit code. if it is not
+  # zero, keep the currently stored exit code, and do not do anything.
   #
-  set0(code i32) =>
-    exit_code <- code
+  set0(code i32)
+    post
+      code != 0 : !exit_code.open
+    =>
+      if exit_code.open
+        exit_code <- code
+
+      if code != 0
+        exit_code.close
+        unit
 
 
   # execute the code given by f. if after f is completed, the exit code is
