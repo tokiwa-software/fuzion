@@ -33,7 +33,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrappedOnNeg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u128) => max -° thiz < other

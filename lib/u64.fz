@@ -32,7 +32,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrappedOnNeg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u64) => u64.type.max -° thiz < other

@@ -32,7 +32,7 @@ u32(val u32) : wrapping_integer u32, hasInterval u32, u32s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrappedOnNeg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u32) => u32.type.max -° thiz < other
