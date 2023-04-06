@@ -257,7 +257,7 @@ public class Errors extends ANY
       {
         _errors_.add(e);
         print(pos, errorMessage(msg), detail);
-        if (count() >= MAX_ERROR_MESSAGES)
+        if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
           {
             showAndExit();
           }
@@ -454,7 +454,7 @@ public class Errors extends ANY
   {
     if (count() > 0)
       {
-        if (count() >= MAX_ERROR_MESSAGES)
+        if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
           {
             warning(SourcePosition.builtIn,
                     "Maximum error count reached, terminating.",
@@ -519,9 +519,9 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    if (warningCount() < MAX_WARNING_MESSAGES)
+    if (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1)
       {
-        if (warningCount()+1 == MAX_WARNING_MESSAGES)
+        if (warningCount()+1 == MAX_WARNING_MESSAGES && MAX_WARNING_MESSAGES != -1)
           {
             pos = SourcePosition.builtIn;
             msg = "Maximum warning count reached, suppressing further warnings";
