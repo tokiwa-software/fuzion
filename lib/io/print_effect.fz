@@ -17,17 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature printEffect
+#  Source code of Fuzion standard library feature print_effect
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# printEffect -- effect providing an output stream
+# print_effect -- effect providing an output stream
 #
 # This is used as heir feature for effects such as io.out and io.err.
 #
-private printEffect (
+private print_effect (
   p Can_Print,
 
   # action to be taken: plain nomad, install or replace?
