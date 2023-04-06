@@ -66,8 +66,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   infix -° (other W) W is abstract
   infix *° (other W) W is abstract
 
-  isMin => wrapping_integer.this ≟ wrapping_integer.this.type.min
-  isMax => wrapping_integer.this ≟ wrapping_integer.this.type.max
+  isMin => wrapping_integer.this = wrapping_integer.this.type.min
+  isMax => wrapping_integer.this = wrapping_integer.this.type.max
 
   # check if this type of wrapping_integer is bounded
   #
@@ -111,7 +111,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrappedOnNeg if thiz ⩼ zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
+  redef prefix -^          => if wrappedOnNeg if thiz > zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
   redef infix +^ (other W) => if overflowOnAdd(other) then wrapping_integer.this.type.max.thiz else if underflowOnAdd(other) then wrapping_integer.this.type.min.thiz else thiz + other
   redef infix -^ (other W) => if overflowOnSub(other) then wrapping_integer.this.type.max.thiz else if underflowOnSub(other) then wrapping_integer.this.type.min.thiz else thiz - other
   redef infix *^ (other W) => if overflowOnMul(other) then wrapping_integer.this.type.max.thiz else if underflowOnMul(other) then wrapping_integer.this.type.min.thiz else thiz * other
@@ -137,8 +137,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other ≟ zero) one
-    else if (other ≟ one ) thiz
+    if      (other = zero) one
+    else if (other = one ) thiz
     else
       tmp := (thiz *° thiz) **° (other / two)
       if other %% two
@@ -155,8 +155,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other ≟ zero) one
-    else if (other ≟ one ) thiz
+    if      (other = zero) one
+    else if (other = one ) thiz
     else
       tmp := (thiz *? thiz) **? (other / two)
       if other %% two

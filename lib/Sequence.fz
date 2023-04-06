@@ -388,7 +388,7 @@ Sequence(T type) ref is
   index [] (i i32) T
     pre
       debug: 0 ≤ i,
-      debug: finite: i ⩻ count,
+      debug: finite: i < count,
       debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get

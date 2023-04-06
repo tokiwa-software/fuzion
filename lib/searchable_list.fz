@@ -64,7 +64,7 @@ is
       c2 Cons =>
         match from.as_list
           nil     => false
-          c1 Cons => c1.head ≟ c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
+          c1 Cons => c1.head = c2.head && (searchable_list c1.tail).starts_with c2.tail # tail recursion
 
 
   # get the index of l within this list or nil if it does not exist
@@ -99,9 +99,9 @@ is
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
         # NYI: #637: perhaps make it possible to do
-        #     if limit ≟ option 0
+        #     if limit = option 0
         # here.
-        if (limit.map (v -> v ≟ (u64 0))).get false
+        if (limit.map (v -> v = (u64 0))).get false
           already_replaced ++ to_be_replaced
         else
           a := already_replaced ++ (to_be_replaced.take n) ++ new

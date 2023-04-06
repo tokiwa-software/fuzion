@@ -90,7 +90,7 @@ is
    *
    * so use until .. then .. else instead, which works, but repeats 'x'
    */
-    until nf ≟ u64 0 || nanos / nf ⩻ u64 10 then
+    until nf = u64 0 || nanos / nf < u64 10 then
       x
     else
       x

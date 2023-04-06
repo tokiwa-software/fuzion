@@ -35,15 +35,15 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   redef wrappedOnNeg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u16) => u16.type.max -° thiz ⩻ other
+  redef overflowOnAdd (other u16) => u16.type.max -° thiz < other
   redef underflowOnAdd(other u16) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u16) => false
-  redef underflowOnSub(other u16) => thiz ⩻ other
+  redef underflowOnSub(other u16) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 ⩼ u16.type.max.as_i32
+  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 > u16.type.max.as_i32
   redef underflowOnMul(other u16) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -117,10 +117,10 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   highestOneBit u16 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u16 0    )
-    (v1, s1) := if (v0 ⩻ (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
-    (v2, s2) := if (v1 ⩻  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
-    (v3, s3) := if (v2 ⩻     (u16 4)) (v2, s2) else (v2 >>  2, s2 +  2)
-    (v4, s4) := if (v3 ⩻     (u16 2)) (v3, s3) else (v3 >>  1, s3 +  1)
+    (v1, s1) := if (v0 < (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
+    (v2, s2) := if (v1 <  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
+    (v3, s3) := if (v2 <     (u16 4)) (v2, s2) else (v2 >>  2, s2 +  2)
+    (v4, s4) := if (v3 <     (u16 2)) (v3, s3) else (v3 >>  1, s3 +  1)
     v4 << s4
 
 

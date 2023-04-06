@@ -42,12 +42,12 @@ equals_test_negative is
   b1 := equals_test_b 42
   b2 := equals_test_b 42
 
-  say "b1.infix ≟ b2 is {b1.infix ≟ b2}"    # 2. should flag an error: equals_test_b does not implement equality
+  say "b1.infix = b2 is {b1.infix = b2}"    # 2. should flag an error: equals_test_b does not implement equality
 
   c1 := equals_test_c 42
   c2 := equals_test_c 42
 
-  say "c1 ≟ c2 is {c1 ≟ c2}"                # 3. should flag an error: equals_test_c does not implement equality
+  say "c1 = c2 is {c1 = c2}"                # 3. should flag an error: equals_test_c does not implement equality
 
 # control test that should pass
 equals_test_ok(x i32) : equatable is

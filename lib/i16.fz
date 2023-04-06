@@ -35,16 +35,16 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   redef wrappedOnNeg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i16) => thiz ⩼ zero && i16.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i16) => thiz ⩻ zero && i16.type.min -° thiz ⩼ other
+  redef overflowOnAdd (other i16) => thiz > zero && i16.type.max -° thiz < other
+  redef underflowOnAdd(other i16) => thiz < zero && i16.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° i16.type.max ⩼ other
-  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° i16.type.min ⩻ other
+  redef overflowOnSub (other i16) => thiz > zero && thiz -° i16.type.max > other
+  redef underflowOnSub(other i16) => thiz < zero && thiz -° i16.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ i16.type.max.as_i32
-  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ i16.type.min.as_i32
+  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 > i16.type.max.as_i32
+  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 < i16.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i16 is intrinsic

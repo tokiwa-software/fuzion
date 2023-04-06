@@ -32,7 +32,7 @@ valWithDynOuter is
   exit_code := mut 0
 
   chck(str, expected String) =>
-    if str ≟ expected
+    if str = expected
       say "PASSED: $str"
     else
       say "FAILED: $str /= $expected"

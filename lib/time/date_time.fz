@@ -115,5 +115,5 @@ private days_in_year(year i32) =>
 
 # is the given year a leap year?
 private is_leap_year(year i32) =>
-  (year % 4 ≟ 0 & !(year % 100 ≟ 0)) |
-    ((year % 100 ≟ 0) & (year % 400 ≟ 0))
+  (year % 4 = 0 & !(year % 100 = 0)) |
+    ((year % 100 = 0) & (year % 400 = 0))
