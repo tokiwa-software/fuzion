@@ -78,11 +78,11 @@ test_local_mutate is
         option s
 
       # NYI: move this into negative test
-      if envir.args.count ≟ 2
+      if envir.args.count = 2
         say count    # *** will cause an error, requires m to be installed
 
       # NYI: move this into negative test
-      if envir.args.count ≟ 3
+      if envir.args.count = 3
         s := m.go ()->count2
         say s        # *** will cause an error, requires m to be installed
 
@@ -123,7 +123,7 @@ test_local_mutate is
 
     quicksort(T type: has_total_order, data Sequence T) array T is
       c := data.count
-      if c ≟ 0
+      if c = 0
         []
       else
         m : mutate is
@@ -142,8 +142,8 @@ test_local_mutate is
             for
               a := l, a + (sw ? 0 : 1)
               b := r, b - (sw ? 1 : 0)
-              sw := arr[a] ⩼ pv
-            while a ⩻ b
+              sw := arr[a] > pv
+            while a < b
               if sw
                 swap a b-1
             else
@@ -151,7 +151,7 @@ test_local_mutate is
               b
 
           qs(l, r i32) unit is # =>  does not work
-            if l ⩻ r
+            if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
               qs pi+1 r

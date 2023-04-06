@@ -40,7 +40,7 @@ fraction(B type : integer B,
          den B   # denominatior
         ) : numeric (fraction B)
   pre
-    safety: den.sign ⩼ 0 # denominator must be positive
+    safety: den.sign > 0 # denominator must be positive
 is
 
 # private:
@@ -56,7 +56,7 @@ is
   # reduce numerator and denominator by their gcd:
   reduce =>
     gcd := num.abs.gcd(den)
-    if gcd ≟ num.one
+    if gcd = num.one
       a
     else
       fraction(num / gcd,

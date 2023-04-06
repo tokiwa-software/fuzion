@@ -29,7 +29,7 @@ int (s sign, n uint) : hasInterval int
 is
 
   # normalize the sign => no minus zero
-  ns := if n ≟ uint.type.zero then plus else s
+  ns := if n = uint.type.zero then plus else s
 
   max int is
     panic "invalid, there is no max int."
@@ -62,7 +62,7 @@ is
 
   # add this int to other
   infix +  (other int) int is
-    if ns ≟ other.ns
+    if ns = other.ns
       int ns n+other.n
     else
       match ns
@@ -88,7 +88,7 @@ is
   # the sign of the result of the
   # multiplication or division of thiz and other
   private result_sign_mul_div(other int) sign is
-    if ns ≟ other.ns then plus else minus
+    if ns = other.ns then plus else minus
 
 
   # multiply this int by other
@@ -150,7 +150,7 @@ is
   # equality: are these two ints equal?
   #
   fixed type.equality(a, b int) bool is
-    (a.ns ≟ b.ns) & (a.n ≟ b.n)
+    (a.ns = b.ns) & (a.n = b.n)
 
   # total order
   #
@@ -209,10 +209,10 @@ is
 
   # helper feature to init int via an i64
   type.from_i64(val i64) int is
-    s sign := if val ⩻ (i64 0) then minus else plus
-    n u64 := if val ≟ i64.type.min
+    s sign := if val < (i64 0) then minus else plus
+    n u64 := if val = i64.type.min
                i64.type.max.as_u64 + 1
-             else if val ⩻ (i64 0)
+             else if val < (i64 0)
                (-val).as_u64
              else val.as_u64
     int s (uint n)

@@ -54,7 +54,7 @@ private stat(
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
+      meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
     else
       replace
       error "stat error {data[0]} for {path}"
@@ -70,7 +70,7 @@ private stat(
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     if (ps.stats (fuzion.sys.c_string path) data.internalArray.data)
       replace
-      meta_data data[0] data[1] (data[2] ≟ i64 1) (data[3] ≟ i64 1)
+      meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
     else
       replace
       error "lstat error {data[0]} for {path}"

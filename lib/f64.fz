@@ -127,9 +127,9 @@ f64(val f64) : float f64, f64s is
   redef fract f64 is
     if f64s.isNaN val
       NaN
-    else if val ⩻ (f64 0)
+    else if val < (f64 0)
       -(-val).fract
-    else if val ⩻ (f64 1)
+    else if val < (f64 1)
       val
     else
       shift := (f64.type.mantissa_bits - exponent)

@@ -66,7 +66,7 @@ is
     for
       x in a.e
       y in a.e
-    until !(x ≟ y)
+    until !(x = y)
       false
     else
       true

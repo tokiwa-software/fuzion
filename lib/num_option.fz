@@ -109,11 +109,11 @@ is
     num_option.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≟ w
+  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v = w
   infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
-  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩻  w
+  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
   infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≤ w
-  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩼  w
+  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
   infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
 
   isZero => sign ==? 0
