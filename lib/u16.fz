@@ -32,19 +32,19 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrapped_on_neg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u16) => u16.type.max -° thiz < other
-  redef underflowOnAdd(other u16) => false
+  redef overflow_on_add (other u16) => u16.type.max -° thiz < other
+  redef underflow_on_add(other u16) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other u16) => false
-  redef underflowOnSub(other u16) => thiz < other
+  redef overflow_on_sub (other u16) => false
+  redef underflow_on_sub(other u16) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 > u16.type.max.as_i32
-  redef underflowOnMul(other u16) => false
+  redef overflow_on_mul (other u16) => as_i32 *° other.as_i32 > u16.type.max.as_i32
+  redef underflow_on_mul(other u16) => false
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° u16 is intrinsic
@@ -114,7 +114,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit u16 is
+  highest_one_bit u16 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u16 0    )
     (v1, s1) := if (v0 < (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
@@ -126,7 +126,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
+  trailing_zeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
     (v1, s1) := if (v0 & 0xff) != u16 0 then (v0, s0) else (v0 >> 8, s0 + 8)

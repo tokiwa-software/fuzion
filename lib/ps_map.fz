@@ -205,7 +205,7 @@ O(n log n).
         else
           get at0 sz0 nt
 
-    subSz := size.highestOneBit
+    subSz := size.highest_one_bit
     get 0 subSz (data.length - subSz)
 
 
@@ -276,7 +276,7 @@ O(n log n).
               m
           min m0 at0 sz0 nt
 
-      subSz := size.highestOneBit
+      subSz := size.highest_one_bit
       min data[0].values.0 0 subSz (data.length - subSz)
 
 
@@ -305,7 +305,7 @@ O(n log n).
               m
           max m0 at0 sz0 nt
 
-      subSz := size.highestOneBit
+      subSz := size.highest_one_bit
       max data[0].values.0 0 subSz (data.length - subSz)
 
 
@@ -350,7 +350,7 @@ O(n log n).
               a
           addAll a0 at0 sz0 nt
 
-      addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
+      addAll other 0 size.highest_one_bit (data.length - size.highest_one_bit)
 
 
   # infix operator synonym for union of two ps_maps

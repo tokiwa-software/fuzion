@@ -33,19 +33,19 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrapped_on_neg => !isZero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u128) => max -° thiz < other
-  redef underflowOnAdd(other u128) => false
+  redef overflow_on_add (other u128) => max -° thiz < other
+  redef underflow_on_add(other u128) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other u128) => false
-  redef underflowOnSub(other u128) => thiz < other
+  redef overflow_on_sub (other u128) => false
+  redef underflow_on_sub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u128) => if (other = zero) false else !((thiz *° other / other) = thiz)
-  redef underflowOnMul(other u128) => false
+  redef overflow_on_mul (other u128) => if (other = zero) false else !((thiz *° other / other) = thiz)
+  redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -°             u128 is carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
@@ -96,11 +96,11 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
     if thiz < other
       zero
     else
-      ob := other.highestOneBit.trailingZeros
+      ob := other.highest_one_bit.trailing_zeros
       for
         rem := thiz, rem - s
-        bit := rem.highestOneBit >> ob.as_u128, bit >> one
-        d := other << bit.trailingZeros.as_u128, d >> one
+        bit := rem.highest_one_bit >> ob.as_u128, bit >> one
+        d := other << bit.trailing_zeros.as_u128, d >> one
         s := if (rem < d) zero else d
         p := if (rem < d) zero else bit
         res := p, res + p
@@ -219,20 +219,20 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit u128 is
+  highest_one_bit u128 is
     if hi = u64 0
-      u128 0 lo.highestOneBit
+      u128 0 lo.highest_one_bit
     else
-      u128 hi.highestOneBit 0
+      u128 hi.highest_one_bit 0
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
+  trailing_zeros i32 is
     if lo = u64 0
-      64 + hi.trailingZeros
+      64 + hi.trailing_zeros
     else
-      lo.trailingZeros
+      lo.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
