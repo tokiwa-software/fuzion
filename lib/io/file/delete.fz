@@ -27,7 +27,7 @@
 #
 private delete(
     dop Delete_Operation,
-    redef r effectMode.val,
+    redef r effect_mode.val,
     _ unit
   ) : deletes, effect r is
 
@@ -49,7 +49,7 @@ delete_custom(f () -> unit) => delete_custom default_delete_operation f # NYI : 
 # short-hand for creating and installing effect
 #
 delete_custom(dop Delete_Operation, f () -> unit) =>
-    s := delete dop effectMode.new unit
+    s := delete dop effect_mode.new unit
     s.use0 f
     unit
 
@@ -59,7 +59,7 @@ delete_custom(dop Delete_Operation, f () -> unit) =>
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
 delete(path String) =>
-  deletes.installDefault
+  deletes.install_default
   delete.env.delete path
 
 # reference to the delete operations that could take place
@@ -78,6 +78,6 @@ default_delete_operation : Delete_Operation is
 #
 deletes is
     # install default effect io.file.delete
-    installDefault unit is
+    install_default unit is
         if !(effects.exists io.file.delete)
-            _ := delete default_delete_operation effectMode.default unit
+            _ := delete default_delete_operation effect_mode.default unit

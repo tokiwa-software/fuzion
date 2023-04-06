@@ -60,7 +60,7 @@ vars (p Vars_Provider) : simpleEffect is
 
   # install default instance of vars
   #
-  type.installDefault =>
+  type.install_default =>
     (envir.vars default_vars_provider).default
 
 
@@ -75,7 +75,7 @@ vars (p Vars_Provider) : simpleEffect is
 # short-hand for accessing envir.args effect in current environment
 #
 vars =>
-  vars.type.installDefault
+  vars.type.install_default
   envir.vars.env
 
 

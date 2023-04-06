@@ -31,7 +31,7 @@ private printEffect (
   p Can_Print,
 
   # action to be taken: plain nomad, install or replace?
-  redef r effectMode.val
+  redef r effect_mode.val
   ) : effect r
 is
 

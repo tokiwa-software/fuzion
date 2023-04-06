@@ -30,7 +30,7 @@ thread (
   # the provider this effect uses to spawn threads
   p Thread_Provider,
 
-  redef r effectMode.val
+  redef r effect_mode.val
   ) : effect r
 is
 
@@ -46,7 +46,7 @@ is
 # source of thread concurrency.
 #
 thread =>
-  thread_type.installDefault
+  thread_type.install_default
   thread.env
 
 
@@ -63,9 +63,9 @@ Thread_Provider ref is
 #
 thread_type is
 
-  installDefault is
+  install_default is
     if !effects.exists thread
-      _ := thread defaultThread effectMode.default
+      _ := thread defaultThread effect_mode.default
 
 
 # default concurrency provider

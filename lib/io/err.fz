@@ -29,7 +29,7 @@ private err (
   redef p Can_Print,
 
   # action to be taken: install or default?
-  redef r effectMode.val,
+  redef r effect_mode.val,
 
   _ unit
   ) : printEffect p r
@@ -44,14 +44,14 @@ err(rr ()->unit) => err defaultPrintToErr rr
 # short-hand for creating and installing err effect
 #
 err(p Can_Print, rr ()->unit) =>
-  err p (effectMode.inst rr) unit
+  err p (effect_mode.inst rr) unit
   unit
 
 
 # short-hand for accessing err effect in current environment
 #
 err =>
-  errs.installDefault
+  errs.install_default
   io.err.env
 
 
@@ -66,6 +66,6 @@ defaultPrintToErr : Can_Print is
 errs is
 
   # install default effect err using defaultPrint
-  installDefault unit is
+  install_default unit is
     if !effects.exists io.err
-      _ := err defaultPrintToErr effectMode.default unit
+      _ := err defaultPrintToErr effect_mode.default unit
