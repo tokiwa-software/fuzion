@@ -86,3 +86,49 @@ exit_type is
     #
     exit(code i32) =>
       fuzion.std.exit code
+
+
+# delayed_exit -- effect that runs some code that can set an exit code, but
+# only exits after all the code has been run
+#
+# this is intended for use in tests
+#
+delayed_exit (_ unit) : effect effectMode.plain is
+
+
+  # mutable value of the current exit code set
+  #
+  exit_code := mut 0
+
+
+  # update the exit code to the given value
+  #
+  set0(code i32) =>
+    exit_code <- code
+
+
+  # execute the code given by f. if after f is completed, the exit code is
+  # not 0, the program will exit with the given exit code. otherwise, the
+  # value returned by f is returned.
+  #
+  go(T type, f ()->T) T is
+    fo () -> option T is ()->f()
+    r := run fo (unit)->nil
+    match r
+      nil => panic "*** unexpected abort in {delayed_exit.this.type}"
+      v T =>
+        if exit_code.get != 0
+          exit exit_code.get
+        else
+          v
+
+
+  type.install_default =>
+    (delayed_exit unit).default
+
+
+# short-hand access to the delayed_exit effect
+#
+delayed_exit =>
+  delayed_exit.type.install_default
+  delayed_exit.env
