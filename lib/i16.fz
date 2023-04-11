@@ -32,7 +32,7 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrapped_on_neg => isMin
+  redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
   redef overflow_on_add (other i16) => thiz > zero && i16.type.max -° thiz < other
