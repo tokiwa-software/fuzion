@@ -65,12 +65,12 @@ thread_type is
 
   install_default is
     if !effects.exists thread
-      _ := thread defaultThread effect_mode.default
+      _ := thread default_thread effect_mode.default
 
 
 # default concurrency provider
 #
-defaultThread : Thread_Provider is
+default_thread : Thread_Provider is
 
   # spawn a new thread using given code
   #

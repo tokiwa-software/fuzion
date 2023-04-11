@@ -32,7 +32,7 @@ private out (
   redef r effect_mode.val,
 
   _ unit
-  ) : printEffect p r
+  ) : print_effect p r
 is
 
 

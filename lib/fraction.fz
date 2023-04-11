@@ -97,7 +97,7 @@ is
   # equality
   #
   fixed type.equality(a, b fraction B) =>
-    (a - b).num.isZero
+    (a - b).num.is_zero
 
 
   # total order

@@ -98,13 +98,13 @@ is
   infix **?(other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v **? w
   infix /? (other num_option T) num_option T
     pre
-      safety: !other.isZero
+      safety: !other.is_zero
   is
     num_option.this >>= v -> other >>= w -> v / w
 
   infix %? (other num_option T) num_option T
     pre
-      safety: !other.isZero
+      safety: !other.is_zero
   is
     num_option.this >>= v -> other >>= w -> v % w
 
@@ -116,7 +116,7 @@ is
   infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
   infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
 
-  isZero => sign ==? 0
+  is_zero => sign ==? 0
 
   sign num_option i32 is
     num_option.this ? v T => v.sign
