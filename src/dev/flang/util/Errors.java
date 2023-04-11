@@ -89,6 +89,16 @@ public class Errors extends ANY
    */
   public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
   public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+
+
+  /**
+   * The case that this option is set to 0 is equivalent to setting it to 1.
+   * This is because if there are error messages, there is no point in really
+   * suppressing all of them, there needs to be some indication that an error
+   * happened.
+   *
+   * If this is set to -1, all errors will be displayed.
+   */
   public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 10);
 
 
@@ -98,6 +108,13 @@ public class Errors extends ANY
    */
   public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
   public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+
+
+  /**
+   * If this option is set to 0, all warning messages will be suppressed.
+   *
+   * If it is set to -1, all warnings will be displayed.
+   */
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
