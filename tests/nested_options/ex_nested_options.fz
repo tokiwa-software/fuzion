@@ -23,14 +23,14 @@
 
 ex_nested_options is
 
-  exitCode := mut 0
+  exit_code := mut 0
 
   chk(exp, act String) unit is
     if exp = act
       say "PASSED: $exp = $act"
     else
       say "FAILED: $exp /= $act"
-      exitCode <- 1
+      exit_code <- 1
 
   test(T type, v option T) =>
     match v
@@ -93,4 +93,4 @@ ex_nested_options is
   chk "option (option String): T foo"      (test sooo)
   chk "option (option String): T --nil--" (test sooon)
 
-  exit exitCode.get
+  exit exit_code.get

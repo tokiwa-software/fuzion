@@ -32,19 +32,19 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i16) => thiz ⩼ zero && i16.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i16) => thiz ⩻ zero && i16.type.min -° thiz ⩼ other
+  redef overflow_on_add (other i16) => thiz > zero && i16.type.max -° thiz < other
+  redef underflow_on_add(other i16) => thiz < zero && i16.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i16) => thiz ⩼ zero && thiz -° i16.type.max ⩼ other
-  redef underflowOnSub(other i16) => thiz ⩻ zero && thiz -° i16.type.min ⩻ other
+  redef overflow_on_sub (other i16) => thiz > zero && thiz -° i16.type.max > other
+  redef underflow_on_sub(other i16) => thiz < zero && thiz -° i16.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i16) => as_i32 *° other.as_i32 ⩼ i16.type.max.as_i32
-  redef underflowOnMul(other i16) => as_i32 *° other.as_i32 ⩻ i16.type.min.as_i32
+  redef overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.type.max.as_i32
+  redef underflow_on_mul(other i16) => as_i32 *° other.as_i32 < i16.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i16 is intrinsic
@@ -93,7 +93,7 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
       low8bits
   as_u16 u16
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
+      debug: thiz ≥ zero
     is
       castTo_u16
   as_u32 u32
@@ -134,14 +134,14 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
-  highestOneBit i16 is
-    val.castTo_u16.highestOneBit.castTo_i16
+  highest_one_bit i16 is
+    val.castTo_u16.highest_one_bit.castTo_i16
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u16.trailingZeros
+  trailing_zeros i32 is
+    val.castTo_u16.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this

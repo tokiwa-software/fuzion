@@ -73,7 +73,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
       nil
     else
       arr := sorted_array_of numeric_sequence.this
-      if arr.length % 2 ≟ 1
+      if arr.length % 2 = 1
         arr[arr.length / 2]
       else
         (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
@@ -84,5 +84,5 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
   fixed type.equality(a, b numeric_sequence N) bool is
     aa := a.as_array
     ba := b.as_array
-    aa.count ≟ ba.count
+    aa.count = ba.count
       && ((0..(a.count - 1)) ∀ (i -> aa[i] = ba[i]))

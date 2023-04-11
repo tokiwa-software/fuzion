@@ -32,19 +32,19 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i8) => thiz ⩼ zero && i8.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i8) => thiz ⩻ zero && i8.type.min -° thiz ⩼ other
+  redef overflow_on_add (other i8) => thiz > zero && i8.type.max -° thiz < other
+  redef underflow_on_add(other i8) => thiz < zero && i8.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i8) => thiz ⩼ zero && thiz -° i8.type.max ⩼ other
-  redef underflowOnSub(other i8) => thiz ⩻ zero && thiz -° i8.type.min ⩻ other
+  redef overflow_on_sub (other i8) => thiz > zero && thiz -° i8.type.max > other
+  redef underflow_on_sub(other i8) => thiz < zero && thiz -° i8.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i8) => as_i32 *° other.as_i32 ⩼ i8.type.max.as_i32
-  redef underflowOnMul(other i8) => as_i32 *° other.as_i32 ⩻ i8.type.min.as_i32
+  redef overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.type.max.as_i32
+  redef underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i8 is intrinsic
@@ -129,14 +129,14 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
-  highestOneBit i8 is
-    val.castTo_u8.highestOneBit.castTo_i8
+  highest_one_bit i8 is
+    val.castTo_u8.highest_one_bit.castTo_i8
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u8.trailingZeros
+  trailing_zeros i32 is
+    val.castTo_u8.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this

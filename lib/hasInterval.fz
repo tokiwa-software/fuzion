@@ -85,8 +85,8 @@ hasInterval(H type : hasInterval H) : integer H is
       # list representation of values in this interval
       #
       redef as_list list H is
-        has_next_step => ((step ⩼ zero) && (lower ≤ upper) ||
-                          (step ⩻ zero) && (lower ≥ upper))
+        has_next_step => ((step > zero) && (lower ≤ upper) ||
+                          (step < zero) && (lower ≥ upper))
 
         if has_next_step
           tail =>
@@ -113,7 +113,7 @@ hasInterval(H type : hasInterval H) : integer H is
       cons (head H) : Cons H (list H) is
         tail list H is
           if (head ≥ upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.
-      if (lower ⩼ upper) nil else cons lower
+      if (lower > upper) nil else cons lower
 
 
     # use map implementation from Sequence:

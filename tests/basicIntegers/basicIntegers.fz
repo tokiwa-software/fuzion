@@ -33,7 +33,7 @@ basicIntegers =>
     say "{T.name}: $a +° $b = {a +° b}"
     say "{T.name}: $a -° $b = {a -° b}"
     say "{T.name}: $a *° $b = {a *° b}"
-    if !b.isZero
+    if !b.is_zero
       say "{T.name}: $a / $b = {a / b}"
       say "{T.name}: $a % $b = {a % b}"
 

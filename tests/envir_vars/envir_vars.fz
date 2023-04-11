@@ -33,7 +33,7 @@ envir_vars is
 
   match envir.vars.get "FUZION_ENVIR_VARS_TEST_SET"
     val String =>
-      if val ≟ "world"
+      if val = "world"
         say " successful"
       else
         exit 1

@@ -38,4 +38,4 @@ conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_
   # array.as_string
   #
   redef as_string String is conststring.this
-  redef is_empty => length ≟ 0
+  redef is_empty => length = 0

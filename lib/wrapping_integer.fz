@@ -33,29 +33,29 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  wrappedOnNeg bool is abstract
+  wrapped_on_neg bool is abstract
 
   # would addition thiz + other cause an overflow or underflow?
-  overflowOnAdd(other W) bool is abstract
-  underflowOnAdd(other W) bool is abstract
-  wrappedOnAdd(other W) => overflowOnAdd(other) || underflowOnAdd(other)
+  overflow_on_add(other W) bool is abstract
+  underflow_on_add(other W) bool is abstract
+  wrappedOnAdd(other W) => overflow_on_add(other) || underflow_on_add(other)
 
   # would subtraction thiz - other cause an overflow or underflow?
-  overflowOnSub(other W) bool is abstract
-  underflowOnSub(other W) bool is abstract
-  wrappedOnSub(other W) => overflowOnSub(other) || underflowOnSub(other)
+  overflow_on_sub(other W) bool is abstract
+  underflow_on_sub(other W) bool is abstract
+  wrappedOnSub(other W) => overflow_on_sub(other) || underflow_on_sub(other)
 
   # would multiplication thiz * other cause an overflow or underflow?
-  overflowOnMul(other W) bool is abstract
-  underflowOnMul(other W) bool is abstract
-  wrappedOnMul(other W) => overflowOnMul(other) || underflowOnMul(other)
+  overflow_on_mul(other W) bool is abstract
+  underflow_on_mul(other W) bool is abstract
+  wrappedOnMul(other W) => overflow_on_mul(other) || underflow_on_mul(other)
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
-  prefix -! => !wrappedOnNeg
-  infix +! (other W) => !(overflowOnAdd other) && !(underflowOnAdd other)
-  infix -! (other W) => !(overflowOnSub other) && !(underflowOnSub other)
-  infix *! (other W) => !(overflowOnMul other) && !(underflowOnMul other)
+  prefix -! => !wrapped_on_neg
+  infix +! (other W) => !(overflow_on_add other) && !(underflow_on_add other)
+  infix -! (other W) => !(overflow_on_sub other) && !(underflow_on_sub other)
+  infix *! (other W) => !(overflow_on_mul other) && !(underflow_on_mul other)
   infix /! (other W) => true  # other != zero is checked in separate condition
   infix %! (other W) => true  # other != zero is checked in separate condition
   infix **!(other W) => !(overflowOnExp other)
@@ -66,8 +66,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   infix -° (other W) W is abstract
   infix *° (other W) W is abstract
 
-  isMin => wrapping_integer.this ≟ wrapping_integer.this.type.min
-  isMax => wrapping_integer.this ≟ wrapping_integer.this.type.max
+  isMin => wrapping_integer.this = wrapping_integer.this.type.min
+  isMax => wrapping_integer.this = wrapping_integer.this.type.max
 
   # check if this type of wrapping_integer is bounded
   #
@@ -80,41 +80,41 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   # negation, with check for overflow
   redef prefix - W
     pre
-      debug: !wrappedOnNeg
+      debug: !wrapped_on_neg
   is -° thiz
 
   # addition, with check for overflow
   redef infix +  (other W) W
     pre
-      debug: !overflowOnAdd(other),
-      debug: !underflowOnAdd(other)
+      debug: !overflow_on_add(other),
+      debug: !underflow_on_add(other)
   is thiz +° other
 
   # subtraction, with check for overflow
   redef infix -  (other W) W
     pre
-      debug: !overflowOnSub(other),
-      debug: !underflowOnSub(other)
+      debug: !overflow_on_sub(other),
+      debug: !underflow_on_sub(other)
   is thiz -° other
 
   # multiplication, with check for overflow
   redef infix *  (other W) W
     pre
-      debug: !overflowOnMul(other),
-      debug: !underflowOnMul(other)
+      debug: !overflow_on_mul(other),
+      debug: !underflow_on_mul(other)
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          num_option W is if wrappedOnNeg        then nil else -thiz
+  redef prefix -?          num_option W is if wrapped_on_neg        then nil else -thiz
   redef infix +? (other W) num_option W is if wrappedOnAdd(other) then nil else thiz + other
   redef infix -? (other W) num_option W is if wrappedOnSub(other) then nil else thiz - other
   redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrappedOnNeg if thiz ⩼ zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
-  redef infix +^ (other W) => if overflowOnAdd(other) then wrapping_integer.this.type.max.thiz else if underflowOnAdd(other) then wrapping_integer.this.type.min.thiz else thiz + other
-  redef infix -^ (other W) => if overflowOnSub(other) then wrapping_integer.this.type.max.thiz else if underflowOnSub(other) then wrapping_integer.this.type.min.thiz else thiz - other
-  redef infix *^ (other W) => if overflowOnMul(other) then wrapping_integer.this.type.max.thiz else if underflowOnMul(other) then wrapping_integer.this.type.min.thiz else thiz * other
+  redef prefix -^          => if wrapped_on_neg if thiz > zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
+  redef infix +^ (other W) => if overflow_on_add(other) then wrapping_integer.this.type.max.thiz else if underflow_on_add(other) then wrapping_integer.this.type.min.thiz else thiz + other
+  redef infix -^ (other W) => if overflow_on_sub(other) then wrapping_integer.this.type.max.thiz else if underflow_on_sub(other) then wrapping_integer.this.type.min.thiz else thiz - other
+  redef infix *^ (other W) => if overflow_on_mul(other) then wrapping_integer.this.type.max.thiz else if underflow_on_mul(other) then wrapping_integer.this.type.min.thiz else thiz * other
 
 
   # exponentiation for positive exponent
@@ -137,8 +137,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other ≟ zero) one
-    else if (other ≟ one ) thiz
+    if      (other = zero) one
+    else if (other = one ) thiz
     else
       tmp := (thiz *° thiz) **° (other / two)
       if other %% two
@@ -155,8 +155,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other ≟ zero) one
-    else if (other ≟ one ) thiz
+    if      (other = zero) one
+    else if (other = one ) thiz
     else
       tmp := (thiz *? thiz) **? (other / two)
       if other %% two

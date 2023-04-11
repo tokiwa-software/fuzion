@@ -32,19 +32,19 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i32) => thiz ⩼ 0 && i32.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i32) => thiz ⩻ 0 && i32.type.min -° thiz ⩼ other
+  redef overflow_on_add (other i32) => thiz > 0 && i32.type.max -° thiz < other
+  redef underflow_on_add(other i32) => thiz < 0 && i32.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i32) => thiz ⩼ 0 && thiz -° i32.type.max ⩼ other
-  redef underflowOnSub(other i32) => thiz ⩻ 0 && thiz -° i32.type.min ⩻ other
+  redef overflow_on_sub (other i32) => thiz > 0 && thiz -° i32.type.max > other
+  redef underflow_on_sub(other i32) => thiz < 0 && thiz -° i32.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 ⩼ i32.type.max.as_i64
-  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 ⩻ i32.type.min.as_i64
+  redef overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.type.max.as_i64
+  redef underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.type.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i32 is intrinsic
@@ -145,14 +145,14 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit i32 is
-    val.castTo_u32.highestOneBit.castTo_i32
+  highest_one_bit i32 is
+    val.castTo_u32.highest_one_bit.castTo_i32
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u32.trailingZeros
+  trailing_zeros i32 is
+    val.castTo_u32.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this

@@ -37,9 +37,9 @@ public fileio is
     buf := array n.as_i32 i->(u8 0)
     res := read fd buf.internalArray.data buf.length
 
-    if res ⩻ i64 0
+    if res < i64 0
       error "unspecified read error: {res}"
-    else if res ⩻ n.as_i64 || res ≟ n.as_i64
+    else if res < n.as_i64 || res = n.as_i64
       (buf.slice 0 res.as_i32).as_array
     else
       error "read more than expected"
@@ -75,7 +75,7 @@ public fileio is
   public write(fd i64, content array u8) outcome unit is
     res := write fd content.internalArray.data content.length
 
-    if res ≟ i8 0
+    if res = i8 0
       unit
     else
       error "write error: {res}"
@@ -198,7 +198,7 @@ public fileio is
               flag i8) outcome i64 is
     open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
     open (fuzion.sys.c_string path) open_results.internalArray.data flag
-    if open_results[1] ≟ i64 0
+    if open_results[1] = i64 0
       open_results[0]
     else
       error "error number: {open_results[1]}"
@@ -222,7 +222,7 @@ public fileio is
                # file descriptor
                fd i64) outcome unit is
     closing_result := close fd unit
-    if closing_result ≟ i8 0
+    if closing_result = i8 0
       unit
     else
       error "error number: $closing_result"
@@ -249,7 +249,7 @@ public fileio is
               offset i64) outcome i64 is
     arr := array 2 (i -> i64 0)
     seek fd offset arr.internalArray.data
-    if arr[1] ≟ i64 0
+    if arr[1] = i64 0
       arr[0]
     else
       error "error number: {arr[1]}"
@@ -277,7 +277,7 @@ public fileio is
                        fd i64) outcome i64 is
     arr := array 2 (i -> i64 0)
     file_position fd arr.internalArray.data
-    if arr[1] ≟ i64 0
+    if arr[1] = i64 0
       arr[0]
     else
       error "error number: {arr[1]}"

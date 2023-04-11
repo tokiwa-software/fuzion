@@ -116,9 +116,9 @@ f32(val f32) : float f32, f32s is
   redef fract f32 is
     if f32s.isNaN val
       NaN
-    else if val ⩻ (f32 0)
+    else if val < (f32 0)
       -(-val).fract
-    else if val ⩻ (f32 1)
+    else if val < (f32 1)
       val
     else
       shift := (f32.type.mantissa_bits - exponent)

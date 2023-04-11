@@ -26,26 +26,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
+import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.List;
 
-import java.lang.reflect.Array;
-
-import java.io.PrintStream;
-import java.io.RandomAccessFile;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,12 +46,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
-
 import java.util.concurrent.TimeUnit;
 
 
@@ -729,6 +718,10 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (interpreter, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (interpreter, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    // setting env variable not supported in java
+    put("fuzion.sys.env_vars.set0"  , (interpreter, innerClazz) -> args -> new boolValue(false));
+    // unsetting env variable not supported in java
+    put("fuzion.sys.env_vars.unset0", (interpreter, innerClazz) -> args -> new boolValue(false));
     put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(++_last_unique_id_));
     put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
         {

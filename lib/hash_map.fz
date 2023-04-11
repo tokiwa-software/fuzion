@@ -30,7 +30,7 @@ hash_map(HK type : has_hash,
         ks array HK,
         vs array V) : Map HK V
   pre
-    ks.length ≟ vs.length
+    ks.length = vs.length
 
 is
 
@@ -79,7 +79,7 @@ is
 
           t tuple =>     # we have a conflict
             (ek, _) := t
-            if ek ≟ k    # no conflict, but remapping of k
+            if ek = k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
             else         # conflict
               store (collision at)
@@ -104,7 +104,7 @@ is
         nil     => nil
         t tuple =>
           (ek, v) := t
-          if ek ≟ k
+          if ek = k
             v
           else
             retrieve (collision at)

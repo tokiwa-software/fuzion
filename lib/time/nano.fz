@@ -59,7 +59,7 @@ is
 
 # short-hand for creating and installing time.nano effect
 #
-nano(rr ()->unit) => nano defaultNanoTime rr
+nano(rr ()->unit) => nano default_nano_time rr
 
 
 # short-hand for creating and installing time.nano effect
@@ -87,7 +87,7 @@ Nano_Time_Provider ref is
   sleep(d duration) unit is abstract
 
 
-defaultNanoTime : Nano_Time_Provider is
+default_nano_time : Nano_Time_Provider is
 
   # no guarantee can be given for precision nor resolution
   read => fuzion.std.nano_time
@@ -104,4 +104,4 @@ nano_type is
   # install default effect time using defaultTime
   installDefault unit is
     if !effects.exists nano
-      _ := nano defaultNanoTime effectMode.default unit
+      _ := nano default_nano_time effectMode.default unit

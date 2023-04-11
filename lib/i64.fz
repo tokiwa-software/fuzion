@@ -32,19 +32,19 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => isMin
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i64) => thiz ⩼ i64 0 && i64.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i64) => thiz ⩻ i64 0 && i64.type.min -° thiz ⩼ other
+  redef overflow_on_add (other i64) => thiz > i64 0 && i64.type.max -° thiz < other
+  redef underflow_on_add(other i64) => thiz < i64 0 && i64.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i64) => thiz ⩼ i64 0 && thiz -° i64.type.max ⩼ other
-  redef underflowOnSub(other i64) => thiz ⩻ i64 0 && thiz -° i64.type.min ⩻ other
+  redef overflow_on_sub (other i64) => thiz > i64 0 && thiz -° i64.type.max > other
+  redef underflow_on_sub(other i64) => thiz < i64 0 && thiz -° i64.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i64) => if sign *° other.sign ≤ 0 false else !((thiz *° other / other) ≟ thiz)
-  redef underflowOnMul(other i64) => if sign *° other.sign ≥ 0 false else !((thiz *° other / other) ≟ thiz)
+  redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else !((thiz *° other / other) = thiz)
+  redef underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else !((thiz *° other / other) = thiz)
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i64 is intrinsic
@@ -87,8 +87,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i16
   as_i16 i16
     pre
-      # NYI: fix?
-      thiz ≤ i16.type.max.as_i64,
+      thiz ≥ i16.type.min.as_i64,
       thiz ≤ i16.type.max.as_i64
     is
       low16bits.as_i16
@@ -109,7 +108,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
       thiz ≥ (i64 0)
 #      thiz ≤ u8.type.max.as_i64
 #    post
-#      analysis: result.as_u64 ≟ thiz
+#      analysis: result.as_u64 = thiz
     is
       low8bits
 
@@ -120,7 +119,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
       thiz ≥ (i64 0)
 #      thiz ≤ u16.type.max.as_i64
 #    post
-#      analysis: result.as_u64 ≟ thiz
+#      analysis: result.as_u64 = thiz
     is
       low16bits
 
@@ -131,7 +130,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
       thiz ≥ (i64 0)
 #      thiz ≤ u32.type.max.as_i64
 #    post
-#      analysis:  result.as_i64 ≟ thiz
+#      analysis:  result.as_i64 = thiz
     is
       low32bits
 
@@ -141,7 +140,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
     pre
       thiz ≥ (i64 0)
 #    post
-#      analysis:  result.as_i64 ≟ thiz
+#      analysis:  result.as_i64 = thiz
     is
       castTo_u64
 
@@ -151,7 +150,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
     pre
       thiz ≥ (i64 0)
     post
-      analysis:  result.as_i64 ≟ thiz
+      analysis:  result.as_i64 = thiz
     is
       u128 0 castTo_u64
 
@@ -191,14 +190,14 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit i64 is
-    val.castTo_u64.highestOneBit.castTo_i64
+  highest_one_bit i64 is
+    val.castTo_u64.highest_one_bit.castTo_i64
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u64.trailingZeros
+  trailing_zeros i32 is
+    val.castTo_u64.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this

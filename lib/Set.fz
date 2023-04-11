@@ -67,4 +67,4 @@ Set(E type : equatable) ref : Sequence E is
     else
       ("\{"
        + (as_list.map String (x -> x.as_string)).fold(String.type.concat ";")
-       + "\}")
+       + "}")
