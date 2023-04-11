@@ -276,6 +276,10 @@ public class Errors extends ANY
         print(pos, errorMessage(msg), detail);
         if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
           {
+            warning(SourcePosition.builtIn,
+                    "Maximum error count reached, terminating.",
+                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
+                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
             showAndExit();
           }
         //Thread.dumpStack();
@@ -471,13 +475,6 @@ public class Errors extends ANY
   {
     if (count() > 0)
       {
-        if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
-          {
-            warning(SourcePosition.builtIn,
-                    "Maximum error count reached, terminating.",
-                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
-                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
-          }
         println(singularOrPlural(count(), "error") +
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
@@ -538,7 +535,7 @@ public class Errors extends ANY
 
     if (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1)
       {
-        if (warningCount()+1 == MAX_WARNING_MESSAGES && MAX_WARNING_MESSAGES != -1)
+        if (warningCount()+1 == MAX_WARNING_MESSAGES)
           {
             pos = SourcePosition.builtIn;
             msg = "Maximum warning count reached, suppressing further warnings";
