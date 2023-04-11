@@ -138,7 +138,7 @@ outerNormalization is
   testNormalize2
 
 
-  # An (open) interval such as '0..' is of type '(hasInterval i32).infix ..', but
+  # An (open) interval such as '0..' is of type '(has_interval i32).infix ..', but
   # that should be converted to 'i32.infix ..' in FUIR:
   #
   testInterval is

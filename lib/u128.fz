@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
+u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   redef thiz => u128 hi lo
@@ -207,7 +207,7 @@ u128(hi, lo u64) : wrapping_integer u128, hasInterval u128, u128s is
   low64bits u64 is lo
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
+  # from has_interval is abstract, fz should not complain about this conflict.
   redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
