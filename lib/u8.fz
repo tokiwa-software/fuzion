@@ -25,7 +25,7 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
+u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
 
   redef thiz => u8.this.val
 
@@ -94,7 +94,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   castTo_i8 i8 is intrinsic
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
+  # from has_interval is abstract, fz should not complain about this conflict.
   redef max => u8 0xff
 
 

@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
+i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
 
   redef thiz => i16.this.val
 
@@ -122,7 +122,7 @@ i16(val i16) : wrapping_integer i16, hasInterval i16, i16s is
   castTo_u128 u128 is castTo_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval<i8> is abstract, fz should not complain about this conflict.
+  # from has_interval<i8> is abstract, fz should not complain about this conflict.
   redef max => i16 0x7fff
 
 

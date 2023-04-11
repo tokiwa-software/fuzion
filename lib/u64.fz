@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
+u64(val u64) : wrapping_integer u64, has_interval u64, u64s is
 
   redef thiz => u64.this.val
 
@@ -169,7 +169,7 @@ u64(val u64) : wrapping_integer u64, hasInterval u64, u64s is
   as_f32 => as_f64.as_f32
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
+  # from has_interval is abstract, fz should not complain about this conflict.
   redef max u64 is 0x_ffff_ffff_ffff_ffff
 
 

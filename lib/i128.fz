@@ -25,14 +25,14 @@
 
 # i128 -- 128-bit signed integer values
 #
-i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
+i128(hi i64, lo u64) : wrapping_integer i128, has_interval i128, i128s is
   redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
   redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
   redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
   redef infix / (other i128) i128 is panic "NYI: i128 is not supported"
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
+  # from has_interval is abstract, fz should not complain about this conflict.
   redef max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
   # returns the number in whose bit representation all bits are ones

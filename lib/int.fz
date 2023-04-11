@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-int (s sign, n uint) : hasInterval int
+int (s sign, n uint) : has_interval int
 is
 
   # normalize the sign => no minus zero

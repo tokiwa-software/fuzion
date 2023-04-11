@@ -404,7 +404,7 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
+  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
 
