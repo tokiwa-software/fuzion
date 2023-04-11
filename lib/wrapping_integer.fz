@@ -66,8 +66,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   infix -° (other W) W is abstract
   infix *° (other W) W is abstract
 
-  isMin => wrapping_integer.this = wrapping_integer.this.type.min
-  isMax => wrapping_integer.this = wrapping_integer.this.type.max
+  is_min => wrapping_integer.this = wrapping_integer.this.type.min
+  is_max => wrapping_integer.this = wrapping_integer.this.type.max
 
   # check if this type of wrapping_integer is bounded
   #
