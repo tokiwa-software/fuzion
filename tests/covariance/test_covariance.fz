@@ -75,15 +75,15 @@ test_covariance is
 
   # integer mod 2 implementation of num
   #
-  intM2(isZero bool) : num is
+  intM2(is_zero bool) : num is
     fixed z => intM2 true
     fixed o => intM2 false
     fixed type.zero => test_covariance.intM2 true
     fixed type.one => test_covariance.intM2 false
-    fixed lessThan(other intM2) => isZero && !other.isZero
-    fixed plus(other intM2) => if isZero then other else intM2 !other.isZero
+    fixed lessThan(other intM2) => is_zero && !other.is_zero
+    fixed plus(other intM2) => if is_zero then other else intM2 !other.is_zero
     fixed minus(other intM2) => plus other
-    redef valueString => if isZero then "0 mod 2" else "1 mod 2"
+    redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
   # integer mod 5 implementation of num
   #

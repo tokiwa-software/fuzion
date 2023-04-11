@@ -32,7 +32,7 @@ private err (
   redef r effectMode.val,
 
   _ unit
-  ) : printEffect p r
+  ) : print_effect p r
 is
 
 

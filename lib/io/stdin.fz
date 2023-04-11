@@ -169,7 +169,7 @@ stdin =>
 stdins is
   installDefault is
     if !effects.exists io.stdin
-      s := stdin (defaultInputHandler (error "not initialized")) effectMode.new unit
+      s := stdin (default_input_handler (error "not initialized")) effectMode.new unit
       s.default
 
 
@@ -182,15 +182,15 @@ Byte_Input_Handler ref is
 
 
 # the default input handler reading bytes via fuzion.sys.stdin.nextByte
-defaultInputHandler(r choice u8 end_of_file error) : Byte_Input_Handler is
+default_input_handler(r choice u8 end_of_file error) : Byte_Input_Handler is
 
   next Byte_Input_Handler is
     v := fuzion.sys.stdin.next_byte
     if v = -1
-      defaultInputHandler end_of_file
+      default_input_handler end_of_file
     else if v < -1
-      defaultInputHandler (error "an error occurred while reading stdin")
+      default_input_handler (error "an error occurred while reading stdin")
     else
-      defaultInputHandler v.as_u8
+      default_input_handler v.as_u8
 
   get => r
