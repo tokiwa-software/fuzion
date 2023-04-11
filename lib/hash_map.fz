@@ -63,7 +63,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mi := mutate.type.installDefault
+      mi := mutate.type.install_default
       mcontents := mutate.env.array (option (tuple HK V)) allocatedSize nil, mcontents
       k in ks
       v in vs

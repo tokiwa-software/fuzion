@@ -30,7 +30,7 @@ random (
   # the provider this effect uses to create random numbers
   p Random_Provider,
 
-  redef r effectMode.val
+  redef r effect_mode.val
   ) : effect r
 is
 
@@ -99,14 +99,14 @@ is
 # source of randomness.
 #
 random =>
-  randoms.installDefault
+  randoms.install_default
   random.env
 
 simple_random(seed u64, rr ()->unit) =>
-  _ := random (simple_random_provider seed seed) (effectMode.inst rr)
+  _ := random (simple_random_provider seed seed) (effect_mode.inst rr)
 
 time_seeded_random(rr ()->unit) =>
-  _ := random simple_random_providers.time_seeded (effectMode.inst rr)
+  _ := random simple_random_providers.time_seeded (effect_mode.inst rr)
 
 
 # Random_Provider -- abstract source of random numbers
@@ -142,9 +142,9 @@ Random_Provider ref is
 #
 randoms is
 
-  installDefault is
+  install_default is
     if !effects.exists random
-      _ := random simple_random_providers.default effectMode.default
+      _ := random simple_random_providers.default effect_mode.default
 
 
 
@@ -210,4 +210,4 @@ simple_random_providers is
   # random number generator.
   #
   time_seeded(rr ()->unit) =>
-    _ := random time_seeded (effectMode.inst rr)
+    _ := random time_seeded (effect_mode.inst rr)

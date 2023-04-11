@@ -30,7 +30,7 @@
 private stdin(
     ip Byte_Input_Handler,
     # action to be taken: plain nomad, install or replace?
-    redef r effectMode.val,
+    redef r effect_mode.val,
     _ unit
   ) : stdins, effect r is
 
@@ -155,21 +155,21 @@ end_of_file is
 
 # short-hand for creating and installing stdin effect
 stdin(h Byte_Input_Handler, f () -> unit) =>
-  s := stdin h effectMode.new unit
+  s := stdin h effect_mode.new unit
   s.use0 f
   unit
 
 # short-hand for accessing stdin effect in current environment
 stdin =>
-  stdins.installDefault
+  stdins.install_default
   stdin.env
 
 
 # unit feature providing static helpers
 stdins is
-  installDefault is
+  install_default is
     if !effects.exists io.stdin
-      s := stdin (default_input_handler (error "not initialized")) effectMode.new unit
+      s := stdin (default_input_handler (error "not initialized")) effect_mode.new unit
       s.default
 
 

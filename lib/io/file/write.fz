@@ -28,8 +28,8 @@
 private write(
   fwh File_Write_Handler,
 
-  redef r effectMode.val,
-  
+  redef r effect_mode.val,
+
   _ unit
   ) : writes, effect r
 is
@@ -61,14 +61,14 @@ write(f () -> unit) => write default_file_write_handler f
 # short-hand for creating and installing write effect
 #
 write(h File_Write_Handler, f () -> unit) =>
-  s := write h effectMode.new unit
+  s := write h effect_mode.new unit
   s.use0 f
   unit
 
 # short-hand for accessing write effect in current environment
 #
 write =>
-  writes.installDefault
+  writes.install_default
   write.env
 
 # reference to the writing operations that could take place
@@ -84,7 +84,7 @@ default_file_write_handler : File_Write_Handler is
   # dummy parameter for overloading
   write(fd i64, content array u8, _ unit) =>
     fuzion.sys.fileio.write fd content
-  
+
   mkdir(path String) =>
     fuzion.sys.fileio.create_dir path
 
@@ -93,6 +93,6 @@ default_file_write_handler : File_Write_Handler is
 #
 writes is
   # install default effect io.file.write
-  installDefault unit is
+  install_default unit is
     if !(effects.exists io.file.write)
-      _ := write default_file_write_handler effectMode.default unit
+      _ := write default_file_write_handler effect_mode.default unit

@@ -27,7 +27,7 @@
 #
 private read(
   ro Read_Operation,
-  redef r effectMode.val,
+  redef r effect_mode.val,
   _ unit
   ) : reads, effect r is
 
@@ -83,14 +83,14 @@ read_custom(f () -> unit) => read_custom default_read_operation f
 # short-hand for installing and creating effects
 #
 read_custom(ro Read_Operation, f () -> unit) =>
-  s := read ro effectMode.new unit
+  s := read ro effect_mode.new unit
   s.use0 f
   unit
 
 # short-hand for accessing read effect in current environment
 #
-read => 
-  reads.installDefault
+read =>
+  reads.install_default
   read.env
 
 # reference to the reading operations that could take place
@@ -109,6 +109,6 @@ default_read_operation : Read_Operation is
 #
 reads is
   # install default effect io.file.read
-  installDefault unit is 
+  install_default unit is
     if !(effects.exists io.file.read)
-      _ := read default_read_operation effectMode.default unit
+      _ := read default_read_operation effect_mode.default unit

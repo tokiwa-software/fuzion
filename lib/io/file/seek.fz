@@ -27,7 +27,7 @@
 #
 private seek(
   ps Provided_Seek,
-  redef r effectMode.val,
+  redef r effect_mode.val,
   _ unit
   ) : seeks, effect r is
 
@@ -55,7 +55,7 @@ private seek(
     replace
     tmp
 
-# short-hand for accessing seek effect in current environment and performing the default seek operation using 
+# short-hand for accessing seek effect in current environment and performing the default seek operation using
 # io.file.seek.seek fd offset
 # seek offset in the stream represented by fd
 # returns an outcome i64 that represents the new offset
@@ -66,7 +66,7 @@ seek(
      fd i64,
      # the offset to seek from the beginning of the stream pointer
      offset i64) =>
-  seeks.installDefault
+  seeks.install_default
   seek.env.seek fd offset
 
 # short-hand for creating and installing effect
@@ -76,14 +76,14 @@ seek_custom(f () -> unit) => seek_custom default_provided_seek f
 # short-hand for creating and installing effect
 #
 seek_custom(ps Provided_Seek, f () -> unit) =>
-  s := seek ps effectMode.new unit
+  s := seek ps effect_mode.new unit
   s.use0 f
   unit
 
 # short-hand for accessing seek effect in current environment
 #
-seek => 
-  seeks.installDefault
+seek =>
+  seeks.install_default
   seek.env
 
 # reference to the seek operations that could be provided
@@ -106,6 +106,6 @@ default_provided_seek : Provided_Seek is
 #
 seeks is
   # install default effect io.file.seek
-  installDefault unit is 
+  install_default unit is
     if !(effects.exists io.file.seek)
-      _ := seek default_provided_seek effectMode.default unit
+      _ := seek default_provided_seek effect_mode.default unit

@@ -28,7 +28,7 @@ private now (
   p () -> time.date_time,
 
   # action to be taken: install or default?
-  redef r effectMode.val,
+  redef r effect_mode.val,
 
   _ unit
   ) : effect r
@@ -50,7 +50,7 @@ now(rr ()->unit) => now default_now rr
 # short-hand for creating and installing custom time.now effect
 #
 now(p ()->time.date_time, rr ()->unit) unit is
-  _ := now p (effectMode.inst rr) unit
+  _ := now p (effect_mode.inst rr) unit
 
 
 
@@ -60,7 +60,7 @@ now(p ()->time.date_time, rr ()->unit) unit is
 #
 now =>
   if !effects.exists now
-    _ := now default_now effectMode.default unit
+    _ := now default_now effect_mode.default unit
   now.env.get
 
 

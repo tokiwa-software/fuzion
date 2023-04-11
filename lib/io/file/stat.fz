@@ -39,7 +39,7 @@ meta_data(
 #
 private stat(
   ps Provided_Stat,
-  redef r effectMode.val,
+  redef r effect_mode.val,
   _ unit
   ) : stats, effect r is
 
@@ -82,14 +82,14 @@ stat(f () -> unit) => stat_custom default_provided_stat f
 # short-hand for creating and installing a customized stat effect
 #
 stat_custom(ps Provided_Stat, f () -> unit) =>
-  s := stat ps effectMode.new unit
+  s := stat ps effect_mode.new unit
   s.use0 f
   unit
 
 # short-hand for accessing the stat effect in current environment
 #
-stat => 
-  stats.installDefault
+stat =>
+  stats.install_default
   stat.env
 
 # short-hand for accessing and using stats/lstats provided by the stat effect in current environment
@@ -102,8 +102,8 @@ stat(
      # the (relative or absolute) file name, using platform specific path separators
      path String,
      # a boolean resolve flag to resolve symbolic links or not
-     resolve bool) => 
-  stats.installDefault
+     resolve bool) =>
+  stats.install_default
   if resolve
     stat.env.stats path
   else
@@ -129,6 +129,6 @@ default_provided_stat : Provided_Stat is
 #
 stats is
   # install default effect io.file.stat
-  installDefault unit is 
+  install_default unit is
     if !(effects.exists io.file.stat)
-      _ := stat default_provided_stat effectMode.default unit
+      _ := stat default_provided_stat effect_mode.default unit

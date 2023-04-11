@@ -243,14 +243,14 @@ mutate : simpleEffect is
 
   # install default instance of mutate
   #
-  type.installDefault =>
+  type.install_default =>
     mutate.default
 
 
 # short-hand for accessing mut effect in current environment
 #
 mut =>
-  mutate.type.installDefault
+  mutate.type.install_default
   mutate.env
 
 

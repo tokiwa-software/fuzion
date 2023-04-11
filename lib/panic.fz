@@ -30,7 +30,7 @@ panic (
   # the provider this effect uses to panic
   p Panic_Provider,
 
-  redef r effectMode.val
+  redef r effect_mode.val
   ) : effect r
 is
 
@@ -45,7 +45,7 @@ is
 # panic provider.
 #
 panic =>
-  panic_type.installDefault
+  panic_type.install_default
   panic.env
 
 
@@ -74,7 +74,7 @@ Panic_Provider ref is
   # removed and the result of do_panic should be returned instead).
   #
   use(R type, code, def ()->R) =>
-    p := panic Panic_Provider.this effectMode.plain
+    p := panic Panic_Provider.this effect_mode.plain
     p.run code unit->def()
 
 
@@ -82,9 +82,9 @@ Panic_Provider ref is
 #
 panic_type is
 
-  installDefault is
+  install_default is
     if !effects.exists panic
-      _ := panic defaultPanicProvider effectMode.default
+      _ := panic defaultPanicProvider effect_mode.default
 
   # default panic provider using io.err and exit with return code 1
   #
