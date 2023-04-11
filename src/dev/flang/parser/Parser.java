@@ -2089,7 +2089,6 @@ term        : simpleterm ( indexCall
                                      )
             ;
 simpleterm  : bracketTerm
-            | fun
             | stringTerm
             | NUM_LITERAL
             | match
@@ -2114,7 +2113,6 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_fun       :         result = fun();                                    break;
           case t_numliteral: var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
@@ -2234,7 +2232,6 @@ stringTermB : '}any chars&quot;'
       case t_lparen    :
       case t_lcrochet  :
       case t_lbrace    :
-      case t_fun       :
       case t_numliteral:
       case t_match     : return true;
       default          :
@@ -2260,31 +2257,6 @@ op          : OPERATOR
 
     Operator result = new Operator(tokenSourcePos(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
-    return result;
-  }
-
-
-  /**
-   * Parse fun
-   *
-fun         : "fun" call
-            ;
-   */
-  Expr fun()
-  {
-    Expr result;
-    SourcePosition pos = tokenSourcePos();
-    match(Token.t_fun, "fun");
-    var c = call(null);
-    if (c.actuals().size() == 0)
-      {
-        result = new Function(pos, c);
-      }
-    else
-      {
-        syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
-        result = c;
-      }
     return result;
   }
 

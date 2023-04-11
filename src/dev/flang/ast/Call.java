@@ -151,14 +151,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * forFun specifies iff this call is within a function declaration, e.g., the
-   * call to "b" in "x(fun a.b)". In this case, the actual arguments list must
-   * be empty, independent of the formal arguments expected by b.
-   */
-  boolean _forFun = false;
-
-
-  /**
    * For static type analysis: This gives the resolved formal argument types for
    * the arguments of this call.  During type checking, it has to be checked
    * that the actual arguments can be assigned to these types.
@@ -903,8 +895,7 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return _forFun                 /* a fun-declaration "fun a.b.f" */
-      || ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
 
@@ -1087,8 +1078,7 @@ public class Call extends AbstractCall
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if (!_forFun                                     && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        (_type.isFunType() &&
+    if ((_type.isFunType() &&
          _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
          _calledFeature.arguments().size() == 0      &&
          hasParentheses()
@@ -2139,8 +2129,7 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    if (!_forFun &&
-        _type != Types.t_ERROR &&
+    if (_type != Types.t_ERROR &&
         _resolvedFormalArgumentTypes != null &&
         _actuals.size() == _resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
@@ -2182,7 +2171,7 @@ public class Call extends AbstractCall
    */
   public void box(AbstractFeature outer)
   {
-    if (!_forFun && _type != Types.t_ERROR)
+    if (_type != Types.t_ERROR)
       {
         int fsz = _resolvedFormalArgumentTypes.length;
         if (_actuals.size() ==  fsz)
@@ -2218,20 +2207,7 @@ public class Call extends AbstractCall
    */
   public void checkTypes(AbstractFeature outer)
   {
-    if (_forFun)
-      { // this is a call to "b" within an expression of the form "fun a.b". In
-        // this case, there must be no generics nor actual arguments to "b", the
-        // call will be replaced during Function.resolveSyntacticSugar.
-        if (_actuals.size() != 0)
-          {
-            AstErrors.functionMustNotProvideActuals(pos(), this, _actuals);
-          }
-        else if (hasParentheses())
-          {
-            AstErrors.functionMustNotProvideParentheses(pos(), this);
-          }
-      }
-    else if (_type != Types.t_ERROR)
+    if (_type != Types.t_ERROR)
       {
         int fsz = _resolvedFormalArgumentTypes.length;
         if (_actuals.size() !=  fsz)
