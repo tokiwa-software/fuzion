@@ -87,8 +87,7 @@ i64(val i64) : wrapping_integer i64, hasInterval i64, i64s is
   # this i64 as an i16
   as_i16 i16
     pre
-      # NYI: fix?
-      thiz ≤ i16.type.max.as_i64,
+      thiz ≥ i16.type.min.as_i64,
       thiz ≤ i16.type.max.as_i64
     is
       low16bits.as_i16
