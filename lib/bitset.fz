@@ -101,9 +101,6 @@ is
         else
           "\{" + s + "}"
 
-/*
-has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
-*/
 
   # an empty bitset
   #
