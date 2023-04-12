@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -137,7 +138,7 @@ public class FormalGenerics extends ANY
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
-                                               SourcePosition pos,
+                                               Supplier<SourcePosition> pos,
                                                String detail1,
                                                String detail2)
   {
@@ -147,7 +148,7 @@ public class FormalGenerics extends ANY
         result = false;
         AstErrors.wrongNumberOfGenericArguments(this,
                                                 actualGenerics,
-                                                pos,
+                                                pos.get(),
                                                 detail1,
                                                 detail2);
       }

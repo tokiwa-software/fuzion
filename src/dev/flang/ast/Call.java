@@ -2075,7 +2075,7 @@ public class Call extends AbstractCall
               }
           }
         if (_calledFeature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                                    pos(),
+                                                                    ()->pos(),
                                                                     "call",
                                                                     "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
@@ -2251,7 +2251,7 @@ public class Call extends AbstractCall
                         AstErrors.unexpectedTypeParameterInCall(_calledFeature,
                                                                 count,
                                                                 frmlT,
-                                                                _actualsNew.get(_generics.size() + count)._type);
+                                                                _actualsNew.get(_generics.size() + count));
                       }
                     else if (actl != null && !frmlT.isAssignableFrom(actl.type()))
                       {

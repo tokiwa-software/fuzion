@@ -453,12 +453,12 @@ public class AstErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param value the value to be assigned.
+   * @param typePar the unexpected type parameter
    */
   static void unexpectedTypeParameterInCall(AbstractFeature calledFeature,
                                             int count,
                                             AbstractType frmlT,
-                                            AbstractType typePar)
+                                            Actual typePar)
   {
     var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
@@ -475,7 +475,7 @@ public class AstErrors extends ANY
                      (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
                      null,
-                     typePar);
+                     typePar._type);
   }
 
 
@@ -1444,7 +1444,7 @@ public class AstErrors extends ANY
           "A choice feature must be a normal feature with empty code section");
   }
 
-  static void choiceMustNotReferToOwnValueType(SourcePosition pos, AbstractType t)
+  static void choiceMustNotReferToOwnValueType(SourcePosition pos, ParsedType t)
   {
     error(pos,
           "Choice cannot refer to its own value type as one of the choice alternatives",
@@ -1452,7 +1452,7 @@ public class AstErrors extends ANY
           "Faulty type parameter: " + s(t) + " at " + t.pos().show());
   }
 
-  static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
+  static void choiceMustNotReferToOuterValueType(SourcePosition pos, ParsedType t)
   {
     error(pos,
           "Choice cannot refer to an outer value type as one of the choice alternatives",

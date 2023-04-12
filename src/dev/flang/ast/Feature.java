@@ -94,7 +94,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The sourcecode position of this feature's return type, if given explicitly.
    */
-  private final SourcePosition _posOfReturnType;
+  private SourcePosition _posOfReturnType = SourcePosition.notAvailable;
 
 
   /**
@@ -586,6 +586,47 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param r the result type
    *
+   * @param rPos the position of the result type
+   *
+   * @param qname the name of this feature
+   *
+   * @param a the arguments
+   *
+   * @param i the inherits calls
+   *
+   * @param c the contract
+   *
+   * @param p the implementation (feature body etc).
+   */
+  public Feature(SourcePosition pos,
+                 Visi v,
+                 int m,
+                 ReturnType r,
+                 SourcePosition rPos,
+                 List<String> qname,
+                 List<Feature> a,
+                 List<AbstractCall> i,
+                 Contract c,
+                 Impl p)
+  {
+    this(pos,v,m,r,qname,a,i,c,p);
+    this._posOfReturnType = rPos;
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param r the result type
+   *
+   * @param rPos the position of the result type
+   *
    * @param qname the name of this feature
    *
    * @param a the arguments
@@ -615,7 +656,6 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1545,7 +1585,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             if (t.compareTo(thisType()) == 0)
               {
-                AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
+                AstErrors.choiceMustNotReferToOwnValueType(_pos, (ParsedType)t);
                 _selfType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
@@ -1554,7 +1594,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (t.compareTo(o.thisType()) == 0)
                   {
-                    AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
+                    AstErrors.choiceMustNotReferToOuterValueType(_pos, (ParsedType)t);
                     eraseChoiceGenerics();
                   }
                 o = o.outer();
@@ -1640,6 +1680,9 @@ public class Feature extends AbstractFeature implements Stmnt
         _resultType = resultType();
         if (_resultType instanceof Type t)
           {
+            if (CHECKS) check
+              (!isChoice() || _posOfReturnType != SourcePosition.notAvailable);
+
             t.checkChoice(_posOfReturnType);
           }
         if (_resultType != null)

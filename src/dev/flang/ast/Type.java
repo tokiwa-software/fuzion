@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -586,27 +585,6 @@ public class Type extends AbstractType
   }
 
 
-  /**
-   * Call Constructor for a function type that returns a result
-   *
-   * @param returnType the result type.
-   *
-   * @param arguments the arguments list
-   *
-   * @return a Type instance that represents this function
-   */
-  public static Type funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
-  {
-    if (PRECONDITIONS) require
-      (returnType != null,
-       arguments != null);
-
-    // This is called during parsing, so Types.resolved.f_function is not set yet.
-    return new Type(arguments.size() == 1 ? Types.UNARY_NAME : Types.FUNCTION_NAME,
-                    new List<AbstractType>(returnType, arguments),
-                    null);
-  }
-
 
   /**
    * setRef is called by the parser when parsing a type of the form "ref
@@ -824,7 +802,7 @@ public class Type extends AbstractType
           {
             if (outer().isGenericArgument())
               {
-                AstErrors.formalGenericAsOuterType(pos(), this);
+                AstErrors.formalGenericAsOuterType(((ParsedType)this).pos(), this);
               }
           }
         else
@@ -839,7 +817,7 @@ public class Type extends AbstractType
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
+                AstErrors.formalGenericWithGenericArgs(((ParsedType)this).pos(), this, generic);
               }
           }
       }
@@ -968,7 +946,7 @@ public class Type extends AbstractType
               }
             _generics = FormalGenerics.resolve(res, _generics, outerfeat);
             if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                                  this.pos(),
+                                                                  () -> ((ParsedType)this).pos(),
                                                                   "type",
                                                                   "Type: " + toString() + "\n"))
               {
@@ -1010,7 +988,7 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            var fo = res._module.lookupType(pos(), of, name, _outer == null);
+            var fo = res._module.lookupType(this instanceof ParsedType pt ? pt.pos() : SourcePosition.notAvailable, of, name, _outer == null);
             feature = fo._feature;
             if (_outer == null && !fo._outer.isUniverse())
               {

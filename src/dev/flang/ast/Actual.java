@@ -41,13 +41,6 @@ public class Actual extends Expr
 
   /*----------------------------  variables  ----------------------------*/
 
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final HasSourcePosition _pos;
-
-
   /**
    * This actual parsed as a type, null if it can only be parsed as a value.
    */
@@ -68,13 +61,12 @@ public class Actual extends Expr
    *
    * t must be non-null or e must not be NO_VALUE.
    */
-  public Actual(HasSourcePosition pos, AbstractType t, Expr e)
+  public Actual(AbstractType t, Expr e)
   {
     if (PRECONDITIONS) require
       (t != null || e != Expr.NO_VALUE,
        e != null);
 
-    _pos = pos;
     _type = t;
     _expr = e;
   }
@@ -87,13 +79,7 @@ public class Actual extends Expr
    */
   public Actual(AbstractType t)
   {
-    this(new HasSourcePosition() {
-      @Override
-      public SourcePosition pos()
-      {
-        return t.pos();
-      }
-    }, t, Expr.NO_VALUE);
+    this(t, Expr.NO_VALUE);
 
     if (PRECONDITIONS) require
       (t != null);
@@ -106,7 +92,7 @@ public class Actual extends Expr
    */
   public Actual(Expr e)
   {
-    this(e, null, e);
+    this(null, e);
 
     if (PRECONDITIONS) require
       (e != Expr.NO_VALUE,
@@ -123,7 +109,10 @@ public class Actual extends Expr
    */
   public SourcePosition pos()
   {
-    return _pos.pos();
+    if (PRECONDITIONS) require
+      (_expr != Expr.NO_VALUE);
+
+    return _expr.pos();
   }
 
 

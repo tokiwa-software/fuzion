@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-
 /**
  * FunctionReturnType represents the type of the value returned by a function.
  *
@@ -97,6 +96,7 @@ public class FunctionReturnType extends ReturnType
   {
     type = type.visit(v, outer);
   }
+
 
   /**
    * toString

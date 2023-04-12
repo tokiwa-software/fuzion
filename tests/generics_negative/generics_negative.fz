@@ -57,7 +57,7 @@ generics_negative is
 
   opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is // 7. should flag an error: open generic cannot be used as generic argument
 
-  opengenerics10 (A type, B type, C type...) is  // NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
+  opengenerics10 (A type, B type, C type...) is
     x1 : choice A is
     x2 : choice A B is
     x3 : choice A C B is  // 8. should flag an error: choice cannot use open generic

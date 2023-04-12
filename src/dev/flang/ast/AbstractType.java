@@ -175,17 +175,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean ensureNotOpen()
   {
-    boolean result = true;
-
     if (PRECONDITIONS) require
       (checkedForGeneric());
 
-    if (isOpenGeneric())
-      {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos(), genericArgument());
-        result = false;
-      }
-    return result;
+    // An Error for this should have been flagged in ParsedType.
+    if (CHECKS) require
+      (Errors.count() > 0 || !isOpenGeneric());
+
+    return true;
   }
 
 
@@ -1438,20 +1435,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-
-
-  public SourcePosition pos()
-  {
-    // NYI can we do this better somehow?
-    if (this instanceof Type t && t.generic == null && t.feature == null)
-      {
-        return SourcePosition.builtIn;
-      }
-    return isGenericArgument()
-      ? genericArgument().pos()
-      : featureOfType().pos();
-  }
-
 
 }
 

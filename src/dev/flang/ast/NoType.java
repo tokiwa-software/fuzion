@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-
 /**
  * NoType represents a feature return type in source code that is missing.
  *

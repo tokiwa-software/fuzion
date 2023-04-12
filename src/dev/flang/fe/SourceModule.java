@@ -1063,7 +1063,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * Also, if there is no such type, an error will be produced.
    *
-   * @param pos the position of the type.
+   * @param pos the position of where to flag an error
    *
    * @param outer the outer feature of the type
    *

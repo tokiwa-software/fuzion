@@ -281,6 +281,7 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var a = formArgsOpt();
+    var rPos = posObject();
     var r = returnType();
     var eff = effects();
     var hasType = r != NoType.INSTANCE;
@@ -292,7 +293,7 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh);
-    l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
+    l.add(new Feature(pos, v,m,r,rPos,name,a,inh,c,p));
     return p2 == null
       ? new FList(l)
       : p2.routOrField(pos, l, v, m, n, i+1);
@@ -402,7 +403,7 @@ field       : returnType
               {
                 list.add(f);
               }
-            g.add(new Type(f.featureName().baseName(), new List<>(), new OuterType()));
+            g.add(new ParsedType(f.pos(), f.featureName().baseName(), new List<>(), new OuterType()));
           }
       }
     else
@@ -1695,8 +1696,6 @@ actual   : expr | type
    */
   Actual actual()
   {
-    var pos = posObject();
-
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -1730,7 +1729,7 @@ actual   : expr | type
         t = type();
         e = Expr.NO_VALUE;
       }
-    return new Actual(pos, t, e);
+    return new Actual(t, e);
   }
 
 
@@ -2861,7 +2860,9 @@ nextValue   : COMMA exprInLine
     String     n1  =        name();
     String     n2  = forked.name();
     boolean hasType = isType();
-    ReturnType r1 = hasType ? new FunctionReturnType(       type()) : NoType.INSTANCE;
+    SourcePosition r1Pos = posObject();
+    ReturnType r1 = hasType ? new FunctionReturnType(type()) : NoType.INSTANCE;
+    SourcePosition r2Pos = forked.posObject();
     ReturnType r2 = hasType ? new FunctionReturnType(forked.type()) : NoType.INSTANCE;
     Contract   c1 =        contract();
     Contract   c2 = forked.contract();
@@ -2885,11 +2886,11 @@ nextValue   : COMMA exprInLine
             p2 = new Impl(pos, exprInLine(), p2._kind);
           }
       }
-    Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
+    Feature f1 = new Feature(pos,v1,m1,r1,r1Pos,new List<>(n1),
                              new List<Feature>(),
                              new List<>(),
                              c1,p1);
-    Feature f2 = new Feature(pos,v2,m2,r2,new List<>(n2),
+    Feature f2 = new Feature(pos,v2,m2,r2,r2Pos,new List<>(n2),
                              new List<Feature>(),
                              new List<>(),
                              c2,p2);
@@ -3276,20 +3277,12 @@ qualThis    : name ( dot name )* dot "this"
         done = skip(Token.t_this);
         if (asType)
           {
-            var p = pos;
-            result = new Type(n,
+            result = new ParsedType(pos, n,
                               Call.NO_GENERICS,
                               result,
                               null,
                               done ? Type.RefOrVal.ThisType
-                                   : Type.RefOrVal.LikeUnderlyingFeature)
-                        {
-                          @Override
-                          public SourcePosition pos()
-                          {
-                            return p;
-                          }
-                        };
+                                   : Type.RefOrVal.LikeUnderlyingFeature);
           }
         else
           {
@@ -3315,9 +3308,9 @@ qualThis    : name ( dot name )* dot "this"
    * Parse qualThis producing an instance of Type.  This is used withing the
    * rule thistype.
    */
-  Type qualThisAsType()
+  ParsedType qualThisAsType()
   {
-    return (Type) qualThis(true);
+    return (ParsedType) qualThis(true);
   }
 
 
@@ -3669,20 +3662,13 @@ type        : thistype
         result = onetype();
         if (isOperator('|'))
           {
-            var pos = result.pos();
+            var pos = ((ParsedType)result).pos();
             List<AbstractType> l = new List<>(result);
             while (skip('|'))
               {
                 l.add(onetype());
               }
-            result = new Type("choice", l, null)
-            {
-              @Override
-              public SourcePosition pos()
-              {
-                return pos;
-              }
-            };
+            result = new ParsedType(pos, "choice", l, null);
           }
       }
     return result;
@@ -3769,9 +3755,9 @@ type        : thistype
 thistype    : qualThis dot "type"
             ;
    */
-  AbstractType thistype()
+  ParsedType thistype()
   {
-    Type result = qualThisAsType();
+    ParsedType result = qualThisAsType();
     matchOperator(".", "thistype");
     match(Token.t_type, "thistype");
     return result;
@@ -3860,15 +3846,15 @@ typeOpt     : type
         var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
         if (skip("->"))
           {
-            result = Type.funType(pos, type(), a);
+            result = ParsedType.funType(pos, type(), a);
           }
         else if (a.size() == 1)
           {
-            result = typeTail((Type) a.getFirst());
+            result = typeTail((ParsedType) a.getFirst());
           }
         else
           {
-            result = new Type("tuple", a, null);
+            result = new ParsedType(pos, "tuple", a, null);
           }
       }
     else
@@ -3876,7 +3862,7 @@ typeOpt     : type
         result = simpletype(null);
         if (skip("->"))
           {
-            result = Type.funType(pos, type(), new List<>(result));
+            result = ParsedType.funType(pos, type(), new List<>(result));
           }
       }
     return result;
@@ -3959,18 +3945,12 @@ typeOpt     : type
 simpletype  : name typePars typeTail
             ;
    */
-  Type simpletype(Type lhs)
+  ParsedType simpletype(ParsedType lhs)
   {
     var p = posObject();
     var n = name();
     var a = typePars();
-    lhs = new Type(n, a, lhs){
-      @Override
-      public SourcePosition pos()
-      {
-        return p;
-      }
-    };
+    lhs = new ParsedType(p, n, a, lhs);
     return typeTail(lhs);
   }
 
@@ -4018,7 +3998,7 @@ typeTail    : dot simpletype
             |
             ;
    */
-  Type typeTail(Type lhs)
+  ParsedType typeTail(ParsedType lhs)
   {
     var result = lhs;
     if (!isDotEnvOrType() && skipDot())
@@ -4093,14 +4073,14 @@ typeInParens: "(" typeInParens ")"
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
-            result = Type.funType(posObject(pos), type(), l);
+            result = ParsedType.funType(posObject(pos), type(), l);
           }
         else if (l.size() == 1)
           {
             result = l.get(0);
             if (!ignoredTokenBefore())
               {
-                result = typeTail((Type) result);
+                result = typeTail((ParsedType) result);
               }
           }
         else
