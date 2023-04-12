@@ -167,7 +167,7 @@ floats(F type : float F) : numerics F is
 
 
 
-  # exponentation with base ℇᵛᵃˡ
+  # the `val`-th power of ℇ
   # i.e. ℇᵛᵃˡ
   #
   exp (val F) F is abstract
