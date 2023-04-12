@@ -56,9 +56,9 @@ ryū is
   # convert f64 to string for none trivial case
   private as_string_none_trivial(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
 
-    (mv, mp, mm, mm_shift, is_even) := step_2 val
+    (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
 
-    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-f64.type.mantissa_bits-2).as_i64 mv mp mm mm_shift is_even rounding_mode
+    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-f64.type.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
 
     (output, output_length, exponent_decimal) := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
 
@@ -71,19 +71,21 @@ ryū is
     m := val.mantissa.as_i64
     mv := m * 4
     mm_shift i64 := if (m != (i64 1 << f64.type.mantissa_bits.as_i64)) || (val.exponent_biased <= 1) then 1 else 0
-    (mv, mv + 2, mv - 1 - mm_shift, mm_shift, (m & 1) = 0)
+    (mv - 1 - mm_shift, mv, mv + 2, mm_shift, (m & 1) = 0)
 
 
 
   # step 3: convert to decimal power base
-  private step_3(exponent, mv, mp, mm, mm_shift i64, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
+  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point, mm_shift i64, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
 
-    # calculates: ceil(log_2(5^e))
+    # calculates: ⌈log₂ 5ᵉ⌉
     private pow5bits(e i64)
     pre e >= 0,
         e <= 3528
+    post
+      pow5bits.this.result = (f64s.log 2.0 (5.0 ** e.as_f64)).as_i64
       =>
-      ((e * 1217359) >> 19) + 1
+      (e * 1217359) >> 19
 
 
     # NYI document
@@ -774,14 +776,16 @@ ryū is
 
     # NYI document
     private mul_pow5_div_pow2(m, i, j i64)
-    pre (actual_shift j) >= 0
+    pre (actual_shift j) >= 0,
+        exponent < 0
       =>
       mul_pow5_div_pow2 m i j pow5_split
 
 
     # NYI document
     private mul_pow5_inv_div_pow2(m, i, j i64) i64
-    pre (actual_shift j) >= 0
+    pre (actual_shift j) >= 0,
+        exponent >= 0
     is
       mul_pow5_div_pow2 m i j pow5_inv_split
 
@@ -796,34 +800,58 @@ ryū is
 
 
     if (exponent >= 0)
-      q := max (i64 0) (exponent*78913 >> 18)-1
-      k := pow5_inv_bitcount + pow5bits q - 1
+
+      # computes ⌊log₁₀ 2ᵉ⌋
+      floor_log₁₀_pow_2(e i64) i64
+      pre e >= 0,
+          e <= 1650
+      post
+        floor_log₁₀_pow_2.this.result = (f64s.log 10 (2.0 ** e.as_f64)).floor.as_i64
+      is
+        exponent*78913 >> 18
+
+
+      q := max (i64 0) (floor_log₁₀_pow_2 exponent)-1
+      k := pow5_inv_bitcount + pow5bits q
       i := -exponent + q + k
 
+      dm := mul_pow5_inv_div_pow2 smaller_halfway_point q i
       dv := mul_pow5_inv_div_pow2 mv q i
-      dp := mul_pow5_inv_div_pow2 mp q i
-      dm := mul_pow5_inv_div_pow2 mm q i
+      dp := mul_pow5_inv_div_pow2 larger_halfway_point q i
 
       if q <= 21
         if mv % 5 = 0
           (dv, dp, dm, false, (multiple_of_power_of_5 mv q), q)
         else if rounding_mode.accept_upper_bound is_even
-          (dv, dp, dm, (multiple_of_power_of_5 mm q), false,  q)
-        else if multiple_of_power_of_5 mp q
+          (dv, dp, dm, (multiple_of_power_of_5 smaller_halfway_point q), false,  q)
+        else if multiple_of_power_of_5 larger_halfway_point q
           (dv, dp-1, dm, false, false, q)
         else
           (dv, dp, dm, false, false, q)
       else
         (dv, dp, dm, false, false, q)
     else
-      q := max (i64 0) (-exponent*732923 >> 20)-1
+
+
+      # computes ⌊log₁₀ 5ᵉ⌋
+      floor_log₁₀_pow_5 (e i64) i64
+      pre e >= 0,
+          e <= 2620
+      post
+        ( f64s.log 10 (5.0 ** e.as_f64) = f64s.infinity
+          || floor_log₁₀_pow_5.this.result = (f64s.log 10 (5.0 ** e.as_f64)).floor.as_i64)
+      is
+        e*732923 >> 20
+
+
+      q := max (i64 0) (floor_log₁₀_pow_5 -exponent)-1
       i := -exponent - q
-      k := pow5bits i - pow5_bitcount
+      k := pow5bits i + 1 - pow5_bitcount
       j := q - k
 
+      dm := mul_pow5_div_pow2 smaller_halfway_point i j
       dv := mul_pow5_div_pow2 mv i j
-      dp := mul_pow5_div_pow2 mp i j
-      dm := mul_pow5_div_pow2 mm i j
+      dp := mul_pow5_div_pow2 larger_halfway_point i j
       e10 := q + exponent
 
       if q <= 1
