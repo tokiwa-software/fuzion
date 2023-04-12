@@ -948,7 +948,7 @@ ryū is
 
 
   # step 5: construct the string
-  private step_5(output, output_length, exp i64, is_negative, scientific_notation bool) String is
+  private step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String is
 
 
     # convert output to string
@@ -960,23 +960,23 @@ ryū is
       else
         s
 
-    # this float as a scientific string i.e. 3.2E2
+    # this float as a scientific string e.g. 3.2E2
     scientific =>
       for idx in i64 1 .. output_length
           output := output, output / 10
           str := "{output % 10}", "{output % 10}" + (if idx = output_length then "." else "") + str
       else
-        "{str}E{exp}"
+        "{str}E{exponent}"
 
     # the float as a decimal string
     full =>
-      if exp < 0
-        "0.{"0" * -(exp+1).as_i32}{output_as_string output output_length}"
-      else if exp + 1 >= output_length
-        "{output_as_string output output_length}{"0" * (exp+1-output_length).as_i32}.0"
+      if exponent < 0
+        "0.{"0" * -(exponent+1).as_i32}{output_as_string output output_length}"
+      else if exponent + 1 >= output_length
+        "{output_as_string output output_length}{"0" * (exponent+1-output_length).as_i32}.0"
       else
         for idx in i64 0 .. output_length
-            is_dot_pos := false, output_length - idx - 1 = exp
+            is_dot_pos := false, output_length - idx - 1 = exponent
             output := output, if is_dot_pos then output else output / 10
             str := "{output % 10}", (if is_dot_pos then "." else "{output % 10}") + str
         else
