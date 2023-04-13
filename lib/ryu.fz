@@ -29,14 +29,26 @@
 # For more information see the original repository: https://github.com/ulfjack/ryu
 # and the paper: https://dl.acm.org/citation.cfm?doid=3296979.3192369
 #
+# NYI lacks documentation
+#
 ryū is
 
 
-  # NYI document
+  # constructor for rounding mode
+  # see below for predefined rounding modes
+  #
   rounding_mode(accept_upper_bound, accept_lower_bound bool -> bool) is
 
+
+  # rounding mode 'conservative', never accepts lower/upper bound
+  #
   rounding_conservative := (rounding_mode (is_even)->false (is_even)->false)
 
+
+  # rounding mode 'even', chooses the closest even number.
+  # examples: 0.5 => 0
+  #           1.5 => 2
+  #
   rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
 
 
@@ -88,15 +100,16 @@ ryū is
       (e * 1217359) >> 19
 
 
-    # NYI document
     # max 3*31 = 124
     private pow5_bitcount => i64 121
     # max 3*31 = 124
     private pow5_inv_bitcount => i64 122
-    private pow5_quarter_bitcount => i64 31
-    private mask => ((i64 1 << pow5_quarter_bitcount) - 1).as_uint
+
 
     /***********  code to generate the tables below
+
+    private pow5_quarter_bitcount => i64 31
+    private mask => ((i64 1 << pow5_quarter_bitcount) - 1).as_uint
 
     # 5⁰, 5¹, 5², .. , 5^325
     private powers_of_5_cache_key(data array uint) is
@@ -749,12 +762,10 @@ ryū is
       ]
 
 
-    # NYI document
     private actual_shift(j i64) =>
       j - 114
 
 
-    # NYI document
     private mul_pow5_div_pow2(m, i, j i64, table array (array i64)) =>
       m_high := m >> 31
       m_low := m & 0x7fffffff
@@ -774,7 +785,6 @@ ryū is
                           + (bits13 << 10)) >> (actual_shift j)
 
 
-    # NYI document
     private mul_pow5_div_pow2(m, i, j i64)
     pre (actual_shift j) >= 0,
         exponent < 0
@@ -782,7 +792,6 @@ ryū is
       mul_pow5_div_pow2 m i j pow5_split
 
 
-    # NYI document
     private mul_pow5_inv_div_pow2(m, i, j i64) i64
     pre (actual_shift j) >= 0,
         exponent >= 0
@@ -790,7 +799,6 @@ ryū is
       mul_pow5_div_pow2 m i j pow5_inv_split
 
 
-    # NYI document
     multiple_of_power_of_5(val i64, q i64) =>
       for pow5_factor := i64 0, pow5_factor+1
           mod         := i64 5, mod*5
@@ -893,7 +901,6 @@ ryū is
       else                                   1
 
 
-    # NYI document
     require_more_digits(d i64) => !(d<100 && scientific_notation)
 
     vplength := decimal_length dp
