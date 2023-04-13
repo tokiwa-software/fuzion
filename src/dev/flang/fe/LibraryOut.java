@@ -574,7 +574,7 @@ class LibraryOut extends ANY
           {
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.featureOfType());
-            _data.write(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
+            _data.writeByte(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
                         t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                        : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
@@ -705,7 +705,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(u.type());
-        _data.write(u._needed ? 1 : 0);
+        _data.writeByte(u._needed ? 1 : 0);
       }
     else if (s instanceof Box b)
       {
@@ -730,7 +730,7 @@ class LibraryOut extends ANY
           }
         if (!dumpResult)
           {
-            _data.write(IR.ExprKind.Unit.ordinal());
+            _data.writeByte(IR.ExprKind.Unit.ordinal());
           }
       }
     else if (s instanceof Constant c)
@@ -850,7 +850,7 @@ class LibraryOut extends ANY
         _data.write(c.isArtificial() ? 1 : 0);
         if (dumpResult)
           {
-            _data.write(IR.ExprKind.Pop.ordinal());
+            _data.writeByte(IR.ExprKind.Pop.ordinal());
           }
       }
     else if (s instanceof AbstractMatch m)
@@ -998,12 +998,12 @@ class LibraryOut extends ANY
   {
     if (lastPos == null || lastPos.compareTo(newPos) != 0)
       {
-        _data.write(k.ordinal() | 0x80);
+        _data.writeByte(k.ordinal() | 0x80);
         pos(newPos);
       }
     else
       {
-        _data.write(k.ordinal());
+        _data.writeByte(k.ordinal());
       }
     return newPos;
   }

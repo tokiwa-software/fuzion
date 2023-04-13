@@ -84,7 +84,7 @@ public class DataOut extends ANY
   /**
    * Write given byte to this buffer and increase offset by 1.
    */
-  public void write(int b)
+  public void writeByte(int b)
   {
     if (PRECONDITIONS) require
       (0 <= b, b <= 0xFF);
@@ -104,7 +104,7 @@ public class DataOut extends ANY
    */
   public void writeBool(boolean b)
   {
-    write(b ? 1 : 0);
+    writeByte(b ? 1 : 0);
   }
 
 
@@ -113,8 +113,8 @@ public class DataOut extends ANY
    */
   public void writeShort(int i)
   {
-    write((i >>  8) & 0xFF);
-    write((i      ) & 0xFF);
+    writeByte((i >>  8) & 0xFF);
+    writeByte((i      ) & 0xFF);
   }
 
 
@@ -123,10 +123,10 @@ public class DataOut extends ANY
    */
   public void writeInt(int i)
   {
-    write((i >> 24) & 0xFF);
-    write((i >> 16) & 0xFF);
-    write((i >>  8) & 0xFF);
-    write((i      ) & 0xFF);
+    writeByte((i >> 24) & 0xFF);
+    writeByte((i >> 16) & 0xFF);
+    writeByte((i >>  8) & 0xFF);
+    writeByte((i      ) & 0xFF);
   }
 
 
