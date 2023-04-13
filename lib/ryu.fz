@@ -49,12 +49,12 @@ ryū is
     else if (val = 0.0)
       if val.is_sign_bit_set then "-0.0" else "0.0"
     else
-      as_string_none_trivial val scientific_notation rounding_mode
+      as_string_nontrivial val scientific_notation rounding_mode
 
 
 
-  # convert f64 to string for none trivial case
-  private as_string_none_trivial(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
+  # convert f64 to string for nontrivial case
+  private as_string_nontrivial(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
 
     (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
 
