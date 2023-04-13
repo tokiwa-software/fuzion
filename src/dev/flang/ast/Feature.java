@@ -1637,7 +1637,12 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultType();
+        _resultType = resultTypeRaw();
+        if (_resultType == null)
+          {
+            AstErrors.missingResultTypeForField(this);
+            _resultType = Types.t_ERROR;
+          }
         if (_resultType instanceof Type t)
           {
             t.checkChoice(_posOfReturnType);
