@@ -67,16 +67,16 @@ ryū is
 
 
   # step 2: get the interval of legal decimal representations
-  private step_2(val f64) tuple i64 i64 i64 i64 bool is
+  private step_2(val f64) tuple i64 i64 i64 bool bool is
     m := val.mantissa.as_i64
-    mv := m * 4
-    mm_shift i64 := if (m != (i64 1 << f64.type.mantissa_bits.as_i64)) || (val.exponent_biased <= 1) then 1 else 0
-    (mv - 1 - mm_shift, mv, mv + 2, mm_shift, (m & 1) = 0)
+    mv := m << 2
+    mm_shift := m != (i64 1 << f64.type.mantissa_bits.as_i64) || val.exponent_biased <= 1
+    (mv - (if mm_shift then 2 else 1), mv, mv + 2, mm_shift, (m & 1) = 0)
 
 
 
   # step 3: convert to decimal power base
-  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point, mm_shift i64, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
+  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
 
     # calculates: ⌈log₂ 5ᵉ⌉
     private pow5bits(e i64)
@@ -856,7 +856,7 @@ ryū is
 
       if q <= 1
         if rounding_mode.accept_upper_bound is_even
-          (dv, dp, dm, mm_shift = 1, true, e10)
+          (dv, dp, dm, mm_shift, true, e10)
         else
           (dv, dp -  1, dm, false, true, e10)
       else if q < 63
