@@ -847,7 +847,7 @@ class LibraryOut extends ANY
           {
             _data.writeInt(c.select());
           }
-        _data.write(c.isArtificial() ? 1 : 0);
+        _data.writeByte(c.isArtificial() ? 1 : 0);
         if (dumpResult)
           {
             _data.writeByte(IR.ExprKind.Pop.ordinal());
