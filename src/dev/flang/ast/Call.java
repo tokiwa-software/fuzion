@@ -262,25 +262,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t the target of the call, null if none.
-   *
-   * @param n the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public Call(SourcePosition pos, Expr t, String n, int select)
-  {
-    this(pos, t, n, select, NO_PARENTHESES);
-  }
-
-
-  /**
    * Constructor for a call whose called feature is already known, typically
    * because this call is created artificially for some syntactic sugar and not
    * by parsing source code.
@@ -2334,6 +2315,15 @@ public class Call extends AbstractCall
         _target = _targetFrom.target(pos(), res, outer);
       }
     return this;
+  }
+
+  /**
+   * Is this an artificial call, a call
+   * that is not explicitly present in source code.
+   */
+  public boolean isArtificial()
+  {
+    return true;
   }
 
 }

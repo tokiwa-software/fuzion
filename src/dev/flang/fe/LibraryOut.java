@@ -815,6 +815,8 @@ class LibraryOut extends ANY
    *   | nGeneri|        |               |                                               |
    *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | bool          | isArtificial                                  |
+   *   +--------+--------+---------------+-----------------------------------------------+
    */
         _data.writeOffset(c.calledFeature());
         type(c.type());
@@ -845,6 +847,7 @@ class LibraryOut extends ANY
           {
             _data.writeInt(c.select());
           }
+        _data.write(c.isArtificial() ? 1 : 0);
         if (dumpResult)
           {
             _data.write(IR.ExprKind.Pop.ordinal());

@@ -30,16 +30,13 @@ import java.util.Collections;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -62,7 +59,7 @@ public abstract class LibraryCall extends AbstractCall
 
 
   /**
-   * index of this feature within _libModule.
+   * index of this call within _libModule.
    */
   private final int _index;
 
@@ -73,6 +70,7 @@ public abstract class LibraryCall extends AbstractCall
   private final List<AbstractType> _generics;
   private final AbstractFeature _calledFeature;
   private final int _select;
+  private boolean _isArtificial;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -122,6 +120,7 @@ public abstract class LibraryCall extends AbstractCall
     _target = target;
     _calledFeature = f;
     _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : -1;
+    _isArtificial = lib.callIsArtificial(index);
   }
 
 
@@ -172,6 +171,19 @@ public abstract class LibraryCall extends AbstractCall
   {
     return _isInheritanceCall;
   }
+
+
+  /**
+   * Is this an artificial call, a call
+   * that is not explicitly present in source code.
+   */
+  @Override
+  public boolean isArtificial()
+  {
+    return _isArtificial;
+  }
+
+
   public AbstractType type()
   {
     return _type;

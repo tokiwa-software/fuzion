@@ -1361,18 +1361,18 @@ actuals     : actualArgs
               {
                 AstErrors.illegalSelect(pos, select, e);
               }
-            result = new Call(pos, target, n, s);
+            result = new ParsedCall(pos, target, n, s);
           }
         else
           {
-            result = new Call(pos, target, n);
+            result = new ParsedCall(pos, target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new Call(pos, target, n, l);
+        result = new ParsedCall(pos, target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;

@@ -48,7 +48,6 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
@@ -1770,6 +1769,8 @@ Call
    *   | nGeneri|        |               |                                               |
    *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | bool          | isArtificial                                  |
+   *   +--------+--------+---------------+-----------------------------------------------+
    */
   int callCalledFeaturePos(int at)
   {
@@ -1894,7 +1895,7 @@ Call
 
     return data().getInt(callSelectPos(at));
   }
-  int callNextPos(int at)
+  int callIsArtificialPos(int at)
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
@@ -1904,6 +1905,22 @@ Call
     var nat = sat + (libraryFeature(callCalledFeature(at)).resultType().isOpenGeneric() ? 4 : 0);
 
     return nat;
+  }
+  boolean callIsArtificial(int at)
+  {
+    if (PRECONDITIONS) require
+     (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
+      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+
+    return data().get(callIsArtificialPos(at)) != 0;
+  }
+  int callNextPos(int at)
+  {
+    if (PRECONDITIONS) require
+     (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
+      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+
+    return callIsArtificialPos(at) + 1;
   }
 
 

@@ -94,6 +94,13 @@ public abstract class AbstractCall extends Expr
 
 
   /**
+   * Is this an artificial call, a call
+   * that is not explicitly present in source code.
+   */
+  public abstract boolean isArtificial();
+
+
+  /**
    * visit all the statements within this Call.
    *
    * @param v the visitor instance that defines an action to be performed on
