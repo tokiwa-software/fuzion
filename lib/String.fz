@@ -81,7 +81,7 @@ String ref : equatable, has_hash, has_total_order is
       .filter (x ->
         (c, d) := x
         !(c = d))
-      .mapSequence (x ->
+      .map_sequence (x ->
         (c, d) := x
         c ≤ d)
       # if all bytes are equal lengths of strings might still differ
@@ -91,10 +91,10 @@ String ref : equatable, has_hash, has_total_order is
   # create hash code from a string
   #
   hash u64 is
-    shL := u64 13
-    shR := u64 51
+    sh_l := u64 13
+    sh_r := u64 51
     for
-      h u64 := 0, ((h << shL) | (h >> shR)) ^ b.as_u64;
+      h u64 := 0, ((h << sh_l) | (h >> sh_r)) ^ b.as_u64;
       b in utf8
     while true
     else
@@ -734,7 +734,7 @@ String ref : equatable, has_hash, has_total_order is
       from_array (a.add other)
 
     redef utf8 Sequence u8 is
-      a.flatMapSequence u8 ai->ai.as_string.utf8
+      a.flat_map_sequence u8 ai->ai.as_string.utf8
 
 
   # create string from the given utf8 bytes
@@ -750,7 +750,7 @@ String ref : equatable, has_hash, has_total_order is
     ref : String
       utf8 Sequence u8 is
         codePoints
-          .flatMapSequence u8 (x -> x.utf8)
+          .flat_map_sequence u8 (x -> x.utf8)
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals

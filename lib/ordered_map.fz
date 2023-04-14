@@ -59,7 +59,7 @@ is
 
   # a sorted array of entries of this map
   #
-  sortedEntries := sorted_array_of (ks.indices.mapSequence (i -> entry i)).as_array
+  sortedEntries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
 
 
   # number of entries in this map

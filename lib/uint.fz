@@ -190,19 +190,19 @@ is
     data
       .reverse
       .indexed
-      .mapSequence ((x) ->
+      .map_sequence ((x) ->
         (i, v) := x
         other
           .data
           .reverse
           .indexed
-          .mapSequence (ox ->
+          .map_sequence (ox ->
             (oi,ov) := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
           )
         )
-      .flatMapSequence uint (x -> x)
+      .flat_map_sequence uint (x -> x)
       .fold uint.type.sum
 
 
@@ -254,7 +254,7 @@ is
         # skip to first unequal
         .drop_while (x -> (c,d) := x; c = d)
         # compare
-        .mapSequence (x -> (c,d) := x; c ≤ d)
+        .map_sequence (x -> (c,d) := x; c ≤ d)
         # fallback, if all are equal
         .first true
     else

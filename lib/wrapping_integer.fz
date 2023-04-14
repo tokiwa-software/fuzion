@@ -38,17 +38,17 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   # would addition thiz + other cause an overflow or underflow?
   overflow_on_add(other W) bool is abstract
   underflow_on_add(other W) bool is abstract
-  wrappedOnAdd(other W) => overflow_on_add(other) || underflow_on_add(other)
+  wrapped_on_add(other W) => overflow_on_add(other) || underflow_on_add(other)
 
   # would subtraction thiz - other cause an overflow or underflow?
   overflow_on_sub(other W) bool is abstract
   underflow_on_sub(other W) bool is abstract
-  wrappedOnSub(other W) => overflow_on_sub(other) || underflow_on_sub(other)
+  wrapped_on_sub(other W) => overflow_on_sub(other) || underflow_on_sub(other)
 
   # would multiplication thiz * other cause an overflow or underflow?
   overflow_on_mul(other W) bool is abstract
   underflow_on_mul(other W) bool is abstract
-  wrappedOnMul(other W) => overflow_on_mul(other) || underflow_on_mul(other)
+  wrapped_on_mul(other W) => overflow_on_mul(other) || underflow_on_mul(other)
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
@@ -58,7 +58,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   infix *! (other W) => !(overflow_on_mul other) && !(underflow_on_mul other)
   infix /! (other W) => true  # other != zero is checked in separate condition
   infix %! (other W) => true  # other != zero is checked in separate condition
-  infix **!(other W) => !(overflowOnExp other)
+  infix **!(other W) => !(overflow_on_exp other)
 
   # neg, add, sub, mul with wrap-around semantics
   prefix -° W is abstract
@@ -106,9 +106,9 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
 
   # overflow checking operations
   redef prefix -?          num_option W is if wrapped_on_neg        then nil else -thiz
-  redef infix +? (other W) num_option W is if wrappedOnAdd(other) then nil else thiz + other
-  redef infix -? (other W) num_option W is if wrappedOnSub(other) then nil else thiz - other
-  redef infix *? (other W) num_option W is if wrappedOnMul(other) then nil else thiz * other
+  redef infix +? (other W) num_option W is if wrapped_on_add(other) then nil else thiz + other
+  redef infix -? (other W) num_option W is if wrapped_on_sub(other) then nil else thiz - other
+  redef infix *? (other W) num_option W is if wrapped_on_mul(other) then nil else thiz * other
 
   # saturating  operations
   redef prefix -^          => if wrapped_on_neg if thiz > zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
@@ -124,7 +124,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   infix ** (other W) W
     pre
       safety: other ≥ zero,
-      debug: !overflowOnExp(other)
+      debug: !overflow_on_exp(other)
   is
     thiz **° other
 
@@ -167,7 +167,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  overflowOnExp(other W) => (thiz **? other)!!
+  overflow_on_exp(other W) => (thiz **? other)!!
 
 
   # exponentiation with saturating semantics
@@ -178,7 +178,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if overflowOnExp other
+    if overflow_on_exp other
       if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% two)
         wrapping_integer.this.type.max.thiz
       else

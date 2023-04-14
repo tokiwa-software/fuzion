@@ -69,7 +69,7 @@ is
 
   # create a sorted array from the elements of this set
   #
-  redef as_array => psm.asKeyArray
+  redef as_array => psm.as_key_array
 
 
   # check if an element equal to given element k is part of this set
@@ -95,12 +95,12 @@ is
   # intersection of two ps_sets
   infix ∩ (other ref ps_set K) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
-    (ps_sets K).empty.addAll s
+    (ps_sets K).empty.add_all s
 
 
   # add all elements of the given Sequence to this set
   #
-  addAll (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+  add_all (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
     this_ref ref ps_set K := ps_set.this
     s.reduce this_ref ((r,k) -> r.add k)
 
@@ -108,7 +108,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  redef sizeOption option i32 is size
+  redef size_option option i32 is size
 
 
   # does this set contain the given value?
@@ -155,4 +155,4 @@ ps_sets(K type : has_total_order) is
 #
 # This feature creates a pre-initialized instance of ps_set.
 #
-ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.addAll vs
+ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs

@@ -117,7 +117,7 @@ is
   items Sequence (tuple HK V) is
     contents
       .filter      (o -> o??)
-      .mapSequence (o -> match o
+      .map_sequence (o -> match o
                             nil     => panic "filter failed"
                             t tuple => t)
 
@@ -127,7 +127,7 @@ is
   #
   redef as_string =>
     items
-      .mapSequence (t -> "({t.values.0},{t.values.1})")
+      .map_sequence (t -> "({t.values.0},{t.values.1})")
       .as_string
 
 
