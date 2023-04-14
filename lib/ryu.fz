@@ -802,7 +802,7 @@ ryū is
     multiple_of_power_of_5(val i64, q i64) =>
       for pow5_factor := i64 0, pow5_factor+1
           mod         := i64 5, mod*5
-      while val % mod != 0 && mod*!5
+      while val % mod = 0 && mod*!5
       else
         pow5_factor >= q
 
@@ -939,10 +939,10 @@ ryū is
            exponent)
 
     else
-      for dp := dp, dp / 10
+      for last_removed_digit := i64 0, dv % 10
+          dp := dp, dp / 10
           dv := dv, dv / 10
           dm := dm, dm / 10
-          last_removed_digit := i64 0, dv % 10
           removed := i64 0, removed+1
       while ((dp / 10 > dm / 10) && require_more_digits dp)
       else
