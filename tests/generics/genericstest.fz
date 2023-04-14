@@ -25,13 +25,12 @@
 
 genericstest is
 
-  exit_code := mut 0
-
   chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      set_exit_code 1 ? unit =>
+                      | error =>
       "FAILED: "
     say (s + msg)
 
@@ -188,4 +187,4 @@ genericstest is
     unit
   opengenerics12
 
-  exit exit_code.get
+  exit
