@@ -617,7 +617,7 @@ public class Call extends AbstractCall
    * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
    * during state RESOLVING_TYPES for all other calls.
    *
-   * @param res this is called during type resolution, res gives the resolution
+   * @param res the resolution instance.
    * instance.
    *
    * @param thiz the surrounding feature. For a call c in an inherits clause ("f
@@ -671,13 +671,13 @@ public class Call extends AbstractCall
                       }
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built a chained bool: `a < b < c` => `(a < b) && (a < c)`
+                  { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
                     resolveTypesOfActuals(res,thiz);
                     actualsResolved = true;
                     findChainedBooleans(res, thiz);
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built operator call: `a + b` => `x.y.z.this.infix + a b`
+                  { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
                 if (_calledFeature == null && !fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
