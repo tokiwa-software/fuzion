@@ -1640,6 +1640,13 @@ public class AstErrors extends ANY
           "Expression with unknown type: " + s(e));
   }
 
+  static void failedToInferResultType(Feature f)
+  {
+    error(f.pos(),
+          "Failed to infer result type for feature " + s(f) +  ".",
+          "To solve this, please specify a result type explicitly.");
+  }
+
   static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
   {
     StringBuilder typesMsg = new StringBuilder();
