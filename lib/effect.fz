@@ -71,7 +71,7 @@ is
   #
   private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
     res option R := nil
-    cf := effect_call f
+    cf := Effect_Call f
     abortable cf
     match cf.res
       nil => def(unit)
@@ -99,12 +99,12 @@ is
         effect_mode.new => true
         * => false
   is
-    abortable (effect_call code)
+    abortable (Effect_Call code)
 
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
-private effect_call(redef R type, f () -> R) ref : Function unit is
+private Effect_Call(redef R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()
@@ -140,21 +140,21 @@ is
   code ()->unit is abstract
 
 
-# simpleEffect provides a simple means to define and use an effect
+# simple_effect provides a simple means to define and use an effect
 #
 # user-defined effects should inherit from this feature and add
 # operations as inner features or fields of function type.
 #
-# To install this effect to execute a function, simpleEffect.use
+# To install this effect to execute a function, simple_effect.use
 # can be called.
 #
-simpleEffect : effect effect_mode.plain
+simple_effect : effect effect_mode.plain
 is
 
-  # install this simpleEffect and run code
+  # install this simple_effect and run code
   #
   use(code ()->unit) unit is
-    abortable (effect_call code)
+    abortable (Effect_Call code)
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
@@ -163,5 +163,5 @@ is
     fo () -> option T is ()->f()
     r := run fo (unit)->nil
     match r
-      nil => panic "*** unexpected abort in {simpleEffect.this.type}"
+      nil => panic "*** unexpected abort in {simple_effect.this.type}"
       v T => v

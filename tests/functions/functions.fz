@@ -67,22 +67,22 @@ functions is
           o.hashCode + i
        })
 
-    f ref : Function i32 Any i32 is
+    F ref : Function i32 Any i32 is
         redefine call(o Any, i i32) i32 is
           say "here f.call---------------"
           set result := o.hashCode + i
           say "here f.call done---------------"
 
     say "here x0 f()---------------"
-    x0 f()
+    x0 F()
     say "here x0 f---------------"
-    x0 f
+    x0 F
     say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hashCode + i })---------------"
     x0 ((o, i) -> { set result := o.hashCode + i })
     say "here x f()---------------"
-    x f()
+    x F()
     say "here x(f)---------------"
-    x f
+    x F
 
     f1(o Any, i i32) i32 is
         say "here f1 o i !!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

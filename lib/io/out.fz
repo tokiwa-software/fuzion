@@ -38,7 +38,7 @@ is
 
 # short-hand for creating and installing out effect
 #
-out(rr ()->unit) => out defaultPrintToOut rr
+out(rr ()->unit) => out default_print_to_out rr
 
 
 # short-hand for creating and installing out effect
@@ -55,7 +55,7 @@ out =>
   io.out.env
 
 
-defaultPrintToOut : Can_Print is
+default_print_to_out : Can_Print is
 
   print(s Any) => stdout.print s
 
@@ -68,4 +68,4 @@ outs is
   # install default effect out using defaultPrint
   install_default unit is
     if !effects.exists io.out
-      _ := out defaultPrintToOut effect_mode.default unit
+      _ := out default_print_to_out effect_mode.default unit

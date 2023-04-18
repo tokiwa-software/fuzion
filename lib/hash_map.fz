@@ -43,19 +43,19 @@ is
   # size of allocated contents array, allows for some empty slots
   #
   /* NYI: local */
-  allocatedSize => size * 2
+  allocated_size => size * 2
 
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => (k.hash.low32bits.castTo_i32 & 0.max) % allocatedSize
+  at (k HK) => (k.hash.low32bits.castTo_i32 & 0.max) % allocated_size
 
 
   # in case of a collision at given position,
   # return the next alternative position to check
   #
   collision (at i32) =>
-    (at + 1) % allocatedSize  # NYI: dumb collision function, check literature and improve!
+    (at + 1) % allocated_size  # NYI: dumb collision function, check literature and improve!
 
 
   # the contents
@@ -64,7 +64,7 @@ is
   contents :=
     for
       mi := mutate.type.install_default
-      mcontents := mutate.env.array (option (tuple HK V)) allocatedSize nil, mcontents
+      mcontents := mutate.env.array (option (tuple HK V)) allocated_size nil, mcontents
       k in ks
       v in vs
     do

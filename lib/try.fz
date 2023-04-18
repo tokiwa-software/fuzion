@@ -59,7 +59,7 @@ try(R type, f ()->R) =>
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-tryOrPanic(R type, f ()->R) outcome R is
+try_or_panic(R type, f ()->R) outcome R is
   match try.on f
     e error => panic $e
     r R => r

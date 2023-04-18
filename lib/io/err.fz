@@ -38,7 +38,7 @@ is
 
 # short-hand for creating and installing err effect
 #
-err(rr ()->unit) => err defaultPrintToErr rr
+err(rr ()->unit) => err default_print_to_err rr
 
 
 # short-hand for creating and installing err effect
@@ -55,7 +55,7 @@ err =>
   io.err.env
 
 
-defaultPrintToErr : Can_Print is
+default_print_to_err : Can_Print is
 
   print(s Any) => fuzion.sys.err.print s
 
@@ -68,4 +68,4 @@ errs is
   # install default effect err using defaultPrint
   install_default unit is
     if !effects.exists io.err
-      _ := err defaultPrintToErr effect_mode.default unit
+      _ := err default_print_to_err effect_mode.default unit

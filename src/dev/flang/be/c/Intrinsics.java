@@ -83,7 +83,7 @@ public class Intrinsics extends ANY
         });
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
-    put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
+    put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
     put("fuzion.sys.args.count", (c,cl,outer,in) -> c._names.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
@@ -520,24 +520,24 @@ public class Intrinsics extends ANY
      * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
      * source: https://github.com/rust-lang/rust/issues/88734
      */
-    put("f32s.minExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
+    put("f32s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f32s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f32s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
     put("f32s.max"             , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
     put("f32s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64s.minExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
+    put("f64s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f64s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f64s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
     put("f64s.max"             , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
     put("f64s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32s.isNaN"           ,
-        "f64s.isNaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32s.is_NaN"          ,
+        "f64s.is_NaN"          , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
+    put("f32s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
+    put("f64s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
     put("f32s.exp"             , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
     put("f64s.exp"             , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
     put("f32s.log"             , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());

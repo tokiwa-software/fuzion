@@ -36,16 +36,16 @@
 #
 #     ex_handles is
 #       hdl := handle 42
-#     
+#
 #       say hdl.get
-#     
+#
 #       x(h handle0 i32) unit is
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
-#     
+#
 #       x hdl
-#     
+#
 #       say hdl.get
 #
 # the example also shows the difference between handles and the mutate effect:
@@ -85,7 +85,7 @@ is
     w T
     ) handles T X
   post
-    result.hasLast
+    result.has_last
   is
     na := array T count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
@@ -93,14 +93,14 @@ is
 
   # has one element been created using 'new'?
   #
-  hasLast => count > 0
+  has_last => count > 0
 
 
   # return the last handle that was created by 'new'
   #
   last
     pre
-      hasLast
+      has_last
    =>
     handle0 T count-1
 

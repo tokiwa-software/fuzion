@@ -119,7 +119,7 @@ public class FUIR extends IR
     c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
-    c_conststring { Clazz getIfCreated() { return Clazzes.conststring.getIfCreated(); } },
+    c_Const_String { Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
     c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
@@ -517,7 +517,7 @@ public class FUIR extends IR
    * @param cl an intrinsic
    *
    * @return its intrinsic name, e.g. 'Array.getel' instead of
-   * 'conststring.getel'
+   * 'Const_String.getel'
    */
   public String clazzIntrinsicName(int cl)
   {
@@ -1052,7 +1052,7 @@ hw25 is
           case Abstract, Choice -> false;
           case Intrinsic, Routine, Field ->
             (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
-            && cc != Clazzes.conststring.getIfCreated()
+            && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
             // NYI: this should not depend on string comparison!
             && !(cc.feature().qualifiedName().equals("void.absurd"))
@@ -1078,23 +1078,23 @@ hw25 is
 
 
   /**
-   * Get the id of clazz conststring
+   * Get the id of clazz Const_String
    *
-   * @return the id of conststring or -1 if that clazz was not created.
+   * @return the id of Const_String or -1 if that clazz was not created.
    */
-  public int clazz_conststring()
+  public int clazz_Const_String()
   {
-    var cc = Clazzes.conststring.getIfCreated();
+    var cc = Clazzes.Const_String.getIfCreated();
     return cc == null ? -1 : id(cc);
   }
 
 
   /**
-   * Get the id of clazz conststring.internalArray
+   * Get the id of clazz Const_String.internalArray
    *
-   * @return the id of conststring.internalArray or -1 if that clazz was not created.
+   * @return the id of Const_String.internalArray or -1 if that clazz was not created.
    */
-  public int clazz_conststring_internalArray()
+  public int clazz_Const_String_internalArray()
   {
     var cc = Clazzes.constStringInternalArray;
     return cc == null ? -1 : id(cc);
@@ -1547,7 +1547,7 @@ hw25 is
   /**
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
-   * Currently, the clazz is one of bool, i32, u32, i64, u64 of conststring.
+   * Currently, the clazz is one of bool, i32, u32, i64, u64 of Const_String.
    * This will be extended by other basic types (f64, etc.), value instances
    * without refs, choice instances with tag, arrays, etc.
    */
@@ -1572,7 +1572,7 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_u64   ) == 0) { clazz = Clazzes.u64        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f32   ) == 0) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64   ) == 0) { clazz = Clazzes.f64        .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.conststring.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
+    else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.Const_String.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");

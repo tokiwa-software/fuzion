@@ -125,7 +125,7 @@ f64(val f64) : float f64, f64s is
 
   # the fraction of this floating point number
   redef fract f64 is
-    if f64s.isNaN val
+    if f64s.is_NaN val
       NaN
     else if val < (f64 0)
       -(-val).fract
@@ -192,16 +192,16 @@ f64s : floats f64 is
   redef one  => f64 1
 
 
-  redef isNaN(val f64) bool is intrinsic
+  redef is_NaN(val f64) bool is intrinsic
 
 
-  redef minExp i32 is intrinsic
-  redef maxExp i32 is intrinsic
-  redef minPositive f64 is intrinsic
+  redef min_exp i32 is intrinsic
+  redef max_exp i32 is intrinsic
+  redef min_positive f64 is intrinsic
   redef max f64 is intrinsic
   redef epsilon f64 is intrinsic
 
-  redef squareRoot(val f64) f64 is intrinsic
+  redef square_root(val f64) f64 is intrinsic
 
   redef exp(val f64) f64 is intrinsic
   redef log(val f64) f64 is intrinsic
