@@ -72,11 +72,11 @@ public class Function extends ExprWithPos
   /**
    * For function declaration of the kind
    *
-   *  fun int (Object o, int i) { result =* o.hashCode + i; }
+   *  fun int (Object o, int i) { result =* o.hash_code + i; }
    *
    * this is the declared feature
    *
-   *  int (Object o, int i) { result =* o.hashCode + i; }
+   *  int (Object o, int i) { result =* o.hash_code + i; }
    *
    */
   AbstractFeature _feature;
@@ -240,7 +240,7 @@ public class Function extends ExprWithPos
 
         /* We have an expression of the form
          *
-         *   (o, i) -> o.hashCode + i
+         *   (o, i) -> o.hash_code + i
          *
          * so we replace it by
          *
@@ -248,7 +248,7 @@ public class Function extends ExprWithPos
          * {
          *   public redefine R call(A1 a1, A2 a2, ...)
          *   {
-         *     result = o.hashCode + i;
+         *     result = o.hash_code + i;
          *   }
          * }
          * [..]

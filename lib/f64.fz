@@ -66,17 +66,17 @@ f64(val f64) : float f64, f64s is
 
 
   # casting bit representation to u64
-  castTo_u64 u64 is intrinsic
+  cast_to_u64 u64 is intrinsic
 
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # is the sign bit set?
   is_sign_bit_set bool is
-    castTo_u64 >= 1P63
+    cast_to_u64 >= 1P63
 
 
   # number of bits used for mantissa,
@@ -103,7 +103,7 @@ f64(val f64) : float f64, f64s is
 
 
   # the biased exponent
-  exponent_biased => ((castTo_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
+  exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
 
 
   # the normalized exponent
@@ -116,7 +116,7 @@ f64(val f64) : float f64, f64s is
 
   # the normalized mantissa
   mantissa =>
-    m := castTo_u64 & f64.type.mantissa_mask
+    m := cast_to_u64 & f64.type.mantissa_mask
     if exponent_biased = 0
       m
     else
@@ -134,8 +134,8 @@ f64(val f64) : float f64, f64s is
     else
       shift := (f64.type.mantissa_bits - exponent)
       if (shift > 0)
-        whole := castTo_u64 & (u64.type.max << shift.as_u64)
-        val - whole.castTo_f64
+        whole := cast_to_u64 & (u64.type.max << shift.as_u64)
+        val - whole.cast_to_f64
       else
         0.0
 

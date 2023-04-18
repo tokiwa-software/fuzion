@@ -167,25 +167,25 @@ floating_point_numbers is
 
 
 
-  # castTo_f32, 0, -∞, ∞
-  chck ((u32 0x_8000_0000).castTo_f32 = (-f32s.zero))                 "castTo_f32 works, bit representation for 0 is correct"
-  chck ((u32 0x_FF80_0000).castTo_f32 = (f32s.negativeInfinity))      "castTo_f32 works, bit representation for -∞ is correct"
-  chck ((u32 0x_7F80_0000).castTo_f32 = (f32s.positiveInfinity))      "castTo_f32 works, bit representation for ∞ is correct"
+  # cast_to_f32, 0, -∞, ∞
+  chck ((u32 0x_8000_0000).cast_to_f32 = (-f32s.zero))                 "cast_to_f32 works, bit representation for 0 is correct"
+  chck ((u32 0x_FF80_0000).cast_to_f32 = (f32s.negativeInfinity))      "cast_to_f32 works, bit representation for -∞ is correct"
+  chck ((u32 0x_7F80_0000).cast_to_f32 = (f32s.positiveInfinity))      "cast_to_f32 works, bit representation for ∞ is correct"
 
-  # castTo_u32
-  chck ((-f32s.zero).castTo_u32 = u32 0x_8000_0000)                       "castTo_u32 works for -0"
-  chck ((f32s.negativeInfinity).castTo_u32 = u32 0x_FF80_0000)            "castTo_u32 works for -∞"
-  chck ((f32s.positiveInfinity).castTo_u32 = u32 0x_7F80_0000)            "castTo_u32 works for ∞"
+  # cast_to_u32
+  chck ((-f32s.zero).cast_to_u32 = u32 0x_8000_0000)                       "cast_to_u32 works for -0"
+  chck ((f32s.negativeInfinity).cast_to_u32 = u32 0x_FF80_0000)            "cast_to_u32 works for -∞"
+  chck ((f32s.positiveInfinity).cast_to_u32 = u32 0x_7F80_0000)            "cast_to_u32 works for ∞"
 
-  # castTo_f64, 0, -∞, ∞
-  chck ((u64 0x_8000_0000_0000_0000).castTo_f64 = (-f64s.zero))                 "castTo_f64 works, bit representation for 0 is correct"
-  chck ((u64 0x_FFF0_0000_0000_0000).castTo_f64 = (f64s.negativeInfinity))      "castTo_f64 works, bit representation for -∞ is correct"
-  chck ((u64 0x_7FF0_0000_0000_0000).castTo_f64 = (f64s.positiveInfinity))      "castTo_f64 works, bit representation for ∞ is correct"
+  # cast_to_f64, 0, -∞, ∞
+  chck ((u64 0x_8000_0000_0000_0000).cast_to_f64 = (-f64s.zero))                 "cast_to_f64 works, bit representation for 0 is correct"
+  chck ((u64 0x_FFF0_0000_0000_0000).cast_to_f64 = (f64s.negativeInfinity))      "cast_to_f64 works, bit representation for -∞ is correct"
+  chck ((u64 0x_7FF0_0000_0000_0000).cast_to_f64 = (f64s.positiveInfinity))      "cast_to_f64 works, bit representation for ∞ is correct"
 
-  # castTo_u64
-  chck ((-f64s.zero).castTo_u64 = u64 0x_8000_0000_0000_0000)                       "castTo_u64 works for -0"
-  chck ((f64s.negativeInfinity).castTo_u64 = u64 0x_FFF0_0000_0000_0000)            "castTo_u64 works for -∞"
-  chck ((f64s.positiveInfinity).castTo_u64 = u64 0x_7FF0_0000_0000_0000)            "castTo_u64 works for ∞"
+  # cast_to_u64
+  chck ((-f64s.zero).cast_to_u64 = u64 0x_8000_0000_0000_0000)                       "cast_to_u64 works for -0"
+  chck ((f64s.negativeInfinity).cast_to_u64 = u64 0x_FFF0_0000_0000_0000)            "cast_to_u64 works for -∞"
+  chck ((f64s.positiveInfinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)            "cast_to_u64 works for ∞"
 
   # minExp, maxExp
   chck (f32s.minExp = -126)                                              "f32: minExp is correct"

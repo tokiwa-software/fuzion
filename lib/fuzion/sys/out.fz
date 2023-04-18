@@ -39,5 +39,5 @@ public out : character_encodings is
   private write(arr array u8) =>
     write arr.internalArray.data arr.length
 
-  private write(arrayData Any, length i32) unit is intrinsic
+  private write(array_data Any, length i32) unit is intrinsic
   private flush unit is intrinsic
