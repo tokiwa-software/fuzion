@@ -500,12 +500,6 @@ String ref : equatable, has_hash, has_total_order is
       ref : Cons String (list String)
         head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
         tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
-        # NYI using the inherited 'from_bytes' as in
-        #
-        #   head =>  from_bytes l.take_while fun (c i32) => !is_ascii_white_space c
-        #
-        # currerntly creates an error (recursive value type), this needs to be fixed (or,
-        # at least, understood better).
 
 
   # split string at s
@@ -593,25 +587,18 @@ String ref : equatable, has_hash, has_total_order is
     s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
     s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
 
-# NYI: This causes fz to crash:
-#   from_bytes s2
-
     String.type.from_bytes s2
 
 
   # remove leading white space from this string
   #
   trim_start =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
     String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
     String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
 
 
