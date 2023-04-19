@@ -25,47 +25,19 @@
 
 # out -- effect providing an output stream
 #
-private out (
-  redef p Can_Print,
-
-  # action to be taken: install or default?
-  redef r effect_mode.val,
-
-  _ unit
-  ) : print_effect p r
-is
+private out (redef p Can_Print) : print_effect p is
 
 
-# short-hand for creating and installing out effect
-#
-out(rr ()->unit) => out defaultPrintToOut rr
+  type.install_default =>
+    (io.out default_print_to_out).default
 
 
-# short-hand for creating and installing out effect
-#
-out(p Can_Print, rr ()->unit) =>
-  out p (effect_mode.inst rr) unit
-  unit
+  type.default_print_to_out : io.Can_Print is
+    print(s Any) => stdout.print s
 
 
 # short-hand for accessing out effect in current environment
 #
 out =>
-  outs.install_default
+  out.type.install_default
   io.out.env
-
-
-defaultPrintToOut : Can_Print is
-
-  print(s Any) => stdout.print s
-
-
-# unit type feature defining features related to out but not requiring an
-# instance.
-#
-outs is
-
-  # install default effect out using defaultPrint
-  install_default unit is
-    if !effects.exists io.out
-      _ := out defaultPrintToOut effect_mode.default unit
