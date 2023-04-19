@@ -37,11 +37,7 @@ meta_data(
 
 # stat -- effect providing operations to retrieve file stats
 #
-private stat(
-  ps Provided_Stat,
-  redef r effect_mode.val,
-  _ unit
-  ) : stats, effect r is
+private stat(ps Provided_Stat) : simpleEffect is
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -75,22 +71,28 @@ private stat(
       replace
       error "lstat error {data[0]} for {path}"
 
-# short-hand for installing the default stat effect to the provided code
-#
-stat(f () -> unit) => stat_custom default_provided_stat f
 
-# short-hand for creating and installing a customized stat effect
-#
-stat_custom(ps Provided_Stat, f () -> unit) =>
-  s := stat ps effect_mode.new unit
-  s.use0 f
-  unit
+  # the default file stat provided
+  #
+  type.default_provided_stat : io.file.Provided_Stat is
+    stats(path Any, meta_data_arr Any) =>
+      fuzion.sys.fileio.stats path meta_data_arr
+
+    lstats(path Any, meta_data_arr Any) =>
+      fuzion.sys.fileio.lstats path meta_data_arr
+
+
+  # install default effect io.file.stat
+  type.install_default =>
+    (io.file.stat default_provided_stat).default
+
 
 # short-hand for accessing the stat effect in current environment
 #
 stat =>
-  stats.install_default
+  stat.type.install_default
   stat.env
+
 
 # short-hand for accessing and using stats/lstats provided by the stat effect in current environment
 # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -103,32 +105,15 @@ stat(
      path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) =>
-  stats.install_default
+  stat.type.install_default
   if resolve
     stat.env.stats path
   else
     stat.env.lstats path
+
 
 # reference to the stats that could be provided
 #
 Provided_Stat ref is
   stats(path Any, meta_data_arr Any) bool is abstract
   lstats(path Any, meta_data_arr Any) bool is abstract
-
-# the default file stat provided
-#
-default_provided_stat : Provided_Stat is
-  stats(path Any, meta_data_arr Any) =>
-    fuzion.sys.fileio.stats path meta_data_arr
-
-  lstats(path Any, meta_data_arr Any) =>
-    fuzion.sys.fileio.lstats path meta_data_arr
-
-# unit type feature defining features related to stat effect but not requiring an
-# instance.
-#
-stats is
-  # install default effect io.file.stat
-  install_default unit is
-    if !(effects.exists io.file.stat)
-      _ := stat default_provided_stat effect_mode.default unit
