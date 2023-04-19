@@ -80,7 +80,7 @@ String ref : equatable, has_hash, has_total_order is
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
         (c, d) := x
-        !(c = d))
+        c != d)
       .map_sequence (x ->
         (c, d) := x
         c ≤ d)
@@ -306,7 +306,7 @@ String ref : equatable, has_hash, has_total_order is
             c2 Cons =>
               b2 := c2.head
               e2(msg String) => ret (e "$b1, $b2: $msg") c2.tail
-              if !((b2 & 0xc0) = (u8 0x80))
+              if (b2 & 0xc0) != (u8 0x80)
                 e2 "expected continuation byte in the range 0x80..0xbf."
               else if u8 0xc0 ≤ b1 ≤ (u8 0xdf)   # 0x0080..0x7ff encoded in 2 bytes
                 res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
@@ -320,7 +320,7 @@ String ref : equatable, has_hash, has_total_order is
                   c3 Cons =>
                     b3 := c3.head
                     e3(msg String) => ret (e "$b1, $b2, $b3: $msg") c3.tail
-                    if !((b3 & 0xc0) = (u8 0x80))
+                    if (b3 & 0xc0) != (u8 0x80)
                       e3 "expected two continuation bytes in the range 0x80..0xbf."
                     else if b1 ≤ (u8 0xef)       # 0x0800..0xffff encoded in 3 bytes
                       res := (((b1.as_u32 & 0x0f) << 12) |
@@ -340,7 +340,7 @@ String ref : equatable, has_hash, has_total_order is
                         c4 Cons =>
                           b4 := c4.head
                           e4(msg String) => ret (e "$b1, $b2, $b3, $b4: $msg") c4.tail
-                          if !((b4 & 0xc0) = (u8 0x80))
+                          if (b4 & 0xc0) != (u8 0x80)
                             e4 "expected three continuation bytes in the range 0x80..0xbf."
                           else
                             res := (((b1.as_u32 & 0x07) << 18) |

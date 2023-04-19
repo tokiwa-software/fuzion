@@ -43,7 +43,7 @@ u64(val u64) : wrapping_integer u64, has_interval u64, u64s is
   redef underflow_on_sub(other u64) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u64) => if other = (u64 0) false else !((thiz *° other / other) = thiz)
+  redef overflow_on_mul (other u64) => if other = (u64 0) false else (thiz *° other / other) != thiz
   redef underflow_on_mul(other u64) => false
 
   # neg, add, sub, mul with wrap-around semantics

@@ -43,8 +43,8 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
   redef underflow_on_sub(other i64) => thiz < i64 0 && thiz -° i64.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else !((thiz *° other / other) = thiz)
-  redef underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else !((thiz *° other / other) = thiz)
+  redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (thiz *° other / other) != thiz
+  redef underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else (thiz *° other / other) != thiz
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i64 is intrinsic
