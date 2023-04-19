@@ -132,7 +132,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
   # equality - NYI
   #
   fixed type.equality(a, b Main_Node CTK CTV) bool is
-    a.hashCode = b.hashCode
+    a.hash_code = b.hash_code
 
   as_list
   pre match prev.get
@@ -219,7 +219,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
   # equality - NYI
   #
   fixed type.equality(a, b Indirection_Node CTK CTV) bool is
-    a.hashCode = b.hashCode
+    a.hash_code = b.hash_code
 
   redef as_string => "Indirection_Node($data)"
 

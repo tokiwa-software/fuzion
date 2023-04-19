@@ -31,10 +31,10 @@ private thread is
   # intrinsic to spawn a new thread
   #
   private spawn(code ()->unit) =>
-    doCall ref : Function unit is
+    Do_Call ref : Function unit is
       call =>
         code()
 
-    spawn0 doCall
+    spawn0 Do_Call
 
   private spawn0(T type : ()->unit, code T) unit is intrinsic

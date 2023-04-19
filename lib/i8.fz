@@ -85,36 +85,36 @@ i8(val i8) : wrapping_integer i8, has_interval i8, i8s is
     pre
       debug: thiz ≥ zero
     is
-      castTo_u8
+      cast_to_u8
   as_u16 u16
     pre
       debug: thiz ≥ zero
     is
-      castTo_u16
+      cast_to_u16
   as_u32 u32
     pre
       debug: thiz ≥ zero
     is
-      castTo_u32
+      cast_to_u32
   as_u64 u64
     pre
       debug: thiz ≥ zero
     is
-      castTo_u64
+      cast_to_u64
   as_u128 u128
     pre
       debug: thiz ≥ zero
     is
-      castTo_u128
+      cast_to_u128
   as_int int is
     int as_i64
 
   # casting to unsigned, adding 1<<8 if negative
-  castTo_u8   u8   is intrinsic           # 3 -> 3, -3 -> 0xfd
-  castTo_u16  u16  is castTo_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
-  castTo_u32  u32  is castTo_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
-  castTo_u64  u64  is castTo_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
-  castTo_u128 u128 is castTo_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
+  cast_to_u8   u8   is intrinsic            # 3 -> 3, -3 -> 0xfd
+  cast_to_u16  u16  is cast_to_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
+  cast_to_u32  u32  is cast_to_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
+  cast_to_u64  u64  is cast_to_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
+  cast_to_u128 u128 is cast_to_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval i8 is abstract, fz should not complain about this conflict.
@@ -123,27 +123,27 @@ i8(val i8) : wrapping_integer i8, has_interval i8, i8s is
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
   highest_one_bit i8 is
-    val.castTo_u8.highest_one_bit.castTo_i8
+    val.cast_to_u8.highest_one_bit.cast_to_i8
 
 
   # count the number of trailing zeros in this integer.
   #
   trailing_zeros i32 is
-    val.castTo_u8.trailing_zeros
+    val.cast_to_u8.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
   ones_count i32 is
-    val.castTo_u8.ones_count
+    val.cast_to_u8.ones_count
 
 
   # -----------------------------------------------------------------------

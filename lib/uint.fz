@@ -277,8 +277,6 @@ is
   infix **?(other uint) num_option uint is thiz ** other
   infix **^(other uint) uint is thiz ** other
 
-  orderedThis uint is thiz
-
   fixed type.zero uint is
     uint [u32 0] unit
 

@@ -452,16 +452,16 @@ public class Intrinsics extends ANY
     put("u8.as_i32"            , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("u16.as_i32"           , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("u32.as_i64"           , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
-    put("i8.castTo_u8"         , (c,cl,outer,in) -> outer.castTo("fzT_1u8").ret());
-    put("i16.castTo_u16"       , (c,cl,outer,in) -> outer.castTo("fzT_1u16").ret());
-    put("i32.castTo_u32"       , (c,cl,outer,in) -> outer.castTo("fzT_1u32").ret());
-    put("i64.castTo_u64"       , (c,cl,outer,in) -> outer.castTo("fzT_1u64").ret());
-    put("u8.castTo_i8"         , (c,cl,outer,in) -> outer.castTo("fzT_1i8").ret());
-    put("u16.castTo_i16"       , (c,cl,outer,in) -> outer.castTo("fzT_1i16").ret());
-    put("u32.castTo_i32"       , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
-    put("u32.castTo_f32"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f32*").deref().ret());
-    put("u64.castTo_i64"       , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
-    put("u64.castTo_f64"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f64*").deref().ret());
+    put("i8.cast_to_u8"        , (c,cl,outer,in) -> outer.castTo("fzT_1u8").ret());
+    put("i16.cast_to_u16"      , (c,cl,outer,in) -> outer.castTo("fzT_1u16").ret());
+    put("i32.cast_to_u32"      , (c,cl,outer,in) -> outer.castTo("fzT_1u32").ret());
+    put("i64.cast_to_u64"      , (c,cl,outer,in) -> outer.castTo("fzT_1u64").ret());
+    put("u8.cast_to_i8"        , (c,cl,outer,in) -> outer.castTo("fzT_1i8").ret());
+    put("u16.cast_to_i16"      , (c,cl,outer,in) -> outer.castTo("fzT_1i16").ret());
+    put("u32.cast_to_i32"      , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
+    put("u32.cast_to_f32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f32*").deref().ret());
+    put("u64.cast_to_i64"      , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
+    put("u64.cast_to_f64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f64*").deref().ret());
     put("u16.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret());
     put("u32.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret());
     put("u64.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret());
@@ -504,8 +504,8 @@ public class Intrinsics extends ANY
                             outer.castTo("fzT_1i64").ret()
                             );
         });
-    put("f32.castTo_u32"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
-    put("f64.castTo_u64"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
+    put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
+    put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
     put("f32.as_string"        ,
         "f64.as_string"        , (c,cl,outer,in) ->
         {
@@ -563,12 +563,12 @@ public class Intrinsics extends ANY
     put("f32s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.hashCode"         , (c,cl,outer,in) ->
+    put("Any.hash_code"        , (c,cl,outer,in) ->
         {
           var or = c._fuir.clazzOuterRef(cl);
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
-            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hashCode relies on non-compacting GC
-            : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
+            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hash_code relies on non-compacting GC
+            : CExpr.int32const(42);  // NYI: This implementation of hash_code is stupid
           return hc.ret();
         });
     put("Any.as_string"        , (c,cl,outer,in) ->

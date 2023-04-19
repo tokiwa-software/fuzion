@@ -99,7 +99,7 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
       thiz ≥ i32.type.min.as_i64,
       thiz ≤ i32.type.max.as_i64
     is
-      low32bits.castTo_i32
+      low32bits.cast_to_i32
 
 
   # this i64 as an u8
@@ -142,7 +142,7 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
 #    post
 #      analysis:  result.as_i64 = thiz
     is
-      castTo_u64
+      cast_to_u64
 
 
   # this i64 as an u128
@@ -152,7 +152,7 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
     post
       analysis:  result.as_i64 = thiz
     is
-      u128 0 castTo_u64
+      u128 0 cast_to_u64
 
 
   # this i64 as an int
@@ -168,10 +168,10 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
 
 
   # casting bit representation to unsigned
-  low8bits   u8  is castTo_u64.low8bits
-  low16bits  u16 is castTo_u64.low16bits
-  low32bits  u32 is castTo_u64.low32bits
-  castTo_u64 u64 is intrinsic
+  low8bits   u8  is cast_to_u64.low8bits
+  low16bits  u16 is cast_to_u64.low16bits
+  low32bits  u32 is cast_to_u64.low32bits
+  cast_to_u64 u64 is intrinsic
 
   # conversion to float
   as_f64 f64 is intrinsic
@@ -184,27 +184,27 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
   highest_one_bit i64 is
-    val.castTo_u64.highest_one_bit.castTo_i64
+    val.cast_to_u64.highest_one_bit.cast_to_i64
 
 
   # count the number of trailing zeros in this integer.
   #
   trailing_zeros i32 is
-    val.castTo_u64.trailing_zeros
+    val.cast_to_u64.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
   ones_count i32 is
-    val.castTo_u64.ones_count
+    val.cast_to_u64.ones_count
 
 
   # -----------------------------------------------------------------------
