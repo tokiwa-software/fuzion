@@ -1,0 +1,13 @@
+
+[32m--CURDIR--/issue1055.fz:42:16:[39m [1;31merror 1[0m[1m: Called feature '[35mfloat.fract[39m' needs an instance, but was called like a type feature.[0m
+[34m    say T.type.fract
+[33m---------------^[0m
+To solve this, remove the offending code.
+
+
+[32m--CURDIR--/issue1055.fz:31:32:[39m [1;31merror 2[0m[1m: Illegal use of '[35m.this.type[39m' inside of type feature '[35missue1055.self_referential_feature.type.a_type_feature[39m'.[0m
+[34m      self_referential_feature.this.type.some_feat_requiring_instance
+[33m-------------------------------^[0m
+To solve this, remove the offending code.
+
+2 errors.

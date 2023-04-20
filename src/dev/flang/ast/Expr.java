@@ -562,6 +562,14 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
            : toString();
   }
 
+  /**
+   * @return Is this expr a .type call?
+   */
+  public boolean isDotTypeCall()
+  {
+    return false;
+  }
+
 
 }
 

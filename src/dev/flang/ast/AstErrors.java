@@ -1764,6 +1764,20 @@ public class AstErrors extends ANY
           code(new_code_ref) + "to return a reference.");
   }
 
+  public static void illegalUseOfThisTypeInTypeFeature(DotType d, AbstractFeature outer)
+  {
+    error(d.pos(),
+          "Illegal use of " + code(".this.type") + " inside of type feature " + s(outer) + ".",
+          "To solve this, remove the offending code.");
+  }
+
+  public static void featureRequiringInstanceCalledOnDotType(Call c, AbstractFeature cf)
+  {
+    error(c.pos(),
+          "Called feature " + s(cf) + " needs an instance, but was called like a type feature.",
+          "To solve this, remove the offending code.");
+  }
+
 
 }
 

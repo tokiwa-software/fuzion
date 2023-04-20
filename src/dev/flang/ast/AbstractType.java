@@ -1442,6 +1442,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * @return Is this the self type belonging to a type features this type?
+   */
+  public boolean isTypeFeatureThisType()
+  {
+    // NYI: CLEANUP: #706: Replace string operation by a flag marking this features as a 'THIS_TYPE' type parameter
+    return name().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE);
+  }
+
+
 }
 
 /* end of file */

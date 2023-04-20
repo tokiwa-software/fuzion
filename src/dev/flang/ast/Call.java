@@ -663,7 +663,15 @@ public class Call extends AbstractCall
                   }
                 if (fo != null)
                   {
-                    _calledFeature = fo._feature;
+                    if (_target != null && _target.isDotTypeCall() && needsInstance(fo))
+                      {
+                        AstErrors.featureRequiringInstanceCalledOnDotType(this, fo._feature);
+                        _calledFeature = Types.f_ERROR;
+                      }
+                    else
+                      {
+                        _calledFeature = fo._feature;
+                      }
                     if (_target == null)
                       {
                         _target = fo.target(pos(), res, thiz);
@@ -714,6 +722,17 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != null,
        Errors.count() > 0 || _target         != null);
+  }
+
+
+  /**
+   * Does fo require an instance to be called?
+   * @param fo
+   * @return
+   */
+  private boolean needsInstance(FeatureAndOuter fo)
+  {
+    return !(fo._feature.isTypeFeature() || fo._outer.isTypeFeature());
   }
 
 

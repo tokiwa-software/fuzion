@@ -108,14 +108,37 @@ public class DotType extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public Call resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    var tc = new Call(_pos, new Universe(), "Types");
-    tc.resolveTypes(res, outer);
+    if (withinTypeFeature(outer) && _lhs.isTypeFeatureThisType())
+      {
+        AstErrors.illegalUseOfThisTypeInTypeFeature(this, outer);
+        return Expr.ERROR_VALUE;
+      }
+    var tc = new Call(_pos, new Universe(), "Types").resolveTypes(res, outer);
     return new Call(_pos,
                     tc,
                     "get",
-                    new List<>(new Actual(_lhs))).resolveTypes(res, outer);
+                    new List<>(new Actual(_lhs))){
+                     @Override
+                     public boolean isDotTypeCall()
+                     {
+                       return true;
+                     }
+                    }.resolveTypes(res, outer);
+
+  }
+
+  /**
+   * @return Are we within a type feature?
+   */
+  private boolean withinTypeFeature(AbstractFeature f)
+  {
+    return f == null
+      ? false
+      : f.isTypeFeature()
+      ? true
+      : withinTypeFeature(f.outer());
   }
 
 
