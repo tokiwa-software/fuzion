@@ -26,12 +26,9 @@
 # thread -- effect that provides concurrent thread
 #
 thread (
-
   # the provider this effect uses to spawn threads
-  p Thread_Provider,
-
-  redef r effect_mode.val
-  ) : effect r
+  p Thread_Provider
+  ) : simpleEffect
 is
 
 
@@ -39,14 +36,27 @@ is
   #
   spawn(code ()->unit) =>
     p.spawn code
-    _ := thread p mode
+    _ := thread p
+
+
+  type.install_default =>
+    (concur.thread default_thread).default
+
+
+  # default concurrency provider
+  #
+  type.default_thread : concur.Thread_Provider is
+
+    # spawn a new thread using given code
+    #
+    spawn(code ()->unit) => fuzion.sys.thread.spawn code
 
 
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
 thread =>
-  thread_type.install_default
+  thread.type.install_default
   thread.env
 
 
@@ -57,21 +67,3 @@ Thread_Provider ref is
   # spawn a new thread using given code
   #
   spawn(code ()->unit) unit is abstract
-
-
-# type related to thread declaring features not requiring an instance of thread
-#
-thread_type is
-
-  install_default is
-    if !effects.exists thread
-      _ := thread default_thread effect_mode.default
-
-
-# default concurrency provider
-#
-default_thread : Thread_Provider is
-
-  # spawn a new thread using given code
-  #
-  spawn(code ()->unit) => fuzion.sys.thread.spawn code
