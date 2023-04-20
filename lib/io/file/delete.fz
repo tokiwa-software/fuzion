@@ -25,7 +25,7 @@
 
 # delete -- effect wrapping the file delete operation
 #
-private delete0(dop Delete_Operation) : simpleEffect is
+private delete(dop Delete_Operation, _ unit) : simpleEffect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
@@ -49,7 +49,7 @@ private delete0(dop Delete_Operation) : simpleEffect is
   # install default effect io.file.delete
   #
   type.install_default =>
-    (io.file.delete0 default_delete_operation).default
+    (io.file.delete default_delete_operation unit).default
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 # deletes the file/dir found in the path
@@ -57,8 +57,8 @@ private delete0(dop Delete_Operation) : simpleEffect is
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
 delete(path String) =>
-  delete0.type.install_default
-  delete0.env.delete path
+  delete.type.install_default
+  delete.env.delete path
 
 # reference to the delete operations that could take place
 #
