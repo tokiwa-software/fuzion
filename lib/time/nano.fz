@@ -34,15 +34,7 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-private nano (
-  p Nano_Time_Provider,
-
-  # action to be taken: install or default?
-  redef r effect_mode.val,
-
-  _ unit
-  ) : effect r
-is
+private nano (p Nano_Time_Provider) : simpleEffect is
 
   # no guarantee can be given for precision nor resolution
   read =>
@@ -51,28 +43,30 @@ is
     res
 
   # no guarantee can be given for precision nor resolution
-  sleep(d duration) =>
+  sleep(d time.duration) =>
     res := p.sleep d
     replace
     res
 
 
-# short-hand for creating and installing time.nano effect
-#
-nano(rr ()->unit) => nano default_nano_time rr
+  type.default_nano_time : time.Nano_Time_Provider is
+
+    # no guarantee can be given for precision nor resolution
+    read => fuzion.std.nano_time
+
+    # no guarantee can be given for precision nor resolution
+    sleep(d time.duration) => fuzion.std.nano_sleep d.nanos
 
 
-# short-hand for creating and installing time.nano effect
-#
-nano(p Nano_Time_Provider, rr ()->unit) =>
-  nano p (effect_mode.inst rr) unit
-  unit
+  # install default effect time using defaultTime
+  type.install_default =>
+    (time.nano default_nano_time).default
 
 
 # short-hand for accessing time.nano effect in current environment
 #
 nano =>
-  nano_type.install_default
+  nano.type.install_default
   nano.env
 
 
@@ -84,24 +78,4 @@ Nano_Time_Provider ref is
   read u64 is abstract
 
   # no guarantee can be given for precision nor resolution
-  sleep(d duration) unit is abstract
-
-
-default_nano_time : Nano_Time_Provider is
-
-  # no guarantee can be given for precision nor resolution
-  read => fuzion.std.nano_time
-
-  # no guarantee can be given for precision nor resolution
-  sleep(d duration) => fuzion.std.nano_sleep d.nanos
-
-
-# unit type feature defining features related to time.nano but not requiring an
-# instance.
-#
-nano_type is
-
-  # install default effect time using defaultTime
-  install_default unit is
-    if !effects.exists nano
-      _ := nano default_nano_time effect_mode.default unit
+  sleep(d time.duration) unit is abstract
