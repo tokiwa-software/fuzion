@@ -25,9 +25,10 @@
 
 # panic -- effect that terminates a computation in panic
 #
-panic0 (
+panic (
   # the provider this effect uses to panic
-  p Panic_Provider
+  p Panic_Provider,
+  _ unit
   ) : simpleEffect
 is
 
@@ -39,7 +40,7 @@ is
 
 
   type.install_default =>
-    (panic0 default_panic_provider).default
+    (panic default_panic_provider unit).default
 
 
   # default panic provider using io.err and exit with return code 1
@@ -57,8 +58,8 @@ is
 # panic provider.
 #
 panic =>
-  panic0.type.install_default
-  panic0.env
+  panic.type.install_default
+  panic.env
 
 
 # panic with a msg argument calls panic.panic msg, i.e., it uses the
@@ -86,5 +87,5 @@ Panic_Provider ref is
   # removed and the result of do_panic should be returned instead).
   #
   use(R type, code, def ()->R) =>
-    p := panic0 Panic_Provider.this
+    p := panic Panic_Provider.this unit
     p.run code unit->def()
