@@ -26,12 +26,10 @@
 # panic -- effect that terminates a computation in panic
 #
 panic (
-
   # the provider this effect uses to panic
   p Panic_Provider,
-
-  redef r effect_mode.val
-  ) : effect r
+  _ unit
+  ) : simpleEffect
 is
 
   # panic with the given message
@@ -41,11 +39,26 @@ is
     abort
 
 
+  type.install_default =>
+    (panic default_panic_provider unit).default
+
+
+  # default panic provider using io.err and exit with return code 1
+  #
+  type.default_panic_provider : Panic_Provider is
+
+    # panic with the given message and exit with return code 1
+    #
+    do_panic(msg String) =>
+      io.err.println "*** panic: $msg"
+      exit 1
+
+
 # panic with no argument returns panic.env, the currently installed
 # panic provider.
 #
 panic =>
-  panic_type.install_default
+  panic.type.install_default
   panic.env
 
 
@@ -74,24 +87,5 @@ Panic_Provider ref is
   # removed and the result of do_panic should be returned instead).
   #
   use(R type, code, def ()->R) =>
-    p := panic Panic_Provider.this effect_mode.plain
+    p := panic Panic_Provider.this unit
     p.run code unit->def()
-
-
-# type related to panic declaring features not requiring an instance of panic
-#
-panic_type is
-
-  install_default is
-    if !effects.exists panic
-      _ := panic defaultPanicProvider effect_mode.default
-
-  # default panic provider using io.err and exit with return code 1
-  #
-  defaultPanicProvider : Panic_Provider is
-
-    # panic with the given message and exit with return code 1
-    #
-    do_panic(msg String) =>
-      io.err.println "*** panic: $msg"
-      exit 1

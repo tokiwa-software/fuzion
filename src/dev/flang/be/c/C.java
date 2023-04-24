@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -406,6 +406,9 @@ public class C extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  private static final int expectedClangVersion = 11;
+
+
   /**
    * C code generation phase for generating C functions for features.
    */
@@ -535,6 +538,15 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
+    var clangVersion = getClangVersion();
+    // NYI should be clangVersion == expectedClangVersion but workflows etc. must be updated first
+    if (_options._cCompiler == null && clangVersion < expectedClangVersion)
+      {
+        Errors.warning(clangVersion == -1
+          ? "Could not determine clang version."
+          : "Expected clang version " + expectedClangVersion + " or higher. Found version " + clangVersion + ".");
+      }
+
     var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
     var command = new List<String>(cCompiler);
     if(_options._cFlags != null)
@@ -549,11 +561,16 @@ public class C extends ANY
           "-Wno-gnu-empty-struct",
           "-Wno-unused-variable",
           "-Wno-unused-label",
-          "-Wno-unused-but-set-variable",
           "-Wno-unused-function",
           // allow infinite recursion
-          "-Wno-infinite-recursion",
-          "-O3");
+          "-Wno-infinite-recursion");
+
+        if (_options._cCompiler == null && clangVersion >= 13)
+          {
+            command.addAll("-Wno-unused-but-set-variable");
+          }
+
+        command.addAll("-O3");
       }
     if(_options._useBoehmGC)
       {
@@ -562,7 +579,7 @@ public class C extends ANY
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-o", name, cname);
 
-    _options.verbosePrintln(" * " + command.toString("", " ", ""));;
+    _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
         var p = new ProcessBuilder().inheritIO().command(command).start();
@@ -579,6 +596,33 @@ public class C extends ANY
                      "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
       }
     Errors.showAndExit();
+  }
+
+
+  /**
+   * @return The currently installed clang version or -1 on error.
+   */
+  private int getClangVersion()
+  {
+    try
+      {
+        var p = new ProcessBuilder().command(Arrays.asList("clang", "--version"))
+        .start();
+        p.waitFor();
+
+        var clangVersion = new String(p
+                                .getInputStream()
+                                .readAllBytes())
+                              .lines()
+                              .findFirst()
+                              .orElse("");
+
+        return Integer.parseInt(clangVersion.replaceFirst(".*?(\\d+).*", "$1"));
+      }
+    catch (IOException | InterruptedException | NumberFormatException e)
+      {
+        return -1;
+      }
   }
 
 
