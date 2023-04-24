@@ -442,7 +442,7 @@ public class SourceFile extends ANY
   {
     if (PRECONDITIONS) require
       (cp >= 0,
-       cp <= 0x10FFFF || cp == BAD_CODEPOINT || cp == END_OF_FILE,
+       cp <= 0x10FFFF || cp == BAD_CODEPOINT,
        sz > 0,
        sz <= 4);
 
@@ -640,19 +640,10 @@ public class SourceFile extends ANY
   public int codePoint(int pos)
   {
     if (PRECONDITIONS) require
-      (pos >= 0);
+      (pos >= 0,
+       pos < _bytes.length);
 
-    int cpAndSz;
-
-    if (pos < _bytes.length)
-      {
-        cpAndSz = decodeCodePointAndSize(pos);
-      }
-    else
-      {
-        cpAndSz = makeCodePointWithSize(END_OF_FILE, 1);
-      }
-
+    int cpAndSz = decodeCodePointAndSize(pos);
     return codePointFromCpAndSize(cpAndSz);
   }
 
