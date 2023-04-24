@@ -27,12 +27,7 @@
 #
 # This is used as heir feature for effects such as io.out and io.err.
 #
-private print_effect (
-  p Can_Print,
-
-  # action to be taken: plain nomad, install or replace?
-  redef r effect_mode.val
-  ) : effect r
+private print_effect (p Can_Print) : simpleEffect
 is
 
   # print the given string followed be new line

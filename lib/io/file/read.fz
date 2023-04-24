@@ -25,11 +25,7 @@
 
 # read -- effect providing byte reading operations from files
 #
-private read(
-  ro Read_Operation,
-  redef r effect_mode.val,
-  _ unit
-  ) : reads, effect r is
+private read(ro Read_Operation) : simpleEffect is
 
 
   # how much of a file do we read at a time, in bytes
@@ -76,39 +72,26 @@ private read(
         tmp)
 
 
-# short-hand for installing and creating effects
-#
-read_custom(f () -> unit) => read_custom default_read_operation f
+  # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
+  #
+  type.default_read_operation : io.file.Read_Operation is
+    read(fd i64, n u64) =>
+      fuzion.sys.fileio.read fd n
 
-# short-hand for installing and creating effects
-#
-read_custom(ro Read_Operation, f () -> unit) =>
-  s := read ro effect_mode.new unit
-  s.use0 f
-  unit
+
+  # install default effect io.file.read
+  type.install_default =>
+    (io.file.read default_read_operation).default
+
 
 # short-hand for accessing read effect in current environment
 #
 read =>
-  reads.install_default
+  read.type.install_default
   read.env
+
 
 # reference to the reading operations that could take place
 #
 Read_Operation ref is
   read(fd i64, n u64) outcome (array u8) is abstract
-
-# the default file reading operation reading bytes from files via fuzion.sys.fileio.read
-#
-default_read_operation : Read_Operation is
-  read(fd i64, n u64) =>
-    fuzion.sys.fileio.read fd n
-
-# unit type feature defining features related to read effect but not requiring an
-# instance.
-#
-reads is
-  # install default effect io.file.read
-  install_default unit is
-    if !(effects.exists io.file.read)
-      _ := read default_read_operation effect_mode.default unit

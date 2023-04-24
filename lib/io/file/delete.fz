@@ -25,33 +25,31 @@
 
 # delete -- effect wrapping the file delete operation
 #
-private delete(
-    dop Delete_Operation,
-    redef r effect_mode.val,
-    _ unit
-  ) : deletes, effect r is
+private delete(dop Delete_Operation, _ unit) : simpleEffect is
 
-    # deletes the file/dir found in the path
-    # returns unit as outcome in case of successful deletion and error in case of failure
-    # if the targeted dir has content, then the return value will be error and the deletion will not take place
-    #
-    delete(
-           # the (relative or absolute) dir name, using platform specific path separators
-           path String) =>
-        tmp := dop.delete path
-        replace
-        tmp
+  # deletes the file/dir found in the path
+  # returns unit as outcome in case of successful deletion and error in case of failure
+  # if the targeted dir has content, then the return value will be error and the deletion will not take place
+  #
+  delete(
+         # the (relative or absolute) dir name, using platform specific path separators
+         path String) =>
+    tmp := dop.delete path
+    replace
+    tmp
 
-# short-hand for creating and intalling effect
-#
-delete_custom(f () -> unit) => delete_custom default_delete_operation f # NYI : overload
 
-# short-hand for creating and installing effect
-#
-delete_custom(dop Delete_Operation, f () -> unit) =>
-    s := delete dop effect_mode.new unit
-    s.use0 f
-    unit
+  # the default file/dir delete operation via fuzion.sys.fileio.delete
+  #
+  type.default_delete_operation : io.file.Delete_Operation is
+    delete(path String) =>
+      fuzion.sys.fileio.delete path
+
+
+  # install default effect io.file.delete
+  #
+  type.install_default =>
+    (io.file.delete default_delete_operation unit).default
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 # deletes the file/dir found in the path
@@ -59,25 +57,10 @@ delete_custom(dop Delete_Operation, f () -> unit) =>
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
 delete(path String) =>
-  deletes.install_default
+  delete.type.install_default
   delete.env.delete path
 
 # reference to the delete operations that could take place
 #
 Delete_Operation ref is
     delete(path String) outcome unit is abstract
-
-# the default file/dir delete operation via fuzion.sys.fileio.delete
-#
-default_delete_operation : Delete_Operation is
-    delete(path String) =>
-        fuzion.sys.fileio.delete path
-
-# unit type feature defining features related to delete effect but not requiring an
-# instance.
-#
-deletes is
-    # install default effect io.file.delete
-    install_default unit is
-        if !(effects.exists io.file.delete)
-            _ := delete default_delete_operation effect_mode.default unit

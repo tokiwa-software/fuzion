@@ -24,15 +24,7 @@
 # -----------------------------------------------------------------------
 
 # effect for getting the current date_time
-private now (
-  p () -> time.date_time,
-
-  # action to be taken: install or default?
-  redef r effect_mode.val,
-
-  _ unit
-  ) : effect r
-is
+private now (p () -> time.date_time) : simpleEffect is
 
   get =>
     res := p()
@@ -40,18 +32,18 @@ is
     res
 
 
+  # default provider for now effect.
+  # returns the current date_time
+  # the system is giving us.
+  #
+  private type.default_now ()->time.date_time is () ->
+    a := array i32 6 i->0
+    fuzion.std.date_time a.internalArray.data
+    time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
 
-# short-hand for creating and installing default time.now effect
-#
-now(rr ()->unit) => now default_now rr
 
-
-
-# short-hand for creating and installing custom time.now effect
-#
-now(p ()->time.date_time, rr ()->unit) unit is
-  _ := now p (effect_mode.inst rr) unit
-
+  type.install_default =>
+    (time.now default_now).default
 
 
 # get the current date_time.
@@ -59,17 +51,5 @@ now(p ()->time.date_time, rr ()->unit) unit is
 # or installs the default_now provider
 #
 now =>
-  if !effects.exists now
-    _ := now default_now effect_mode.default unit
-  now.env.get
-
-
-
-# default provider for now effect.
-# returns the current date_time
-# the system is giving us.
-#
-private default_now ()->time.date_time is () ->
-  a := array i32 6 i->0
-  fuzion.std.date_time a.internalArray.data
-  time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
+  now.type.install_default
+  now.env

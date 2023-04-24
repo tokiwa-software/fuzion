@@ -25,47 +25,19 @@
 
 # err -- effect providing an output stream
 #
-private err (
-  redef p Can_Print,
-
-  # action to be taken: install or default?
-  redef r effect_mode.val,
-
-  _ unit
-  ) : print_effect p r
-is
+private err (redef p Can_Print) : print_effect p is
 
 
-# short-hand for creating and installing err effect
-#
-err(rr ()->unit) => err defaultPrintToErr rr
+  type.install_default =>
+    (io.err default_print_to_err).default
 
 
-# short-hand for creating and installing err effect
-#
-err(p Can_Print, rr ()->unit) =>
-  err p (effect_mode.inst rr) unit
-  unit
+  type.default_print_to_err : io.Can_Print is
+    print(s Any) => fuzion.sys.err.print s
 
 
 # short-hand for accessing err effect in current environment
 #
 err =>
-  errs.install_default
+  err.type.install_default
   io.err.env
-
-
-defaultPrintToErr : Can_Print is
-
-  print(s Any) => fuzion.sys.err.print s
-
-
-# unit type feature defining features related to err but not requiring an
-# instance.
-#
-errs is
-
-  # install default effect err using defaultPrint
-  install_default unit is
-    if !effects.exists io.err
-      _ := err defaultPrintToErr effect_mode.default unit
