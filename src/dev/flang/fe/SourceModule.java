@@ -181,7 +181,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
                 if (stmnts.size() == 1)
                   {
-                    res =  f.featureName().baseName();
+                    if (f.kind() == Feature.Kind.Field)
+                      {
+                        // execute the universe's code in this case, to avoid FeErrors.mainFeatureMustNotBeField
+                        res = null;
+                      }
+                    else
+                      {
+                        res = f.featureName().baseName();
+                      }
                   }
               }
           }
