@@ -91,7 +91,7 @@ bool : choice FALSE TRUE, equatable is
       true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  ternary ? : (T type, lazy a, b T) => if bool.this a else b
+  ternary ? : (T type, a, b T) => if bool.this a else b
 
   # human readable string
   redef as_string => if bool.this "true" else "false"
