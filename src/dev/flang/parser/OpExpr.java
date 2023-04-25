@@ -458,7 +458,7 @@ public class OpExpr extends ANY
   /**
    * Initial characters of operators that bind to the right.
    */
-  public final String RIGHT_TO_LEFT_CHARS = "^";
+  public final String RIGHT_TO_LEFT_CHARS = "^:";
 
 }
 
