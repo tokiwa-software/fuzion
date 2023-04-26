@@ -1547,7 +1547,7 @@ hw25 is
   /**
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
-   * Currently, the clazz is one of bool, i32, u32, i64, u64 of conststring.
+   * Currently, the clazz is one of bool, i32, u32, i64, u64 or conststring.
    * This will be extended by other basic types (f64, etc.), value instances
    * without refs, choice instances with tag, arrays, etc.
    */
