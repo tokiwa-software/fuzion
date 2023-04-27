@@ -97,9 +97,7 @@ public class Clazzes extends ANY
     final TypF _t;
     Clazz _clazz = null;
     Clazz _dummy = null;
-    boolean _called = false;
     OnDemandClazz(TypF t) { _t = t; }
-    OnDemandClazz(TypF t, boolean called) { this(t); _called = called; }
     OnDemandClazz() { this(null); }
 
     /**
@@ -137,10 +135,6 @@ public class Clazzes extends ANY
             {
               _clazz = create(_t.get(), universe.get());
             }
-          if (_called)
-            {
-              // called(_clazz);
-            }
         }
       return _clazz;
     }
@@ -154,7 +148,7 @@ public class Clazzes extends ANY
   /**
    * Handy preallocated classes to be used during execution:
    */
-  public static final OnDemandClazz universe    = new OnDemandClazz(null, true);
+  public static final OnDemandClazz universe    = new OnDemandClazz(null);
   public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
@@ -181,7 +175,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
   public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
-  public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
+  public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
