@@ -81,6 +81,12 @@ CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_
 JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
 JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
+# coverage tool
+JARS_JACOCO_AGENT_URL = https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.10/org.jacoco.agent-0.8.10.jar
+JARS_JACOCO_AGENT = $(BUILD_DIR)/jars/org.jacoco.agent-0.8.10.jar
+JARS_JACOCO_CLI_URL = https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.10/org.jacoco.cli-0.8.10-nodeps.jar
+JARS_JACOCO_CLI = $(BUILD_DIR)/jars/org.jacoco.cli-0.8.10-nodeps.jar
+
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 FZ_SRC_LIB = $(FZ_SRC)/lib
@@ -1079,3 +1085,18 @@ show_release_notes:
 .PHONY: spellcheck
 spellcheck:
 	bin/spell_check_java.sh
+
+$(JARS_JACOCO_AGENT):
+	mkdir -p $(@D)
+	curl $(JARS_JACOCO_AGENT_URL) --output $@
+	unzip $(JARS_JACOCO_AGENT) jacocoagent.jar -d $(BUILD_DIR)/jars
+
+$(JARS_JACOCO_CLI):
+	mkdir -p $(@D)
+	curl $(JARS_JACOCO_CLI_URL) --output $@
+
+coverage: $(FZ_INT) $(FZ_C) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(JARS_JACOCO_AGENT) $(JARS_JACOCO_CLI)
+	(FUZION_JAVA_OPTIONS="-javaagent:../../jars/jacocoagent.jar=destfile=../../jacoco.exec" $(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int) || true
+	(FUZION_JAVA_OPTIONS="-javaagent:../../jars/jacocoagent.jar=destfile=../../jacoco.exec" $(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c) || true
+	java -jar $(JARS_JACOCO_CLI) report $(BUILD_DIR)/jacoco.exec --classfiles $(BUILD_DIR)/classes/ --html $(BUILD_DIR)/coverage
+	x-www-browser build/coverage/index.html
