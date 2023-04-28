@@ -634,7 +634,7 @@ public class C extends ANY
   private void createCode(CFile cf, COptions _options) throws IOException
   {
     cf.print
-      ((_options._useBoehmGC ? "#include <gc.h>\n" : "")+
+      ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
