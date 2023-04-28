@@ -425,6 +425,20 @@ Sequence(T type) ref is
     res
 
 
+
+  # chop this Sequence into chunks of `chunk_size`.
+  # the last chunk may be smaller than `chunk_size`.
+  #
+  chunk(chunk_size i32) list (list T)
+  pre chunk_size > 0
+  is
+    if is_empty
+      nil
+    else
+      (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
+
+
+
   # create an empty list and return it as a Sequence
   #
   type.empty Sequence T is
