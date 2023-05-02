@@ -37,7 +37,7 @@ ordered_map(OK type : has_total_order,
            ks array OK,
            vs array V) : Map OK V
   pre
-    ks.length ≟ vs.length
+    ks.length = vs.length
 
 is
 
@@ -59,7 +59,7 @@ is
 
   # a sorted array of entries of this map
   #
-  sortedEntries := sorted_array_of (ks.indices.mapSequence (i -> entry i)).as_array
+  sortedEntries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
 
 
   # number of entries in this map
@@ -90,7 +90,7 @@ is
           (ks++[k]).as_array
           (vs++[v]).as_array)
       V =>
-        va := array size (i -> if ks[i] ≟ k then v else vs[i])
+        va := array size (i -> if ks[i] = k then v else vs[i])
         (ordered_map ks va)
 
 

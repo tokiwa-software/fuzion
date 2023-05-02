@@ -72,7 +72,7 @@ Sequence(T type) ref is
   count
     pre
       analysis: finite  # in practice, we do not always have this information
-    => (mapSequence i32 (_ -> 1)).fold i32.type.sum
+    => (map_sequence i32 (_ -> 1)).fold i32.type.sum
 
 
   # get the first element of this Sequence
@@ -256,7 +256,7 @@ Sequence(T type) ref is
 
   # call 'as_string' on the elements
   #
-  as_Strings => mapSequence c->c.as_string
+  as_strings => map_sequence c->c.as_string
 
 
   # map the Sequence to a new list applying function f to all elements
@@ -267,16 +267,16 @@ Sequence(T type) ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapSequence(B type, f T -> B) => as_list.map f
+  map_sequence(B type, f T -> B) => as_list.map f
 
 
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap(B type, f T -> Sequence B) =>
-  #   as_list.flatMap f
-  flatMapSequence(B type, f T -> Sequence B) =>
-    as_list.flatMap f
+  # flat_map(B type, f T -> Sequence B) =>
+  #   as_list.flat_map f
+  flat_map_sequence(B type, f T -> Sequence B) =>
+    as_list.flat_map f
 
 
   # fold the elements of this Sequence using the given monoid.
@@ -388,7 +388,7 @@ Sequence(T type) ref is
   index [] (i i32) T
     pre
       debug: 0 ≤ i,
-      debug: finite: i ⩻ count,
+      debug: finite: i < count,
       debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get
@@ -404,7 +404,7 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
+  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
 

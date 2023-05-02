@@ -97,11 +97,11 @@ public class Pretty extends ANY
   {
     var i = new Intervals<Lexer.Token>(null);
     var lastToken = l.current();
-    var lastPos = l.pos();
+    var lastPos = l.tokenPos();
     while (lastToken != Lexer.Token.t_eof)
       {
         var t = l.current();
-        var p = l.pos();
+        var p = l.tokenPos();
         if (lastToken != t)
           {
             i.add(lastPos, p, lastToken);

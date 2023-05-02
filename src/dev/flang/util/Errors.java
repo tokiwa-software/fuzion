@@ -89,6 +89,16 @@ public class Errors extends ANY
    */
   public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
   public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+
+
+  /**
+   * The case that this option is set to 0 is equivalent to setting it to 1.
+   * This is because if there are error messages, there is no point in really
+   * suppressing all of them, there needs to be some indication that an error
+   * happened.
+   *
+   * If this is set to -1, all errors will be displayed.
+   */
   public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 10);
 
 
@@ -98,6 +108,13 @@ public class Errors extends ANY
    */
   public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
   public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+
+
+  /**
+   * If this option is set to 0, all warning messages will be suppressed.
+   *
+   * If it is set to -1, all warnings will be displayed.
+   */
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
@@ -257,8 +274,12 @@ public class Errors extends ANY
       {
         _errors_.add(e);
         print(pos, errorMessage(msg), detail);
-        if (count() >= MAX_ERROR_MESSAGES)
+        if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
           {
+            warning(SourcePosition.builtIn,
+                    "Maximum error count reached, terminating.",
+                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
+                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
             showAndExit();
           }
         //Thread.dumpStack();
@@ -454,13 +475,6 @@ public class Errors extends ANY
   {
     if (count() > 0)
       {
-        if (count() >= MAX_ERROR_MESSAGES)
-          {
-            warning(SourcePosition.builtIn,
-                    "Maximum error count reached, terminating.",
-                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
-                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
-          }
         println(singularOrPlural(count(), "error") +
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
@@ -519,7 +533,7 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    if (warningCount() < MAX_WARNING_MESSAGES)
+    if (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1)
       {
         if (warningCount()+1 == MAX_WARNING_MESSAGES)
           {
@@ -575,19 +589,26 @@ public class Errors extends ANY
                 detail);
   }
 
-  private static String legalEscapes(char[][] escapes)
+  private static String legalEscapes(int[][] escapes)
   {
     var legal = new StringBuilder();
     var comma = "";
     for (var c : escapes)
       {
-        legal.append(comma).append("'\\" + c[0] + "'");
+        if (c[1] < 0)
+          {
+            legal.append(comma).append("'\\<ASCII " + c[0] + ">'");
+          }
+        else
+          {
+            legal.append(comma).append("'\\" + (char) c[0] + "'");
+          }
         comma = ", ";
       }
     return legal.toString();
   }
 
-  public static void unknownEscapedChar(SourcePosition pos, int found, char[][] escapes)
+  public static void unknownEscapedChar(SourcePosition pos, int found, int[][] escapes)
   {
     syntaxError(pos,
                 "Unknown escaped character found in constant string.",

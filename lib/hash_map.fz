@@ -30,7 +30,7 @@ hash_map(HK type : has_hash,
         ks array HK,
         vs array V) : Map HK V
   pre
-    ks.length ≟ vs.length
+    ks.length = vs.length
 
 is
 
@@ -48,7 +48,7 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => (k.hash.low32bits.castTo_i32 & 0.max) % allocatedSize
+  at (k HK) => (k.hash.low32bits.cast_to_i32 & 0.max) % allocatedSize
 
 
   # in case of a collision at given position,
@@ -63,7 +63,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mi := mutate.type.installDefault
+      mi := mutate.type.install_default
       mcontents := mutate.env.array (option (tuple HK V)) allocatedSize nil, mcontents
       k in ks
       v in vs
@@ -79,7 +79,7 @@ is
 
           t tuple =>     # we have a conflict
             (ek, _) := t
-            if ek ≟ k    # no conflict, but remapping of k
+            if ek = k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
             else         # conflict
               store (collision at)
@@ -104,7 +104,7 @@ is
         nil     => nil
         t tuple =>
           (ek, v) := t
-          if ek ≟ k
+          if ek = k
             v
           else
             retrieve (collision at)
@@ -117,7 +117,7 @@ is
   items Sequence (tuple HK V) is
     contents
       .filter      (o -> o??)
-      .mapSequence (o -> match o
+      .map_sequence (o -> match o
                             nil     => panic "filter failed"
                             t tuple => t)
 
@@ -127,7 +127,7 @@ is
   #
   redef as_string =>
     items
-      .mapSequence (t -> "({t.values.0},{t.values.1})")
+      .map_sequence (t -> "({t.values.0},{t.values.1})")
       .as_string
 
 

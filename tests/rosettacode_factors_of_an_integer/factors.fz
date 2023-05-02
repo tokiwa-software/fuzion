@@ -48,14 +48,14 @@ factors is
 
   yak "factors filtering and consuming a Sequence:"
   (1..n).filter (x -> n %% x)
-        .for_each (fun print)
+        .for_each (x -> print x)
   say
 
   yak "factors filtering and printing a Sequence: "
   say ((1..n).filter (x -> n %% x))
 
   yak "factors using pipes to filter and print a Sequence: "
-  (1..n) & (x -> n %% x) | fun print
+  (1..n) & (x -> n %% x) | (x -> print x)
   say
 
   say "factors embedded in String: {(1..n) &  (x -> n %% x)}"

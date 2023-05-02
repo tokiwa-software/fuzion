@@ -41,36 +41,36 @@ redef_args is
   Complex3(redefine real, imag i32) : Complex i32 real imag is
   Complex4(redefine real, imag i32) : Complex3(real, imag) is
 
-  chck ((Complex i32 3 4).real  ≟ 3) "generic field real set correctly"
-  chck ((Complex i32 3 4).imag  ≟ 4) "generic field imag set correctly"
-  chck ((Complex1    3 4).real  ≟ 3) "non-generic field real set correctly"
-  chck ((Complex1    3 4).imag  ≟ 4) "non-generic field imag set correctly"
-  chck ((Complex2    3 4).real  ≟ 3) "inherited generic field real set correctly"
-  chck ((Complex2    3 4).imag  ≟ 4) "inherited generic field imag set correctly"
-  chck ((Complex2    3 4).rr ≟ 3) "non-generic field rr set correctly"
-  chck ((Complex2    3 4).ii ≟ 4) "non-generic field ii set correctly"
-  chck ((Complex3    3 4).real  ≟ 3) "redefined generic field real set correctly"
-  chck ((Complex3    3 4).imag  ≟ 4) "redefined generic field imag set correctly"
+  chck ((Complex i32 3 4).real  = 3) "generic field real set correctly"
+  chck ((Complex i32 3 4).imag  = 4) "generic field imag set correctly"
+  chck ((Complex1    3 4).real  = 3) "non-generic field real set correctly"
+  chck ((Complex1    3 4).imag  = 4) "non-generic field imag set correctly"
+  chck ((Complex2    3 4).real  = 3) "inherited generic field real set correctly"
+  chck ((Complex2    3 4).imag  = 4) "inherited generic field imag set correctly"
+  chck ((Complex2    3 4).rr = 3) "non-generic field rr set correctly"
+  chck ((Complex2    3 4).ii = 4) "non-generic field ii set correctly"
+  chck ((Complex3    3 4).real  = 3) "redefined generic field real set correctly"
+  chck ((Complex3    3 4).imag  = 4) "redefined generic field imag set correctly"
   c ref Complex i32 := Complex3 3 4
-  chck (c                .real  ≟ 3) "redefined generic field real accessed through super feature set correctly"
-  chck (c                .imag  ≟ 4) "redefined generic field imag accessed through super feature set correctly"
-  chck ((Complex4    3 4).real  ≟ 3) "double redefined generic field real set correctly"
-  chck ((Complex4    3 4).imag  ≟ 4) "double redefined generic field imag set correctly"
+  chck (c                .real  = 3) "redefined generic field real accessed through super feature set correctly"
+  chck (c                .imag  = 4) "redefined generic field imag accessed through super feature set correctly"
+  chck ((Complex4    3 4).real  = 3) "double redefined generic field real set correctly"
+  chck ((Complex4    3 4).imag  = 4) "double redefined generic field imag set correctly"
   c2 ref Complex i32 := Complex4 3 4
-  chck (c2               .real  ≟ 3) "double redefined generic field real accessed through super-super feature set correctly"
-  chck (c2               .imag  ≟ 4) "double redefined generic field imag accessed through super-super feature set correctly"
+  chck (c2               .real  = 3) "double redefined generic field real accessed through super-super feature set correctly"
+  chck (c2               .imag  = 4) "double redefined generic field imag accessed through super-super feature set correctly"
   c3 ref Complex3 := Complex4 3 4
-  chck (c3               .real  ≟ 3) "double redefined generic field real accessed through super feature set correctly"
-  chck (c3               .imag  ≟ 4) "double redefined generic field imag accessed through super feature set correctly"
+  chck (c3               .real  = 3) "double redefined generic field real accessed through super feature set correctly"
+  chck (c3               .imag  = 4) "double redefined generic field imag accessed through super feature set correctly"
 
   # regression test using example from https://github.com/tokiwa-software/fuzion/issues/165
   v := ra 33
-  chck (v ≟ 2) "redefined field as in #165"
+  chck (v = 2) "redefined field as in #165"
   ra(redef a i32) : st 2 =>
-    chck (a ≟ 2) "redefined field as in #165"
+    chck (a = 2) "redefined field as in #165"
     a
   st (a i32) is
-    chck (a ≟ 2) "redefined field as in #165"
+    chck (a = 2) "redefined field as in #165"
 
 
   exit exit_code.get

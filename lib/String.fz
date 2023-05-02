@@ -67,8 +67,8 @@ String ref : equatable, has_hash, has_total_order is
   # bytes are equal.
   #
   fixed type.equality(a, b String) =>
-    ((a.utf8.zip b.utf8 aa,bb->aa≟bb) ∀ x->x)
-      & a.utf8.count ≟ b.utf8.count
+    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
+      & a.utf8.count = b.utf8.count
 
 
   # is `a` less than or equal to `b` when comparing their utf8 bytes?
@@ -80,8 +80,8 @@ String ref : equatable, has_hash, has_total_order is
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
         (c, d) := x
-        !(c ≟ d))
-      .mapSequence (x ->
+        c != d)
+      .map_sequence (x ->
         (c, d) := x
         c ≤ d)
       # if all bytes are equal lengths of strings might still differ
@@ -91,10 +91,10 @@ String ref : equatable, has_hash, has_total_order is
   # create hash code from a string
   #
   hash u64 is
-    shL := u64 13
-    shR := u64 51
+    sh_l := u64 13
+    sh_r := u64 51
     for
-      h u64 := 0, ((h << shL) | (h >> shR)) ^ b.as_u64;
+      h u64 := 0, ((h << sh_l) | (h >> sh_r)) ^ b.as_u64;
       b in utf8
     while true
     else
@@ -113,7 +113,7 @@ String ref : equatable, has_hash, has_total_order is
   parse_i32_octal  => parse_i32 8
   parse_i32_hex    => parse_i32 16
   parse_i32 (base i32) outcome i32
-    pre 1 ⩻ base ≤ 36
+    pre 1 < base ≤ 36
   is
     parse_integer i32 base
 
@@ -125,7 +125,7 @@ String ref : equatable, has_hash, has_total_order is
   parse_u32_octal  => parse_u32 8
   parse_u32_hex    => parse_u32 16
   parse_u32 (base u32) outcome u32
-    pre u32 1 ⩻ base ≤ (u32 36)
+    pre u32 1 < base ≤ (u32 36)
   is
     parse_integer u32 base
 
@@ -137,7 +137,7 @@ String ref : equatable, has_hash, has_total_order is
   parse_i64_octal  => parse_i64 8
   parse_i64_hex    => parse_i64 16
   parse_i64 (base i64) outcome i64
-    pre i64 1 ⩻ base ≤ (i64 36)
+    pre i64 1 < base ≤ (i64 36)
   is
     parse_integer i64 base
 
@@ -149,7 +149,7 @@ String ref : equatable, has_hash, has_total_order is
   parse_u64_octal  => parse_u64 8
   parse_u64_hex    => parse_u64 16
   parse_u64 (base u64) outcome u64
-    pre u64 1 ⩻ base ≤ (u64 36)
+    pre u64 1 < base ≤ (u64 36)
   is
     parse_integer u64 base
 
@@ -161,7 +161,7 @@ String ref : equatable, has_hash, has_total_order is
   parse_int_octal  => parse_int int(8)
   parse_int_hex    => parse_int int(16)
   parse_int (base int) outcome int
-    pre (int 1) ⩻ base ≤ int 36
+    pre (int 1) < base ≤ int 36
   is
     parse_integer int base
 
@@ -177,14 +177,14 @@ String ref : equatable, has_hash, has_total_order is
 
     ) outcome T
 
-    pre base.one ⩻ base ≤ base.from_u32 36
+    pre base.one < base ≤ base.from_u32 36
 
   is
     match utf8.as_list
       nil => parse_error "empty string"
       c Cons =>
-        negate := c.head ≟ String.type.minus_char
-        d := if (negate || c.head ≟ String.type.plus_char) String.type.zero_char else c.head
+        negate := c.head = String.type.minus_char
+        d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
         parse_integer T base negate base.zero d c.tail
 
 
@@ -306,7 +306,7 @@ String ref : equatable, has_hash, has_total_order is
             c2 Cons =>
               b2 := c2.head
               e2(msg String) => ret (e "$b1, $b2: $msg") c2.tail
-              if !((b2 & 0xc0) ≟ (u8 0x80))
+              if (b2 & 0xc0) != (u8 0x80)
                 e2 "expected continuation byte in the range 0x80..0xbf."
               else if u8 0xc0 ≤ b1 ≤ (u8 0xdf)   # 0x0080..0x7ff encoded in 2 bytes
                 res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
@@ -320,7 +320,7 @@ String ref : equatable, has_hash, has_total_order is
                   c3 Cons =>
                     b3 := c3.head
                     e3(msg String) => ret (e "$b1, $b2, $b3: $msg") c3.tail
-                    if !((b3 & 0xc0) ≟ (u8 0x80))
+                    if (b3 & 0xc0) != (u8 0x80)
                       e3 "expected two continuation bytes in the range 0x80..0xbf."
                     else if b1 ≤ (u8 0xef)       # 0x0800..0xffff encoded in 3 bytes
                       res := (((b1.as_u32 & 0x0f) << 12) |
@@ -340,7 +340,7 @@ String ref : equatable, has_hash, has_total_order is
                         c4 Cons =>
                           b4 := c4.head
                           e4(msg String) => ret (e "$b1, $b2, $b3, $b4: $msg") c4.tail
-                          if !((b4 & 0xc0) ≟ (u8 0x80))
+                          if (b4 & 0xc0) != (u8 0x80)
                             e4 "expected three continuation bytes in the range 0x80..0xbf."
                           else
                             res := (((b1.as_u32 & 0x07) << 18) |
@@ -349,7 +349,7 @@ String ref : equatable, has_hash, has_total_order is
                                     ((b4.as_u32 & 0x3f)      )   )
                             if res ∉ p.utf8_encoded_in_four_bytes
                               e4 "codepoint $res uses overlong 4-byte encoding."
-                            else if res ⩼ (u32 0x10ffff)
+                            else if res > (u32 0x10ffff)
                               e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                             else
                               ret (codepoint res) c4.tail
@@ -476,12 +476,12 @@ String ref : equatable, has_hash, has_total_order is
   # is c an ASCII white-space character?
   #
   private is_ascii_white_space(c u8) =>
-    (c ≟ (u8  9) ||  // HT
-     c ≟ (u8 10) ||  // LF
-     c ≟ (u8 11) ||  // VT
-     c ≟ (u8 12) ||  // FF
-     c ≟ (u8 13) ||  // CR
-     c ≟ (u8 32)     // SPACE
+    (c = (u8  9) ||  // HT
+     c = (u8 10) ||  // LF
+     c = (u8 11) ||  // VT
+     c = (u8 12) ||  // FF
+     c = (u8 13) ||  // CR
+     c = (u8 32)     // SPACE
      )
 
 
@@ -500,12 +500,6 @@ String ref : equatable, has_hash, has_total_order is
       ref : Cons String (list String)
         head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
         tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
-        # NYI using the inherited 'from_bytes' as in
-        #
-        #   head =>  from_bytes l.take_while fun (c i32) => !is_ascii_white_space c
-        #
-        # currerntly creates an error (recursive value type), this needs to be fixed (or,
-        # at least, understood better).
 
 
   # split string at s
@@ -535,7 +529,7 @@ String ref : equatable, has_hash, has_total_order is
   split_n(s String, n u32) list String
     pre
       !s.is_empty,
-      n ⩼ (u32 0)
+      n > (u32 0)
     is
       split0 s n false
 
@@ -548,7 +542,7 @@ String ref : equatable, has_hash, has_total_order is
   split_after_n(s String, n u32) list String
     pre
       !s.is_empty,
-      n ⩼ (u32 0)
+      n > (u32 0)
     is
       split0 s n true
 
@@ -566,7 +560,7 @@ String ref : equatable, has_hash, has_total_order is
       !s.is_empty,
       match limit
         nil => true
-        n u32 => n ⩼ (u32 0)
+        n u32 => n > (u32 0)
     is
       match (find s)
         nil => String.this.as_string : ()->nil
@@ -579,7 +573,7 @@ String ref : equatable, has_hash, has_total_order is
               match limit
                 nil => rest.split0 s nil split_after
                 n u32 =>
-                  if n ⩼ u32 1
+                  if n > u32 1
                     rest.split0 s (n - 1) split_after
                   else
                     [rest].as_list
@@ -590,11 +584,8 @@ String ref : equatable, has_hash, has_total_order is
   trim String is
     s0 := utf8
 
-    s1 := (s0.drop_while (fun is_ascii_white_space)).reverse
-    s2 := (s1.drop_while (fun is_ascii_white_space)).reverse
-
-# NYI: This causes fz to crash:
-#   from_bytes s2
+    s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
+    s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
 
     String.type.from_bytes s2
 
@@ -602,17 +593,13 @@ String ref : equatable, has_hash, has_total_order is
   # remove leading white space from this string
   #
   trim_start =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
-    String.type.from_bytes (utf8.drop_while (fun is_ascii_white_space))
+    String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
-    String.type.from_bytes (utf8.as_list.reverse.drop_while (fun is_ascii_white_space)).reverse
+    String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
 
 
   # is this part of given set
@@ -631,7 +618,7 @@ String ref : equatable, has_hash, has_total_order is
   # padding codepoint s to start of string
   #
   pad_codepoint_start(l i32, s String) String
-  pre s.codepoint_length ≟ 1
+  pre s.codepoint_length = 1
   is
     missing := l - codepoint_length
     if missing ≤ 0
@@ -734,7 +721,7 @@ String ref : equatable, has_hash, has_total_order is
       from_array (a.add other)
 
     redef utf8 Sequence u8 is
-      a.flatMapSequence u8 ai->ai.as_string.utf8
+      a.flat_map_sequence u8 ai->ai.as_string.utf8
 
 
   # create string from the given utf8 bytes
@@ -750,7 +737,7 @@ String ref : equatable, has_hash, has_total_order is
     ref : String
       utf8 Sequence u8 is
         codePoints
-          .flatMapSequence u8 (x -> x.utf8)
+          .flat_map_sequence u8 (x -> x.utf8)
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals

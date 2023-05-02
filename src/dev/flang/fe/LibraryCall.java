@@ -30,16 +30,13 @@ import java.util.Collections;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -62,7 +59,7 @@ public abstract class LibraryCall extends AbstractCall
 
 
   /**
-   * index of this feature within _libModule.
+   * index of this call within _libModule.
    */
   private final int _index;
 

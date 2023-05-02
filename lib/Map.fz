@@ -45,7 +45,7 @@ Map(K, V type) ref is
   # get a sequence of all keys in this map
   #
   keys Sequence K is
-    items.mapSequence K (t -> (k,_) := t; k)
+    items.map_sequence K (t -> (k,_) := t; k)
 
 
   # check if key k is present in the set of keys
@@ -56,7 +56,7 @@ Map(K, V type) ref is
   # get a sequence of all values in this map
   #
   values Sequence V is
-    items.mapSequence V (t -> (_,v) := t; v)
+    items.map_sequence V (t -> (_,v) := t; v)
 
 
   # create a string containing all mappings

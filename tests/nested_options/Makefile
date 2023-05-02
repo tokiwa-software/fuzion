@@ -17,20 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature spit
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# spit -- shortcut for stdout.print
-#
-# NYI: remove?
-#
-# A handy shortcut for stdout.print, output string representation of
-# an object, do not add a line break at the end.
-#
-# NYI: there is also 'yak', which I currently prefer, but this needs some
-# native English speaker's advice.
-#
-spit(s ref Any) => stdout.print s
+override NAME = ex_nested_options
+include ../positive.mk

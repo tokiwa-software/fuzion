@@ -36,7 +36,7 @@
 private server(
   state outcome i64,
   p protocol.val,
-  m effectMode.val,
+  m effect_mode.val,
   _ unit,
   _ unit
 ) : effect m
@@ -57,9 +57,9 @@ is
       d i64 =>
         match fuzion.sys.net.close d
           unit =>
-            server (error "not initialized") nil effectMode.repl unit unit
+            server (error "not initialized") nil effect_mode.repl unit unit
           error error =>
-            server error nil effectMode.repl unit unit
+            server error nil effect_mode.repl unit unit
       * =>
     unit
 
@@ -125,7 +125,7 @@ server(f family.val, p protocol.val, addr String, port u16) outcome unit is
 
   match init_ip_server f p addr port
     desc i64 =>
-      server desc p effectMode.repl unit unit
+      server desc p effect_mode.repl unit unit
       unit
     e error =>
       e
@@ -134,7 +134,7 @@ server(f family.val, p protocol.val, addr String, port u16) outcome unit is
 # get currently installed server from env
 server =>
   if !effects.exists server
-    server (error "not initialized") nil effectMode.default unit unit
+    server (error "not initialized") nil effect_mode.default unit unit
   server.env
 
 

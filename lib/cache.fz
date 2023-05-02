@@ -72,7 +72,7 @@ cache(T type, f () -> T) T is
   cache_item(T type, val T) is
 
   if !(effects.exists (state unit (cache_item T)))
-    _ := state unit (cache_item T) unit (cache_item f()) effectMode.default
+    _ := state unit (cache_item T) unit (cache_item f()) effect_mode.default
 
   state_get (cache_item T)
     .val

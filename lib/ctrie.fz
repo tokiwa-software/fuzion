@@ -113,7 +113,7 @@ private container_node(CTK type : has_hash, CTV type, bmp u32, array array (bran
   redef as_string => "container_node($bmp, [{array.map x->x.as_string
                                                  .fold (String.type.concat ", ")}])"
 
-  as_list => array.flatMapSequence (tuple CTK CTV) (b -> b.as_list)
+  as_list => array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list)
                  .as_list
 
 
@@ -132,7 +132,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
   # equality - NYI
   #
   fixed type.equality(a, b Main_Node CTK CTV) bool is
-    a.hashCode ≟ b.hashCode
+    a.hash_code = b.hash_code
 
   as_list
   pre match prev.get
@@ -142,7 +142,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
     match data
       container_node container_node => container_node.as_list
       tomb_node tomb_node => tomb_node.as_list
-      list_node list_node => list_node.mapSequence (sn -> (sn.k, sn.v))
+      list_node list_node => list_node.map_sequence (sn -> (sn.k, sn.v))
 
   # compare and update `prev`
   cas_prev(o,n choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) =>
@@ -182,7 +182,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
         else
           gcas_commit data.get ct
       n Main_Node =>
-        if gen ≟ m.gen && !ct.read_only
+        if gen = m.gen && !ct.read_only
           if m.cas_prev n nil
             m
           else
@@ -219,7 +219,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
   # equality - NYI
   #
   fixed type.equality(a, b Indirection_Node CTK CTV) bool is
-    a.hashCode ≟ b.hashCode
+    a.hash_code = b.hash_code
 
   redef as_string => "Indirection_Node($data)"
 
@@ -233,7 +233,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
 private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
-pre from ∀ (sn -> (from.filter (snn -> sn.k.hash ≟ snn.k.hash)).count ≟ 1)
+pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef as_list => from.as_list
 
@@ -283,7 +283,7 @@ is
             rdcss_complete abort
         else
           old_main := desc.ov.gcas_read CTrie.this
-          if old_main ≟ desc.exp
+          if old_main = desc.exp
             if cas_root desc desc.nv
               desc.nv
             else
@@ -358,7 +358,7 @@ is
 
   # contract a container node
   private contract(cn container_node CTK CTV, lev u32, gen i32) Main_Node CTK CTV is
-    if (lev ⩼ (u32 0)) & (cn.array.length ≟ 1)
+    if (lev > (u32 0)) & (cn.array.length = 1)
       match cn.array[0]
         sn singleton_node => Main_Node (tomb_node sn) gen
         i Indirection_Node => Main_Node cn gen
@@ -385,11 +385,11 @@ is
       match m.data
         cn container_node CTK CTV =>
           (flag, pos) := flagpos hash lev cn.bmp
-          if !((cn.bmp & flag) ≟ u32 0)
+          if (cn.bmp & flag) != u32 0
             sub := cn.array[pos.as_i32]
             match sub
               Indirection_Node Indirection_Node CTK CTV =>
-                if Indirection_Node ≟ i
+                if Indirection_Node = i
                   match i.gcas_read(CTrie.this).data
                     tn tomb_node CTK CTV =>
                       ncn := cn.updated pos tn.sn
@@ -411,15 +411,15 @@ is
   # Main_Node -> container_node -> Indirection_Node -> dual x y
   private dual(x, y singleton_node CTK CTV, lev u32, gen i32) Main_Node CTK CTV is
     # NYI why 35??
-    if lev ⩻ (u32 35)
+    if lev < (u32 35)
       xidx := ((hash x.k.hash) >> lev) & 0x1f
       yidx := ((hash y.k.hash) >> lev) & 0x1f
       bmp := (u32 1 << xidx) | (u32 1 << yidx)
-      if xidx ≟ yidx
+      if xidx = yidx
         sub_node := Indirection_Node CTK CTV (mut (dual x y (lev + width) gen))
         Main_Node (container_node CTK CTV bmp [sub_node]) gen
       else
-        if (xidx ⩻ yidx)
+        if (xidx < yidx)
           Main_Node (container_node CTK CTV bmp [x, y]) gen
         else
           Main_Node (container_node CTK CTV bmp [y, x]) gen
@@ -447,19 +447,19 @@ is
     match m.data
       cn container_node CTK CTV =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) ≟ (u32 0)
+        if (cn.bmp & flag) = (u32 0)
           not_found
         else
           match cn.array[pos.as_i32]
             sin Indirection_Node =>
-              if read_only || gen ≟ sin.data.get.gen
+              if read_only || gen = sin.data.get.gen
                 lookup sin k (lev + width) i gen
               else
                 match i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this
                   ctrie_ok => lookup i k lev parent gen
                   restart => restart
             sn singleton_node =>
-              if sn.k ≟ k
+              if sn.k = k
                 sn.v
               else
                 not_found
@@ -471,7 +471,7 @@ is
 
   # find k in linked nodes
   private find(ln list_node CTK CTV, k CTK) choice restart not_found CTV is
-    match ln.drop_while(sn -> !(sn.k ≟ k)).head
+    match ln.drop_while(sn -> sn.k != k).head
           nil => not_found
           sn singleton_node => sn.v
 
@@ -494,22 +494,22 @@ is
     match m.data
       cn container_node CTK CTV =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) ≟ (u32 0)
-          ncn := (if m.gen ≟ gen then cn else cn.renewed gen CTrie.this).added pos flag (singleton_node k v)
+        if (cn.bmp & flag) = (u32 0)
+          ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).added pos flag (singleton_node k v)
           i.gcas m (Main_Node ncn gen) CTrie.this
         else
           match cn.array[pos.as_i32]
             sin Indirection_Node =>
-              if m.gen ≟ gen
+              if m.gen = gen
                 add sin k v (lev+width) i gen
               else
                 match (i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this)
                   ctrie_ok => add i k v lev parent gen
                   restart => restart
             sn singleton_node =>
-              if !(sn.k ≟ k)
+              if sn.k != k
                 nin := Indirection_Node (mut (dual sn (singleton_node k v) (lev + width) i.data.get.gen))
-                ncn := (if m.gen ≟ gen then cn else cn.renewed gen CTrie.this).updated pos nin
+                ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).updated pos nin
                 i.gcas m (Main_Node ncn gen) CTrie.this
               else
                 ncn := cn.updated pos (singleton_node k v)
@@ -518,7 +518,7 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> !(sn.k ≟ k))))) i.data.get.gen) CTrie.this
+        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k)))) i.data.get.gen) CTrie.this
 
 
   # remove key from ctrie
@@ -537,19 +537,19 @@ is
     match m.data
       cn container_node =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) ≟ (u32 0)
+        if (cn.bmp & flag) = (u32 0)
           not_found
         else
           res choice restart not_found CTV := match cn.array[pos.as_i32]
             sin Indirection_Node =>
-              if sin.data.get.gen ≟ gen
+              if sin.data.get.gen = gen
                 remove sin k (lev + width) i gen
               else
                 match (i.gcas m (Main_Node (cn.renewed gen CTrie.this) gen) CTrie.this)
                   ctrie_ok => remove i k lev parent gen
                   restart => restart
             sn singleton_node =>
-              if !(sn.k ≟ k)
+              if sn.k != k
                 not_found
               else
                 ncn  := cn.removed pos flag
@@ -568,8 +568,8 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        fln := list_node ln.filter(sn -> !(sn.k ≟ k))
-        nln Main_Node CTK CTV := if fln.count ≟ 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
+        fln := list_node ln.filter(sn -> sn.k != k)
+        nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
         match (i.gcas m nln CTrie.this)
           ctrie_ok => find ln k
           restart => restart

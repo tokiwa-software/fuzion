@@ -1110,7 +1110,7 @@ public class AstErrors extends ANY
     error(pos,
           "Expected actual type parameter in call",
           "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.OBJECT_NAME) + " as an argument to this call.\n");
+          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " as an argument to this call.\n");
   }
 
   static void expectedTypeExpression(SourcePosition pos, Expr e)
@@ -1119,7 +1119,7 @@ public class AstErrors extends ANY
           "Expected type in 'xyz.type' expression",
           "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
           "Expression found: " + s(e) + "\n"+
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.OBJECT_NAME) + " instead of " + s(e) + ".\n");
+          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " instead of " + s(e) + ".\n");
   }
 
 
@@ -1536,21 +1536,6 @@ public class AstErrors extends ANY
           "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
           "Expected type parameters: " + s(cf.generics()) + "\n"+
           "Type inference failed for " + singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
-  }
-
-  static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
-  {
-    error(pos,
-          "Function declaration of the form " + ss("fun a.b") + " must not provide any actual arguments to " + ss("b") + ", " + ss("b") + " is not called here",
-          "Call that followed " + ss("fun") + ": " + s(c) + "\n" +
-          "Actual arguments: " + sle(actuals) + "\n");
-  }
-
-  static void functionMustNotProvideParentheses(SourcePosition pos, Call c)
-  {
-    error(pos,
-          "Function declaration of the form " + ss("fun a.b") + " must not provide any parentheses " + ss("b()") + ", " + ss("b") +" is not called here",
-          "Call that followed " + ss("fun") + ": " + s(c) + "\n");
   }
 
   static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)

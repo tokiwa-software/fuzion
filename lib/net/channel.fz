@@ -35,7 +35,7 @@
 # 2) writing to a channel installed by `server.accept` will result in an error.
 # 3) reading from a channel installed by `client ...` will block indefinitely.
 #
-private channel(T type, desc outcome i64, auto_close bool, m effectMode.val) : effect m
+private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
 is
 
   # get the last error that occured
@@ -93,11 +93,11 @@ is
         d i64 =>
           match fuzion.sys.net.close d
             unit =>
-              channel T (error "not initialized") false effectMode.repl
+              channel T (error "not initialized") false effect_mode.repl
             e error =>
-              channel T e false effectMode.repl
+              channel T e false effect_mode.repl
         e error =>
-          channel T (error "not initialized") false effectMode.repl
+          channel T (error "not initialized") false effect_mode.repl
     unit
 
 
@@ -105,12 +105,12 @@ is
 # short hand to install a new channel of type T
 channel(T type, desc outcome i64, auto_close bool) =>
   (channel T).close
-  channel T desc auto_close effectMode.repl
+  channel T desc auto_close effect_mode.repl
 
 
 
 # short hand to get the currently installed channel of type T
 channel(T type) =>
   if !effects.exists (channel T)
-    channel T (error "not initialized") false effectMode.default
+    channel T (error "not initialized") false effect_mode.default
   (channel T).env

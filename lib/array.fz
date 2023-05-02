@@ -64,7 +64,7 @@ array(redef T type,
   redef index [ ] (i i32) T
     pre
       safety: 0 ≤ i,
-      safety: i ⩻ length
+      safety: i < length
   is
     internalArray[i]
 
@@ -79,7 +79,7 @@ array(redef T type,
     # NYI: This is very inefficent since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array T (max length i+1) (ix -> if (ix ≟ i) v else array.this[ix])
+    array T (max length i+1) (ix -> if (ix = i) v else array.this[ix])
 
   # create a new array with element i set to v. Grow the array in case i >= length.
   # New array elements at indices array.this.length..i-1 will be set to z.
@@ -93,7 +93,7 @@ array(redef T type,
     # NYI: This is very inefficent since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array T (max length i+1) (ix -> if (ix ≟ i) v else if (ix ≥ length) z else array.this[ix])
+    array T (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else array.this[ix])
 
 
   # apply f to all elements in this array
@@ -137,7 +137,7 @@ array(redef T type,
   #
   arrayCons (i, to i32) : Cons T (list T)
     pre
-      debug: 0 ≤ i ⩻ to ≤ length
+      debug: 0 ≤ i < to ≤ length
   is
     head => array.this[i]
     tail => slice i+1 to
@@ -171,7 +171,7 @@ array(redef T type,
     pre
       debug: 0 ≤ i ≤ length
   is
-    if i ≟ length
+    if i = length
       s
     else
       fold i+1 (m.op s array.this[i]) m
@@ -186,23 +186,23 @@ array(redef T type,
   # get a list of tuples indices and elements in this array
   #
   enumerate list (tuple i32 T) is
-    if length ≟ 0
+    if length = 0
       nil
     else
-      enumerateCons 0
+      enumerate_cons 0
 
 
   # create a cons cell for a list of tuples of this array's indices and elements
   # starting at the given indices.
   #
-  enumerateCons (i i32) : Cons (i32, T) (list (tuple i32 T))
+  enumerate_cons (i i32) : Cons (i32, T) (list (tuple i32 T))
     pre
       debug: 0 ≤ i,
-      debug: i ⩻ length
+      debug: i < length
   is
     head => (i, index[] i)
     tail list (tuple i32 T) is
-      if i ⩻ length-1 then enumerateCons i+1
+      if i < length-1 then enumerate_cons i+1
       else                 nil
 
 

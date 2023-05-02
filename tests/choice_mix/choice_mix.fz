@@ -153,8 +153,8 @@ choice_mix is
 
   for
     i := 0, i + 1
-  while i ⩻ 6
-    if i ⩼ 0 say "-------------"
+  while i < 6
+    if i > 0 say "-------------"
     yak "show_a : "; show_a
     yak "show_v : "; show_v
     yak "show_i : "; show_i
@@ -278,12 +278,12 @@ choice_mix is
 
   alternatives1 unit is // use pipe for choice result type
     f(i i32) i32 | bool | String is
-      if i ⩻ 10 { i }
-      else if i ⩻ 20 { i ⩼ 15 }
+      if i < 10 { i }
+      else if i < 20 { i > 15 }
       else { "Large" }
     for
       i := 0, i + 1
-    while i ⩻ 25
+    while i < 25
       yak "$i ==> "
       match f(i)
         x i32 => yak x

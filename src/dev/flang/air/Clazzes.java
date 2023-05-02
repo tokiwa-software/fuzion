@@ -179,7 +179,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_ref_u64          );
   public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_ref_f32          );
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
-  public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
+  public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
@@ -419,10 +419,9 @@ public class Clazzes extends ANY
   public static void findAllClasses(Clazz main)
   {
     var toLayout = new LinkedList<Clazz>();
-    int clazzCount = 0;
 
     // make sure internally referenced clazzes do exist:
-    object.get();
+    any.get();
     create(Types.t_ADDRESS, universe.get());
 
     // mark internally referenced clazzes as called or instantiated:
@@ -450,7 +449,6 @@ public class Clazzes extends ANY
 
     while (!clazzesToBeVisited.isEmpty())
       {
-        clazzCount++;
         Clazz cl = clazzesToBeVisited.removeFirst();
 
         cl.findAllClasses();
@@ -1380,7 +1378,7 @@ public class Clazzes extends ANY
     ref_u64.clear();
     ref_f32.clear();
     ref_f64.clear();
-    object.clear();
+    any.clear();
     string.clear();
     conststring.clear();
     c_unit.clear();

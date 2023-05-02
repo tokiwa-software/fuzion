@@ -830,7 +830,7 @@ public class Type extends AbstractType
    */
   void findGenerics(AbstractFeature outerfeat)
   {
-    //    if (PRECONDITIONS) require
+    // NYI   if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     if ((feature == null) && (generic == null))

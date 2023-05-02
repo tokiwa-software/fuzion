@@ -182,17 +182,17 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  flatMap(B type, f A -> Sequence B) list B is
+  flat_map(B type, f A -> Sequence B) list B is
     match list.this
       _ nil  => nil
       c Cons =>
         match (f c.head).as_list
-          _ nil => c.tail.flatMap B f
+          _ nil => c.tail.flat_map B f
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
               head => c2.head
-              tail => c2.tail ++ c.tail.flatMap B f
+              tail => c2.tail ++ c.tail.flat_map B f
 
 
   # fold the elements of this list using the given monoid.
@@ -223,7 +223,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
         c Cons =>
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => if n ≟ 1 then nil else c.tail.take n-1
+            redef tail => if n = 1 then nil else c.tail.take n-1
 
 
   # reverse the order of the elements in this list
