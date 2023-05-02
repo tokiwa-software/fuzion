@@ -1,19 +1,19 @@
 
-[32m--CURDIR--/issue_1352.fz:25:3:[39m [1;31merror 1[0m[1m: Failed to infer result type for feature '[35missue_1352.a[39m'.[0m
-[34m  a := () ->
+[32m--CURDIR--/issue_1352.fz:25:3:[39m [1;31merror 1[0m[1m: Failed to infer result type for feature '[35missue_1352.c[39m'.[0m
+[34m  c := a ->
 [33m--^[0m
 To solve this, please specify a result type explicitly.
 
 
-[32m--CURDIR--/issue_1352.fz:27:3:[39m [1;31merror 2[0m[1m: Failed to infer result type for feature '[35missue_1352.b[39m'.[0m
-[34m  b => () ->
+[32m--CURDIR--/issue_1352.fz:27:3:[39m [1;31merror 2[0m[1m: Failed to infer result type for feature '[35missue_1352.d[39m'.[0m
+[34m  d => b ->
 [33m--^[0m
 To solve this, please specify a result type explicitly.
 
 
-[32m--CURDIR--/issue_1352.fz:25:11:[39m [1;31merror 3[0m[1m: No type information can be inferred from a lambda expression[0m
-[34m  a := () ->
-[33m----------^[0m
+[32m--CURDIR--/issue_1352.fz:25:10:[39m [1;31merror 3[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m  c := a ->
+[33m---------^[0m
 A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
 with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
 assigned field must be given explicitly.
