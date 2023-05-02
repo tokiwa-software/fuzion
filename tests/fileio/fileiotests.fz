@@ -56,7 +56,8 @@ fileiotests =>
     error =>
   say "$file exists: {exists file}"
 
-  say "$file size is {(f.stat file true).val.size}"
+  try ()->
+    say "$file size is {(f.stat file true).val.size}"
 
   # NYI: we need to use fuzion.sys.fileio directly until we have a
   # closeable effect.
