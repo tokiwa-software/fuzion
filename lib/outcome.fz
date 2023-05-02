@@ -77,15 +77,13 @@ is
 
   # value of an outcome that is known to contain a value
   #
-  # This can only be called in cases where it is known for sure that this
-  # outcomee is not an error.  A runtime error will be created otherwise.
+  # In case outcome is an error `try.env.raise` is called
+  # which aborts the current execution.
   #
-  val T
-    pre
-      safety: outcome.this??
+  val T ! try.this.type
   is
     outcome.this ? v T   => v
-                 | error => panic "outcome.val called on error"
+                 | error => try.env.raise (error "outcome.val called on error")
 
 
   # value of an outcome or default if outcome contains err
@@ -98,14 +96,12 @@ is
 
   # error of an outcome that is known to contain an error
   #
-  # This can only be called in cases where it is known for sure that this
-  # outcomee is an error.  A runtime error will be created otherwise.
+  # In case outcome is not an error `try.env.raise` is called
+  # which aborts the current execution.
   #
-  err error
-    pre
-      safety: outcome.this!!
+  err error ! try.this.type
   is
-    outcome.this ? T       => panic "outcome.err called on successful outcome"
+    outcome.this ? T       => try.env.raise (error "outcome.err called on successful outcome")
                  | e error => e
 
 
