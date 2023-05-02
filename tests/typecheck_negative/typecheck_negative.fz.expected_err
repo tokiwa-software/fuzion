@@ -1,0 +1,162 @@
+
+[32m--CURDIR--/typecheck_negative.fz:39:11:[39m [1;31merror 1[0m[1m: Incompatible types in assignment[0m
+[34m    set q := p // 1. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.q[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+for value assigned  : '[36massign.this.p[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.q[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:40:11:[39m [1;31merror 2[0m[1m: Incompatible types in assignment[0m
+[34m    set r := p // 2. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.r[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+for value assigned  : '[36massign.this.p[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.r[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:41:11:[39m [1;31merror 3[0m[1m: Incompatible types in assignment[0m
+[34m    set q := r // 3. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.q[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+for value assigned  : '[36massign.this.r[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.q[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:42:11:[39m [1;31merror 4[0m[1m: Incompatible types in assignment[0m
+[34m    set r := q // 4. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.r[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+for value assigned  : '[36massign.this.q[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.r[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:43:11:[39m [1;31merror 5[0m[1m: Incompatible types in assignment[0m
+[34m    set s := p // 5. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.s[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m'
+for value assigned  : '[36massign.this.p[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.s[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:44:11:[39m [1;31merror 6[0m[1m: Incompatible types in assignment[0m
+[34m    set s := q // 6. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.s[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m'
+for value assigned  : '[36massign.this.q[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.s[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i64).B u64).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:45:11:[39m [1;31merror 7[0m[1m: Incompatible types in assignment[0m
+[34m    set s := r // 7. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.s[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m'
+for value assigned  : '[36massign.this.r[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.s[39m' to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B bool).C bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.A i32).B u64).C u32[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:57:11:[39m [1;31merror 8[0m[1m: Incompatible types in assignment[0m
+[34m    set v := u // 8. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.v[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.u[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.v[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:58:11:[39m [1;31merror 9[0m[1m: Incompatible types in assignment[0m
+[34m    set w := u // 9. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.w[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.u[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.w[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:59:11:[39m [1;31merror 10[0m[1m: Incompatible types in assignment[0m
+[34m    set v := w // 10. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.v[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.w[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.v[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:60:11:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[34m    set w := v // 11. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.w[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.v[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.w[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:61:11:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[34m    set x := u // 12. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.x[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.u[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.x[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:62:11:[39m [1;31merror 13[0m[1m: Incompatible types in assignment[0m
+[34m    set x := v // 13. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.x[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.v[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.x[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i64).E u64).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'.
+
+
+[32m--CURDIR--/typecheck_negative.fz:63:11:[39m [1;31merror 14[0m[1m: Incompatible types in assignment[0m
+[34m    set x := w // 14. should flag an error, illegal assignment
+[33m----------^[0m
+assignment to field : '[35mtypecheck_negative.assign.x[39m'
+expected formal type: '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'
+actual type found   : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m'
+assignable to       : '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m',
+                      '[33mAny[39m'
+for value assigned  : '[36massign.this.w[39m'
+To solve this, you could change the type of the target '[36mtypecheck_negative.assign.x[39m' to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E bool).F bool[39m' or convert the type of the assigned value to '[33m((typecheck_negative.this.type.assign.this.type.D i32).E u64).F u32[39m'.
+
+14 errors.

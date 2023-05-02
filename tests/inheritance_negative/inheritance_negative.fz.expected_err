@@ -1,0 +1,52 @@
+
+[32m--CURDIR--/inheritance_negative.fz:33:5:[39m [1;31merror 1[0m[1m: Recursive value type is not allowed[0m
+[34m    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+Value type inheritance_negative.strm2.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm2.u at [32m--CURDIR--/inheritance_negative.fz:33:5:[39m
+[34m    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+2: inheritance_negative.strm2.u at [32m--CURDIR--/inheritance_negative.fz:33:5:[39m
+[34m    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+To solve this, you could add a 'ref' after the arguments list at [32m--CURDIR--/inheritance_negative.fz:33:5:[39m
+[34m    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+
+[32m--CURDIR--/inheritance_negative.fz:43:5:[39m [1;31merror 2[0m[1m: Recursive value type is not allowed[0m
+[34m    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+Value type inheritance_negative.strm3.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm3.u at [32m--CURDIR--/inheritance_negative.fz:43:5:[39m
+[34m    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+2: inheritance_negative.strm3.u at [32m--CURDIR--/inheritance_negative.fz:43:5:[39m
+[34m    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+To solve this, you could add a 'ref' after the arguments list at [32m--CURDIR--/inheritance_negative.fz:43:5:[39m
+[34m    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+
+[32m--CURDIR--/inheritance_negative.fz:53:5:[39m [1;31merror 3[0m[1m: Recursive value type is not allowed[0m
+[34m    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+Value type inheritance_negative.strm4.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm4.u at [32m--CURDIR--/inheritance_negative.fz:53:5:[39m
+[34m    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+2: inheritance_negative.strm4.u at [32m--CURDIR--/inheritance_negative.fz:53:5:[39m
+[34m    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+To solve this, you could add a 'ref' after the arguments list at [32m--CURDIR--/inheritance_negative.fz:53:5:[39m
+[34m    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+[33m----^[0m
+
+3 errors.

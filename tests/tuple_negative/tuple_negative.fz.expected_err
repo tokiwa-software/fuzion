@@ -1,0 +1,1068 @@
+
+[32m--CURDIR--/tuple_negative.fz:141:17:[39m [1;31merror 1[0m[1m: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found right parenthesis ')'[0m
+[34m  t10 (i32, bool) => (3, false) // 15. should flag an error, no syntactic sugar for tuple types
+[33m----------------^[0m
+While parsing: name, parse stack: name (2 times), simpletype, onetype, type, formArgs, formArgsOpt, routOrField, feature, stmnt, stmnts, brblock, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/tuple_negative.fz:199:40:[39m [1;31merror 2[0m[1m: Unexpected control sequence in constant string.[0m
+[34m  chck (t12a3 == 64) "third must be 64;
+[33m---------------------------------------^[0m
+Found unexpected control sequence 'LF ' (0xa) in constant string starting at [32m--CURDIR--/tuple_negative.fz:199:22:[39m
+[34m  chck (t12a3 == 64) "third must be 64;
+[33m---------------------^[0m
+
+
+[32m--CURDIR--/tuple_negative.fz:282:1:[39m [1;31merror 3[0m[1m: Syntax error: expected right curly brace '}', found end-of-file[0m
+[34m
+[33m^[0m
+While parsing: block, parse stack: brblock, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/tuple_negative.fz:84:19:[39m [1;31merror 4[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (one10)         := tuple i32 42 ; p "one10 is $one10" // one-tuple using destructure and explicit type
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone10[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:85:19:[39m [1;31merror 5[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (one11)         := tuple i32 42 ; p "one11 is $one11" // one-tuple using destructure and inferring generic
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone11[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:87:19:[39m [1;31merror 6[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (one12b)        :=         (nil); p "one12 is $one12" //  9. should flag an error, (expr) is not a tuple
+[33m------------------^[0m
+Found no visible argument fields '[36m[39m'
+while there is one destructuring variable: '[36mone12b[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:88:19:[39m [1;31merror 7[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (one13 i32)     := tuple i32 42 ; p "one13 is $one13" // one-tuple using destructure and explicit type
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone13[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:89:19:[39m [1;31merror 8[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (one14 i32)     := tuple i32 42 ; p "one14 is $one14" // one-tuple using destructure and inferring generic
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone14[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:92:19:[39m [1;31merror 9[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  set (one16)     := tuple i32 42 ; p "one16 is $one16" // one-tuple using destructure and explicit type
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone16[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:93:19:[39m [1;31merror 10[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  set (one17)     := tuple i32 42 ; p "one17 is $one17" // one-tuple using destructure and inferring generic
+[33m------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mone17[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:115:24:[39m [1;31merror 11[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (two10a, two10b)     := tuple i32 i32 4  2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
+[33m-----------------------^[0m
+Found 4 visible argument fields '[36mvalues.0, values.1, values.2, values.3[39m'
+while there are 2 destructuring variables: '[36mtwo10a, two10b[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:118:24:[39m [1;31merror 12[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  (two13a, two13b i32) := tuple i32 i32 4  2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
+[33m-----------------------^[0m
+Found 4 visible argument fields '[36mvalues.0, values.1, values.2, values.3[39m'
+while there are 2 destructuring variables: '[36mtwo13a, two13b[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:122:24:[39m [1;31merror 13[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  set (two16a, two16b) := tuple i32 i32 4  2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
+[33m-----------------------^[0m
+Found 4 visible argument fields '[36mvalues.0, values.1, values.2, values.3[39m'
+while there are 2 destructuring variables: '[36mtwo16a, two16b[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:180:29:[39m [1;31merror 14[0m[1m: Repeated entry in destructuring[0m
+[34m  set (t10b1, t10b2, t10b2) := t10   // 16. should flag an error, destructuring into too many variables
+[33m----------------------------^[0m
+Variable '[36mt10b2[39m' appears 2 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:180:29:[39m [1;31merror 15[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  set (t10b1, t10b2, t10b2) := t10   // 16. should flag an error, destructuring into too many variables
+[33m----------------------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there are 3 destructuring variables: '[36mt10b1, t10b2, t10b2[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:181:15:[39m [1;31merror 16[0m[1m: Destructuring mismatch between number of visible fields and number of target variables.[0m
+[34m  set (t10b1) := t10                 // 17. should flag an error, destructuring into too few variables
+[33m--------------^[0m
+Found 2 visible argument fields '[36mvalues.0, values.1[39m'
+while there is one destructuring variable: '[36mt10b1[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:199:3:[39m [1;31merror 17[0m[1m: Could not find called feature[0m
+[34m  chck (t12a3 == 64) "third must be 64;
+[33m--^[0m
+Feature not found: '[35mchck[39m' (one argument)
+Target feature: '[35mtuple_negative[39m'
+In call:
+[36mchck ({
+  t12a3.infix == 64
+})[39m
+
+To solve this, you might change the actual number of arguments to match this feature: '[35mchck[39m' (2 arguments)
+
+
+[32m--CURDIR--/tuple_negative.fz:200:27:[39m [1;31merror 18[0m[1m: Repeated entry in destructuring[0m
+[34m  set (t12a1,t12a1,t12a1) := t11 4 // 18. should flag an error, repeated elements in destructuring
+[33m--------------------------^[0m
+Variable '[36mt12a1[39m' appears 3 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:202:27:[39m [1;31merror 19[0m[1m: Repeated entry in destructuring[0m
+[34m  (t12b1,t12b1,t12b3 i32) := t11 4 // 19. should flag an error, repeated elements in destructuring
+[33m--------------------------^[0m
+Variable '[36mt12b1[39m' appears 2 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:203:27:[39m [1;31merror 20[0m[1m: Repeated entry in destructuring[0m
+[34m  (t12c1,t12c2,t12c2 i32) := t11 4 // 20. should flag an error, repeated elements in destructuring
+[33m--------------------------^[0m
+Variable '[36mt12c2[39m' appears 2 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:209:23:[39m [1;31merror 21[0m[1m: Repeated entry in destructuring[0m
+[34m  (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
+[33m----------------------^[0m
+Variable '[36mt12e1[39m' appears 2 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:210:23:[39m [1;31merror 22[0m[1m: Repeated entry in destructuring[0m
+[34m  (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
+[33m----------------------^[0m
+Variable '[36mt12f1[39m' appears 2 times.
+
+
+[32m--CURDIR--/tuple_negative.fz:44:19:[39m [1;31merror 23[0m[1m: Could not find called feature[0m
+[34m  chck (g1(123).a == 123) "g1 A infer A==i32"
+[33m------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.g1 i32 123.a.infix == 123[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:83:54:[39m [1;31merror 24[0m[1m: Could not find called feature[0m
+[34m  one9            :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
+[33m-----------------------------------------------------^[0m
+Feature not found: '[35mvalues[39m' (no arguments)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one9.values .0[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:95:23:[39m [1;31merror 25[0m[1m: Could not find called feature[0m
+[34m  chck (one1.values.0 == 42) "one1"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one1.values .0.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:96:23:[39m [1;31merror 26[0m[1m: Could not find called feature[0m
+[34m  chck (one2.values.0 == 42) "one2"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one2.values .0.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:97:23:[39m [1;31merror 27[0m[1m: Could not find called feature[0m
+[34m  chck (one7.values.0 == 42) "one7"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.one7.values .0.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:98:23:[39m [1;31merror 28[0m[1m: Could not find called feature[0m
+[34m  chck (one8.values.0 == 42) "one8"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.one8.values .0.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:99:15:[39m [1;31merror 29[0m[1m: Could not find called feature[0m
+[34m  chck (one10 == 42) "one10"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.one10.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:100:15:[39m [1;31merror 30[0m[1m: Could not find called feature[0m
+[34m  chck (one11 == 42) "one11"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.one11.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:101:15:[39m [1;31merror 31[0m[1m: Could not find called feature[0m
+[34m  chck (one13 == 42) "one13"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one13.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:102:15:[39m [1;31merror 32[0m[1m: Could not find called feature[0m
+[34m  chck (one14 == 42) "one14"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one14.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:103:15:[39m [1;31merror 33[0m[1m: Could not find called feature[0m
+[34m  chck (one16 == 42) "one10"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one16.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:104:15:[39m [1;31merror 34[0m[1m: Could not find called feature[0m
+[34m  chck (one17 == 42) "one10"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.one17.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:125:23:[39m [1;31merror 35[0m[1m: Could not find called feature[0m
+[34m  chck (two1.values.0 == 4 && two1.values.1 == 2) "two1"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two1.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:126:23:[39m [1;31merror 36[0m[1m: Could not find called feature[0m
+[34m  chck (two2.values.0 == 4 && two2.values.1 == 2) "two2"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two2.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:127:23:[39m [1;31merror 37[0m[1m: Could not find called feature[0m
+[34m  chck (two3.values.0 == 4 && two3.values.1 == 2) "two3"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two3.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:128:23:[39m [1;31merror 38[0m[1m: Could not find called feature[0m
+[34m  chck (two7.values.0 == 4 && two7.values.1 == 2) "two7"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.two7.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:129:23:[39m [1;31merror 39[0m[1m: Could not find called feature[0m
+[34m  chck (two8.values.0 == 4 && two8.values.1 == 2) "two8"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.two8.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:130:23:[39m [1;31merror 40[0m[1m: Could not find called feature[0m
+[34m  chck (two9.values.0 == 4 && two9.values.1 == 2) "two9"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two9.values .0.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:131:16:[39m [1;31merror 41[0m[1m: Could not find called feature[0m
+[34m  chck (two10a == 4 && two10b == 2) "two10"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32s[39m'
+In call: '[36mtuple_negative.this.two10a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:132:16:[39m [1;31merror 42[0m[1m: Could not find called feature[0m
+[34m  chck (two11a == 4 && two11b == 2) "two11"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two11a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:133:16:[39m [1;31merror 43[0m[1m: Could not find called feature[0m
+[34m  chck (two12a == 4 && two12b == 2) "two12"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two12a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:134:16:[39m [1;31merror 44[0m[1m: Could not find called feature[0m
+[34m  chck (two13a == 4 && two13b == 2) "two13"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two13a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:135:16:[39m [1;31merror 45[0m[1m: Could not find called feature[0m
+[34m  chck (two14a == 4 && two14b == 2) "two14"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two14a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:136:16:[39m [1;31merror 46[0m[1m: Could not find called feature[0m
+[34m  chck (two15a == 4 && two15b == 2) "two15"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two15a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:137:16:[39m [1;31merror 47[0m[1m: Could not find called feature[0m
+[34m  chck (two16a == 4 && two16b == 2) "two16"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two16a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:138:16:[39m [1;31merror 48[0m[1m: Could not find called feature[0m
+[34m  chck (two17a == 4 && two17b == 2) "two17"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two17a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:139:16:[39m [1;31merror 49[0m[1m: Could not find called feature[0m
+[34m  chck (two18a == 4 && two18b == 2) "two18"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.two18a.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:144:22:[39m [1;31merror 50[0m[1m: Could not find called feature[0m
+[34m  chck (t10.values.0 == 3    ) "t10.values.0"
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10.values .0.infix == 3[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:145:22:[39m [1;31merror 51[0m[1m: Could not find called feature[0m
+[34m  chck (t10.values.1 == false) "t10.values.1"
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mbool[39m'
+In call: '[36mtuple_negative.this.t10.values .1.infix == false[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:149:23:[39m [1;31merror 52[0m[1m: Could not find called feature[0m
+[34m  chck (t10a.values.0 == 3    ) "t10a.values.0"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10a.values .0.infix == 3[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:150:23:[39m [1;31merror 53[0m[1m: Could not find called feature[0m
+[34m  chck (t10a.values.1 == false) "t10a.values.1"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mbool[39m'
+In call: '[36mtuple_negative.this.t10a.values .1.infix == false[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:154:24:[39m [1;31merror 54[0m[1m: Could not find called feature[0m
+[34m  chck (t10aa.values.0 == 42) "t10aa.values.0"
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10aa.values .0.infix == 42[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:160:25:[39m [1;31merror 55[0m[1m: Could not find called feature[0m
+[34m  chck (t10aaa.values.1 == 666) "t10aaa.values.1"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10aaa.values .1.infix == 666[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:164:15:[39m [1;31merror 56[0m[1m: Could not find called feature[0m
+[34m  chck (t10a1 == 3) "t10a1"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10a1.infix == 3[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:172:15:[39m [1;31merror 57[0m[1m: Could not find called feature[0m
+[34m  chck (t10b1 == 33) "t10b1"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10b1.infix == 33[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:177:15:[39m [1;31merror 58[0m[1m: Could not find called feature[0m
+[34m  chck (t10b1 == 3) "t10b1"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10b1.infix == 3[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:185:15:[39m [1;31merror 59[0m[1m: Could not find called feature[0m
+[34m  chck (t10c1 == 3) "t10c1"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t10c1.infix == 3[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:191:23:[39m [1;31merror 60[0m[1m: Could not find called feature[0m
+[34m  chck (t11a.values.0 == 5) "first must be 5"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t11a.values .0.infix == 5[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:192:23:[39m [1;31merror 61[0m[1m: Could not find called feature[0m
+[34m  chck (t11a.values.1 == 25) "second must be 25"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t11a.values .1.infix == 25[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:193:23:[39m [1;31merror 62[0m[1m: Could not find called feature[0m
+[34m  chck (t11a.values.2 == 125) "third must be 25"
+[33m----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t11a.values .2.infix == 125[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:197:15:[39m [1;31merror 63[0m[1m: Could not find called feature[0m
+[34m  chck (t12a1 ==  4) "first must be 4"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12a1.infix == 4[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:198:15:[39m [1;31merror 64[0m[1m: Could not find called feature[0m
+[34m  chck (t12a2 == 16) "second must be 16"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12a2.infix == 16[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:205:15:[39m [1;31merror 65[0m[1m: Could not find called feature[0m
+[34m  chck (t12d1 == 6) "first must be 6"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12d1.infix == 6[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:206:15:[39m [1;31merror 66[0m[1m: Could not find called feature[0m
+[34m  chck (t12d2 == 36) "second must be 36"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12d2.infix == 36[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:207:15:[39m [1;31merror 67[0m[1m: Could not find called feature[0m
+[34m  chck (t12d3 == 216) "third must be 216"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12d3.infix == 216[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:212:15:[39m [1;31merror 68[0m[1m: Could not find called feature[0m
+[34m  chck (t12g1 == 7) "first must be 7"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12g1.infix == 7[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:213:15:[39m [1;31merror 69[0m[1m: Could not find called feature[0m
+[34m  chck (t12g2 == 49) "second must be 49"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12g2.infix == 49[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:214:15:[39m [1;31merror 70[0m[1m: Could not find called feature[0m
+[34m  chck (t12g3 == 343) "third must be 343"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12g3.infix == 343[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:217:41:[39m [1;31merror 71[0m[1m: Could not find called feature[0m
+[34m  set (_,_,t12h3) := t11 8; chck (t12h3 == 512) "t12h3 must be 512"
+[33m----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12h3.infix == 512[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:218:41:[39m [1;31merror 72[0m[1m: Could not find called feature[0m
+[34m  set (_,t12h2,_) := t11 8; chck (t12h2 ==  64) "t12h2 must be 64"
+[33m----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12h2.infix == 64[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:219:41:[39m [1;31merror 73[0m[1m: Could not find called feature[0m
+[34m  set (t12h1,_,_) := t11 8; chck (t12h1 ==   8) "t12h1 must be 8"
+[33m----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12h1.infix == 8[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:221:37:[39m [1;31merror 74[0m[1m: Could not find called feature[0m
+[34m  (_,_,t12i3) := t11 9; chck (t12i3 == 729) "t12i3 must be 729"
+[33m------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12i3.infix == 729[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:222:37:[39m [1;31merror 75[0m[1m: Could not find called feature[0m
+[34m  (_,t12i2,_) := t11 9; chck (t12i2 ==  81) "t12i2 must be 81"
+[33m------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12i2.infix == 81[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:223:37:[39m [1;31merror 76[0m[1m: Could not find called feature[0m
+[34m  (t12i1,_,_) := t11 9; chck (t12i1 ==   9) "t12i1 must be 9"
+[33m------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12i1.infix == 9[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:225:42:[39m [1;31merror 77[0m[1m: Could not find called feature[0m
+[34m  (_,_,t12j3 i32) := t11 10; chck (t12j3 == 1000) "t12j3 must be 1000"
+[33m-----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12j3.infix == 1000[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:226:42:[39m [1;31merror 78[0m[1m: Could not find called feature[0m
+[34m  (_,t12j2,_ i32) := t11 10; chck (t12j2 ==  100) "t12j2 must be 100"
+[33m-----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12j2.infix == 100[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:227:42:[39m [1;31merror 79[0m[1m: Could not find called feature[0m
+[34m  (t12j1,_,_ i32) := t11 10; chck (t12j1 ==   10) "t12j1 must be 10"
+[33m-----------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t12j1.infix == 10[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:238:59:[39m [1;31merror 80[0m[1m: Could not find called feature[0m
+[34m  set (t13a1,_,_)            := (01, 12, 23); chck (t13a1 == 01) "t13a1 must be 01"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13a1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:240:59:[39m [1;31merror 81[0m[1m: Could not find called feature[0m
+[34m  set (_,_,t13a3)            := (01, 12, 23); chck (t13a3 == 23) "t13a3 must be 23"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13a3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:241:59:[39m [1;31merror 82[0m[1m: Could not find called feature[0m
+[34m  (t13b1, _, _ i32)          := (01, 12, 23); chck (t13b1 == 01) "t13b1 must be 01"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13b1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:242:59:[39m [1;31merror 83[0m[1m: Could not find called feature[0m
+[34m  (_, t13b2, _ i32)          := (01, 12, 23); chck (t13b2 == 12) "t13b2 must be 12"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13b2.infix == 12[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:243:59:[39m [1;31merror 84[0m[1m: Could not find called feature[0m
+[34m  (_, _, t13b3 i32)          := (01, 12, 23); chck (t13b3 == 23) "t13b3 must be 23"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13b3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:247:59:[39m [1;31merror 85[0m[1m: Could not find called feature[0m
+[34m  (t13d1,_,_)                := (01, 12, 23); chck (t13d1 == 01) "t13d1 must be 01"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13d1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:248:59:[39m [1;31merror 86[0m[1m: Could not find called feature[0m
+[34m  (_,t13d2,_)                := (01, 12, 23); chck (t13d2 == 12) "t13d2 must be 12"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13d2.infix == 12[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:249:59:[39m [1;31merror 87[0m[1m: Could not find called feature[0m
+[34m  (_,_,t13d3)                := (01, 12, 23); chck (t13d3 == 23) "t13d3 must be 23"
+[33m----------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t13d3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:253:61:[39m [1;31merror 88[0m[1m: Could not find called feature[0m
+[34m  set (t14a1,_,_)            := (01, true, 23); chck (t14a1 == 01) "t14a1 must be 01"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14a1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:255:61:[39m [1;31merror 89[0m[1m: Could not find called feature[0m
+[34m  set (_,_,t14a3)            := (01, true, 23); chck (t14a3 == 23) "t14a3 must be 23"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14a3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:259:61:[39m [1;31merror 90[0m[1m: Could not find called feature[0m
+[34m  (t14c1 i32, _ bool, _ i32) := (01, true, 23); chck (t14c1 == 01) "t14c1 must be 01"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14c1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:261:61:[39m [1;31merror 91[0m[1m: Could not find called feature[0m
+[34m  (_ i32, _ bool, t14c3 i32) := (01, true, 23); chck (t14c3 == 23) "t14c3 must be 23"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14c3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:262:61:[39m [1;31merror 92[0m[1m: Could not find called feature[0m
+[34m  (t14d1,_,_)                := (01, true, 23); chck (t14d1 == 01) "t14d1 must be 01"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14d1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:264:61:[39m [1;31merror 93[0m[1m: Could not find called feature[0m
+[34m  (_,_,t14d3)                := (01, true, 23); chck (t14d3 == 23) "t14d3 must be 23"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t14d3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:268:61:[39m [1;31merror 94[0m[1m: Could not find called feature[0m
+[34m  set (t15a1,_,_)            := (01, true, 23); chck (t15a1 == 01) "t15a1 must be 01"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t15a1.infix == 01[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:270:61:[39m [1;31merror 95[0m[1m: Could not find called feature[0m
+[34m  set (_,_,t15a3)            := (01, true, 23); chck (t15a3 == 23) "t15a3 must be 23"
+[33m------------------------------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mtuple_negative.this.t15a3.infix == 23[39m'
+
+
+[32m--CURDIR--/tuple_negative.fz:75:3:[39m [1;31merror 96[0m[1m: Incompatible types in assignment[0m
+[34m  one1 tuple i32 := tuple i32  42 ; p "one1 is {one1.values.0}" // one-tuple using explicit types
+[33m--^[0m
+assignment to field : '[35mtuple_negative.one1[39m'
+expected formal type: '[33mtuple i32[39m'
+actual type found   : '[33mtuple i32s i32[39m'
+assignable to       : '[33mtuple i32s i32[39m'
+for value assigned  : '[36mtuple i32s i32 i32 42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one1[39m' to '[33mtuple i32s i32[39m' or convert the type of the assigned value to '[33mtuple i32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:77:3:[39m [1;31merror 97[0m[1m: Incompatible types in assignment[0m
+[34m  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" //  4. should flag an error, (expr) is not a tuple
+[33m--^[0m
+assignment to field : '[35mtuple_negative.one3[39m'
+expected formal type: '[33mtuple i32[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one3[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mtuple i32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:78:3:[39m [1;31merror 98[0m[1m: Incompatible types in assignment[0m
+[34m  one4 tuple      := tuple i32 42 ; //  5. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.one4[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mtuple i32s i32[39m'
+assignable to       : '[33mtuple i32s i32[39m'
+for value assigned  : '[36mtuple i32s i32 i32 42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one4[39m' to '[33mtuple i32s i32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:79:3:[39m [1;31merror 99[0m[1m: Incompatible types in assignment[0m
+[34m  one5 tuple      := tuple     42 ; //  6. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.one5[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mtuple i32[39m'
+assignable to       : '[33mtuple i32[39m'
+for value assigned  : '[36mtuple i32 42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one5[39m' to '[33mtuple i32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:80:3:[39m [1;31merror 100[0m[1m: Incompatible types in assignment[0m
+[34m  one6 tuple      :=          (42); //  7. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.one6[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one6[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:88:19:[39m [1;31merror 101[0m[1m: Incompatible types in assignment[0m
+[34m  (one13 i32)     := tuple i32 42 ; p "one13 is $one13" // one-tuple using destructure and explicit type
+[33m------------------^[0m
+assignment to field : '[35mtuple_negative.one13[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure10.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one13[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:89:19:[39m [1;31merror 102[0m[1m: Incompatible types in assignment[0m
+[34m  (one14 i32)     := tuple i32 42 ; p "one14 is $one14" // one-tuple using destructure and inferring generic
+[33m------------------^[0m
+assignment to field : '[35mtuple_negative.one14[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure11.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one14[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:92:19:[39m [1;31merror 103[0m[1m: Incompatible types in assignment[0m
+[34m  set (one16)     := tuple i32 42 ; p "one16 is $one16" // one-tuple using destructure and explicit type
+[33m------------------^[0m
+assignment to field : '[35mtuple_negative.one16[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure13.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one16[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:93:19:[39m [1;31merror 104[0m[1m: Incompatible types in assignment[0m
+[34m  set (one17)     := tuple i32 42 ; p "one17 is $one17" // one-tuple using destructure and inferring generic
+[33m------------------^[0m
+assignment to field : '[35mtuple_negative.one17[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure14.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.one17[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:106:3:[39m [1;31merror 105[0m[1m: Incompatible types in assignment[0m
+[34m  two1 tuple i32 i32  := tuple i32 i32 4  2 ; p "two1 is {two1.values.0}, {two1.values.1}" // one-tuple using explicit types
+[33m--^[0m
+assignment to field : '[35mtuple_negative.two1[39m'
+expected formal type: '[33mtuple i32 i32[39m'
+actual type found   : '[33mtuple i32s i32s i32 i32[39m'
+assignable to       : '[33mtuple i32s i32s i32 i32[39m'
+for value assigned  : '[36mtuple i32s i32s i32 i32 i32 i32 4 2[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two1[39m' to '[33mtuple i32s i32s i32 i32[39m' or convert the type of the assigned value to '[33mtuple i32 i32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:109:3:[39m [1;31merror 106[0m[1m: Incompatible types in assignment[0m
+[34m  two4 tuple           := tuple i32 i32 4  2 ; // 12. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.two4[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mtuple i32s i32s i32 i32[39m'
+assignable to       : '[33mtuple i32s i32s i32 i32[39m'
+for value assigned  : '[36mtuple i32s i32s i32 i32 i32 i32 4 2[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two4[39m' to '[33mtuple i32s i32s i32 i32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:110:3:[39m [1;31merror 107[0m[1m: Incompatible types in assignment[0m
+[34m  two5 tuple           := tuple         4  2 ; // 13. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.two5[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mtuple i32 i32[39m'
+assignable to       : '[33mtuple i32 i32[39m'
+for value assigned  : '[36mtuple i32 i32 4 2[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two5[39m' to '[33mtuple i32 i32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:111:3:[39m [1;31merror 108[0m[1m: Incompatible types in assignment[0m
+[34m  two6 tuple           :=              (4, 2); // 14. should flag an error, type inference does not infer generics of result type
+[33m--^[0m
+assignment to field : '[35mtuple_negative.two6[39m'
+expected formal type: '[33mtuple[39m'
+actual type found   : '[33mtuple i32 i32[39m'
+assignable to       : '[33mtuple i32 i32[39m'
+for value assigned  : '[36mtuple i32 i32 4 2[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two6[39m' to '[33mtuple i32 i32[39m' or convert the type of the assigned value to '[33mtuple[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:118:24:[39m [1;31merror 109[0m[1m: Incompatible types in assignment[0m
+[34m  (two13a, two13b i32) := tuple i32 i32 4  2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
+[33m-----------------------^[0m
+assignment to field : '[35mtuple_negative.two13a[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure19.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two13a[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:122:24:[39m [1;31merror 110[0m[1m: Incompatible types in assignment[0m
+[34m  set (two16a, two16b) := tuple i32 i32 4  2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
+[33m-----------------------^[0m
+assignment to field : '[35mtuple_negative.two16a[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mi32s[39m'
+assignable to       : '[33mi32s[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure22.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.two16a[39m' to '[33mi32s[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:168:3:[39m [1;31merror 111[0m[1m: Incompatible types in assignment[0m
+[34m  t10b2 bool := 42
+[33m--^[0m
+assignment to field : '[35mtuple_negative.t10b2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t10b2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:232:13:[39m [1;31merror 112[0m[1m: Incompatible types in assignment[0m
+[34m  (_,_ i32) := (true, 23) // 23. should flag an error, illegal type
+[33m------------^[0m
+assignment to field : '[35mtuple_negative.#_14[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure51.values .0[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_14[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:237:3:[39m [1;31merror 113[0m[1m: Incompatible types in assignment[0m
+[34m  t13a2 bool := 42
+[33m--^[0m
+assignment to field : '[35mtuple_negative.t13a2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t13a2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:239:30:[39m [1;31merror 114[0m[1m: Incompatible types in assignment[0m
+[34m  set (_,t13a2,_)            := (01, 12, 23); // 24. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.t13a2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure55.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t13a2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:244:30:[39m [1;31merror 115[0m[1m: Incompatible types in assignment[0m
+[34m  (t13c1 i32, _ bool, _ i32) := (01, 12, 23); // 25. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_26[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure60.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_26[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:245:30:[39m [1;31merror 116[0m[1m: Incompatible types in assignment[0m
+[34m  (_ i32, t13c2 bool, _ i32) := (01, 12, 23); // 26. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.t13c2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure61.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t13c2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:246:30:[39m [1;31merror 117[0m[1m: Incompatible types in assignment[0m
+[34m  (_ i32, _ bool, t13c3 i32) := (01, 12, 23); // 27. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_31[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure62.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_31[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:252:3:[39m [1;31merror 118[0m[1m: Incompatible types in assignment[0m
+[34m  t14a2 bool := 42;
+[33m--^[0m
+assignment to field : '[35mtuple_negative.t14a2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t14a2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:256:30:[39m [1;31merror 119[0m[1m: Incompatible types in assignment[0m
+[34m  (t14b1,_,_ i32)            := (01, true, 23); // 28. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_38[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure69.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_38[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:257:30:[39m [1;31merror 120[0m[1m: Incompatible types in assignment[0m
+[34m  (_,t14b2,_ i32)            := (01, true, 23); // 29. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.t14b2[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure70.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t14b2[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:258:30:[39m [1;31merror 121[0m[1m: Incompatible types in assignment[0m
+[34m  (_,_,t14b3 i32)            := (01, true, 23); // 30. should flag an error, illegal type
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_43[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure71.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_43[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:267:3:[39m [1;31merror 122[0m[1m: Incompatible types in assignment[0m
+[34m  t15a2 bool := 42;
+[33m--^[0m
+assignment to field : '[35mtuple_negative.t15a2[39m'
+expected formal type: '[33mbool[39m'
+actual type found   : '[33mi32[39m'
+assignable to       : '[33mi32[39m'
+for value assigned  : '[36m42[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t15a2[39m' to '[33mi32[39m' or convert the type of the assigned value to '[33mbool[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:271:30:[39m [1;31merror 123[0m[1m: Incompatible types in assignment[0m
+[34m  (t15a1,_,_ i32)            := (01, true, 23); // 31. should flag an error, duplicate declaration
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_56[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure81.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_56[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:272:30:[39m [1;31merror 124[0m[1m: Incompatible types in assignment[0m
+[34m  (_,t15a2,_ i32)            := (01, true, 23); // 32. should flag an error, duplicate declaration
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.t15a2[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure82.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.t15a2[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/tuple_negative.fz:273:30:[39m [1;31merror 125[0m[1m: Incompatible types in assignment[0m
+[34m  (_,_,t15a3 i32)            := (01, true, 23); // 33. should flag an error, duplicate declaration
+[33m-----------------------------^[0m
+assignment to field : '[35mtuple_negative.#_61[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : '[36mtuple_negative.this.#destructure83.values .1[39m'
+To solve this, you could change the type of the target '[36mtuple_negative.#_61[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+125 errors.

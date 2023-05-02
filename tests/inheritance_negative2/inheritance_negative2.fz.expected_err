@@ -1,0 +1,241 @@
+
+[32m--CURDIR--/inheritance_negative2.fz:30:9:[39m [1;31merror 1[0m[1m: Could not find called feature[0m
+[34m    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
+[33m--------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.inheritedNotFound1[39m'
+In call: '[36mB1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:35:11:[39m [1;31merror 2[0m[1m: Could not find called feature[0m
+[34m    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
+[33m----------^[0m
+Feature not found: '[35mB[39m' (no arguments)
+Target feature: '[35minheritance_negative2.inheritedNotFound2.A[39m'
+In call: '[36minheritance_negative2.inheritedNotFound2.this.A.B[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:53:17:[39m [1;31merror 3[0m[1m: Could not find called feature[0m
+[34m    C1 ref : A1.B1.C is                 // 3. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:54:17:[39m [1;31merror 4[0m[1m: Could not find called feature[0m
+[34m    D1 ref : A1.B1.C1.D is              // 4. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:55:17:[39m [1;31merror 5[0m[1m: Could not find called feature[0m
+[34m    E1 ref : A1.B1.C1.D1.E is           // 5. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:56:17:[39m [1;31merror 6[0m[1m: Could not find called feature[0m
+[34m    F1 ref : A1.B1.C1.D1.E1.F is        // 6. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:59:17:[39m [1;31merror 7[0m[1m: Could not find called feature[0m
+[34m    C2 ref : A1.B1.C is                 // 7. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:60:17:[39m [1;31merror 8[0m[1m: Could not find called feature[0m
+[34m    D2 ref : A1.B1.C1.D is              // 8. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:61:17:[39m [1;31merror 9[0m[1m: Could not find called feature[0m
+[34m    E2 ref : A1.B1.C1.D1.E is           // 9. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:62:17:[39m [1;31merror 10[0m[1m: Could not find called feature[0m
+[34m    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
+[33m----------------^[0m
+Feature not found: '[35mB1[39m' (no arguments)
+Target feature: '[35minheritance_negative2.outerInheritsNotFound3.A1[39m'
+In call: '[36minheritance_negative2.outerInheritsNotFound3.this.A1.B1[39m'
+
+
+[32m--CURDIR--/inheritance_negative2.fz:53:5:[39m [1;31merror 11[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    C1 ref : A1.B1.C is                 // 3. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.C1.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.C1.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:53:5:[39m [1;31merror 12[0m[1m: Wrong number of type parameters[0m
+[34m    C1 ref : A1.B1.C is                 // 3. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.C1.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:54:5:[39m [1;31merror 13[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    D1 ref : A1.B1.C1.D is              // 4. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.D1.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.D1.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:54:5:[39m [1;31merror 14[0m[1m: Wrong number of type parameters[0m
+[34m    D1 ref : A1.B1.C1.D is              // 4. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.D1.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:55:5:[39m [1;31merror 15[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    E1 ref : A1.B1.C1.D1.E is           // 5. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.E1.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.E1.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:55:5:[39m [1;31merror 16[0m[1m: Wrong number of type parameters[0m
+[34m    E1 ref : A1.B1.C1.D1.E is           // 5. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.E1.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:56:5:[39m [1;31merror 17[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    F1 ref : A1.B1.C1.D1.E1.F is        // 6. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.F1.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.F1.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:56:5:[39m [1;31merror 18[0m[1m: Wrong number of type parameters[0m
+[34m    F1 ref : A1.B1.C1.D1.E1.F is        // 6. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.F1.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:59:5:[39m [1;31merror 19[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    C2 ref : A1.B1.C is                 // 7. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.C2.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.C2.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:59:5:[39m [1;31merror 20[0m[1m: Wrong number of type parameters[0m
+[34m    C2 ref : A1.B1.C is                 // 7. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.C2.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:60:5:[39m [1;31merror 21[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    D2 ref : A1.B1.C1.D is              // 8. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.D2.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.D2.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:60:5:[39m [1;31merror 22[0m[1m: Wrong number of type parameters[0m
+[34m    D2 ref : A1.B1.C1.D is              // 8. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.D2.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:61:5:[39m [1;31merror 23[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    E2 ref : A1.B1.C1.D1.E is           // 9. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.E2.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.E2.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:61:5:[39m [1;31merror 24[0m[1m: Wrong number of type parameters[0m
+[34m    E2 ref : A1.B1.C1.D1.E is           // 9. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.E2.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:62:5:[39m [1;31merror 25[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.outerInheritsNotFound3.F2.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.outerInheritsNotFound3.F2.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:62:5:[39m [1;31merror 26[0m[1m: Wrong number of type parameters[0m
+[34m    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.outerInheritsNotFound3.F2.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:30:5:[39m [1;31merror 27[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.inheritedNotFound1.C.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.inheritedNotFound1.C.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:30:5:[39m [1;31merror 28[0m[1m: Wrong number of type parameters[0m
+[34m    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.inheritedNotFound1.C.this.type (in type feature)[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:35:5:[39m [1;31merror 29[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
+[33m----^[0m
+Redefining feature: '[35minheritance_negative2.inheritedNotFound2.C.this.type[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35minheritance_negative2.inheritedNotFound2.C.this.type[39m'.
+
+
+[32m--CURDIR--/inheritance_negative2.fz:35:5:[39m [1;31merror 30[0m[1m: Wrong number of type parameters[0m
+[34m    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
+[33m----^[0m
+Wrong number of actual type parameters in call:
+Called feature: #universe
+expected no generic arguments
+found 1: '[33minheritance_negative2.inheritedNotFound2.C.this.type (in type feature)[39m'.
+
+30 errors.

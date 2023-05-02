@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = iftest_negative
-include ../negative.mk
+include ../simple.mk

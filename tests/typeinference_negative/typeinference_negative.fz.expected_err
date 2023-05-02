@@ -1,0 +1,493 @@
+
+[32m--CURDIR--/typeinference_negative.fz:227:5:[39m [1;31merror 1[0m[1m: Inconsistent indentation[0m
+[34m    {
+[33m----^[0m
+Indentation reference point is [32m--CURDIR--/typeinference_negative.fz:226:5:[39m
+[34m    f choice i32 String bool :=
+[33m----^[0m
+While parsing: term, parse stack: term, opTail, opExpr, expr, exprInLine, implFldInit, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/typeinference_negative.fz:282:5:[39m [1;31merror 2[0m[1m: Inconsistent indentation[0m
+[34m    {
+[33m----^[0m
+Indentation reference point is [32m--CURDIR--/typeinference_negative.fz:281:5:[39m
+[34m    f choice i32 String bool E :=
+[33m----^[0m
+While parsing: term, parse stack: term, opTail, opExpr, expr, exprInLine, implFldInit, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/typeinference_negative.fz:29:11:[39m [1;31merror 3[0m[1m: Could not find called feature[0m
+[34m     x := x  // 1. c0.a should flag an error, cyclic type inference from oneself
+[33m----------^[0m
+Feature not found: '[35mx[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic0[39m'
+In call: '[36mx[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:32:11:[39m [1;31merror 4[0m[1m: Could not find called feature[0m
+[34m     x := y  // 2. c1.a should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35my[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic1[39m'
+In call: '[36my[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:36:11:[39m [1;31merror 5[0m[1m: Could not find called feature[0m
+[34m     x := y  // 4. c1a.a should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35my[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic1a[39m'
+In call: '[36my[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:37:11:[39m [1;31merror 6[0m[1m: Could not find called feature[0m
+[34m     y := z  // 5. c1a.b should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mz[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic1a[39m'
+In call: '[36mz[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:44:20:[39m [1;31merror 7[0m[1m: Illegal forward or cyclic type inference[0m
+[34m     x := cyclic2a.x  // 8. c2.b should flag an error, cyclic type inference between cousins
+[33m-------------------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mtypeinference_negative.cyclic2a.x[39m' at [32m--CURDIR--/typeinference_negative.fz:41:6:[39m
+[34m     x := cyclic2b.x  // 7. c2.a should flag an error, cyclic type inference between cousins
+[33m-----^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:56:11:[39m [1;31merror 8[0m[1m: Could not find called feature[0m
+[34m     a := b  //  9. c4.a should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mb[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mb[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:57:11:[39m [1;31merror 9[0m[1m: Could not find called feature[0m
+[34m     b := c  // 10. c4.b should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mc[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mc[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:58:11:[39m [1;31merror 10[0m[1m: Could not find called feature[0m
+[34m     c := d  // 11. c4.c should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35md[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36md[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:59:11:[39m [1;31merror 11[0m[1m: Could not find called feature[0m
+[34m     d := e  // 12. c4.d should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35me[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36me[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:60:11:[39m [1;31merror 12[0m[1m: Could not find called feature[0m
+[34m     e := f  // 13. c4.e should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mf[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mf[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:61:11:[39m [1;31merror 13[0m[1m: Could not find called feature[0m
+[34m     f := g  // 14. c4.f should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mg[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mg[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:62:11:[39m [1;31merror 14[0m[1m: Could not find called feature[0m
+[34m     g := h  // 15. c4.g should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mh[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mh[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:63:11:[39m [1;31merror 15[0m[1m: Could not find called feature[0m
+[34m     h := i  // 16. c4.h should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mi[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mi[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:64:11:[39m [1;31merror 16[0m[1m: Could not find called feature[0m
+[34m     i := j  // 17. c4.i should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mj[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mj[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:65:11:[39m [1;31merror 17[0m[1m: Could not find called feature[0m
+[34m     j := k  // 18. c4.j should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mk[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mk[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:66:11:[39m [1;31merror 18[0m[1m: Could not find called feature[0m
+[34m     k := l  // 19. c4.k should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35ml[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36ml[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:67:11:[39m [1;31merror 19[0m[1m: Could not find called feature[0m
+[34m     l := m  // 20. c4.l should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mm[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mm[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:68:11:[39m [1;31merror 20[0m[1m: Could not find called feature[0m
+[34m     m := n  // 21. c4.m should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mn[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mn[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:69:11:[39m [1;31merror 21[0m[1m: Could not find called feature[0m
+[34m     n := o  // 22. c4.n should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mo[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mo[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:70:11:[39m [1;31merror 22[0m[1m: Could not find called feature[0m
+[34m     o := p  // 23. c4.o should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mp[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mp[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:71:11:[39m [1;31merror 23[0m[1m: Could not find called feature[0m
+[34m     p := q  // 24. c4.p should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:72:11:[39m [1;31merror 24[0m[1m: Could not find called feature[0m
+[34m     q := r  // 25. c4.q should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:73:11:[39m [1;31merror 25[0m[1m: Could not find called feature[0m
+[34m     r := s  // 26. c4.r should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:74:11:[39m [1;31merror 26[0m[1m: Could not find called feature[0m
+[34m     s := t  // 27. c4.s should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mt[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mt[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:75:11:[39m [1;31merror 27[0m[1m: Could not find called feature[0m
+[34m     t := u  // 28. c4.t should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mu[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mu[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:76:11:[39m [1;31merror 28[0m[1m: Could not find called feature[0m
+[34m     u := v  // 29. c4.u should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mv[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mv[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:77:11:[39m [1;31merror 29[0m[1m: Could not find called feature[0m
+[34m     v := w  // 30. c4.v should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mw[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mw[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:78:11:[39m [1;31merror 30[0m[1m: Could not find called feature[0m
+[34m     w := x  // 31. c4.w should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mx[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mx[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:79:11:[39m [1;31merror 31[0m[1m: Could not find called feature[0m
+[34m     x := y  // 32. c4.x should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35my[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36my[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:80:11:[39m [1;31merror 32[0m[1m: Could not find called feature[0m
+[34m     y := z  // 33. c4.y should flag an error, field invisible
+[33m----------^[0m
+Feature not found: '[35mz[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.cyclic4[39m'
+In call: '[36mz[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:120:11:[39m [1;31merror 33[0m[1m: Could not find called feature[0m
+[34m     a := d  // 35. f2. should flag an error, illegal forward reference
+[33m----------^[0m
+Feature not found: '[35md[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.funct2[39m'
+In call: '[36md[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:178:10:[39m [1;31merror 34[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    f => x // 41. m3.f should flag an error, cyclic type inference between field and feature result type
+[33m---------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mtypeinference_negative.mix3.x[39m' at [32m--CURDIR--/typeinference_negative.fz:177:5:[39m
+[34m    x := f // 40. m3.x should flag an error, cyclic type inference between field and feature result type
+[33m----^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:181:10:[39m [1;31merror 35[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    f => x // 42. m4.f should flag an error, field invisible
+[33m---------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mtypeinference_negative.mix4.x[39m' at [32m--CURDIR--/typeinference_negative.fz:182:5:[39m
+[34m    x := f
+[33m----^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:194:10:[39m [1;31merror 36[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    g => y // 44. m6.z should flag an error, y accessed before it is initilized
+[33m---------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mtypeinference_negative.mix6.y[39m' at [32m--CURDIR--/typeinference_negative.fz:196:5:[39m
+[34m    y := f
+[33m----^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:207:10:[39m [1;31merror 37[0m[1m: Could not find called feature[0m
+[34m    x := h; f => x; g => f; h => y; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+[33m---------^[0m
+Feature not found: '[35mh[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.mix8[39m'
+In call: '[36mh[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:208:10:[39m [1;31merror 38[0m[1m: Could not find called feature[0m
+[34m    z := h
+[33m---------^[0m
+Feature not found: '[35mh[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.mix8[39m'
+In call: '[36mh[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:299:5:[39m [1;31merror 39[0m[1m: Could not find called feature[0m
+[34m    f(y choice i32 String bool E)
+[33m----^[0m
+Feature not found: '[35mf[39m' (one argument)
+Target feature: '[35mtypeinference_negative.typeInferencingFromMatch4[39m'
+In call: '[36mf (y choice i32 String bool E)[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:300:5:[39m [1;31merror 40[0m[1m: Could not find called feature[0m
+[34m    f({
+[33m----^[0m
+Feature not found: '[35mf[39m' (one argument)
+Target feature: '[35mtypeinference_negative.typeInferencingFromMatch4[39m'
+In call: 
+[36mf ({
+  match x
+  a A => {
+    3
+  }
+  B, C => {
+    "String"
+  }
+  d D => {
+    false
+  }
+  e E => {
+    e
+  }
+  
+})[39m
+
+
+
+[32m--CURDIR--/typeinference_negative.fz:159:10:[39m [1;31merror 41[0m[1m: Could not find called feature[0m
+[34m    x => z; y => x;  z => y; // 36. r3.z should flag an error, cyclic result type inference
+[33m---------^[0m
+Feature not found: '[35mz[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.result3.x[39m'
+In call: '[36mz[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:165:10:[39m [1;31merror 42[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    x => y // 38. r5.x should flag an error, cyclic result type inference
+[33m---------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mtypeinference_negative.result5.y[39m' at [32m--CURDIR--/typeinference_negative.fz:166:5:[39m
+[34m    y => x // 39. r5.y should flag an error, cyclic result type inference
+[33m----^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:207:34:[39m [1;31merror 43[0m[1m: Could not find called feature[0m
+[34m    x := h; f => x; g => f; h => y; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+[33m---------------------------------^[0m
+Feature not found: '[35my[39m' (no arguments)
+Target feature: '[35mtypeinference_negative.mix8.f.g.h[39m'
+In call: '[36my[39m'
+
+
+[32m--CURDIR--/typeinference_negative.fz:211:5:[39m [1;31merror 44[0m[1m: Incompatible types in branches of if statement[0m
+[34m    if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
+[33m----^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:211:22:[39m
+[34m    if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
+[33m---------------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:212:22:[39m
+[34m    else if !b     { "String" }
+[33m---------------------^[0m
+blocks return value of type '[33munit[39m' at [32m--CURDIR--/typeinference_negative.fz:213:22:[39m
+[34m    else if b && b { x i32 := 3 }
+[33m---------------------^[0m
+and at [32m--CURDIR--/typeinference_negative.fz:214:22:[39m
+[34m    else if b || b { }
+[33m---------------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:215:22:[39m
+[34m    else           { false }
+[33m---------------------^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:219:7:[39m [1;31merror 45[0m[1m: Incompatible types in branches of if statement[0m
+[34m      if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
+[33m------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:219:24:[39m
+[34m      if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
+[33m-----------------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:220:24:[39m
+[34m      else if !b     { "String" }
+[33m-----------------------^[0m
+blocks return value of type '[33munit[39m' at [32m--CURDIR--/typeinference_negative.fz:221:24:[39m
+[34m      else if b && b { x i32 := 3 }
+[33m-----------------------^[0m
+and at [32m--CURDIR--/typeinference_negative.fz:222:24:[39m
+[34m      else if b || b { }
+[33m-----------------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:223:24:[39m
+[34m      else           { false }
+[33m-----------------------^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:250:7:[39m [1;31merror 46[0m[1m: Incompatible types in cases of match statement[0m
+[34m      match x          // 48. should flag an error: result type cannot be inferred
+[33m------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:251:16:[39m
+[34m        a A => 3
+[33m---------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:252:16:[39m
+[34m        B,C => "String"
+[33m---------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:253:16:[39m
+[34m        d D => false
+[33m---------------^[0m
+block returns value of type '[33mtypeinference_negative.this.type.typeInferencingFromMatch1.this.type.E[39m' at [32m--CURDIR--/typeinference_negative.fz:254:16:[39m
+[34m        e E => e
+[33m---------------^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:266:9:[39m [1;31merror 47[0m[1m: Incompatible types in cases of match statement[0m
+[34m        match x          // 49. should flag an error: result type cannot be inferred
+[33m--------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:267:18:[39m
+[34m          a A => 3
+[33m-----------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:268:18:[39m
+[34m          B,C => "String"
+[33m-----------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:269:18:[39m
+[34m          d D => false
+[33m-----------------^[0m
+block returns value of type '[33mtypeinference_negative.this.type.typeInferencingFromMatch2.this.type.E[39m' at [32m--CURDIR--/typeinference_negative.fz:270:18:[39m
+[34m          e E => e
+[33m-----------------^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:228:7:[39m [1;31merror 48[0m[1m: Incompatible types in branches of if statement[0m
+[34m      if       b { 3 }
+[33m------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:228:20:[39m
+[34m      if       b { 3 }
+[33m-------------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:229:20:[39m
+[34m      else if !b { "String" }
+[33m-------------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:230:20:[39m
+[34m      else       { false }
+[33m-------------------^[0m
+
+
+[32m--CURDIR--/typeinference_negative.fz:235:5:[39m [1;31merror 49[0m[1m: Constructor code should result in type '[33munit[39m'[0m
+[34m    f({
+[33m----^[0m
+Type returned by this constructor's implementation is '[33mtypeinference_negative.this.type.typeInferencingFromIf4.this.type.f[39m'
+To solve this, you could turn this constructor into a routine by adding a matching result type compatible to '[33mtypeinference_negative.this.type.typeInferencingFromIf4.this.type.f[39m' or by using '[35m=>[39m' instead of '[35mis[39m' to infer the result type from the result expression.
+Alternatively, you could explicitly return '[33munit[39m' as the last statement or explicitly ignore the result of the last expression by an assignment '[33m_ := <expression>[39m'.
+
+
+[32m--CURDIR--/typeinference_negative.fz:283:7:[39m [1;31merror 50[0m[1m: Incompatible types in cases of match statement[0m
+[34m      match x
+[33m------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/typeinference_negative.fz:284:16:[39m
+[34m        a A => 3
+[33m---------------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/typeinference_negative.fz:285:16:[39m
+[34m        B,C => "String"
+[33m---------------^[0m
+block returns value of type '[33mbool[39m' at [32m--CURDIR--/typeinference_negative.fz:286:16:[39m
+[34m        d D => false
+[33m---------------^[0m
+block returns value of type '[33mtypeinference_negative.this.type.typeInferencingFromMatch3.this.type.E[39m' at [32m--CURDIR--/typeinference_negative.fz:287:16:[39m
+[34m        e E => e
+[33m---------------^[0m
+
+50 errors.

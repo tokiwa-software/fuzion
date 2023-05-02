@@ -1,0 +1,100 @@
+
+[32m--CURDIR--/indentation_negative.fz:47:8:[39m [1;31merror 1[0m[1m: Inconsistent indentation[0m
+[34m       say "1bc"  //  1. should flag an error: wrong indentation
+[33m-------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:45:7:[39m
+[34m      say "1ba"
+[33m------^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:56:6:[39m [1;31merror 2[0m[1m: Inconsistent indentation[0m
+[34m     say "1cc"  //  2. should flag an error: wrong indentation
+[33m-----^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:53:5:[39m
+[34m    feature1 is
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:72:18:[39m [1;31merror 3[0m[1m: Inconsistent indentation[0m
+[34m                 say "2bc"  //  3. should flag an error: wrong indentation
+[33m-----------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:70:17:[39m
+[34m    feature2 is say "2ba"
+[33m----------------^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:80:16:[39m [1;31merror 4[0m[1m: Inconsistent indentation[0m
+[34m               say "2cc"  //  4. should flag an error: wrong indentation
+[33m---------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:78:5:[39m
+[34m    feature2 is say "2ca"
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:87:18:[39m [1;31merror 5[0m[1m: Inconsistent indentation[0m
+[34m                 say "2db"  //  5. should flag an error: wrong indentation
+[33m-----------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:86:17:[39m
+[34m    feature2 is say "2da"
+[33m----------------^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:88:18:[39m [1;31merror 6[0m[1m: Inconsistent indentation[0m
+[34m                 say "2dc"  //  6. should flag an error: wrong indentation
+[33m-----------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:86:17:[39m
+[34m    feature2 is say "2da"
+[33m----------------^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:95:16:[39m [1;31merror 7[0m[1m: Inconsistent indentation[0m
+[34m               say "2eb"  //  7. should flag an error: wrong indentation
+[33m---------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:94:5:[39m
+[34m    feature2 is say "2ea"
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:96:16:[39m [1;31merror 8[0m[1m: Inconsistent indentation[0m
+[34m               say "2ec"  //  8. should flag an error: wrong indentation
+[33m---------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:94:5:[39m
+[34m    feature2 is say "2ea"
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:110:16:[39m [1;31merror 9[0m[1m: Inconsistent indentation[0m
+[34m               say "3bc"  //  9. should flag an error: wrong indentation
+[33m---------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:109:5:[39m
+[34m    feature3 is say "3ba"; say "3bb"
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:117:18:[39m [1;31merror 10[0m[1m: Inconsistent indentation[0m
+[34m                 say "3cc"  // 10. should flag an error: wrong indentation
+[33m-----------------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:116:17:[39m
+[34m    feature3 is say "3ca"; say "3cb"
+[33m----------------^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/indentation_negative.fz:170:7:[39m [1;31merror 11[0m[1m: Inconsistent indentation[0m
+[34m      say "ok"            // 11. should flag an error: wrong indentation
+[33m------^[0m
+Indentation reference point is [32m--CURDIR--/indentation_negative.fz:168:5:[39m
+[34m    if callWith2Args arg
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+11 errors.

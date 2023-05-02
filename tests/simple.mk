@@ -31,7 +31,7 @@
 #  FUZION -- the fz command
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
 
-FUZION_OPTIONS ?=
+FUZION_OPTIONS := -XmaxErrors=-1 $(FUZION_OPTIONS)
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz

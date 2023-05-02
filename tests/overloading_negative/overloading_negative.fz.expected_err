@@ -1,0 +1,182 @@
+
+[32m--CURDIR--/overloading_negative.fz:46:8:[39m [1;31merror 1[0m[1m: Ambiguous type[0m
+[34m    a1 a := a            // 1. should flag an error: ambiguous types
+[33m-------^[0m
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: '[33ma[39m'
+Possible features that match this type: 
+'[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:38:5:[39m
+[34m    a is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:39:5:[39m
+[34m    a(i i32) is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:40:5:[39m
+[34m    a(i, j i32) is
+[33m----^[0m
+
+To solve this, rename these features such that each one has a unique name.
+
+
+[32m--CURDIR--/overloading_negative.fz:47:8:[39m [1;31merror 2[0m[1m: Ambiguous type[0m
+[34m    a2 a := a 42         // 2. should flag an error: ambiguous types
+[33m-------^[0m
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: '[33ma[39m'
+Possible features that match this type: 
+'[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:38:5:[39m
+[34m    a is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:39:5:[39m
+[34m    a(i i32) is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:40:5:[39m
+[34m    a(i, j i32) is
+[33m----^[0m
+
+To solve this, rename these features such that each one has a unique name.
+
+
+[32m--CURDIR--/overloading_negative.fz:48:8:[39m [1;31merror 3[0m[1m: Ambiguous type[0m
+[34m    a3 a := a 47 11      // 3. should flag an error: ambiguous types
+[33m-------^[0m
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: '[33ma[39m'
+Possible features that match this type: 
+'[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:38:5:[39m
+[34m    a is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:39:5:[39m
+[34m    a(i i32) is
+[33m----^[0m
+and '[35moverloading_negative.test1.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:40:5:[39m
+[34m    a(i, j i32) is
+[33m----^[0m
+
+To solve this, rename these features such that each one has a unique name.
+
+
+[32m--CURDIR--/overloading_negative.fz:63:8:[39m [1;31merror 4[0m[1m: Type not found[0m
+[34m    a1 a := a            // 4. should flag an error: type not found
+[33m-------^[0m
+Type '[33ma[39m' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: '[33ma[39m'
+in feature: '[35moverloading_negative.test2.a1[39m'
+However, 3 features have been found that match the type name but that do not define a type:
+'[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:55:5:[39m
+[34m    a() unit is
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:56:5:[39m
+[34m    a(i i32) i32 is 13
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:57:5:[39m
+[34m    a(i, j i32) String is "foo"
+[33m----^[0m
+
+To solve this, remove the return type (or replace it by '[35mref[39m') of one of these features.
+
+
+[32m--CURDIR--/overloading_negative.fz:64:8:[39m [1;31merror 5[0m[1m: Type not found[0m
+[34m    a2 a := a 42         // 5. should flag an error: type not found
+[33m-------^[0m
+Type '[33ma[39m' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: '[33ma[39m'
+in feature: '[35moverloading_negative.test2.a2[39m'
+However, 3 features have been found that match the type name but that do not define a type:
+'[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:55:5:[39m
+[34m    a() unit is
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:56:5:[39m
+[34m    a(i i32) i32 is 13
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:57:5:[39m
+[34m    a(i, j i32) String is "foo"
+[33m----^[0m
+
+To solve this, remove the return type (or replace it by '[35mref[39m') of one of these features.
+
+
+[32m--CURDIR--/overloading_negative.fz:65:8:[39m [1;31merror 6[0m[1m: Type not found[0m
+[34m    a3 a := a 47 11      // 6. should flag an error: type not found
+[33m-------^[0m
+Type '[33ma[39m' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: '[33ma[39m'
+in feature: '[35moverloading_negative.test2.a3[39m'
+However, 3 features have been found that match the type name but that do not define a type:
+'[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:55:5:[39m
+[34m    a() unit is
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:56:5:[39m
+[34m    a(i i32) i32 is 13
+[33m----^[0m
+and '[35moverloading_negative.test2.a[39m' defined at [32m--CURDIR--/overloading_negative.fz:57:5:[39m
+[34m    a(i, j i32) String is "foo"
+[33m----^[0m
+
+To solve this, remove the return type (or replace it by '[35mref[39m') of one of these features.
+
+
+[32m--CURDIR--/overloading_negative.fz:39:5:[39m [1;31merror 7[0m[1m: Duplicate feature declaration[0m
+[34m    a(i i32) is
+[33m----^[0m
+Feature that was declared repeatedly: '[35moverloading_negative.test1.a[39m'
+originally declared at [32m--CURDIR--/overloading_negative.fz:38:5:[39m
+[34m    a is
+[33m----^[0m
+To solve this, consider renaming one of these two features, e.g., as '[35maʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or changing it into a routine by returning a '[35munit[39m' result, i.e., adding '[35munit[39m' before '[35mis[39m' or using '[35m=>[39m' instead of '[35mis[39m'.
+
+
+[32m--CURDIR--/overloading_negative.fz:40:5:[39m [1;31merror 8[0m[1m: Duplicate feature declaration[0m
+[34m    a(i, j i32) is
+[33m----^[0m
+Feature that was declared repeatedly: '[35moverloading_negative.test1.a[39m'
+originally declared at [32m--CURDIR--/overloading_negative.fz:39:5:[39m
+[34m    a(i i32) is
+[33m----^[0m
+To solve this, consider renaming one of these two features, e.g., as '[35maʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or changing it into a routine by returning a '[35munit[39m' result, i.e., adding '[35munit[39m' before '[35mis[39m' or using '[35m=>[39m' instead of '[35mis[39m'.
+
+
+[32m--CURDIR--/overloading_negative.fz:47:5:[39m [1;31merror 9[0m[1m: Incompatible types in assignment[0m
+[34m    a2 a := a 42         // 2. should flag an error: ambiguous types
+[33m----^[0m
+assignment to field : '[35moverloading_negative.test1.a2[39m'
+expected formal type: '[33moverloading_negative.this.type.test1.this.type.a[39m'
+actual type found   : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+assignable to       : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+for value assigned  : '[36mtest1.this.a 42[39m'
+To solve this, you could change the type of the target '[36moverloading_negative.test1.a2[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
+
+
+[32m--CURDIR--/overloading_negative.fz:48:5:[39m [1;31merror 10[0m[1m: Incompatible types in assignment[0m
+[34m    a3 a := a 47 11      // 3. should flag an error: ambiguous types
+[33m----^[0m
+assignment to field : '[35moverloading_negative.test1.a3[39m'
+expected formal type: '[33moverloading_negative.this.type.test1.this.type.a[39m'
+actual type found   : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+assignable to       : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+for value assigned  : '[36mtest1.this.a 47 11[39m'
+To solve this, you could change the type of the target '[36moverloading_negative.test1.a3[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
+
+
+[32m--CURDIR--/overloading_negative.fz:50:12:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[34m    set a2 := a 42
+[33m-----------^[0m
+assignment to field : '[35moverloading_negative.test1.a2[39m'
+expected formal type: '[33moverloading_negative.this.type.test1.this.type.a[39m'
+actual type found   : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+assignable to       : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+for value assigned  : '[36mtest1.this.a 42[39m'
+To solve this, you could change the type of the target '[36moverloading_negative.test1.a2[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
+
+
+[32m--CURDIR--/overloading_negative.fz:51:12:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[34m    set a3 := a 47 11
+[33m-----------^[0m
+assignment to field : '[35moverloading_negative.test1.a3[39m'
+expected formal type: '[33moverloading_negative.this.type.test1.this.type.a[39m'
+actual type found   : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+assignable to       : '[33moverloading_negative.this.type.test1.this.type.a[39m'
+for value assigned  : '[36mtest1.this.a 47 11[39m'
+To solve this, you could change the type of the target '[36moverloading_negative.test1.a3[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
+
+12 errors.

@@ -1,0 +1,17 @@
+
+[32m--CURDIR--/forwardref_negative.fz:29:10:[39m [1;31merror 1[0m[1m: Could not find called feature[0m
+[34m    a := z // 1. should flag an error, forward reference to uninitialized field
+[33m---------^[0m
+Feature not found: '[35mz[39m' (no arguments)
+Target feature: '[35mforwardref_negative.cyclic1[39m'
+In call: '[36mz[39m'
+
+
+[32m--CURDIR--/forwardref_negative.fz:58:10:[39m [1;31merror 2[0m[1m: Could not find called feature[0m
+[34m    a := z // 2. should flag an error, forward reference to uninitialized field
+[33m---------^[0m
+Feature not found: '[35mz[39m' (no arguments)
+Target feature: '[35mforwardref_negative.cyclic2[39m'
+In call: '[36mz[39m'
+
+2 errors.

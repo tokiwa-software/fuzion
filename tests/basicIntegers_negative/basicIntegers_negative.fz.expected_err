@@ -1,0 +1,202 @@
+
+[32m--CURDIR--/basicIntegers_negative.fz:5:12:[39m [1;31merror 1[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  i3 i8 := 128  // 1. should flag an error, constant out of range
+[33m-----------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m128[39m'
+Assigned to type: '[33mi8[39m'
+Acceptable range of values: '[36m-128[39m' .. '[36m127[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:9:12:[39m [1;31merror 2[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  i7 i8 := -129  // 2. should flag an error, constant out of range
+[33m-----------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-129[39m'
+Assigned to type: '[33mi8[39m'
+Acceptable range of values: '[36m-128[39m' .. '[36m127[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:17:12:[39m [1;31merror 3[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  u5 u8 := 256  // 3. should flag an error, constant out of range
+[33m-----------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m256[39m'
+Assigned to type: '[33mu8[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m255[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:19:12:[39m [1;31merror 4[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  u7 u8 := -1   // 4. should flag an error, constant out of range
+[33m-----------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-1[39m'
+Assigned to type: '[33mu8[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m255[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:27:13:[39m [1;31merror 5[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s5 i16 := 0x8000               // 5. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m0x8000[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-0x8000[39m' .. '[36m0x7fff[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:29:13:[39m [1;31merror 6[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s7 i16 := 0b1111111111111111   // 6. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m0b1111111111111111[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-0b1000000000000000[39m' .. '[36m0b111111111111111[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:33:14:[39m [1;31merror 7[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s9b i16 := -(-32768)           // 7. should flag an error, constant out of range
+[33m-------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m32768[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-32768[39m' .. '[36m32767[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:35:14:[39m [1;31merror 8[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s10 i16 := -32769              // 8. should flag an error, constant out of range
+[33m-------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-32769[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-32768[39m' .. '[36m32767[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:36:15:[39m [1;31merror 9[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s10a i16 := -(-(-(32769)))     // 9. should flag an error, constant out of range
+[33m--------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-32769[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-32768[39m' .. '[36m32767[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:37:17:[39m [1;31merror 10[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  s10b i16 := +(-(+(32769)))     // 10. should flag an error, constant out of range
+[33m----------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-32769[39m'
+Assigned to type: '[33mi16[39m'
+Acceptable range of values: '[36m-32768[39m' .. '[36m32767[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:41:13:[39m [1;31merror 11[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  c3 u16 := 65536                // 11. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m65536[39m'
+Assigned to type: '[33mu16[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m65535[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:43:13:[39m [1;31merror 12[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  c5 u16 := 0x10000              // 12. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m0x10000[39m'
+Assigned to type: '[33mu16[39m'
+Acceptable range of values: '[36m0x0[39m' .. '[36m0xffff[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:45:13:[39m [1;31merror 13[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  c7 u16 := 0b10000000000000000  // 13. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m0b10000000000000000[39m'
+Assigned to type: '[33mu16[39m'
+Acceptable range of values: '[36m0b0[39m' .. '[36m0b1111111111111111[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:47:13:[39m [1;31merror 14[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  c9 u16 := -1                   // 14. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-1[39m'
+Assigned to type: '[33mu16[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m65535[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:51:13:[39m [1;31merror 15[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  l2 i64 := 9223372036854775808  // 15. should flag an error, constant out of range
+[33m------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m9223372036854775808[39m'
+Assigned to type: '[33mi64[39m'
+Acceptable range of values: '[36m-9223372036854775808[39m' .. '[36m9223372036854775807[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:56:14:[39m [1;31merror 16[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  ul4 u64 := 18446744073709551616 // 16. should flag an error, constant out of range
+[33m-------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m18446744073709551616[39m'
+Assigned to type: '[33mu64[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m18446744073709551615[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:58:14:[39m [1;31merror 17[0m[1m: Integer constant value outside of allowed range for target type[0m
+[34m  ul6 u64 := -1                   // 17. should flag an error, constant out of range
+[33m-------------^[0m
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '[36m-1[39m'
+Assigned to type: '[33mu64[39m'
+Acceptable range of values: '[36m0[39m' .. '[36m18446744073709551615[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:65:6:[39m [1;31merror 18[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m  sa 123.456       # 18. should flag an error, must be integer
+[33m-----^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m123.456[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:66:6:[39m [1;31merror 19[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m  sa 123456.789    # 19. should flag an error, must be integer
+[33m-----^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m123456.789[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:68:6:[39m [1;31merror 20[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m  sa 123456.789E2  # 20. should flag an error, must be integer
+[33m-----^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m123456.789E2[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:72:6:[39m [1;31merror 21[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m  sa 123456780E-2  # 21. should flag an error, must be integer
+[33m-----^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m123456780E-2[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:73:6:[39m [1;31merror 22[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m  sa 123456780E-3  # 22. should flag an error, must be integer
+[33m-----^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m123456780E-3[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[32m--CURDIR--/basicIntegers_negative.fz:73:3:[39m [1;31merror 23[0m[1m: Constructor code should result in type '[33munit[39m'[0m
+[34m  sa 123456780E-3  # 22. should flag an error, must be integer
+[33m--^[0m
+Type returned by this constructor's implementation is '[33mbasicIntegers_negative.this.type.sa[39m'
+To solve this, you could turn this constructor into a routine by adding a matching result type compatible to '[33mbasicIntegers_negative.this.type.sa[39m' or by using '[35m=>[39m' instead of '[35mis[39m' to infer the result type from the result expression.
+Alternatively, you could explicitly return '[33munit[39m' as the last statement or explicitly ignore the result of the last expression by an assignment '[33m_ := <expression>[39m'.
+
+23 errors.

@@ -1,0 +1,40 @@
+
+[32m--CURDIR--/strings_multiline_negative.fz:28:8:[39m [1;31merror 1[0m[1m: Expected multiline string to start in first line following fat quotation '"""'[0m
+[34m  a := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
+[33m-------^[0m
+Found start at [32m--CURDIR--/strings_multiline_negative.fz:28:11:[39m
+[34m  a := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
+[33m----------^[0m instead.
+
+
+[32m--CURDIR--/strings_multiline_negative.fz:29:8:[39m [1;31merror 2[0m[1m: Expected multiline string to start in first line following fat quotation '"""'[0m
+[34m  b := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
+[33m-------^[0m
+Found start at [32m--CURDIR--/strings_multiline_negative.fz:29:12:[39m
+[34m  b := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
+[33m-----------^[0m instead.
+
+
+[32m--CURDIR--/strings_multiline_negative.fz:32:8:[39m [1;31merror 3[0m[1m: Expected multiline string to start in first line following fat quotation '"""'[0m
+[34m  c := """
+[33m-------^[0m
+Found start at [32m--CURDIR--/strings_multiline_negative.fz:34:3:[39m
+[34m  c
+[33m--^[0m instead.
+
+
+[32m--CURDIR--/strings_multiline_negative.fz:39:2:[39m [1;31merror 4[0m[1m: Found codepoint at less indentation than expected in multiline string.[0m
+[34m d              //  4. should flag an error: Found codepoint at less indentation than expected in multiline string.
+[33m-^[0m
+To solve this, indent offending line by at least 2 spaces.
+Alternatively decrease indentation of first line. One way to do this is by using the \s escape code which equals a space.
+
+
+[32m--CURDIR--/strings_multiline_negative.fz:51:76:[39m [1;31merror 5[0m[1m: Unexpected control sequence in constant string.[0m
+[34m  """"  // 6. should flag an error: Found unexpected control sequence 'LF '
+[33m---------------------------------------------------------------------------^[0m
+Found unexpected control sequence 'LF ' (0xa) in constant string starting at [32m--CURDIR--/strings_multiline_negative.fz:51:6:[39m
+[34m  """"  // 6. should flag an error: Found unexpected control sequence 'LF '
+[33m-----^[0m
+
+5 errors.

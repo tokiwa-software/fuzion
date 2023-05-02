@@ -1,0 +1,7 @@
+
+[32m--CURDIR--/issue761.fz:30:12:[39m [1;31merror 1[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m        if place_queen // 1. should flag an error: If condition must be assignable to type 'bool'. Actual type is 'unit'.
+[33m-----------^[0m
+Actual type is '[33munit[39m'
+
+one error.

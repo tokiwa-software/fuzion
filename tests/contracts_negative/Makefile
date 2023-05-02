@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = SquareRoot
-include ../negative.mk
+override NAME = contracts_negative
+include ../simple.mk

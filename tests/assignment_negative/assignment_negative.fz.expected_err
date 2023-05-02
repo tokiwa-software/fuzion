@@ -1,0 +1,202 @@
+
+[32m--CURDIR--/assignment_negative.fz:57:3:[39m [1;31merror 1[0m[1m: Repeated inheritance of conflicting features[0m
+[34m  E ref : D is
+[33m--^[0m
+Feature '[35massignment_negative.E.type[39m' inherits feature '[35mx.#type[39m' (one argument) repeatedly: '[35massignment_negative.B.x.type[39m' defined at [32m--CURDIR--/assignment_negative.fz:47:5:[39m
+[34m    redefine x is say "B.x"
+[33m----^[0m
+and '[35massignment_negative.C.x.type[39m' defined at [32m--CURDIR--/assignment_negative.fz:51:5:[39m
+[34m    redefine x is say "C.x"
+[33m----^[0m
+To solve this, you could add a redefinition of '[35mx.#type[39m' to '[35massignment_negative.E.type[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:55:5:[39m [1;31merror 2[0m[1m: Cannot redefine feature with type parameters[0m
+[34m    redefine x is say "D.x"
+[33m----^[0m
+Feature that redefines existing feature: '[35massignment_negative.D.type[39m'
+original feature: '[35massignment_negative.C.x.type[39m'
+original feature defined in [32m--CURDIR--/assignment_negative.fz:51:5:[39m
+To solve this, ask the Fuzion team to remove this restriction :-).
+
+
+[32m--CURDIR--/assignment_negative.fz:58:5:[39m [1;31merror 3[0m[1m: Cannot redefine feature with type parameters[0m
+[34m    redefine x  is say "E.x"
+[33m----^[0m
+Feature that redefines existing feature: '[35massignment_negative.E.type[39m'
+original feature: '[35massignment_negative.B.x.type[39m'
+original feature defined in [32m--CURDIR--/assignment_negative.fz:47:5:[39m
+To solve this, ask the Fuzion team to remove this restriction :-).
+
+
+[32m--CURDIR--/assignment_negative.fz:63:3:[39m [1;31merror 4[0m[1m: Incompatible types in assignment[0m
+[34m  ci Q.C := C  // 1. should flag an error: illegal assignment
+[33m--^[0m
+assignment to field : '[35massignment_negative.ci[39m'
+expected formal type: '[33massignment_negative.this.type.Q.C[39m'
+actual type found   : '[33massignment_negative.this.type.C[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.A[39m',
+                      '[33massignment_negative.this.type.C[39m'
+for value assigned  : '[36massignment_negative.this.C[39m'
+To solve this, you could change the type of the target '[36massignment_negative.ci[39m' to '[33massignment_negative.this.type.C[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.C[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:64:3:[39m [1;31merror 5[0m[1m: Incompatible types in assignment[0m
+[34m  aa Q.A := bi // 2. should flag an error: illegal assignment
+[33m--^[0m
+assignment to field : '[35massignment_negative.aa[39m'
+expected formal type: '[33massignment_negative.this.type.Q.A[39m'
+actual type found   : '[33massignment_negative.this.type.B[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.A[39m',
+                      '[33massignment_negative.this.type.B[39m'
+for value assigned  : '[36massignment_negative.this.bi[39m'
+To solve this, you could change the type of the target '[36massignment_negative.aa[39m' to '[33massignment_negative.this.type.B[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.A[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:68:10:[39m [1;31merror 6[0m[1m: Incompatible types in assignment[0m
+[34m  set aa := ci // 3. should flag an error: illegal assignment
+[33m---------^[0m
+assignment to field : '[35massignment_negative.aa[39m'
+expected formal type: '[33massignment_negative.this.type.Q.A[39m'
+actual type found   : '[33massignment_negative.this.type.Q.C[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.Q.C[39m'
+for value assigned  : '[36massignment_negative.this.ci[39m'
+To solve this, you could change the type of the target '[36massignment_negative.aa[39m' to '[33massignment_negative.this.type.Q.C[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.A[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:70:3:[39m [1;31merror 7[0m[1m: Incompatible types in assignment[0m
+[34m  di Q.D := D // 4. should flag an error: illegal assignment
+[33m--^[0m
+assignment to field : '[35massignment_negative.di[39m'
+expected formal type: '[33massignment_negative.this.type.Q.D[39m'
+actual type found   : '[33massignment_negative.this.type.D[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.A[39m',
+                      '[33massignment_negative.this.type.B[39m',
+                      '[33massignment_negative.this.type.C[39m',
+                      '[33massignment_negative.this.type.D[39m'
+for value assigned  : '[36massignment_negative.this.D[39m'
+To solve this, you could change the type of the target '[36massignment_negative.di[39m' to '[33massignment_negative.this.type.D[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.D[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:71:3:[39m [1;31merror 8[0m[1m: Incompatible types in assignment[0m
+[34m  ei Q.E := E // 5. should flag an error: illegal assignment
+[33m--^[0m
+assignment to field : '[35massignment_negative.ei[39m'
+expected formal type: '[33massignment_negative.this.type.Q.E[39m'
+actual type found   : '[33massignment_negative.this.type.E[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.A[39m',
+                      '[33massignment_negative.this.type.B[39m',
+                      '[33massignment_negative.this.type.C[39m',
+                      '[33massignment_negative.this.type.D[39m',
+                      '[33massignment_negative.this.type.E[39m'
+for value assigned  : '[36massignment_negative.this.E[39m'
+To solve this, you could change the type of the target '[36massignment_negative.ei[39m' to '[33massignment_negative.this.type.E[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.E[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:81:10:[39m [1;31merror 9[0m[1m: Incompatible types in assignment[0m
+[34m  set di := ei  // 6. should flag an error: illegal assignment
+[33m---------^[0m
+assignment to field : '[35massignment_negative.di[39m'
+expected formal type: '[33massignment_negative.this.type.Q.D[39m'
+actual type found   : '[33massignment_negative.this.type.Q.E[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.Q.E[39m'
+for value assigned  : '[36massignment_negative.this.ei[39m'
+To solve this, you could change the type of the target '[36massignment_negative.di[39m' to '[33massignment_negative.this.type.Q.E[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.D[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:85:10:[39m [1;31merror 10[0m[1m: Incompatible types in assignment[0m
+[34m  set bi := di  // 7. should flag an error: illegal assignment
+[33m---------^[0m
+assignment to field : '[35massignment_negative.bi[39m'
+expected formal type: '[33massignment_negative.this.type.B[39m'
+actual type found   : '[33massignment_negative.this.type.Q.D[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.Q.D[39m'
+for value assigned  : '[36massignment_negative.this.di[39m'
+To solve this, you could change the type of the target '[36massignment_negative.bi[39m' to '[33massignment_negative.this.type.Q.D[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.B[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:86:10:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[34m  set ci := di  // 8. should flag an error: illegal assignment
+[33m---------^[0m
+assignment to field : '[35massignment_negative.ci[39m'
+expected formal type: '[33massignment_negative.this.type.Q.C[39m'
+actual type found   : '[33massignment_negative.this.type.Q.D[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.Q.D[39m'
+for value assigned  : '[36massignment_negative.this.di[39m'
+To solve this, you could change the type of the target '[36massignment_negative.ci[39m' to '[33massignment_negative.this.type.Q.D[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.C[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:91:10:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[34m  set aa := ei  // 9. should flag an error: illegal assignment
+[33m---------^[0m
+assignment to field : '[35massignment_negative.aa[39m'
+expected formal type: '[33massignment_negative.this.type.Q.A[39m'
+actual type found   : '[33massignment_negative.this.type.Q.E[39m'
+assignable to       : '[33mAny[39m',
+                      '[33massignment_negative.this.type.Q.E[39m'
+for value assigned  : '[36massignment_negative.this.ei[39m'
+To solve this, you could change the type of the target '[36massignment_negative.aa[39m' to '[33massignment_negative.this.type.Q.E[39m' or convert the type of the assigned value to '[33massignment_negative.this.type.Q.A[39m'.
+
+
+[32m--CURDIR--/assignment_negative.fz:47:5:[39m [1;31merror 13[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine x is say "B.x"
+[33m----^[0m
+In '[35massignment_negative.B.x[39m' that redefines '[35massignment_negative.A.x[39m' result type is '[33massignment_negative.B.x[39m', result type should be '[33munit[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:43:5:[39m
+[34m    x is abstract
+[33m----^[0m
+To solve this, change type of result to '[33munit[39m'
+
+
+[32m--CURDIR--/assignment_negative.fz:51:5:[39m [1;31merror 14[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine x is say "C.x"
+[33m----^[0m
+In '[35massignment_negative.C.x[39m' that redefines '[35massignment_negative.A.x[39m' result type is '[33massignment_negative.C.x[39m', result type should be '[33munit[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:43:5:[39m
+[34m    x is abstract
+[33m----^[0m
+To solve this, change type of result to '[33munit[39m'
+
+
+[32m--CURDIR--/assignment_negative.fz:55:5:[39m [1;31merror 15[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine x is say "D.x"
+[33m----^[0m
+In '[35massignment_negative.D.x[39m' that redefines '[35massignment_negative.C.x[39m' result type is '[33massignment_negative.D.x[39m', result type should be '[33massignment_negative.C.x[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:51:5:[39m
+[34m    redefine x is say "C.x"
+[33m----^[0m
+To solve this, change type of result to '[33massignment_negative.C.x[39m'
+
+
+[32m--CURDIR--/assignment_negative.fz:58:5:[39m [1;31merror 16[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine x  is say "E.x"
+[33m----^[0m
+In '[35massignment_negative.E.x[39m' that redefines '[35massignment_negative.D.x[39m' result type is '[33massignment_negative.E.x[39m', result type should be '[33massignment_negative.D.x[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:55:5:[39m
+[34m    redefine x is say "D.x"
+[33m----^[0m
+To solve this, change type of result to '[33massignment_negative.D.x[39m'
+
+
+[32m--CURDIR--/assignment_negative.fz:60:5:[39m [1;31merror 17[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine xc is say "E.xc"
+[33m----^[0m
+In '[35massignment_negative.E.xc[39m' that redefines '[35massignment_negative.C.xc[39m' result type is '[33massignment_negative.E.xc[39m', result type should be '[33massignment_negative.C.xc[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:52:5:[39m
+[34m    xc is say "C.xc"
+[33m----^[0m
+To solve this, change type of result to '[33massignment_negative.C.xc[39m'
+
+
+[32m--CURDIR--/assignment_negative.fz:59:5:[39m [1;31merror 18[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine xb is say "E.xb"
+[33m----^[0m
+In '[35massignment_negative.E.xb[39m' that redefines '[35massignment_negative.B.xb[39m' result type is '[33massignment_negative.E.xb[39m', result type should be '[33massignment_negative.B.xb[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:48:5:[39m
+[34m    xb is say "B.xb"
+[33m----^[0m
+To solve this, change type of result to '[33massignment_negative.B.xb[39m'
+
+18 errors.

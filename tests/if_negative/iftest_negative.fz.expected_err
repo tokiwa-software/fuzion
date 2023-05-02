@@ -1,0 +1,49 @@
+
+[32m--CURDIR--/iftest_negative.fz:40:13:[39m [1;31merror 1[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    else if "string"  // 2. should flag an error: must be of type bool
+[33m------------^[0m
+Actual type is '[33mString[39m'
+
+
+[32m--CURDIR--/iftest_negative.fz:39:8:[39m [1;31merror 2[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    if "string"       // 1. should flag an error: must be of type bool
+[33m-------^[0m
+Actual type is '[33mString[39m'
+
+
+[32m--CURDIR--/iftest_negative.fz:45:13:[39m [1;31merror 3[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    else if 42        // 4. should flag an error: must be of type bool
+[33m------------^[0m
+Actual type is '[33mi32[39m'
+
+
+[32m--CURDIR--/iftest_negative.fz:44:8:[39m [1;31merror 4[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    if 42             // 3. should flag an error: must be of type bool
+[33m-------^[0m
+Actual type is '[33mi32[39m'
+
+
+[32m--CURDIR--/iftest_negative.fz:61:5:[39m [1;31merror 5[0m[1m: Incompatible types in assignment[0m
+[34m    if b // 5. should flag an error: Incompatible types in assignment
+[33m----^[0m
+assignment to field : '[35miftest_negative.routine_negative.#stmtResult6[39m'
+expected formal type: '[33mString[39m'
+actual type found   : '[33mref unit[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mref unit[39m'
+for value assigned  : '[36mbox(unit)[39m'
+To solve this, you could change the type of the target '[36miftest_negative.routine_negative.#stmtResult6[39m' to '[33mref unit[39m' or convert the type of the assigned value to '[33mString[39m'.
+
+
+[32m--CURDIR--/iftest_negative.fz:66:5:[39m [1;31merror 6[0m[1m: Incompatible types in branches of if statement[0m
+[34m    if b // 6. should flag an error: Incompatible types in branches of if statement
+[33m----^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mString[39m' at [32m--CURDIR--/iftest_negative.fz:67:7:[39m
+[34m      "Hello"
+[33m------^[0m
+block returns value of type '[33munit[39m' at [32m--CURDIR--/iftest_negative.fz:66:5:[39m
+[34m    if b // 6. should flag an error: Incompatible types in branches of if statement
+[33m----^[0m
+
+6 errors.

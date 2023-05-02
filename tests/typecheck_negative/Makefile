@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = typecheck_negative
-include ../negative.mk
+include ../simple.mk

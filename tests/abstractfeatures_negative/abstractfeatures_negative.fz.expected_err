@@ -1,0 +1,85 @@
+
+[32m--CURDIR--/abstractfeatures_negative.fz:33:5:[39m [1;31merror 1[0m[1m: Used abstract feature '[35mabstractfeatures_negative.opengenerics12.F.f[39m' is not implemented by '[35mabstractfeatures_negative.opengenerics12.G[39m'[0m
+[34m    G ref : F i32 bool i32 is
+[33m----^[0m
+Feature '[35mabstractfeatures_negative.opengenerics12.G[39m' instantiated at [32m--CURDIR--/abstractfeatures_negative.fz:35:12:[39m
+[34m    x G := G                                     //  2. should flag an error: abstract feature f not implemented
+[33m-----------^[0m
+inherits or declares abstract feature '[35mabstractfeatures_negative.opengenerics12.F.f[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:30:7:[39m
+[34m      f(a A) is abstract                         //  1. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:37:7:[39m
+[34m    y.f 3 true 5
+[33m------^[0m
+without providing an implementation
+
+
+[32m--CURDIR--/abstractfeatures_negative.fz:49:5:[39m [1;31merror 2[0m[1m: Used abstract features '[35mabstractfeatures_negative.opengenerics12a.F.f1[39m', '[35mabstractfeatures_negative.opengenerics12a.F.f2[39m', '[35mabstractfeatures_negative.opengenerics12a.F.f3[39m' are not implemented by '[35mabstractfeatures_negative.opengenerics12a.G[39m'[0m
+[34m    G ref : F i32 bool i32 is
+[33m----^[0m
+Feature '[35mabstractfeatures_negative.opengenerics12a.G[39m' instantiated at [32m--CURDIR--/abstractfeatures_negative.fz:51:12:[39m
+[34m    x G := G                                       //  6. should flag an error: abstract features f1, f2, f3 not implemented
+[33m-----------^[0m
+inherits or declares abstract feature '[35mabstractfeatures_negative.opengenerics12a.F.f1[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:43:7:[39m
+[34m      f1(a A) is abstract                          //  3. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:53:7:[39m
+[34m    y.f1 3 true 5
+[33m------^[0m
+and abstract feature '[35mabstractfeatures_negative.opengenerics12a.F.f2[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:44:7:[39m
+[34m      f2(a A) is abstract                          //  4. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:54:7:[39m
+[34m    y.f2 3 true 5
+[33m------^[0m
+and abstract feature '[35mabstractfeatures_negative.opengenerics12a.F.f3[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:45:7:[39m
+[34m      f3(a A) is abstract                          //  5. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:55:7:[39m
+[34m    y.f3 3 true 5
+[33m------^[0m
+without providing an implementation
+
+
+[32m--CURDIR--/abstractfeatures_negative.fz:64:5:[39m [1;31merror 3[0m[1m: Used abstract feature '[35mabstractfeatures_negative.opengenerics12b.F.f[39m' is not implemented by '[35mabstractfeatures_negative.opengenerics12b.G[39m'[0m
+[34m    G ref : F i32 bool i32 is
+[33m----^[0m
+Feature '[35mabstractfeatures_negative.opengenerics12b.G[39m' instantiated at [32m--CURDIR--/abstractfeatures_negative.fz:66:12:[39m
+[34m    x G := G                                       //  8. should flag an error: abstract feature f not implemented
+[33m-----------^[0m
+inherits or declares abstract feature '[35mabstractfeatures_negative.opengenerics12b.F.f[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:61:7:[39m
+[34m      f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:67:7:[39m
+[34m    x.f 3 true 5
+[33m------^[0m
+without providing an implementation
+
+
+[32m--CURDIR--/abstractfeatures_negative.fz:79:5:[39m [1;31merror 4[0m[1m: Used abstract features '[35mabstractfeatures_negative.opengenerics12c.F.f1[39m', '[35mabstractfeatures_negative.opengenerics12c.F.f2[39m', '[35mabstractfeatures_negative.opengenerics12c.F.f3[39m' are not implemented by '[35mabstractfeatures_negative.opengenerics12c.G[39m'[0m
+[34m    G ref : F i32 bool i32 is
+[33m----^[0m
+Feature '[35mabstractfeatures_negative.opengenerics12c.G[39m' instantiated at [32m--CURDIR--/abstractfeatures_negative.fz:81:12:[39m
+[34m    x G := G                                       // 12. should flag an error: abstract features f1, f2, f3 not implemented
+[33m-----------^[0m
+inherits or declares abstract feature '[35mabstractfeatures_negative.opengenerics12c.F.f1[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:73:7:[39m
+[34m      f1(a A) is abstract                          //  9. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:82:7:[39m
+[34m    x.f1 3 true 5
+[33m------^[0m
+and abstract feature '[35mabstractfeatures_negative.opengenerics12c.F.f2[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:74:7:[39m
+[34m      f2(a A) is abstract                          // 10. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:83:7:[39m
+[34m    x.f2 3 true 5
+[33m------^[0m
+and abstract feature '[35mabstractfeatures_negative.opengenerics12c.F.f3[39m' declared at [32m--CURDIR--/abstractfeatures_negative.fz:75:7:[39m
+[34m      f3(a A) is abstract                          // 11. should flag an error: abstract feature not implemented
+[33m------^[0m
+which is called at [32m--CURDIR--/abstractfeatures_negative.fz:84:7:[39m
+[34m    x.f3 3 true 5
+[33m------^[0m
+without providing an implementation
+
+4 errors.

@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = equals_test_negative
-include ../negative.mk
+include ../simple.mk

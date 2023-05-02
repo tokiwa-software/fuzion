@@ -1,0 +1,37 @@
+
+[32m--CURDIR--/choice_negative.fz:29:5:[39m [1;31merror 1[0m[1m: Cyclic field nesting is not permitted[0m
+[34m    A is
+[33m----^[0m
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+[32m--CURDIR--/choice_negative.fz:30:7:[39m
+[34m      x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
+[33m------^[0m
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+
+[32m--CURDIR--/choice_negative.fz:51:5:[39m [1;31merror 2[0m[1m: Cyclic field nesting is not permitted[0m
+[34m    A is
+[33m----^[0m
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+[32m--CURDIR--/choice_negative.fz:52:7:[39m
+[34m      x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
+[33m------^[0m
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+
+[32m--CURDIR--/choice_negative.fz:73:5:[39m [1;31merror 3[0m[1m: Cyclic field nesting is not permitted[0m
+[34m    A is
+[33m----^[0m
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+[32m--CURDIR--/choice_negative.fz:74:7:[39m
+[34m      x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
+[33m------^[0m
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+3 errors.

@@ -1,0 +1,40 @@
+
+[32m--CURDIR--/nested_choice_negative.fz:42:3:[39m [1;31merror 1[0m[1m: Duplicate feature declaration[0m
+[34m  my_choice2 := "str" // 2. should flag an error: generics must be disjoint
+[33m--^[0m
+Feature that was declared repeatedly: '[35mnested_choice_negative.my_choice2[39m'
+originally declared at [32m--CURDIR--/nested_choice_negative.fz:41:3:[39m
+[34m  my_choice2 : choice String my_string is
+[33m--^[0m
+To solve this, consider renaming one of these two features, e.g., as '[35mmy_choice2ʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or adding an additional argument (e.g. '[35m_ unit[39m' for an ignored unit argument used only to disambiguate these two).
+
+
+[32m--CURDIR--/nested_choice_negative.fz:46:3:[39m [1;31merror 2[0m[1m: Duplicate feature declaration[0m
+[34m  my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
+[33m--^[0m
+Feature that was declared repeatedly: '[35mnested_choice_negative.my_choice3[39m'
+originally declared at [32m--CURDIR--/nested_choice_negative.fz:45:3:[39m
+[34m  my_choice3 : choice i32 my_i32 is
+[33m--^[0m
+To solve this, consider renaming one of these two features, e.g., as '[35mmy_choice3ʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or adding an additional argument (e.g. '[35m_ unit[39m' for an ignored unit argument used only to disambiguate these two).
+
+
+[32m--CURDIR--/nested_choice_negative.fz:32:30:[39m [1;31merror 3[0m[1m: Ambiguous targets found for call to '[35mString[39m'[0m
+[34m            String String => String
+[33m-----------------------------^[0m
+Found several possible call targets within the current feature at different levels of outer features:
+in '[35mnested_choice_negative.my_choice.as_string[39m' found '[35mnested_choice_negative.my_choice.as_string.String[39m' defined at [32m--CURDIR--/nested_choice_negative.fz:32:13:[39m
+[34m            String String => String
+[33m------------^[0m
+and in '[35m#universe[39m' found '[35mString[39m' defined at [32m$FUZION/lib/String.fz:28:1:[39m
+[34mString ref : equatable, has_hash, has_total_order is
+[33m^[0m
+To solve this, you may qualify the feature using '[35mnested_choice_negative.my_choice.as_string.this.String[39m' or '[35m#universe.this.String[39m'.
+
+
+[32m--CURDIR--/nested_choice_negative.fz:38:18:[39m [1;31merror 4[0m[1m: Ambiguous assignment to '[33mnested_choice_negative.this.type.my_choice[39m' from '[33mnil[39m'[0m
+[34m  c my_choice := nil // 1. should flag an error: ambiguous assignment
+[33m-----------------^[0m
+'[33mnil[39m' is assignable to '[33mchoice nil String[39m', '[33mchoice nil unit[39m'
+
+4 errors.

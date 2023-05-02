@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = abstractfeatures_negative
-include ../negative.mk
+include ../simple.mk

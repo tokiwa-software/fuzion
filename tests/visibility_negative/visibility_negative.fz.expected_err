@@ -1,0 +1,3127 @@
+
+[32m--CURDIR--/visibility_negative.fz:583:9:[39m [1;31merror 1[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t6 := it1 // 297. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:584:9:[39m [1;31merror 2[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t7 := it2 // 298. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:585:9:[39m [1;31merror 3[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t8 := ix3 // 299. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:586:9:[39m [1;31merror 4[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t9 := b   // 300. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:587:9:[39m [1;31merror 5[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t10 := q  // 301. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:588:9:[39m [1;31merror 6[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t11 := r  // 302. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:589:9:[39m [1;31merror 7[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t12 := s  // 303. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:590:9:[39m [1;31merror 8[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        s := a + ix1 + ix2
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:591:9:[39m [1;31merror 9[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t13 := b  // 304. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:592:9:[39m [1;31merror 10[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t14 := q  // 305. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:593:9:[39m [1;31merror 11[0m[1m: Initial value not allowed for feature not embedded in outer feature[0m
+[34m        t15 := r  // 306. should flag an error: feature not visible
+[33m--------^[0m
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+[32m--CURDIR--/visibility_negative.fz:58:11:[39m [1;31merror 12[0m[1m: Could not find called feature[0m
+[34m          c3 //  6. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c2[39m'
+In call: '[36mc3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:59:11:[39m [1;31merror 13[0m[1m: Could not find called feature[0m
+[34m          c4 //  7. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c2[39m'
+In call: '[36mc4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:60:11:[39m [1;31merror 14[0m[1m: Could not find called feature[0m
+[34m          b3 //  8. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c2[39m'
+In call: '[36mb3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:61:11:[39m [1;31merror 15[0m[1m: Could not find called feature[0m
+[34m          c5 //  9. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c2[39m'
+In call: '[36mc5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:62:11:[39m [1;31merror 16[0m[1m: Could not find called feature[0m
+[34m          c6 // 10. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c2[39m'
+In call: '[36mc6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:49:11:[39m [1;31merror 17[0m[1m: Could not find called feature[0m
+[34m          c3 //  1. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c1[39m'
+In call: '[36mc3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:50:11:[39m [1;31merror 18[0m[1m: Could not find called feature[0m
+[34m          c4 //  2. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c1[39m'
+In call: '[36mc4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:51:11:[39m [1;31merror 19[0m[1m: Could not find called feature[0m
+[34m          b3 //  3. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c1[39m'
+In call: '[36mb3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:52:11:[39m [1;31merror 20[0m[1m: Could not find called feature[0m
+[34m          c5 //  4. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c1[39m'
+In call: '[36mc5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:53:11:[39m [1;31merror 21[0m[1m: Could not find called feature[0m
+[34m          c6 //  5. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b1.c1[39m'
+In call: '[36mc6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:105:25:[39m [1;31merror 22[0m[1m: Could not find called feature[0m
+[34m    chck (a1.b1.c1 true == 11) "call a1.b1.c1"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a1.b1.c1 true.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:106:25:[39m [1;31merror 23[0m[1m: Could not find called feature[0m
+[34m    chck (a1.b1.c2 true == 22) "call a1.b1.c2"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a1.b1.c2 true.infix == 22[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:77:11:[39m [1;31merror 24[0m[1m: Could not find called feature[0m
+[34m          c1 // 16. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c4[39m'
+In call: '[36mc1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:78:11:[39m [1;31merror 25[0m[1m: Could not find called feature[0m
+[34m          c2 // 17. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c4[39m'
+In call: '[36mc2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:79:11:[39m [1;31merror 26[0m[1m: Could not find called feature[0m
+[34m          b3 // 18. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c4[39m'
+In call: '[36mb3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:80:11:[39m [1;31merror 27[0m[1m: Could not find called feature[0m
+[34m          c5 // 19. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c4[39m'
+In call: '[36mc5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:81:11:[39m [1;31merror 28[0m[1m: Could not find called feature[0m
+[34m          c6 // 20. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c4[39m'
+In call: '[36mc6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:68:11:[39m [1;31merror 29[0m[1m: Could not find called feature[0m
+[34m          c1 // 11. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c3[39m'
+In call: '[36mc1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:69:11:[39m [1;31merror 30[0m[1m: Could not find called feature[0m
+[34m          c2 // 12. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c3[39m'
+In call: '[36mc2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:70:11:[39m [1;31merror 31[0m[1m: Could not find called feature[0m
+[34m          b3 // 13. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c3[39m'
+In call: '[36mb3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:71:11:[39m [1;31merror 32[0m[1m: Could not find called feature[0m
+[34m          c5 // 14. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c3[39m'
+In call: '[36mc5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:72:11:[39m [1;31merror 33[0m[1m: Could not find called feature[0m
+[34m          c6 // 15. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a1.b2.c3[39m'
+In call: '[36mc6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:107:25:[39m [1;31merror 34[0m[1m: Could not find called feature[0m
+[34m    chck (a1.b2.c3 true == 33) "call a1.b2.c3"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a1.b2.c3 true.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:108:25:[39m [1;31merror 35[0m[1m: Could not find called feature[0m
+[34m    chck (a1.b2.c4 true == 44) "call a1.b2.c4"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a1.b2.c4 true.infix == 44[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:98:11:[39m [1;31merror 36[0m[1m: Could not find called feature[0m
+[34m          c1 // 27. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mc1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:99:11:[39m [1;31merror 37[0m[1m: Could not find called feature[0m
+[34m          c2 // 28. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mc2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:100:11:[39m [1;31merror 38[0m[1m: Could not find called feature[0m
+[34m          c3 // 29. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mc3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:101:11:[39m [1;31merror 39[0m[1m: Could not find called feature[0m
+[34m          c4 // 30. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mc4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:102:11:[39m [1;31merror 40[0m[1m: Could not find called feature[0m
+[34m          b1 // 31. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mb1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:103:11:[39m [1;31merror 41[0m[1m: Could not find called feature[0m
+[34m          b2 // 32. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c6[39m'
+In call: '[36mb2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:88:11:[39m [1;31merror 42[0m[1m: Could not find called feature[0m
+[34m          c1 // 21. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mc1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:89:11:[39m [1;31merror 43[0m[1m: Could not find called feature[0m
+[34m          c2 // 22. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mc2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:90:11:[39m [1;31merror 44[0m[1m: Could not find called feature[0m
+[34m          c3 // 23. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mc3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:91:11:[39m [1;31merror 45[0m[1m: Could not find called feature[0m
+[34m          c4 // 24. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mc4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mc4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:92:11:[39m [1;31merror 46[0m[1m: Could not find called feature[0m
+[34m          b1 // 25. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mb1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:93:11:[39m [1;31merror 47[0m[1m: Could not find called feature[0m
+[34m          b2 // 26. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mb2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi1.a2.b3.c5[39m'
+In call: '[36mb2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:109:25:[39m [1;31merror 48[0m[1m: Could not find called feature[0m
+[34m    chck (a2.b3.c5 true == 55) "call a2.b3.c5"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a2.b3.c5 true.infix == 55[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:110:25:[39m [1;31merror 49[0m[1m: Could not find called feature[0m
+[34m    chck (a2.b3.c6 true == 66) "call a2.b3.c6"
+[33m------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mvisi1.this.a2.b3.c6 true.infix == 66[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:120:16:[39m [1;31merror 50[0m[1m: Could not find called feature[0m
+[34m      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:121:11:[39m [1;31merror 51[0m[1m: Could not find called feature[0m
+[34m      use f2   // 33. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:122:11:[39m [1;31merror 52[0m[1m: Could not find called feature[0m
+[34m      use f3   // 34. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:123:11:[39m [1;31merror 53[0m[1m: Could not find called feature[0m
+[34m      use f4   // 35. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:124:11:[39m [1;31merror 54[0m[1m: Could not find called feature[0m
+[34m      use f5   // 36. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:125:11:[39m [1;31merror 55[0m[1m: Could not find called feature[0m
+[34m      use f6   // 37. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:126:11:[39m [1;31merror 56[0m[1m: Could not find called feature[0m
+[34m      use f7   // 38. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:127:11:[39m [1;31merror 57[0m[1m: Could not find called feature[0m
+[34m      use f8   // 39. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf8[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf8[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:128:11:[39m [1;31merror 58[0m[1m: Could not find called feature[0m
+[34m      use f9   // 40. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:241:16:[39m [1;31merror 59[0m[1m: Could not find called feature[0m
+[34m      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:242:11:[39m [1;31merror 60[0m[1m: Could not find called feature[0m
+[34m      use f2   // 112. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:243:11:[39m [1;31merror 61[0m[1m: Could not find called feature[0m
+[34m      use f3   // 113. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:244:11:[39m [1;31merror 62[0m[1m: Could not find called feature[0m
+[34m      use f4   // 114. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:245:11:[39m [1;31merror 63[0m[1m: Could not find called feature[0m
+[34m      use f5   // 115. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:246:11:[39m [1;31merror 64[0m[1m: Could not find called feature[0m
+[34m      use f6   // 116. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:247:11:[39m [1;31merror 65[0m[1m: Could not find called feature[0m
+[34m      use f7   // 117. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:248:11:[39m [1;31merror 66[0m[1m: Could not find called feature[0m
+[34m      use f8   // 118. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf8[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf8[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:249:11:[39m [1;31merror 67[0m[1m: Could not find called feature[0m
+[34m      use f9   // 119. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:251:16:[39m [1;31merror 68[0m[1m: Could not find called feature[0m
+[34m      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:252:11:[39m [1;31merror 69[0m[1m: Could not find called feature[0m
+[34m      use f2   // 120. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:253:11:[39m [1;31merror 70[0m[1m: Could not find called feature[0m
+[34m      use f3   // 121. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:254:11:[39m [1;31merror 71[0m[1m: Could not find called feature[0m
+[34m      use f4   // 122. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:255:11:[39m [1;31merror 72[0m[1m: Could not find called feature[0m
+[34m      use f5   // 123. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:256:11:[39m [1;31merror 73[0m[1m: Could not find called feature[0m
+[34m      use f6   // 124. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:257:11:[39m [1;31merror 74[0m[1m: Could not find called feature[0m
+[34m      use f7   // 125. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:258:16:[39m [1;31merror 75[0m[1m: Could not find called feature[0m
+[34m      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f8.infix == 22[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:259:11:[39m [1;31merror 76[0m[1m: Could not find called feature[0m
+[34m      use f9   // 126. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:281:16:[39m [1;31merror 77[0m[1m: Could not find called feature[0m
+[34m      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:282:11:[39m [1;31merror 78[0m[1m: Could not find called feature[0m
+[34m      use f2   // 140. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:283:11:[39m [1;31merror 79[0m[1m: Could not find called feature[0m
+[34m      use f3   // 141. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:284:11:[39m [1;31merror 80[0m[1m: Could not find called feature[0m
+[34m      use f4   // 142. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:285:11:[39m [1;31merror 81[0m[1m: Could not find called feature[0m
+[34m      use f5   // 143. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:286:11:[39m [1;31merror 82[0m[1m: Could not find called feature[0m
+[34m      use f6   // 144. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:287:11:[39m [1;31merror 83[0m[1m: Could not find called feature[0m
+[34m      use f7   // 145. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:288:16:[39m [1;31merror 84[0m[1m: Could not find called feature[0m
+[34m      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+[33m---------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f8.infix == 22[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:289:11:[39m [1;31merror 85[0m[1m: Could not find called feature[0m
+[34m      use f9   // 146. should flag an error: feature not found / not visible
+[33m----------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:130:18:[39m [1;31merror 86[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:131:13:[39m [1;31merror 87[0m[1m: Could not find called feature[0m
+[34m        use f2   // 41. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:132:13:[39m [1;31merror 88[0m[1m: Could not find called feature[0m
+[34m        use f3   // 42. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:133:13:[39m [1;31merror 89[0m[1m: Could not find called feature[0m
+[34m        use f4   // 43. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:134:13:[39m [1;31merror 90[0m[1m: Could not find called feature[0m
+[34m        use f5   // 44. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:135:13:[39m [1;31merror 91[0m[1m: Could not find called feature[0m
+[34m        use f6   // 45. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:136:13:[39m [1;31merror 92[0m[1m: Could not find called feature[0m
+[34m        use f7   // 46. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:138:13:[39m [1;31merror 93[0m[1m: Could not find called feature[0m
+[34m        use f9   // 48. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:140:18:[39m [1;31merror 94[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:141:18:[39m [1;31merror 95[0m[1m: Could not find called feature[0m
+[34m        chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:142:13:[39m [1;31merror 96[0m[1m: Could not find called feature[0m
+[34m        use f3   // 49. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:143:13:[39m [1;31merror 97[0m[1m: Could not find called feature[0m
+[34m        use f4   // 50. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:144:13:[39m [1;31merror 98[0m[1m: Could not find called feature[0m
+[34m        use f5   // 51. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:145:13:[39m [1;31merror 99[0m[1m: Could not find called feature[0m
+[34m        use f6   // 52. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:146:13:[39m [1;31merror 100[0m[1m: Could not find called feature[0m
+[34m        use f7   // 53. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:148:13:[39m [1;31merror 101[0m[1m: Could not find called feature[0m
+[34m        use f9   // 55. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:180:18:[39m [1;31merror 102[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:181:18:[39m [1;31merror 103[0m[1m: Could not find called feature[0m
+[34m        chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:182:13:[39m [1;31merror 104[0m[1m: Could not find called feature[0m
+[34m        use f3   // 74. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:183:13:[39m [1;31merror 105[0m[1m: Could not find called feature[0m
+[34m        use f4   // 75. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:184:13:[39m [1;31merror 106[0m[1m: Could not find called feature[0m
+[34m        use f5   // 76. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:185:13:[39m [1;31merror 107[0m[1m: Could not find called feature[0m
+[34m        use f6   // 77. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:186:13:[39m [1;31merror 108[0m[1m: Could not find called feature[0m
+[34m        use f7   // 78. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:188:13:[39m [1;31merror 109[0m[1m: Could not find called feature[0m
+[34m        use f9   // 80. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:221:18:[39m [1;31merror 110[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:222:18:[39m [1;31merror 111[0m[1m: Could not find called feature[0m
+[34m        chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:223:13:[39m [1;31merror 112[0m[1m: Could not find called feature[0m
+[34m        use f3   // 99. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:224:13:[39m [1;31merror 113[0m[1m: Could not find called feature[0m
+[34m        use f4   // 100. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:225:13:[39m [1;31merror 114[0m[1m: Could not find called feature[0m
+[34m        use f5   // 101. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:226:13:[39m [1;31merror 115[0m[1m: Could not find called feature[0m
+[34m        use f6   // 102. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:227:13:[39m [1;31merror 116[0m[1m: Could not find called feature[0m
+[34m        use f7   // 103. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:229:13:[39m [1;31merror 117[0m[1m: Could not find called feature[0m
+[34m        use f9   // 105. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:231:18:[39m [1;31merror 118[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:232:18:[39m [1;31merror 119[0m[1m: Could not find called feature[0m
+[34m        chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:233:13:[39m [1;31merror 120[0m[1m: Could not find called feature[0m
+[34m        use f3   // 106. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:234:13:[39m [1;31merror 121[0m[1m: Could not find called feature[0m
+[34m        use f4   // 107. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:235:13:[39m [1;31merror 122[0m[1m: Could not find called feature[0m
+[34m        use f5   // 108. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:236:13:[39m [1;31merror 123[0m[1m: Could not find called feature[0m
+[34m        use f6   // 109. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:237:18:[39m [1;31merror 124[0m[1m: Could not find called feature[0m
+[34m        chck (f7 == 44 || f7 == 110) "can access f7"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f7.infix == 44[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:239:13:[39m [1;31merror 125[0m[1m: Could not find called feature[0m
+[34m        use f9   // 111. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:38:10:[39m [1;31merror 126[0m[1m: Could not find called feature[0m
+[34m    if a == b
+[33m---------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mchck.this.a.infix == b[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:150:20:[39m [1;31merror 127[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi2.a1.b1.c1).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:151:20:[39m [1;31merror 128[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi2.a1.b1.c1).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:152:15:[39m [1;31merror 129[0m[1m: Could not find called feature[0m
+[34m          use f3   // 56. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:153:15:[39m [1;31merror 130[0m[1m: Could not find called feature[0m
+[34m          use f4   // 57. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:154:15:[39m [1;31merror 131[0m[1m: Could not find called feature[0m
+[34m          use f5   // 58. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:155:15:[39m [1;31merror 132[0m[1m: Could not find called feature[0m
+[34m          use f6   // 59. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:158:15:[39m [1;31merror 133[0m[1m: Could not find called feature[0m
+[34m          use f9   // 62. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:160:20:[39m [1;31merror 134[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi2.a1.b1.c1).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:161:20:[39m [1;31merror 135[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi2.a1.b1.c1).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:163:15:[39m [1;31merror 136[0m[1m: Could not find called feature[0m
+[34m          use f4   // 63. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:164:15:[39m [1;31merror 137[0m[1m: Could not find called feature[0m
+[34m          use f5   // 64. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:165:15:[39m [1;31merror 138[0m[1m: Could not find called feature[0m
+[34m          use f6   // 65. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:168:15:[39m [1;31merror 139[0m[1m: Could not find called feature[0m
+[34m          use f9   // 68. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:170:20:[39m [1;31merror 140[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi2.a1.b1.c1).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:171:20:[39m [1;31merror 141[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi2.a1.b1.c1).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:174:15:[39m [1;31merror 142[0m[1m: Could not find called feature[0m
+[34m          use f5   // 69. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:175:15:[39m [1;31merror 143[0m[1m: Could not find called feature[0m
+[34m          use f6   // 70. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:178:15:[39m [1;31merror 144[0m[1m: Could not find called feature[0m
+[34m          use f9   // 73. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c1[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:191:20:[39m [1;31merror 145[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi2.a1.b1.c2).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:192:20:[39m [1;31merror 146[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi2.a1.b1.c2).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:193:15:[39m [1;31merror 147[0m[1m: Could not find called feature[0m
+[34m          use f3   // 81. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:194:15:[39m [1;31merror 148[0m[1m: Could not find called feature[0m
+[34m          use f4   // 82. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:195:15:[39m [1;31merror 149[0m[1m: Could not find called feature[0m
+[34m          use f5   // 83. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:196:15:[39m [1;31merror 150[0m[1m: Could not find called feature[0m
+[34m          use f6   // 84. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:199:15:[39m [1;31merror 151[0m[1m: Could not find called feature[0m
+[34m          use f9   // 87. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:201:20:[39m [1;31merror 152[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi2.a1.b1.c2).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:202:20:[39m [1;31merror 153[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi2.a1.b1.c2).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:203:15:[39m [1;31merror 154[0m[1m: Could not find called feature[0m
+[34m          use f3   // 88. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:204:15:[39m [1;31merror 155[0m[1m: Could not find called feature[0m
+[34m          use f4   // 89. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:205:20:[39m [1;31merror 156[0m[1m: Could not find called feature[0m
+[34m          chck (f5 == 55 || f5 == 121) "can access f5"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f5.infix == 55[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:206:15:[39m [1;31merror 157[0m[1m: Could not find called feature[0m
+[34m          use f6   // 90. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:209:15:[39m [1;31merror 158[0m[1m: Could not find called feature[0m
+[34m          use f9   // 93. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:211:20:[39m [1;31merror 159[0m[1m: Could not find called feature[0m
+[34m          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi2.a1.b1.c2).#^visibility_negative.visi2.a1.b1).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:212:20:[39m [1;31merror 160[0m[1m: Could not find called feature[0m
+[34m          chck (f2 == 33 || f2 == 99) "can access f2"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi2.a1.b1.c2).f2.infix == 33[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:213:15:[39m [1;31merror 161[0m[1m: Could not find called feature[0m
+[34m          use f3   // 94. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:214:15:[39m [1;31merror 162[0m[1m: Could not find called feature[0m
+[34m          use f4   // 95. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:215:20:[39m [1;31merror 163[0m[1m: Could not find called feature[0m
+[34m          chck (f5 == 55 || f5 == 121) "can access f5"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f5.infix == 55[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:216:20:[39m [1;31merror 164[0m[1m: Could not find called feature[0m
+[34m          chck (f6 == 66 || f6 == 132) "can access f6"
+[33m-------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f6.infix == 66[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:219:15:[39m [1;31merror 165[0m[1m: Could not find called feature[0m
+[34m          use f9   // 98. should flag an error: feature not found / not visible
+[33m--------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b1.c2[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:262:18:[39m [1;31merror 166[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi2.a1.b2).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:263:13:[39m [1;31merror 167[0m[1m: Could not find called feature[0m
+[34m        use f2   // 127. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:264:13:[39m [1;31merror 168[0m[1m: Could not find called feature[0m
+[34m        use f3   // 128. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:265:13:[39m [1;31merror 169[0m[1m: Could not find called feature[0m
+[34m        use f4   // 129. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:266:13:[39m [1;31merror 170[0m[1m: Could not find called feature[0m
+[34m        use f5   // 130. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:267:13:[39m [1;31merror 171[0m[1m: Could not find called feature[0m
+[34m        use f6   // 131. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:268:13:[39m [1;31merror 172[0m[1m: Could not find called feature[0m
+[34m        use f7   // 132. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:269:18:[39m [1;31merror 173[0m[1m: Could not find called feature[0m
+[34m        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi2.a1.b2).f8.infix == 22[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:270:13:[39m [1;31merror 174[0m[1m: Could not find called feature[0m
+[34m        use f9   // 133. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf9[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf9[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:272:18:[39m [1;31merror 175[0m[1m: Could not find called feature[0m
+[34m        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi2.a1.b2).f1.infix == 11[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:273:13:[39m [1;31merror 176[0m[1m: Could not find called feature[0m
+[34m        use f2   // 134. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:274:13:[39m [1;31merror 177[0m[1m: Could not find called feature[0m
+[34m        use f3   // 135. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:275:13:[39m [1;31merror 178[0m[1m: Could not find called feature[0m
+[34m        use f4   // 136. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf4[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:276:13:[39m [1;31merror 179[0m[1m: Could not find called feature[0m
+[34m        use f5   // 137. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf5[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf5[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:277:13:[39m [1;31merror 180[0m[1m: Could not find called feature[0m
+[34m        use f6   // 138. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf6[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf6[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:278:13:[39m [1;31merror 181[0m[1m: Could not find called feature[0m
+[34m        use f7   // 139. should flag an error: feature not found / not visible
+[33m------------^[0m
+Feature not found: '[35mf7[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi2.a1.b2[39m'
+In call: '[36mf7[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:279:18:[39m [1;31merror 182[0m[1m: Could not find called feature[0m
+[34m        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi2.a1.b2).f8.infix == 22[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:280:18:[39m [1;31merror 183[0m[1m: Could not find called feature[0m
+[34m        chck (f9 == 99 || f9 == 165) "can access f9"
+[33m-----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb2.this.f9.infix == 99[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:303:14:[39m [1;31merror 184[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m      set f2 := 222 // 147. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:304:14:[39m [1;31merror 185[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m      set f3 := 333 // 148. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:305:14:[39m [1;31merror 186[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m      set f4 := 444 // 149. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:306:14:[39m [1;31merror 187[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m      set f5 := 555 // 150. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:307:14:[39m [1;31merror 188[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m      set f6 := 666 // 151. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:308:14:[39m [1;31merror 189[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m      set f7 := 777 // 152. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:309:14:[39m [1;31merror 190[0m[1m: Could not find target field '[35mf8[39m' in assignment[0m
+[34m      set f8 := 888 // 153. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf8[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f8 := 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:310:14:[39m [1;31merror 191[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m      set f9 := 999 // 154. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:421:14:[39m [1;31merror 192[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m      set f2 := 222 // 226. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:422:14:[39m [1;31merror 193[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m      set f3 := 333 // 227. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:423:14:[39m [1;31merror 194[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m      set f4 := 444 // 228. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:424:14:[39m [1;31merror 195[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m      set f5 := 555 // 229. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:425:14:[39m [1;31merror 196[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m      set f6 := 666 // 230. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:426:14:[39m [1;31merror 197[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m      set f7 := 777 // 231. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:427:14:[39m [1;31merror 198[0m[1m: Could not find target field '[35mf8[39m' in assignment[0m
+[34m      set f8 := 888 // 232. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf8[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f8 := 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:428:14:[39m [1;31merror 199[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m      set f9 := 999 // 233. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:431:14:[39m [1;31merror 200[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m      set f2 := 222 // 234. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:432:14:[39m [1;31merror 201[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m      set f3 := 333 // 235. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:433:14:[39m [1;31merror 202[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m      set f4 := 444 // 236. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:434:14:[39m [1;31merror 203[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m      set f5 := 555 // 237. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:435:14:[39m [1;31merror 204[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m      set f6 := 666 // 238. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:436:14:[39m [1;31merror 205[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m      set f7 := 777 // 239. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:438:14:[39m [1;31merror 206[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m      set f9 := 999 // 240. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:461:14:[39m [1;31merror 207[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m      set f2 := 222 // 254. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:462:14:[39m [1;31merror 208[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m      set f3 := 333 // 255. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:463:14:[39m [1;31merror 209[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m      set f4 := 444 // 256. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:464:14:[39m [1;31merror 210[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m      set f5 := 555 // 257. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:465:14:[39m [1;31merror 211[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m      set f6 := 666 // 258. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:466:14:[39m [1;31merror 212[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m      set f7 := 777 // 259. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:468:14:[39m [1;31merror 213[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m      set f9 := 999 // 260. should flag an error: feature not visible for assignment
+[33m-------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:302:31:[39m [1;31merror 214[0m[1m: Could not find called feature[0m
+[34m      set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:420:31:[39m [1;31merror 215[0m[1m: Could not find called feature[0m
+[34m      set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:430:31:[39m [1;31merror 216[0m[1m: Could not find called feature[0m
+[34m      set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:437:31:[39m [1;31merror 217[0m[1m: Could not find called feature[0m
+[34m      set f8 := 888; chck (f8 == 888) "can assign f8"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f8.infix == 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:460:31:[39m [1;31merror 218[0m[1m: Could not find called feature[0m
+[34m      set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:467:31:[39m [1;31merror 219[0m[1m: Could not find called feature[0m
+[34m      set f8 := 888; chck (f8 == 888) "can assign f8"
+[33m------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36ma1.this.f8.infix == 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:313:16:[39m [1;31merror 220[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m        set f2 := 222 // 155. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:314:16:[39m [1;31merror 221[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 156. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:315:16:[39m [1;31merror 222[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 157. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:316:16:[39m [1;31merror 223[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 158. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:317:16:[39m [1;31merror 224[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 159. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:318:16:[39m [1;31merror 225[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 160. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:320:16:[39m [1;31merror 226[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 162. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:324:16:[39m [1;31merror 227[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 163. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:325:16:[39m [1;31merror 228[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 164. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:326:16:[39m [1;31merror 229[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 165. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:327:16:[39m [1;31merror 230[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 166. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:328:16:[39m [1;31merror 231[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 167. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:330:16:[39m [1;31merror 232[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 169. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:363:16:[39m [1;31merror 233[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 188. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:364:16:[39m [1;31merror 234[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 189. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:365:16:[39m [1;31merror 235[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 190. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:366:16:[39m [1;31merror 236[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 191. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:367:16:[39m [1;31merror 237[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 192. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:369:16:[39m [1;31merror 238[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 194. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:403:16:[39m [1;31merror 239[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 213. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:404:16:[39m [1;31merror 240[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 214. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:405:16:[39m [1;31merror 241[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 215. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:406:16:[39m [1;31merror 242[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 216. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:407:16:[39m [1;31merror 243[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 217. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:409:16:[39m [1;31merror 244[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 219. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:413:16:[39m [1;31merror 245[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 220. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:414:16:[39m [1;31merror 246[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 221. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:415:16:[39m [1;31merror 247[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 222. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:416:16:[39m [1;31merror 248[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 223. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:419:16:[39m [1;31merror 249[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 225. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:312:33:[39m [1;31merror 250[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:322:33:[39m [1;31merror 251[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:323:33:[39m [1;31merror 252[0m[1m: Could not find called feature[0m
+[34m        set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:361:33:[39m [1;31merror 253[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:362:33:[39m [1;31merror 254[0m[1m: Could not find called feature[0m
+[34m        set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:401:33:[39m [1;31merror 255[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:402:33:[39m [1;31merror 256[0m[1m: Could not find called feature[0m
+[34m        set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:411:33:[39m [1;31merror 257[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b1.this.#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:412:33:[39m [1;31merror 258[0m[1m: Could not find called feature[0m
+[34m        set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:417:33:[39m [1;31merror 259[0m[1m: Could not find called feature[0m
+[34m        set f7 := 777; chck (f7 == 777) "can assign f7"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb1.this.f7.infix == 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:334:18:[39m [1;31merror 260[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m          set f3 := 333 // 170. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:335:18:[39m [1;31merror 261[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m          set f4 := 444 // 171. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:336:18:[39m [1;31merror 262[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m          set f5 := 555 // 172. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:337:18:[39m [1;31merror 263[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m          set f6 := 666 // 173. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:340:18:[39m [1;31merror 264[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 176. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:345:18:[39m [1;31merror 265[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m          set f4 := 444 // 177. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:346:18:[39m [1;31merror 266[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m          set f5 := 555 // 178. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:347:18:[39m [1;31merror 267[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m          set f6 := 666 // 179. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:350:18:[39m [1;31merror 268[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 182. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:356:18:[39m [1;31merror 269[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m          set f5 := 555 // 183. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:357:18:[39m [1;31merror 270[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m          set f6 := 666 // 184. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:360:18:[39m [1;31merror 271[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 187. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c1[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:332:35:[39m [1;31merror 272[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi3.a1.b1.c1).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:333:35:[39m [1;31merror 273[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi3.a1.b1.c1).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:342:35:[39m [1;31merror 274[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi3.a1.b1.c1).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:343:35:[39m [1;31merror 275[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi3.a1.b1.c1).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:344:35:[39m [1;31merror 276[0m[1m: Could not find called feature[0m
+[34m          set f3 := 333; chck (f3 == 333) "can assign f3"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc1.this.f3.infix == 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:352:35:[39m [1;31merror 277[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c1.this.#^visibility_negative.visi3.a1.b1.c1).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:353:35:[39m [1;31merror 278[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c1.this.#^visibility_negative.visi3.a1.b1.c1).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:354:35:[39m [1;31merror 279[0m[1m: Could not find called feature[0m
+[34m          set f3 := 333; chck (f3 == 333) "can assign f3"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc1.this.f3.infix == 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:355:35:[39m [1;31merror 280[0m[1m: Could not find called feature[0m
+[34m          set f4 := 444; chck (f4 == 444) "can assign f4"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc1.this.f4.infix == 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:374:18:[39m [1;31merror 281[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m          set f3 := 333 // 195. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:375:18:[39m [1;31merror 282[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m          set f4 := 444 // 196. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:376:18:[39m [1;31merror 283[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m          set f5 := 555 // 197. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:377:18:[39m [1;31merror 284[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m          set f6 := 666 // 198. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:380:18:[39m [1;31merror 285[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 201. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:384:18:[39m [1;31merror 286[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m          set f3 := 333 // 202. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:385:18:[39m [1;31merror 287[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m          set f4 := 444 // 203. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:387:18:[39m [1;31merror 288[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m          set f6 := 666 // 204. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:390:18:[39m [1;31merror 289[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 207. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:394:18:[39m [1;31merror 290[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m          set f3 := 333 // 208. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:395:18:[39m [1;31merror 291[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m          set f4 := 444 // 209. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:400:18:[39m [1;31merror 292[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m          set f9 := 999 // 212. should flag an error: feature not visible for assignment
+[33m-----------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b1.c2[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:372:35:[39m [1;31merror 293[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi3.a1.b1.c2).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:373:35:[39m [1;31merror 294[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi3.a1.b1.c2).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:382:35:[39m [1;31merror 295[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi3.a1.b1.c2).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:383:35:[39m [1;31merror 296[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi3.a1.b1.c2).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:386:35:[39m [1;31merror 297[0m[1m: Could not find called feature[0m
+[34m          set f5 := 555; chck (f5 == 555) "can assign f5"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f5.infix == 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:392:35:[39m [1;31merror 298[0m[1m: Could not find called feature[0m
+[34m          set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(deref(c2.this.#^visibility_negative.visi3.a1.b1.c2).#^visibility_negative.visi3.a1.b1).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:393:35:[39m [1;31merror 299[0m[1m: Could not find called feature[0m
+[34m          set f2 := 222; chck (f2 == 222) "can assign f2"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(c2.this.#^visibility_negative.visi3.a1.b1.c2).f2.infix == 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:396:35:[39m [1;31merror 300[0m[1m: Could not find called feature[0m
+[34m          set f5 := 555; chck (f5 == 555) "can assign f5"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f5.infix == 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:397:35:[39m [1;31merror 301[0m[1m: Could not find called feature[0m
+[34m          set f6 := 666; chck (f6 == 666) "can assign f6"
+[33m----------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mc2.this.f6.infix == 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:442:16:[39m [1;31merror 302[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m        set f2 := 222 // 241. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:443:16:[39m [1;31merror 303[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 242. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:444:16:[39m [1;31merror 304[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 243. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:445:16:[39m [1;31merror 305[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 244. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:446:16:[39m [1;31merror 306[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 245. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:447:16:[39m [1;31merror 307[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 246. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:449:16:[39m [1;31merror 308[0m[1m: Could not find target field '[35mf9[39m' in assignment[0m
+[34m        set f9 := 999 // 247. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf9[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f9 := 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:452:16:[39m [1;31merror 309[0m[1m: Could not find target field '[35mf2[39m' in assignment[0m
+[34m        set f2 := 222 // 248. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf2[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f2 := 222[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:453:16:[39m [1;31merror 310[0m[1m: Could not find target field '[35mf3[39m' in assignment[0m
+[34m        set f3 := 333 // 249. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf3[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f3 := 333[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:454:16:[39m [1;31merror 311[0m[1m: Could not find target field '[35mf4[39m' in assignment[0m
+[34m        set f4 := 444 // 250. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf4[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f4 := 444[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:455:16:[39m [1;31merror 312[0m[1m: Could not find target field '[35mf5[39m' in assignment[0m
+[34m        set f5 := 555 // 251. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf5[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f5 := 555[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:456:16:[39m [1;31merror 313[0m[1m: Could not find target field '[35mf6[39m' in assignment[0m
+[34m        set f6 := 666 // 252. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf6[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f6 := 666[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:457:16:[39m [1;31merror 314[0m[1m: Could not find target field '[35mf7[39m' in assignment[0m
+[34m        set f7 := 777 // 253. should flag an error: feature not visible for assignment
+[33m---------------^[0m
+Field not found: '[35mf7[39m'
+Within feature: '[35mvisibility_negative.visi3.a1.b2[39m'
+For assignment: '[36mset f7 := 777[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:441:33:[39m [1;31merror 315[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi3.a1.b2).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:448:33:[39m [1;31merror 316[0m[1m: Could not find called feature[0m
+[34m        set f8 := 888; chck (f8 == 888) "can assign f8"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi3.a1.b2).f8.infix == 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:451:33:[39m [1;31merror 317[0m[1m: Could not find called feature[0m
+[34m        set f1 := 111; chck (f1 == 111) "can assign f1"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi3.a1.b2).f1.infix == 111[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:458:33:[39m [1;31merror 318[0m[1m: Could not find called feature[0m
+[34m        set f8 := 888; chck (f8 == 888) "can assign f8"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mderef(b2.this.#^visibility_negative.visi3.a1.b2).f8.infix == 888[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:459:33:[39m [1;31merror 319[0m[1m: Could not find called feature[0m
+[34m        set f9 := 999; chck (f9 == 999) "can assign f9"
+[33m--------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mb2.this.f9.infix == 999[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:476:13:[39m [1;31merror 320[0m[1m: Could not find called feature[0m
+[34m      chck (x == "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
+[33m------------^[0m
+Feature not found: '[35mx[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi5.a[39m'
+In call: '[36mx[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:477:22:[39m [1;31merror 321[0m[1m: Could not find called feature[0m
+[34m      chck (a.this.x == "Outer!") "a.this.x"       // 262. should flag an error: field used before it is declared
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:478:15:[39m [1;31merror 322[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m      chck (b.this.x == "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
+[33m--------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a[39m'
+Outer feature that was not found: '[35mb[39m'
+Outer features available: visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:478:22:[39m [1;31merror 323[0m[1m: Could not find called feature[0m
+[34m      chck (b.this.x == "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:479:15:[39m [1;31merror 324[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m      chck (c.this.x == "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
+[33m--------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a[39m'
+Outer feature that was not found: '[35mc[39m'
+Outer features available: visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:479:22:[39m [1;31merror 325[0m[1m: Could not find called feature[0m
+[34m      chck (c.this.x == "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:481:15:[39m [1;31merror 326[0m[1m: Could not find called feature[0m
+[34m      chck (x == "Outer!") "outer x"
+[33m--------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:482:22:[39m [1;31merror 327[0m[1m: Could not find called feature[0m
+[34m      chck (a.this.x == "Outer!") "a.this.x"
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:483:15:[39m [1;31merror 328[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m      chck (b.this.x == "Inner!") "b.this.x"       // 265. should flag an error: feature not visible
+[33m--------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a[39m'
+Outer feature that was not found: '[35mb[39m'
+Outer features available: visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:483:22:[39m [1;31merror 329[0m[1m: Could not find called feature[0m
+[34m      chck (b.this.x == "Inner!") "b.this.x"       // 265. should flag an error: feature not visible
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:484:15:[39m [1;31merror 330[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m      chck (c.this.x == "Inner Inner!") "c.this.x" // 266. should flag an error: feature not visible
+[33m--------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a[39m'
+Outer feature that was not found: '[35mc[39m'
+Outer features available: visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:484:22:[39m [1;31merror 331[0m[1m: Could not find called feature[0m
+[34m      chck (c.this.x == "Inner Inner!") "c.this.x" // 266. should flag an error: feature not visible
+[33m---------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36ma.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:486:17:[39m [1;31merror 332[0m[1m: Could not find called feature[0m
+[34m        chck (x == "Outer!") "outer x"
+[33m----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(b.this.#^visibility_negative.visi5.a.b).x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:487:24:[39m [1;31merror 333[0m[1m: Could not find called feature[0m
+[34m        chck (a.this.x == "Outer!") "a.this.x"
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(b.this.#^visibility_negative.visi5.a.b).x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:488:24:[39m [1;31merror 334[0m[1m: Could not find called feature[0m
+[34m        chck (b.this.x == "Inner!") "b.this.x"       // 267. should flag an error: feature used before it is declared
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mb.this.x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:489:17:[39m [1;31merror 335[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m        chck (c.this.x == "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
+[33m----------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a.b[39m'
+Outer feature that was not found: '[35mc[39m'
+Outer features available: visibility_negative.visi5.a.b, visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:489:24:[39m [1;31merror 336[0m[1m: Could not find called feature[0m
+[34m        chck (c.this.x == "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mb.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:491:17:[39m [1;31merror 337[0m[1m: Could not find called feature[0m
+[34m        chck (x == "Inner!") "inner x"
+[33m----------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mb.this.x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:492:24:[39m [1;31merror 338[0m[1m: Could not find called feature[0m
+[34m        chck (a.this.x == "Outer!") "a.this.x"
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(b.this.#^visibility_negative.visi5.a.b).x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:493:24:[39m [1;31merror 339[0m[1m: Could not find called feature[0m
+[34m        chck (b.this.x == "Inner!") "b.this.x"
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mb.this.x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:494:17:[39m [1;31merror 340[0m[1m: Could not find outer feature in '[35m.this[39m'-expression[0m
+[34m        chck (c.this.x == "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
+[33m----------------^[0m
+Within feature: '[35mvisibility_negative.visi5.a.b[39m'
+Outer feature that was not found: '[35mc[39m'
+Outer features available: visibility_negative.visi5.a.b, visibility_negative.visi5.a, visibility_negative.visi5, visibility_negative
+
+
+[32m--CURDIR--/visibility_negative.fz:494:24:[39m [1;31merror 341[0m[1m: Could not find called feature[0m
+[34m        chck (c.this.x == "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
+[33m-----------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mb.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:497:19:[39m [1;31merror 342[0m[1m: Could not find called feature[0m
+[34m          chck (x == "Inner!") "inner x"
+[33m------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(c.this.#^visibility_negative.visi5.a.b.c).x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:498:26:[39m [1;31merror 343[0m[1m: Could not find called feature[0m
+[34m          chck (a.this.x == "Outer!") "a.this.x"
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(deref(c.this.#^visibility_negative.visi5.a.b.c).#^visibility_negative.visi5.a.b).x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:499:26:[39m [1;31merror 344[0m[1m: Could not find called feature[0m
+[34m          chck (b.this.x == "Inner!") "b.this.x"
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(c.this.#^visibility_negative.visi5.a.b.c).x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:500:26:[39m [1;31merror 345[0m[1m: Could not find called feature[0m
+[34m          chck (c.this.x == "Inner Inner!") "c.this.x" // 270. should flag an error: feature used before it is declared
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mc.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:502:19:[39m [1;31merror 346[0m[1m: Could not find called feature[0m
+[34m          chck (x == "Inner Inner!") "inner inner x"
+[33m------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mc.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:503:26:[39m [1;31merror 347[0m[1m: Could not find called feature[0m
+[34m          chck (a.this.x == "Outer!") "a.this.x"
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(deref(c.this.#^visibility_negative.visi5.a.b.c).#^visibility_negative.visi5.a.b).x.infix == "Outer!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:504:26:[39m [1;31merror 348[0m[1m: Could not find called feature[0m
+[34m          chck (b.this.x == "Inner!") "b.this.x"
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mderef(c.this.#^visibility_negative.visi5.a.b.c).x.infix == "Inner!"[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:505:26:[39m [1;31merror 349[0m[1m: Could not find called feature[0m
+[34m          chck (c.this.x == "Inner Inner!") "c.this.x"
+[33m-------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mString[39m'
+In call: '[36mc.this.x.infix == ("Inner Inner!")[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:510:16:[39m [1;31merror 350[0m[1m: Could not find called feature[0m
+[34m    say "x is $x"   // 271. should flag an error: feature used before it is declared
+[33m---------------^[0m
+Feature not found: '[35mx[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi6[39m'
+In call: '[36mx[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:512:12:[39m [1;31merror 351[0m[1m: Could not find called feature[0m
+[34m    x := x as f64; say "x is $x"
+[33m-----------^[0m
+Feature not found: '[35mas[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi6[39m'
+In call: '[36mas[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:512:15:[39m [1;31merror 352[0m[1m: Could not find called feature[0m
+[34m    x := x as f64; say "x is $x"
+[33m--------------^[0m
+Feature not found: '[35mf64[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi6[39m'
+In call: '[36mf64[39m'
+To solve this, you might change the actual number of arguments to match this feature: '[35mf64[39m' (one argument)
+
+
+[32m--CURDIR--/visibility_negative.fz:514:12:[39m [1;31merror 353[0m[1m: Could not find called feature[0m
+[34m    x := x as i32; say "x is $x"
+[33m-----------^[0m
+Feature not found: '[35mas[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi6[39m'
+In call: '[36mas[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:523:11:[39m [1;31merror 354[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    chck (f.call == "x is 2") "x is 2"
+[33m----------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mvisibility_negative.visi7.f[39m' at [32m--CURDIR--/visibility_negative.fz:519:22:[39m
+[34m    x := 2;          f := ()->"x is "+x+""
+[33m---------------------^[0m
+
+
+[32m--CURDIR--/visibility_negative.fz:524:11:[39m [1;31merror 355[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    chck (g.call == "x is 16") "x is 16"
+[33m----------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mvisibility_negative.visi7.g[39m' at [32m--CURDIR--/visibility_negative.fz:520:22:[39m
+[34m    x := x*x*x*x;    g := ()->"x is "+x+""
+[33m---------------------^[0m
+
+
+[32m--CURDIR--/visibility_negative.fz:525:11:[39m [1;31merror 356[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    chck (h.call == "x is 16") "x is 16"
+[33m----------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mvisibility_negative.visi7.h[39m' at [32m--CURDIR--/visibility_negative.fz:521:23:[39m
+[34m    x := x.as_string; h := ()->"x is "+x+""
+[33m----------------------^[0m
+
+
+[32m--CURDIR--/visibility_negative.fz:526:11:[39m [1;31merror 357[0m[1m: Illegal forward or cyclic type inference[0m
+[34m    chck (i.call == "x is 1616161616") "x is 1616161616"
+[33m----------^[0m
+The definition of a field using '[36m:=[39m', or of a feature or function
+using '[36m=>[39m' must not create cyclic type dependencies.
+Referenced feature: '[35mvisibility_negative.visi7.i[39m' at [32m--CURDIR--/visibility_negative.fz:522:22:[39m
+[34m    x := x * 5;      i := ()->"x is "+x+""
+[33m---------------------^[0m
+
+
+[32m--CURDIR--/visibility_negative.fz:554:19:[39m [1;31merror 358[0m[1m: Could not find called feature[0m
+[34m      ixtest1  := ix1     // 281. should flag an error: feature not visible
+[33m------------------^[0m
+Feature not found: '[35mix1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mix1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:556:19:[39m [1;31merror 359[0m[1m: Could not find called feature[0m
+[34m      ixtest2b := ix1, ix1// 282. should flag an error: feature not visible
+[33m------------------^[0m
+Feature not found: '[35mix1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mix1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:557:19:[39m [1;31merror 360[0m[1m: Could not find called feature[0m
+[34m      ixtest3  := ix3     // 283. should flag an error: feature not visible
+[33m------------------^[0m
+Feature not found: '[35mix3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mix3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:559:19:[39m [1;31merror 361[0m[1m: Could not find called feature[0m
+[34m      ixtest4b := ix3, ix3// 284. should flag an error: feature not visible
+[33m------------------^[0m
+Feature not found: '[35mix3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mix3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:571:14:[39m [1;31merror 362[0m[1m: Could not find called feature[0m
+[34m        t0:= q     // 289. should flag an error: feature not visible
+[33m-------------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:573:15:[39m [1;31merror 363[0m[1m: Could not find called feature[0m
+[34m        t1 := r    // 290. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:574:15:[39m [1;31merror 364[0m[1m: Could not find called feature[0m
+[34m        t2 := s    // 291. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:578:15:[39m [1;31merror 365[0m[1m: Could not find called feature[0m
+[34m        t3 := r    // 294. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:579:15:[39m [1;31merror 366[0m[1m: Could not find called feature[0m
+[34m        t4 := s    // 295. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:581:15:[39m [1;31merror 367[0m[1m: Could not find called feature[0m
+[34m        t5 := s    // 296. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:589:16:[39m [1;31merror 368[0m[1m: Could not find called feature[0m
+[34m        t12 := s  // 303. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0.#loop0else1[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:566:14:[39m [1;31merror 369[0m[1m: Could not find called feature[0m
+[34m           b == 3 && // 285. should flag an error: feature not visible
+[33m-------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36m#loop0.this.b.infix == 3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:567:12:[39m [1;31merror 370[0m[1m: Could not find called feature[0m
+[34m           q == 3 && // 286. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:568:12:[39m [1;31merror 371[0m[1m: Could not find called feature[0m
+[34m           r == 3 && // 287. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:569:12:[39m [1;31merror 372[0m[1m: Could not find called feature[0m
+[34m           s == 3  ) // 288. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:576:12:[39m [1;31merror 373[0m[1m: Could not find called feature[0m
+[34m           r == 3 &&  // 292. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:577:12:[39m [1;31merror 374[0m[1m: Could not find called feature[0m
+[34m           s == 3 )   // 293. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35ms[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0[39m'
+In call: '[36ms[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:586:15:[39m [1;31merror 375[0m[1m: Could not find called feature[0m
+[34m        t9 := b   // 300. should flag an error: feature not visible
+[33m--------------^[0m
+Feature not found: '[35mb[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mb[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:587:16:[39m [1;31merror 376[0m[1m: Could not find called feature[0m
+[34m        t10 := q  // 301. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:588:16:[39m [1;31merror 377[0m[1m: Could not find called feature[0m
+[34m        t11 := r  // 302. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:591:16:[39m [1;31merror 378[0m[1m: Could not find called feature[0m
+[34m        t13 := b  // 304. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35mb[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mb[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:592:16:[39m [1;31merror 379[0m[1m: Could not find called feature[0m
+[34m        t14 := q  // 305. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:593:16:[39m [1;31merror 380[0m[1m: Could not find called feature[0m
+[34m        t15 := r  // 306. should flag an error: feature not visible
+[33m---------------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9.#loop0else0[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:596:12:[39m [1;31merror 381[0m[1m: Could not find called feature[0m
+[34m    t18 := it1    // 309. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mit1[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mit1[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:597:12:[39m [1;31merror 382[0m[1m: Could not find called feature[0m
+[34m    t19 := it2    // 310. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mit2[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mit2[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:598:12:[39m [1;31merror 383[0m[1m: Could not find called feature[0m
+[34m    t20 := ix3    // 311. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mix3[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mix3[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:599:12:[39m [1;31merror 384[0m[1m: Could not find called feature[0m
+[34m    t21 := b      // 312. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mb[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mb[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:600:12:[39m [1;31merror 385[0m[1m: Could not find called feature[0m
+[34m    t22 := q      // 313. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mq[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mq[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:601:12:[39m [1;31merror 386[0m[1m: Could not find called feature[0m
+[34m    t23 := r      // 314. should flag an error: feature not visible
+[33m-----------^[0m
+Feature not found: '[35mr[39m' (no arguments)
+Target feature: '[35mvisibility_negative.visi9[39m'
+In call: '[36mr[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:606:9:[39m [1;31merror 387[0m[1m: Could not find called feature[0m
+[34m   if 3 == 4
+[33m--------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36m3.infix == 4[39m'
+
+
+[32m--CURDIR--/visibility_negative.fz:513:14:[39m [1;31merror 388[0m[1m: Numeric literal used for integer type is not a whole number[0m
+[34m    x := x * 3.14; say "x is $x"
+[33m-------------^[0m
+Type propagation results in an integer type that cannot whole a value that is not integer.
+Numeric literal: '[36m3.14[39m'
+Assigned to type: '[33mi32[39m'
+
+
+[1;31merror 389[0m[1m: java.lang.NullPointerException: Cannot read the array length because "this._resolvedFormalArgumentTypes" is null
+	at dev.flang.ast.Call.box(Call.java:2157)
+	at dev.flang.ast.Feature$6.action(Feature.java:1705)
+	at dev.flang.ast.Feature$6.action(Feature.java:1703)
+	at dev.flang.ast.Call.visit(Call.java:1033)
+	at dev.flang.ast.AbstractAssign.visit(AbstractAssign.java:125)
+	at dev.flang.ast.AbstractAssign.visit(AbstractAssign.java:40)
+	at dev.flang.ast.Block.visit(Block.java:226)
+	at dev.flang.ast.Block.visit(Block.java:40)
+	at dev.flang.ast.Impl.visit(Impl.java:337)
+	at dev.flang.ast.Feature.visit(Feature.java:1027)
+	at dev.flang.ast.Feature.box(Feature.java:1703)
+	at dev.flang.ast.Resolution.resolveOne(Resolution.java:390)
+	at dev.flang.ast.Resolution.resolve(Resolution.java:338)
+	at dev.flang.fe.SourceModule.createASTandResolve(SourceModule.java:264)
+	at dev.flang.fe.FrontEnd.<init>(FrontEnd.java:180)
+	at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:830)
+	at dev.flang.tools.Tool.lambda$run$0(Tool.java:154)
+	at dev.flang.util.Errors.runAndExit(Errors.java:748)
+	at dev.flang.tools.Tool.run(Tool.java:154)
+	at dev.flang.tools.Fuzion.main(Fuzion.java:481)
+[0m
+
+*** fatal errors encountered, stopping.

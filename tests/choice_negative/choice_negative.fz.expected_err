@@ -1,0 +1,343 @@
+
+[32m--CURDIR--/choice_negative.fz:141:30:[39m [1;31merror 1[0m[1m: Syntax error: expected 'is', '{' or '=>' in routine declaration, found operator ':='[0m
+[34m    x bool : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
+[33m-----------------------------^[0m
+While parsing: implRout, parse stack: implRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/choice_negative.fz:144:25:[39m [1;31merror 2[0m[1m: Syntax error: expected 'is', '{' or '=>' in routine declaration, found operator ':='[0m
+[34m    x : choice i64 bool := true  // 29. should flag an error, choice feature must not be field
+[33m------------------------^[0m
+While parsing: implRout, parse stack: implRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/choice_negative.fz:146:30:[39m [1;31merror 3[0m[1m: Syntax error: expected 'is', '{' or '=>' in routine declaration, found operator ':='[0m
+[34m    x bool : choice i64 bool := any  // 30. should flag an error, choice feature must not be field
+[33m-----------------------------^[0m
+While parsing: implRout, parse stack: implRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/choice_negative.fz:167:13:[39m [1;31merror 4[0m[1m: Inconsistent indentation[0m
+[34m            | FALSE => false
+[33m------------^[0m
+Indentation reference point is [32m--CURDIR--/choice_negative.fz:162:5:[39m
+[34m    match 42   // 35. should flag an error, match subject must be choice
+[33m----^[0m
+While parsing: stmnts, parse stack: stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+[32m--CURDIR--/choice_negative.fz:58:10:[39m [1;31merror 5[0m[1m: Cannot call choice feature[0m
+[34m    x := MyChoice  // 8. should flag an error: cannot instanciate choice
+[33m---------^[0m
+A choice feature is only used as a type, values are created by assignments only.
+Choice feature that is called: '[35mchoice_negative.instantiate2.MyChoice[39m'
+Declared at [32m--CURDIR--/choice_negative.fz:57:5:[39m
+[34m    MyChoice : choice String bool f64 is
+[33m----^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:162:11:[39m [1;31merror 6[0m[1m: '[35mmatch[39m' subject type must be a choice type[0m
+[34m    match 42   // 35. should flag an error, match subject must be choice
+[33m----------^[0m
+Matched type: '[33mi32[39m', which is not a choice type
+
+
+[32m--CURDIR--/choice_negative.fz:166:10:[39m [1;31merror 7[0m[1m: '[35mmatch[39m' subject type must be a choice type[0m
+[34m    j := 42 ? TRUE => true   // 36. should flag an error, match subject must be choice
+[33m---------^[0m
+Matched type: '[33mi32[39m', which is not a choice type
+
+
+[32m--CURDIR--/choice_negative.fz:167:21:[39m [1;31merror 8[0m[1m: Could not find called feature[0m
+[34m            | FALSE => false
+[33m--------------------^[0m
+Feature not found: '[35minfix =>[39m' (one argument)
+Target feature: '[35mFALSE[39m'
+In call: '[36mFALSE.infix => false[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:61:26:[39m [1;31merror 9[0m[1m: Repeated inheritance of choice is not permitted[0m
+[34m    A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
+[33m-------------------------^[0m
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at [32m--CURDIR--/choice_negative.fz:61:9:[39m
+
+
+[32m--CURDIR--/choice_negative.fz:32:5:[39m [1;31merror 10[0m[1m: Choice cannot refer to its own value type as one of the choice alternatives[0m
+[34m    A : choice A i32 String is  // 1. should flag an error: cyclic choice
+[33m----^[0m
+Embedding a choice type in itself would result in an infinitely large type.
+Faulty type parameter: '[33mchoice_negative.this.type.cyclic1.this.type.A[39m' at [32m--CURDIR--/choice_negative.fz:32:16:[39m
+[34m    A : choice A i32 String is  // 1. should flag an error: cyclic choice
+[33m---------------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:38:5:[39m [1;31merror 11[0m[1m: Choice cannot refer to its own value type as one of the choice alternatives[0m
+[34m    A : choice i32 A String is  // 2. should flag an error: cyclic choice
+[33m----^[0m
+Embedding a choice type in itself would result in an infinitely large type.
+Faulty type parameter: '[33mchoice_negative.this.type.cyclic3.this.type.A[39m' at [32m--CURDIR--/choice_negative.fz:38:20:[39m
+[34m    A : choice i32 A String is  // 2. should flag an error: cyclic choice
+[33m-------------------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:44:5:[39m [1;31merror 12[0m[1m: Choice cannot refer to its own value type as one of the choice alternatives[0m
+[34m    A : choice i32 String A is  // 3. should flag an error: cyclic choice
+[33m----^[0m
+Embedding a choice type in itself would result in an infinitely large type.
+Faulty type parameter: '[33mchoice_negative.this.type.cyclic5.this.type.A[39m' at [32m--CURDIR--/choice_negative.fz:44:27:[39m
+[34m    A : choice i32 String A is  // 3. should flag an error: cyclic choice
+[33m--------------------------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:66:9:[39m [1;31merror 13[0m[1m: Cannot inherit from choice feature[0m
+[34m    C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
+[33m--------^[0m
+Choice must be leaf.
+
+
+[32m--CURDIR--/choice_negative.fz:66:12:[39m [1;31merror 14[0m[1m: Cannot inherit from choice feature[0m
+[34m    C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
+[33m-----------^[0m
+Choice must be leaf.
+
+
+[32m--CURDIR--/choice_negative.fz:70:9:[39m [1;31merror 15[0m[1m: Cannot inherit from choice feature[0m
+[34m    B : A, choice String f64 is // 11. should flag an error: choice type must inherit exactly once from choice
+[33m--------^[0m
+Choice must be leaf.
+
+
+[32m--CURDIR--/choice_negative.fz:74:28:[39m [1;31merror 16[0m[1m: Cannot inherit from choice feature[0m
+[34m    B : choice String f64, A is // 12. should flag an error: choice type must inherit exactly once from choice
+[33m---------------------------^[0m
+Choice must be leaf.
+
+
+[32m--CURDIR--/choice_negative.fz:77:5:[39m [1;31merror 17[0m[1m: Choice must not contain any fields[0m
+[34m    A : choice i32 String bool is
+[33m----^[0m
+Field '[35mchoice_negative.nofields1.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:78:7:[39m
+[34m      x i32 := any // 13. should flag an error: choice type must not have any fields
+[33m------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:77:5:[39m [1;31merror 18[0m[1m: Choice feature must not contain any code[0m
+[34m    A : choice i32 String bool is
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:81:5:[39m [1;31merror 19[0m[1m: Choice must not contain any fields[0m
+[34m    A (x i32)  : choice i32 String bool is  // 14. should flag an error: choice type must not have any fields
+[33m----^[0m
+Field '[35mchoice_negative.nofields2.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:81:8:[39m
+[34m    A (x i32)  : choice i32 String bool is  // 14. should flag an error: choice type must not have any fields
+[33m-------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:85:5:[39m [1;31merror 20[0m[1m: Choice must not contain any fields[0m
+[34m    B : A, choice i32 String bool is // 15. should flag an error: choice type must not have any fields
+[33m----^[0m
+Field '[35mchoice_negative.nofields3.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:84:10:[39m
+[34m    A is x i32 := any
+[33m---------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:89:5:[39m [1;31merror 21[0m[1m: Choice must not contain any fields[0m
+[34m    B : choice i32 String bool, A is // 16. should flag an error: choice type must not have any fields
+[33m----^[0m
+Field '[35mchoice_negative.nofields4.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:88:10:[39m
+[34m    A is x i32 := any
+[33m---------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:94:5:[39m [1;31merror 22[0m[1m: Choice must not contain any fields[0m
+[34m    C : B, choice i32 String bool is // 17. should flag an error: choice type must not have any fields
+[33m----^[0m
+Field '[35mchoice_negative.nofields5.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:92:8:[39m
+[34m    A (x i32) is
+[33m-------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:99:5:[39m [1;31merror 23[0m[1m: Choice must not contain any fields[0m
+[34m    C : choice i32 String bool, B is // 18. should flag an error: choice type must not have any fields
+[33m----^[0m
+Field '[35mchoice_negative.nofields6.A.x[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:97:8:[39m
+[34m    A (x i32) is
+[33m-------^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:103:9:[39m [1;31merror 24[0m[1m: Cannot inherit from choice feature[0m
+[34m    B : A is // 19. should flag an error: choice type must be leaf
+[33m--------^[0m
+Choice must be leaf.
+
+
+[32m--CURDIR--/choice_negative.fz:106:5:[39m [1;31merror 25[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    A : choice i32 i32 is // 20. should flag an error: generic args to choice must be different
+[33m----^[0m
+The following types have overlapping values:
+'[33mi32[39m'
+'[33mi32[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:109:7:[39m [1;31merror 26[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    x choice i32 i32 := any // 21. should flag an error: generic args to choice must be different
+[33m------^[0m
+The following types have overlapping values:
+'[33mi32[39m'
+'[33mi32[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:112:7:[39m [1;31merror 27[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    x i32 | i32 := any  // 22. should flag an error: generic args to choice must be different
+[33m------^[0m
+The following types have overlapping values:
+'[33mi32[39m'
+'[33mi32[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:117:5:[39m [1;31merror 28[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    A : choice R S is // 23. should flag an error: generic args to choice must be different
+[33m----^[0m
+The following types have overlapping values:
+'[33mchoice_negative.args4.R[39m'
+'[33mchoice_negative.args4.S[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:122:7:[39m [1;31merror 29[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    x choice R S := any  // 24. should flag an error: generic args to choice must be different
+[33m------^[0m
+The following types have overlapping values:
+'[33mchoice_negative.this.type.args5.this.type.R[39m'
+'[33mchoice_negative.this.type.args5.this.type.S[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:127:7:[39m [1;31merror 30[0m[1m: Actual type parameters to choice type must be disjoint types[0m
+[34m    x R | S := any  // 25. should flag an error: generic args to choice must be different
+[33m------^[0m
+The following types have overlapping values:
+'[33mchoice_negative.this.type.args6.this.type.R[39m'
+'[33mchoice_negative.this.type.args6.this.type.S[39m'
+
+
+[32m--CURDIR--/choice_negative.fz:130:5:[39m [1;31merror 31[0m[1m: Choice type must not access fields of surrounding scope.[0m
+[34m    A : choice i64 f32 is
+[33m----^[0m
+A closure cannot be built for a choice type. Forbidden accesses occur at 
+[32m--CURDIR--/choice_negative.fz:132:14:[39m
+[34m        y := x // 26. should flag an error: access to closure not permitted in choice
+[33m-------------^[0m
+
+To solve this, you might move the accessed fields outside of the common outer feature.
+
+
+[32m--CURDIR--/choice_negative.fz:138:9:[39m [1;31merror 32[0m[1m: Choice type must not access fields of surrounding scope.[0m
+[34m    B : A, choice i64 f32 is
+[33m--------^[0m
+A closure cannot be built for a choice type. Forbidden accesses occur at 
+[32m--CURDIR--/choice_negative.fz:137:14:[39m
+[34m        y := x // 27. should flag an error: access to closure not permitted in choice
+[33m-------------^[0m
+
+To solve this, you might move the accessed fields outside of the common outer feature.
+
+
+[32m--CURDIR--/choice_negative.fz:141:5:[39m [1;31merror 33[0m[1m: Choice feature must not be intrinsic[0m
+[34m    x bool : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:144:5:[39m [1;31merror 34[0m[1m: Choice feature must not be intrinsic[0m
+[34m    x : choice i64 bool := true  // 29. should flag an error, choice feature must not be field
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:146:5:[39m [1;31merror 35[0m[1m: Choice feature must not be intrinsic[0m
+[34m    x bool : choice i64 bool := any  // 30. should flag an error, choice feature must not be field
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:148:5:[39m [1;31merror 36[0m[1m: Choice must not contain any fields[0m
+[34m    x : choice i64 bool => 3  // 31. should flag an error, choice feature must not contain code
+[33m----^[0m
+Field '[35mchoice_negative.impl4.x.result[39m' is not permitted in choice.
+Field declared at [32m--CURDIR--/choice_negative.fz:148:5:[39m
+[34m    x : choice i64 bool => 3  // 31. should flag an error, choice feature must not contain code
+[33m----^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:148:5:[39m [1;31merror 37[0m[1m: Choice feature must not be defined as a routine with a result[0m
+[34m    x : choice i64 bool => 3  // 31. should flag an error, choice feature must not contain code
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:150:5:[39m [1;31merror 38[0m[1m: Choice feature must not contain any code[0m
+[34m    x : choice i64 bool is say "Hello" // 32. should flag an error, choice feature must not contain code
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:152:5:[39m [1;31merror 39[0m[1m: Choice feature must not be abstract[0m
+[34m    x : choice i64 bool is abstract  // 33. should flag an error, choice feature must not be abstract
+[33m----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:154:6:[39m [1;31merror 40[0m[1m: Choice feature must not be intrinsic[0m
+[34m     x : choice i64 bool is intrinsic  // 34. should flag an error, choice feature must not be intrinsic
+[33m-----^[0m
+A choice feature must be a normal feature with empty code section
+
+
+[32m--CURDIR--/choice_negative.fz:54:10:[39m [1;31merror 41[0m[1m: Cannot call choice feature[0m
+[34m    x := choice i32 String  // 7. should flag an error: cannot instanciate choice
+[33m---------^[0m
+A choice feature is only used as a type, values are created by assignments only.
+Choice feature that is called: '[35mchoice[39m'
+Declared at [32m$FUZION/lib/choice.fz:106:1:[39m
+[34mchoice(CHOICE_ELEMENT_TYPE type...) is
+[33m^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:66:9:[39m [1;31merror 42[0m[1m: Cannot call choice feature[0m
+[34m    C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
+[33m--------^[0m
+A choice feature is only used as a type, values are created by assignments only.
+Choice feature that is called: '[35mchoice_negative.multi2.A[39m'
+Declared at [32m--CURDIR--/choice_negative.fz:64:5:[39m
+[34m    A : choice i32 bool is
+[33m----^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:66:12:[39m [1;31merror 43[0m[1m: Cannot call choice feature[0m
+[34m    C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
+[33m-----------^[0m
+A choice feature is only used as a type, values are created by assignments only.
+Choice feature that is called: '[35mchoice_negative.multi2.B[39m'
+Declared at [32m--CURDIR--/choice_negative.fz:65:5:[39m
+[34m    B : choice String f64 is
+[33m----^[0m
+
+
+[32m--CURDIR--/choice_negative.fz:103:9:[39m [1;31merror 44[0m[1m: Cannot call choice feature[0m
+[34m    B : A is // 19. should flag an error: choice type must be leaf
+[33m--------^[0m
+A choice feature is only used as a type, values are created by assignments only.
+Choice feature that is called: '[35mchoice_negative.leaf1.A[39m'
+Declared at [32m--CURDIR--/choice_negative.fz:102:5:[39m
+[34m    A : choice f32 f64 is
+[33m----^[0m
+
+44 errors.

@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = doubledeclaration_negative
-include ../negative.mk
+include ../simple.mk

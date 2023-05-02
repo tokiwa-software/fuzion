@@ -1,0 +1,127 @@
+
+[32m--CURDIR--/argumentcount_negative.fz:31:5:[39m [1;31merror 1[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x i32) i32 is 42  // 1. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics12.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics12.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:33:5:[39m [1;31merror 2[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x, y i32) i32 is 42  // 2. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics13.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics13.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:36:5:[39m [1;31merror 3[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call() i32 is 42  // 3. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics14.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics14.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:40:5:[39m [1;31merror 4[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x bool, y bool) i32 is 42  // 4. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics16.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics16.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:45:5:[39m [1;31merror 5[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x i32) is // 5. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics18.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics18.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:47:5:[39m [1;31merror 6[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x, y i32) is // 6. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics19.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics19.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:50:5:[39m [1;31merror 7[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call() is // 7. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics20.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics20.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:54:5:[39m [1;31merror 8[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
+[34m    redefine call(x, y bool) is // 8. should flag an error, wrong number of arguments
+[33m----^[0m
+Redefining feature: '[35margumentcount_negative.opengenerics22.call[39m'
+To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics22.call[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:56:3:[39m [1;31merror 9[0m[1m: Incompatible types in assignment[0m
+[34m  r3 Function unit          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
+[33m--^[0m
+assignment to field : '[35margumentcount_negative.r3[39m'
+expected formal type: '[33mFunction unit[39m'
+actual type found   : '[33margumentcount_negative.this.type.opengenerics21[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mFunction unit bool[39m',
+                      '[33margumentcount_negative.this.type.opengenerics21[39m'
+for value assigned  : '[36margumentcount_negative.this.opengenerics21[39m'
+To solve this, you could change the type of the target '[36margumentcount_negative.r3[39m' to '[33margumentcount_negative.this.type.opengenerics21[39m' or convert the type of the assigned value to '[33mFunction unit[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:57:3:[39m [1;31merror 10[0m[1m: Incompatible types in assignment[0m
+[34m  r4 Function unit i32 bool := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
+[33m--^[0m
+assignment to field : '[35margumentcount_negative.r4[39m'
+expected formal type: '[33mFunction unit i32 bool[39m'
+actual type found   : '[33margumentcount_negative.this.type.opengenerics21[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mFunction unit bool[39m',
+                      '[33margumentcount_negative.this.type.opengenerics21[39m'
+for value assigned  : '[36margumentcount_negative.this.opengenerics21[39m'
+To solve this, you could change the type of the target '[36margumentcount_negative.r4[39m' to '[33margumentcount_negative.this.type.opengenerics21[39m' or convert the type of the assigned value to '[33mFunction unit i32 bool[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:59:3:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[34m  f3 Function i32 i32   := opengenerics15   // 11. should flag an error: incompatible types due to incompatible generics
+[33m--^[0m
+assignment to field : '[35margumentcount_negative.f3[39m'
+expected formal type: '[33mFunction i32 i32[39m'
+actual type found   : '[33margumentcount_negative.this.type.opengenerics15[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mFunction i32 bool[39m',
+                      '[33margumentcount_negative.this.type.opengenerics15[39m'
+for value assigned  : '[36margumentcount_negative.this.opengenerics15[39m'
+To solve this, you could change the type of the target '[36margumentcount_negative.f3[39m' to '[33margumentcount_negative.this.type.opengenerics15[39m' or convert the type of the assigned value to '[33mFunction i32 i32[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:60:3:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[34m  f4 Function bool bool := opengenerics15   // 12. should flag an error: incompatible types due to incompatible generics
+[33m--^[0m
+assignment to field : '[35margumentcount_negative.f4[39m'
+expected formal type: '[33mFunction bool bool[39m'
+actual type found   : '[33margumentcount_negative.this.type.opengenerics15[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mFunction i32 bool[39m',
+                      '[33margumentcount_negative.this.type.opengenerics15[39m'
+for value assigned  : '[36margumentcount_negative.this.opengenerics15[39m'
+To solve this, you could change the type of the target '[36margumentcount_negative.f4[39m' to '[33margumentcount_negative.this.type.opengenerics15[39m' or convert the type of the assigned value to '[33mFunction bool bool[39m'.
+
+
+[32m--CURDIR--/argumentcount_negative.fz:43:5:[39m [1;31merror 13[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine call() is
+[33m----^[0m
+In '[35margumentcount_negative.opengenerics17.call[39m' that redefines '[35mFunction.call[39m' result type is '[33margumentcount_negative.opengenerics17.call[39m', result type should be '[33munit[39m' (from '[33mFunction.R[39m').  Original feature declared at [32m$FUZION/lib/Function.fz:34:3:[39m
+[34m  call(a A) R is abstract
+[33m--^[0m
+To solve this, change type of result to '[33munit[39m'
+
+
+[32m--CURDIR--/argumentcount_negative.fz:52:5:[39m [1;31merror 14[0m[1m: Wrong result type in redefined feature[0m
+[34m    redefine call(x bool) is
+[33m----^[0m
+In '[35margumentcount_negative.opengenerics21.call[39m' that redefines '[35mFunction.call[39m' result type is '[33margumentcount_negative.opengenerics21.call[39m', result type should be '[33munit[39m' (from '[33mFunction.R[39m').  Original feature declared at [32m$FUZION/lib/Function.fz:34:3:[39m
+[34m  call(a A) R is abstract
+[33m--^[0m
+To solve this, change type of result to '[33munit[39m'
+
+14 errors.

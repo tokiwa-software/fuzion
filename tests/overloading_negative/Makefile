@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = overloading_negative
-include ../negative.mk
+include ../simple.mk

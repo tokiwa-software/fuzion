@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = indentation_negative
-include ../negative.mk
+include ../simple.mk

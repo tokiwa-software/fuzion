@@ -1,0 +1,90 @@
+
+[32m--CURDIR--/test_this_type_negative.fz:61:16:[39m [1;31merror 1[0m[1m: Incompatible types when passing argument in a call[0m
+[34m  _ := xa1.op0 (xb "xb")   # 3. should flag an error: incompatible type
+[33m---------------^[0m
+Actual type for argument #1 '[35mv[39m' does not match expected type.
+In call to          : '[35mtest_this_type_negative.xa.op0[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.xa[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.xb[39m'
+assignable to       : '[33mtest_this_type_negative.this.type.xb[39m'
+for value assigned  : 
+[36m{
+  test_this_type_negative.this.xb "xb"
+}[39m
+
+To solve this, you could change the type of the target '[36mv[39m' to '[33mtest_this_type_negative.this.type.xb[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.xa[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:62:16:[39m [1;31merror 2[0m[1m: Incompatible types when passing argument in a call[0m
+[34m  _ := xa1.op0 xc          # 4. should flag an error: incompatible type
+[33m---------------^[0m
+Actual type for argument #1 '[35mv[39m' does not match expected type.
+In call to          : '[35mtest_this_type_negative.xa.op0[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.xa[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.xc[39m'
+assignable to       : '[33mtest_this_type_negative.this.type.xc[39m'
+for value assigned  : '[36mtest_this_type_negative.this.xc[39m'
+To solve this, you could change the type of the target '[36mv[39m' to '[33mtest_this_type_negative.this.type.xc[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.xa[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:76:16:[39m [1;31merror 3[0m[1m: Incompatible types when passing argument in a call[0m
+[34m  _ := xb1.op0 xa   # 5. should flag an error: incompatible type
+[33m---------------^[0m
+Actual type for argument #1 '[35mv[39m' does not match expected type.
+In call to          : '[35mtest_this_type_negative.xb.op0[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.xb[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.xa[39m'
+assignable to       : '[33mtest_this_type_negative.this.type.xa[39m'
+for value assigned  : '[36mtest_this_type_negative.this.xa[39m'
+To solve this, you could change the type of the target '[36mv[39m' to '[33mtest_this_type_negative.this.type.xa[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.xb[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:77:16:[39m [1;31merror 4[0m[1m: Incompatible types when passing argument in a call[0m
+[34m  _ := xb1.op0 xc   # 6. should flag an error: incompatible type
+[33m---------------^[0m
+Actual type for argument #1 '[35mv[39m' does not match expected type.
+In call to          : '[35mtest_this_type_negative.xb.op0[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.xb[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.xc[39m'
+assignable to       : '[33mtest_this_type_negative.this.type.xc[39m'
+for value assigned  : '[36mtest_this_type_negative.this.xc[39m'
+To solve this, you could change the type of the target '[36mv[39m' to '[33mtest_this_type_negative.this.type.xc[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.xb[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:35:5:[39m [1;31merror 5[0m[1m: Incompatible types in assignment[0m
+[34m    a1 a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+[33m----^[0m
+assignment to field : '[35mtest_this_type_negative.a.a1[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.a[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.a.this.type[39m'
+assignable to       : ref '[33mtest_this_type_negative.this.type.ref a[39m'
+for value assigned  : '[36ma.this[39m'
+To solve this, you could change the type of the target '[36mtest_this_type_negative.a.a1[39m' to '[33mtest_this_type_negative.this.type.a.this.type[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.a[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:31:7:[39m [1;31merror 6[0m[1m: Incompatible types in assignment[0m
+[34m      ax1 a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+[33m------^[0m
+assignment to field : '[35mtest_this_type_negative.a.x.ax1[39m'
+expected formal type: '[33mtest_this_type_negative.this.type.a[39m'
+actual type found   : '[33mtest_this_type_negative.this.type.a.this.type[39m'
+assignable to       : ref '[33mtest_this_type_negative.this.type.ref a[39m'
+for value assigned  : '[36mderef(x.this.#^test_this_type_negative.a.x)[39m'
+To solve this, you could change the type of the target '[36mtest_this_type_negative.a.x.ax1[39m' to '[33mtest_this_type_negative.this.type.a.this.type[39m' or convert the type of the assigned value to '[33mtest_this_type_negative.this.type.a[39m'.
+
+
+[32m--CURDIR--/test_this_type_negative.fz:49:3:[39m [1;31merror 7[0m[1m: Used abstract feature '[35mtest_this_type_negative.xa.op0[39m' is not implemented by '[35mtest_this_type_negative.xa[39m'[0m
+[34m  xa is
+[33m--^[0m
+Feature '[35mtest_this_type_negative.xa[39m' instantiated at [32m--CURDIR--/test_this_type_negative.fz:58:10:[39m
+[34m  xa1 := xa
+[33m---------^[0m
+inherits or declares abstract feature '[35mtest_this_type_negative.xa.op0[39m' declared at [32m--CURDIR--/test_this_type_negative.fz:50:5:[39m
+[34m    op0(v xa.this.type) xa.this.type is abstract
+[33m----^[0m
+which is called at [32m--CURDIR--/test_this_type_negative.fz:60:12:[39m
+[34m  _ := xa1.op0 xa
+[33m-----------^[0m
+without providing an implementation
+
+7 errors.

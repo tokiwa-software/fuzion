@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = inheritance_negative2
-include ../negative.mk
+include ../simple.mk

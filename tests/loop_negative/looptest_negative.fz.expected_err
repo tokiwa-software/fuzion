@@ -1,0 +1,163 @@
+
+[32m--CURDIR--/looptest_negative.fz:94:13:[39m [1;31merror 1[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set i := 2   //  4. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToIndexVar.#loop5.i[39m'
+Within feature: '[35mlooptest_negative.testWriteToIndexVar.#loop5[39m'
+For assignment: '[36mset i := 2[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:89:7:[39m
+[34m      i i32 := 0, i+1
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:95:13:[39m [1;31merror 2[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set j := i*i //  5. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToIndexVar.#loop5.j[39m'
+Within feature: '[35mlooptest_negative.testWriteToIndexVar.#loop5[39m'
+For assignment: '[36mset j := #loop5.this.i.infix * i[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:90:7:[39m
+[34m      j := 100, j-1
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:96:13:[39m [1;31merror 3[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set k := 3   //  6. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToIndexVar.#loop5.k[39m'
+Within feature: '[35mlooptest_negative.testWriteToIndexVar.#loop5[39m'
+For assignment: '[36mset k := 3[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:91:7:[39m
+[34m      k in 0..10
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:97:13:[39m [1;31merror 4[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set l := k-j //  7. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToIndexVar.#loop5.l[39m'
+Within feature: '[35mlooptest_negative.testWriteToIndexVar.#loop5[39m'
+For assignment: '[36mset l := #loop5.this.k.infix - j[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:92:7:[39m
+[34m      l in 0..20 : 2
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:105:13:[39m [1;31merror 5[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set i := i+2 //  7a. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToDeclaredVar.#loop6.i[39m'
+Within feature: '[35mlooptest_negative.testWriteToDeclaredVar.#loop6[39m'
+For assignment: '[36mset i := #loop6.this.i.infix + 2[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:102:7:[39m
+[34m      i i32 := 0
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:106:13:[39m [1;31merror 6[0m[1m: Target of assignment must not be a loop index variable[0m
+[34m      set j := i*i //  7b. should flag an error: must not assign value to loop index var
+[33m------------^[0m
+Target of assignment: '[35mlooptest_negative.testWriteToDeclaredVar.#loop6.j[39m'
+Within feature: '[35mlooptest_negative.testWriteToDeclaredVar.#loop6[39m'
+For assignment: '[36mset j := #loop6.this.i.infix * i[39m'
+Was defined as loop index variable at [32m--CURDIR--/looptest_negative.fz:103:7:[39m
+[34m      j := 100
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:43:14:[39m [1;31merror 7[0m[1m: Incompatible types in branches of if statement[0m
+[34m    while ix < data.length
+[33m-------------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/looptest_negative.fz:45:11:[39m
+[34m    until isWhatWeWant(data[ix])     //  1.a should flag an error: incompatible result types i32 vs. String
+[33m----------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/looptest_negative.fz:48:7:[39m
+[34m      "4444"            //  1.b should flag an error: incompatible result types i32 vs. String
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:54:14:[39m [1;31merror 8[0m[1m: Incompatible types in branches of if statement[0m
+[34m    while ix < data.length
+[33m-------------^[0m
+Incompatible result types in different branches:
+block returns value of type '[33mi32[39m' at [32m--CURDIR--/looptest_negative.fz:56:11:[39m
+[34m    until isWhatWeWant(data[ix])    //  2.a should flag an error: incompatible result types i32 vs. String
+[33m----------^[0m
+block returns value of type '[33mString[39m' at [32m--CURDIR--/looptest_negative.fz:59:7:[39m
+[34m      "4444"            //  2.b should flag an error: incompatible result types i32 vs. String
+[33m------^[0m
+
+
+[32m--CURDIR--/looptest_negative.fz:37:39:[39m [1;31merror 9[0m[1m: Could not find called feature[0m
+[34m  a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
+[33m--------------------------------------^[0m
+Feature not found: '[35minfix ==[39m' (one argument)
+Target feature: '[35mi32[39m'
+In call: '[36mcall.this.i.infix % 23.infix == 0[39m'
+
+
+[32m--CURDIR--/looptest_negative.fz:37:50:[39m [1;31merror 10[0m[1m: Block must end with a result expression[0m
+[34m  a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
+[33m-------------------------------------------------^[0m
+This block must produce a value since its result is used by the enclosing statement.
+Expected type of value: '[33mi32[39m'
+
+
+[32m--CURDIR--/looptest_negative.fz:69:3:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[34m  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
+[33m--^[0m
+assignment to field : '[35mlooptest_negative.neg3i[39m'
+expected formal type: '[33mi32[39m'
+actual type found   : '[33mbool[39m'
+assignable to       : '[33mbool[39m'
+for value assigned  : 
+[36mlooptest_negative.this.testLoop_neg3 looptest_negative.this.a ({
+  function FEATURE: invisible call(local i i32 is field) bool : Any is routine
+})[39m
+
+To solve this, you could change the type of the target '[36mlooptest_negative.neg3i[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33mi32[39m'.
+
+
+[32m--CURDIR--/looptest_negative.fz:70:3:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[34m  neg3s String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types VOID vs. String
+[33m--^[0m
+assignment to field : '[35mlooptest_negative.neg3s[39m'
+expected formal type: '[33mString[39m'
+actual type found   : '[33mref bool[39m'
+assignable to       : '[33mAny[39m',
+                      '[33mref bool[39m',
+                      '[33mref choice FALSE TRUE[39m',
+                      '[33mref equatable[39m'
+for value assigned  : 
+[36mbox(looptest_negative.this.testLoop_neg3 looptest_negative.this.a ({
+  function FEATURE: invisible call(local i i32 is field) bool : Any is routine
+}))[39m
+
+To solve this, you could change the type of the target '[36mlooptest_negative.neg3s[39m' to '[33mref bool[39m' or convert the type of the assigned value to '[33mString[39m'.
+
+
+[32m--CURDIR--/looptest_negative.fz:110:11:[39m [1;31merror 13[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    while "string"  // 8. should flag an error: must be of type bool
+[33m----------^[0m
+Actual type is '[33mString[39m'
+
+
+[32m--CURDIR--/looptest_negative.fz:114:11:[39m [1;31merror 14[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    while 23  // 9. should flag an error: must be of type bool
+[33m----------^[0m
+Actual type is '[33mi32[39m'
+
+
+[32m--CURDIR--/looptest_negative.fz:126:11:[39m [1;31merror 15[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    until "string"  // 10. should flag an error: must be of type bool
+[33m----------^[0m
+Actual type is '[33mString[39m'
+
+
+[32m--CURDIR--/looptest_negative.fz:131:11:[39m [1;31merror 16[0m[1m: If condition must be assignable to type '[33mbool[39m'[0m
+[34m    until 23  // 11. should flag an error: must be of type bool
+[33m----------^[0m
+Actual type is '[33mi32[39m'
+
+16 errors.

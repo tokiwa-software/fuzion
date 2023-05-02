@@ -1,0 +1,33 @@
+
+[32m--CURDIR--/equals_test_negative.fz:40:25:[39m [1;31merror 1[0m[1m: Incompatible type parameter[0m
+[34m  say "equals a1 a2 is {equals a1 a2}"      # 1. should flag an error: equals_test_a does not implement equality
+[33m------------------------^[0m
+formal type parameter '[33mT[39m' with constraint '[33mequatable[39m'
+actual type parameter '[33mequals_test_a[39m'
+
+
+[32m--CURDIR--/equals_test_negative.fz:45:29:[39m [1;31merror 2[0m[1m: Incompatible type parameter[0m
+[34m  say "b1.infix = b2 is {b1.infix = b2}"    # 2. should flag an error: equals_test_b does not implement equality
+[33m----------------------------^[0m
+formal type parameter '[33mT[39m' with constraint '[33mequatable[39m'
+actual type parameter '[33mequals_test_b[39m'
+
+
+[32m--CURDIR--/equals_test_negative.fz:50:23:[39m [1;31merror 3[0m[1m: Incompatible type parameter[0m
+[34m  say "c1 = c2 is {c1 = c2}"                # 3. should flag an error: equals_test_c does not implement equality
+[33m----------------------^[0m
+formal type parameter '[33mT[39m' with constraint '[33mequatable[39m'
+actual type parameter '[33mequals_test_c[39m'
+
+
+[32m--CURDIR--/equals_test_negative.fz:54:32:[39m [1;31merror 4[0m[1m: Wrong argument type in redefined feature[0m
+[34m  equals_test_ok.type.equality(a, b equals_test_ok) => a.x = b.x
+[33m-------------------------------^[0m
+In '[35mequals_test_ok.type.equality[39m' that redefines '[35mequatable.type.equality[39m' argument type is '[33mequals_test_ok[39m', argument type should be '[33mequals_test_ok.this.type (in type feature)[39m' (from '[33mequatable.type.THIS#TYPE[39m').  Original argument declared at [32m$FUZION/lib/equatable.fz:42:17:[39m
+[34m  type.equality(a, b equatable.this.type) bool is abstract
+[33m----------------^[0m
+To solve this, add '[35mfixed[39m' modifier at declaration of '[35mequals_test_ok.type.equality[39m' at [32m--CURDIR--/equals_test_negative.fz:54:3:[39m
+[34m  equals_test_ok.type.equality(a, b equals_test_ok) => a.x = b.x
+[33m--^[0m
+
+4 errors.

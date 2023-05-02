@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = typeinference_negative
-include ../negative.mk
+include ../simple.mk
