@@ -817,7 +817,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * Add inner to the set of declared inner features of outer.
    *
    * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * in a different module.  E.g. universe is declared in stdlib, while an
    * inner feature 'main' may be declared in the application's module.
    *
    * @param outer the declaring feature
