@@ -780,7 +780,6 @@ modifiers   : modifier modifiers
             ;
 modifier    : "lazy"
             | "redef"
-            | "redefine"
             | "dyn"
             ;
    *
@@ -798,7 +797,6 @@ modifier    : "lazy"
           {
           case t_lazy        : m = Consts.MODIFIER_LAZY        ; break;
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
           default            : throw new Error();
           }
@@ -829,7 +827,6 @@ modifier    : "lazy"
       {
       case t_lazy        :
       case t_redef       :
-      case t_redefine    :
       case t_fixed       : return true;
       default            : return false;
       }

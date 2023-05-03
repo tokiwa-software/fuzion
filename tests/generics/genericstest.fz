@@ -173,7 +173,7 @@ genericstest is
       f(a A) unit is abstract
 
     G ref : F i32 bool i32 is
-      redefine f(a0 i32, a1 bool, a2 i32) unit is
+      redef f(a0 i32, a1 bool, a2 i32) unit is
        chck (a0 = a2) "f only called with first and last element equal"
        chck a1        "f only called with a1 true"
        unit

@@ -38,17 +38,17 @@ inheritance is
     x unit is abstract
   B ref : A is
     say "B's body$ident"
-    redefine x unit is say "B.x"
+    redef x unit is say "B.x"
     xb unit is say "B.xb"
   C ref : A is
-    redefine x unit is say "C.x"
+    redef x unit is say "C.x"
     xc unit is say "C.xc"
   D ref : B, C is
-    redefine x unit is say "D.x"
+    redef x unit is say "D.x"
   E ref : D is
-    redefine x  unit is say "E.x"
-    redefine xb unit is say "E.xb"
-    redefine xc unit is say "E.xc"
+    redef x  unit is say "E.x"
+    redef xb unit is say "E.xb"
+    redef xc unit is say "E.xc"
   bi B := B
   ci C := C
   aa A := bi
@@ -241,7 +241,7 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
@@ -275,7 +275,7 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
@@ -297,7 +297,7 @@ inheritance is
       x => say "A.x: FAILED."; exit_code <- 1
     BB ref : AA is
       a
-      redefine x unit is say "B.x: PASSED."
+      redef x unit is say "B.x: PASSED."
     BB
     unit
   check_dyn_binding_when_inheriting_value
@@ -321,7 +321,7 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1

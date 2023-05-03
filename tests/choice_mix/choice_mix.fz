@@ -171,17 +171,17 @@ choice_mix is
 
   colors1 unit is  // using choice over features inheriting from abstract feature
     color is rgb u32 is abstract
-    red     : color is redefine rgb => u32 255 * 256 * 256
-    green   : color is redefine rgb => u32 255 * 256
-    blue    : color is redefine rgb => u32 255
-    yellow  : color is redefine rgb => red.rgb + green.rgb
-    magenta : color is redefine rgb => red.rgb + blue.rgb
-    black   : color is redefine rgb => u32 0
-    white   : color is redefine rgb => red.rgb + blue.rgb + green.rgb
+    red     : color is redef rgb => u32 255 * 256 * 256
+    green   : color is redef rgb => u32 255 * 256
+    blue    : color is redef rgb => u32 255
+    yellow  : color is redef rgb => red.rgb + green.rgb
+    magenta : color is redef rgb => red.rgb + blue.rgb
+    black   : color is redef rgb => u32 0
+    white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
       pre alpha ≥ u32 0, alpha ≤ u32 255
     is
-      redefine rgb => alpha * 256*256*256
+      redef rgb => alpha * 256*256*256
 
     p, q, r, s, t choice red
                          green
@@ -225,17 +225,17 @@ choice_mix is
 
   colors2 unit is // same as colors1, using pipe notation
     color is rgb u32 is abstract
-    red     : color is redefine rgb => u32 255 * 256 * 256
-    green   : color is redefine rgb => u32 255 * 256
-    blue    : color is redefine rgb => u32 255
-    yellow  : color is redefine rgb => red.rgb + green.rgb
-    magenta : color is redefine rgb => red.rgb + blue.rgb
-    black   : color is redefine rgb => u32 0
-    white   : color is redefine rgb => red.rgb + blue.rgb + green.rgb
+    red     : color is redef rgb => u32 255 * 256 * 256
+    green   : color is redef rgb => u32 255 * 256
+    blue    : color is redef rgb => u32 255
+    yellow  : color is redef rgb => red.rgb + green.rgb
+    magenta : color is redef rgb => red.rgb + blue.rgb
+    black   : color is redef rgb => u32 0
+    white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
       pre alpha ≥ u32 0, alpha ≤ u32 255
     is
-      redefine rgb => alpha * 256*256*256
+      redef rgb => alpha * 256*256*256
 
     p, q, r, s, t red
                 | green
