@@ -726,17 +726,17 @@ String ref : equatable, has_hash, has_total_order is
 
   # create string from the given utf8 bytes
   #
-  type.from_bytes(utf8Bytes Sequence u8) String is
+  type.from_bytes(utf8_bytes Sequence u8) String is
     ref : String
-      redef utf8 => utf8Bytes
+      redef utf8 => utf8_bytes
 
 
   # create string from the given codepoints
   #
-  type.from_codepoint_sequence(codePoints Sequence codepoint) String is
+  type.from_codepoint_sequence(codepoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
-        codePoints
+        codepoints
           .flat_map_sequence u8 (x -> x.utf8)
 
 
