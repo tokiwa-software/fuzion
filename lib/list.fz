@@ -439,28 +439,21 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
               | nil    => nil
 
 
-# lists -- unit type defining features related to list but not requiring an
-# instance
-#
-#
-lists is
-
-
   # create an empty list
   #
-  empty(A type) list A is
+  redef type.empty list A is
     nil
 
 
   # fmap lifts a function from A to B to a function from list A to list B
   #
-  fmap(A, B type, f A -> B) list A -> list B is
+  type.fmap(A, B type, f A -> B) list A -> list B is
     l -> l.map B f
 
 
   # monoid of lists with infix concatentation operation.
   #
-  concat_monoid(A type) : Monoid (list A) is
+  type.concat_monoid(A type) : Monoid (list A) is
 
     # associative operation
     #

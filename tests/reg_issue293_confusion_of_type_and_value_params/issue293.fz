@@ -36,7 +36,7 @@ issue293 is
         res ++ [val]
     red := xf.call rf
     for
-      res := (Sequence TAcc).type.empty, red.call res el
+      res Sequence TAcc := (Sequence TAcc).type.empty, red.call res el
       el in seq do
     else
       res
