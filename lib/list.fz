@@ -290,34 +290,20 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   # Lazy list concatenation, O(1)
-  #
-  concat (t list A) list A is
-    match list.this
-      _ nil => t
-      c Cons =>
-        match t
-          nil => list.this
-          c2 Cons =>
-            ref : Cons A (list A)
-              head => c.head
-              tail => c.tail.concat t
-
-
-  # Lazy list concatenation, O(1)
   # t is evaluated only when this list is exhausted
-  # NYI: #1166 syntax sugar for lazy evaluation
   #
   # This is useful when doing buffered reading from an input
   # source and the next buffer chunk, the tail should only
   # be created when actually necessary.
   #
-  concat_lazy (t () -> list A) list A is
+  concat (t Lazy (list A)) list A is
     match list.this
       _ nil => t()
       c Cons =>
-        ref : Cons A (list A)
-          head => c.head
-          tail => c.tail.concat_lazy t
+        # tricky, Lazy wrapping a Lazy.
+        # The expression following the colon
+        # is a Lazy and t is also a Lazy.
+        c.head : c.tail.concat t
 
 
   # infix operand synonym for concat
@@ -473,7 +459,6 @@ lists is
 
 
 # convenience routine to create a list from head h and lazy tail t.
-# NYI: #1166, syntax sugar for lazy evaluation
 #
 list(T type, h T, t Lazy (list T)) list T is
   ref : Cons T (list T)
