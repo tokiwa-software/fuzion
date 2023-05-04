@@ -635,7 +635,7 @@ String ref : equatable, has_hash, has_total_order is
   fields_func(p codepoint -> bool) list String is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
-    i := state_wrapper (lists.empty String) false 0 0
+    i := state_wrapper (list String).type.empty false 0 0
     last_state := as_codepoint_sequence.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
@@ -726,17 +726,17 @@ String ref : equatable, has_hash, has_total_order is
 
   # create string from the given utf8 bytes
   #
-  type.from_bytes(utf8Bytes Sequence u8) String is
+  type.from_bytes(utf8_bytes Sequence u8) String is
     ref : String
-      redef utf8 => utf8Bytes
+      redef utf8 => utf8_bytes
 
 
   # create string from the given codepoints
   #
-  type.from_codepoint_sequence(codePoints Sequence codepoint) String is
+  type.from_codepoint_sequence(codepoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
-        codePoints
+        codepoints
           .flat_map_sequence u8 (x -> x.utf8)
 
 
