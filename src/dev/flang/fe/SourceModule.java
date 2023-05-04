@@ -164,7 +164,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
-   * @return the main feature found or null if none
+   * @return the main feature found or _defaultMain if none
    */
   String parseMain()
   {
@@ -179,17 +179,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1)
+                if (stmnts.size() == 1 && !f.isField())
                   {
-                    if (f.kind() == Feature.Kind.Field)
-                      {
-                        // execute the universe's code in this case, to avoid FeErrors.mainFeatureMustNotBeField
-                        res = null;
-                      }
-                    else
-                      {
-                        res = f.featureName().baseName();
-                      }
+                    res = f.featureName().baseName();
                   }
               }
           }
