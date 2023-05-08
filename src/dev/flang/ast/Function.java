@@ -246,7 +246,7 @@ public class Function extends ExprWithPos
          *
          * --Fun<id>-- : Function<R,A1,A2,...>
          * {
-         *   public redefine R call(A1 a1, A2 a2, ...)
+         *   public redef R call(A1 a1, A2 a2, ...)
          *   {
          *     result = o.hash_code + i;
          *   }
@@ -518,7 +518,7 @@ public class Function extends ExprWithPos
              *
              * --Fun<id>-- : Function<R,A1,A2,...>
              * {
-             *   public redefine R call(A1 a1, A2 a2, ...)
+             *   public redef R call(A1 a1, A2 a2, ...)
              *   {
              *     result = a.b.f(a1, a2, ...);
              *   }

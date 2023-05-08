@@ -779,7 +779,6 @@ modifiers   : modifier modifiers
             |
             ;
 modifier    : "redef"
-            | "redefine"
             | "fixed"
             ;
    *
@@ -796,7 +795,6 @@ modifier    : "redef"
         switch (current())
           {
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
           default            : throw new Error();
           }
@@ -826,7 +824,6 @@ modifier    : "redef"
     switch (current())
       {
       case t_redef       :
-      case t_redefine    :
       case t_fixed       : return true;
       default            : return false;
       }
