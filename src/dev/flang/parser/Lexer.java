@@ -2460,7 +2460,7 @@ PIPE        : "|"
     private int raw(Optional<Integer> pos)
     {
       return pos
-        .map(p -> codePoint(p))
+        .map(p -> codePointAt(p))
         .orElse(curCodePoint());
     }
 
