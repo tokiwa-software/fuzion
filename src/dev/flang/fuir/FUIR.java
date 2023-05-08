@@ -119,7 +119,7 @@ public class FUIR extends IR
     c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
-    c_Const_String { Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
+    c_Const_String{ Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
     c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
