@@ -28,19 +28,19 @@ private map_of_total_order (
   K type : has_total_order, V type,
   # the provider this effect uses to create a Map
   public new (array K, array V) -> Map K V,
-  private em effectMode.val,
+  private em effect_mode.val,
   _ unit
   ) : effect em
 is
   type.install_default =>
     if !effects.exists (map_of_total_order K V)
-      _ := map_of_total_order K V (ks,vs -> ordered_map ks vs) effectMode.default unit
+      _ := map_of_total_order K V (ks,vs -> ordered_map ks vs) effect_mode.default unit
 
 
 
 # shorthand to run code with custom map initializer.
 map_of_total_order(K type : has_total_order, V type, map_init (array K, array V) -> Map K V, code () -> unit) =>
-  _ := map_of_total_order K V map_init (effectMode.inst code) unit
+  _ := map_of_total_order K V map_init (effect_mode.inst code) unit
 
 
 

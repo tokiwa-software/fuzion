@@ -69,7 +69,7 @@ is
     match desc
       d i64 =>
         l := (1..)
-          .reduce((list u8), (lists.empty u8), ((r,_) ->
+          .reduce((list u8), (list u8).type.empty, ((r,_) ->
             match read buffer_size
               e error => abort r
               a array u8 => r ++ a))
