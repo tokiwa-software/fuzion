@@ -579,6 +579,11 @@ public class C extends ANY
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-o", name, cname);
 
+    if (isWindows())
+      {
+        command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
+      }
+
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
@@ -634,7 +639,7 @@ public class C extends ANY
   private void createCode(CFile cf, COptions _options) throws IOException
   {
     cf.print
-      ((_options._useBoehmGC ? "#include <gc.h>\n" : "")+
+      ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -1421,6 +1426,16 @@ public class C extends ANY
   String realloc()
   {
     return _options._useBoehmGC ? "GC_REALLOC" : "realloc";
+  }
+
+
+  /**
+   * Is the compiler running on windows?
+   * @return
+   */
+  boolean isWindows()
+  {
+    return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
 }

@@ -208,7 +208,7 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (!Clazzes.isUsedAtAll(f))
+    if (!Clazzes.isUsed(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
         if (!(f instanceof Feature ff) || ff.state() == Feature.State.RESOLVED)
@@ -241,7 +241,7 @@ public class MiddleEnd extends ANY
           {
             for (AbstractFeature of : df.redefines())
               {
-                if (Clazzes.isUsedAtAll(of))
+                if (Clazzes.isUsed(of))
                   {
                     markUsed(df, usedAt);
                   }

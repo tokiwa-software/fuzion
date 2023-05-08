@@ -1215,6 +1215,17 @@ public class DFA extends ANY
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new environment */, cl);
           return Value.UNIT;
         });
+
+    // NYI these intrinsics manipulate an array passed as an arg.
+    put("fuzion.sys.net.bind0"            , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.listen"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.accept"          , cl -> cl._dfa._bool );
+    put("fuzion.sys.net.connect0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.read"            , cl -> cl._dfa._bool );
+    put("fuzion.sys.net.write"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.close0"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.set_blocking0"    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 

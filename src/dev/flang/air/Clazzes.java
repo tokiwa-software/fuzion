@@ -97,9 +97,7 @@ public class Clazzes extends ANY
     final TypF _t;
     Clazz _clazz = null;
     Clazz _dummy = null;
-    boolean _called = false;
     OnDemandClazz(TypF t) { _t = t; }
-    OnDemandClazz(TypF t, boolean called) { this(t); _called = called; }
     OnDemandClazz() { this(null); }
 
     /**
@@ -137,10 +135,6 @@ public class Clazzes extends ANY
             {
               _clazz = create(_t.get(), universe.get());
             }
-          if (_called)
-            {
-              // called(_clazz);
-            }
         }
       return _clazz;
     }
@@ -154,7 +148,7 @@ public class Clazzes extends ANY
   /**
    * Handy preallocated classes to be used during execution:
    */
-  public static final OnDemandClazz universe    = new OnDemandClazz(null, true);
+  public static final OnDemandClazz universe    = new OnDemandClazz(null);
   public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
@@ -181,7 +175,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
   public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
-  public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
+  public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
@@ -542,10 +536,10 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || isUsedAtAll(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
-                                                     * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
-                                                     * in types differently.
-                                                     */,
+      (Errors.count() > 0 || isUsed(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
+                                                * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
+                                                * in types differently.
+                                                */,
        f.generics().list.isEmpty());
 
     if (!_calledDynamically_.contains(f))
@@ -750,7 +744,7 @@ public class Clazzes extends ANY
         var vc = sClazz.asValue();
         var fc = vc.lookup(a._assignedField, a);
         propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
-        if (isUsed(a._assignedField, sClazz))
+        if (isUsed(a._assignedField))
           {
             outerClazz.setRuntimeClazz(a._tid + 1, fc);
           }
@@ -967,7 +961,7 @@ public class Clazzes extends ANY
     int i = c._runtimeClazzId;
     if (f != null)
       {
-        var fOrFc = isUsed(f, outerClazz)
+        var fOrFc = isUsed(f)
           ? outerClazz.lookup(f)
           : outerClazz.actualClazz(f.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
@@ -1309,18 +1303,9 @@ public class Clazzes extends ANY
 
 
   /**
-   * Has this feature been found to be used within the given static clazz?
-   */
-  public static boolean isUsed(AbstractFeature thiz, Clazz staticClazz)
-  {
-    return isUsedAtAll(thiz);
-  }
-
-
-  /**
    * Has this feature been found to be used?
    */
-  public static boolean isUsedAtAll(AbstractFeature thiz)
+  public static boolean isUsed(AbstractFeature thiz)
   {
     return thiz._usedAt != null;
   }

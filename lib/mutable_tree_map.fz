@@ -46,7 +46,9 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # returns a string representation of the map
   #
   redef as_string String is
-    "\{" + (String.type.join (fold (lists.empty String) ((i, x) -> list "{x.key}={x.val}" i)) ", ") + "}"
+    "\{" +
+      (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
+     "}"
 
 
   # freeze the map, such that it is no longer mutable afterwards

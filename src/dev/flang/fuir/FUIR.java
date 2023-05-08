@@ -1547,9 +1547,9 @@ hw25 is
   /**
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
-   * Currently, the clazz is one of bool, i32, u32, i64, u64 of conststring.
-   * This will be extended by other basic types (f64, etc.), value instances
-   * without refs, choice instances with tag, arrays, etc.
+   * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
+   * f32, f64, or conststring. This will be extended by value instances without
+   * refs, choice instances with tag, arrays, etc.
    */
   public int constClazz(int c, int ix)
   {
@@ -1659,7 +1659,7 @@ hw25 is
       {
         var mc = m.cases().get(cix);
         var f = mc.field();
-        var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc._runtimeClazzId) : null;
+        var fc = f != null && Clazzes.isUsed(f) ? cc.getRuntimeClazz(mc._runtimeClazzId) : null;
         result = fc != null ? id(fc) : -1;
       }
     return result;

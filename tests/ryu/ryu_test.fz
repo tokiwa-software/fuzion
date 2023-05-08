@@ -1,0 +1,46 @@
+ryu_test =>
+
+  min_subnormal := 4.9406564584124654E-324
+  max_subnormal := 2.2250738585072009E-308
+  min_positive  := 2.2250738585072014E-308
+  max_positive  := 1.7976931348623157E308
+
+  numbers := [ 0.0,
+              -f64s.zero,
+              f64s.positiveInfinity,
+              f64s.negativeInfinity,
+              f64s.quietNaN,
+              0.3,
+              1.0,
+              1.5,
+              f64.type.π,
+              min_subnormal,
+              max_subnormal,
+              min_positive,
+              max_positive,
+
+              # these numbers are taken from test cases in
+              # https://github.com/ulfjack/ryu
+
+              1.8531501765868567E21,
+              -3.347727380279489E33,
+              1.9430376160308388E16,
+              -6.9741824662760956E19,
+              4.3816050601147837E18,
+              -2.1098088986959632E16,
+              -2.109808898695963E16,
+              4.940656E-318,
+              1.18575755E-316,
+              2.989102097996E-312,
+              9.0608011534336E15,
+              4.708356024711512E18,
+              9.409340012568248E18,
+              ]
+
+  for num in numbers
+  do
+    for is_scientific in [true, false] do
+      for rounding_mode in [("conservative", ryū.rounding_conservative), ("even", ryū.rounding_even)] do
+        (rm_name, rm) := rounding_mode
+        say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {ryū.as_string num is_scientific rm}"
+    say "--"

@@ -22,7 +22,7 @@ RUN test_this_type.fz 18,26c18
 > simple_test_for_this_type_value: --CURDIR--/test_this_type.fz:91:47:
 >   say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
 > ----------------------------------------------^
-> #universe: --CURDIR--/test_this_type.fz:96:1:
+> universe: --CURDIR--/test_this_type.fz:96:1:
 > simple_test_for_this_type_value
 > ^
 >

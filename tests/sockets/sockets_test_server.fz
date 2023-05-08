@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test sockets
+#
+# -----------------------------------------------------------------------
+
+sockets_test_server =>
+
+  # server handles one connection at a time
+  start_server(family net.family.val, protocol net.protocol.val, port u16) =>
+    # install server in env
+    say "opened $protocol/$family-server on port $port: {(net.server family protocol port)}"
+
+    for ar := net.server.accept, net.server.accept
+    while net.server.is_active
+    do
+      say "$protocol/$family-server, accepted connection: $ar"
+
+      rr1 := (net.channel net.server)
+        .read 11
+        .or(error "error")
+        .bind String (d -> String.type.from_bytes  d)
+
+      say "$protocol/$family-server, read  11 bytes: >{rr1}<"
+
+      match protocol
+        net.protocol.tcp =>
+          # read more than available
+          rr2 := (net.channel net.server)
+            .read 100
+            .or (error "error")
+            .bind String (d -> String.type.from_bytes  d)
+
+          say "$protocol/$family-server, read 100 bytes: >{rr2}<"
+
+          res := "received: {rr1.as_string + rr2.as_string}"
+
+          wr := (net.channel net.server)
+            .write res.utf8
+            .or (error "error")
+          say "$protocol/$family-server, write {wr}"
+        net.protocol.udp =>
+          # rest of udp datagram was discarded
+        * =>
+          panic "NI"
+
+
+  f net.family.val   := if envir.args.drop(1).first = "ipv4" then net.family.ipv4   else net.family.ipv6
+  p net.protocol.val := if envir.args.drop(2).first = "tcp"  then net.protocol.tcp  else net.protocol.udp
+
+  # For now use a different port for every test.
+  port := u16 40000 + p.as_num.as_u16*10 + f.as_num.as_u16
+
+  # NYI c tests fail
+  # no_out : io.Can_Print is
+  #   print(s Any) => unit
+
+  # io.out no_out ()->
+  #   start_server f p port
+  #   unit
+
+  start_server f p port

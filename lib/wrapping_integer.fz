@@ -215,7 +215,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
 
   # how many bytes does this integer use?
   type.byte_size i32 is
-    all_bits_set.ones_count / 8
+    # NYI #1179
+    W.all_bits_set.ones_count / 8
 
 
   # minimum
