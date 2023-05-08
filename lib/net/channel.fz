@@ -1,0 +1,116 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.channel
+#
+# -----------------------------------------------------------------------
+
+
+# a channel encapsulates an open network resource
+# that can be read from and written to.
+# channels are usually installed by a successfully connected client
+# or a by a newly accepted server connection.
+#
+# Note that even though UDP is a connection-less protocol its
+# usage in fuzion does not differ from TCP except for the following
+# caveats.
+# 1) Reading a Datagram with a buffer not large enough to hold
+# all data will lead to the rest of the datagram being dropped.
+# 2) writing to a channel installed by `server.accept` will result in an error.
+# 3) reading from a channel installed by `client ...` will block indefinitely.
+#
+private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
+is
+
+  # get the last error that occured
+  last_error => desc.bind unit (_ -> unit)
+
+
+  # is this channel still active?
+  is_active => desc.ok
+
+
+  # shorthand to replace the effect installed in env
+  # and return a
+  replace(T type, a T) T is
+    replace
+    a
+
+
+  # read bytes from channel
+  public read(max_bytes i32) outcome (array u8) is
+    # close channel on certain read errors?
+    replace (match desc
+      d i64 => fuzion.sys.net.read d max_bytes
+      e error => e)
+
+
+  # NYI when to stop reading?
+  public read outcome String is
+    # read buffer in bytes
+    buffer_size i32 := 10
+
+    match desc
+      d i64 =>
+        l := (1..)
+          .reduce((list u8), (list u8).type.empty, ((r,_) ->
+            match read buffer_size
+              e error => abort r
+              a array u8 => r ++ a))
+        String.type.from_bytes l
+      e error =>
+        e
+
+
+  # write data to channel
+  public write(data Sequence u8) outcome unit is
+    # close channel on certain write errors?
+    match desc
+      d i64 => replace (fuzion.sys.net.write d data.as_array)
+      e error => e
+
+
+  # close the channel
+  close is
+    if auto_close
+      match desc
+        d i64 =>
+          match fuzion.sys.net.close d
+            unit =>
+              channel T (error "not initialized") false effect_mode.repl
+            e error =>
+              channel T e false effect_mode.repl
+        e error =>
+          channel T (error "not initialized") false effect_mode.repl
+    unit
+
+
+
+# short hand to install a new channel of type T
+channel(T type, desc outcome i64, auto_close bool) =>
+  (channel T).close
+  channel T desc auto_close effect_mode.repl
+
+
+
+# short hand to get the currently installed channel of type T
+channel(T type) =>
+  if !effects.exists (channel T)
+    channel T (error "not initialized") false effect_mode.default
+  (channel T).env

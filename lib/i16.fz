@@ -81,7 +81,7 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
       thiz ≥ i8.type.min.as_i16,
       thiz ≤ i8.type.max.as_i16
     is
-      low8bits.castTo_i8
+      low8bits.cast_to_i8
   as_i32 i32 is intrinsic
   as_i64  => thiz.as_i32.as_i64
 # as_i128 => thiz.as_i32.as_i128
@@ -95,31 +95,31 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
     pre
       debug: thiz ≥ zero
     is
-      castTo_u16
+      cast_to_u16
   as_u32 u32
     pre
       debug: thiz ≥ zero
     is
-      castTo_u32
+      cast_to_u32
   as_u64 u64
     pre
       debug: thiz ≥ zero
     is
-      castTo_u64
+      cast_to_u64
   as_u128 u128
     pre
       debug: thiz ≥ zero
     is
-      castTo_u128
+      cast_to_u128
   as_int int is
     int as_i64
 
   # casting to unsigned, adding 1<<16 if negative
-  low8bits    u8   is castTo_u16.as_u8     # 0x1234 ->   0x34, -0x1234 -> 0xcc
-  castTo_u16  u16  is intrinsic            # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
-  castTo_u32  u32  is castTo_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
-  castTo_u64  u64  is castTo_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
-  castTo_u128 u128 is castTo_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
+  low8bits    u8   is cast_to_u16.as_u8      # 0x1234 ->   0x34, -0x1234 -> 0xcc
+  cast_to_u16  u16  is intrinsic             # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
+  cast_to_u32  u32  is cast_to_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
+  cast_to_u64  u64  is cast_to_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
+  cast_to_u128 u128 is cast_to_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval<i8> is abstract, fz should not complain about this conflict.
@@ -128,27 +128,27 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
   highest_one_bit i16 is
-    val.castTo_u16.highest_one_bit.castTo_i16
+    val.cast_to_u16.highest_one_bit.cast_to_i16
 
 
   # count the number of trailing zeros in this integer.
   #
   trailing_zeros i32 is
-    val.castTo_u16.trailing_zeros
+    val.cast_to_u16.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
   ones_count i32 is
-    val.castTo_u16.ones_count
+    val.cast_to_u16.ones_count
 
 
   # -----------------------------------------------------------------------

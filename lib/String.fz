@@ -80,7 +80,7 @@ String ref : equatable, has_hash, has_total_order is
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
         (c, d) := x
-        !(c = d))
+        c != d)
       .map_sequence (x ->
         (c, d) := x
         c ≤ d)
@@ -306,7 +306,7 @@ String ref : equatable, has_hash, has_total_order is
             c2 Cons =>
               b2 := c2.head
               e2(msg String) => ret (e "$b1, $b2: $msg") c2.tail
-              if !((b2 & 0xc0) = (u8 0x80))
+              if (b2 & 0xc0) != (u8 0x80)
                 e2 "expected continuation byte in the range 0x80..0xbf."
               else if u8 0xc0 ≤ b1 ≤ (u8 0xdf)   # 0x0080..0x7ff encoded in 2 bytes
                 res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
@@ -320,7 +320,7 @@ String ref : equatable, has_hash, has_total_order is
                   c3 Cons =>
                     b3 := c3.head
                     e3(msg String) => ret (e "$b1, $b2, $b3: $msg") c3.tail
-                    if !((b3 & 0xc0) = (u8 0x80))
+                    if (b3 & 0xc0) != (u8 0x80)
                       e3 "expected two continuation bytes in the range 0x80..0xbf."
                     else if b1 ≤ (u8 0xef)       # 0x0800..0xffff encoded in 3 bytes
                       res := (((b1.as_u32 & 0x0f) << 12) |
@@ -340,7 +340,7 @@ String ref : equatable, has_hash, has_total_order is
                         c4 Cons =>
                           b4 := c4.head
                           e4(msg String) => ret (e "$b1, $b2, $b3, $b4: $msg") c4.tail
-                          if !((b4 & 0xc0) = (u8 0x80))
+                          if (b4 & 0xc0) != (u8 0x80)
                             e4 "expected three continuation bytes in the range 0x80..0xbf."
                           else
                             res := (((b1.as_u32 & 0x07) << 18) |
@@ -500,12 +500,6 @@ String ref : equatable, has_hash, has_total_order is
       ref : Cons String (list String)
         head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
         tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
-        # NYI using the inherited 'from_bytes' as in
-        #
-        #   head =>  from_bytes l.take_while fun (c i32) => !is_ascii_white_space c
-        #
-        # currerntly creates an error (recursive value type), this needs to be fixed (or,
-        # at least, understood better).
 
 
   # split string at s
@@ -593,25 +587,18 @@ String ref : equatable, has_hash, has_total_order is
     s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
     s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
 
-# NYI: This causes fz to crash:
-#   from_bytes s2
-
     String.type.from_bytes s2
 
 
   # remove leading white space from this string
   #
   trim_start =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
     String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-# NYI: This causes fz to crash:
-#   from_bytes ...
     String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
 
 
@@ -648,7 +635,7 @@ String ref : equatable, has_hash, has_total_order is
   fields_func(p codepoint -> bool) list String is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
-    i := state_wrapper (lists.empty String) false 0 0
+    i := state_wrapper (list String).type.empty false 0 0
     last_state := as_codepoint_sequence.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
@@ -739,17 +726,17 @@ String ref : equatable, has_hash, has_total_order is
 
   # create string from the given utf8 bytes
   #
-  type.from_bytes(utf8Bytes Sequence u8) String is
+  type.from_bytes(utf8_bytes Sequence u8) String is
     ref : String
-      redef utf8 => utf8Bytes
+      redef utf8 => utf8_bytes
 
 
   # create string from the given codepoints
   #
-  type.from_codepoint_sequence(codePoints Sequence codepoint) String is
+  type.from_codepoint_sequence(codepoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
-        codePoints
+        codepoints
           .flat_map_sequence u8 (x -> x.utf8)
 
 

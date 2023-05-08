@@ -35,9 +35,17 @@ import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instea
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
+import java.lang.reflect.Array;
+import java.net.InetSocketAddress;
+import java.net.BindException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,7 +86,7 @@ public class Intrinsics extends ANY
    */
   enum SystemErrNo
   {
-    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95);
+    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95), EADDRINUSE(98), ECONNREFUSED(111);
 
     final int errno;
 
@@ -103,16 +111,16 @@ public class Intrinsics extends ANY
   /**
    * This contains all open files/streams.
    */
-  private static OpenResources<RandomAccessFile> _openStreams_ = new OpenResources<RandomAccessFile>()
+  private static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
   {
     @Override
-    protected boolean close(RandomAccessFile f) {
+    protected boolean close(AutoCloseable f) {
       try
       {
         f.close();
         return true;
       }
-      catch(IOException e)
+      catch(Exception e)
       {
         return false;
       }
@@ -136,6 +144,13 @@ public class Intrinsics extends ANY
 
 
   private static void put(String n, IntrinsicCode c) { _intrinsics_.put(n, c); }
+  private static void putUnsafe(String n, IntrinsicCode c) { _intrinsics_.put(n, (interpreter, innerClazz) -> args -> {
+    if (!ENABLE_UNSAFE_INTRINSICS)
+      {
+        Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
+      }
+    return c.get(interpreter, innerClazz).call(args);
+  }); }
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
@@ -231,7 +246,7 @@ public class Intrinsics extends ANY
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              int bytesRead = _openStreams_.get(args.get(1).i64Value()).read(byteArr);
+              int bytesRead = ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).read(byteArr);
 
               if (args.get(3).i32Value() != bytesRead)
                 {
@@ -258,7 +273,7 @@ public class Intrinsics extends ANY
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
-              _openStreams_.get(args.get(1).i64Value()).write(fileContent);
+              ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).write(fileContent);
               return new i8Value(0);
             }
           catch (Exception e)
@@ -417,8 +432,9 @@ public class Intrinsics extends ANY
           var seekResults = (long[])args.get(3).arrayData()._array;
           try
             {
-              _openStreams_.get(fd).seek(args.get(2).i16Value());
-              seekResults[0] = _openStreams_.get(fd).getFilePointer();
+              var raf = (RandomAccessFile)_openStreams_.get(fd);
+              raf.seek(args.get(2).i16Value());
+              seekResults[0] = raf.getFilePointer();
               return Value.EMPTY_VALUE;
             }
           catch (Exception e)
@@ -438,7 +454,7 @@ public class Intrinsics extends ANY
           long[] arr = (long[])args.get(2).arrayData()._array;
           try
             {
-              arr[0] = _openStreams_.get(fd).getFilePointer();
+              arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
               return Value.EMPTY_VALUE;
             }
           catch (Exception e)
@@ -735,11 +751,191 @@ public class Intrinsics extends ANY
           t.start();
           return new Instance(Clazzes.c_unit.get());
         });
+
+
+    putUnsafe("fuzion.sys.net.bind0"    , (interpreter, innerClazz) -> args -> {
+      var family = args.get(1).i32Value();
+      var socketType = args.get(2).i32Value();
+      var protocol = args.get(3).i32Value();
+      var host = utf8ByteArrayDataToString(args.get(4));
+      var port = utf8ByteArrayDataToString(args.get(5));
+      var result = (long[])args.get(6).arrayData()._array;
+      if (family != 2 && family != 10)
+        {
+          throw new RuntimeException("NYI");
+        }
+      try
+        {
+          return switch (protocol)
+            {
+              case 6 ->
+                {
+                  var ss = ServerSocketChannel.open();
+                  ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              case 17 ->
+                {
+                  var ss = DatagramChannel.open();
+                  ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              default -> throw new RuntimeException("NYI");
+            };
+        }
+      catch(BindException e)
+        {
+          result[0] = SystemErrNo.EADDRINUSE.errno;
+          return new i32Value(-1);
+        }
+      catch(IOException e)
+        {
+          result[0] = -1;
+          return new i32Value(-1);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
+      return new i32Value(0);
+    });
+
+    putUnsafe("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
+      try
+        {
+          var asc = _openStreams_.get(args.get(1).i64Value());
+          if(asc instanceof ServerSocketChannel ssc)
+            {
+              var socket = ssc.accept();
+              ((long[])args.get(2).arrayData()._array)[0] = _openStreams_.add(socket);
+              return new boolValue(true);
+            }
+          else if(asc instanceof DatagramChannel dc)
+            {
+              ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
+              return new boolValue(true);
+            }
+          throw new RuntimeException("NYI");
+        }
+      catch(IOException e)
+        {
+          return new boolValue(false);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.connect0" , (interpreter, innerClazz) -> args -> {
+      var family = args.get(1).i32Value();
+      var socketType = args.get(2).i32Value();
+      var protocol = args.get(3).i32Value();
+      var host = utf8ByteArrayDataToString(args.get(4));
+      var port = utf8ByteArrayDataToString(args.get(5));
+      var result = (long[])args.get(6).arrayData()._array;
+      if (family != 2 && family != 10)
+        {
+          throw new RuntimeException("NYI");
+        }
+      try
+        {
+          return switch (protocol)
+            {
+              case 6 ->
+                {
+                  var socket = SocketChannel.open();
+                  socket.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(socket);
+                  yield new i32Value(0);
+                }
+              case 17 ->
+                {
+                  var ss = DatagramChannel.open();
+                  ss.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                  result[0] = _openStreams_.add(ss);
+                  yield new i32Value(0);
+                }
+              default -> throw new RuntimeException("NYI");
+            };
+        }
+      catch(IOException e)
+        {
+          result[0] = SystemErrNo.ECONNREFUSED.errno;
+          return new i32Value(-1);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.read" , (interpreter, innerClazz) -> args -> {
+      try
+        {
+          byte[] buff = (byte[])args.get(2).arrayData()._array;
+          var desc = _openStreams_.get(args.get(1).i64Value());
+          // NYI blocking / none blocking read
+          long bytesRead;
+          if (desc instanceof DatagramChannel dc)
+            {
+              bytesRead = dc.receive(ByteBuffer.wrap(buff)) == null
+                ? 0
+                // NYI how to determine datagram length?
+                : buff.length;
+            }
+          else if (desc instanceof ByteChannel sc)
+            {
+              bytesRead = sc.read(ByteBuffer.wrap(buff));
+            }
+          else
+            {
+              throw new RuntimeException("NYI");
+            }
+          ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
+          return new boolValue(bytesRead != -1);
+        }
+      catch(IOException e) //SocketTimeoutException and others
+        {
+          // unspecified error
+          ((long[])args.get(4).arrayData()._array)[0] = -1;
+          return new boolValue(false);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.write" , (interpreter, innerClazz) -> args -> {
+      try
+        {
+          var fileContent = (byte[])args.get(2).arrayData()._array;
+          var sc = (ByteChannel)_openStreams_.get(args.get(1).i64Value());
+          sc.write(ByteBuffer.wrap(fileContent));
+          return new i32Value(0);
+        }
+      catch(IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.close0" , (interpreter, innerClazz) -> args -> {
+      long fd = args.get(1).i64Value();
+      return _openStreams_.remove(fd)
+        ? new i32Value(0)
+        : new i32Value(-1);
+    });
+
+    putUnsafe("fuzion.sys.net.set_blocking0" , (interpreter, innerClazz) -> args -> {
+      var asc = (AbstractSelectableChannel)_openStreams_.get(args.get(1).i64Value());
+      var blocking = args.get(2).i32Value();
+      try
+        {
+          asc.configureBlocking(blocking == 1);
+          return new i32Value(0);
+        }
+      catch(IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
     put("debug_level"            , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
     put("i8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
-    put("i8.castTo_u8"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
+    put("i8.cast_to_u8"         , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
     put("i8.infix +°"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  +   args.get(1).i8Value() )));
     put("i8.infix -°"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  -   args.get(1).i8Value() )));
@@ -754,7 +950,7 @@ public class Intrinsics extends ANY
     put("i8.type.equality"      , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  ==  args.get(2).i8Value() )));
     put("i8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  <=  args.get(2).i8Value() )));
     put("i16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i16Value())));
-    put("i16.castTo_u16"        , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
+    put("i16.cast_to_u16"       , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
     put("i16.prefix -°"         , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (                       -   args.get(0).i16Value())));
     put("i16.infix +°"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() +   args.get(1).i16Value())));
     put("i16.infix -°"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() -   args.get(1).i16Value())));
@@ -769,7 +965,7 @@ public class Intrinsics extends ANY
     put("i16.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() ==  args.get(2).i16Value())));
     put("i16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() <=  args.get(2).i16Value())));
     put("i32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value ((long)        (                           args.get(0).i32Value())));
-    put("i32.castTo_u32"        , (interpreter, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
+    put("i32.cast_to_u32"       , (interpreter, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
     put("i32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i32Value())));
     put("i32.prefix -°"         , (interpreter, innerClazz) -> args -> new i32Value (              (                       -   args.get(0).i32Value())));
     put("i32.infix +°"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() +   args.get(1).i32Value())));
@@ -784,7 +980,7 @@ public class Intrinsics extends ANY
     put("i32.infix <<"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())));
     put("i32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() ==  args.get(2).i32Value())));
     put("i32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
-    put("i64.castTo_u64"        , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
+    put("i64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
     put("i64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
     put("i64.prefix -°"         , (interpreter, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).u64Value())));
     put("i64.infix +°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() +   args.get(1).i64Value())));
@@ -800,7 +996,7 @@ public class Intrinsics extends ANY
     put("i64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() ==  args.get(2).i64Value())));
     put("i64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() <=  args.get(2).i64Value())));
     put("u8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u8Value() )));
-    put("u8.castTo_i8"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));
+    put("u8.cast_to_i8"         , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));
     put("u8.prefix -°"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                       -   args.get(0).u8Value() )));
     put("u8.infix +°"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  +   args.get(1).u8Value() )));
     put("u8.infix -°"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  -   args.get(1).u8Value() )));
@@ -816,7 +1012,7 @@ public class Intrinsics extends ANY
     put("u8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u8Value(), args.get(2).u8Value()) <= 0));
     put("u16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u16Value())));
     put("u16.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u16Value())));
-    put("u16.castTo_i16"        , (interpreter, innerClazz) -> args -> new i16Value ((short)       (                           args.get(0).u16Value())));
+    put("u16.cast_to_i16"       , (interpreter, innerClazz) -> args -> new i16Value ((short)       (                           args.get(0).u16Value())));
     put("u16.prefix -°"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                       -   args.get(0).u16Value())));
     put("u16.infix +°"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() +   args.get(1).u16Value())));
     put("u16.infix -°"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() -   args.get(1).u16Value())));
@@ -833,9 +1029,9 @@ public class Intrinsics extends ANY
     put("u32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())));
     put("u32.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u32Value())));
     put("u32.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).u32Value())));
-    put("u32.castTo_i32"        , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u32Value())));
+    put("u32.cast_to_i32"       , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u32Value())));
     put("u32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      Integer.toUnsignedLong(     args.get(0).u32Value())));
-    put("u32.castTo_f32"        , (interpreter, innerClazz) -> args -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())));
+    put("u32.cast_to_f32"       , (interpreter, innerClazz) -> args -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())));
     put("u32.prefix -°"         , (interpreter, innerClazz) -> args -> new u32Value (              (                       -   args.get(0).u32Value())));
     put("u32.infix +°"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())));
     put("u32.infix -°"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())));
@@ -852,9 +1048,9 @@ public class Intrinsics extends ANY
     put("u64.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())));
     put("u64.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())));
     put("u64.low32bits"         , (interpreter, innerClazz) -> args -> new u32Value ((int)         (                           args.get(0).u64Value())));
-    put("u64.castTo_i64"        , (interpreter, innerClazz) -> args -> new i64Value (              (                           args.get(0).u64Value())));
+    put("u64.cast_to_i64"       , (interpreter, innerClazz) -> args -> new i64Value (              (                           args.get(0).u64Value())));
     put("u64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value (Double.parseDouble(Long.toUnsignedString(args.get(0).u64Value()))));
-    put("u64.castTo_f64"        , (interpreter, innerClazz) -> args -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())));
+    put("u64.cast_to_f64"       , (interpreter, innerClazz) -> args -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())));
     put("u64.prefix -°"         , (interpreter, innerClazz) -> args -> new u64Value (              (                       -   args.get(0).u64Value())));
     put("u64.infix +°"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())));
     put("u64.infix -°"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())));
@@ -878,7 +1074,7 @@ public class Intrinsics extends ANY
     put("f32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() == args.get(2).f32Value())));
     put("f32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() <= args.get(2).f32Value())));
     put("f32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
-    put("f32.castTo_u32"        , (interpreter, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
+    put("f32.cast_to_u32"       , (interpreter, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
     put("f32.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())));
     put("f64.prefix -"          , (interpreter, innerClazz) -> args -> new f64Value (                (                       -  args.get(0).f64Value())));
     put("f64.infix +"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())));
@@ -891,7 +1087,7 @@ public class Intrinsics extends ANY
     put("f64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() <= args.get(2).f64Value())));
     put("f64.as_i64_lax"        , (interpreter, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (interpreter, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
-    put("f64.castTo_u64"        , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
+    put("f64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
     put("f64.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Double.toString       (                args.get(0).f64Value())));
     put("f32s.is_NaN"           , (interpreter, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
     put("f64s.is_NaN"           , (interpreter, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
@@ -931,7 +1127,7 @@ public class Intrinsics extends ANY
     put("f64s.square_root"      , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64s.tan"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
     put("f64s.tanh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("Any.hashCode"          , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
+    put("Any.hash_code"         , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
     put("Any.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
     put("fuzion.std.nano_time"  , (interpreter, innerClazz) -> args -> new u64Value (System.nanoTime()));
     put("fuzion.std.nano_sleep" , (interpreter, innerClazz) -> args ->

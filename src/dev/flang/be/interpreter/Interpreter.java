@@ -426,7 +426,7 @@ public class Interpreter extends ANY
           {
             var c = it.next();
 
-            if (c.field() != null && Clazzes.isUsed(c.field(), staticClazz))
+            if (c.field() != null && Clazzes.isUsed(c.field()))
               {
                 Clazz fieldClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId).resultClazz();
                 if (fieldClazz.isDirectlyAssignableFrom(subjectClazz))
@@ -521,7 +521,7 @@ public class Interpreter extends ANY
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
                     f = vc.lookup(f, b).feature();
-                    if (Clazzes.isUsed(f, vc))
+                    if (Clazzes.isUsed(f))
                       {
                         Value v = getField(f, vc, val, true /* allow for uninitialized ref field */);
                         // NYI: Check that this works well for internal fields such as choice tags.
@@ -809,7 +809,7 @@ public class Interpreter extends ANY
                 var rc = innerClazz.resultClazz();
                 if (CHECKS) check  // check that outer ref, if exists, is unused:
                   (true || // NYI: This check is currently disabled, outer ref of types are not properly removed yet and not properly initialized here
-                   rc.feature().outerRef() == null || !Clazzes.isUsedAtAll(rc.feature().outerRef()));
+                   rc.feature().outerRef() == null || !Clazzes.isUsed(rc.feature().outerRef()));
                 return new Instance(rc);
               };
               break;
@@ -843,7 +843,7 @@ public class Interpreter extends ANY
     FuzionThread.current()._callStackFrames.push(staticClazz);
 
     if (CHECKS) check
-      (Clazzes.isUsedAtAll(thiz));
+      (Clazzes.isUsed(thiz));
 
     setOuter(thiz, staticClazz, cur, args.get(0));
     int aix = 1;
@@ -1382,7 +1382,7 @@ public class Interpreter extends ANY
        (curValue instanceof Instance) || (curValue instanceof LValue),
        staticClazz != null);
 
-    if (Clazzes.isUsed(thiz, staticClazz))
+    if (Clazzes.isUsed(thiz))
       {
         Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
         LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
@@ -1402,7 +1402,7 @@ public class Interpreter extends ANY
   public static void setOuter(AbstractFeature thiz, Clazz staticClazz, Instance cur, Value outer)
   {
     var or = thiz.outerRef();
-    if (or != null && Clazzes.isUsedAtAll(or))
+    if (or != null && Clazzes.isUsed(or))
       {
         setField(or, -1, staticClazz, cur, outer);
       }

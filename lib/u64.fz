@@ -43,7 +43,7 @@ u64(val u64) : wrapping_integer u64, has_interval u64, u64s is
   redef underflow_on_sub(other u64) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u64) => if other = (u64 0) false else !((thiz *° other / other) = thiz)
+  redef overflow_on_mul (other u64) => if other = (u64 0) false else (thiz *° other / other) != thiz
   redef underflow_on_mul(other u64) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -106,7 +106,7 @@ u64(val u64) : wrapping_integer u64, has_interval u64, u64s is
 #    post
 #      analysis:  result.as_u64 == thiz
     is
-      castTo_i64
+      cast_to_i64
 # as_i128 i128 is as_u128.as_i128
 
 
@@ -161,8 +161,8 @@ u64(val u64) : wrapping_integer u64, has_interval u64, u64s is
   low8bits   u8  is intrinsic
   low16bits  u16 is intrinsic
   low32bits  u32 is intrinsic
-  castTo_i64 i64 is intrinsic
-  castTo_f64 f64 is intrinsic
+  cast_to_i64 i64 is intrinsic
+  cast_to_f64 f64 is intrinsic
 
   # conversion to float
   as_f64 f64 is intrinsic

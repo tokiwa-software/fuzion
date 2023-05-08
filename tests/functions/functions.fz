@@ -54,31 +54,31 @@ functions is
 
     say "here 1b---------------"
     // all of these are equivalent:
-//    x ((o, i) -> o.hashCode + i)
-//    x (fun (o, i) -> o.hashCode + i)
-//    x (fun (o, i) { set result := o.hashCode + i})
-    x ((o, i) -> { set result := o.hashCode + i })
-    x ((o, i) -> { o.hashCode + i })  // implicit assignment to result from last statement
+//    x ((o, i) -> o.hash_code + i)
+//    x (fun (o, i) -> o.hash_code + i)
+//    x (fun (o, i) { set result := o.hash_code + i})
+    x ((o, i) -> { set result := o.hash_code + i })
+    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last statement
 
     say "here 1c---------------"
     x (ref : Function i32 Any i32 {
         redefine call(o Any, i i32) i32 is
           say "in anonymous function: $o"
-          o.hashCode + i
+          o.hash_code + i
        })
 
     F ref : Function i32 Any i32 is
         redefine call(o Any, i i32) i32 is
           say "here f.call---------------"
-          set result := o.hashCode + i
+          set result := o.hash_code + i
           say "here f.call done---------------"
 
     say "here x0 f()---------------"
     x0 F()
     say "here x0 f---------------"
     x0 F
-    say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hashCode + i })---------------"
-    x0 ((o, i) -> { set result := o.hashCode + i })
+    say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hash_code + i })---------------"
+    x0 ((o, i) -> { set result := o.hash_code + i })
     say "here x f()---------------"
     x F()
     say "here x(f)---------------"
@@ -86,7 +86,7 @@ functions is
 
     f1(o Any, i i32) i32 is
         say "here f1 o i !!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        o.hashCode + i
+        o.hash_code + i
     say "here x0 (fun f1)---------------"
     x0 ((o, i)->f1 o i)
     say "here x (fun f1)---------------"

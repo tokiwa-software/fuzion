@@ -778,10 +778,9 @@ opName      : "infix"   op
 modifiers   : modifier modifiers
             |
             ;
-modifier    : "lazy"
-            | "redef"
+modifier    : "redef"
             | "redefine"
-            | "dyn"
+            | "fixed"
             ;
    *
    * @return logically or'ed set of Consts.MODIFIER_* constants found.
@@ -796,7 +795,6 @@ modifier    : "lazy"
         int p2 = tokenPos();
         switch (current())
           {
-          case t_lazy        : m = Consts.MODIFIER_LAZY        ; break;
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
@@ -827,7 +825,6 @@ modifier    : "lazy"
   {
     switch (current())
       {
-      case t_lazy        :
       case t_redef       :
       case t_redefine    :
       case t_fixed       : return true;
@@ -1361,18 +1358,18 @@ actuals     : actualArgs
               {
                 AstErrors.illegalSelect(pos, select, e);
               }
-            result = new Call(pos, target, n, s);
+            result = new ParsedCall(pos, target, n, s);
           }
         else
           {
-            result = new Call(pos, target, n);
+            result = new ParsedCall(pos, target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new Call(pos, target, n, l);
+        result = new ParsedCall(pos, target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;

@@ -79,7 +79,7 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
     pre
       debug: thiz ≤ i8.type.max.as_u8
     is
-      castTo_i8
+      cast_to_i8
   as_i16 => as_i32.as_i16
   as_i32 i32 is intrinsic
   as_i64  => as_i32.as_i64
@@ -91,7 +91,7 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
   as_u128 => as_i32.as_u128
   as_int  => int as_i64
 
-  castTo_i8 i8 is intrinsic
+  cast_to_i8 i8 is intrinsic
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.

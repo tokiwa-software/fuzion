@@ -1177,6 +1177,9 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
+    if(PRECONDITIONS) require
+      (f.isField());
+
     if (CHECKS) check
       (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
 
@@ -1635,6 +1638,13 @@ public class AstErrors extends ANY
     error(e.pos(),
           "Failed to infer type of expression.",
           "Expression with unknown type: " + s(e));
+  }
+
+  static void failedToInferResultType(Feature f)
+  {
+    error(f.pos(),
+          "Failed to infer result type for feature " + s(f) +  ".",
+          "To solve this, please specify a result type explicitly.");
   }
 
   static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)

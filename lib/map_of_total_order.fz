@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature map_of_total_order
+#
+# -----------------------------------------------------------------------
+
+
+# defines effect map_of_total_order
+# this allows creating a map from a keys and values array
+private map_of_total_order (
+  K type : has_total_order, V type,
+  # the provider this effect uses to create a Map
+  public new (array K, array V) -> Map K V,
+  private em effect_mode.val,
+  _ unit
+  ) : effect em
+is
+  type.install_default =>
+    if !effects.exists (map_of_total_order K V)
+      _ := map_of_total_order K V (ks,vs -> ordered_map ks vs) effect_mode.default unit
+
+
+
+# shorthand to run code with custom map initializer.
+map_of_total_order(K type : has_total_order, V type, map_init (array K, array V) -> Map K V, code () -> unit) =>
+  _ := map_of_total_order K V map_init (effect_mode.inst code) unit
+
+
+
+# get currently installed effect map_of_total_order
+# which allows creating a map from a keys array and a values array
+map_of_total_order(K type : has_total_order, V type) =>
+  (map_of_total_order K V).type.install_default
+  (map_of_total_order K V)
+    .env

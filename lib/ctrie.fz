@@ -132,7 +132,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
   # equality - NYI
   #
   fixed type.equality(a, b Main_Node CTK CTV) bool is
-    a.hashCode = b.hashCode
+    a.hash_code = b.hash_code
 
   as_list
   pre match prev.get
@@ -219,7 +219,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
   # equality - NYI
   #
   fixed type.equality(a, b Indirection_Node CTK CTV) bool is
-    a.hashCode = b.hashCode
+    a.hash_code = b.hash_code
 
   redef as_string => "Indirection_Node($data)"
 
@@ -385,7 +385,7 @@ is
       match m.data
         cn container_node CTK CTV =>
           (flag, pos) := flagpos hash lev cn.bmp
-          if !((cn.bmp & flag) = u32 0)
+          if (cn.bmp & flag) != u32 0
             sub := cn.array[pos.as_i32]
             match sub
               Indirection_Node Indirection_Node CTK CTV =>
@@ -471,7 +471,7 @@ is
 
   # find k in linked nodes
   private find(ln list_node CTK CTV, k CTK) choice restart not_found CTV is
-    match ln.drop_while(sn -> !(sn.k = k)).head
+    match ln.drop_while(sn -> sn.k != k).head
           nil => not_found
           sn singleton_node => sn.v
 
@@ -507,7 +507,7 @@ is
                   ctrie_ok => add i k v lev parent gen
                   restart => restart
             sn singleton_node =>
-              if !(sn.k = k)
+              if sn.k != k
                 nin := Indirection_Node (mut (dual sn (singleton_node k v) (lev + width) i.data.get.gen))
                 ncn := (if m.gen = gen then cn else cn.renewed gen C_Trie.this).updated pos nin
                 i.gcas m (Main_Node ncn gen) C_Trie.this
@@ -518,7 +518,7 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> !(sn.k = k))))) i.data.get.gen) C_Trie.this
+        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k)))) i.data.get.gen) C_Trie.this
 
 
   # remove key from ctrie
@@ -549,7 +549,7 @@ is
                   ctrie_ok => remove i k lev parent gen
                   restart => restart
             sn singleton_node =>
-              if !(sn.k = k)
+              if sn.k != k
                 not_found
               else
                 ncn  := cn.removed pos flag
@@ -568,7 +568,7 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        fln := list_node ln.filter(sn -> !(sn.k = k))
+        fln := list_node ln.filter(sn -> sn.k != k)
         nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
         match (i.gcas m nln C_Trie.this)
           ctrie_ok => find ln k

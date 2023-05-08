@@ -262,25 +262,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t the target of the call, null if none.
-   *
-   * @param n the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public Call(SourcePosition pos, Expr t, String n, int select)
-  {
-    this(pos, t, n, select, NO_PARENTHESES);
-  }
-
-
-  /**
    * Constructor for a call whose called feature is already known, typically
    * because this call is created artificially for some syntactic sugar and not
    * by parsing source code.
@@ -617,7 +598,7 @@ public class Call extends AbstractCall
    * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
    * during state RESOLVING_TYPES for all other calls.
    *
-   * @param res this is called during type resolution, res gives the resolution
+   * @param res the resolution instance.
    * instance.
    *
    * @param thiz the surrounding feature. For a call c in an inherits clause ("f
@@ -671,13 +652,13 @@ public class Call extends AbstractCall
                       }
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built a chained bool: `a < b < c` => `(a < b) && (a < c)`
+                  { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
                     resolveTypesOfActuals(res,thiz);
                     actualsResolved = true;
                     findChainedBooleans(res, thiz);
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built operator call: `a + b` => `x.y.z.this.infix + a b`
+                  { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
                 if (_calledFeature == null && !fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -2335,6 +2316,7 @@ public class Call extends AbstractCall
       }
     return this;
   }
+
 
 }
 

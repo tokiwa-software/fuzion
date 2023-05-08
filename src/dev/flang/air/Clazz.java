@@ -2383,7 +2383,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case Routine    :
         {
           var or = f.outerRef();
-          if (or != null && Clazzes.isUsedAtAll(or))
+          if (or != null && Clazzes.isUsed(or))
             {
               result = lookup(or);
             }
@@ -2504,7 +2504,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         if (!this.isVoidType() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
-            Clazzes.isUsed(field, this))
+            Clazzes.isUsed(field))
           {
             if (field.isOpenGenericField())
               {

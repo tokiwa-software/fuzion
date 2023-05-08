@@ -48,7 +48,7 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => (k.hash.low32bits.castTo_i32 & 0.max) % allocated_size
+  at (k HK) => (k.hash.low32bits.cast_to_i32 & 0.max) % allocated_size
 
 
   # in case of a collision at given position,

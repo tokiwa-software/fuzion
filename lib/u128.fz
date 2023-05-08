@@ -44,7 +44,7 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
   redef underflow_on_sub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u128) => if (other = zero) false else !((thiz *° other / other) = thiz)
+  redef overflow_on_mul (other u128) => if (other = zero) false else (thiz *° other / other) != thiz
   redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics

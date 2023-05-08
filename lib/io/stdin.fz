@@ -27,18 +27,13 @@
 # stdin -- effect providing several features
 # for consuming the given Byte_Input_Handler
 #
-private stdin(
-    ip Byte_Input_Handler,
-    # action to be taken: plain nomad, install or replace?
-    redef r effect_mode.val,
-    _ unit
-  ) : stdins, effect r is
+private stdin(ip io.Byte_Input_Handler) : simpleEffect is
 
 
   # read a single byte from stdin
   #
   byte =>
-    (stdin ip.next mode unit).ip.get
+    (stdin ip.next).ip.get
 
 
   # an infinite list of either a byte, an end_of_file or an error
@@ -47,7 +42,8 @@ private stdin(
   # Additionally there may be read more from stdin than what is consumed
   # via this list.
   # NYI: How can we lessen these imperfections?
-  bytes list (choice u8 end_of_file error) is
+  #
+  bytes list (choice u8 io.end_of_file error) is
     list byte ()->bytes
 
 
@@ -64,7 +60,8 @@ private stdin(
   # Additionally there may be read more from stdin than what is consumed
   # via this list.
   # NYI: How can we lessen these imperfections?
-  codepoints list (choice codepoint end_of_file error) is
+  #
+  codepoints list (choice codepoint io.end_of_file error) is
     list codepoint0 ()->codepoints
 
 
@@ -80,6 +77,29 @@ private stdin(
   read_line => read_line0
 
 
+  # install default instance of stdin
+  #
+  type.install_default =>
+    (io.stdin (default_input_handler (error "not initialized"))).default
+
+
+  # the default input handler reading bytes via fuzion.sys.stdin.nextByte
+  #
+  type.default_input_handler(r choice u8 io.end_of_file error) : io.Byte_Input_Handler is
+
+
+    next io.Byte_Input_Handler is
+      v := fuzion.sys.stdin.next_byte
+      if v = -1
+        default_input_handler io.end_of_file
+      else if v < -1
+        default_input_handler (error "an error occurred while reading stdin")
+      else
+        default_input_handler v.as_u8
+
+
+    get => r
+
 
 private read_line0 outcome String : character_encodings is
   stdin.codepoints
@@ -93,7 +113,7 @@ private read_line0 outcome String : character_encodings is
               abort (outcome r)
           else
             r + c
-        end_of_file =>
+        io.end_of_file =>
           abort (outcome r)
         e error =>
           abort (outcome String) e
@@ -103,6 +123,7 @@ private read_line0 outcome String : character_encodings is
 # read n codepoints from stdin
 # may return less than n bytes if end of file is reached
 # or error if stdin can not be read right now
+#
 private read0(n i32) outcome String
 pre n ≥ 0
 is
@@ -111,7 +132,7 @@ is
       match codepoint0
         c codepoint =>
           r + c
-        end_of_file =>
+        io.end_of_file =>
           abort (outcome r) // return what we read so far
         e error =>
           abort (outcome String) e   // return only the error, discarding what we read so far
@@ -119,78 +140,54 @@ is
 
 
 # try reading a codepoint from stdin
-private codepoint0 choice codepoint end_of_file error is
+#
+private codepoint0 choice codepoint io.end_of_file error is
   match stdin.byte
     b u8 =>
       match codepoint.type.num_utf8_bytes b
         n i32 =>
           rest := (2..n)
             # NYI use reduce_or_error once outcome is open generic
-            .reduce (choice (Sequence u8) end_of_file error) [b] (r,t ->
+            .reduce (choice (Sequence u8) io.end_of_file error) [b] (r,t ->
               match r
                 seq Sequence u8 =>
                   match stdin.byte
                     b u8 => seq ++ [b]
-                    end_of_file =>
-                      abort (choice (Sequence u8) end_of_file error) end_of_file
+                    io.end_of_file =>
+                      abort (choice (Sequence u8) io.end_of_file error) io.end_of_file
                     e error =>
-                      abort (choice (Sequence u8) end_of_file error) e
+                      abort (choice (Sequence u8) io.end_of_file error) e
                 * => fuzion.std.panic "should not be possible"
               )
           match rest
             l Sequence u8 => String.type.from_bytes l
                                     .as_codepoint_sequence
                                     .first
-            end_of_file => end_of_file
+            io.end_of_file => io.end_of_file
             e error => e // error occurred while reading the rest of utf8 bytes
         e error => e     // first byte is not the start of a utf8 codepoint
-    end_of_file => end_of_file
+    io.end_of_file => io.end_of_file
     e error => e         // not even single byte could be read from stdin
 
 
-
 # type to indicate an `end of file`
+#
 end_of_file is
 
 
-# short-hand for creating and installing stdin effect
-stdin(h Byte_Input_Handler, f () -> unit) =>
-  s := stdin h effect_mode.new unit
-  s.use0 f
-  unit
-
 # short-hand for accessing stdin effect in current environment
+#
 stdin =>
-  stdins.install_default
+  stdin.type.install_default
   stdin.env
-
-
-# unit feature providing static helpers
-stdins is
-  install_default is
-    if !effects.exists io.stdin
-      s := stdin (default_input_handler (error "not initialized")) effect_mode.new unit
-      s.default
 
 
 Byte_Input_Handler ref is
 
-  next Byte_Input_Handler is abstract
+
+  next io.Byte_Input_Handler is abstract
+
 
   # NYI using choice, until open generic for error in outcome is implemented
-  get choice u8 end_of_file error is abstract
-
-
-# the default input handler reading bytes via fuzion.sys.stdin.nextByte
-default_input_handler(r choice u8 end_of_file error) : Byte_Input_Handler is
-
-  next Byte_Input_Handler is
-    v := fuzion.sys.stdin.next_byte
-    if v = -1
-      default_input_handler end_of_file
-    else if v < -1
-      default_input_handler (error "an error occurred while reading stdin")
-    else
-      default_input_handler v.as_u8
-
-  get => r
+  #
+  get choice u8 io.end_of_file error is abstract
