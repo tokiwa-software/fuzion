@@ -36,21 +36,16 @@ import java.nio.file.Path;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
-import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
@@ -62,7 +57,7 @@ import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -574,7 +569,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
 
-              if (c.calledFeature() instanceof Feature cf)
+              if (c.calledFeature() instanceof Feature cf
+                  // fixes issue #1358
+                  && cf.state() == State.LOADING)
                 {
                   findDeclarations(cf, outer);
                 }
