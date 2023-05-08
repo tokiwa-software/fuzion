@@ -166,10 +166,24 @@ floats(F type : float F) : numerics F is
   sqrt(val F) => squareRoot val
 
 
-  # exponentiation, logarithm
 
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
   exp (val F) F is abstract
+
+
+  # logarithm with base ℇ
+  #
   log (val F) F is abstract
+
+
+  # logarithm with base `base`
+  #
+  log (base, val F) F
+  pre base > zero
+  is
+    (log val) / (log base)
 
 
   # trigonometric
