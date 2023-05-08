@@ -193,7 +193,6 @@ public class Lexer extends SourceFile
     t_ref("ref"),
     t_synchronized("synchronized"),   // unused
     t_redef("redef"),
-    t_redefine("redefine"),
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),

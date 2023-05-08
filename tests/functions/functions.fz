@@ -62,26 +62,26 @@ functions is
 
     say "here 1c---------------"
     x (ref : Function i32 Any i32 {
-        redefine call(o Any, i i32) i32 is
+        redef call(o Any, i i32) i32 is
           say "in anonymous function: $o"
           o.hash_code + i
        })
 
     F ref : Function i32 Any i32 is
-        redefine call(o Any, i i32) i32 is
-          say "here f.call---------------"
+        redef call(o Any, i i32) i32 is
+          say "here F.call---------------"
           set result := o.hash_code + i
-          say "here f.call done---------------"
+          say "here F.call done---------------"
 
-    say "here x0 f()---------------"
+    say "here x0 F()---------------"
     x0 F()
-    say "here x0 f---------------"
+    say "here x0 F---------------"
     x0 F
     say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hash_code + i })---------------"
     x0 ((o, i) -> { set result := o.hash_code + i })
-    say "here x f()---------------"
+    say "here x F()---------------"
     x F()
-    say "here x(f)---------------"
+    say "here x(F)---------------"
     x F
 
     f1(o Any, i i32) i32 is
