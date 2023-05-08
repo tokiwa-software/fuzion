@@ -63,6 +63,9 @@ public class Intrinsics extends ANY
   static CIdent A0 = new CIdent("arg0");
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
+  static CIdent A3 = new CIdent("arg3");
+  static CIdent A4 = new CIdent("arg4");
+  static CIdent A5 = new CIdent("arg5");
 
   /**
    * Predefined identifier to access errno macro.
@@ -730,6 +733,58 @@ public class Intrinsics extends ANY
             A0.castTo("fzT_1i32 *").index(5).assign(CExpr.int32const(0)));
       });
 
+
+    put("fuzion.sys.net.bind0",    (c,cl,outer,in) ->
+      CExpr.call("fzE_bind", new List<CExpr>(
+        A0.castTo("int"),       // family
+        A1.castTo("int"),       // socktype
+        A2.castTo("int"),       // protocol
+        A3.castTo("char *"),    // host
+        A4.castTo("char *"),    // port
+        A5.castTo("int64_t *")  // result
+    )).ret());
+
+    put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
+      A0.castTo("int"), // socket descriptor
+      A1.castTo("int")  // size of backlog
+    )).ret());
+
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_accept", new List<CExpr>(
+      A0.castTo("int") // socket descriptor
+    )), A1));
+
+    put("fuzion.sys.net.connect0",    (c,cl,outer,in) ->
+    CExpr.call("fzE_connect", new List<CExpr>(
+      A0.castTo("int"),       // family
+      A1.castTo("int"),       // socktype
+      A2.castTo("int"),       // protocol
+      A3.castTo("char *"),    // host
+      A4.castTo("char *"),    // port
+      A5.castTo("int64_t *")  // result (err or descriptor)
+  )).ret());
+
+    put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
+      A0.castTo("int"),    // socket descriptor
+      A1.castTo("void *"), // buffer
+      A2.castTo("size_t")  // buffer length
+    )), A3));
+
+    put("fuzion.sys.net.write", (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
+      A0.castTo("int"),    // socket descriptor
+      A1.castTo("void *"), // buffer
+      A2.castTo("size_t")  // buffer length
+    )).ret());
+
+    put("fuzion.sys.net.close0", (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
+      A0.castTo("int") // socket descriptor
+    )).ret());
+
+    put("fuzion.sys.net.set_blocking0", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
+      A0.castTo("int"), // socket descriptor
+      A1.castTo("int")  // blocking
+    )).ret());
+
+
     put("effect.replace"       ,
         "effect.default"       ,
         "effect.abortable"     ,
@@ -961,6 +1016,42 @@ public class Intrinsics extends ANY
     var rs = ru.castTo(st);
 
     return rs;
+  }
+
+
+  /**
+   * if result of expr is -1 return false and assign
+   * the result fzE_net_error to res[0]
+   * else return true and assign the result of expr to res[0]
+   * @param c
+   * @param expr
+   * @param res
+   * @return
+   */
+  static CStmnt assignNetErrorOnError(C c,CExpr expr, CIdent res)
+  {
+    var expr_res = new CIdent("expr_res");
+    return CStmnt.seq(
+      CExpr.decl("int", expr_res),
+      expr_res.assign(expr),
+      // error
+      CExpr.iff(CExpr.eq(expr_res, CExpr.int32const(-1)),
+        CStmnt.seq(
+          res
+            .castTo("fzT_1i32 *")
+            .index(CExpr.int32const(0))
+            .assign(CExpr.call("fzE_net_error", new List<>())),
+          c._names.FZ_FALSE.ret()
+        )
+      ),
+      // success
+      CStmnt.seq(
+        res
+          .castTo("fzT_1i32 *")
+          .index(CExpr.int32const(0))
+          .assign(expr_res),
+        c._names.FZ_TRUE.ret()
+      ));
   }
 
 }

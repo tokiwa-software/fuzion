@@ -1,0 +1,179 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.net0
+#
+# -----------------------------------------------------------------------
+
+# groups networking related features
+#
+# internally this builds on:
+# - java: nio
+#   - why not java.net.Socket etc.?: this is only suitable for blocking I/O
+#   - why not nio2?                : nio2 is basically the same as nio but asynchronous.
+#                                    I.e. read/write return Futures.
+# - c/posix: posix-sockets
+# - c/win: winsock2
+#
+# sources of inspiration:
+# - https://github.com/tezc/sc/
+# - https://github.com/jart/cosmopolitan
+# - https://learn.microsoft.com/en-us/windows/win32/winsock/complete-server-code
+# - https://learn.microsoft.com/en-us/windows/win32/winsock/complete-client-code
+#
+# NYI: use error codes coming from backend
+#
+net is
+
+
+  # bind a name to a newly created socket
+  #
+  # 0  => arr_result[0] is the socket descriptor
+  # -1 => arr_result[0] is an error number
+  #
+  bind0   (family, socket_type, protocol i32, host Any, port Any, arr_result Any) i32 is intrinsic
+
+
+  # bind a name to a newly created socket, wrapper for bind0 intrinsic
+  #
+  bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 is
+    arr array i64 := [0]
+    if (bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internalArray.data) = 0
+      arr[0]
+    else
+      error "error: {arr[0]}"
+
+
+
+  # activates a server socket, setting a backlog
+  # of a maximum amount of connections which are kept
+  # waiting for acceptance.
+  #
+  # returns zero on success, anything else is an error.
+  #
+  listen (sd i64, backlog i32) i32 is intrinsic
+
+
+  # accept a new connection for given socket descriptor.
+  # may block until there is a connection to accept.
+  # returns a new / different descriptor which
+  # corresponds to the accepted connection only.
+  #
+  # true  => arr_result[0] is the socket descriptor
+  # false => arr_result[0] is an error number
+  #
+  accept (sd i64, arr_result Any) bool is intrinsic
+
+
+  # accept a new connection for given socket descriptor, wrapper for accept intrinsic.
+  # returns an error or a new descriptor.
+  accept(sd i64) outcome i64 is
+    arr array i64 := [0]
+    if accept sd arr.internalArray.data then arr[0] else error "accept failed, error number: {arr[0]}"
+
+
+  # open and connect a client socket
+  #
+  # 0  => arr_result[0] is the socket descriptor
+  # -1 => arr_result[0] is an error number
+  #
+  connect0(family, socket_type, protocol i32, host Any, port Any, arr_result Any) i32 is intrinsic
+
+
+  # open and connect a client socket
+  #
+  connect(family, socket_type, protocol i32, host String, port u16) outcome i64 is
+    arr array i64 := [0]
+    if (connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internalArray.data) = 0
+      arr[0]
+    else
+      error "error: {arr[0]}"
+
+
+
+  # read bytes into arr_data buffer
+  #
+  # true  => arr_result[0] is the number of bytes read
+  # false => arr_result[0] is an error number
+  #
+  read(sd i64, arr_data Any, length i32, arr_result Any) bool is intrinsic
+
+
+  # read a maximum of max_bytes from descriptor, wrapper for read intrinsic
+  # may block if descriptor is set to blocking.
+  #
+  read(descriptor i64, max_bytes i32) outcome (array u8) is
+    buff := fuzion.sys.internal_array_init u8 max_bytes
+    arr array i64 := [0]
+    if read descriptor buff.data max_bytes arr.internalArray.data
+      if arr[0].as_i32 = max_bytes
+        array u8 buff unit unit unit
+      else
+        # NYI there should be a way to use a slice of internalArray to init array
+        array u8 arr[0].as_i32 (idx -> buff[idx])
+    else
+      error "error: {arr[0]}"
+
+
+  # write buffer bytes on socket
+  #
+  # returns zero on success, anything else is an error.
+  #
+  write(sd i64, arr_data Any, length i32) i32 is intrinsic
+
+
+  # write data to descriptor, wrapper for write intrinsic
+  # may block if descriptor is set to blocking.
+  #
+  write(descriptor i64, data array u8) outcome unit is
+    res := write descriptor data.internalArray.data data.length
+    if res = -1 then error "error: $res" else unit
+
+
+  # close socket
+  #
+  # returns zero on success, anything else is an error.
+  #
+  close0(sd i64) i32 is intrinsic
+
+
+  # close socket descriptor
+  close(sd i64) outcome unit is
+    res := close0 sd
+    if res = -1 then error "error: $res" else unit
+
+
+  # 0 = blocking, 1 = none_blocking
+  #
+  # returns zero on success, anything else is an error.
+  #
+  # NYI non blocking needs some kind of polling mechanism like epoll / kqueue
+  # probably not good enough:
+  # - select "can monitor only file descriptors  numbers
+  #           that  are less  than  FD_SETSIZE (1024)—an unreasonably
+  #           low limit for many modern applications"
+  # - poll is in O(n)
+  # difficult to implement on windows, read here: https://notgull.github.io/device-afd/
+  set_blocking0(sd i64, blocking i32) i32 is intrinsic
+
+
+  # set descriptor to blocking / none blocking mode.
+  set_blocking(sd i64, blocking bool) outcome unit is
+    res := if blocking then set_blocking0 sd 0 else set_blocking0 sd 1
+    if res = 0 then unit else error "error: $res"
