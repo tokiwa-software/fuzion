@@ -209,7 +209,7 @@ public class Types extends ANY
       t_bool          = ct.type("bool"        , false);
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type(FuzionConstants.STRING_NAME, false);
-      t_Const_String   = ct.type("Const_String" , false);
+      t_Const_String  = ct.type("Const_String" , false);
       t_any           = ct.type(FuzionConstants.ANY_NAME, false);
       t_unit          = ct.type(FuzionConstants.UNIT_NAME, false);
       t_void          = ct.type("void"        , false);
@@ -223,7 +223,7 @@ public class Types extends ANY
       f_bool_OR       = f_bool.get(mod, "infix ||");
       f_bool_IMPLIES  = f_bool.get(mod, "infix :");
       f_debug         = universe.get(mod, "debug", 0);
-      f_debug_level    = universe.get(mod, "debug_level");
+      f_debug_level   = universe.get(mod, "debug_level");
       f_function      = universe.get(mod, FUNCTION_NAME);
       f_function_call = f_function.get(mod, "call");
       f_safety        = universe.get(mod, "safety");

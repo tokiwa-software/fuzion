@@ -933,7 +933,7 @@ public class Intrinsics extends ANY
 
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
-    put("debug_level"            , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
+    put("debug_level"           , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
     put("i8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
