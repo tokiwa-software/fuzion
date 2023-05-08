@@ -1637,20 +1637,22 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultType();
+        _resultType = resultTypeRaw();
+        if (_resultType == null)
+          {
+            AstErrors.failedToInferResultType(this);
+            _resultType = Types.t_ERROR;
+          }
         if (_resultType instanceof Type t)
           {
             t.checkChoice(_posOfReturnType);
           }
-        if (_resultType != null)
-          {
-            if (_resultType.isThisType() && _resultType.featureOfType() == this)
-              { // we are in the case of issue #1186: A routine returns itself:
-                //
-                //  a => a.this
-                AstErrors.routineCannotReturnItself(this);
-                _resultType = Types.t_ERROR;
-              }
+        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+          { // we are in the case of issue #1186: A routine returns itself:
+            //
+            //  a => a.this
+            AstErrors.routineCannotReturnItself(this);
+            _resultType = Types.t_ERROR;
           }
 
         /**
