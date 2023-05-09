@@ -7,9 +7,9 @@ ryu_test =>
 
   numbers := [ 0.0,
               -f64s.zero,
-              f64s.positiveInfinity,
-              f64s.negativeInfinity,
-              f64s.quietNaN,
+              f64s.positive_infinity,
+              f64s.negative_infinity,
+              f64s.quiet_NaN,
               0.3,
               1.0,
               1.5,

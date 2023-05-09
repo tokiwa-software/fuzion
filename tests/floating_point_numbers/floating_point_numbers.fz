@@ -47,7 +47,7 @@ floating_point_numbers is
     # serialize floating point numbers
     # NYI serialization will be done in fuzion and then we won't have
     # different results for interpreter- / c- backend
-    chck ("{one.quietNaN}" =  "nan" || "{one.quietNaN}" =  "NaN")          "{T.name}: quiet nan serializes correctly"
+    chck ("{one.quiet_NaN}" =  "nan" || "{one.quiet_NaN}" =  "NaN")          "{T.name}: quiet nan serializes correctly"
     chck ("{one.negative_infinity}"
       .replace("I", "i")
       .substring(0, 4) =  "-inf")                                          "{T.name}: neg inf serializes correctly"

@@ -139,10 +139,10 @@ floats(F type : float F) : numerics F is
   exponent_range => -min_exp..max_exp
 
   # non signaling not a number
-  quietNaN => zero / zero
+  quiet_NaN => zero / zero
 
   # not a number
-  NaN => quietNaN
+  NaN => quiet_NaN
 
   # is not a number?
   is_NaN(val F) bool is abstract
