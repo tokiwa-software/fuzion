@@ -55,8 +55,8 @@ jobs:
         run: echo "PATH=$PWD/build/bin:$PATH" >> $GITHUB_ENV
 
       - name: check idioms interpreter
-        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./bin/check_example.sh
+        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./build/tests/check_simple_example.sh fz
 
       - name: check idioms c backend
-        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./bin/check_example_c.sh
+        run: find fuzion-idioms -name "*.fz" | sort | xargs -n 1 ./build/tests/check_simple_example.sh fz
 
