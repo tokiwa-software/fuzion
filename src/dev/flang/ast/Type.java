@@ -807,10 +807,12 @@ public class Type extends AbstractType
               }
           }
       }
-    if (!_generics.isEmpty() && !(_generics instanceof FormalGenerics.AsActuals))
+    if (!(_generics instanceof FormalGenerics.AsActuals))
       {
-        var g = generics();
-        g.map(gt -> gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
+        generics()
+          .stream()
+          .filter(g -> g instanceof Type)
+          .forEach(g -> g.visit(v, outerfeat));
       }
     return v.action(this, outerfeat);
   }
