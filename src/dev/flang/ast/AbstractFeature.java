@@ -1141,21 +1141,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Are calls to this feature performed using dynamic binding?
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (this == Types.f_ERROR || outer() != null);
-
-    return
-      this != Types.f_ERROR &&
-      generics() == FormalGenerics.NONE &&
-      !outer().isChoice();
-  }
-
-
-  /**
    * Is this a constructor returning a reference result?
    */
   public abstract boolean isThisRef();

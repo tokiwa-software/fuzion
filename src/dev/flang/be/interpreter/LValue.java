@@ -82,6 +82,20 @@ public class LValue extends ValueWithClazz
 
 
   /**
+   * Create a copy (clone) of this value.  Used for boxing values into
+   * ref-types.
+   */
+  Instance cloneValue(Clazz cl)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == cl,
+       !cl.isRef());
+
+    return new Instance(cl, container, offset);
+  }
+
+
+  /**
    * For a value of type i8, return the value.
    *
    * @return the integer value

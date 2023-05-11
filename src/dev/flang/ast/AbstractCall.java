@@ -121,7 +121,6 @@ public abstract class AbstractCall extends Expr
   public boolean isDynamic()
   {
     return
-      calledFeature().isDynamic() &&
       !(target() instanceof AbstractCurrent) &&
       !isInheritanceCall();
   }

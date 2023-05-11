@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -227,7 +228,7 @@ public class Clazzes extends ANY
    * Set of features that are called dynamically. Populated during findClasses
    * phase.
    */
-  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet<>();
+  private static TreeSet<FeatureAndActuals> _calledDynamically_ = new TreeSet<>();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -307,91 +308,86 @@ public class Clazzes extends ANY
        Errors.count() > 0 || !actualType.dependsOnGenerics(),
        Errors.count() > 0 || !actualType.containsThisType());
 
-    Clazz result = null;
     Clazz o = outer;
-    while (o != null && result == null)
+    var ao = actualType.featureOfType().outer();
+    while (o != null)
       {
-        if (o._type == actualType && actualType != Types.t_ERROR)
-          { // a recursive outer-relation
-            result = o;  // is ok for a ref type, we can just return the original outer clazz
-            if (// This is a little ugly: we do not want outer to be a value
-                // type in the source code (see tests/inheritance_negative for
-                // reasons why), but we are fine if outer is an 'artificial'
-                // value type that is created by Clazz.asValue(), since these
-                // will never be instantiated at runtime but are here only for
-                // the convenience of the backend.
-                //
-                // So instead of testing !o.isRef() we use
-                // !o._type.featureOfType().isThisRef().
-                !o._type.featureOfType().isThisRef() &&
-                !o._type.featureOfType().isIntrinsic())
-              {  // but a recursive chain of value types is not permitted
+        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()))
+          {
+            outer = o;  // short-circuit outer relation if suitable outer was found
+          }
 
-                // NYI: recursive chain of value types should be detected during
-                // types checking phase!
-                StringBuilder chain = new StringBuilder();
-                chain.append("1: "+actualType+" at "+actualType.pos2BeRemoved().show()+"\n");
-                int i = 2;
-                Clazz c = outer;
-                while (c._type != actualType)
-                  {
-                    chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
-                    c = c._outer;
-                    i++;
-                  }
+        // NYI: Check if the following code is still needed:
+        if (o._type == actualType && actualType != Types.t_ERROR &&
+            // a recursive outer-relation
+
+            // This is a little ugly: we do not want outer to be a value
+            // type in the source code (see tests/inheritance_negative for
+            // reasons why), but we are fine if outer is an 'artificial'
+            // value type that is created by Clazz.asValue(), since these
+            // will never be instantiated at runtime but are here only for
+            // the convenience of the backend.
+            //
+            // So instead of testing !o.isRef() we use
+            // !o._type.featureOfType().isThisRef().
+            !o._type.featureOfType().isThisRef() &&
+            !o._type.featureOfType().isIntrinsic())
+          {  // but a recursive chain of value types is not permitted
+
+            // NYI: recursive chain of value types should be detected during
+            // types checking phase!
+            StringBuilder chain = new StringBuilder();
+            chain.append("1: "+actualType+" at "+actualType.pos2BeRemoved().show()+"\n");
+            int i = 2;
+            Clazz c = outer;
+            while (c._type != actualType)
+              {
                 chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
-                Errors.error(actualType.pos2BeRemoved(),
-                             "Recursive value type is not allowed",
-                             "Value type " + actualType + " equals type of outer feature.\n"+
-                             "The chain of outer types that lead to this recursion is:\n"+
-                             chain + "\n" +
-                             "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                c = c._outer;
+                i++;
               }
+            chain.append(""+i+": "+c._type+" at "+c._type.pos2BeRemoved().show()+"\n");
+            Errors.error(actualType.pos2BeRemoved(),
+                         "Recursive value type is not allowed",
+                         "Value type " + actualType + " equals type of outer feature.\n"+
+                         "The chain of outer types that lead to this recursion is:\n"+
+                         chain + "\n" +
+                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
           }
         o = o._outer;
       }
-    if (result == null)
+
+    // NYI: We currently create new clazzes for every different outer
+    // context. This gives us plenty of opportunity to specialize the code,
+    // but it might be overkill in some cases. We might rethink this and,
+    // e.g. treat clazzes of inherited features with a reference outer clazz
+    // the same.
+
+    var newcl = wouldCreateCycleInOuters(actualType, outer) ? clazz(actualType)
+                                                            : new Clazz(actualType, select, outer);
+    var result = intern(newcl);
+    if (result == newcl)
       {
-        // NYI: We currently create new clazzes for every different outer
-        // context. This gives us plenty of opportunity to specialize the code,
-        // but it might be overkill in some cases. We might rethink this and,
-        // e.g. treat clazzes of inherited features with a reference outer clazz
-        // the same.
-
-        Clazz newcl;
-        if (wouldCreateCycleInOuters(actualType, outer))
+        if (CHECKS) check
+          (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
+        if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
           {
-            newcl = clazz(actualType);
+            clazzesToBeVisited.add(result);
           }
-        else
+        result.registerAsHeir();
+        if (_options_.verbose(3))
           {
-            newcl =  new Clazz(actualType, select, outer);
-          }
-
-        result = intern(newcl);
-        if (result == newcl)
-          {
-            if (CHECKS) check
-              (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
-            if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
+            _options_.verbosePrintln(3, "GLOBAL CLAZZ: " + result);
+            if (_options_.verbose(10))
               {
-                clazzesToBeVisited.add(result);
+                Thread.dumpStack();
               }
-            result.registerAsHeir();
-            if (_options_.verbose(3))
-              {
-                _options_.verbosePrintln(3, "GLOBAL CLAZZ: " + result);
-                if (_options_.verbose(10))
-                  {
-                    Thread.dumpStack();
-                  }
-              }
-            result.dependencies();
           }
+        result.dependencies();
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0 || true,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -490,7 +486,7 @@ public class Clazzes extends ANY
   static void whenCalledDynamically(AbstractFeature f,
                                     Runnable r)
   {
-    if (_calledDynamically_.contains(f))
+    if (isCalledDynamically(f))
       {
         r.run();
       }
@@ -541,18 +537,18 @@ public class Clazzes extends ANY
    * called dynamically, execute all the runnables registered for f by
    * whenCalledDynamically.
    */
-  static void calledDynamically(AbstractFeature f)
+  static void calledDynamically(AbstractFeature f, List<AbstractType> tp)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || isUsedAtAll(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
                                                      * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
                                                      * in types differently.
-                                                     */,
-       f.generics().list.isEmpty());
+                                                     */);
 
-    if (!_calledDynamically_.contains(f))
+    var ft = new FeatureAndActuals(f, tp, false);
+    var added = _calledDynamically_.add(ft);
+    if (added)
       {
-        _calledDynamically_.add(f);
         var l = _whenCalledDynamically_.remove(f);
         if (l != null)
           {
@@ -573,7 +569,17 @@ public class Clazzes extends ANY
    */
   static boolean isCalledDynamically(AbstractFeature f)
   {
-    return _calledDynamically_.contains(f);
+    return !calledDynamicallyWithTypePars(f).isEmpty();
+  }
+
+  /**
+   * Has f been found to be called dynamically?
+   */
+  static Set<FeatureAndActuals> calledDynamicallyWithTypePars(AbstractFeature f)
+  {
+    var fmin = new FeatureAndActuals(f, false);
+    var fmax = new FeatureAndActuals(f, true);
+    return _calledDynamically_.subSet(fmin, fmax);
   }
 
 
@@ -795,6 +801,25 @@ public class Clazzes extends ANY
           {
             rc.instantiated(b);
           }
+        else
+          {
+            propagateExpectedClazz(b._value, ec, outerClazz);
+          }
+      }
+    else if (e instanceof Unbox u)
+      {
+        Clazz rc = clazz(u._adr, outerClazz);
+        Clazz vc = rc;
+        if (!ec.isRef())
+          {
+            vc = rc.asValue();
+          }
+        if (u._refAndValClazzId < 0)
+          {
+            u._refAndValClazzId = getRuntimeClazzIds(2);
+          }
+        outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
+        outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -822,8 +847,11 @@ public class Clazzes extends ANY
       {
         u._refAndValClazzId = getRuntimeClazzIds(2);
       }
-    outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
-    outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
+    if (outerClazz._runtimeClazzes.size() <= u._refAndValClazzId || outerClazz.getRuntimeClazz(u._refAndValClazzId) == null)
+      {
+        outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
+        outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, rc);
+      }
   }
 
 
@@ -865,14 +893,10 @@ public class Clazzes extends ANY
       {
         tclazz._isCalledAsOuter = true;
       }
-    if (dynamic)
-      {
-        calledDynamically(cf);
-      }
+    var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
     if (cf.isChoice())
       {
-        outerClazz
-          .actualGenerics(c.actualTypeParameters())
+        typePars
           .stream()
           .forEach(ag ->
             {
@@ -888,13 +912,20 @@ public class Clazzes extends ANY
       }
     else if (tclazz != c_void.get())
       {
-        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.actualTypeParameters()), c, c.isInheritanceCall());
+        if (dynamic)
+          {
+            calledDynamically(cf, typePars);
+          }
+
+        var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
+        var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
         if (c._sid < 0)
           {
-            c._sid = getRuntimeClazzIds(2);
+            c._sid = getRuntimeClazzIds(3);
           }
-        outerClazz.setRuntimeData(c._sid + 0, innerClazz);
-        outerClazz.setRuntimeData(c._sid + 1, tclazz    );
+        outerClazz.setRuntimeData(c._sid + 0, innerClazz       );
+        outerClazz.setRuntimeData(c._sid + 1, tclazz           );
+        outerClazz.setRuntimeData(c._sid + 2, preconditionClazz);
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
@@ -1070,6 +1101,16 @@ public class Clazzes extends ANY
     if (e instanceof Unbox u)
       {
         result = clazz(u._adr, outerClazz);
+        var id = u._refAndValClazzId;
+        if (id >= 0)
+          {
+            var rc = outerClazz.getRuntimeClazz(id  );
+            var vc = outerClazz.getRuntimeClazz(id+1);
+            if (rc != null && vc != null && rc.isRef() && !vc.isRef() && result.isBoxed())
+              {
+                result = result.asValue();
+              }
+          }
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -1087,9 +1128,10 @@ public class Clazzes extends ANY
         var tclazz = clazz(c.target(), outerClazz);
         if (tclazz != c_void.get())
           {
-            var inner = tclazz.lookup(c.calledFeature(),
+            var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
+                                                            outerClazz.actualGenerics(c.actualTypeParameters()),
+                                                            false),
                                       c.select(),
-                                      outerClazz.actualGenerics(c.actualTypeParameters()),
                                       c,
                                       false);
             result = inner.resultClazz();

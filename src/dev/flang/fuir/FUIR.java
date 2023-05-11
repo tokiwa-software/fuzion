@@ -34,6 +34,7 @@ import java.util.TreeSet;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
+import dev.flang.air.FeatureAndActuals;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
@@ -528,9 +529,31 @@ public class FUIR extends IR
     return cc.feature().qualifiedName();
   }
 
+
+  /**
+   * Is the given clazz a ref clazz?
+   *
+   * @return true for non-value-type clazzes
+   */
   public boolean clazzIsRef(int cl)
   {
     return clazz(cl).isRef();
+  }
+
+
+  /**
+   * Is the given clazz a ref clazz that contains a boxed value type?
+   *
+   * @return true for boxed value-type clazz
+   */
+  public boolean clazzIsBoxed(int cl)
+  {
+    var result = clazz(cl).isBoxed();
+
+    if (POSTCONDITIONS) ensure
+      (!result || clazzIsRef(cl));  // result implies clazzIsRef(cl)
+
+    return result;
   }
 
 
@@ -894,7 +917,7 @@ hw25 is
 
         var pf = p.calledFeature();
         var of = pf.outerRef();
-        var or = (of == null) ? null : (Clazz) cc._inner.get(of);  // NYI: ugly cast
+        var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
         toStack(code, p.target());
         if (or != null && !or.resultClazz().isUnitType())
           {
@@ -1306,6 +1329,50 @@ hw25 is
 
 
   /**
+   * Get the inner clazz the precondition of a call, -1 if no precondition.
+   *
+   * The precondition clazz may be different to the accessedClazz in case of
+   * `ref` types: in the following code
+   *
+   *    x is
+   *      f t
+   *      pre condition
+   *      is expr
+   *    r ref x := x
+   *    r.f
+   *
+   * the precondition clazz for the call `r.f` is `(ref x).f`, while the
+   * accessedClazz may be `x.f` (NYI: check!).
+   *
+   * @param cl index of clazz containing the access
+   *
+   * @param c code block containing the access
+   *
+   * @param ix index of the access
+   *
+   * @return the clazz whose precondition has to be checked or -1 if there is no
+   * precondition to be checked.
+   */
+  public int accessedPreconditionClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call   ||
+       codeAt(c, ix) == ExprKind.Assign    );
+
+    var outerClazz = clazz(cl);
+    var s = _codeIds.get(c).get(ix);
+    Clazz innerClazz =
+      (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 2) :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+
+    var res = innerClazz == null ? -1 : id(innerClazz);
+    return res != -1 && hasPrecondition(res) ? res : -1;
+  }
+
+
+  /**
    * Get the inner clazz for a non dynamic access or the static clazz of a dynamic
    * access.
    *
@@ -1364,11 +1431,13 @@ hw25 is
     var s =  _codeIds.get(c).get(ix);
     Clazz tclazz;
     AbstractFeature f;
+    var typePars = AbstractCall.NO_GENERICS;
 
     if (s instanceof AbstractCall call)
       {
         f = call.calledFeature();
         tclazz     = (Clazz) outerClazz.getRuntimeData(call._sid + 1);
+        typePars = outerClazz.actualGenerics(call.actualTypeParameters());
       }
     else if (s instanceof AbstractAssign ass)
       {
@@ -1385,25 +1454,29 @@ hw25 is
       {
         throw new Error();
       }
-    var innerClazzes = new List<Clazz>();
+    var innerClazzes1 = new List<Clazz>();
+    var innerClazzes2 = new List<Clazz>();
     for (var clz : tclazz.heirs())
       {
         if (CHECKS) check
           (clz.isRef() == tclazz.isRef());
-        var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
-        if (in != null && clazzNeedsCode(id(in)))
+
+        var in = (Clazz) clz._inner.get(new FeatureAndActuals(f, typePars, false));
+        if (in != null && clazzNeedsCode(id(in)) && !innerClazzes1.contains(clz))
           {
-            innerClazzes.add(clz);
-            innerClazzes.add(in);
+            innerClazzes1.add(clz);
+            innerClazzes2.add(in);
           }
       }
 
-    var innerClazzIds = new int[innerClazzes.size()];
-    for (var i = 0; i < innerClazzes.size(); i++)
+    var innerClazzIds = new int[2*innerClazzes1.size()];
+    for (var i = 0; i < innerClazzes1.size(); i++)
       {
-        innerClazzIds[i] = id(innerClazzes.get(i));
+        innerClazzIds[2*i  ] = id(innerClazzes1.get(i));
+        innerClazzIds[2*i+1] = id(innerClazzes2.get(i));
         if (CHECKS) check
-          (innerClazzIds[i] != -1);
+          (innerClazzIds[2*i  ] != -1,
+           innerClazzIds[2*i+1] != -1);
       }
     return innerClazzIds;
   }
@@ -1438,7 +1511,9 @@ hw25 is
     else
       {
         var innerClazz = accessedClazz(cl, c, ix);
-        result = clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
+        var iC = clazz(innerClazz);
+        var tt = clazzOuterClazz(innerClazz);
+        result = clazzNeedsCode(innerClazz) ? new int[] { tt, innerClazz }
                                             : new int[0];
       }
     return result;
@@ -1471,7 +1546,7 @@ hw25 is
       (s instanceof AbstractAssign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass._tid)).isRef() : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
-      (s instanceof AbstractCall   call) ? call.isDynamic() && ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef() :
+      (s instanceof AbstractCall   call) ? (true || call.isDynamic()) && ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef() && (true || !call.calledFeature().isConstructor() || !((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isBoxed())  :
       new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
 
     return res;
@@ -1768,34 +1843,6 @@ hw25 is
 
 
   /**
-   * For a given field cl whose outer instance is a value type, find the same
-   * field in the corresponding outer ref type.
-   *
-   * @param cl index of a clazz that is a field.
-   */
-  public int correspondingFieldInRefInstance(int cl)
-  {
-    var cc = clazz(cl);
-    var rf = cc.correspondingFieldInRefInstance(cc);
-    return id(rf);
-  }
-
-
-  /**
-   * For a given field cl whose outer instance is a ref type, find the same
-   * field in the corresponding outer value type.
-   *
-   * @param cl index of a clazz that is a field.
-   */
-  public int correspondingFieldInValueInstance(int cl)
-  {
-    var cc = clazz(cl);
-    var rf = cc.correspondingFieldInValueInstance(cc);
-    return id(rf);
-  }
-
-
-  /**
    * Get a string representation of the expr at the given index in given code
    * block.  Useful for debugging.
    *
@@ -1810,10 +1857,10 @@ hw25 is
     return switch (codeAt(c,ix))
       {
       case AdrOf   -> "AdrOf";
-      case Assign  -> "Assign to " + clazzAsString(accessedClazz(cl, c, ix));
-      case Box     -> "Box " + clazzAsString(boxValueClazz(cl, c, ix)) + " => " + clazzAsString(boxResultClazz(cl, c, ix));
-      case Unbox   -> "Unbox";
-      case Call    -> "Call to " + clazzAsString(accessedClazz(cl, c, ix));
+      case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
+      case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
+      case Unbox   -> "Unbox "     + clazzAsString(unboxOuterRefClazz(cl, c, ix)) + " => " + clazzAsString(unboxResultClazz(cl, c, ix));
+      case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment";
       case Const   -> "Const";
@@ -1852,7 +1899,8 @@ hw25 is
 
     var e = _codeIds.get(c).get(ix);
     return (e instanceof Stmnt s) ? s.pos() :
-           (e instanceof Clazz z) ? z._type.pos2BeRemoved() : null;
+           (e instanceof Clazz z) ? z._type.pos2BeRemoved()  /* implicit assignment to argument field, maybe z.feature().pos()? */
+                                  : null;
   }
 
 
