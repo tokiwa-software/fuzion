@@ -86,7 +86,7 @@ test3 is
 test4 is
   a ref is
     dt : a => a.this.type
-    b : c is
+    b ref : c is
 
   c : a is
 
