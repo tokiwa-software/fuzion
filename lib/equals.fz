@@ -80,8 +80,8 @@ infix ⩻(T type : has_total_order, a, b T) bool is
 # result is = 0 if this = other
 #
 infix ⋄(T type : has_total_order, a, b T) i32 is
-  if      a ⩻ b then -1
-  else if a ⩼ b then +1
+  if      a < b then -1
+  else if a > b then +1
   else                0
 
 
@@ -115,8 +115,8 @@ infix <(T type : has_total_order, a, b T) bool is
 # result is = 0 if this = other
 #
 infix <>(T type : has_total_order, a, b T) i32 is
-  if      a ⩻ b then -1
-  else if a ⩼ b then +1
+  if      a < b then -1
+  else if a > b then +1
   else                0
 
 

@@ -72,11 +72,11 @@ public class Function extends ExprWithPos
   /**
    * For function declaration of the kind
    *
-   *  fun int (Object o, int i) { result =* o.hashCode + i; }
+   *  fun int (Object o, int i) { result =* o.hash_code + i; }
    *
    * this is the declared feature
    *
-   *  int (Object o, int i) { result =* o.hashCode + i; }
+   *  int (Object o, int i) { result =* o.hash_code + i; }
    *
    */
   AbstractFeature _feature;
@@ -115,44 +115,6 @@ public class Function extends ExprWithPos
 
 
   /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor defining a function by referring to a feature, e.g.,
-   *
-   *   x(fun a.b.f);
-   *
-   * where f is defined in a.b as
-   *
-   *   f(o Object, i int) int { result = o.hashCode + i; };
-   *
-   * then the "fun f" is syntactic sugar for
-   *
-   *  a.b._anonymous<#>_f_: Function<int,Object,int>
-   *   {
-   *     redefine call(o Object, i int) int
-   *     {
-   *       result = f(o,i);
-   *     };
-   *   }
-   *  x(a.b._anonymous<#>_f_());
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param c the call after the fun keyword
-   */
-  public Function(SourcePosition pos,
-                  Call c)
-  {
-    super(pos);
-
-    if (PRECONDITIONS) require
-      (c._actuals.size() == 0);
-
-    this._call = c;
-    c._forFun = true;
-    this._wrapper = null;
-  }
 
 
   /**
@@ -278,15 +240,15 @@ public class Function extends ExprWithPos
 
         /* We have an expression of the form
          *
-         *   (o, i) -> o.hashCode + i
+         *   (o, i) -> o.hash_code + i
          *
          * so we replace it by
          *
          * --Fun<id>-- : Function<R,A1,A2,...>
          * {
-         *   public redefine R call(A1 a1, A2 a2, ...)
+         *   public redef R call(A1 a1, A2 a2, ...)
          *   {
-         *     result = o.hashCode + i;
+         *     result = o.hash_code + i;
          *   }
          * }
          * [..]
@@ -556,7 +518,7 @@ public class Function extends ExprWithPos
              *
              * --Fun<id>-- : Function<R,A1,A2,...>
              * {
-             *   public redefine R call(A1 a1, A2 a2, ...)
+             *   public redef R call(A1 a1, A2 a2, ...)
              *   {
              *     result = a.b.f(a1, a2, ...);
              *   }
@@ -566,7 +528,6 @@ public class Function extends ExprWithPos
              * [..]
              */
             Call call = this._call;
-            call._forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
             var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors or special cases

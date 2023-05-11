@@ -151,21 +151,21 @@ O(n log n).
     # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
     #
     join (ole i32, dest i32, sz i32) ps_map PK V is
-      if (size & sz) ≟ 0
+      if (size & sz) = 0
         ps_map ndata nsize dest+sz
       else
         tmp := array (tuple PK V) sz (i -> ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
-          use1 := i1 ⩻ sz && ((i2 ≥ sz) || data[ole + i1].values.0 ⩻ tmp[i2].values.0)
+          use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
           e := if use1 then data[ole + i1] else tmp[i2]
         do
           ndata[dest + i1 + i2] := e
-        until i1 + i2 ≟ 2*sz-1
+        until i1 + i2 = 2*sz-1
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
-    if (nsize & size) ≟ 0
+    if (nsize & size) = 0
       set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
@@ -176,21 +176,21 @@ O(n log n).
   #
   index [] (k PK) option V is
 
-    binarySearch(l, r i32) option V is
+    binary_search(l, r i32) option V is
       m := (l + r) / 2
-      if l ⩼ r
+      if l > r
         nil
       else
         (mk,mv) := data[m]
         c := (mk) ⋄ k
-        if      c ⩻ 0 then binarySearch m+1 r
-        else if c ⩼ 0 then binarySearch l m-1
+        if      c < 0 then binary_search m+1 r
+        else if c > 0 then binary_search l m-1
         else               mv
 
     # find k in sub-arrays starting at data[at]
     #
     get (at i32, sz i32, tail i32) option V is
-      if sz ≟ 0
+      if sz = 0
         nil
       else
         sz0 := sz / 2
@@ -199,18 +199,18 @@ O(n log n).
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
         if (size & sz) != 0
-          match binarySearch at at+sz-1
+          match binary_search at at+sz-1
             v V => v
             nil => get at0 sz0 nt
         else
           get at0 sz0 nt
 
-    subSz := size.highestOneBit
-    get 0 subSz (data.length - subSz)
+    sub_sz := size.highest_one_bit
+    get 0 sub_sz (data.length - sub_sz)
 
 
   show unit is
-    for e in asKeyArray
+    for e in as_key_array
         sep := "", " "
     do
       yak (sep + e)
@@ -219,7 +219,7 @@ O(n log n).
 
   # create sorted array of all keys in this map
   #
-  asKeyArray array PK is
+  as_key_array array PK is
     r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
@@ -231,11 +231,11 @@ O(n log n).
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 ⩻ sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 ⩻ tmp[i2]))
+            use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
             e := if (use1) data[ole + i1].values.0 else tmp[i2]
           do
             r[i1 + i2] := e
-          until i1 + i2 ≟ sz+rsz-1
+          until i1 + i2 = sz+rsz-1
           join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
         else
           join ole-sz 2*sz rsz (skip + sz + skip)
@@ -248,13 +248,13 @@ O(n log n).
   # get an array of all key/value pairs in this map
   #
   redef items Sequence (tuple PK V) is
-    asKeyArray.map (tuple PK V) (k -> (k, ps_map.this[k].get))
+    as_key_array.map (tuple PK V) (k -> (k, ps_map.this[k].get))
 
 
   # get the lowest key in this map
   #
   min option PK is
-    if size ≟ 0
+    if size = 0
       nil
     else
       min0 (m PK, l i32, r i32) PK is
@@ -262,7 +262,7 @@ O(n log n).
         if (m ≤ lk) m else lk
 
       min (m PK, at i32, sz i32, tail i32) PK is
-        if sz ≟ 0
+        if sz = 0
           m
         else
           sz0 := sz / 2
@@ -276,14 +276,14 @@ O(n log n).
               m
           min m0 at0 sz0 nt
 
-      subSz := size.highestOneBit
-      min data[0].values.0 0 subSz (data.length - subSz)
+      sub_sz := size.highest_one_bit
+      min data[0].values.0 0 sub_sz (data.length - sub_sz)
 
 
   # get the highest key in this map
   #
   max option PK is
-    if size ≟ 0
+    if size = 0
       nil
     else
       max0 (m PK, l i32, r i32) PK is
@@ -291,7 +291,7 @@ O(n log n).
         if (m ≥ rk) m else rk
 
       max (m PK, at i32, sz i32, tail i32) PK is
-        if sz ≟ 0
+        if sz = 0
           m
         else
           sz0 := sz / 2
@@ -305,8 +305,8 @@ O(n log n).
               m
           max m0 at0 sz0 nt
 
-      subSz := size.highestOneBit
-      max data[0].values.0 0 subSz (data.length - subSz)
+      sub_sz := size.highest_one_bit
+      max data[0].values.0 0 sub_sz (data.length - sub_sz)
 
 
   # union of two ps_maps
@@ -317,26 +317,26 @@ O(n log n).
   # but it is undefined to which of these two.
   #
   union (other ref ps_map PK V) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-    if other.size ⩻ size
+    if other.size < size
       other ∪ ps_map.this
     else
 
       # helper to add 'ps_map.this.data[l..r]' to 'a' and return the resulting map.
       #
-      addAll (a ref ps_map PK V, l i32, r i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-        if l ⩼ r
+      add_all (a ref ps_map PK V, l i32, r i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
+        if l > r
           a
         else
           kv := data[l]
           a0 := if (a.has kv.values.0) a else a.add kv
-          addAll a0 l+1 r
+          add_all a0 l+1 r
 
       # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
       # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
       # well.
       #
-      addAll (a ref ps_map PK V, at i32, sz i32, tail i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
-        if sz ≟ 0
+      add_all (a ref ps_map PK V, at i32, sz i32, tail i32) ref ps_map PK V is  # NYI: #167: 'ref' due to lack of 'like this'
+        if sz = 0
           a
         else
           sz0 := sz / 2
@@ -345,12 +345,12 @@ O(n log n).
                   + (if (size & sz0) != 0 nt else 0)
                   + (if (size & sz ) != 0 sz else 0))
           a0 := if (size & sz) != 0
-              addAll a at at+sz-1
+              add_all a at at+sz-1
             else
               a
-          addAll a0 at0 sz0 nt
+          add_all a0 at0 sz0 nt
 
-      addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
+      add_all other 0 size.highest_one_bit (data.length - size.highest_one_bit)
 
 
   # infix operator synonym for union of two ps_maps

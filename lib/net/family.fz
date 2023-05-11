@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.family
+#
+# -----------------------------------------------------------------------
+
+
+# defines constants for protocol families which
+# can be used for network communication.
+#
+family is
+
+  # Internet Protocol Version 4
+  ipv4 is
+    redef as_string String is
+      "IPv4"
+
+  # Internet Protocol Version 6
+  ipv6 is
+    redef as_string String is
+      "IPv6"
+
+
+  val : choice ipv4 ipv6 is
+    as_num i32 is
+      match val.this
+        ipv4  => 2
+        ipv6  => 10
+
+    redef as_string String is
+      match val.this
+        i4 ipv4  => i4.as_string
+        i6 ipv6  => i6.as_string
+
+
+  # convenience feature to get the localhost address of a family
+  localhost(f net.family.val) String is
+    match f
+      net.family.ipv4 => "127.0.0.1"
+      net.family.ipv6 => "::1"

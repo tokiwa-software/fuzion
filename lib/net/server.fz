@@ -1,0 +1,164 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.server
+#
+# -----------------------------------------------------------------------
+
+
+# server -- effect for storing a bound - and in the
+# case of TCP, listening - socket descriptor.
+#
+# Basic usage description:
+# 1) Initialize the server, e.g. like this:
+# `server family.ipv4 protocol.tcp 8080`
+# 2) Accept a connection:
+# `server.accept`
+# 3) Use the now installed channel for reading/writing.
+# `(channel server).read ...` / `(channel server).write ...`
+#
+private server(
+  state outcome i64,
+  p protocol.val,
+  m effect_mode.val,
+  _ unit,
+  _ unit
+) : effect m
+is
+
+  # get the last error that occured
+  last_error => state.bind unit (_ -> unit)
+
+  # is the server running?
+  is_active =>
+    state.ok
+
+
+  # close server, stop listening on port
+  close is
+    (channel server).close
+    match state
+      d i64 =>
+        match fuzion.sys.net.close d
+          unit =>
+            server (error "not initialized") nil effect_mode.repl unit unit
+          error error =>
+            server error nil effect_mode.repl unit unit
+      * =>
+    unit
+
+
+  # accept new TCP connection
+  # does nothing for UDP etc.
+  # blocks until connection is established
+  # NYI we may want to close server on certain errors?
+  accept outcome unit is
+    match state
+      d i64 =>
+        match p
+          protocol.tcp =>
+            ar := fuzion.sys.net.accept d
+            channel server ar true
+            ar.bind unit d->unit
+          * =>
+            channel server state false
+            unit
+      error =>
+        error "not initialized"
+
+
+  # accept new TCP connection in new thread, then runs code
+  # runs code immediately for UDP etc.
+  # NYI should need effect thread pool / work queue?, to run on a background thread.
+  # NYI on error ...
+  accept_in_thread(code () -> unit) is
+    match state
+      d i64 =>
+        concur.thread.spawn ()->
+          match p
+            protocol.tcp =>
+              channel server (fuzion.sys.net.accept d) true
+              code()
+            * =>
+              channel server state true
+              code()
+      error =>
+        channel server (error "not initialized") true
+    unit
+
+
+# open new server bound to the any address listening on port
+# closes currently installed server
+# NYI blocking / none blocking
+server(f family.val, p protocol.val, port u16) outcome unit is
+
+  any_addr := (
+    match f
+      family.ipv4 => "0.0.0.0"
+      family.ipv6 => "0:0:0:0:0:0:0:0"
+  )
+
+  server f p any_addr port
+
+
+# open new server bound to addr listening on port
+# closes currently installed server
+# NYI blocking / none blocking
+server(f family.val, p protocol.val, addr String, port u16) outcome unit is
+  server.close
+
+  match init_ip_server f p addr port
+    desc i64 =>
+      server desc p effect_mode.repl unit unit
+      unit
+    e error =>
+      e
+
+
+# get currently installed server from env
+server =>
+  if !effects.exists server
+    server (error "not initialized") nil effect_mode.default unit unit
+  server.env
+
+
+Server_Provider ref is
+  initialize outcome i64 is abstract
+
+
+# opens sockets, binds to port and sets socket to listening
+private init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 is
+  backlog := 10
+  s := socket_type.by_protocol p
+
+  # bind to port
+  match fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port
+    err error => err
+    sd i64  =>
+      match p
+        protocol.tcp =>
+          # listen
+          listen_res := fuzion.sys.net.listen sd backlog
+          if listen_res != 0
+            fuzion.sys.net.close sd
+            error "listening on socket failed with error $listen_res."
+          else
+            sd
+        * =>
+          sd

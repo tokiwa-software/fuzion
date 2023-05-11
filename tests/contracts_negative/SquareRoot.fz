@@ -29,14 +29,14 @@ SquareRoot is
     pre
       a ≥ 0
     post
-      (result * result ≤ a) && ((result+1) * (result+1) ⩼ a)
+      (result * result ≤ a) && ((result+1) * (result+1) > a)
   is
     set result := 1
     for it in 0..99 do
       n := a / result
       set result := (result + n) / 2
     until (( result    * result     ≤ a) &&
-           ((result+1) * (result+1) ⩼  a)    )
+           ((result+1) * (result+1) >  a)    )
     else
       say "*** error, sqrt diverges"
 

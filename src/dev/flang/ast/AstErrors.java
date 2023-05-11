@@ -1177,6 +1177,9 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
+    if(PRECONDITIONS) require
+      (f.isField());
+
     if (CHECKS) check
       (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
 
@@ -1538,21 +1541,6 @@ public class AstErrors extends ANY
           "Type inference failed for " + singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
   }
 
-  static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
-  {
-    error(pos,
-          "Function declaration of the form " + ss("fun a.b") + " must not provide any actual arguments to " + ss("b") + ", " + ss("b") + " is not called here",
-          "Call that followed " + ss("fun") + ": " + s(c) + "\n" +
-          "Actual arguments: " + sle(actuals) + "\n");
-  }
-
-  static void functionMustNotProvideParentheses(SourcePosition pos, Call c)
-  {
-    error(pos,
-          "Function declaration of the form " + ss("fun a.b") + " must not provide any parentheses " + ss("b()") + ", " + ss("b") +" is not called here",
-          "Call that followed " + ss("fun") + ": " + s(c) + "\n");
-  }
-
   static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
   {
     error(pos,
@@ -1650,6 +1638,13 @@ public class AstErrors extends ANY
     error(e.pos(),
           "Failed to infer type of expression.",
           "Expression with unknown type: " + s(e));
+  }
+
+  static void failedToInferResultType(Feature f)
+  {
+    error(f.pos(),
+          "Failed to infer result type for feature " + s(f) +  ".",
+          "To solve this, please specify a result type explicitly.");
   }
 
   static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)

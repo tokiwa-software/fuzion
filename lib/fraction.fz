@@ -40,7 +40,7 @@ fraction(B type : integer B,
          den B   # denominatior
         ) : numeric (fraction B)
   pre
-    safety: den.sign ⩼ 0 # denominator must be positive
+    safety: den.sign > 0 # denominator must be positive
 is
 
 # private:
@@ -55,26 +55,25 @@ is
 
   # reduce numerator and denominator by their gcd:
   reduce =>
-    gcd := num.abs.gcd(den)
-    if gcd ≟ num.one
+    gcd := num.abs.gcd den
+    if gcd = num.one
       a
     else
-      fraction(num / gcd,
-               den / gcd)
+      fraction (num / gcd) (den / gcd)
 
-  redef zero => fraction(num.zero, num.one)
-  redef one  => fraction(num.zero, num.one)
+  redef zero => fraction num.zero num.one
+  redef one  => fraction num.zero num.one
 
   # basic operations
   redef prefix + => a
   redef prefix - => fraction -a.num a.den
-  redef infix +  (b fraction B) => fraction(num * b.den + b.num * den, den * b.den).reduce
-  redef infix -  (b fraction B) => fraction(num * b.den - b.num * den, den * b.den).reduce
-  redef infix *  (b fraction B) => fraction(num * b.num              , den * b.den).reduce
+  redef infix +  (b fraction B) => (fraction (num * b.den + b.num * den) (den * b.den)).reduce
+  redef infix -  (b fraction B) => (fraction (num * b.den - b.num * den) (den * b.den)).reduce
+  redef infix *  (b fraction B) => (fraction (num * b.num              ) (den * b.den)).reduce
   redef infix /  (b fraction B) fraction B
     pre
       safety: b != zero
-  is fraction(num * b.den                  , den * b.num).reduce
+  is (fraction (num * b.den) (den * b.num)).reduce
 
   redef as_string => "" + num + "⁄" + den
 
@@ -97,7 +96,7 @@ is
   # equality
   #
   fixed type.equality(a, b fraction B) =>
-    (a - b).num.isZero
+    (a - b).num.is_zero
 
 
   # total order

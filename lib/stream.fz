@@ -44,26 +44,26 @@
 # mutable state.
 stream(redef T type) ref : Sequence T is
 
-  as_list0 option (some (list T)) := nil
+  as_list0 option (list T) := nil
 
   # create a list from this stream
   #
   redef as_list list T is
     if !as_list0.exists
-      set as_list0 := some from_stream
-    as_list0.get.val
+      set as_list0 := from_stream
+    as_list0.get
 
   # this must not be called more than once!
   private from_stream list T is
     if has_next
       h := next
       ref : Cons T (list T)
-        memoized_tail option (some (list T)) := nil
+        memoized_tail option (list T) := nil
         head => h
         tail =>
           if !memoized_tail.exists
-            set memoized_tail := some from_stream
-          memoized_tail.get.val
+            set memoized_tail := from_stream
+          memoized_tail.get
     else
       nil
 

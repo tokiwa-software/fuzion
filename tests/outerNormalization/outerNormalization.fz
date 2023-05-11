@@ -138,7 +138,7 @@ outerNormalization is
   testNormalize2
 
 
-  # An (open) interval such as '0..' is of type '(hasInterval i32).infix ..', but
+  # An (open) interval such as '0..' is of type '(has_interval i32).infix ..', but
   # that should be converted to 'i32.infix ..' in FUIR:
   #
   testInterval is
@@ -147,7 +147,7 @@ outerNormalization is
     z := y.has_next
     for i in 0.. do
       say $i
-    until i ⩼ 3
+    until i > 3
     unit # NYI #1066: This has to be added since the loop result is bool. A loop should not force the bool result upon us if we do not need it.
 
   testInterval

@@ -68,7 +68,7 @@ private handles(
   private ar array T,
 
   # action to be taken: plain monad, install or replace?
-  redef r effectMode.val
+  redef r effect_mode.val
   ) : oneway_monad X (handles T X) r
 is
 
@@ -87,13 +87,13 @@ is
   post
     result.hasLast
   is
-    na := array T count+1 (i -> if (i ⩻ count) ar[i] else w)
+    na := array T count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
 
 
   # has one element been created using 'new'?
   #
-  hasLast => count ⩼ 0
+  hasLast => count > 0
 
 
   # return the last handle that was created by 'new'
@@ -170,25 +170,25 @@ is
   infix >>= (f X -> handles T X) => bind X f
 
   bind(B type, f X -> handles T B) handles T B is
-    handles T B (f v).v ar effectMode.plain
+    handles T B (f v).v ar effect_mode.plain
 
-  return( B type, w B) => handles T B w ar effectMode.plain
+  return( B type, w B) => handles T B w ar effect_mode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
 handles(T type, rr ()->unit) =>
-  handles T unit unit (array T 0 x->do) (effectMode.inst rr)
+  handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles_(T type) => handles T unit unit (array T 0 x->do) effectMode.plain
+handles_(T type) => handles T unit unit (array T 0 x->do) effect_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
 handles(T type) =>
-  (handles_type T).installDefault
+  (handles_type T).install_default
   (handles T unit).env
 
 
@@ -225,8 +225,8 @@ handles_type(T type) is
 
   # install default instance of handles
   #
-  installDefault unit is
-    handles T unit unit (array T 0 x->do) effectMode.default
+  install_default unit is
+    handles T unit unit (array T 0 x->do) effect_mode.default
     unit
 
 

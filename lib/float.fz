@@ -60,9 +60,9 @@ float(redef F type : float F) : numeric F, floats F is
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   round F is
-    if thiz ⩻ zero
+    if thiz < zero
       -(-thiz).round
-    else if fract ≟ zero
+    else if fract = zero
       thiz
     else
       (thiz + one/two).floor
@@ -70,7 +70,7 @@ float(redef F type : float F) : numeric F, floats F is
 
   # floor: the greatest integer lower or equal to this
   floor F is
-    if fract ⩻ zero
+    if fract < zero
       thiz - fract - one
     else
       thiz - fract
@@ -166,10 +166,24 @@ floats(F type : float F) : numerics F is
   sqrt(val F) => squareRoot val
 
 
-  # exponentiation, logarithm
 
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
   exp (val F) F is abstract
+
+
+  # logarithm with base ℇ
+  #
   log (val F) F is abstract
+
+
+  # logarithm with base `base`
+  #
+  log (base, val F) F
+  pre base > zero
+  is
+    (log val) / (log base)
 
 
   # trigonometric

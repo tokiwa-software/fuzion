@@ -635,7 +635,7 @@ gmtime
 goto
 handDownFormalArg
 hasError
-hashCode
+hash_code
 HashMap
 hasImplicitResult
 hasNext

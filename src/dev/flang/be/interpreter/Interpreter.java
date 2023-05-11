@@ -438,7 +438,7 @@ public class Interpreter extends ANY
           {
             var c = it.next();
 
-            if (c.field() != null && Clazzes.isUsed(c.field(), staticClazz))
+            if (c.field() != null && Clazzes.isUsed(c.field()))
               {
                 Clazz fieldClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId).resultClazz();
                 if (fieldClazz.isDirectlyAssignableFrom(subjectClazz))
@@ -778,7 +778,7 @@ public class Interpreter extends ANY
                 var rc = innerClazz.resultClazz();
                 if (CHECKS) check  // check that outer ref, if exists, is unused:
                   (true || // NYI: This check is currently disabled, outer ref of types are not properly removed yet and not properly initialized here
-                   rc.feature().outerRef() == null || !Clazzes.isUsedAtAll(rc.feature().outerRef()));
+                   rc.feature().outerRef() == null || !Clazzes.isUsed(rc.feature().outerRef()));
                 return new Instance(rc);
               };
               break;
@@ -812,7 +812,7 @@ public class Interpreter extends ANY
     FuzionThread.current()._callStackFrames.push(staticClazz);
 
     if (CHECKS) check
-      (Clazzes.isUsedAtAll(thiz));
+      (Clazzes.isUsed(thiz));
 
     Value o = args.get(0);
     if (o instanceof Boxed b && !staticClazz.feature().isConstructor())
@@ -1363,7 +1363,7 @@ public class Interpreter extends ANY
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
        staticClazz != null);
 
-    if (Clazzes.isUsed(thiz, staticClazz))
+    if (Clazzes.isUsed(thiz))
       {
         Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
         LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
@@ -1383,7 +1383,7 @@ public class Interpreter extends ANY
   public static void setOuter(AbstractFeature thiz, Clazz staticClazz, Instance cur, Value outer)
   {
     var or = thiz.outerRef();
-    if (or != null && Clazzes.isUsedAtAll(or))
+    if (or != null && Clazzes.isUsed(or))
       {
         setField(or, -1, staticClazz, cur, outer);
       }

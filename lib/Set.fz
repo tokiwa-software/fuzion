@@ -31,13 +31,13 @@ Set(E type : equatable) ref : Sequence E is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => sizeOption??
+  redef finite => size_option??
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  sizeOption option i32 is nil
+  size_option option i32 is nil
 
 
   # does this set contain the given value?

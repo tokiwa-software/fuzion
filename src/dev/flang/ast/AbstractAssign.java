@@ -189,10 +189,21 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
-    if (_assignedField != Types.f_ERROR && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES))
+    if (resultTypeKnown())
       {
         _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
       }
+  }
+
+
+  /**
+   * @return Is the result type of this field already known?
+   */
+  private boolean resultTypeKnown()
+  {
+    return  _assignedField != Types.f_ERROR
+         && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES)
+         && _assignedField.resultTypeRaw() != null;
   }
 
 

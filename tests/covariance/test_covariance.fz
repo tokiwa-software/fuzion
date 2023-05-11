@@ -75,15 +75,15 @@ test_covariance is
 
   # integer mod 2 implementation of num
   #
-  intM2(isZero bool) : num is
+  intM2(is_zero bool) : num is
     fixed z => intM2 true
     fixed o => intM2 false
     fixed type.zero => test_covariance.intM2 true
     fixed type.one => test_covariance.intM2 false
-    fixed lessThan(other intM2) => isZero && !other.isZero
-    fixed plus(other intM2) => if isZero then other else intM2 !other.isZero
+    fixed lessThan(other intM2) => is_zero && !other.is_zero
+    fixed plus(other intM2) => if is_zero then other else intM2 !other.is_zero
     fixed minus(other intM2) => plus other
-    redef valueString => if isZero then "0 mod 2" else "1 mod 2"
+    redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
   # integer mod 5 implementation of num
   #
@@ -92,7 +92,7 @@ test_covariance is
     fixed o => intM5 1
     fixed type.zero => test_covariance.intM5 0
     fixed type.one => test_covariance.intM5 1
-    fixed lessThan(other intM5) => v ⩻ other.v
+    fixed lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed minus(other intM5) => intM5 (v - other.v)%5
     redef valueString => "$v mod 5"
@@ -218,7 +218,7 @@ test_this_type =>
   chck $Z       "vwxZ"
 
   chck(s1, s2 String) =>
-    say (if s1 ≟ s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
+    say (if s1 = s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
 
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.
@@ -229,16 +229,16 @@ test_this_type_in_type_feature =>
     def(s String) is
       ghi is
         jkl(val i32, msg String) is
-          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
 
           type.choose1L(a, b     def.this.type)     def.this.type is a
           type.choose1R(a, b     def.this.type)     def.this.type is b

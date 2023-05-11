@@ -36,21 +36,16 @@ import java.nio.file.Path;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
-import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
@@ -62,7 +57,7 @@ import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -164,7 +159,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
-   * @return the main feature found or null if none
+   * @return the main feature found or _defaultMain if none
    */
   String parseMain()
   {
@@ -179,9 +174,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1)
+                if (stmnts.size() == 1 && !f.isField())
                   {
-                    res =  f.featureName().baseName();
+                    res = f.featureName().baseName();
                   }
               }
           }
@@ -574,7 +569,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
 
-              if (c.calledFeature() instanceof Feature cf)
+              if (c.calledFeature() instanceof Feature cf
+                  // fixes issue #1358
+                  && cf.state() == State.LOADING)
                 {
                   findDeclarations(cf, outer);
                 }
@@ -817,7 +814,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * Add inner to the set of declared inner features of outer.
    *
    * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * in a different module.  E.g. universe is declared in stdlib, while an
    * inner feature 'main' may be declared in the application's module.
    *
    * @param outer the declaring feature

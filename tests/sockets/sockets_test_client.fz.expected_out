@@ -1,0 +1,32 @@
+### TCP/IPv4-Tests ###
+TCP/IPv4-client 1, write to 127.0.0.1:40062: unit
+TCP/IPv4-client 1, read  12 bytes from  127.0.0.1:40062: >received: GE<
+TCP/IPv4-client 1, read 100 bytes from  127.0.0.1:40062: >T / HTTP
+Host: 127.0.0.1
+Client: 1
+<
+TCP/IPv4-client 2, write to 127.0.0.1:40062: unit
+TCP/IPv4-client 2, read  12 bytes from  127.0.0.1:40062: >received: GE<
+TCP/IPv4-client 2, read 100 bytes from  127.0.0.1:40062: >T / HTTP
+Host: 127.0.0.1
+Client: 2
+<
+### TCP/IPv6-Tests ###
+TCP/IPv6-client 1, write to ::1:40070: unit
+TCP/IPv6-client 1, read  12 bytes from  ::1:40070: >received: GE<
+TCP/IPv6-client 1, read 100 bytes from  ::1:40070: >T / HTTP
+Host: ::1
+Client: 1
+<
+TCP/IPv6-client 2, write to ::1:40070: unit
+TCP/IPv6-client 2, read  12 bytes from  ::1:40070: >received: GE<
+TCP/IPv6-client 2, read 100 bytes from  ::1:40070: >T / HTTP
+Host: ::1
+Client: 2
+<
+### UDP/IPv4-Tests ###
+UDP/IPv4-client 1, write to 127.0.0.1:40172: unit
+UDP/IPv4-client 2, write to 127.0.0.1:40172: unit
+### UDP/IPv6-Tests ###
+UDP/IPv6-client 1, write to ::1:40180: unit
+UDP/IPv6-client 2, write to ::1:40180: unit

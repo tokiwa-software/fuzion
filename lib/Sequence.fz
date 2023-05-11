@@ -72,7 +72,7 @@ Sequence(T type) ref is
   count
     pre
       analysis: finite  # in practice, we do not always have this information
-    => (mapSequence i32 (_ -> 1)).fold i32.type.sum
+    => (map_sequence i32 (_ -> 1)).fold i32.type.sum
 
 
   # get the first element of this Sequence
@@ -256,7 +256,7 @@ Sequence(T type) ref is
 
   # call 'as_string' on the elements
   #
-  as_Strings => mapSequence c->c.as_string
+  as_strings => map_sequence c->c.as_string
 
 
   # map the Sequence to a new list applying function f to all elements
@@ -267,16 +267,16 @@ Sequence(T type) ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapSequence(B type, f T -> B) => as_list.map f
+  map_sequence(B type, f T -> B) => as_list.map f
 
 
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap(B type, f T -> Sequence B) =>
-  #   as_list.flatMap f
-  flatMapSequence(B type, f T -> Sequence B) =>
-    as_list.flatMap f
+  # flat_map(B type, f T -> Sequence B) =>
+  #   as_list.flat_map f
+  flat_map_sequence(B type, f T -> Sequence B) =>
+    as_list.flat_map f
 
 
   # fold the elements of this Sequence using the given monoid.
@@ -359,7 +359,7 @@ Sequence(T type) ref is
   into(TA type, xf Transducer(Sequence(TA),TA,T)) Sequence(TA) is
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res := (Sequence TA).type.empty , red.call res el
+      res (Sequence TA) := (Sequence TA).type.empty , red.call res el
       el in Sequence.this do
     else
       res
@@ -388,7 +388,7 @@ Sequence(T type) ref is
   index [] (i i32) T
     pre
       debug: 0 ≤ i,
-      debug: finite: i ⩻ count,
+      debug: finite: i < count,
       debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get
@@ -404,7 +404,7 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
+  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
 
@@ -425,10 +425,24 @@ Sequence(T type) ref is
     res
 
 
+
+  # chop this Sequence into chunks of `chunk_size`.
+  # the last chunk may be smaller than `chunk_size`.
+  #
+  chunk(chunk_size i32) list (list T)
+  pre chunk_size > 0
+  is
+    if is_empty
+      nil
+    else
+      (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
+
+
+
   # create an empty list and return it as a Sequence
   #
-  type.empty Sequence T is
-    lists.empty T
+  type.empty list T is
+    (list T).type.empty
 
 
   # monoid of Sequences with infix concatentation operation.
@@ -441,7 +455,8 @@ Sequence(T type) ref is
 
     # identity element
     #
-    e => (Sequence T).type.empty
+    e Sequence T is
+      (Sequence T).type.empty
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring

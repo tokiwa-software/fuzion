@@ -43,12 +43,20 @@ bool : choice FALSE TRUE, equatable is
     if bool.this then FALSE else TRUE
 
   # or with lazy evaluation
-  infix ||  (lazy other bool) bool is
-    fuzion.std.panic "bool.infix || is handled by front end"
+  #
+  infix || (other Lazy bool) bool is
+    if bool.this
+      true
+    else
+      other
 
   # and with lazy evaluation
-  infix &&  (lazy other bool) bool is
-    fuzion.std.panic "bool.infix && is handled by front end"
+  #
+  infix && (other Lazy bool) bool is
+    if bool.this
+      other
+    else
+      false
 
   # or
   infix |   (other bool) => bool.this || other
@@ -75,11 +83,15 @@ bool : choice FALSE TRUE, equatable is
   infix ^   (other bool) => if bool.this (!other) else  other
 
   # implies
-  infix :   (lazy other bool) bool is
-    fuzion.std.panic "bool.infix : is handled by front end"
+  #
+  infix : (other Lazy bool) bool is
+    if bool.this
+      other
+    else
+      true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  ternary ? : (T type, lazy a, b T) => if bool.this a else b
+  ternary ? : (T type, a, b T) => if bool.this a else b
 
   # human readable string
   redef as_string => if bool.this "true" else "false"

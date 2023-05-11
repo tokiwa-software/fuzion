@@ -1693,6 +1693,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return visibility() + " " +
       Consts.modifierToString(modifiers()) +
+      (isTypeFeature() ? "type." : "") +
       featureName().baseName() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +

@@ -26,9 +26,9 @@
 # try -- simple exception effect
 #
 # try provides an operation 'raise' that immediately stops execution and
-# returns an 'error' wrapped in an 'oucome'.
+# returns an 'error' wrapped in an 'outcome'.
 #
-try : effect effectMode.plain
+try : effect effect_mode.plain
 is
 
   # mutuable field to receive the error in case raise is called

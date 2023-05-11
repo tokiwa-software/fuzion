@@ -356,16 +356,16 @@ public class CFG extends ANY
     put("u32.as_i64"                     , (cfg, cl) -> { } );
     put("u32.as_f64"                     , (cfg, cl) -> { } );
     put("u64.as_f64"                     , (cfg, cl) -> { } );
-    put("i8.castTo_u8"                   , (cfg, cl) -> { } );
-    put("i16.castTo_u16"                 , (cfg, cl) -> { } );
-    put("i32.castTo_u32"                 , (cfg, cl) -> { } );
-    put("i64.castTo_u64"                 , (cfg, cl) -> { } );
-    put("u8.castTo_i8"                   , (cfg, cl) -> { } );
-    put("u16.castTo_i16"                 , (cfg, cl) -> { } );
-    put("u32.castTo_i32"                 , (cfg, cl) -> { } );
-    put("u32.castTo_f32"                 , (cfg, cl) -> { } );
-    put("u64.castTo_i64"                 , (cfg, cl) -> { } );
-    put("u64.castTo_f64"                 , (cfg, cl) -> { } );
+    put("i8.cast_to_u8"                  , (cfg, cl) -> { } );
+    put("i16.cast_to_u16"                , (cfg, cl) -> { } );
+    put("i32.cast_to_u32"                , (cfg, cl) -> { } );
+    put("i64.cast_to_u64"                , (cfg, cl) -> { } );
+    put("u8.cast_to_i8"                  , (cfg, cl) -> { } );
+    put("u16.cast_to_i16"                , (cfg, cl) -> { } );
+    put("u32.cast_to_i32"                , (cfg, cl) -> { } );
+    put("u32.cast_to_f32"                , (cfg, cl) -> { } );
+    put("u64.cast_to_i64"                , (cfg, cl) -> { } );
+    put("u64.cast_to_f64"                , (cfg, cl) -> { } );
     put("u16.low8bits"                   , (cfg, cl) -> { } );
     put("u32.low8bits"                   , (cfg, cl) -> { } );
     put("u64.low8bits"                   , (cfg, cl) -> { } );
@@ -394,8 +394,8 @@ public class CFG extends ANY
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
-    put("f32.castTo_u32"                 , (cfg, cl) -> { } );
-    put("f64.castTo_u64"                 , (cfg, cl) -> { } );
+    put("f32.cast_to_u32"                , (cfg, cl) -> { } );
+    put("f64.cast_to_u64"                , (cfg, cl) -> { } );
     put("f32.as_string"                  , (cfg, cl) -> { } );
     put("f64.as_string"                  , (cfg, cl) -> { } );
 
@@ -438,7 +438,7 @@ public class CFG extends ANY
     put("f32s.tanh"                      , (cfg, cl) -> { } );
     put("f64s.tanh"                      , (cfg, cl) -> { } );
 
-    put("Any.hashCode"                   , (cfg, cl) -> { } );
+    put("Any.hash_code"                  , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
@@ -449,6 +449,16 @@ public class CFG extends ANY
     put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
+
+    put("fuzion.sys.net.bind0"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net.connect0"         , (cfg, cl) -> { } );
+    put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
+    put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
+    put("fuzion.sys.net.set_blocking0"    , (cfg, cl) -> { } );
+
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );

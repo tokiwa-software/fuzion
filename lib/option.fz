@@ -80,7 +80,7 @@ is
 
 
   # synonym for infix >>=
-  andThen (f T -> option T) => option.this >>= f
+  and_then (f T -> option T) => option.this >>= f
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v

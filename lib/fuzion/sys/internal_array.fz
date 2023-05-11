@@ -45,13 +45,13 @@ internal_array(T type, data Any, private length i32) is
 
   index [ ] (i i32) T
     pre
-      safety: 0 ≤ i ⩻ length
+      safety: 0 ≤ i < length
   is
     get T data i
 
   set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i ⩻ length
+      safety: 0 ≤ i < length
   # post   NYI
     #array.this[i] == o
   is
