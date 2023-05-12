@@ -25,7 +25,7 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-private open(T type, private fd i64, public file_name String) : simpleEffect is
+private open(T type, private fd i64, public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
