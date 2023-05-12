@@ -655,7 +655,7 @@ public class C extends ANY
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
        // defines _O_BINARY
-       "#include <sys/fcntl.h>\n");
+       "#include <fcntl.h>\n");
 
     var fzH = _options.fuzionHome().resolve("include/fz.h").normalize().toAbsolutePath();
     cf.println("#include \"" + fzH.toString() + "\"\n");

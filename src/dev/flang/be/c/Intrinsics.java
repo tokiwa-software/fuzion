@@ -87,11 +87,11 @@ public class Intrinsics extends ANY
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
-    put("fuzion.sys.args.count", (c,cl,outer,in) -> c._names.GLOBAL_ARGC.ret());
+    put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
           var tmp = new CIdent("tmp");
-          var str = c._names.GLOBAL_ARGV.index(A0);
+          var str = CNames.GLOBAL_ARGV.index(A0);
           var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(c.constString(str,CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
@@ -791,10 +791,10 @@ public class Intrinsics extends ANY
         "effect.abort"         , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectType(cl);
-          var ev  = c._names.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          var evj = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
-          var o   = c._names.OUTER;
+          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
+          var o   = CNames.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
             switch (in)
@@ -851,7 +851,7 @@ public class Intrinsics extends ANY
     put("effects.exists"       , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
-          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
 

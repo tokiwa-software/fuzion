@@ -803,20 +803,16 @@ public class Type extends AbstractType
                 if (CHECKS) check
                   (_interned == null);
 
-                var o = _outer;
                 _outer = _outer.visit(v, outerfeat);
               }
           }
       }
-    if (!_generics.isEmpty() && !(_generics instanceof FormalGenerics.AsActuals))
+    if (!(_generics instanceof FormalGenerics.AsActuals))
       {
-        var result = this;
-        var g = generics();
-        var ng = g.map(gt -> gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
-        if (ng != g)
-          {
-            result = new Type(this, ng, outer());
-          }
+        generics()
+          .stream()
+          .filter(g -> g instanceof Type)
+          .forEach(g -> g.visit(v, outerfeat));
       }
     return v.action(this, outerfeat);
   }

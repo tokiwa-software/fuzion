@@ -396,6 +396,10 @@ public class AstErrors extends ANY
               frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
             remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
           }
+        else if (frmlT.compareTo(Types.resolved.t_unit) == 0)
+          {
+            remedy = "To solve this, you could explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".\n";
+          }
         else
           {
             remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";

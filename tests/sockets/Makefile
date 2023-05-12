@@ -29,7 +29,7 @@
 #  NAME -- the name of the main feature to be tested
 #  FUZION -- the fz command
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
-NAME=sockets_test_client
+override NAME = sockets_test_client
 FUZION_OPTIONS = -unsafeIntrinsics=on
 FUZION = ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
