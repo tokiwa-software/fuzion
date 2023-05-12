@@ -476,6 +476,13 @@ public class CFG extends ANY
         });
     put("effect.abort"                   , (cfg, cl) -> { } );
     put("effects.exists"                 , (cfg, cl) -> { } );
+
+    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
+    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
+
     put("fuzion.java.JavaObject.isNull"  , (cfg, cl) -> { } );
     put("fuzion.java.arrayGet"           , (cfg, cl) -> { } );
     put("fuzion.java.arrayLength"        , (cfg, cl) -> { } );

@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature process.spawn
+#
+# -----------------------------------------------------------------------
+
+
+
+# spawn process with option to pass environment variables
+#
+# NYI env_vars should be map, issue #1313
+spawn(process_and_args array String, env_vars array String, code () -> T) outcome unit
+pre process_and_args.length > 0,
+# NYI allow utf-8?
+    process_and_args ∀ (x -> x.as_codepoint_sequence ∀ (y -> y.is_ascii)),
+    spawn.this.env_vars ∀ (x -> x.as_codepoint_sequence ∀ (y -> y.is_ascii)),
+    spawn.this.env_vars ∀ (x -> x.contains "=") # NYI check that only one =
+is
+
+  sys := fuzion.sys
+
+  # posix_spawn needs last arg to be NULL
+  arg_data := array Any process_and_args.count+1 (i -> if i<process_and_args.length then sys.c_string process_and_args[i] else Any)
+
+  # posix_spawn needs last arg to be NULL
+  # NYI issue #1313
+  # env_var_items := create.this.env_vars.items.as_array
+  # env_data := array Any env_var_items.length+1 (i -> if i<env_var_items.length then "{env_var_items[i].values.0}={env_var_items[i].values.1}" else Any)
+  env_data := array Any spawn.this.env_vars.length+1 (i -> if i<spawn.this.env_vars.length then sys.c_string spawn.this.env_vars[i] else Any)
+
+  res_data := array i64 4 i->0
+
+  args_str := sys.c_string (String.type.join process_and_args " ")
+  env_str := sys.c_string ((String.type.join spawn.this.env_vars (codepoint 0)) + (codepoint 0))
+
+  if (fuzion.sys.process.create arg_data.internalArray.data arg_data.count env_data.internalArray.data env_data.count res_data.internalArray.data args_str env_str) = -1
+    error "*** error creating process ***"
+  else
+    unit
+    fuzion.sys.process.r_processes [fuzion.sys.process.r_process res_data[0] res_data[1] res_data[2] res_data[3]]

@@ -1,0 +1,94 @@
+test_process =>
+
+  proc := fuzion.sys.process
+
+  test(str String) is
+    say "===  Test: $str  ==="
+
+  test "write to stdin of process"
+  match proc.create ["cat"]
+    p fuzion.sys.process.r_processes =>
+      p.write_string "Hello from the other side."
+      say "close write: {p.close_write}"
+      say "close write again: {p.close_write}"
+      say p.read_string
+      say "exit code: {p.exit}"
+    error => say "error"
+
+
+
+  test "read stdout of process"
+  match proc.create ["echo", "eecchhoo"]
+    p fuzion.sys.process.r_processes =>
+      say p.read_string
+      say "exit code: {p.exit}"
+    error => say "error"
+
+
+
+  test "pass environment variable"
+  match proc.create ["printenv", "MYENVVAR"] ["MYENVVAR=content"]
+    p fuzion.sys.process.r_processes =>
+      say p.read_string
+      say "exit code: {p.exit}"
+    error => say "error"
+
+
+
+  test "feed output of process 1 to process 2"
+  say ((proc.create ["echo", "'feed me to cat'"]) | (proc.create ["cat"]))
+
+
+
+  test "read stdout blocks until stdin closed"
+  match proc.create ["cat"]
+    p2 fuzion.sys.process.r_processes =>
+
+      concur.thread.spawn (() ->
+        time.nano.sleep (time.durations.ms 100)
+        say "1) closing write"
+        _ := p2.close_write)
+
+      # this read should block until stdin is closed
+      say "2) read: {p2.read_string}"
+      say "3) exit code: {p2.exit}"
+    error => say "error"
+
+
+
+  # create string of given byte size
+  get_str(byte_size i32) =>
+    ref : String
+      utf8 Sequence u8 is
+        (1..byte_size)
+          .map u8 (x -> codepoint.type.zero_char)
+
+
+
+  test "100kb argument, piped to another process"
+  match (proc.create ["echo", "-n", (get_str 1E5)]) | (proc.create ["cat"])
+    p fuzion.sys.process.r_processes =>
+      say p.read_string.val.byte_length
+      say "exit code: {p.exit}"
+    e error =>
+      say e
+
+
+
+  test "10mb write to stdin, piped to another process"
+  match proc.create ["cat"]
+    p3 fuzion.sys.process.r_processes =>
+      concur.thread.spawn ()->
+        time.nano.sleep (time.durations.s 1)
+        say "start reading"
+        while
+          match p3.read_bytes 100
+            Sequence => true
+            * => false
+
+      # NYI write should block here?
+      say (p3.write_bytes (get_str 1E7).utf8)
+      p3.close_write
+      say "exit code: {p3.exit}"
+    error =>
+

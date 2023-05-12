@@ -170,10 +170,6 @@ private codepoint0 choice codepoint io.end_of_file error is
     e error => e         // not even single byte could be read from stdin
 
 
-# type to indicate an `end of file`
-#
-end_of_file is
-
 
 # short-hand for accessing stdin effect in current environment
 #
