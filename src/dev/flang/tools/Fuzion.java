@@ -264,6 +264,19 @@ class Fuzion extends Tool
       }
     },
 
+    /**
+     * This backend does nothing except showing
+     * any errors that happened in the frontend.
+     * Can be used for syntax checking of fz files.
+     */
+    noBackend("-no-backend")
+    {
+      void processFrontEnd(Fuzion f, FrontEnd fe)
+      {
+        Errors.showAndExit();
+      }
+    },
+
     undefined;
 
     /**
