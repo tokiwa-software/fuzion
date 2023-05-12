@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature using_file
+#  Source code of Fuzion standard library feature io.file.use
 #
 # -----------------------------------------------------------------------
 
@@ -33,18 +33,18 @@ mode is
 
 
 # this opens a file with the given mode and installs
-# effect (open_file T) to be used in `code()`.
+# effect (open T) to be used in `code()`.
 #
 # type parameter T is used to distinguish between several open files.
 #
 # usage example:
 # ```
-# using_file some_type String mode.read ()->
-#   match (open_file some_type).read
+# use some_type String mode.read ()->
+#   match (open some_type).read
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-using_file(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
 
   mode_num := match m
                 mode.read => i8 0
@@ -53,8 +53,8 @@ using_file(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
 
   match fuzion.sys.fileio.open file_name mode_num
     fd i64 =>
-      # install effect `open_file T` and run `code`
-      r := open_file T fd file_name
+      # install effect `open T` and run `code`
+      r := open T fd file_name
         .go code
       # close file
       fuzion.sys.fileio.close fd
@@ -65,15 +65,15 @@ using_file(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
 
 
 
-# short hand for using_file when
-# it is not necessary to distinguish between open_files
+# short hand for use when
+# it is not necessary to distinguish between opens
 #
 # usage example:
 # ```
-# using_file String mode.read ()->
-#   match open_file.read
+# use String mode.read ()->
+#   match open.read
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-using_file(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
-  using_file open_file_unique_type R file_name m code
+use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+  use open_unique_type R file_name m code

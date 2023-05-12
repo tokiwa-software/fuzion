@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature open_file
+#  Source code of Fuzion standard library feature io.file.open
 #
 # -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-private open_file(T type, private fd i64, public file_name String) : simpleEffect is
+private open(T type, private fd i64, public file_name String) : simpleEffect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -45,27 +45,27 @@ private open_file(T type, private fd i64, public file_name String) : simpleEffec
 
 
 # short hand to get the currently
-# installed open_file effect
+# installed open effect
 # for type T from the environment.
-# see `using_file` on how to use this.
+# see `use` on how to use this.
 #
-open_file(T type) =>
-  (open_file T).env
+open(T type) =>
+  (open T).env
 
 
 
-# unit type used internally by open_file- and using_file-
+# unit type used internally by open- and use-
 # short hands which can be used when one does not need
 # to distinguish between several open files.
-private open_file_unique_type is
+private open_unique_type is
 
 
 
 # short hand to get the currently
-# installed open_file effect
+# installed open effect
 # from the environment.
-# see `using_file` on how to use this.
+# see `use` on how to use this.
 #
-open_file =>
-  (open_file open_file_unique_type).env
+open =>
+  (open open_unique_type).env
 

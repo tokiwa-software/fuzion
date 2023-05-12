@@ -49,15 +49,15 @@ fileiotests =>
 
   say "$file exists: {exists file}"
 
-  match f.using_file unit file io.file.mode.write (()->
-    io.file.open_file.write content.utf8)
+  match f.use unit file io.file.mode.write (()->
+    io.file.open.write content.utf8)
     unit => say "$file was created"
     error =>
   say "$file exists: {exists file}"
 
   say "$file size is {(f.stat file true).val.size}"
 
-  match f.using_file (array u8) file io.file.mode.read ()->io.file.open_file.read
+  match f.use (array u8) file io.file.mode.read ()->io.file.open.read
     bytes array u8 =>
       filecontent := String.type.from_bytes bytes
       say "file content bytes: $bytes"
