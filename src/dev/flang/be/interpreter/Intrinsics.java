@@ -152,8 +152,11 @@ public class Intrinsics extends ANY
     return c.get(interpreter, innerClazz).call(args);
   }); }
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
+  private static void putUnsafe(String n1, String n2, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); }
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
+  private static void putUnsafe(String n1, String n2, String n3, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
+  private static void putUnsafe(String n1, String n2, String n3, String n4, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); putUnsafe(n4, c); }
 
 
   /**
@@ -237,12 +240,8 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
+    putUnsafe("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
@@ -264,12 +263,8 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
@@ -281,12 +276,8 @@ public class Intrinsics extends ANY
               return new i8Value(-1);
             }
         });
-    put("fuzion.sys.fileio.delete", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.delete", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
@@ -298,12 +289,8 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.sys.fileio.move", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.move", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
           Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
           try
@@ -316,12 +303,8 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.sys.fileio.create_dir", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.create_dir", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
             {
@@ -333,13 +316,8 @@ public class Intrinsics extends ANY
               return new boolValue(false);
             }
         });
-    put("fuzion.sys.fileio.open", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.open", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
           var open_results = (long[])args.get(2).arrayData()._array;
           try
             {
@@ -369,27 +347,17 @@ public class Intrinsics extends ANY
             }
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.sys.fileio.close", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.close", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
           long fd = args.get(1).i64Value();
           return _openStreams_.remove(fd)
             ? new i8Value(0)
             : new i8Value(-1);
         });
-    put("fuzion.sys.fileio.stats",
+    putUnsafe("fuzion.sys.fileio.stats",
         "fuzion.sys.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
         (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           long[] stats = (long[])args.get(2).arrayData()._array;
           var err = SystemErrNo.UNSPECIFIED;
@@ -421,13 +389,8 @@ public class Intrinsics extends ANY
           stats[3] = 0;
           return new boolValue(false);
         });
-    put("fuzion.sys.fileio.seek", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.seek", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
           long fd = args.get(1).i64Value();
           var seekResults = (long[])args.get(3).arrayData()._array;
           try
@@ -443,13 +406,8 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             }
         });
-    put("fuzion.sys.fileio.file_position", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.file_position", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-              System.exit(1);
-            }
           long fd = args.get(1).i64Value();
           long[] arr = (long[])args.get(2).arrayData()._array;
           try
@@ -514,7 +472,7 @@ public class Intrinsics extends ANY
           Object thiz  =  JavaInterface.instanceToJavaObject(thizI);
           return new boolValue(thiz == null);
         });
-    put("fuzion.java.getStaticField0",
+    putUnsafe("fuzion.java.getStaticField0",
         "fuzion.java.getField0"      , (interpreter, innerClazz) ->
         {
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
@@ -527,10 +485,6 @@ public class Intrinsics extends ANY
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
             {
-              if (!ENABLE_UNSAFE_INTRINSICS)
-                {
-                  Errors.fatal("*** error: unsafe feature "+in+" disabled");
-                }
               Instance clazzOrThizI = (Instance) args.get(1);
               Instance fieldI = (Instance) args.get(2);
               String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
@@ -539,7 +493,7 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
-    put("fuzion.java.callV0",
+    putUnsafe("fuzion.java.callV0",
         "fuzion.java.callS0",
         "fuzion.java.callC0", (interpreter, innerClazz) ->
         {
@@ -551,10 +505,6 @@ public class Intrinsics extends ANY
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
             {
-              if (!ENABLE_UNSAFE_INTRINSICS)
-                {
-                  Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-                }
               int a = 1;
               var clNameI =                      (Instance) args.get(a++);
               var nameI   = constructor ? null : (Instance) args.get(a++);
@@ -574,140 +524,88 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    put("fuzion.java.arrayLength",  (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.arrayLength",  (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           return new i32Value(Array.getLength(arr));
         });
-    put("fuzion.java.arrayGet", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.arrayGet", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           var ix  = args.get(2).i32Value();
           var res = Array.get(arr, ix);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    put("fuzion.java.arrayToJavaObject0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.arrayToJavaObject0", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var arrA = args.get(1).arrayData();
           var res = arrA._array;
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    put("fuzion.java.stringToJavaObject0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.stringToJavaObject0", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var str = utf8ByteArrayDataToString(args.get(1));
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(str, resultClazz);
         });
-    put("fuzion.java.javaStringToString", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.javaStringToString", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
           return Interpreter.value(javaString == null ? "--null--" : javaString);
         });
-    put("fuzion.java.i8ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i8ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var b = args.get(1).i8Value();
           var jb = Byte.valueOf((byte) b);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.java.u16ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.u16ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var c = args.get(1).u16Value();
           var jc = Character.valueOf((char) c);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jc, resultClazz);
         });
-    put("fuzion.java.i16ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i16ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var s = args.get(1).i16Value();
           var js = Short.valueOf((short) s);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(js, resultClazz);
         });
-    put("fuzion.java.i32ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i32ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var i = args.get(1).i32Value();
           var ji = Integer.valueOf(i);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(ji, resultClazz);
         });
-    put("fuzion.java.i64ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i64ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var l = args.get(1).i64Value();
           var jl = Long.valueOf(l);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jl, resultClazz);
         });
-    put("fuzion.java.f32ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f32ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var f32 = args.get(1).f32Value();
           var jf = Float.valueOf(f32);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jf, resultClazz);
         });
-    put("fuzion.java.f64ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f64ToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var d = args.get(1).f64Value();
           var jd = Double.valueOf(d);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jd, resultClazz);
         });
-    put("fuzion.java.boolToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.boolToJavaObject", (interpreter, innerClazz) -> args ->
         {
-          if (!ENABLE_UNSAFE_INTRINSICS)
-            {
-              Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-            }
           var b = args.get(1).boolValue();
           var jb = Boolean.valueOf(b);
           Clazz resultClazz = innerClazz.resultClazz();
