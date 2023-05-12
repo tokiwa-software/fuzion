@@ -660,7 +660,7 @@ public class Interpreter extends ANY
    */
   public static Value value(String str)
   {
-    Clazz cl = Clazzes.conststring.get();
+    Clazz cl = Clazzes.Const_String.get();
     Instance result = new Instance(cl);
     var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);

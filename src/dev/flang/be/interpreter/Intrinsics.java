@@ -831,7 +831,7 @@ public class Intrinsics extends ANY
 
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
-    put("debugLevel"            , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
+    put("debug_level"           , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
     put("i8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
@@ -987,8 +987,8 @@ public class Intrinsics extends ANY
     put("f64.as_f32"            , (interpreter, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
     put("f64.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Double.toString       (                args.get(0).f64Value())));
-    put("f32s.isNaN"            , (interpreter, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
-    put("f64s.isNaN"            , (interpreter, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
+    put("f32s.is_NaN"           , (interpreter, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
+    put("f64s.is_NaN"           , (interpreter, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
     put("f32s.acos"             , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));
     put("f32s.asin"             , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())));
     put("f32s.atan"             , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
@@ -999,12 +999,12 @@ public class Intrinsics extends ANY
     put("f32s.exp"              , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())));
     put("f32s.log"              , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(1).f32Value())));
     put("f32s.max"              , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
-    put("f32s.maxExp"           , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
-    put("f32s.minPositive"      , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
-    put("f32s.minExp"           , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
+    put("f32s.max_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
+    put("f32s.min_positive"     , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
+    put("f32s.min_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
     put("f32s.sin"              , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())));
     put("f32s.sinh"             , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
-    put("f32s.squareRoot"       , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
+    put("f32s.square_root"      , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
     put("f32s.tan"              , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
     put("f32s.tanh"             , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
     put("f64s.acos"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
@@ -1017,12 +1017,12 @@ public class Intrinsics extends ANY
     put("f64s.exp"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(1).f64Value())));
     put("f64s.log"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(1).f64Value())));
     put("f64s.max"              , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
-    put("f64s.maxExp"           , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
-    put("f64s.minPositive"      , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
-    put("f64s.minExp"           , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
+    put("f64s.max_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
+    put("f64s.min_positive"     , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
+    put("f64s.min_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
     put("f64s.sin"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(1).f64Value())));
     put("f64s.sinh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
-    put("f64s.squareRoot"       , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
+    put("f64s.square_root"      , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64s.tan"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
     put("f64s.tanh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
     put("Any.hash_code"         , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
@@ -1133,7 +1133,7 @@ public class Intrinsics extends ANY
   {
     // NYI: Properly determine generic argument type of array
     var arrayType = arrayClazz._type;
-    if (arrayType.compareTo(Types.resolved.t_conststring) == 0 /* NYI: Hack */)
+    if (arrayType.compareTo(Types.resolved.t_Const_String) == 0 /* NYI: Hack */)
       {
         return Types.resolved.t_i32;
       }

@@ -247,7 +247,7 @@ public class C extends ANY
         case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
         case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
         case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
-        case c_conststring ->
+        case c_Const_String ->
         {
           var tmp = _names.newTemp();
           o = constString(d, tmp);
@@ -976,8 +976,8 @@ public class C extends ANY
    */
   CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
   {
-    var cs            = _fuir.clazz_conststring();
-    var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
+    var cs            = _fuir.clazz_Const_String();
+    var internalArray = _names.fieldName(_fuir.clazz_Const_String_internalArray());
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
     var sysArray = fields(tmp, cs).field(internalArray);

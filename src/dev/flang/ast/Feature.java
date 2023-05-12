@@ -1363,7 +1363,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
    * used for lazy boolean operations like &&, || and for compile-time constants
-   * safety, debugLevel, debug.
+   * safety, debug_level, debug.
    *
    * @param res the resolution instance.
    */

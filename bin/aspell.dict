@@ -274,7 +274,7 @@ ConstantType
 constCl
 constructortype
 Consts
-conststring
+Const_String
 constString
 containsKey
 containsVoid
@@ -321,7 +321,7 @@ da
 DataOut
 de
 deadc
-debugLevel
+debug_level
 declaredFeatures
 declaredInBlock
 declaredOrInherited
@@ -774,7 +774,7 @@ isIntrinsc
 isIntrinsic
 isKeyword
 isnan
-isNaN
+is_NaN
 isNewLine
 isOp
 isOpe
@@ -889,7 +889,7 @@ MapToN
 mapToObj
 markUsed
 maxErrorCount
-maxExp
+max_exp
 maxlength
 maxRow
 maxWarningCount
@@ -900,9 +900,9 @@ memcpy
 memset
 MERCHANTABILITY
 MiddleEnd
-minExp
+min_exp
 minIndent
-minPositive
+min_positive
 mir
 MirModule
 mkdir
@@ -1195,7 +1195,7 @@ splitSkip
 sprintf
 sqrt
 sqrtf
-squareRoot
+square_root
 src
 SRC
 srcfile
