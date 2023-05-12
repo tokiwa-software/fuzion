@@ -48,22 +48,16 @@ fileiotests =>
   say "$dir exists: {exists dir}"
 
   say "$file exists: {exists file}"
-  match (fuzion.sys.fileio.open file (i8 1)).bind unit (fd->
-      res := writer.write fd content.utf8.as_array
-      fuzion.sys.fileio.close fd
-      res)
+
+  match f.using_file unit file io.file.mode.write (()->
+    io.file.open_file.write content.utf8)
     unit => say "$file was created"
     error =>
   say "$file exists: {exists file}"
 
   say "$file size is {(f.stat file true).val.size}"
 
-  # NYI: we need to use fuzion.sys.fileio directly until we have a
-  # closeable effect.
-  match (fuzion.sys.fileio.open file (i8 0)).bind (array u8) (fd->
-      res := reader.read_file fd
-      fuzion.sys.fileio.close fd
-      res)
+  match f.using_file (array u8) file io.file.mode.read ()->io.file.open_file.read
     bytes array u8 =>
       filecontent := String.type.from_bytes bytes
       say "file content bytes: $bytes"

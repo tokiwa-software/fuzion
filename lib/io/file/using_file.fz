@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature using_file
+#
+# -----------------------------------------------------------------------
+
+
+# the mode to use when opening a file
+#
+mode is
+  val : choice of
+    read,
+    write,
+    append.
+
+
+
+# this opens a file with the given mode and installs
+# effect (open_file T) to be used in `code()`.
+#
+# type parameter T is used to distinguish between several open files.
+#
+# usage example:
+# ```
+# using_file some_type String mode.read ()->
+#   match (open_file some_type).read
+#     e error => e
+#     a array => String.type.from_bytes a
+# ```
+using_file(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+
+  mode_num := match m
+                mode.read => i8 0
+                mode.write => i8 1
+                mode.append => i8 2
+
+  match fuzion.sys.fileio.open file_name mode_num
+    fd i64 =>
+      # install effect `open_file T` and run `code`
+      r := open_file T fd file_name
+        .go code
+      # close file
+      fuzion.sys.fileio.close fd
+      # return result
+      r
+    e error =>
+      e
+
+
+
+# short hand for using_file when
+# it is not necessary to distinguish between open_files
+#
+# usage example:
+# ```
+# using_file String mode.read ()->
+#   match open_file.read
+#     e error => e
+#     a array => String.type.from_bytes a
+# ```
+using_file(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+  using_file open_file_unique_type R file_name m code

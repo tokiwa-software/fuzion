@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature open_file
+#
+# -----------------------------------------------------------------------
+
+
+# effect for manipulating open files
+# T is used to distinguish several open files
+#
+private open_file(T type, private fd i64, public file_name String) : simpleEffect is
+
+  # writes the content of an array of bytes to a file opened as fd
+  #
+  # this might overwrite parts or all of an existing file.
+  #
+  write(content Sequence u8) ! io.file.write =>
+    io.file.write.write fd content.as_array
+
+
+  # reads all bytes from the file in the path
+  # returns outcome array u8, a byte array representing the content of the file if the operation was successful
+  # returns an error in case the operation fails
+  #
+  read outcome (array u8) ! io.file.read is
+    io.file.read.read_file fd
+
+
+
+# short hand to get the currently
+# installed open_file effect
+# for type T from the environment.
+# see `using_file` on how to use this.
+#
+open_file(T type) =>
+  (open_file T).env
+
+
+
+# unit type used internally by open_file- and using_file-
+# short hands which can be used when one does not need
+# to distinguish between several open files.
+private open_file_unique_type is
+
+
+
+# short hand to get the currently
+# installed open_file effect
+# from the environment.
+# see `using_file` on how to use this.
+#
+open_file =>
+  (open_file open_file_unique_type).env
+
