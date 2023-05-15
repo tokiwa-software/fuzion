@@ -114,8 +114,8 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * Does this call use dynamic binding.  Dynamic binding is used if the called
-   * feature uses dynamic binding and the target is not Current.  In case the
+   * Does this call use dynamic binding.  Dynamic binding is used if the target
+   * is not Current (either explicitly or in an inheritcance call).  In case the
    * target is current, this call will be specialized to avoid dynamic binding.
    */
   public boolean isDynamic()

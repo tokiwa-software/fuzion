@@ -1432,7 +1432,6 @@ public class Call extends AbstractCall
         var inner = new Type(calledFeature().selfType(),
                              _target.typeForCallTarget());
         var t0 = t;
-        var c = Errors.count();
         t = t.replace_this_type_by_actual_outer(inner,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
                                                 );

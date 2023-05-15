@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # This tests a tricky call situation where the result type of a call is ambiguous
-# due since the outer type is a ref this.type that could be a boxed value type.
+# since the outer type is a ref this.type that could be a boxed value type.
 #
 call_with_ambiguous_result_type is
 
@@ -37,7 +37,7 @@ call_with_ambiguous_result_type is
   h1 : r is
   h2 : r is
 
-  # v will set to `boxed h1` or `boxed h2`
+  # v will be set to `boxed h1` or `boxed h2`
   v r := if time.nano.read % 2 = 1 then
            h1
          else

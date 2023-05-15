@@ -1098,7 +1098,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
-   * @param fa the feature and actualt types that is called
+   * @param fa the feature and actual types that is called
    *
    * @return the inner clazz of the target in the call.
    */
@@ -1115,7 +1115,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
-   * @param fa the feature and actualt types that is called
+   * @param fa the feature and actual types that is called
    *
    * @param p if this lookup would result in the returned feature to be called,
    * p gives the position in the source code that causes this call.  p must be

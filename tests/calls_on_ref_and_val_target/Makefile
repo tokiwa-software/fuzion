@@ -25,4 +25,4 @@
 
 override NAME = calls
 
-include ../simple_inp.mk
+include ../simple.mk

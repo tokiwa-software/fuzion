@@ -37,10 +37,10 @@ import dev.flang.util.List;
 /**
  * FeatureAndActuals represents a triplet consisting of an AbstractFeature
  * combined with a list of actual type parameters for that feature and a flag
- * selecting between the feature itself of the precondition of this feature.
+ * selecting between the feature itself or the precondition of this feature.
  *
- * Instances of this are used as the key the the set of inner clazzes in a Clazz
- * since for this inner clazz to exist, there must be a call iwth actual type
+ * Instances of this are used as the key for the set of inner clazzes in a Clazz
+ * since for this inner clazz to exist, there must be a call with actual type
  * parameters and this call may be either to the feature itself or to its
  * precondition.
  *
@@ -107,11 +107,11 @@ public class FeatureAndActuals extends ANY implements Comparable
     _tp = tp;
     _preconditionClazz = preconditionClazz;
     _max = false; /* unused */
-    }
+  }
 
 
   /**
-   * Convenience constructor for empty type parameters and not precondition clazz.
+   * Convenience constructor for empty type parameters and no precondition.
    *
    * @param f the underlying feature, must not be null
    */

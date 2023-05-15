@@ -735,9 +735,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Helper for actualType_ to determine the actual type of a type feature's
-   * type. This needs special handling since the the type feature has one
-   * additional first type parameter --the underlying type: this_type--, and all
-   * other type parameters need converted to the actual type relative to that.
+   * type. This needs special handling since the type feature has one additional
+   * first type parameter --the underlying type: this_type--, and all other type
+   * parameters need converted to the actual type relative to that.
    *
    * @param this_type the first type parameter that contains the actual type.
    */
@@ -1014,9 +1014,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
    *
-   * @param foundRef a consumer that will be called for all the the this-types
-   * found together with the ref type they are replaced with.  May be null.
-   * This will be used to check for AstErrors.illegalOuterRefTypeInCall.
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
@@ -1051,8 +1051,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param tt the type feature we are calling
    *
-   * @param foundRef a consumer that will be called for all the the this-types
-   * found together with the ref type they are replaced with.  May be null.
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
    */
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {

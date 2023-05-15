@@ -1329,7 +1329,7 @@ hw25 is
 
 
   /**
-   * Get the inner clazz the precondition of a call, -1 if no precondition.
+   * Get the inner clazz of the precondition of a call, -1 if no precondition.
    *
    * The precondition clazz may be different to the accessedClazz in case of
    * `ref` types: in the following code
@@ -1546,7 +1546,7 @@ hw25 is
       (s instanceof AbstractAssign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass._tid)).isRef() : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
-      (s instanceof AbstractCall   call) ? (true || call.isDynamic()) && ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef() && (true || !call.calledFeature().isConstructor() || !((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isBoxed())  :
+      (s instanceof AbstractCall   call) ? ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef()  :
       new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
 
     return res;

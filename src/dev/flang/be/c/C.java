@@ -874,7 +874,7 @@ public class C extends ANY
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
             var tt = ccs[cci  ];                   // target clazz we match against
-            var cc = ccs[cci+1];                   // called clazz in cased of match
+            var cc = ccs[cci+1];                   // called clazz in case of match
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
             var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
