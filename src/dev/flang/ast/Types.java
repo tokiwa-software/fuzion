@@ -168,7 +168,7 @@ public class Types extends ANY
     public final AbstractFeature f_function_call;
     public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
-    public final AbstractFeature f_array_internalArray;
+    public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
@@ -228,7 +228,7 @@ public class Types extends ANY
       f_function_call = f_function.get(mod, "call");
       f_safety        = universe.get(mod, "safety");
       f_array         = universe.get(mod, "array", 5);
-      f_array_internalArray = f_array.get(mod, "internalArray");
+      f_array_internal_array = f_array.get(mod, "internal_array");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");

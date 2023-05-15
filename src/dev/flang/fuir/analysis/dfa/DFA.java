@@ -1307,25 +1307,25 @@ public class DFA extends ANY
                           */
         );
 
-    put("fuzion.java.JavaObject.isNull"  , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayGet"           , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayLength"        , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayToJavaObject0" , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.boolToJavaObject"   , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callC0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callS0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callV0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.f32ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.f64ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.getField0"          , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.getStaticField0"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i16ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i32ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i64ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i8ToJavaObject"     , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.javaStringToString" , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.stringToJavaObject0", cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.u16ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.Java_Object.is_null"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_get"             , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_length"          , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_to_java_object0" , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.bool_to_java_object"   , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_c0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_s0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_v0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.f32_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.f64_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.get_field0"            , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.get_static_field0"     , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i16_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i32_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i64_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i8_to_java_object"     , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.java_string_to_string" , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.string_to_java_object0", cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.u16_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
   }
 
 
@@ -1454,7 +1454,7 @@ public class DFA extends ANY
   Value newConstString(byte[] utf8Bytes, Context context)
   {
     var cs            = _fuir.clazz_Const_String();
-    var internalArray = _fuir.clazz_Const_String_internalArray();
+    var internalArray = _fuir.clazz_Const_String_internal_array();
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);

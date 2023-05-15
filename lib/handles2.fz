@@ -39,7 +39,7 @@ private handles2(
   # the inner value of this monad
   v X,
 
-  lastOpt option (handle2_0 T),
+  last_opt option (handle2_0 T),
 
   # action to be taken: plain monad, install or replace?
   redef r effect_mode.val
@@ -55,23 +55,23 @@ is
     w T
     ) handles2 T X
   post
-    result.hasLast
+    result.has_last
   is
     handles2 T X v (handle2_0 w) mode
 
 
   # has one element been created using 'new'?
   #
-  hasLast => lastOpt??
+  has_last => last_opt??
 
 
   # return the last handle that was created by 'new'
   #
   last
     pre
-      hasLast
+      has_last
    =>
-    lastOpt.get
+    last_opt.get
 
 
   # a one-way feature to create a new handle and update the monad
@@ -113,7 +113,7 @@ is
       effect_mode.inst, effect_mode.repl => true
    =>
     h.put w
-    handles2 T X v lastOpt mode
+    handles2 T X v last_opt mode
 
 
   # create a new instance with the value refered to by a given handle read and
@@ -135,15 +135,15 @@ is
       effect_mode.inst, effect_mode.repl => true
    =>
     h.put (f h.get)
-    handles2 T X v lastOpt mode
+    handles2 T X v last_opt mode
 
 
   infix >>= (f X -> handles2 T X) => bind X f
 
   bind(B type, f X -> handles2 T B) handles2 T B is
-    handles2 T B (f v).v lastOpt effect_mode.plain
+    handles2 T B (f v).v last_opt effect_mode.plain
 
-  return(B type, w B) => handles2 T B w lastOpt effect_mode.plain
+  return(B type, w B) => handles2 T B w last_opt effect_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #

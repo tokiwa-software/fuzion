@@ -474,27 +474,27 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call, false);
             }
         });
-    put("effect.abort"                   , (cfg, cl) -> { } );
-    put("effects.exists"                 , (cfg, cl) -> { } );
-    put("fuzion.java.JavaObject.isNull"  , (cfg, cl) -> { } );
-    put("fuzion.java.arrayGet"           , (cfg, cl) -> { } );
-    put("fuzion.java.arrayLength"        , (cfg, cl) -> { } );
-    put("fuzion.java.arrayToJavaObject0" , (cfg, cl) -> { } );
-    put("fuzion.java.boolToJavaObject"   , (cfg, cl) -> { } );
-    put("fuzion.java.callC0"             , (cfg, cl) -> { } );
-    put("fuzion.java.callS0"             , (cfg, cl) -> { } );
-    put("fuzion.java.callV0"             , (cfg, cl) -> { } );
-    put("fuzion.java.f32ToJavaObject"    , (cfg, cl) -> { } );
-    put("fuzion.java.f64ToJavaObject"    , (cfg, cl) -> { } );
-    put("fuzion.java.getField0"          , (cfg, cl) -> { } );
-    put("fuzion.java.getStaticField0"    , (cfg, cl) -> { } );
-    put("fuzion.java.i16ToJavaObject"    , (cfg, cl) -> { } );
-    put("fuzion.java.i32ToJavaObject"    , (cfg, cl) -> { } );
-    put("fuzion.java.i64ToJavaObject"    , (cfg, cl) -> { } );
-    put("fuzion.java.i8ToJavaObject"     , (cfg, cl) -> { } );
-    put("fuzion.java.javaStringToString" , (cfg, cl) -> { } );
-    put("fuzion.java.stringToJavaObject0", (cfg, cl) -> { } );
-    put("fuzion.java.u16ToJavaObject"    , (cfg, cl) -> { } );
+    put("effect.abort"                      , (cfg, cl) -> { } );
+    put("effects.exists"                    , (cfg, cl) -> { } );
+    put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
+    put("fuzion.java.array_get"             , (cfg, cl) -> { } );
+    put("fuzion.java.array_length"          , (cfg, cl) -> { } );
+    put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );
+    put("fuzion.java.bool_to_java_object"   , (cfg, cl) -> { } );
+    put("fuzion.java.call_c0"               , (cfg, cl) -> { } );
+    put("fuzion.java.call_s0"               , (cfg, cl) -> { } );
+    put("fuzion.java.call_v0"               , (cfg, cl) -> { } );
+    put("fuzion.java.f32_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.java.f64_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.java.get_field0"            , (cfg, cl) -> { } );
+    put("fuzion.java.get_static_field0"     , (cfg, cl) -> { } );
+    put("fuzion.java.i16_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.java.i32_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.java.i64_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.java.i8_to_java_object"     , (cfg, cl) -> { } );
+    put("fuzion.java.java_string_to_string" , (cfg, cl) -> { } );
+    put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
+    put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
   }
 
 

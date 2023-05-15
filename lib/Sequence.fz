@@ -224,7 +224,7 @@ Sequence(T type) ref is
   concat_sequences (s Sequence T) Sequence T is as_list.concat s.as_list
 
 
-  # infix operand synonym for concatSequences
+  # infix operand synonym for concat_sequences
   #
   infix ++ (s Sequence T) => as_list ++ s.as_list
 

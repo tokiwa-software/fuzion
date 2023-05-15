@@ -405,7 +405,7 @@ String ref : equatable, has_hash, has_total_order is
       .fold String.type.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
   #
   private substring_codepoint(from i32) String
     pre

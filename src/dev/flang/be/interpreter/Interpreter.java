@@ -568,7 +568,7 @@ public class Interpreter extends ANY
             Intrinsics.fuzionSysArraySetEl(arrayData, x, v, sac);
           }
         result = new Instance(ac);
-        setField(Types.resolved.f_array_internalArray, -1, ac, result, sa);
+        setField(Types.resolved.f_array_internal_array, -1, ac, result, sa);
       }
 
     else if (s instanceof Env v)
@@ -632,7 +632,7 @@ public class Interpreter extends ANY
     setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
     setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
-    setField(Types.resolved.f_array_internalArray, -1, cl, result, sa);
+    setField(Types.resolved.f_array_internal_array, -1, cl, result, sa);
 
     return result;
   }

@@ -83,7 +83,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
     (io.stdin (default_input_handler (error "not initialized"))).default
 
 
-  # the default input handler reading bytes via fuzion.sys.stdin.nextByte
+  # the default input handler reading bytes via fuzion.sys.stdin.next_byte
   #
   type.default_input_handler(r choice u8 io.end_of_file error) : io.Byte_Input_Handler is
 

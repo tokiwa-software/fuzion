@@ -31,22 +31,22 @@
 # Several error conditions are needed if there are several very different
 # reasons for an operation to fail, e.g.
 #
-#   getData (u User, t Type) outcome data IOError PermissionError is
-#     if u.allowedToAcces T
-#       (readFile t.fileName)?
+#   get_data (u User, t Type) outcome data IO_Error Permission_Error is
+#     if u.allowed_to_acces T
+#       (read_file t.file_name)?
 #     else
-#       PermissionError u, t
+#       Permission_Error u, t
 #
-#   readFile t Type outcome data IOError is
+#   read_file t Type outcome data IO_Error is
 #     [..]
 #
-# Note that 'outcome data IOError' is not assignment compatible with
-# 'outcome data IOError PermissionError', it has to be unwrapped first.
+# Note that 'outcome data IO_Error' is not assignment compatible with
+# 'outcome data IO_Error Permission_Error', it has to be unwrapped first.
 # This unwrapping, however, requires very little boilerplate, it is done
-# using the '?' on the result of the call to 'readFile': This unwraps
-# 'outcome data IOError' into 'IOError', which would be returned abruptly,
+# using the '?' on the result of the call to 'read_file': This unwraps
+# 'outcome data IO_Error' into 'IO_Error', which would be returned abruptly,
 # and 'data', which would be returned normally. Both are assignment
-# compatible to  'outcome data IOError PermissionError', so everything
+# compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
 outcome(T type) :
@@ -67,12 +67,12 @@ is
 
   # Does this outcome contain an error
   #
-  isError => !ok
+  is_error => !ok
 
 
-  # short-hand postfix operator for 'isError'
+  # short-hand postfix operator for 'is_error'
   #
-  postfix !! => isError
+  postfix !! => is_error
 
 
   # value of an outcome that is known to contain a value
