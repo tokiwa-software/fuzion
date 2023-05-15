@@ -100,7 +100,7 @@ int fzE_set_blocking(int sockfd, int blocking)
 {
 #ifdef _WIN32
   u_long b = blocking;
-  return ioctlsocket(fd, FIONBIO, &b);
+  return ioctlsocket(sockfd, FIONBIO, &b);
 #else
   int flag = blocking == 1
     ? fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK
