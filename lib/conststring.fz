@@ -17,25 +17,25 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature conststring
+#  Source code of Fuzion standard library feature Const_String
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# conststring -- feature used for string constants in Fuzion source code
+# Const_String -- feature used for string constants in Fuzion source code
 #
-# conststring cannot be called directly, instances are created implicitly by the
+# Const_String cannot be called directly, instances are created implicitly by the
 # backend.
 #
-conststring (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
+Const_String (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
 
-  redef utf8 Sequence u8 is conststring.this
+  redef utf8 Sequence u8 is Const_String.this
 
   # Resolve repeated inheritance of as_string, is_empty from string and from array.
   #
   # NYI: Once we have a select-mechanism, we could select string.as_string over
   # array.as_string
   #
-  redef as_string String is conststring.this
+  redef as_string String is Const_String.this
   redef is_empty => length = 0

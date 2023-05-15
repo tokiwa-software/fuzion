@@ -34,7 +34,7 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-private nano (p Nano_Time_Provider) : simpleEffect is
+private nano (p Nano_Time_Provider) : simple_effect is
 
   # no guarantee can be given for precision nor resolution
   read =>

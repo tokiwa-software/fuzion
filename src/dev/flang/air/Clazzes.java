@@ -176,7 +176,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
   public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
-  public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      );
+  public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
@@ -187,8 +187,8 @@ public class Clazzes extends ANY
         return super.get();
       }
     };
-  public static Clazz constStringInternalArray;  // field conststring.internalArray
-  public static Clazz fuzionSysArray_u8;         // result clazz of conststring.internalArray
+  public static Clazz constStringInternalArray;  // field Const_String.internalArray
+  public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internalArray
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
 
@@ -427,11 +427,11 @@ public class Clazzes extends ANY
         c.get().called(SourcePosition.builtIn);
         c.get().instantiated(SourcePosition.builtIn);
       }
-    for (var c : new OnDemandClazz[] { conststring, bool, c_TRUE, c_FALSE, c_unit })
+    for (var c : new OnDemandClazz[] { Const_String, bool, c_TRUE, c_FALSE, c_unit })
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, SourcePosition.builtIn);
+    constStringInternalArray = Const_String.get().lookup(Types.resolved.f_array_internalArray, SourcePosition.builtIn);
     fuzionSysArray_u8 = constStringInternalArray.resultClazz();
     fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
@@ -1159,11 +1159,11 @@ public class Clazzes extends ANY
         if (result == string.get())
           { /* this is a bit tricky: in the front end, the type of a string
              * constant is 'string'.  However, for the back end, the type is
-             * 'conststring' such that the backend can create an instance of
+             * 'Const_String' such that the backend can create an instance of
              * 'constString' and see the correct type (and create proper type
              * conversion code to 'string' if this is needed).
              */
-            result = conststring.get();
+            result = Const_String.get();
           }
       }
 
@@ -1407,7 +1407,7 @@ public class Clazzes extends ANY
     ref_f64.clear();
     any.clear();
     string.clear();
-    conststring.clear();
+    Const_String.clear();
     c_unit.clear();
     error.clear();
     constStringInternalArray = null;

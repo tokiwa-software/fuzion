@@ -438,8 +438,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize an outer clazz for a given type. For a reference clazz that
    * inherits from f, this will return the corresponding clazz derived from
-   * f. The idea is that, e.g., we do not need to distinguish conststring.length
-   * from array<u8>.length.
+   * f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * from (array u8).length.
    *
    * @param t the type of the newly created clazz
    *
@@ -462,8 +462,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize a reference clazz to the given feature.  For a reference clazz
    * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish conststring.length
-   * from array<u8>.length.
+   * from f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * from (array u8).length.
    *
    * @param f the feature we want to normalize to (array in the example above).
    *
@@ -2033,7 +2033,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public boolean isInstantiated()
   {
     return this == Clazzes.fuzionSysArray_u8 ||
-      this == Clazzes.conststring.get() ||
+      this == Clazzes.Const_String.get() ||
       _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
   }
 

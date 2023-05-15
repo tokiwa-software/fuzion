@@ -53,7 +53,7 @@
 #
 # is not supported yet.
 #
-mutate : simpleEffect is
+mutate : simple_effect is
 
   # short-hand to access effect type
   #
