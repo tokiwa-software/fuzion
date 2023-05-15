@@ -773,18 +773,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     else if (existing == f)
       {
       }
-    else if (existing.outer() == outer)
-      {
-        if (existing.isTypeFeature())
-          {
-            // NYI: see #461: type features may currently be declared repeatedly in different modules
-          }
-        else if (Errors.count() == 0)
-          { // This can happen only as the result of previous errors since this
-            // case was already handled in addDeclaredInnerFeature:
-            throw new Error();
-          }
-      }
     else if (existing.generics() != FormalGenerics.NONE)
       {
         AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
