@@ -8,3 +8,6 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: eclipse-temurin
+        update-types: [ "version-update:semver-major" ]
