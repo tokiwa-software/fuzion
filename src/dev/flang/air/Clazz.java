@@ -944,33 +944,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Check if this clazz is a value type that is used as an outer instance that
-   * requires dynamic binding when called.
-   */
-  public boolean isDynamicOuterRef()
-  {
-    if (!isRef())
-      {
-        if (isUsedAsDynamicOuterRef())
-          {
-            return true;
-          }
-        for (var p : parents())
-          {
-            if (p != this && p.isUsedAsDynamicOuterRef())
-              {
-                return true;
-              }
-          }
-      }
-    return false;
-  }
-
-
-  /**
    * Is this clazz the static clazz of a target of a call to a dynamic outer
-   * ref.  This is slightly different to isDynamicOuterRef() which is also true
-   * for all heirs.
+   * ref.
    */
   public boolean isUsedAsDynamicOuterRef()
   {
@@ -1005,7 +980,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (this._type != Types.t_ADDRESS);
 
     if (Clazzes.isCalledDynamically(f) &&
-        (isRef() || isDynamicOuterRef()) &&
+        isRef() &&
         isInstantiated())
       {
         for (var ft : Clazzes.calledDynamicallyWithTypePars(f))
