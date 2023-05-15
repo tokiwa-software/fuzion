@@ -17,33 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test unboxOuterRef
+#  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #25: https://github.com/tokiwa-software/fuzion/issues/25
-#
-# A simple negative test for using an outer ref to a ref instance as a value
-#
-# The test should be run and its output should be compared to the expected
-# output.
-#
-unboxOuterRef is
+override NAME = type
 
-  y (i i32) is
-    redef as_string => "y $i"
-    g (v y) is
-      vs := v.as_string
-      say "in g: $vs $i"
-    f unit is
-#     g y.this   # y.this is not assignable to y, should be type 'like y.this', see #167
-      g (y i)
-      unit
-
-  v := y 42
-  v.f
-  r ref y := v
-  r.f
-  unit
+include ../simple.mk

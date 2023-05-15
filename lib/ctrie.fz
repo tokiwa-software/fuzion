@@ -250,6 +250,9 @@ private restart is
 # unit type to indicate success
 private ctrie_ok is
 
+# unit type to indicate when value to lookup/remove is not found
+private not_found is
+  redef as_string => "not found"
 
 # descriptor for double-compare-single-swap operation
 private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
@@ -319,11 +322,6 @@ is
       true
     else
       false
-
-
-  # unit type to indicate when value to lookup/remove is not found
-  not_found is
-    redef as_string => "not found"
 
 
   # the width of the branching factor, 2^5 = 32

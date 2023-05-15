@@ -197,6 +197,27 @@ public class DFA extends ANY
 
 
     /**
+     * In an access, check if the target of the access is a boxed value. If so,
+     * unbox it.
+     *
+     * @param tvalue the target value of an access
+     *
+     * @param tt the type of the target value
+     *
+     * @param cc the called clazz
+     *
+     * @return tvalue in case tvalue does not need unboxing, or the unboxed
+     * value if tt is boxed and the outer clazz of cc is a value type.
+     */
+    private Value unboxTarget(Value tvalue, int tt, int cc)
+    {
+      var cco = _fuir.clazzOuterClazz(cc);
+      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.unbox(cco)
+                                                            : tvalue;
+    }
+
+
+    /**
      * Perform a call of a feature with target instance tvalue with given
      * arguments.. The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
@@ -206,11 +227,12 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> call(int cl, int c, int i, Value tvalue, List<Value> args)
     {
-      var cc0 = _fuir.accessedClazz  (cl, c, i);
+      var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+      var cc0 = _fuir.accessedClazz            (cl, c, i);
       var res = Value.UNIT;
-      if (_fuir.hasPrecondition(cc0))
+      if (ccP != -1)
         {
-          res = call0(cl, tvalue, args, c, i, cc0, true);
+          res = call0(cl, tvalue, args, c, i, ccP, true);
         }
       if (res != null && !_fuir.callPreconditionOnly(cl, c, i))
         {
@@ -238,6 +260,7 @@ public class DFA extends ANY
      */
     Value access(int cl, int c, int i, Value tvalue, List<Value> args)
     {
+      var tc = _fuir.accessTargetClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
@@ -252,10 +275,7 @@ public class DFA extends ANY
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
-                  //!_fuir.accessIsDynamic(cl, c, i) && _fuir.correspondingFieldInValueInstance(tt) == t._clazz ||
-
-                  // NYI: This is a little too much special handling, must simplify:
-                  !_fuir.accessIsDynamic(cl, c, i) && _fuir.clazzIsRef(t._clazz) && !_fuir.clazzIsOuterRef(cc0))
+                  _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
                   var r = access0(cl, c, i, t, args, cc);
@@ -326,6 +346,8 @@ public class DFA extends ANY
      */
     Value call0(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre)
     {
+      // in case we access the value in a boxed target, unbox it first:
+      tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
       Value res = null;
       switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
@@ -753,13 +775,7 @@ public class DFA extends ANY
             switch (_fuir.clazzKind(cl))
             {
             case Routine, Intrinsic -> called.contains(cl);
-            case Field              ->
-            {
-              var fc = _fuir.correspondingFieldInValueInstance(cl);
-              yield
-                isBuiltInNumeric(_fuir.clazzOuterClazz(fc)) ||
-                _readFields.contains(fc);
-            }
+            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) || _readFields.contains(cl);
             case Abstract           -> true;
             case Choice             -> true;
             };

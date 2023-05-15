@@ -1431,7 +1431,10 @@ public class Call extends AbstractCall
       {
         var inner = new Type(calledFeature().selfType(),
                              _target.typeForCallTarget());
-        t = t.replace_this_type_by_actual_outer(inner);
+        var t0 = t;
+        t = t.replace_this_type_by_actual_outer(inner,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
+                                                );
       }
     return t;
   }
@@ -2190,6 +2193,17 @@ public class Call extends AbstractCall
   {
     if (_type != Types.t_ERROR)
       {
+        var o = _type;
+        while (o != null && !o.isGenericArgument())
+          {
+            o = o.outer();
+            if (o != null && o.isRef() && !o.featureOfType().isThisRef())
+              {
+                AstErrors.illegalCallResultType(this, _type, o);
+                o = null;
+              }
+          }
+
         int fsz = _resolvedFormalArgumentTypes.length;
         if (_actuals.size() !=  fsz)
           {

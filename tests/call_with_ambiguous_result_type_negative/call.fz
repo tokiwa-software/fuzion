@@ -17,33 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test unboxOuterRef
+#  Source code of Fuzion test call_with_ambiguous_result_type
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #25: https://github.com/tokiwa-software/fuzion/issues/25
+# This tests a tricky call situation where the result type of a call is ambiguous
+# since the outer type is a ref this.type that could be a boxed value type.
 #
-# A simple negative test for using an outer ref to a ref instance as a value
-#
-# The test should be run and its output should be compared to the expected
-# output.
-#
-unboxOuterRef is
+call_with_ambiguous_result_type is
 
-  y (i i32) is
-    redef as_string => "y $i"
-    g (v y) is
-      vs := v.as_string
-      say "in g: $vs $i"
-    f unit is
-#     g y.this   # y.this is not assignable to y, should be type 'like y.this', see #167
-      g (y i)
-      unit
+  r ref is
+    e is
 
-  v := y 42
-  v.f
-  r ref y := v
-  r.f
-  unit
+    # result type of g is r.this.type.e
+    g => e
+
+  h1 : r is
+  h2 : r is
+
+  # v will be set to `boxed h1` or `boxed h2`
+  v r := if time.nano.read % 2 = 1 then
+           h1
+         else
+           h2
+
+  # the result type of `v.g` is ambiguous: `h.e` for any
+  # heir of `r`.  So this will cause an error:
+  #
+  x := v.g   # error! ambiguous result type

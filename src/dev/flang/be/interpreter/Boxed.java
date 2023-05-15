@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Value
+ * Source of class Boxed
  *
  *---------------------------------------------------------------------*/
 
@@ -29,38 +29,30 @@ package dev.flang.be.interpreter;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
-import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 
 
 /**
- * Value <description>
+ * Boxed represents a value type instance that was boxed to create a ref type.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Value extends ANY
+public class Boxed extends ValueWithClazz
 {
-
 
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * Dummy value to be returned by Expr.execute for the case that the
-   * expression does not produce a value
-   */
-  public static Value NO_VALUE = new Value() { };
+  /*----------------------------  variables  ----------------------------*/
+
+
+  public Clazz _valueClazz;
 
 
   /**
-   * Dummy value to be returned by intrinsic features that return an empty self.
+   *
    */
-  public static Value EMPTY_VALUE = new Value()
-    {
-      void storeNonRef(LValue slot, int size)
-      {
-        // treat as NOP.
-      }
-    };
+  public Value _contents;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -68,9 +60,21 @@ public abstract class Value extends ANY
 
   /**
    * Constructor
+   *
+   * @param clazz
+   *
+   * @param outer
    */
-  public Value()
+  public Boxed(Clazz clazz, Clazz valueClazz, Value contents)
   {
+    super(clazz);
+
+    if (PRECONDITIONS) require
+      (clazz != null,
+       clazz.isBoxed());
+
+    this._contents = contents;
+    this._valueClazz = valueClazz;
   }
 
 
@@ -81,20 +85,12 @@ public abstract class Value extends ANY
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Value cloneValue(Clazz cl)
+  Instance cloneValue(Clazz cl)
   {
-    return this;
-  }
+    if (PRECONDITIONS) require
+      (false);
 
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return "UNKNOWN VALUE";
+    throw new Error("cannot clone boxed value");
   }
 
 
@@ -105,7 +101,10 @@ public abstract class Value extends ANY
    */
   public int i8Value()
   {
-    throw new Error("this is not of type i8Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.i8    .getIfCreated());
+
+    return _contents.i8Value();
   }
 
 
@@ -116,7 +115,10 @@ public abstract class Value extends ANY
    */
   public int i16Value()
   {
-    throw new Error("this is not of type i16Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.i16    .getIfCreated());
+
+    return _contents.i16Value();
   }
 
 
@@ -127,7 +129,10 @@ public abstract class Value extends ANY
    */
   public int i32Value()
   {
-    throw new Error("this is not of type i32Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.i32    .getIfCreated());
+
+    return _contents.i32Value();
   }
 
 
@@ -138,7 +143,10 @@ public abstract class Value extends ANY
    */
   public long i64Value()
   {
-    throw new Error("this is not of type i64Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.i64    .getIfCreated());
+
+    return _contents.i64Value();
   }
 
 
@@ -149,8 +157,12 @@ public abstract class Value extends ANY
    */
   public int u8Value()
   {
-    throw new Error("this is not of type u8Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.u8    .getIfCreated());
+
+    return _contents.u8Value();
   }
+
 
 
   /**
@@ -160,7 +172,10 @@ public abstract class Value extends ANY
    */
   public int u16Value()
   {
-    throw new Error("this is not of type u16Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.u16    .getIfCreated());
+
+    return _contents.u16Value();
   }
 
 
@@ -171,7 +186,10 @@ public abstract class Value extends ANY
    */
   public int u32Value()
   {
-    throw new Error("this is not of type u32Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.u32    .getIfCreated());
+
+    return _contents.u32Value();
   }
 
 
@@ -182,7 +200,10 @@ public abstract class Value extends ANY
    */
   public long u64Value()
   {
-    throw new Error("this is not of type u64Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.u64    .getIfCreated());
+
+    return _contents.u64Value();
   }
 
 
@@ -193,7 +214,10 @@ public abstract class Value extends ANY
    */
   public float f32Value()
   {
-    throw new Error("this is not of type f32Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.f32    .getIfCreated());
+
+    return _contents.f32Value();
   }
 
 
@@ -204,7 +228,10 @@ public abstract class Value extends ANY
    */
   public double f64Value()
   {
-    throw new Error("this is not of type f64Value, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.f64    .getIfCreated());
+
+    return _contents.f64Value();
   }
 
 
@@ -215,7 +242,12 @@ public abstract class Value extends ANY
    */
   public boolean boolValue()
   {
-    throw new Error("this is not of type boolValue, but " + getClass());
+    if (PRECONDITIONS) require
+      (_valueClazz == Clazzes.c_TRUE .getIfCreated() ||
+       _valueClazz == Clazzes.c_FALSE.getIfCreated() ||
+       _valueClazz == Clazzes.bool   .getIfCreated());
+
+    return _contents.boolValue();
   }
 
 
@@ -230,56 +262,29 @@ public abstract class Value extends ANY
    */
   public LValue at(Clazz c, int off)
   {
-    throw new Error("Cannot create LValue from " + getClass());
+    return _contents.at(c, off);
   }
 
 
   /**
-   * Store this value in a field
+   * toString
    *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
+   * @return
    */
-  void storeNonRef(LValue slot, int size)
+  public String toString()
   {
-    throw new Error("Cannot store " + getClass() + " as non-ref");
+    return "boxed[" + _clazz + "]" + this.hashCode();
   }
 
 
   /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
+   * dump
    */
-  void checkStaticClazz(Clazz expected)
+  public void dump()
   {
-    throw new Error("value " + this + " not allowed for clazz "+ expected);
+    System.out.print("BOXED: ");
+    if (this._contents instanceof Instance i) i.dump();
   }
-
-
-  /**
-   * Return the instance this value contains.  If this is an Instance, return
-   * this, if this is an LValue containing an instance, get that instance.
-   */
-  Instance instance()
-  {
-    throw new Error("value "+ this + " of class " + getClass() + " is not an instance");
-  }
-
-
-  /**
-   * Return the ArrayData this value contains.  If this is an ArrayData, return
-   * this, if this is an LValue containing an ArrayData, get that ArrayData.
-   */
-  ArrayData arrayData()
-  {
-    throw new Error("value "+ this + " of class " + getClass() + " is not an ArrayData");
-  }
-
 
 }
 

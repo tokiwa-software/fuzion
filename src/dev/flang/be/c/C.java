@@ -164,11 +164,12 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> call(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
     {
-      var cc0 = _fuir.accessedClazz  (cl, c, i);
+      var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+      var cc0 = _fuir.accessedClazz            (cl, c, i);
       var ol = new List<CStmnt>();
-      if (_fuir.hasPrecondition(cc0))
+      if (ccP != -1)
         {
-          var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
+          var callpair = C.this.call(cl, tvalue, args, c, i, ccP, true);
           ol.add(callpair._v1);
         }
       var res = CExpr.UNIT;
@@ -872,12 +873,18 @@ public class C extends ANY
         CStmnt acc = CStmnt.EMPTY;
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
-            var tt = ccs[cci  ];
-            var cc = ccs[cci+1];
+            var tt = ccs[cci  ];                   // target clazz we match against
+            var cc = ccs[cci+1];                   // called clazz in case of match
+            var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
+            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+            if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
+              { // in case we access the value in a boxed target, unbox it first:
+                tv = fields(tv, tt);
+              }
             if (isCall)
               {
-                var calpair = call(cl, tvalue, args, c, i, cc, false);
+                var calpair = call(cl, tv, args, c, i, cc, false);
                 var rv  = calpair._v0;
                 acc = calpair._v1;
                 if (ccs.length == 2)
@@ -897,7 +904,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tvalue, tc, tt, cc, args.get(0), rti);
+                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -1018,7 +1025,7 @@ public class C extends ANY
    */
   CStmnt assignField(CExpr tvalue, int tc, int tt, int f, CExpr value, int rt)
   {
-    if (_fuir.clazzIsRef(tc) && tc != tt)
+    if (_fuir.clazzIsRef(tt) && tc != tt)
       {
         tvalue = tvalue.castTo(_types.clazz(tt));
       }
@@ -1079,7 +1086,7 @@ public class C extends ANY
    */
   Pair<CExpr, CStmnt> call(int cl, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean pre)
   {
-    var tc = _fuir.accessTargetClazz(cl, c, i);
+    var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -1215,11 +1222,11 @@ public class C extends ANY
         if (or != -1)
           {
             var rc = _fuir.clazzResultClazz(or);
-            var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var esc = _fuir.clazzOuterRefEscapes(cc);
             var a3 = esc && a.isLocalVar() ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
                                            : a2;
-            var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
+            var a4 = _fuir.clazzIsRef(tc) ? a3.castTo(_types.clazzField(or)) : a3;
             return new List<>(a4);
           }
       }
