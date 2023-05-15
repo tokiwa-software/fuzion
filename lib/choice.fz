@@ -79,12 +79,12 @@
 # Now we define the choice type using the wrapped i32 types, which are
 # distinct:
 #
-#   hasFever(temp centigrade | fahrenheit) bool is ...
+#   has_fever(temp centigrade | fahrenheit) bool is ...
 #
 # When passing arguments to this feature, we need to wrap them accordingly:
 #
-#   hasFever (centigrade 37)
-#   hasFever (fahrenheit 99)
+#   has_fever (centigrade 37)
+#   has_fever (fahrenheit 99)
 #
 # When matching the choice type, we use the wrapper types and access the
 # argument field 'degrees' to access the i32 stored inside

@@ -466,21 +466,21 @@ public class Intrinsics extends ANY
           System.exit(rc);
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.java.JavaObject.isNull", (interpreter, innerClazz) -> args ->
+    put("fuzion.java.Java_Object.is_null", (interpreter, innerClazz) -> args ->
         {
           Instance thizI = (Instance) args.get(0);
           Object thiz  =  JavaInterface.instanceToJavaObject(thizI);
           return new boolValue(thiz == null);
         });
-    putUnsafe("fuzion.java.getStaticField0",
-        "fuzion.java.getField0"      , (interpreter, innerClazz) ->
+    putUnsafe("fuzion.java.get_static_field0",
+        "fuzion.java.get_field0"      , (interpreter, innerClazz) ->
         {
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
-          var statique = in.equals("fuzion.java.getStaticField0");
+          var statique = in.equals("fuzion.java.get_static_field0");
           var actualGenerics = innerClazz._type.generics();
           if ((actualGenerics == null) || (actualGenerics.size() != 1))
             {
-              Errors.fatal("fuzion.java.getStaticField called with wrong number of actual generic arguments");
+              Errors.fatal("fuzion.java.get_static_field called with wrong number of actual generic arguments");
             }
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
@@ -493,14 +493,14 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
-    putUnsafe("fuzion.java.callV0",
-        "fuzion.java.callS0",
-        "fuzion.java.callC0", (interpreter, innerClazz) ->
+    putUnsafe("fuzion.java.call_v0",
+        "fuzion.java.call_s0",
+        "fuzion.java.call_c0", (interpreter, innerClazz) ->
         {
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
-          var virtual     = in.equals("fuzion.java.callV0");
-          var statique    = in.equals("fuzion.java.callS0");
-          var constructor = in.equals("fuzion.java.callC0");
+          var virtual     = in.equals("fuzion.java.call_v0");
+          var statique    = in.equals("fuzion.java.call_s0");
+          var constructor = in.equals("fuzion.java.call_c0");
           var actualGenerics = innerClazz._type.generics();
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
           return args ->
@@ -524,12 +524,12 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    putUnsafe("fuzion.java.arrayLength",  (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_length",  (interpreter, innerClazz) -> args ->
         {
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           return new i32Value(Array.getLength(arr));
         });
-    putUnsafe("fuzion.java.arrayGet", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_get", (interpreter, innerClazz) -> args ->
         {
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           var ix  = args.get(2).i32Value();
@@ -537,74 +537,74 @@ public class Intrinsics extends ANY
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.java.arrayToJavaObject0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_to_java_object0", (interpreter, innerClazz) -> args ->
         {
           var arrA = args.get(1).arrayData();
           var res = arrA._array;
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.java.stringToJavaObject0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.string_to_java_object0", (interpreter, innerClazz) -> args ->
         {
           var str = utf8ByteArrayDataToString(args.get(1));
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(str, resultClazz);
         });
-    putUnsafe("fuzion.java.javaStringToString", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.java_string_to_string", (interpreter, innerClazz) -> args ->
         {
           var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
           return Interpreter.value(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.java.i8ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i8_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var b = args.get(1).i8Value();
           var jb = Byte.valueOf((byte) b);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    putUnsafe("fuzion.java.u16ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.u16_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var c = args.get(1).u16Value();
           var jc = Character.valueOf((char) c);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jc, resultClazz);
         });
-    putUnsafe("fuzion.java.i16ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i16_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var s = args.get(1).i16Value();
           var js = Short.valueOf((short) s);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(js, resultClazz);
         });
-    putUnsafe("fuzion.java.i32ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i32_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
           var ji = Integer.valueOf(i);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(ji, resultClazz);
         });
-    putUnsafe("fuzion.java.i64ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i64_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var l = args.get(1).i64Value();
           var jl = Long.valueOf(l);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jl, resultClazz);
         });
-    putUnsafe("fuzion.java.f32ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f32_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var f32 = args.get(1).f32Value();
           var jf = Float.valueOf(f32);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jf, resultClazz);
         });
-    putUnsafe("fuzion.java.f64ToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f64_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var d = args.get(1).f64Value();
           var jd = Double.valueOf(d);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jd, resultClazz);
         });
-    putUnsafe("fuzion.java.boolToJavaObject", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.bool_to_java_object", (interpreter, innerClazz) -> args ->
         {
           var b = args.get(1).boolValue();
           var jb = Boolean.valueOf(b);

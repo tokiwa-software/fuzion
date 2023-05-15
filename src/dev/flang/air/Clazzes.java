@@ -187,8 +187,8 @@ public class Clazzes extends ANY
         return super.get();
       }
     };
-  public static Clazz constStringInternalArray;  // field Const_String.internalArray
-  public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internalArray
+  public static Clazz constStringInternalArray;  // field Const_String.internal_array
+  public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
 
@@ -431,7 +431,7 @@ public class Clazzes extends ANY
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringInternalArray = Const_String.get().lookup(Types.resolved.f_array_internalArray, SourcePosition.builtIn);
+    constStringInternalArray = Const_String.get().lookup(Types.resolved.f_array_internal_array, SourcePosition.builtIn);
     fuzionSysArray_u8 = constStringInternalArray.resultClazz();
     fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
@@ -1052,7 +1052,7 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, i).resultClazz();
+    Clazz sa = ac.lookup(Types.resolved.f_array_internal_array, i).resultClazz();
     sa.instantiated(i);
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);

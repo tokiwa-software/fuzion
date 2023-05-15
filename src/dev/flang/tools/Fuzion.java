@@ -421,7 +421,7 @@ class Fuzion extends Tool
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
+   * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
    * not allowed if run in a web playground.
    */
   boolean _enableUnsafeIntrinsics = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");

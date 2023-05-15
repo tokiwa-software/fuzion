@@ -910,7 +910,7 @@ public class AstErrors extends ANY
   /**
    * This shows an incompatibility between front end and API.
    *
-   * @param qname something like "fuzion.java.JavaObject.javaRef"
+   * @param qname something like "fuzion.java.Java_Object.Java_Ref"
    *
    * @param outer the outer feature of what cause a problem, e.g. fuzion.java
    *

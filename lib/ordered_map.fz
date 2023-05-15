@@ -59,12 +59,12 @@ is
 
   # a sorted array of entries of this map
   #
-  sortedEntries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
+  sorted_entries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
 
 
   # number of entries in this map
   #
-  size => sortedEntries.length
+  size => sorted_entries.length
 
 
   # get the value k is mapped to, or nil if none.
@@ -72,13 +72,13 @@ is
   # performance is O(log size).
   #
   index [] (k OK) option V is
-    sortedEntries.find (e -> ks[e.i] ⋄ k)
-                 .map (i -> sortedEntries[i].val)
+    sorted_entries.find (e -> ks[e.i] ⋄ k)
+                 .map (i -> sorted_entries[i].val)
 
 
   # get an array of all key/value pairs in this map
   #
-  items Sequence (tuple OK V) is sortedEntries.map (e -> (e.key, e.val))
+  items Sequence (tuple OK V) is sorted_entries.map (e -> (e.key, e.val))
 
 
   # add mapping from k to v
