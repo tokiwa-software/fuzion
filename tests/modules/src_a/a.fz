@@ -5,8 +5,8 @@ a is
   #
   q =>
     say (Types.get fuzion.java)
-    say (Types.get fuzion.java.JavaVoid)
-    say (Types.get fuzion.java.JavaObject)
-    say (Types.get fuzion.java.JavaString)
+    say (Types.get fuzion.java.java_void)
+    say (Types.get fuzion.java.Java_Object)
+    say (Types.get fuzion.java.Java_String)
     say (Types.get (fuzion.java.Array bool))
     say (Types.get (fuzion.java.Array i32))

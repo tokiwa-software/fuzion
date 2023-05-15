@@ -54,7 +54,7 @@ net is
   #
   bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 is
     arr array i64 := [0]
-    if (bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internalArray.data) = 0
+    if (bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internal_array.data) = 0
       arr[0]
     else
       error "error: {arr[0]}"
@@ -85,7 +85,7 @@ net is
   # returns an error or a new descriptor.
   accept(sd i64) outcome i64 is
     arr array i64 := [0]
-    if accept sd arr.internalArray.data then arr[0] else error "accept failed, error number: {arr[0]}"
+    if accept sd arr.internal_array.data then arr[0] else error "accept failed, error number: {arr[0]}"
 
 
   # open and connect a client socket
@@ -100,7 +100,7 @@ net is
   #
   connect(family, socket_type, protocol i32, host String, port u16) outcome i64 is
     arr array i64 := [0]
-    if (connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internalArray.data) = 0
+    if (connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internal_array.data) = 0
       arr[0]
     else
       error "error: {arr[0]}"
@@ -121,11 +121,11 @@ net is
   read(descriptor i64, max_bytes i32) outcome (array u8) is
     buff := fuzion.sys.internal_array_init u8 max_bytes
     arr array i64 := [0]
-    if read descriptor buff.data max_bytes arr.internalArray.data
+    if read descriptor buff.data max_bytes arr.internal_array.data
       if arr[0].as_i32 = max_bytes
         array u8 buff unit unit unit
       else
-        # NYI there should be a way to use a slice of internalArray to init array
+        # NYI there should be a way to use a slice of internal_array to init array
         array u8 arr[0].as_i32 (idx -> buff[idx])
     else
       error "error: {arr[0]}"
@@ -142,7 +142,7 @@ net is
   # may block if descriptor is set to blocking.
   #
   write(descriptor i64, data array u8) outcome unit is
-    res := write descriptor data.internalArray.data data.length
+    res := write descriptor data.internal_array.data data.length
     if res = -1 then error "error: $res" else unit
 
 

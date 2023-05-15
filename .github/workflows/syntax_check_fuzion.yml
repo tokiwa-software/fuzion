@@ -17,39 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.now
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
 #
 # -----------------------------------------------------------------------
 
-# effect for getting the current date_time
-private now (p () -> time.date_time) : simple_effect is
+name: syntax check fz files
 
-  get =>
-    res := p()
-    replace
-    res
+permissions:
+  contents: read
 
+on:
+  workflow_dispatch:
+  schedule:
+    # weekly
+    - cron: '0 0 * * 0'
 
-  # default provider for now effect.
-  # returns the current date_time
-  # the system is giving us.
-  #
-  private type.default_now ()->time.date_time is () ->
-    a := array i32 6 i->0
-    fuzion.std.date_time a.internal_array.data
-    time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
 
+jobs:
+  run_tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-  type.install_default =>
-    (time.now default_now).default
-
-
-# get the current date_time.
-# Uses currently installed time.now effect
-# or installs the default_now provider
-#
-now =>
-  now.type.install_default
-  now.env
+      - name: syntax check
+        run: make syntaxcheck

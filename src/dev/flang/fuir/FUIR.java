@@ -1113,11 +1113,11 @@ hw25 is
 
 
   /**
-   * Get the id of clazz Const_String.internalArray
+   * Get the id of clazz Const_String.internal_array
    *
-   * @return the id of Const_String.internalArray or -1 if that clazz was not created.
+   * @return the id of Const_String.internal_array or -1 if that clazz was not created.
    */
-  public int clazz_Const_String_internalArray()
+  public int clazz_Const_String_internal_array()
   {
     var cc = Clazzes.constStringInternalArray;
     return cc == null ? -1 : id(cc);

@@ -858,25 +858,25 @@ public class Intrinsics extends ANY
     IntrinsicCode noJava = (c,cl,outer,in) ->
       CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.java.JavaObject.isNull"  , noJava);
-    put("fuzion.java.arrayGet"           , noJava);
-    put("fuzion.java.arrayLength"        , noJava);
-    put("fuzion.java.arrayToJavaObject0" , noJava);
-    put("fuzion.java.boolToJavaObject"   , noJava);
-    put("fuzion.java.callC0"             , noJava);
-    put("fuzion.java.callS0"             , noJava);
-    put("fuzion.java.callV0"             , noJava);
-    put("fuzion.java.f32ToJavaObject"    , noJava);
-    put("fuzion.java.f64ToJavaObject"    , noJava);
-    put("fuzion.java.getField0"          , noJava);
-    put("fuzion.java.getStaticField0"    , noJava);
-    put("fuzion.java.i16ToJavaObject"    , noJava);
-    put("fuzion.java.i32ToJavaObject"    , noJava);
-    put("fuzion.java.i64ToJavaObject"    , noJava);
-    put("fuzion.java.i8ToJavaObject"     , noJava);
-    put("fuzion.java.javaStringToString" , noJava);
-    put("fuzion.java.stringToJavaObject0", noJava);
-    put("fuzion.java.u16ToJavaObject"    , noJava);
+    put("fuzion.java.Java_Object.is_null"   , noJava);
+    put("fuzion.java.array_get"             , noJava);
+    put("fuzion.java.array_length"          , noJava);
+    put("fuzion.java.array_to_java_object0" , noJava);
+    put("fuzion.java.bool_to_java_object"   , noJava);
+    put("fuzion.java.call_c0"               , noJava);
+    put("fuzion.java.call_s0"               , noJava);
+    put("fuzion.java.call_v0"               , noJava);
+    put("fuzion.java.f32_to_java_object"    , noJava);
+    put("fuzion.java.f64_to_java_object"    , noJava);
+    put("fuzion.java.get_field0"            , noJava);
+    put("fuzion.java.get_static_field0"     , noJava);
+    put("fuzion.java.i16_to_java_object"    , noJava);
+    put("fuzion.java.i32_to_java_object"    , noJava);
+    put("fuzion.java.i64_to_java_object"    , noJava);
+    put("fuzion.java.i8_to_java_object"     , noJava);
+    put("fuzion.java.java_string_to_string" , noJava);
+    put("fuzion.java.string_to_java_object0", noJava);
+    put("fuzion.java.u16_to_java_object"    , noJava);
   }
 
 

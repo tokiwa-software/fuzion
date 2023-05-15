@@ -34,14 +34,14 @@
 # moved to 'array.type.new' or 'arrays.new'
 #
 array(redef T type,
-      internalArray fuzion.sys.internal_array T,
+      internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
       _ unit) : Sequence T is
 
 # public:
 
-  length => internalArray.length
+  length => internal_array.length
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -66,7 +66,7 @@ array(redef T type,
       safety: 0 ≤ i,
       safety: i < length
   is
-    internalArray[i]
+    internal_array[i]
 
   # create a new array with element i set to v. Grow the array in case i == length.
   #
@@ -120,7 +120,7 @@ array(redef T type,
   # up to 'to' (excluded).
   #
   # NYI: array.slice should better return an array containing a slice of
-  # internalArray.
+  # internal_array.
   #
   redef slice(from, to i32) list T
     pre
@@ -129,13 +129,13 @@ array(redef T type,
     if to ≤ from
       nil
     else
-      arrayCons from to
+      array_cons from to
 
 
   # create a cons cell for a list of this array starting at the given
   # index and up to to
   #
-  arrayCons (i, to i32) : Cons T (list T)
+  array_cons (i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ length
   is
@@ -209,13 +209,13 @@ array(redef T type,
   # collect the contents of this Sequence into an array
   #
   redef as_array array T is
-    array T internalArray unit unit unit
+    array T internal_array unit unit unit
 
 
 # array -- create initialized one-dimensional immutable array
 #
 # NYI: move this to 'arrays.new' or similar to avoid overloading
-# with 'array(T,internalArray,_,_,_)'.
+# with 'array(T,internal_array,_,_,_)'.
 #
 array(T type, length i32, init i32 -> T) array T
   pre

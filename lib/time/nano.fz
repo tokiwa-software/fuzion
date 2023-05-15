@@ -58,7 +58,7 @@ private nano (p Nano_Time_Provider) : simple_effect is
     sleep(d time.duration) => fuzion.std.nano_sleep d.nanos
 
 
-  # install default effect time using defaultTime
+  # install default effect time using default_nano_time
   type.install_default =>
     (time.nano default_nano_time).default
 

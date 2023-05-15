@@ -984,10 +984,10 @@ public class C extends ANY
   CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
   {
     var cs            = _fuir.clazz_Const_String();
-    var internalArray = _names.fieldName(_fuir.clazz_Const_String_internalArray());
+    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var sysArray = fields(tmp, cs).field(internalArray);
+    var sysArray = fields(tmp, cs).field(internal_array);
     return CStmnt.seq(declareAllocAndInitClazzId(cs, tmp),
                       sysArray.field(data  ).assign(bytes.castTo("void *")),
                       sysArray.field(length).assign(len));

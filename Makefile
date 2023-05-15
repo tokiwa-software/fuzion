@@ -359,6 +359,10 @@ SHELL_SCRIPTS = \
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
+# everything but rarely used java modules
+.PHONY: min-java
+min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(FUZION_FILES)
+
 # everything but the java modules
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
@@ -1079,3 +1083,9 @@ show_release_notes:
 .PHONY: spellcheck
 spellcheck:
 	bin/spell_check_java.sh
+
+# target to do a syntax check of fz files.
+# currently only examples/ are checked.
+.PHONY: syntaxcheck
+syntaxcheck: min-java
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 ./build/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
