@@ -652,7 +652,7 @@ To solve this, you could change the type of the target '[36margument #3[39m' t
 
 
 [32m--CURDIR--/generics_negative.fz:172:7:[39m [1;31merror 71[0m[1m: Wrong result type in redefined feature[0m
-[34m      redefine f(a0 i32, a1 bool, a2 i32) is
+[34m      redef f(a0 i32, a1 bool, a2 i32) is
 [33m------^[0m
 In '[35mgenerics_negative.opengenerics12.G.f[39m' that redefines '[35mgenerics_negative.opengenerics12.F.f[39m' result type is '[33mgenerics_negative.opengenerics12.G.f[39m', result type should be '[33munit[39m'.  Original feature declared at [32m--CURDIR--/generics_negative.fz:169:7:[39m
 [34m      f(a A) is abstract

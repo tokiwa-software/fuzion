@@ -126,7 +126,16 @@ originally declared at [32m--CURDIR--/overloading_negative.fz:38:5:[39m
 To solve this, consider renaming one of these two features, e.g., as '[35maʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or changing it into a routine by returning a '[35munit[39m' result, i.e., adding '[35munit[39m' before '[35mis[39m' or using '[35m=>[39m' instead of '[35mis[39m'.
 
 
-[32m--CURDIR--/overloading_negative.fz:40:5:[39m [1;31merror 8[0m[1m: Duplicate feature declaration[0m
+[32m--CURDIR--/overloading_negative.fz:39:5:[39m [1;31merror 8[0m[1m: Cannot redefine feature with type parameters[0m
+[34m    a(i i32) is
+[33m----^[0m
+Feature that redefines existing feature: '[35moverloading_negative.test1.type[39m'
+original feature: '[35moverloading_negative.test1.a.type[39m'
+original feature defined in [32m--CURDIR--/overloading_negative.fz:38:5:[39m
+To solve this, ask the Fuzion team to remove this restriction :-).
+
+
+[32m--CURDIR--/overloading_negative.fz:40:5:[39m [1;31merror 9[0m[1m: Duplicate feature declaration[0m
 [34m    a(i, j i32) is
 [33m----^[0m
 Feature that was declared repeatedly: '[35moverloading_negative.test1.a[39m'
@@ -136,7 +145,16 @@ originally declared at [32m--CURDIR--/overloading_negative.fz:39:5:[39m
 To solve this, consider renaming one of these two features, e.g., as '[35maʼ[39m' (using a unicode modifier letter apostrophe '[35mʼ[39m' U+02BC) or changing it into a routine by returning a '[35munit[39m' result, i.e., adding '[35munit[39m' before '[35mis[39m' or using '[35m=>[39m' instead of '[35mis[39m'.
 
 
-[32m--CURDIR--/overloading_negative.fz:47:5:[39m [1;31merror 9[0m[1m: Incompatible types in assignment[0m
+[32m--CURDIR--/overloading_negative.fz:40:5:[39m [1;31merror 10[0m[1m: Cannot redefine feature with type parameters[0m
+[34m    a(i, j i32) is
+[33m----^[0m
+Feature that redefines existing feature: '[35moverloading_negative.test1.type[39m'
+original feature: '[35moverloading_negative.test1.a.type[39m'
+original feature defined in [32m--CURDIR--/overloading_negative.fz:39:5:[39m
+To solve this, ask the Fuzion team to remove this restriction :-).
+
+
+[32m--CURDIR--/overloading_negative.fz:47:5:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
 [34m    a2 a := a 42         // 2. should flag an error: ambiguous types
 [33m----^[0m
 assignment to field : '[35moverloading_negative.test1.a2[39m'
@@ -147,7 +165,7 @@ for value assigned  : '[36mtest1.this.a 42[39m'
 To solve this, you could change the type of the target '[36moverloading_negative.test1.a2[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
 
 
-[32m--CURDIR--/overloading_negative.fz:48:5:[39m [1;31merror 10[0m[1m: Incompatible types in assignment[0m
+[32m--CURDIR--/overloading_negative.fz:48:5:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
 [34m    a3 a := a 47 11      // 3. should flag an error: ambiguous types
 [33m----^[0m
 assignment to field : '[35moverloading_negative.test1.a3[39m'
@@ -158,7 +176,7 @@ for value assigned  : '[36mtest1.this.a 47 11[39m'
 To solve this, you could change the type of the target '[36moverloading_negative.test1.a3[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
 
 
-[32m--CURDIR--/overloading_negative.fz:50:12:[39m [1;31merror 11[0m[1m: Incompatible types in assignment[0m
+[32m--CURDIR--/overloading_negative.fz:50:12:[39m [1;31merror 13[0m[1m: Incompatible types in assignment[0m
 [34m    set a2 := a 42
 [33m-----------^[0m
 assignment to field : '[35moverloading_negative.test1.a2[39m'
@@ -169,7 +187,7 @@ for value assigned  : '[36mtest1.this.a 42[39m'
 To solve this, you could change the type of the target '[36moverloading_negative.test1.a2[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
 
 
-[32m--CURDIR--/overloading_negative.fz:51:12:[39m [1;31merror 12[0m[1m: Incompatible types in assignment[0m
+[32m--CURDIR--/overloading_negative.fz:51:12:[39m [1;31merror 14[0m[1m: Incompatible types in assignment[0m
 [34m    set a3 := a 47 11
 [33m-----------^[0m
 assignment to field : '[35moverloading_negative.test1.a3[39m'
@@ -179,4 +197,4 @@ assignable to       : '[33moverloading_negative.this.type.test1.this.type.a[39
 for value assigned  : '[36mtest1.this.a 47 11[39m'
 To solve this, you could change the type of the target '[36moverloading_negative.test1.a3[39m' to '[33moverloading_negative.this.type.test1.this.type.a[39m' or convert the type of the assigned value to '[33moverloading_negative.this.type.test1.this.type.a[39m'.
 
-12 errors.
+14 errors.

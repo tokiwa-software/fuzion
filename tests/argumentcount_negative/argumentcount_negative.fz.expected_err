@@ -1,55 +1,55 @@
 
 [32m--CURDIR--/argumentcount_negative.fz:31:5:[39m [1;31merror 1[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x i32) i32 is 42  // 1. should flag an error, wrong number of arguments
+[34m    redef call(x i32) i32 is 42  // 1. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics12.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics12.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:33:5:[39m [1;31merror 2[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x, y i32) i32 is 42  // 2. should flag an error, wrong number of arguments
+[34m    redef call(x, y i32) i32 is 42  // 2. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics13.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics13.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:36:5:[39m [1;31merror 3[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call() i32 is 42  // 3. should flag an error, wrong number of arguments
+[34m    redef call() i32 is 42  // 3. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics14.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics14.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:40:5:[39m [1;31merror 4[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x bool, y bool) i32 is 42  // 4. should flag an error, wrong number of arguments
+[34m    redef call(x bool, y bool) i32 is 42  // 4. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics16.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics16.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:45:5:[39m [1;31merror 5[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x i32) is // 5. should flag an error, wrong number of arguments
+[34m    redef call(x i32) is // 5. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics18.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics18.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:47:5:[39m [1;31merror 6[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x, y i32) is // 6. should flag an error, wrong number of arguments
+[34m    redef call(x, y i32) is // 6. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics19.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics19.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:50:5:[39m [1;31merror 7[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call() is // 7. should flag an error, wrong number of arguments
+[34m    redef call() is // 7. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics20.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics20.call[39m'.
 
 
 [32m--CURDIR--/argumentcount_negative.fz:54:5:[39m [1;31merror 8[0m[1m: Feature declared using modifier '[35mredef[39m' does not redefine another feature[0m
-[34m    redefine call(x, y bool) is // 8. should flag an error, wrong number of arguments
+[34m    redef call(x, y bool) is // 8. should flag an error, wrong number of arguments
 [33m----^[0m
 Redefining feature: '[35margumentcount_negative.opengenerics22.call[39m'
 To solve this, check spelling and argument count against the feature you want to redefine or remove '[35mredef[39m' modifier in the declaration of '[35margumentcount_negative.opengenerics22.call[39m'.
@@ -108,7 +108,7 @@ To solve this, you could change the type of the target '[36margumentcount_negat
 
 
 [32m--CURDIR--/argumentcount_negative.fz:43:5:[39m [1;31merror 13[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine call() is
+[34m    redef call() is
 [33m----^[0m
 In '[35margumentcount_negative.opengenerics17.call[39m' that redefines '[35mFunction.call[39m' result type is '[33margumentcount_negative.opengenerics17.call[39m', result type should be '[33munit[39m' (from '[33mFunction.R[39m').  Original feature declared at [32m$FUZION/lib/Function.fz:34:3:[39m
 [34m  call(a A) R is abstract
@@ -117,7 +117,7 @@ To solve this, change type of result to '[33munit[39m'
 
 
 [32m--CURDIR--/argumentcount_negative.fz:52:5:[39m [1;31merror 14[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine call(x bool) is
+[34m    redef call(x bool) is
 [33m----^[0m
 In '[35margumentcount_negative.opengenerics21.call[39m' that redefines '[35mFunction.call[39m' result type is '[33margumentcount_negative.opengenerics21.call[39m', result type should be '[33munit[39m' (from '[33mFunction.R[39m').  Original feature declared at [32m$FUZION/lib/Function.fz:34:3:[39m
 [34m  call(a A) R is abstract

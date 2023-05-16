@@ -3,16 +3,16 @@
 [34m  E ref : D is
 [33m--^[0m
 Feature '[35massignment_negative.E.type[39m' inherits feature '[35mx.#type[39m' (one argument) repeatedly: '[35massignment_negative.B.x.type[39m' defined at [32m--CURDIR--/assignment_negative.fz:47:5:[39m
-[34m    redefine x is say "B.x"
+[34m    redef x is say "B.x"
 [33m----^[0m
 and '[35massignment_negative.C.x.type[39m' defined at [32m--CURDIR--/assignment_negative.fz:51:5:[39m
-[34m    redefine x is say "C.x"
+[34m    redef x is say "C.x"
 [33m----^[0m
 To solve this, you could add a redefinition of '[35mx.#type[39m' to '[35massignment_negative.E.type[39m'.
 
 
 [32m--CURDIR--/assignment_negative.fz:55:5:[39m [1;31merror 2[0m[1m: Cannot redefine feature with type parameters[0m
-[34m    redefine x is say "D.x"
+[34m    redef x is say "D.x"
 [33m----^[0m
 Feature that redefines existing feature: '[35massignment_negative.D.type[39m'
 original feature: '[35massignment_negative.C.x.type[39m'
@@ -21,7 +21,7 @@ To solve this, ask the Fuzion team to remove this restriction :-).
 
 
 [32m--CURDIR--/assignment_negative.fz:58:5:[39m [1;31merror 3[0m[1m: Cannot redefine feature with type parameters[0m
-[34m    redefine x  is say "E.x"
+[34m    redef x  is say "E.x"
 [33m----^[0m
 Feature that redefines existing feature: '[35massignment_negative.E.type[39m'
 original feature: '[35massignment_negative.B.x.type[39m'
@@ -147,7 +147,7 @@ To solve this, you could change the type of the target '[36massignment_negative
 
 
 [32m--CURDIR--/assignment_negative.fz:47:5:[39m [1;31merror 13[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine x is say "B.x"
+[34m    redef x is say "B.x"
 [33m----^[0m
 In '[35massignment_negative.B.x[39m' that redefines '[35massignment_negative.A.x[39m' result type is '[33massignment_negative.B.x[39m', result type should be '[33munit[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:43:5:[39m
 [34m    x is abstract
@@ -156,7 +156,7 @@ To solve this, change type of result to '[33munit[39m'
 
 
 [32m--CURDIR--/assignment_negative.fz:51:5:[39m [1;31merror 14[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine x is say "C.x"
+[34m    redef x is say "C.x"
 [33m----^[0m
 In '[35massignment_negative.C.x[39m' that redefines '[35massignment_negative.A.x[39m' result type is '[33massignment_negative.C.x[39m', result type should be '[33munit[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:43:5:[39m
 [34m    x is abstract
@@ -165,25 +165,25 @@ To solve this, change type of result to '[33munit[39m'
 
 
 [32m--CURDIR--/assignment_negative.fz:55:5:[39m [1;31merror 15[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine x is say "D.x"
+[34m    redef x is say "D.x"
 [33m----^[0m
 In '[35massignment_negative.D.x[39m' that redefines '[35massignment_negative.C.x[39m' result type is '[33massignment_negative.D.x[39m', result type should be '[33massignment_negative.C.x[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:51:5:[39m
-[34m    redefine x is say "C.x"
+[34m    redef x is say "C.x"
 [33m----^[0m
 To solve this, change type of result to '[33massignment_negative.C.x[39m'
 
 
 [32m--CURDIR--/assignment_negative.fz:58:5:[39m [1;31merror 16[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine x  is say "E.x"
+[34m    redef x  is say "E.x"
 [33m----^[0m
 In '[35massignment_negative.E.x[39m' that redefines '[35massignment_negative.D.x[39m' result type is '[33massignment_negative.E.x[39m', result type should be '[33massignment_negative.D.x[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:55:5:[39m
-[34m    redefine x is say "D.x"
+[34m    redef x is say "D.x"
 [33m----^[0m
 To solve this, change type of result to '[33massignment_negative.D.x[39m'
 
 
 [32m--CURDIR--/assignment_negative.fz:60:5:[39m [1;31merror 17[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine xc is say "E.xc"
+[34m    redef xc is say "E.xc"
 [33m----^[0m
 In '[35massignment_negative.E.xc[39m' that redefines '[35massignment_negative.C.xc[39m' result type is '[33massignment_negative.E.xc[39m', result type should be '[33massignment_negative.C.xc[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:52:5:[39m
 [34m    xc is say "C.xc"
@@ -192,7 +192,7 @@ To solve this, change type of result to '[33massignment_negative.C.xc[39m'
 
 
 [32m--CURDIR--/assignment_negative.fz:59:5:[39m [1;31merror 18[0m[1m: Wrong result type in redefined feature[0m
-[34m    redefine xb is say "E.xb"
+[34m    redef xb is say "E.xb"
 [33m----^[0m
 In '[35massignment_negative.E.xb[39m' that redefines '[35massignment_negative.B.xb[39m' result type is '[33massignment_negative.E.xb[39m', result type should be '[33massignment_negative.B.xb[39m'.  Original feature declared at [32m--CURDIR--/assignment_negative.fz:48:5:[39m
 [34m    xb is say "B.xb"
