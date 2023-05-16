@@ -90,7 +90,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    C1 ref : A1.B1.C is                 // 3. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.C1.this.type (in type feature)[39m'.
 
@@ -106,7 +106,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    D1 ref : A1.B1.C1.D is              // 4. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.D1.this.type (in type feature)[39m'.
 
@@ -122,7 +122,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    E1 ref : A1.B1.C1.D1.E is           // 5. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.E1.this.type (in type feature)[39m'.
 
@@ -138,7 +138,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    F1 ref : A1.B1.C1.D1.E1.F is        // 6. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.F1.this.type (in type feature)[39m'.
 
@@ -154,7 +154,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    C2 ref : A1.B1.C is                 // 7. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.C2.this.type (in type feature)[39m'.
 
@@ -170,7 +170,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    D2 ref : A1.B1.C1.D is              // 8. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.D2.this.type (in type feature)[39m'.
 
@@ -186,7 +186,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    E2 ref : A1.B1.C1.D1.E is           // 9. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.E2.this.type (in type feature)[39m'.
 
@@ -202,7 +202,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.outerInheritsNotFound3.F2.this.type (in type feature)[39m'.
 
@@ -218,7 +218,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.inheritedNotFound1.C.this.type (in type feature)[39m'.
 
@@ -234,7 +234,7 @@ To solve this, check spelling and argument count against the feature you want to
 [34m    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
 [33m----^[0m
 Wrong number of actual type parameters in call:
-Called feature: #universe
+Called feature: universe
 expected no generic arguments
 found 1: '[33minheritance_negative2.inheritedNotFound2.C.this.type (in type feature)[39m'.
 
