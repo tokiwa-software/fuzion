@@ -36,17 +36,17 @@
 # or the denominator.
 #
 fraction(B type : integer B,
-         num,    # numerator
-         den B   # denominatior
+         numerator,
+         denominator B
         ) : numeric (fraction B)
   pre
-    safety: den.sign > 0 # denominator must be positive
+    safety: denominator.sign > 0 # denominator must be positive
 is
 
 # private:
 
   # just for brevity
-  a => fraction fraction.this.num den
+  a => fraction numerator denominator
 
 # public:
 
@@ -55,27 +55,27 @@ is
 
   # reduce numerator and denominator by their gcd:
   reduce =>
-    gcd := fraction.this.num.abs.gcd den
-    if gcd = fraction.this.num.one
+    gcd := numerator.abs.gcd denominator
+    if gcd = numerator.one
       a
     else
-      fraction (fraction.this.num / gcd) (den / gcd)
+      fraction (numerator / gcd) (denominator / gcd)
 
-  redef zero => fraction fraction.this.num.zero fraction.this.num.one
-  redef one  => fraction fraction.this.num.zero fraction.this.num.one
+  redef zero => fraction numerator.zero numerator.one
+  redef one  => fraction numerator.zero numerator.one
 
   # basic operations
   redef prefix + => a
-  redef prefix - => fraction -a.num a.den
-  redef infix +  (b fraction B) => (fraction (fraction.this.num * b.den + b.num * den) (den * b.den)).reduce
-  redef infix -  (b fraction B) => (fraction (fraction.this.num * b.den - b.num * den) (den * b.den)).reduce
-  redef infix *  (b fraction B) => (fraction (fraction.this.num * b.num              ) (den * b.den)).reduce
+  redef prefix - => fraction -a.numerator a.denominator
+  redef infix +  (b fraction B) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
+  redef infix -  (b fraction B) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
+  redef infix *  (b fraction B) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
   redef infix /  (b fraction B) fraction B
     pre
       safety: b != zero
-  is (fraction (fraction.this.num * b.den) (den * b.num)).reduce
+  is (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
-  redef as_string => "" + fraction.this.num + "⁄" + den
+  redef as_string => "" + numerator + "⁄" + denominator
 
 
   # -----------------------------------------------------------------------
@@ -96,10 +96,10 @@ is
   # equality
   #
   fixed type.equality(a, b num.fraction B) =>
-    (a - b).num.is_zero
+    (a - b).numerator.is_zero
 
 
   # total order
   #
   fixed type.lteq(a, b num.fraction B) =>
-    (a - b).num.sign ≤ 0
+    (a - b).numerator.sign ≤ 0
