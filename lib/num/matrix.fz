@@ -62,18 +62,18 @@ is
 
   # equality
   #
-  fixed type.equality(a, b matrix M) =>
+  fixed type.equality(a, b num.matrix M) =>
     for
       x in a.e
       y in a.e
-    until !(x ≟ y)
+    until x != y
       false
     else
       true
 
   # NYI: total order
   #
-  fixed type.lteq(a, b matrix M) =>
+  fixed type.lteq(a, b num.matrix M) =>
     panic "matrix does not define a total order"
 
   transpose matrix M is

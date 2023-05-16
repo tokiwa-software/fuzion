@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test call_with_ambiguous_result_type
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This tests a tricky call situation where the result type of a call is ambiguous
+# since the outer type is a ref this.type that could be a boxed value type.
+#
+call_with_ambiguous_result_type is
+
+  r ref is
+    e is
+
+    # result type of g is r.this.type.e
+    g => e
+
+  h1 : r is
+  h2 : r is
+
+  # v will be set to `boxed h1` or `boxed h2`
+  v r := if time.nano.read % 2 = 1 then
+           h1
+         else
+           h2
+
+  # the result type of `v.g` is ambiguous: `h.e` for any
+  # heir of `r`.  So this will cause an error:
+  #
+  x := v.g   # error! ambiguous result type

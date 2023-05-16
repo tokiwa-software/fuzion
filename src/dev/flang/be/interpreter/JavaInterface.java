@@ -66,17 +66,17 @@ public class JavaInterface extends ANY
       }
     catch (IllegalAccessException e)
       {
-        Errors.fatal("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
+        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        Errors.fatal("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     return result;
@@ -195,10 +195,10 @@ public class JavaInterface extends ANY
 
 
   /**
-   * Extract Java object from an Instance of fuzion.java.JavaObject
+   * Extract Java object from an Instance of fuzion.java.Java_Object
    *
    * @param i an instance, must be of a clazz that inherits
-   * fuzion.java.JavaObject
+   * fuzion.java.Java_Object
    */
   static Object instanceToJavaObject(Instance i)
   {
@@ -249,8 +249,8 @@ public class JavaInterface extends ANY
    * @param o a Java object
    *
    * @param resultClazz the clazz to wrap o into.  Must be either an heir of
-   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is an heir of
-   * 'fuzion.java.JavaObject'.
+   * 'fuzion.java.Java_Object' or 'outcome&lt;X&gt;' where 'X' is an heir of
+   * 'fuzion.java.Java_Object'.
    *
    * @return a value of resultClazz that contains o.
    */
@@ -270,8 +270,8 @@ public class JavaInterface extends ANY
    * @param e a Java exception
    *
    * @param resultClazz the clazz to wrap o into.  Must be either an heir of
-   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is an heir of
-   * 'fuzion.java.JavaObject'.
+   * 'fuzion.java.Java_Object' or 'outcome&lt;X&gt;' where 'X' is an heir of
+   * 'fuzion.java.Java_Object'.
    *
    * @return a value of resultClazz that contains o or, in case e!=null, e.
    */
@@ -335,7 +335,7 @@ public class JavaInterface extends ANY
             var off = (Integer) e.getValue();
             var v = switch (f.featureName().baseName())
               {
-              case "javaRef"   -> new JavaRef(o);
+              case "Java_Ref"   -> new JavaRef(o);
               case "forbidden" -> Value.NO_VALUE;
               default -> f.isOuterRef() ? new Instance(resultClazz._outer)
                                         : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+f.qualifiedName()); }};
@@ -429,7 +429,7 @@ public class JavaInterface extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static/call_constructor for class " +
                            clName + " calling " + (name == null ? "new " + clName : name ) + sig);
         cl = Object.class; // not reached.
       }
@@ -446,7 +446,7 @@ public class JavaInterface extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
     Object[] argz = instanceToJavaObjects(args);

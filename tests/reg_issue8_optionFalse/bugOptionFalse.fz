@@ -32,7 +32,7 @@ bugOptionFalse is
   x(V type)
   is
     b(l i32) option V is
-      if l ⩼ 0
+      if l > 0
         false  # SHOULD FLAG AN ERROR!
       else
         b l+1

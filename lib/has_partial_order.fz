@@ -35,9 +35,9 @@ has_partial_order : equatable
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.forAll  T     fun(a       T) => (a <= b),                # reflexivity
-    analysis: quantors.forAll3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
-    analysis: quantors.forAll3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
+    analysis: quantors.for_all  T     fun(a       T) => (a <= b),                # reflexivity
+    analysis: quantors.for_all3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
+    analysis: quantors.for_all3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
 */
 
 is

@@ -194,10 +194,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
         var name = _dfa._fuir.clazzIntrinsicName(_cc);
-        var idfa = _dfa._intrinsics_.get(name);
+        var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
-            result = _dfa._intrinsics_.get(name).analyze(this);
+            result = DFA._intrinsics_.get(name).analyze(this);
           }
         else
           {

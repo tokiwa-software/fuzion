@@ -34,4 +34,4 @@ sys is
   # This is used to pass strings down to intrinsics
   #
   private c_string (s String) =>
-    (s + codepoint 0).utf8.as_array.internalArray.data
+    (s + codepoint 0).utf8.as_array.internal_array.data

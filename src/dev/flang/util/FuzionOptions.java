@@ -61,7 +61,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
+   * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
    * not allowed if run in a web playground.
    */
   final boolean _enableUnsafeIntrinsics;

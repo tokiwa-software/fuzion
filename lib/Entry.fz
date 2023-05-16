@@ -46,10 +46,10 @@ private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) 
   # in this submap
   #
   private get(k K) option V is
-    if k ⩻ key
+    if k < key
       left.get ? nil => nil
                | e Entry => e.get k
-    else if key ⩻ k
+    else if key < k
       right.get ? nil => nil
                 | e Entry => e.get k
     else

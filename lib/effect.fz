@@ -32,22 +32,22 @@
 effect (
   # action to be performed, may include code to run while this effect is installed.
   #
-  r effectMode.val
+  r effect_mode.val
   )
 is
 
   match r
-    _ effectMode.plain   =>
-    i effectMode.inst    => run i.f (_)->unit
-    _ effectMode.repl    => replace
-    _ effectMode.abort   => fuzion.std.panic "abort"
-    _ effectMode.default => default
-    _ effectMode.new     =>
+    _ effect_mode.plain   =>
+    i effect_mode.inst    => run i.f (_)->unit
+    _ effect_mode.repl    => replace
+    _ effect_mode.abort   => fuzion.std.panic "abort"
+    _ effect_mode.default => default
+    _ effect_mode.new     =>
 
-  mode effectMode.val is
+  mode effect_mode.val is
     match r
-      effectMode.plain => effectMode.plain
-      effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default, effectMode.new => effectMode.repl
+      effect_mode.plain => effect_mode.plain
+      effect_mode.inst, effect_mode.repl, effect_mode.abort, effect_mode.default, effect_mode.new => effect_mode.repl
 
   # replace effect in the current context by this
   private replace unit is intrinsic
@@ -71,7 +71,7 @@ is
   #
   private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
     res option R := nil
-    cf := effect_call f
+    cf := Effect_Call f
     abortable cf
     match cf.res
       nil => def(unit)
@@ -96,15 +96,15 @@ is
      )
     pre
       match r
-        effectMode.new => true
+        effect_mode.new => true
         * => false
   is
-    abortable (effect_call code)
+    abortable (Effect_Call code)
 
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
-private effect_call(redef R type, f () -> R) ref : Function unit is
+private Effect_Call(redef R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()
@@ -117,7 +117,7 @@ effects is
 
 # effect mode is an enum that determines how an instance of effect is used
 #
-effectMode is
+effect_mode is
 
   val : choice of
     plain,             # a plain effect, not installed as 'env'
@@ -128,7 +128,7 @@ effectMode is
     inst(f ()->unit).  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
 
-code_effect : effect (effectMode.inst code)
+code_effect : effect (effect_mode.inst code)
 is
 
   # the code to be executed within this effect.  This is typically
@@ -140,21 +140,21 @@ is
   code ()->unit is abstract
 
 
-# simpleEffect provides a simple means to define and use an effect
+# simple_effect provides a simple means to define and use an effect
 #
 # user-defined effects should inherit from this feature and add
 # operations as inner features or fields of function type.
 #
-# To install this effect to execute a function, simpleEffect.use
+# To install this effect to execute a function, simple_effect.use
 # can be called.
 #
-simpleEffect : effect effectMode.plain
+simple_effect : effect effect_mode.plain
 is
 
-  # install this simpleEffect and run code
+  # install this simple_effect and run code
   #
   use(code ()->unit) unit is
-    abortable (effect_call code)
+    abortable (Effect_Call code)
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
@@ -163,5 +163,5 @@ is
     fo () -> option T is ()->f()
     r := run fo (unit)->nil
     match r
-      nil => panic "*** unexpected abort in {simpleEffect.this.type}"
+      nil => panic "*** unexpected abort in {simple_effect.this.type}"
       v T => v

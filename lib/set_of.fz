@@ -34,12 +34,12 @@ set_of_ordered(K type : has_total_order, vs Sequence K) Set K is ps_set vs
 #
 # This feature creates an instance of a Set.
 #
-set_of_hashable(K type : has_hash, vs (CTrie K unit) | (Sequence K)) Set K is
+set_of_hashable(K type : has_hash, vs (C_Trie K unit) | (Sequence K)) Set K is
 
-  private map CTrie K unit :=
+  private map C_Trie K unit :=
     match vs
-      vss (Sequence K) => ctrie (vss.mapSequence (k -> tuple k unit))
-      vsc (CTrie K unit) => vsc
+      vss (Sequence K) => c_trie (vss.map_sequence (k -> tuple k unit))
+      vsc (C_Trie K unit) => vsc
 
   ref : Set K
 

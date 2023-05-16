@@ -151,14 +151,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * forFun specifies iff this call is within a function declaration, e.g., the
-   * call to "b" in "x(fun a.b)". In this case, the actual arguments list must
-   * be empty, independent of the formal arguments expected by b.
-   */
-  boolean _forFun = false;
-
-
-  /**
    * For static type analysis: This gives the resolved formal argument types for
    * the arguments of this call.  During type checking, it has to be checked
    * that the actual arguments can be assigned to these types.
@@ -266,25 +258,6 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (la != null,
        select >= -1);
-  }
-
-
-  /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t the target of the call, null if none.
-   *
-   * @param n the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public Call(SourcePosition pos, Expr t, String n, int select)
-  {
-    this(pos, t, n, select, NO_PARENTHESES);
   }
 
 
@@ -625,7 +598,7 @@ public class Call extends AbstractCall
    * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
    * during state RESOLVING_TYPES for all other calls.
    *
-   * @param res this is called during type resolution, res gives the resolution
+   * @param res the resolution instance.
    * instance.
    *
    * @param thiz the surrounding feature. For a call c in an inherits clause ("f
@@ -679,13 +652,13 @@ public class Call extends AbstractCall
                       }
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built a chained bool: `a < b < c` => `(a < b) && (a < c)`
+                  { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
                     resolveTypesOfActuals(res,thiz);
                     actualsResolved = true;
                     findChainedBooleans(res, thiz);
                   }
                 if (_calledFeature == null)
-                  { // nothing found, try if we can built operator call: `a + b` => `x.y.z.this.infix + a b`
+                  { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
                 if (_calledFeature == null && !fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -903,8 +876,7 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return _forFun                 /* a fun-declaration "fun a.b.f" */
-      || ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
 
@@ -1087,8 +1059,7 @@ public class Call extends AbstractCall
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if (!_forFun                                     && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        (_type.isFunType() &&
+    if ((_type.isFunType() &&
          _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
          _calledFeature.arguments().size() == 0      &&
          hasParentheses()
@@ -1460,7 +1431,10 @@ public class Call extends AbstractCall
       {
         var inner = new Type(calledFeature().selfType(),
                              _target.typeForCallTarget());
-        t = t.replace_this_type_by_actual_outer(inner);
+        var t0 = t;
+        t = t.replace_this_type_by_actual_outer(inner,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
+                                                );
       }
     return t;
   }
@@ -2139,8 +2113,7 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    if (!_forFun &&
-        _type != Types.t_ERROR &&
+    if (_type != Types.t_ERROR &&
         _resolvedFormalArgumentTypes != null &&
         _actuals.size() == _resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
@@ -2182,7 +2155,7 @@ public class Call extends AbstractCall
    */
   public void box(AbstractFeature outer)
   {
-    if (!_forFun && _type != Types.t_ERROR)
+    if (_type != Types.t_ERROR)
       {
         int fsz = _resolvedFormalArgumentTypes.length;
         if (_actuals.size() ==  fsz)
@@ -2218,21 +2191,19 @@ public class Call extends AbstractCall
    */
   public void checkTypes(AbstractFeature outer)
   {
-    if (_forFun)
-      { // this is a call to "b" within an expression of the form "fun a.b". In
-        // this case, there must be no generics nor actual arguments to "b", the
-        // call will be replaced during Function.resolveSyntacticSugar.
-        if (_actuals.size() != 0)
-          {
-            AstErrors.functionMustNotProvideActuals(pos(), this, _actuals);
-          }
-        else if (hasParentheses())
-          {
-            AstErrors.functionMustNotProvideParentheses(pos(), this);
-          }
-      }
-    else if (_type != Types.t_ERROR)
+    if (_type != Types.t_ERROR)
       {
+        var o = _type;
+        while (o != null && !o.isGenericArgument())
+          {
+            o = o.outer();
+            if (o != null && o.isRef() && !o.featureOfType().isThisRef())
+              {
+                AstErrors.illegalCallResultType(this, _type, o);
+                o = null;
+              }
+          }
+
         int fsz = _resolvedFormalArgumentTypes.length;
         if (_actuals.size() !=  fsz)
           {
@@ -2359,6 +2330,7 @@ public class Call extends AbstractCall
       }
     return this;
   }
+
 
 }
 

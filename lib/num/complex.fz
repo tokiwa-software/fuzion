@@ -58,14 +58,14 @@ is
 
   # equality
   #
-  fixed type.equality(a, b complex C) bool is
-    a.real ≟ b.real && a.imag ≟ b.imag
+  fixed type.equality(a, b num.complex C) bool is
+    a.real = b.real && a.imag = b.imag
 
   # total order ignoring imag
   #
   # NYI: Does this make sense mathematically?
   #
-  fixed type.lteq(a, b complex C) bool is
+  fixed type.lteq(a, b num.complex C) bool is
     a.real ≤ b.real
 
   abs² => real*real+imag*imag

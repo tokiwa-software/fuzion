@@ -61,7 +61,7 @@ public class Instance extends Value implements Comparable<Instance>
   /**
    * Map from fields to the values that have been assigned to the fields.
    */
-  final TreeMap<Integer, Value> _fields;
+  private final TreeMap<Integer, Value> _fields;
 
 
   /**
@@ -124,8 +124,7 @@ public class Instance extends Value implements Comparable<Instance>
   public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
-      (v != null,
-       dfa._fuir.correspondingFieldInValueInstance(field) == field);
+      (v != null);
 
     var oldv = _fields.get(field);
     if (oldv != null)
@@ -148,23 +147,10 @@ public class Instance extends Value implements Comparable<Instance>
   Value readFieldFromInstance(DFA dfa, int field)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzOuterClazz(field),
-       dfa._fuir.correspondingFieldInValueInstance(field) == field);
+      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
     dfa._readFields.add(field);
     var v = _fields.get(field);
-    if (v == null && _isBoxed)
-      {
-        for (var f : _fields.keySet())
-          { // NYI: HACK: For a boxed value, we read the corresponding value
-            // type field. We should better copy all the fields over from the
-            // value type to the ref type.
-            if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
-              {
-                v = _fields.get(f);
-              }
-          }
-      }
     if (v == null)
       {
         if (dfa._reportResults)

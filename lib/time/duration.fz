@@ -80,8 +80,8 @@ is
   #
   redef as_string String is
     (f,u) := for
-      x := units.unitNames.first, n
-      n in units.unitNames.drop 1
+      x := units.unit_names.first, n
+      n in units.unit_names.drop 1
       nf := n.values.0
   /* NYI this does not work yet, see #228:
    *
@@ -90,7 +90,7 @@ is
    *
    * so use until .. then .. else instead, which works, but repeats 'x'
    */
-    until nf ≟ u64 0 || nanos / nf ⩻ u64 10 then
+    until nf = u64 0 || nanos / nf < u64 10 then
       x
     else
       x
@@ -297,7 +297,7 @@ units is
   # Entries are sorted by increasing duration size.  The last
   # entry is an ((u64 0), "--end marker--").
   #
-  unitNames =>
+  unit_names =>
     [ (nanos_per_nano   , "ns"),
       (nanos_per_micro  , "µs"),
       (nanos_per_milli  , "ms"),

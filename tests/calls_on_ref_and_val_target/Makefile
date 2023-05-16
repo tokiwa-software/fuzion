@@ -17,50 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature printEffect
+#  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# printEffect -- effect providing an output stream
-#
-# This is used as heir feature for effects such as io.out and io.err.
-#
-private printEffect (
-  p Can_Print,
+override NAME = calls
 
-  # action to be taken: plain nomad, install or replace?
-  redef r effectMode.val
-  ) : effect r
-is
-
-  # print the given string followed be new line
-  #
-  println (s Any) =>
-    p.println s
-    replace
-
-  # print the given string
-  #
-  print (s Any) =>
-    p.print s
-    replace
-
-  # print new line
-  #
-  println =>
-    p.println
-    replace
-
-
-Can_Print ref is
-
-  println(s Any) =>
-    print s
-    println
-
-  println =>
-    print (codepoint 10)
-
-  print(s Any) unit is abstract
+include ../simple.mk

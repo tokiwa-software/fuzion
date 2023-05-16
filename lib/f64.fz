@@ -66,17 +66,17 @@ f64(val f64) : float f64, f64s is
 
 
   # casting bit representation to u64
-  castTo_u64 u64 is intrinsic
+  cast_to_u64 u64 is intrinsic
 
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # is the sign bit set?
   is_sign_bit_set bool is
-    castTo_u64 >= 1P63
+    cast_to_u64 >= 1P63
 
 
   # number of bits used for mantissa,
@@ -103,7 +103,7 @@ f64(val f64) : float f64, f64s is
 
 
   # the biased exponent
-  exponent_biased => ((castTo_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
+  exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
 
 
   # the normalized exponent
@@ -116,7 +116,7 @@ f64(val f64) : float f64, f64s is
 
   # the normalized mantissa
   mantissa =>
-    m := castTo_u64 & f64.type.mantissa_mask
+    m := cast_to_u64 & f64.type.mantissa_mask
     if exponent_biased = 0
       m
     else
@@ -125,17 +125,17 @@ f64(val f64) : float f64, f64s is
 
   # the fraction of this floating point number
   redef fract f64 is
-    if f64s.isNaN val
+    if f64s.is_NaN val
       NaN
-    else if val ⩻ (f64 0)
+    else if val < (f64 0)
       -(-val).fract
-    else if val ⩻ (f64 1)
+    else if val < (f64 1)
       val
     else
       shift := (f64.type.mantissa_bits - exponent)
       if (shift > 0)
-        whole := castTo_u64 & (u64.type.max << shift.as_u64)
-        val - whole.castTo_f64
+        whole := cast_to_u64 & (u64.type.max << shift.as_u64)
+        val - whole.cast_to_f64
       else
         0.0
 
@@ -192,16 +192,16 @@ f64s : floats f64 is
   redef one  => f64 1
 
 
-  redef isNaN(val f64) bool is intrinsic
+  redef is_NaN(val f64) bool is intrinsic
 
 
-  redef minExp i32 is intrinsic
-  redef maxExp i32 is intrinsic
-  redef minPositive f64 is intrinsic
+  redef min_exp i32 is intrinsic
+  redef max_exp i32 is intrinsic
+  redef min_positive f64 is intrinsic
   redef max f64 is intrinsic
   redef epsilon f64 is intrinsic
 
-  redef squareRoot(val f64) f64 is intrinsic
+  redef square_root(val f64) f64 is intrinsic
 
   redef exp(val f64) f64 is intrinsic
   redef log(val f64) f64 is intrinsic

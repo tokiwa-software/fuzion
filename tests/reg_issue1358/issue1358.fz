@@ -1,0 +1,3 @@
+issue1358 is
+  a list i32 := 1:(2:nil)
+

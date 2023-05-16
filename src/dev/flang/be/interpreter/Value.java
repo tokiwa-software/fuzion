@@ -78,6 +78,16 @@ public abstract class Value extends ANY
 
 
   /**
+   * Create a copy (clone) of this value.  Used for boxing values into
+   * ref-types.
+   */
+  Value cloneValue(Clazz cl)
+  {
+    return this;
+  }
+
+
+  /**
    * toString
    *
    * @return

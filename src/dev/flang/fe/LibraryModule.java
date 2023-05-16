@@ -48,7 +48,6 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;

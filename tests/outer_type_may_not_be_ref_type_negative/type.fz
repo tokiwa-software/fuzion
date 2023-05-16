@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test outer_type_may_not_be_ref_type
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Test to check that explicit use of `ref` in outer types results in an error.
+#
+# The reason for this is that an outer type that is an explicit ref type is of
+# no use since no values of such a type could be created since the values will
+# have the original value type as their outer type or an (value or ref) heir type,
+# which will not be assignable
+#
+outer_type_may_not_be_ref_type is
+
+  r1 ref is
+    d is
+
+  v : r1 is
+    e is
+
+  r2 ref : v is
+
+  rv ref v := v
+  x1 v.e := v.e                         # ok
+  x2 r2.e := r2.e                       # ok
+  x3 r1.d := r1.d                       # ok
+  x4 (ref v).e := panic "create void"   # error!
+
+  f(a (ref v).e) is                     # error!
+    # do nothing
+
+  g(a i32) (ref v).e is                # error!
+    panic "create void"

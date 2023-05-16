@@ -67,7 +67,7 @@ public class Type extends AbstractType
    */
   public enum RefOrVal
   {
-    Ref,                    // this is an explicit reference type
+    Boxed,                  // this is boxed value type or an an explicit reference type
     Value,                  // this is an explicit value type
     LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
     ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
@@ -98,7 +98,7 @@ public class Type extends AbstractType
    * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
    * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
    */
-  public final String name;
+  public String name;
   public String name()
   {
     return name;
@@ -187,6 +187,11 @@ public class Type extends AbstractType
   public Type(SourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
+    if (_outer != null && _outer.isRef())
+      {
+        AstErrors.outerTypeMayNotBeRefType(this);
+        this.name = Errors.ERROR_STRING;
+      }
   }
 
 
@@ -231,7 +236,7 @@ public class Type extends AbstractType
          o,
          t instanceof Type tt ? tt.feature   : t.featureOfType(),
          t instanceof Type tt ? tt._refOrVal : (t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-                                                t.isRef() ? RefOrVal.Ref
+                                                t.isRef() ? RefOrVal.Boxed
                                                 : RefOrVal.Value),
          true);
 
@@ -256,7 +261,7 @@ public class Type extends AbstractType
   {
     this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), t.generics(), o, t.featureOfType(),
          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-         t.isRef()                                  ? RefOrVal.Ref
+         t.isRef()                                  ? RefOrVal.Boxed
                                                     : RefOrVal.Value,
          false);
 
@@ -387,7 +392,7 @@ public class Type extends AbstractType
     this._generics         = NONE;
     this._outer            = null;
     this.feature           = null;
-    this._refOrVal         = ref ? RefOrVal.Ref
+    this._refOrVal         = ref ? RefOrVal.Boxed
                                  : RefOrVal.LikeUnderlyingFeature;
     this.checkedForGeneric = true;
   }
@@ -426,7 +431,7 @@ public class Type extends AbstractType
    *
    * @param original the original value type
    *
-   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
+   * @param refOrVal must be RefOrVal.Boxed or RefOrVal.Val
    */
   public Type(Type original, RefOrVal refOrVal)
   {
@@ -552,7 +557,7 @@ public class Type extends AbstractType
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new Type(this, RefOrVal.Ref));
+        result = Types.intern(new Type(this, RefOrVal.Boxed));
       }
     return result;
   }
@@ -632,7 +637,7 @@ public class Type extends AbstractType
     if (PRECONDITIONS) require
       (this._refOrVal == RefOrVal.LikeUnderlyingFeature);
 
-    this._refOrVal = RefOrVal.Ref;
+    this._refOrVal = RefOrVal.Boxed;
   }
 
 
@@ -643,7 +648,7 @@ public class Type extends AbstractType
   {
     return switch (this._refOrVal)
       {
-      case Ref                  -> true;
+      case Boxed                -> true;
       case Value                -> false;
       case LikeUnderlyingFeature-> ((feature != null) && feature.isThisRef());
       case ThisType             -> false;
@@ -656,11 +661,7 @@ public class Type extends AbstractType
    */
   public boolean isThisType()
   {
-    return switch (this._refOrVal)
-      {
-      case Ref, Value, LikeUnderlyingFeature -> false;
-      case ThisType                          -> true;
-      };
+    return this._refOrVal == RefOrVal.ThisType;
   }
 
 
@@ -737,9 +738,9 @@ public class Type extends AbstractType
         String outer = _outer.toStringWrapped();
         result = ""
           + (outer == "" ||
-             outer == FuzionConstants.UNIVERSE_NAME ? ""
-                                                    : outer + ".")
-          + (_refOrVal == RefOrVal.Ref   && (feature == null || !feature.isThisRef()) ? "ref "   :
+             outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
+                                                         : outer + ".")
+          + (_refOrVal == RefOrVal.Boxed && (feature == null || !feature.isThisRef()) ? "ref " :
              _refOrVal == RefOrVal.Value &&  feature != null &&  feature.isThisRef()  ? "value "
                                                                                       : ""       )
           + (feature == null ? name
@@ -747,11 +748,18 @@ public class Type extends AbstractType
       }
     else if (feature == null  || feature == Types.f_ERROR)
       {
-        result = name;
+        result =
+          (_refOrVal == RefOrVal.Boxed ? "ref "
+                                       : ""       )
+          + name;
       }
     else
       {
-        result = feature.qualifiedName();
+        result =
+          (_refOrVal == RefOrVal.Boxed && (feature == null || !feature.isThisRef()) ? "ref " :
+           _refOrVal == RefOrVal.Value &&  feature != null &&  feature.isThisRef()  ? "value "
+                                                                                    : ""       )
+          + feature.qualifiedName();
       }
     if (isThisType())
       {
@@ -803,20 +811,16 @@ public class Type extends AbstractType
                 if (CHECKS) check
                   (_interned == null);
 
-                var o = _outer;
                 _outer = _outer.visit(v, outerfeat);
               }
           }
       }
-    if (!_generics.isEmpty() && !(_generics instanceof FormalGenerics.AsActuals))
+    if (!(_generics instanceof FormalGenerics.AsActuals))
       {
-        var result = this;
-        var g = generics();
-        var ng = g.map(gt -> gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
-        if (ng != g)
-          {
-            result = new Type(this, ng, outer());
-          }
+        generics()
+          .stream()
+          .filter(g -> g instanceof Type)
+          .forEach(g -> g.visit(v, outerfeat));
       }
     return v.action(this, outerfeat);
   }
@@ -830,7 +834,7 @@ public class Type extends AbstractType
    */
   void findGenerics(AbstractFeature outerfeat)
   {
-    //    if (PRECONDITIONS) require
+    // NYI   if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     if ((feature == null) && (generic == null))

@@ -732,7 +732,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var p = pos();
             var typeArg = new Feature(p,
                                       visibility(),
-                                      outer().isUniverse() && featureName().baseName().equals(FuzionConstants.OBJECT_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
+                                      outer().isUniverse() && featureName().baseName().equals(FuzionConstants.ANY_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
@@ -1137,21 +1137,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         o = o.outer();
       }
     return result;
-  }
-
-
-  /**
-   * Are calls to this feature performed using dynamic binding?
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (this == Types.f_ERROR || outer() != null);
-
-    return
-      this != Types.f_ERROR &&
-      generics() == FormalGenerics.NONE &&
-      !outer().isChoice();
   }
 
 
@@ -1708,6 +1693,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return visibility() + " " +
       Consts.modifierToString(modifiers()) +
+      (isTypeFeature() ? "type." : "") +
       featureName().baseName() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +

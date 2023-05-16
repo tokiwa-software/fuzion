@@ -63,13 +63,13 @@ generics_negative is
     x3 : choice A C B is  // 8. should flag an error: choice cannot use open generic
 
   opengenerics11 ref : Function i32 is
-    redefine call() i32 is 42
+    redef call() i32 is 42
   opengenerics15 ref : Function i32 bool is
-    redefine call(x bool) i32 is 42
+    redef call(x bool) i32 is 42
   opengenerics17 ref : Function unit is
-    redefine call() unit is
+    redef call() unit is
   opengenerics21 ref : Function unit i32 is
-    redefine call(x i32) unit is
+    redef call(x i32) unit is
 
   f1 Function i32 := opengenerics11
   f1r1 := f1.call()
@@ -169,7 +169,7 @@ generics_negative is
       f(a A) is abstract
 
     G ref : F i32 bool i32 is
-      redefine f(a0 i32, a1 bool, a2 i32) is
+      redef f(a0 i32, a1 bool, a2 i32) is
 
     x G := G
     x.f 3 true 5

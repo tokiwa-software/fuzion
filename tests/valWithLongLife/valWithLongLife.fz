@@ -32,7 +32,7 @@ valWithLongLife is
   exit_code := mut 0
 
   chck(s, expected String) =>
-    if s ≟ expected
+    if s = expected
       say "PASSED: $s"
     else
       say "FAILED: $s /= $expected"

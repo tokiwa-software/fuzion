@@ -326,7 +326,7 @@ class ForClass extends ANY
     var sc = _superClass == null ? null : _superClass._class;
     var inh = sc != null ? typeName(sc) + "(forbidden), " : "";
     var rf  = sc != null ? "redef " : "";
-    var base = _class == String.class ? "fuzion.java.JavaString" : "fuzion.java.JavaObject";
+    var base = _class == String.class ? "fuzion.java.Java_String" : "fuzion.java.Java_Object";
     StringBuilder data_dynamic = new StringBuilder(header(fzj, "Fuzion interface to instance members of Java instance class '" + cn + "'") +
                                                    jtn + "(" + rf + "forbidden void) ref : " + inh + base + "(forbidden) is\n");
     StringBuilder data_static  = new StringBuilder(header(fzj, "Fuzion interface to static members of Java class '" + cn + "'") +
@@ -474,7 +474,7 @@ class ForClass extends ANY
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
                             "  " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.callVirtual (" + fr + ") " +
+                            "    " + ("fuzion.java.call_virtual (" + fr + ") " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -488,7 +488,7 @@ class ForClass extends ANY
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
                             "  " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.callStatic (" + fr + ") " +
+                            "    " + ("fuzion.java.call_static (" + fr + ") " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -519,7 +519,7 @@ class ForClass extends ANY
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  " + fn + fp + " " + fr + " is\n" +
-                       "    " + ("fuzion.java.callConstructor (" + fr + ") " +
+                       "    " + ("fuzion.java.call_constructor (" + fr + ") " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
                                  parametersArray(pa) + "\n")
@@ -815,7 +815,7 @@ class ForClass extends ANY
    * @param pa array of parameters
    *
    * @return a string declaring such an array, e.g.,
-   * "[fuzion.java.stringToJavaObject arg0]".
+   * "[fuzion.java.string_to_java_object arg0]".
    */
   String parametersArray(Parameter[] pa)
   {
@@ -826,16 +826,16 @@ class ForClass extends ANY
         res.append(res.length() == 1 ? "" : "; ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
         res.append("(");
-        if      (t.isArray()        ) { res.append("fuzion.java.arrayToJavaObject (" + plainResultType(t.getComponentType()) + ") "); }
-        else if (t == Byte     .TYPE) { res.append("fuzion.java.i8ToJavaObject "    ); }
-        else if (t == Character.TYPE) { res.append("fuzion.java.u16ToJavaObject "   ); }
-        else if (t == Short    .TYPE) { res.append("fuzion.java.i16ToJavaObject "   ); }
-        else if (t == Integer  .TYPE) { res.append("fuzion.java.i32ToJavaObject "   ); }
-        else if (t == Long     .TYPE) { res.append("fuzion.java.i64ToJavaObject "   ); }
-        else if (t == Float    .TYPE) { res.append("fuzion.java.f32ToJavaObject "   ); }
-        else if (t == Double   .TYPE) { res.append("fuzion.java.f64ToJavaObject "   ); }
-        else if (t == Boolean  .TYPE) { res.append("fuzion.java.boolToJavaObject "  ); }
-        else if (t == String.class  ) { res.append("fuzion.java.stringToJavaObject "); }
+        if      (t.isArray()        ) { res.append("fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") "); }
+        else if (t == Byte     .TYPE) { res.append("fuzion.java.i8_to_java_object "    ); }
+        else if (t == Character.TYPE) { res.append("fuzion.java.u16_to_java_object "   ); }
+        else if (t == Short    .TYPE) { res.append("fuzion.java.i16_to_java_object "   ); }
+        else if (t == Integer  .TYPE) { res.append("fuzion.java.i32_to_java_object "   ); }
+        else if (t == Long     .TYPE) { res.append("fuzion.java.i64_to_java_object "   ); }
+        else if (t == Float    .TYPE) { res.append("fuzion.java.f32_to_java_object "   ); }
+        else if (t == Double   .TYPE) { res.append("fuzion.java.f64_to_java_object "   ); }
+        else if (t == Boolean  .TYPE) { res.append("fuzion.java.bool_to_java_object "  ); }
+        else if (t == String.class  ) { res.append("fuzion.java.string_to_java_object "); }
         res.append(mp);
         res.append(")");
       }
@@ -997,7 +997,7 @@ class ForClass extends ANY
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
                                "  " + fn + " " + rt + " is\n" +
-                               "    " + ("fuzion.java.getStaticField (" + rt + ") " +
+                               "    " + ("fuzion.java.get_static_field (" + rt + ") " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + "\n"));
           }
@@ -1007,7 +1007,7 @@ class ForClass extends ANY
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
                                 "  " + fn + " " + rt + " is\n" +
-                                "    " + ("fuzion.java.getField (" + rt + ") " +
+                                "    " + ("fuzion.java.get_field (" + rt + ") " +
                                           fcn + ".this " +
                                           fuzionString(jn) + "\n"
                                           ));

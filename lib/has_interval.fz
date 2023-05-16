@@ -17,15 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature hasInterval
+#  Source code of Fuzion standard library feature has_interval
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# hasInterval -- feature for integers that can define an interval
+# has_interval -- feature for integers that can define an interval
 #
-hasInterval(H type : hasInterval H) : integer H is
+has_interval(H type : has_interval H) : integer H is
   max  H is abstract
 /*
   zero T is abstract
@@ -48,7 +48,7 @@ hasInterval(H type : hasInterval H) : integer H is
   infix .. (upper H) : Set H is
 
     lower H is thiz
-    # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
+    # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
 
     size H is if lower ≤ upper then upper - lower + one else zero
 
@@ -85,8 +85,8 @@ hasInterval(H type : hasInterval H) : integer H is
       # list representation of values in this interval
       #
       redef as_list list H is
-        has_next_step => ((step ⩼ zero) && (lower ≤ upper) ||
-                          (step ⩻ zero) && (lower ≥ upper))
+        has_next_step => ((step > zero) && (lower ≤ upper) ||
+                          (step < zero) && (lower ≥ upper))
 
         if has_next_step
           tail =>
@@ -104,7 +104,7 @@ hasInterval(H type : hasInterval H) : integer H is
 
       # use map implementation from Sequence:
       #
-      map(B type, f H -> B)  => infix : .this.mapSequence f
+      map(B type, f H -> B)  => infix : .this.map_sequence f
 
 
     # create a list from this interval
@@ -112,13 +112,13 @@ hasInterval(H type : hasInterval H) : integer H is
     redef as_list list H is
       cons (head H) : Cons H (list H) is
         tail list H is
-          if (head ≥ upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.
-      if (lower ⩼ upper) nil else cons lower
+          if (head ≥ upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is has_interval i32, it should be i32.
+      if (lower > upper) nil else cons lower
 
 
     # use map implementation from Sequence:
     #
-    map(B type, f H -> B)  => mapSequence f
+    map(B type, f H -> B)  => map_sequence f
 
 
     # string representation of this interval, e.g., "1..10"
@@ -128,6 +128,6 @@ hasInterval(H type : hasInterval H) : integer H is
 
   # the open interval from this to the maximum H value
   postfix .. () infix .. is
-    hasInterval.this..max
+    has_interval.this..max
 
   # postfix .. : infix .. (max) is  # NYI: check: this should have the same effect using a sub-class

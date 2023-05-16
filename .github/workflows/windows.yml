@@ -20,7 +20,8 @@ jobs:
         with:
           update: true
           path-type: minimal
-          msystem: CLANG64
+          # "If you are unsure, go with UCRT64." https://www.msys2.org/docs/environments/
+          msystem: UCRT64
 # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
           install: >-
             make
@@ -32,16 +33,10 @@ jobs:
         shell: powershell
         run: choco install openjdk --version 17.0.0
 
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v2.6.0
-
-      - name: set PATH
-        run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" >> $GITHUB_PATH
-
-      - name: echo PATH
-        run: echo "$PATH"
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v2.6.0
 
       - name: echo versions
-        run: clang --version && javac --version
+        run: export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
 
       - name: run tests
-        run: make run_tests
+        run: export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && make run_tests

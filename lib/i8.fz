@@ -25,26 +25,26 @@
 
 # i8 -- 8-bit signed integer values
 #
-i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
+i8(val i8) : wrapping_integer i8, has_interval i8, i8s is
 
   redef thiz => i8.this.val
 
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i8) => thiz ⩼ zero && i8.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i8) => thiz ⩻ zero && i8.type.min -° thiz ⩼ other
+  redef overflow_on_add (other i8) => thiz > zero && i8.type.max -° thiz < other
+  redef underflow_on_add(other i8) => thiz < zero && i8.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i8) => thiz ⩼ zero && thiz -° i8.type.max ⩼ other
-  redef underflowOnSub(other i8) => thiz ⩻ zero && thiz -° i8.type.min ⩻ other
+  redef overflow_on_sub (other i8) => thiz > zero && thiz -° i8.type.max > other
+  redef underflow_on_sub(other i8) => thiz < zero && thiz -° i8.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i8) => as_i32 *° other.as_i32 ⩼ i8.type.max.as_i32
-  redef underflowOnMul(other i8) => as_i32 *° other.as_i32 ⩻ i8.type.min.as_i32
+  redef overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.type.max.as_i32
+  redef underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i8 is intrinsic
@@ -85,65 +85,65 @@ i8(val i8) : wrapping_integer i8, hasInterval i8, i8s is
     pre
       debug: thiz ≥ zero
     is
-      castTo_u8
+      cast_to_u8
   as_u16 u16
     pre
       debug: thiz ≥ zero
     is
-      castTo_u16
+      cast_to_u16
   as_u32 u32
     pre
       debug: thiz ≥ zero
     is
-      castTo_u32
+      cast_to_u32
   as_u64 u64
     pre
       debug: thiz ≥ zero
     is
-      castTo_u64
+      cast_to_u64
   as_u128 u128
     pre
       debug: thiz ≥ zero
     is
-      castTo_u128
+      cast_to_u128
   as_int int is
     int as_i64
 
   # casting to unsigned, adding 1<<8 if negative
-  castTo_u8   u8   is intrinsic           # 3 -> 3, -3 -> 0xfd
-  castTo_u16  u16  is castTo_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
-  castTo_u32  u32  is castTo_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
-  castTo_u64  u64  is castTo_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
-  castTo_u128 u128 is castTo_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
+  cast_to_u8   u8   is intrinsic            # 3 -> 3, -3 -> 0xfd
+  cast_to_u16  u16  is cast_to_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
+  cast_to_u32  u32  is cast_to_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
+  cast_to_u64  u64  is cast_to_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
+  cast_to_u128 u128 is cast_to_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval i8 is abstract, fz should not complain about this conflict.
+  # from has_interval i8 is abstract, fz should not complain about this conflict.
   redef max => i8 0x7f
 
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
-  highestOneBit i8 is
-    val.castTo_u8.highestOneBit.castTo_i8
+  highest_one_bit i8 is
+    val.cast_to_u8.highest_one_bit.cast_to_i8
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u8.trailingZeros
+  trailing_zeros i32 is
+    val.cast_to_u8.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
   ones_count i32 is
-    val.castTo_u8.ones_count
+    val.cast_to_u8.ones_count
 
 
   # -----------------------------------------------------------------------
