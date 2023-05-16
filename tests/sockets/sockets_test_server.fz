@@ -34,6 +34,7 @@ sockets_test_server =>
       say "$protocol/$family-server, accepted connection: $ar"
 
       rr1 := (net.channel net.server)
+        # read less than available bytes
         .read 11
         .or(error "error")
         .bind String (d -> String.type.from_bytes  d)
@@ -42,8 +43,8 @@ sockets_test_server =>
 
       match protocol
         net.protocol.tcp =>
-          # read more than available
           rr2 := (net.channel net.server)
+            # read more than available bytes
             .read 100
             .or (error "error")
             .bind String (d -> String.type.from_bytes  d)
