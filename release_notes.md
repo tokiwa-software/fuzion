@@ -225,8 +225,8 @@
 
   - added `type.equality` to several features.
 
-  - `infix ⋃` and `infix ⋂` are now used for union and intersection instead of
-    `∪` and `∩`.
+  - `infix ∪` and `infix ∩` are now used for union and intersection instead of
+    `⋃` and `⋂`.
 
   - `unit.type.monoid` was added.
 
