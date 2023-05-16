@@ -65,7 +65,7 @@ is
     else
       shift := other.as_u32
       (l,_) := data
-        .reduce (lists.empty u32, u32 0) (r,t ->
+        .reduce ((list u32).type.empty, u32 0) (r,t ->
           (res, carry_over) := r
           next := t>>shift | carry_over
           (res ++ [next], t << (u32 32)-shift)
@@ -85,7 +85,7 @@ is
       shift := other.as_u32
       (l,carry_over) := data
         .reverse
-        .reduce (lists.empty u32, u32 0) (r,t ->
+        .reduce ((list u32).type.empty, u32 0) (r,t ->
           (res, carry_over) := r
           next := t<<shift | carry_over
           ([next] ++ res, t >> ((u32 32)-shift))
@@ -146,7 +146,7 @@ is
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
       .reverse
-      .reduce ((lists.empty u32), ([u32 0] ++ b2).reverse, u64 0) (r, t ->
+      .reduce (((list u32).type.empty), ([u32 0] ++ b2).reverse, u64 0) (r, t ->
 
         (bits, rest, carry_over) := r
 
@@ -167,7 +167,7 @@ is
     (r, _) := b1
       .zip b2 (x, y -> (x,y))
       .reverse
-      .reduce (lists.empty u32, u64 0) (r,t ->
+      .reduce ((list u32).type.empty, u64 0) (r,t ->
         (minuend, subtrahend) := t
         (res, carry_over) := r
 

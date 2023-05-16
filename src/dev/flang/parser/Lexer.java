@@ -191,10 +191,8 @@ public class Lexer extends SourceFile
     t_match("match"),
     t_value("value"),
     t_ref("ref"),
-    t_lazy("lazy"),
     t_synchronized("synchronized"),   // unused
     t_redef("redef"),
-    t_redefine("redefine"),
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
@@ -2461,7 +2459,7 @@ PIPE        : "|"
     private int raw(Optional<Integer> pos)
     {
       return pos
-        .map(p -> codePoint(p))
+        .map(p -> codePointAt(p))
         .orElse(curCodePoint());
     }
 

@@ -26,13 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -42,7 +40,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
+public abstract class Expr extends ANY implements Stmnt
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -58,10 +56,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
    * of the actual.
    */
-  public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
-    {
-      { _type = Types.t_ERROR; }
-    };
+  public static Call NO_VALUE;
 
 
   /**
@@ -549,6 +544,18 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   boolean producesResult()
   {
     return true;
+  }
+
+
+  /**
+   * Reset static fields
+   */
+  public static void reset()
+  {
+    NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    {
+      { _type = Types.t_ERROR; }
+    };
   }
 
 

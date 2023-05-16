@@ -70,6 +70,10 @@ public class RefValue extends Value
   public RefValue(DFA dfa, Value original, int vc, int rc)
   {
     super(rc);
+    if (PRECONDITIONS) require
+      (!dfa._fuir.clazzIsRef(original._clazz),
+       original._clazz == vc,
+       dfa._fuir.clazzIsRef(rc));
 
     _dfa = dfa;
     _original = original;
@@ -99,7 +103,7 @@ public class RefValue extends Value
     if (PRECONDITIONS) require
       (v != null);
 
-    _original.setField(dfa, dfa._fuir.correspondingFieldInValueInstance(field), v);
+    _original.setField(dfa, field, v);
   }
 
 
@@ -109,7 +113,7 @@ public class RefValue extends Value
    */
   Value readFieldFromInstance(DFA dfa, int field)
   {
-    return _original.readFieldFromInstance(dfa, dfa._fuir.correspondingFieldInValueInstance(field));
+    return _original.readFieldFromInstance(dfa, field);
   }
 
 

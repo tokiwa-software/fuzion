@@ -150,9 +150,9 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
-    markUsed(universe.get(m, "conststring")                    , SourcePosition.builtIn);
-    markUsed(universe.get(m, "conststring").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(universe.get(m, "conststring").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "Const_String")                    , SourcePosition.builtIn);
+    markUsed(universe.get(m, "Const_String").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "Const_String").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_fuzion_sys_array_data            , SourcePosition.builtIn);
     markUsed(Types.resolved.f_fuzion_sys_array_length          , SourcePosition.builtIn);
     markUsed(universe.get(m, FuzionConstants.UNIT_NAME), SourcePosition.builtIn);
@@ -208,7 +208,7 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (!Clazzes.isUsedAtAll(f))
+    if (!Clazzes.isUsed(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
         if (!(f instanceof Feature ff) || ff.state() == Feature.State.RESOLVED)
@@ -241,7 +241,7 @@ public class MiddleEnd extends ANY
           {
             for (AbstractFeature of : df.redefines())
               {
-                if (Clazzes.isUsedAtAll(of))
+                if (Clazzes.isUsed(of))
                   {
                     markUsed(df, usedAt);
                   }

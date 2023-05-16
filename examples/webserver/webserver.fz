@@ -36,7 +36,7 @@ webserver is
 
    # open socket
    port := 8080
-   serversocket := net.ServerSocket.new port
+   serversocket := webserver.this.net.ServerSocket.new port
    match serversocket
      err error => say "#### $err ####"
      ss Java.java.net.ServerSocket =>

@@ -28,7 +28,7 @@
 thread (
   # the provider this effect uses to spawn threads
   p Thread_Provider
-  ) : simpleEffect
+  ) : simple_effect
 is
 
 

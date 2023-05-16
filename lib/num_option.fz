@@ -47,12 +47,12 @@ is
 
   # Does this option contain no value of type T?
   #
-  isNil => !exists
+  is_nil => !exists
 
 
-  # short-hand postfix operator for 'isNil'
+  # short-hand postfix operator for 'is_nil'
   #
-  postfix !! => isNil
+  postfix !! => is_nil
 
 
   # value of an option that is known to contain a value

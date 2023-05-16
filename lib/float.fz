@@ -136,40 +136,54 @@ float(redef F type : float F) : numeric F, floats F is
 floats(F type : float F) : numerics F is
 
 
-  exponentRange => -minExp..maxExp
+  exponent_range => -min_exp..max_exp
 
   # non signaling not a number
-  quietNaN => zero / zero
+  quiet_NaN => zero / zero
 
   # not a number
-  NaN => quietNaN
+  NaN => quiet_NaN
 
   # is not a number?
-  isNaN(val F) bool is abstract
+  is_NaN(val F) bool is abstract
 
-  negativeInfinity => -one / zero
+  negative_infinity => -one / zero
 
-  positiveInfinity => one / zero
+  positive_infinity => one / zero
 
   # infinity
-  infinity => positiveInfinity
+  infinity => positive_infinity
 
-  minExp i32 is abstract
-  maxExp i32 is abstract
-  minPositive F is abstract
+  min_exp i32 is abstract
+  max_exp i32 is abstract
+  min_positive F is abstract
   max F is abstract
   epsilon F is abstract
 
 
-  squareRoot(val F) F is abstract
+  square_root(val F) F is abstract
   # square root
-  sqrt(val F) => squareRoot val
+  sqrt(val F) => square_root val
 
 
-  # exponentiation, logarithm
 
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
   exp (val F) F is abstract
+
+
+  # logarithm with base ℇ
+  #
   log (val F) F is abstract
+
+
+  # logarithm with base `base`
+  #
+  log (base, val F) F
+  pre base > zero
+  is
+    (log val) / (log base)
 
 
   # trigonometric

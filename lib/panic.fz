@@ -29,7 +29,7 @@ panic (
   # the provider this effect uses to panic
   p Panic_Provider,
   _ unit
-  ) : simpleEffect
+  ) : simple_effect
 is
 
   # panic with the given message

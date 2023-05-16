@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#
+# -----------------------------------------------------------------------
+
+name: syntax check fz files
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    # weekly
+    - cron: '0 0 * * 0'
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: syntax check
+        run: make syntaxcheck

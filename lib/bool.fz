@@ -91,7 +91,7 @@ bool : choice FALSE TRUE, equatable is
       true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  ternary ? : (T type, lazy a, b T) => if bool.this a else b
+  ternary ? : (T type, a, b T) => if bool.this a else b
 
   # human readable string
   redef as_string => if bool.this "true" else "false"
@@ -102,7 +102,7 @@ bool : choice FALSE TRUE, equatable is
 # Note that this value is of unit type >>FALSE<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    myBoolean := FALSE
+#    my_boolean := FALSE
 #
 # you will get a variable of type >>FALSE<<, it will not be possible to assign
 # >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
@@ -116,7 +116,7 @@ FALSE is
 # Note that this value is of unit type >>TRUE<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    myBoolean := TRUE
+#    my_boolean := TRUE
 #
 # you will get a variable of type >>TRUE<<, it will not be possible to assign
 # >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.

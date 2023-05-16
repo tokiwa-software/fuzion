@@ -48,15 +48,15 @@ sorted_array
   #
   # must satisfy:
   #
-  #   forAll a,b: less_or_equal(a, b) <=> (a = b)
-  #   forAll a,b: less_or_equal(a, b) || less_or_equal(b, a)
-  #   forAll a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
+  #   for_all a,b: less_or_equal(a, b) <=> (a = b)
+  #   for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
+  #   for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
   #
   less_or_equal (T, T) -> bool
 
   )
 
-  : array T (sort from.as_array 1).internalArray unit unit unit
+  : array T (sort from.as_array 1).internal_array unit unit unit
 
 is
 

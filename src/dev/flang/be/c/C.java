@@ -164,11 +164,12 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> call(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
     {
-      var cc0 = _fuir.accessedClazz  (cl, c, i);
+      var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+      var cc0 = _fuir.accessedClazz            (cl, c, i);
       var ol = new List<CStmnt>();
-      if (_fuir.hasPrecondition(cc0))
+      if (ccP != -1)
         {
-          var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
+          var callpair = C.this.call(cl, tvalue, args, c, i, ccP, true);
           ol.add(callpair._v1);
         }
       var res = CExpr.UNIT;
@@ -247,7 +248,7 @@ public class C extends ANY
         case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
         case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
         case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
-        case c_conststring ->
+        case c_Const_String ->
         {
           var tmp = _names.newTemp();
           o = constString(d, tmp);
@@ -579,6 +580,11 @@ public class C extends ANY
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-o", name, cname);
 
+    if (isWindows())
+      {
+        command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
+      }
+
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
@@ -634,7 +640,7 @@ public class C extends ANY
   private void createCode(CFile cf, COptions _options) throws IOException
   {
     cf.print
-      ((_options._useBoehmGC ? "#include <gc.h>\n" : "")+
+      ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -650,7 +656,7 @@ public class C extends ANY
        "#include <errno.h>\n"+
        "#include <sys/stat.h>\n"+
        // defines _O_BINARY
-       "#include <sys/fcntl.h>\n");
+       "#include <fcntl.h>\n");
 
     var fzH = _options.fuzionHome().resolve("include/fz.h").normalize().toAbsolutePath();
     cf.println("#include \"" + fzH.toString() + "\"\n");
@@ -867,12 +873,18 @@ public class C extends ANY
         CStmnt acc = CStmnt.EMPTY;
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
-            var tt = ccs[cci  ];
-            var cc = ccs[cci+1];
+            var tt = ccs[cci  ];                   // target clazz we match against
+            var cc = ccs[cci+1];                   // called clazz in case of match
+            var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
+            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+            if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
+              { // in case we access the value in a boxed target, unbox it first:
+                tv = fields(tv, tt);
+              }
             if (isCall)
               {
-                var calpair = call(cl, tvalue, args, c, i, cc, false);
+                var calpair = call(cl, tv, args, c, i, cc, false);
                 var rv  = calpair._v0;
                 acc = calpair._v1;
                 if (ccs.length == 2)
@@ -892,7 +904,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tvalue, tc, tt, cc, args.get(0), rti);
+                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -971,11 +983,11 @@ public class C extends ANY
    */
   CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
   {
-    var cs            = _fuir.clazz_conststring();
-    var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
+    var cs            = _fuir.clazz_Const_String();
+    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var sysArray = fields(tmp, cs).field(internalArray);
+    var sysArray = fields(tmp, cs).field(internal_array);
     return CStmnt.seq(declareAllocAndInitClazzId(cs, tmp),
                       sysArray.field(data  ).assign(bytes.castTo("void *")),
                       sysArray.field(length).assign(len));
@@ -1013,7 +1025,7 @@ public class C extends ANY
    */
   CStmnt assignField(CExpr tvalue, int tc, int tt, int f, CExpr value, int rt)
   {
-    if (_fuir.clazzIsRef(tc) && tc != tt)
+    if (_fuir.clazzIsRef(tt) && tc != tt)
       {
         tvalue = tvalue.castTo(_types.clazz(tt));
       }
@@ -1074,7 +1086,7 @@ public class C extends ANY
    */
   Pair<CExpr, CStmnt> call(int cl, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean pre)
   {
-    var tc = _fuir.accessTargetClazz(cl, c, i);
+    var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -1210,11 +1222,11 @@ public class C extends ANY
         if (or != -1)
           {
             var rc = _fuir.clazzResultClazz(or);
-            var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var esc = _fuir.clazzOuterRefEscapes(cc);
             var a3 = esc && a.isLocalVar() ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
                                            : a2;
-            var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
+            var a4 = _fuir.clazzIsRef(tc) ? a3.castTo(_types.clazzField(or)) : a3;
             return new List<>(a4);
           }
       }
@@ -1421,6 +1433,16 @@ public class C extends ANY
   String realloc()
   {
     return _options._useBoehmGC ? "GC_REALLOC" : "realloc";
+  }
+
+
+  /**
+   * Is the compiler running on windows?
+   * @return
+   */
+  boolean isWindows()
+  {
+    return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
 }
