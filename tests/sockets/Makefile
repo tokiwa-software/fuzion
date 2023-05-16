@@ -64,7 +64,7 @@ c: IPv4_UDP_PID = $(shell ./server ipv4 udp > /dev/null & echo $$!)
 c: IPv6_TCP_PID = $(shell ./server ipv6 tcp > /dev/null & echo $$!)
 c: IPv6_UDP_PID = $(shell ./server ipv6 udp > /dev/null & echo $$!)
 c:
-	sleep 1s
+	sleep 1
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 	kill $(IPv4_TCP_PID) 2> /dev/null || true
 	kill $(IPv4_UDP_PID) 2> /dev/null || true
@@ -91,7 +91,7 @@ record_c: IPv4_UDP_PID = $(shell ./server ipv4 udp > /dev/null & echo $$!)
 record_c: IPv6_TCP_PID = $(shell ./server ipv6 tcp > /dev/null & echo $$!)
 record_c: IPv6_UDP_PID = $(shell ./server ipv6 udp > /dev/null & echo $$!)
 record_c:
-	sleep 1s
+	sleep 1
 	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
 	kill $(IPv4_TCP_PID) 2> /dev/null || true
 	kill $(IPv4_UDP_PID) 2> /dev/null || true
