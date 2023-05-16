@@ -7,9 +7,6 @@ a is
     say (Types.get fuzion.java)
     say (Types.get fuzion.java.java_void)
     say (Types.get fuzion.java.Java_Object)
-
-# NYI: see #461: following lines, when uncommented, show problems related to #461
-#
-#    say (Types.get fuzion.java.Java_String)
-#    say (Types.get (fuzion.java.Array bool))
-#    say (Types.get (fuzion.java.Array i32))
+    say (Types.get fuzion.java.Java_String)
+    say (Types.get (fuzion.java.Array bool))
+    say (Types.get (fuzion.java.Array i32))
