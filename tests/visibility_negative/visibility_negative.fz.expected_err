@@ -3101,27 +3101,94 @@ Numeric literal: '[36m3.14[39m'
 Assigned to type: '[33mi32[39m'
 
 
-[1;31merror 389[0m[1m: java.lang.NullPointerException: Cannot read the array length because "this._resolvedFormalArgumentTypes" is null
-	at dev.flang.ast.Call.box(Call.java:2157)
-	at dev.flang.ast.Feature$6.action(Feature.java:1705)
-	at dev.flang.ast.Feature$6.action(Feature.java:1703)
-	at dev.flang.ast.Call.visit(Call.java:1033)
-	at dev.flang.ast.AbstractAssign.visit(AbstractAssign.java:125)
-	at dev.flang.ast.AbstractAssign.visit(AbstractAssign.java:40)
-	at dev.flang.ast.Block.visit(Block.java:226)
-	at dev.flang.ast.Block.visit(Block.java:40)
-	at dev.flang.ast.Impl.visit(Impl.java:337)
-	at dev.flang.ast.Feature.visit(Feature.java:1027)
-	at dev.flang.ast.Feature.box(Feature.java:1703)
-	at dev.flang.ast.Resolution.resolveOne(Resolution.java:390)
-	at dev.flang.ast.Resolution.resolve(Resolution.java:338)
-	at dev.flang.fe.SourceModule.createASTandResolve(SourceModule.java:264)
-	at dev.flang.fe.FrontEnd.<init>(FrontEnd.java:180)
-	at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:830)
-	at dev.flang.tools.Tool.lambda$run$0(Tool.java:154)
-	at dev.flang.util.Errors.runAndExit(Errors.java:748)
-	at dev.flang.tools.Tool.run(Tool.java:154)
-	at dev.flang.tools.Fuzion.main(Fuzion.java:481)
-[0m
+[32m--CURDIR--/visibility_negative.fz:519:22:[39m [1;31merror 389[0m[1m: Failed to infer result type for feature '[35mvisibility_negative.visi7.f[39m'.[0m
+[34m    x := 2;          f := ()->"x is "+x+""
+[33m---------------------^[0m
+To solve this, please specify a result type explicitly.
 
-*** fatal errors encountered, stopping.
+
+[32m--CURDIR--/visibility_negative.fz:520:22:[39m [1;31merror 390[0m[1m: Failed to infer result type for feature '[35mvisibility_negative.visi7.g[39m'.[0m
+[34m    x := x*x*x*x;    g := ()->"x is "+x+""
+[33m---------------------^[0m
+To solve this, please specify a result type explicitly.
+
+
+[32m--CURDIR--/visibility_negative.fz:521:23:[39m [1;31merror 391[0m[1m: Failed to infer result type for feature '[35mvisibility_negative.visi7.h[39m'.[0m
+[34m    x := x.as_string; h := ()->"x is "+x+""
+[33m----------------------^[0m
+To solve this, please specify a result type explicitly.
+
+
+[32m--CURDIR--/visibility_negative.fz:522:22:[39m [1;31merror 392[0m[1m: Failed to infer result type for feature '[35mvisibility_negative.visi7.i[39m'.[0m
+[34m    x := x * 5;      i := ()->"x is "+x+""
+[33m---------------------^[0m
+To solve this, please specify a result type explicitly.
+
+
+[32m--CURDIR--/visibility_negative.fz:518:5:[39m [1;31merror 393[0m[1m: Failed to infer result type for feature '[35mvisibility_negative.visi7.e[39m'.[0m
+[34m    e := ()->"x is "+x+""   // 272. should flag an error: feature used before it is declared
+[33m----^[0m
+To solve this, please specify a result type explicitly.
+
+
+[32m--CURDIR--/visibility_negative.fz:518:12:[39m [1;31merror 394[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m    e := ()->"x is "+x+""   // 272. should flag an error: feature used before it is declared
+[33m-----------^[0m
+A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., '[36mf (i32, i32) -> bool := x, y -> x > y[39m'.
+
+
+[32m--CURDIR--/visibility_negative.fz:519:29:[39m [1;31merror 395[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m    x := 2;          f := ()->"x is "+x+""
+[33m----------------------------^[0m
+A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., '[36mf (i32, i32) -> bool := x, y -> x > y[39m'.
+
+
+[32m--CURDIR--/visibility_negative.fz:520:29:[39m [1;31merror 396[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m    x := x*x*x*x;    g := ()->"x is "+x+""
+[33m----------------------------^[0m
+A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., '[36mf (i32, i32) -> bool := x, y -> x > y[39m'.
+
+
+[32m--CURDIR--/visibility_negative.fz:521:30:[39m [1;31merror 397[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m    x := x.as_string; h := ()->"x is "+x+""
+[33m-----------------------------^[0m
+A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., '[36mf (i32, i32) -> bool := x, y -> x > y[39m'.
+
+
+[32m--CURDIR--/visibility_negative.fz:522:29:[39m [1;31merror 398[0m[1m: No type information can be inferred from a lambda expression[0m
+[34m    x := x * 5;      i := ()->"x is "+x+""
+[33m----------------------------^[0m
+A lambda expression can only be used if assigned to a field or argument of type '[35mFunction[39m'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., '[36mf (i32, i32) -> bool := x, y -> x > y[39m'.
+
+
+[32m--CURDIR--/visibility_negative.fz:512:10:[39m [1;31merror 399[0m[1m: Wrong number of actual arguments in call[0m
+[34m    x := x as f64; say "x is $x"
+[33m---------^[0m
+Number of actual arguments is 2, while call expects no arguments.
+Called feature: '[35mvisibility_negative.visi6.x[39m'
+Formal arguments: 
+
+
+[32m--CURDIR--/visibility_negative.fz:514:10:[39m [1;31merror 400[0m[1m: Wrong number of actual arguments in call[0m
+[34m    x := x as i32; say "x is $x"
+[33m---------^[0m
+Number of actual arguments is 2, while call expects no arguments.
+Called feature: '[35mvisibility_negative.visi6.x[39m'
+Formal arguments: 
+
+400 errors.
