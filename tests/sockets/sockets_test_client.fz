@@ -39,13 +39,14 @@ sockets_test_client is
           net.protocol.tcp =>
             # for UDP this read would block indefinitely
             rr := (net.channel sockets_test_client)
+              # read less than available bytes
               .read 12
               .or(error "error")
               .bind String (d -> String.type.from_bytes  d)
             say ("$protocol/$family-client $num, read  12 bytes from  $host:$port: >{rr}<")
 
-            # read more than available
             rr := (net.channel sockets_test_client)
+              # read more than available bytes
               .read 100
               .or(error "error")
               .bind String (d -> String.type.from_bytes  d)
