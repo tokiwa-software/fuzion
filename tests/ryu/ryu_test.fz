@@ -37,10 +37,10 @@ ryu_test =>
               9.409340012568248E18,
               ]
 
-  for num in numbers
+  for num0 in numbers
   do
     for is_scientific in [true, false] do
       for rounding_mode in [("conservative", ryū.rounding_conservative), ("even", ryū.rounding_even)] do
         (rm_name, rm) := rounding_mode
-        say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {ryū.as_string num is_scientific rm}"
+        say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {ryū.as_string num0 is_scientific rm}"
     say "--"
