@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := c_trie i32 String
+  ctrie := (C_Trie i32 String).type.empty
 
   all := ps_set 0..100
   removed := ps_set 0..100:2

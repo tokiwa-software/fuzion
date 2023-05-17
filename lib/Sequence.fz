@@ -415,7 +415,7 @@ Sequence(T type) ref is
   #
   group_by(K type : has_hash, f T -> K) Map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
-    res := c_trie K (Sequence T)
+    res := (C_Trie K (Sequence T)).type.empty
     for_each (x ->
       key := f x
       match res[key]

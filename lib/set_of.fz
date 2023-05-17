@@ -38,7 +38,7 @@ set_of_hashable(K type : has_hash, vs (C_Trie K unit) | (Sequence K)) Set K is
 
   private map C_Trie K unit :=
     match vs
-      vss (Sequence K) => c_trie (vss.map_sequence (k -> tuple k unit))
+      vss (Sequence K) => (C_Trie K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
       vsc (C_Trie K unit) => vsc
 
   ref : Set K
