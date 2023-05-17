@@ -27,11 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
