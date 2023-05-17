@@ -80,7 +80,7 @@ is
   is
     # check if the array is fully sorted
     if heap_size ≥ a.length
-      a.as_array  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
+      a
     else
       # h1 is the mutable index within the current first heap, this is updated
       # by the function passed to the array constructor.

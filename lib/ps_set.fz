@@ -36,7 +36,7 @@
 #
 ps_set
   (K type : has_total_order,
-   psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
+   psm ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
   : Set K
@@ -60,7 +60,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+  add (k K) ref ps_set K is
     if has k
       ps_set.this
     else
@@ -89,20 +89,20 @@ is
 
   # union of two ps_sets
   #
-  infix ∪ (other ref ps_set K) => ps_set K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
+  infix ∪ (other ps_set K) ref ps_set K is
+    ps_set K (psm ∪ other.psm) unit
 
 
   # intersection of two ps_sets
-  infix ∩ (other ref ps_set K) =>
+  infix ∩ (other ps_set K) ref ps_set K is
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
     (ps_sets K).empty.add_all s
 
 
   # add all elements of the given Sequence to this set
   #
-  add_all (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
-    this_ref ref ps_set K := ps_set.this
-    s.reduce this_ref ((r,k) -> r.add k)
+  add_all (s Sequence K) ref ps_set K is
+    s.reduce (ref ps_set K) ps_set.this ((r,k) -> r.add k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
@@ -127,7 +127,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # monoid of ps_set with infix ∪ operation.
   #
   union : Monoid (ps_set K) is
-    redef infix ∙ (a, b ps_set K) => a ∪ b
+    redef infix ∙ (a, b ps_set K) => ps_set K (a ∪ b).psm unit
     redef e => empty
 
 
@@ -155,4 +155,6 @@ ps_sets(K type : has_total_order) is
 #
 # This feature creates a pre-initialized instance of ps_set.
 #
-ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs
+ps_set(K type : has_total_order, vs Sequence K) ps_set K is
+  ps_set K ((ps_sets K).empty.add_all vs).psm unit
+
