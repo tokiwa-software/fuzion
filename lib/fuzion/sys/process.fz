@@ -85,7 +85,7 @@ public process is
         .chunk write_chunk_size
         .reduce_or_error 0 ((r, t) ->
           arr := t.as_array
-          bw := pipe.write r_process.this.stdin arr.internalArray.data arr.count
+          bw := pipe.write r_process.this.stdin arr.internal_array.data arr.count
           if bw = -1
             abort (outcome i32) (error "error while writing. wrote $r bytes already.")
           else
@@ -99,7 +99,7 @@ public process is
     pre count > 0
     is
       arr := array u8 count i->0
-      res := pipe.read r_process.this.stdout arr.internalArray.data arr.count
+      res := pipe.read r_process.this.stdout arr.internal_array.data arr.count
       if res = -1
         error "error reading from stdout."
       else if res = 0

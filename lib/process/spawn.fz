@@ -50,7 +50,7 @@ is
   args_str := sys.c_string (String.type.join process_and_args " ")
   env_str := sys.c_string ((String.type.join spawn.this.env_vars (codepoint 0)) + (codepoint 0))
 
-  if (fuzion.sys.process.create arg_data.internalArray.data arg_data.count env_data.internalArray.data env_data.count res_data.internalArray.data args_str env_str) = -1
+  if (fuzion.sys.process.create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.internal_array.data args_str env_str) = -1
     error "*** error creating process ***"
   else
     unit
