@@ -108,6 +108,6 @@ is
 
   # create an empty instance of ordered_map
   #
-  type.empty => (ordered_map
+  type.empty => (container.ordered_map
                  ((Sequence OK).type.empty).as_array
                  ((Sequence V).type.empty).as_array)

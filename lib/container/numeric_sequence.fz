@@ -81,7 +81,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
 
   # equality check implementation for inherited equatable
   #
-  fixed type.equality(a, b numeric_sequence N) bool is
+  fixed type.equality(a, b container.numeric_sequence N) bool is
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count
