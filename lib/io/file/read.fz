@@ -25,7 +25,7 @@
 
 # read -- effect providing byte reading operations from files
 #
-private read(ro Read_Operation) : simpleEffect is
+private read(ro Read_Operation) : simple_effect is
 
 
   # how much of a file do we read at a time, in bytes

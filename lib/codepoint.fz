@@ -109,7 +109,7 @@ is
   # return the number of bytes of this utf-8 character
   # by examining the first byte
   #
-  # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leadingZeroes+1.
+  # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leading_zeroes+1.
   type.num_utf8_bytes (first_byte u8) outcome i32 is
     if ((u8 0)..0x7F).contains first_byte
       1

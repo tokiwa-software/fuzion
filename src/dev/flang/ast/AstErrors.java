@@ -27,11 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -395,6 +393,10 @@ public class AstErrors extends ANY
               frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
               frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
             remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
+          }
+        else if (frmlT.compareTo(Types.resolved.t_unit) == 0)
+          {
+            remedy = "To solve this, you could explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".\n";
           }
         else
           {
@@ -906,7 +908,7 @@ public class AstErrors extends ANY
   /**
    * This shows an incompatibility between front end and API.
    *
-   * @param qname something like "fuzion.java.JavaObject.javaRef"
+   * @param qname something like "fuzion.java.Java_Object.Java_Ref"
    *
    * @param outer the outer feature of what cause a problem, e.g. fuzion.java
    *
@@ -1774,6 +1776,68 @@ public class AstErrors extends ANY
           code(new_code_ref) + "to return a reference.");
   }
 
+
+  public static void outerTypeMayNotBeRefType(Type t)
+  {
+    var o = t.outer();
+    error(t.pos2BeRemoved(),
+          "A type may not use a boxed (explicit " + code("ref") + ") type as its outer type.",
+          "The problem is that for a value type " + type("v") + " any inner constructor " + code("v.c") +
+          "will always create a value of type " + type("v.c") + " even if called on an outer ref type, i.e., in " + code("rv ref v := v; rc := rv.c") +
+          "the type of " + expr("rc") + " will be " + type("v.c") + ".\n" +
+          "Type with boxed outer type: " + s(t) + "\n" +
+          "Boxed outer type          : " + s(o) + "\n" +
+          "To solve this, remove the " + code("ref") + " modifier from the outer type or add " + code("ref") + " to the declaration " +
+          "of the outer feature.");
+  }
+
+
+  public static void illegalCallResultType(Call c, AbstractType t, AbstractType o)
+  {
+    var of = o.featureOfType();
+    error(c.pos(),
+          "Call performed on a boxed (explicit " + code("ref") + ") type not permitted here.",
+          "The problem is that the call result type " + s(t) + " contains the outer, boxed type while " +
+          "the call will create the corresponding value type of the dynamic target type, which might be " +
+          "a different type inheriting from " + s(of) + ".\n" +
+          "Type with boxed outer type: " + s(t) + "\n" +
+          "Boxed outer type          : " + s(o) + "\n" +
+          "To solve this, remove the use of " + code("ref") + " in the declaration of the type of the call target or " +
+          "add " + code("ref") + " to the declaration of the corresponding feature " + s(of) + " at " + of.pos().show());
+  }
+
+
+  /**
+   * This is a tricky error that will be produced in situations like this:
+   *
+   *   r ref is
+   *     e is
+   *     g => e
+   *
+   *   h1 : r is
+   *   h2 : r is
+   *
+   *   v r := if rand 2 = 1 then h1 else h2
+   *   x := v.g
+   *
+   * The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
+   * result in either `h1.e` or `h2.e`.
+   *
+   */
+  public static void illegalOuterRefTypeInCall(Call c, AbstractType t, AbstractType from, AbstractType to)
+  {
+    error(c.pos(),
+          "Call has an ambiguous result type since target of the call is a " + code("ref") + " type.",
+          "The result type of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
+          "may represent a number of different actual dynamic types, the result type is not clearly defined.\n"+
+          "Called feature: " + s(c.calledFeature()) + "\n" +
+          "Raw result type: " + s(t) + "\n" +
+          "Type depending on target: " + s(from) + "\n" +
+          "Target type: " + s(to) + "\n" +
+          "To solve this, you could try to use a value type as the target type of the call" +
+          (c.calledFeature().outer().isThisRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
+          "or change the result type of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
+  }
 
 }
 

@@ -232,7 +232,7 @@ public String.italic                            => terminal.italic + String.this
 public String.underline                         => terminal.underline + String.this + terminal.reset
 public String.slow_blink                        => terminal.slow_blink + String.this + terminal.reset
 public String.rapid_blink                       => terminal.rapid_blink + String.this + terminal.reset
-# NYI: string.reverse causes a conflict with conststring.reverse since visibility is not supported
+# NYI: string.reverse causes a conflict with Const_String.reverse since visibility is not supported
 # public string.reverse                           => terminal.reverse + string.this + terminal.reset
 public String.crossed_out                       => terminal.crossed_out + String.this + terminal.reset
 public String.font_0                            => terminal.font_0 + String.this + terminal.reset

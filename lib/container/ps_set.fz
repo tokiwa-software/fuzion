@@ -133,7 +133,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # equality
   #
-  fixed type.equality(a, b ps_set K) bool is
+  fixed type.equality(a, b container.ps_set K) bool is
     # NYI: a bit expensive
     (a ∪ b).size = a.size
 

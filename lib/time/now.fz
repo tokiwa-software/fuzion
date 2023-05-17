@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # effect for getting the current date_time
-private now (p () -> time.date_time) : simpleEffect is
+private now (p () -> time.date_time) : simple_effect is
 
   get =>
     res := p()
@@ -38,7 +38,7 @@ private now (p () -> time.date_time) : simpleEffect is
   #
   private type.default_now ()->time.date_time is () ->
     a := array i32 6 i->0
-    fuzion.std.date_time a.internalArray.data
+    fuzion.std.date_time a.internal_array.data
     time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
 
 

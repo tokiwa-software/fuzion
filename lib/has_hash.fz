@@ -31,8 +31,8 @@ has_hash : equatable
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
-    analysis: quantors.forAll2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
+    analysis: quantors.for_all2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
+    analysis: quantors.for_all2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
 */
 
 is

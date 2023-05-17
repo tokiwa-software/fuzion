@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.SortedMap;
 
 import dev.flang.util.List;

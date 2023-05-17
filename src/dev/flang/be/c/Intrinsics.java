@@ -87,7 +87,7 @@ public class Intrinsics extends ANY
         });
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
-    put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
+    put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
     put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
@@ -519,24 +519,24 @@ public class Intrinsics extends ANY
      * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
      * source: https://github.com/rust-lang/rust/issues/88734
      */
-    put("f32s.minExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
+    put("f32s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f32s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f32s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
     put("f32s.max"             , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
     put("f32s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64s.minExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
+    put("f64s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f64s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f64s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
     put("f64s.max"             , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
     put("f64s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32s.isNaN"           ,
-        "f64s.isNaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32s.is_NaN"          ,
+        "f64s.is_NaN"          , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
+    put("f32s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
+    put("f64s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
     put("f32s.exp"             , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
     put("f64s.exp"             , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
     put("f32s.log"             , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
@@ -854,25 +854,25 @@ public class Intrinsics extends ANY
     IntrinsicCode noJava = (c,cl,outer,in) ->
       CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.java.JavaObject.isNull"  , noJava);
-    put("fuzion.java.arrayGet"           , noJava);
-    put("fuzion.java.arrayLength"        , noJava);
-    put("fuzion.java.arrayToJavaObject0" , noJava);
-    put("fuzion.java.boolToJavaObject"   , noJava);
-    put("fuzion.java.callC0"             , noJava);
-    put("fuzion.java.callS0"             , noJava);
-    put("fuzion.java.callV0"             , noJava);
-    put("fuzion.java.f32ToJavaObject"    , noJava);
-    put("fuzion.java.f64ToJavaObject"    , noJava);
-    put("fuzion.java.getField0"          , noJava);
-    put("fuzion.java.getStaticField0"    , noJava);
-    put("fuzion.java.i16ToJavaObject"    , noJava);
-    put("fuzion.java.i32ToJavaObject"    , noJava);
-    put("fuzion.java.i64ToJavaObject"    , noJava);
-    put("fuzion.java.i8ToJavaObject"     , noJava);
-    put("fuzion.java.javaStringToString" , noJava);
-    put("fuzion.java.stringToJavaObject0", noJava);
-    put("fuzion.java.u16ToJavaObject"    , noJava);
+    put("fuzion.java.Java_Object.is_null"   , noJava);
+    put("fuzion.java.array_get"             , noJava);
+    put("fuzion.java.array_length"          , noJava);
+    put("fuzion.java.array_to_java_object0" , noJava);
+    put("fuzion.java.bool_to_java_object"   , noJava);
+    put("fuzion.java.call_c0"               , noJava);
+    put("fuzion.java.call_s0"               , noJava);
+    put("fuzion.java.call_v0"               , noJava);
+    put("fuzion.java.f32_to_java_object"    , noJava);
+    put("fuzion.java.f64_to_java_object"    , noJava);
+    put("fuzion.java.get_field0"            , noJava);
+    put("fuzion.java.get_static_field0"     , noJava);
+    put("fuzion.java.i16_to_java_object"    , noJava);
+    put("fuzion.java.i32_to_java_object"    , noJava);
+    put("fuzion.java.i64_to_java_object"    , noJava);
+    put("fuzion.java.i8_to_java_object"     , noJava);
+    put("fuzion.java.java_string_to_string" , noJava);
+    put("fuzion.java.string_to_java_object0", noJava);
+    put("fuzion.java.u16_to_java_object"    , noJava);
   }
 
 

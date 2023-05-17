@@ -189,7 +189,7 @@ stream(redef T type) ref : Sequence T is
   # create a stream that consists of all be the elements if this stream followed
   # by all the elements of s
   #
-  concatStreams (s stream T) ref : stream T is
+  Concat_Streams (s stream T) ref : stream T is
     has_next => stream.this.has_next || s.has_next
     next => if (stream.this.has_next) stream.this.next else s.next
 

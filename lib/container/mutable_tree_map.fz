@@ -316,15 +316,15 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
 
   # returns an empty tree of elements of type A.
   #
-  type.empty mutable_tree_map LM K V is
-    mutable_tree_map LM K V
+  type.empty container.mutable_tree_map LM K V is
+    container.mutable_tree_map LM K V
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  type.singleton(k K, v V) mutable_tree_map LM K V is
-    new_map := mutable_tree_map LM K V
-    new_entry := Entry LM K V k v
+  type.singleton(k K, v V) container.mutable_tree_map LM K V is
+    new_map := container.mutable_tree_map LM K V
+    new_entry := container.Entry LM K V k v
     new_map.root <- new_entry
 
     new_map
@@ -341,8 +341,8 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the array.
   #
-  type.from_array(kvs array (tuple K V), freeze bool) mutable_tree_map LM K V is
-    new_map := mutable_tree_map LM K V
+  type.from_array(kvs array (tuple K V), freeze bool) container.mutable_tree_map LM K V is
+    new_map := container.mutable_tree_map LM K V
     kvs.for_each (x ->
       new_map.put x.values.0 x.values.1
       unit)

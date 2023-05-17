@@ -197,6 +197,27 @@ public class DFA extends ANY
 
 
     /**
+     * In an access, check if the target of the access is a boxed value. If so,
+     * unbox it.
+     *
+     * @param tvalue the target value of an access
+     *
+     * @param tt the type of the target value
+     *
+     * @param cc the called clazz
+     *
+     * @return tvalue in case tvalue does not need unboxing, or the unboxed
+     * value if tt is boxed and the outer clazz of cc is a value type.
+     */
+    private Value unboxTarget(Value tvalue, int tt, int cc)
+    {
+      var cco = _fuir.clazzOuterClazz(cc);
+      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.unbox(cco)
+                                                            : tvalue;
+    }
+
+
+    /**
      * Perform a call of a feature with target instance tvalue with given
      * arguments.. The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
@@ -206,11 +227,12 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> call(int cl, int c, int i, Value tvalue, List<Value> args)
     {
-      var cc0 = _fuir.accessedClazz  (cl, c, i);
+      var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+      var cc0 = _fuir.accessedClazz            (cl, c, i);
       var res = Value.UNIT;
-      if (_fuir.hasPrecondition(cc0))
+      if (ccP != -1)
         {
-          res = call0(cl, tvalue, args, c, i, cc0, true);
+          res = call0(cl, tvalue, args, c, i, ccP, true);
         }
       if (res != null && !_fuir.callPreconditionOnly(cl, c, i))
         {
@@ -238,6 +260,7 @@ public class DFA extends ANY
      */
     Value access(int cl, int c, int i, Value tvalue, List<Value> args)
     {
+      var tc = _fuir.accessTargetClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
@@ -252,10 +275,7 @@ public class DFA extends ANY
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
-                  //!_fuir.accessIsDynamic(cl, c, i) && _fuir.correspondingFieldInValueInstance(tt) == t._clazz ||
-
-                  // NYI: This is a little too much special handling, must simplify:
-                  !_fuir.accessIsDynamic(cl, c, i) && _fuir.clazzIsRef(t._clazz) && !_fuir.clazzIsOuterRef(cc0))
+                  _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
                   var r = access0(cl, c, i, t, args, cc);
@@ -326,6 +346,8 @@ public class DFA extends ANY
      */
     Value call0(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre)
     {
+      // in case we access the value in a boxed target, unbox it first:
+      tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
       Value res = null;
       switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
@@ -440,7 +462,7 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
-        case c_conststring -> newConstString(d, _call);
+        case c_Const_String -> newConstString(d, _call);
         default ->
         {
           Errors.error("Unsupported constant in DFA analysis.",
@@ -753,13 +775,7 @@ public class DFA extends ANY
             switch (_fuir.clazzKind(cl))
             {
             case Routine, Intrinsic -> called.contains(cl);
-            case Field              ->
-            {
-              var fc = _fuir.correspondingFieldInValueInstance(cl);
-              yield
-                isBuiltInNumeric(_fuir.clazzOuterClazz(fc)) ||
-                _readFields.contains(fc);
-            }
+            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) || _readFields.contains(cl);
             case Abstract           -> true;
             case Choice             -> true;
             };
@@ -945,7 +961,7 @@ public class DFA extends ANY
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
-    put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
+    put("debug_level"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
 
     put("fuzion.sys.args.count"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
@@ -1127,20 +1143,20 @@ public class DFA extends ANY
     put("f32.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
     put("f64.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
 
-    put("f32s.minExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.maxExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.minPositive"               , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32s.min_exp"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32s.max_exp"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32s.min_positive"              , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.max"                       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.epsilon"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.isNaN"                     , cl -> cl._dfa._bool );
-    put("f64s.isNaN"                     , cl -> cl._dfa._bool );
-    put("f64s.minExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.maxExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.minPositive"               , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32s.is_NaN"                    , cl -> cl._dfa._bool );
+    put("f64s.is_NaN"                    , cl -> cl._dfa._bool );
+    put("f64s.min_exp"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64s.max_exp"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64s.min_positive"              , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.max"                       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.epsilon"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.squareRoot"                , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.squareRoot"                , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32s.square_root"               , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64s.square_root"               , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.exp"                       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.exp"                       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.log"                       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1226,6 +1242,12 @@ public class DFA extends ANY
     put("fuzion.sys.net.close0"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.set_blocking0"    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
+    put("fuzion.sys.process.create" , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.process.wait"   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.pipe.read"      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.pipe.write"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.pipe.close"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
@@ -1291,31 +1313,25 @@ public class DFA extends ANY
                           */
         );
 
-    put("fuzion.sys.process.create" , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.process.wait"   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.read"      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.write"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.close"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
-    put("fuzion.java.JavaObject.isNull"  , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayGet"           , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayLength"        , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.arrayToJavaObject0" , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.boolToJavaObject"   , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callC0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callS0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.callV0"             , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.f32ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.f64ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.getField0"          , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.getStaticField0"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i16ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i32ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i64ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.i8ToJavaObject"     , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.javaStringToString" , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.stringToJavaObject0", cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.u16ToJavaObject"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.Java_Object.is_null"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_get"             , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_length"          , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.array_to_java_object0" , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.bool_to_java_object"   , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_c0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_s0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.call_v0"               , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.f32_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.f64_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.get_field0"            , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.get_static_field0"     , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i16_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i32_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i64_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.i8_to_java_object"     , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.java_string_to_string" , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.string_to_java_object0", cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.u16_to_java_object"    , cl -> NYIintrinsicMissing(cl) );
   }
 
 
@@ -1443,8 +1459,8 @@ public class DFA extends ANY
    */
   Value newConstString(byte[] utf8Bytes, Context context)
   {
-    var cs            = _fuir.clazz_conststring();
-    var internalArray = _fuir.clazz_conststring_internalArray();
+    var cs            = _fuir.clazz_Const_String();
+    var internalArray = _fuir.clazz_Const_String_internal_array();
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);

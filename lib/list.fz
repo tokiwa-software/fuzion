@@ -233,7 +233,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   # recursively reverse the order of the elements in this list
-  # and append the already reversed reversedHead
+  # and append the already reversed reversed_head
   #
   reverse (reversed_head list A) list A is
     list.this ? nil    => reversed_head
@@ -380,12 +380,12 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       nil    => nil
       c Cons =>
-        cycleCons (h Cons A (list A)) : Cons A (list A) is
+        cycle_cons (h Cons A (list A)) : Cons A (list A) is
           head => h.head
           tail list A is
-            cycleCons (h.tail ? nil    => c
-                              | d Cons => d)
-        cycleCons c
+            cycle_cons (h.tail ? nil    => c
+                               | d Cons => d)
+        cycle_cons c
 
 
   # create a lazy list of all the tails of this list, including the complete list
@@ -417,10 +417,10 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   zip0(U, V type, b list U, f (A,U)->V) list V is
     list.this ? c1 Cons => (b ? c2 Cons =>
-                                  zipCons : Cons V (list V) is
+                                  zip_cons : Cons V (list V) is
                                     head => f c1.head c2.head
                                     tail => c1.tail.zip0 U V c2.tail f
-                                  zipCons
+                                  zip_cons
                               | nil    => nil)
               | nil    => nil
 

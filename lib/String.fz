@@ -371,12 +371,12 @@ String ref : equatable, has_hash, has_total_order is
     # ref : string
     #   redef utf8 Sequence u8 is
     #     string.this.utf8.slice from to
-    substring0 from to
+    Substring0 from to
 
 
   # create substring of the string consisting of bytes from (inclusive) .. to (exclusive).
   #
-  private substring0(from, to i32) ref : String
+  private Substring0(from, to i32) ref : String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
   is
@@ -405,7 +405,7 @@ String ref : equatable, has_hash, has_total_order is
       .fold String.type.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
   #
   private substring_codepoint(from i32) String
     pre
@@ -417,7 +417,7 @@ String ref : equatable, has_hash, has_total_order is
   # check if this string starts with given prefix
   #
   starts_with(prefx String) =>
-    (searchable_sequence utf8).starts_with prefx.utf8
+    (container.searchable_sequence utf8).starts_with prefx.utf8
 
 
   # check if this string ends with given suffix
@@ -426,13 +426,13 @@ String ref : equatable, has_hash, has_total_order is
     l  := byte_length
     sl := suffix.byte_length
     end := utf8.drop l-sl
-    (searchable_sequence end).starts_with suffix.utf8
+    (container.searchable_sequence end).starts_with suffix.utf8
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
   find(substring String) =>
-    (searchable_sequence utf8).find substring.utf8
+    (container.searchable_sequence utf8).find substring.utf8
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
@@ -455,11 +455,11 @@ String ref : equatable, has_hash, has_total_order is
 
   # replace all occurrences of old by new
   #
-  replace (old, new String) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8)
+  replace (old, new String) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  replace(old, new String, n u64) => String.type.from_bytes ((searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  replace(old, new String, n u64) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -470,7 +470,7 @@ String ref : equatable, has_hash, has_total_order is
   # count number of occurrences of given 'substring' in this string
   #
   count (substring String) =>
-    (searchable_sequence utf8).count_matches substring.utf8
+    (container.searchable_sequence utf8).count_matches substring.utf8
 
 
   # is c an ASCII white-space character?
@@ -604,14 +604,14 @@ String ref : equatable, has_hash, has_total_order is
 
   # is this part of given set
   #
-  element_of(s Set String) => s.contains String.this
-  infix ∈ (s Set String) => String.this.element_of s
+  element_of(s container.Set String) => s.contains String.this
+  infix ∈ (s container.Set String) => String.this.element_of s
 
 
   # is this not part of given set
   #
-  not_element_of(s Set String) => !element_of s
-  infix ∉ (s Set String) => String.this.not_element_of s
+  not_element_of(s container.Set String) => !element_of s
+  infix ∉ (s container.Set String) => String.this.not_element_of s
 
 
   # return string of at least length l by
