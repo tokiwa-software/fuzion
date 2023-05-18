@@ -358,7 +358,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
     this._type = (actualType != Types.t_ERROR && this._outer != null)
-      ? Types.intern(new Type(actualType, this._outer._type))
+      ? Types.intern(Type.newType(actualType, this._outer._type))
       : actualType;
     this._dynamicBinding = null;
 

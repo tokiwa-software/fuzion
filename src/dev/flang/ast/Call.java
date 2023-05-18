@@ -1422,8 +1422,8 @@ public class Call extends AbstractCall
       }
     if (!calledFeature().isOuterRef())
       {
-        var inner = new Type(calledFeature().selfType(),
-                             _target.typeForCallTarget());
+        var inner = Type.newType(calledFeature().selfType(),
+                                 _target.typeForCallTarget());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
@@ -1472,12 +1472,12 @@ public class Call extends AbstractCall
     else if (_calledFeature.isOuterRef())
       {
         var o = t.featureOfType().outer();
-        t = o.isUniverse() ? t : new Type(t, o.thisType());
+        t = o.isUniverse() ? t : Type.newType(t, o.thisType());
         t = Types.intern(t).asThis();
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
-        t = new Type(t, _target.typeForCallTarget());
+        t = Type.newType(t, _target.typeForCallTarget());
       }
     else
       {
