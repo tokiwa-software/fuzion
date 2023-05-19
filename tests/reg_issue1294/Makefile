@@ -17,18 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sum
+#  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# sum -- generic sum of the elements of a Sequence of numeric.
-#
-# This allows summing the elements of a list, as in
-#
-#   l := [1,2,3]
-#   say (sum l)     # '6'
-#
-#
-sum(T type : numeric T, l Sequence T) => l.fold T.sum
+override NAME = issue1294
+
+include ../simple.mk

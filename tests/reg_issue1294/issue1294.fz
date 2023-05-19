@@ -1,0 +1,258 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue1294.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+
+
+
+# ------  first scenario  ------
+#
+# the simplest variant of this issue is an abstract type feature used via a type parameter:
+#
+
+scenario1 is
+  fs b
+
+  a(T type) is
+    type.zero T is abstract
+
+  b : a bool is
+    type.zero => true
+
+  fs(F type : a F) =>
+    _ := F.zero
+    unit
+
+scenario1
+
+
+
+
+# ------  second scenario  ------
+#
+# Slightly more complex, derived from the numeric's `sum` monoid:
+#
+
+scenario2 is
+
+  M(T type) ref is
+    e T is abstract
+
+  a(T type) is
+    type.z => zero
+    type.zero T is abstract
+
+    type.sum : scenario2.M T is
+      fixed e => zero
+
+  b : a scenario2.b is
+
+    fixed type.zero scenario2.b is scenario2.b
+
+  fs(F type : a F) =>
+    _ := F.z
+    _ := F.sum.e
+    unit
+
+run_scenario2 =>
+  _ := scenario2.fs scenario2.b
+
+run_scenario2
+
+
+# ------  third scenario  ------
+#
+# Using `float.sum` monoid to cause this problem:
+#
+scenario3 is
+
+  fs f64
+
+  fs(F type : float F) =>
+    _ := F.sum.e
+
+scenario3
+
+
+
+# ------  fourth scenario  ------
+#
+# the example for idiom201 caused the simplest version of this problem in monoids defined for float:
+#
+ex201 =>
+  data := float_sequence [3.0, 4.0]
+  n := data.euclidean_norm
+  say n
+
+ex201
+
+
+# ------  fifth scenario  ------
+#
+# the example for idiom202 caused the a similar problem in monoids defined for integers:
+#
+ex202 is
+
+  a := [0, 8, 15, 47, 11]
+
+  # using sum and map
+  sum := sum (a.map x->x*x)
+  say "sum is $sum"
+
+  # using map and fold
+  sum := a.map x->x*x
+          .fold i32.type.sum
+  say "sum is $sum"
+
+  # using a loop
+  for
+    sum := 0, sum + q
+    v in a
+    q := v*v
+  else
+    say "sum is $sum"
+
+  # using a tail-recursive function
+  sum_of_squares (sum i32, s list i32) i32 is
+    s ? nil    => sum
+      | c Cons => sum_of_squares (sum + c.head**2) c.tail
+
+  say "sum is {sum_of_squares 0 a.as_list}"
+
+ex202
+
+
+# ------  sixth scenario  ------
+#
+# the example for idiom204 caused the problem from the next scenario:
+#
+ex204 is
+  frexp (f f64) tuple f64 i32 is
+    bits := f.cast_to_u64
+    # bits is f in the following representation
+    # seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
+    # where s = sign, e = exponent, f = fraction
+    fract_bits := f64.type.significand_bits.as_u64 - 1
+    # fract_bits is
+    # 0000000000000000000000000000000000000000000000000000000000110100
+    bias := (u64 2 ** (f64.type.exponent_bits.as_u64 - 1) - 1)
+    # bias is
+    # 0000000000000000000000000000000000000000000000000000001111111111
+    mask := u64 2 ** f64.type.exponent_bits.as_u64 - 1
+    # mask is
+    # 0000000000000000000000000000000000000000000000000000011111111111
+    # bits >> fract_bits will give us
+    # 0000000000000000000000000000000000000000000000000000seeeeeeeeeee
+    # AND this with mask
+    # 00000000000000000000000000000000000000000000000000000eeeeeeeeeee
+    e := ((bits >> fract_bits) & mask).as_i32 - bias.as_i32 + 1
+    # mask << fract_bits is
+    # 0111111111110000000000000000000000000000000000000000000000000000
+    # NOT this to get
+    # 1000000000001111111111111111111111111111111111111111111111111111
+    bits2 := bits & (~(mask << fract_bits))
+    # hence bits2 is
+    # s00000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff
+    # (bias - 1) << fract_bits is
+    # 0011111111100000000000000000000000000000000000000000000000000000
+    bits3 := bits2 | ((bias - 1) << fract_bits)
+    # therefore we have
+    # s01111111110ffffffffffffffffffffffffffffffffffffffffffffffffffff
+    # the last step is to "normalize" the exponent of the fraction
+    if ((bits >> fract_bits) & mask) = 0 then
+      (bits3.cast_to_f64, e - 51)
+    else
+      (bits3.cast_to_f64, e)
+
+  a f64 := 3.14
+  (b, c) := frexp a
+  say "{b} {c}"
+
+  d f64 := 5E-324
+  (e, f) := frexp d
+  say "{e} {f}"
+
+ex204
+
+# essentially, the problematic part of ex204 is this simple line:
+#
+ex_204_bis := ~8
+
+
+# ------  seventh scenario  ------
+#
+# here, we have a feature `p` with a type parameter that depends on `p` itself that defines
+# a type feature `abs`
+
+scenario7 is
+
+  p (W type: p W) is
+    type.abs W is abstract
+    a => W.abs
+
+  # Now, features `q`, `q2` and `q3` inherit from `p` and set the type parameter to `q`, `q2`
+  # and `q3, resp. and implement the type feature `abs`
+  #
+  q : p scenario7.q is
+    redef type.abs scenario7.q is scenario7.q
+
+  q2 : p scenario7.q2 is
+    redef type.abs scenario7.q2 is scenario7.q2
+  q3 : p scenario7.q3 is
+    redef type.abs scenario7.q3 is scenario7.q3
+
+  # Next, r, s and t build a long inheritance chain starting at `p q`:
+  #
+  r : p q is
+  s : r is
+  t : s is
+
+  # finally `u1` and `u2` use two type parameters `A` and `B` and inherit from `p A` and `p B`,
+  # respectively. `v1`, `v2`, `w1` and `w2` inherit from `u1` or `u2` giving `q2` or `q3` as
+  # type parameters in both possible orders.
+  #
+  u1(A type : p A, B type : p B) : p A is
+  u2(A type : p A, B type : p B) : p B is
+
+  v1 : u1 q2 q3 is
+  v2 : u1 q3 q2 is
+  w1 : u2 q2 q3 is
+  w2 : u2 q3 q2 is
+
+run_scenario7 =>
+
+  # Finally, we create instances from all the examples and call `a`, which calls `abs` for
+  # all of them:
+  #
+  x := scenario7.q .a; say (type_of x)   # Type of 'q'
+  x := scenario7.r .a; say (type_of x)   # Type of 'q'
+  x := scenario7.s .a; say (type_of x)   # Type of 'q'
+  x := scenario7.t .a; say (type_of x)   # Type of 'q'
+  x := scenario7.v1.a; say (type_of x)   # Type of 'q3'  (inherited through p.W -> u1.A -> q2)
+  x := scenario7.v2.a; say (type_of x)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
+  x := scenario7.w1.a; say (type_of x)   # Type of 'q2'  (inherited through p.W -> u2.B -> q3)
+  x := scenario7.w2.a; say (type_of x)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
+
+run_scenario7
