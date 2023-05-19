@@ -17,12 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue356
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion standard library feature container
 #
 # -----------------------------------------------------------------------
 
-issue356 =>
-  a : choice is
-  b : container.Map String a is
+# container -- unit feature to group features that provide some kind of
+# data structure to store and retrieve values
+#
+container is

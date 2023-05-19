@@ -84,7 +84,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   # can still be modified. however, the list needs to be frozen manually
   # before leaving the mutate environment.
   #
-  type.from_sequence(from Sequence T) Mutable_Linked_List LM T
+  type.from_sequence(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   is
@@ -97,12 +97,12 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   # true, the list is frozen after creation, i.e. it can no longer be changed,
   # but the mutate environment can be left.
   #
-  type.from_sequence(from Sequence T, freeze bool) Mutable_Linked_List LM T
+  type.from_sequence(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   is
     from_list := from.as_list
-    c := Mutable_Linked_List LM T from_list.head.get
+    c := container.Mutable_Linked_List LM T from_list.head.get
     from_list.tail.for_each (x -> c.append x)
 
     if freeze

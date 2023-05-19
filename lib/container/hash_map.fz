@@ -133,5 +133,5 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  type.empty => hash_map HK V [] []
+  type.empty => container.hash_map HK V [] []
 
