@@ -102,7 +102,7 @@ scenario3
 # the example for idiom201 caused the simplest version of this problem in monoids defined for float:
 #
 ex201 =>
-  data := float_sequence [3.0, 4.0]
+  data := container.float_sequence [3.0, 4.0]
   n := data.euclidean_norm
   say n
 
