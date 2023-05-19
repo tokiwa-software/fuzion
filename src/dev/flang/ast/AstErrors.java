@@ -58,7 +58,8 @@ public class AstErrors extends ANY
    */
   public static String s(AbstractFeature f)
   {
-    return sqn(f.qualifiedName());
+    return f == Types.f_ERROR ? err()
+                              : sqn(f.qualifiedName());
   }
   public static String s(Feature f)
   {
@@ -70,7 +71,8 @@ public class AstErrors extends ANY
   }
   static String sbn(AbstractFeature f) // feature base name
   {
-    return sbn(f.featureName().baseName());
+    return f == Types.f_ERROR ? err()
+                              : sbn(f.featureName().baseName());
   }
   static String sbn(FeatureName fn) // feature base name plus arg count and id string
   {
@@ -167,6 +169,7 @@ public class AstErrors extends ANY
   static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
   static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
   static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
+  static String err()          { return Terminal.RED + ERROR_STRING + Terminal.REGULAR_COLOR; }
 
   /**
    * Enclose s in "'" unless s contains a new line. If s contains a new line,

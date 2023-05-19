@@ -713,7 +713,11 @@ public class Type extends AbstractType
   {
     String result;
 
-    if (Types.INTERNAL_NAMES.contains(name))
+    if (this == Types.t_ERROR)
+      {
+        result = Errors.ERROR_STRING;
+      }
+    else if (Types.INTERNAL_NAMES.contains(name))
       {
         result = name;
       }
