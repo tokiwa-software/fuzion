@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;

@@ -324,7 +324,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using the total order defined by less_or_equal
-  sort(less_or_equal (T, T) -> bool) => sorted_array Sequence.this less_or_equal
+  sort(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
 
 
   # sort this Sequence using total order defined for 'f a[i]'
@@ -413,9 +413,9 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K type : has_hash, f T -> K) Map K (Sequence T) is
+  group_by(K type : has_hash, f T -> K) container.Map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
-    res := c_trie K (Sequence T)
+    res := container.c_trie K (Sequence T)
     for_each (x ->
       key := f x
       match res[key]
@@ -469,9 +469,9 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  index_in(A type : equatable, l Sequence A, x A) => (searchable_sequence A l).index_of x
+  index_in(A type : equatable, l Sequence A, x A) => (container.searchable_sequence A l).index_of x
 
 
   # get the index of x within this Sequence or nil if it does not exist
   #
-  find(A type : equatable, l Sequence A, x Sequence A) => (searchable_sequence A l).find x
+  find(A type : equatable, l Sequence A, x Sequence A) => (container.searchable_sequence A l).find x
