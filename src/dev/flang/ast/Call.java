@@ -1414,10 +1414,13 @@ public class Call extends AbstractCall
      * for `a` (and `b`) by `T`.
      */
     var target = target();
-    if (target instanceof Call tc && tc.calledFeature().isTypeParameter())
+    var tt = target().type();
+    if (target instanceof Call tc &&
+        tc.calledFeature().isTypeParameter() &&
+        !tt.isGenericArgument())
       {
         t = t.replace_type_parameter_used_for_this_type_in_type_feature
-          (target.type().featureOfType(),
+          (tt.featureOfType(),
            tc);
       }
     if (!calledFeature().isOuterRef())
@@ -2235,25 +2238,7 @@ public class Call extends AbstractCall
           }
 
         // Check that generics match formal generic constraints
-        var fi = _calledFeature.generics().list.iterator();
-        var gi = _generics.iterator();
-        while (fi.hasNext() &&
-               gi.hasNext()    ) // NYI: handling of open generic arguments
-          {
-            var f = fi.next();
-            var g = gi.next();
-
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null && g != null);
-            if (f != null && g != null &&
-                !f.constraint().constraintAssignableFrom(g))
-              {
-                if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
-                  {
-                    AstErrors.incompatibleActualGeneric(pos(), f, g);
-                  }
-              }
-          }
+        AbstractType.checkActualTypePars(pos(), _calledFeature, _generics);
       }
   }
 
