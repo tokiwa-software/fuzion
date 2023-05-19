@@ -166,14 +166,14 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
   # and it would work for all set types.
   #
-  element_of(s Set T) => s.contains thiz
-  infix ∈ (s Set T) => numeric.this.element_of s
+  element_of(s container.Set T) => s.contains thiz
+  infix ∈ (s container.Set T) => numeric.this.element_of s
 
 
   # is this not part of given set
   #
-  not_element_of(s Set T) => !element_of s
-  infix ∉ (s Set T) => numeric.this.not_element_of s
+  not_element_of(s container.Set T) => !element_of s
+  infix ∉ (s container.Set T) => numeric.this.not_element_of s
 
 
   # -----------------------------------------------------------------------

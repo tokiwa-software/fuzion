@@ -45,7 +45,7 @@ has_interval(H type : has_interval H) : integer H is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper H) : Set H is
+  infix .. (upper H) : container.Set H is
 
     lower H is thiz
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
@@ -80,7 +80,7 @@ has_interval(H type : has_interval H) : integer H is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step H) : Set H is
+    infix : (step H) : container.Set H is
 
       # list representation of values in this interval
       #
