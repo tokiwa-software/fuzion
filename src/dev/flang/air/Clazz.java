@@ -362,8 +362,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
       : actualType;
     this._dynamicBinding = null;
 
-    if(POSTCONDITIONS) ensure
-      (!hasCycles());
+    if (POSTCONDITIONS) ensure
+      (Errors.count() > 0 || !hasCycles());
   }
 
 
@@ -2148,25 +2148,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isTypeParameter());
 
     var f = feature();
-
-    if (_outer.feature() != f.outer())
-      {
-        if (Errors.count() == 0)
-          {
-            throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
-          }
-        else
-          {
-            return Clazzes.error.get();
-          }
+    var o = _outer;
+    var inh = o.feature().tryFindInheritanceChain(f.outer());
+    if (inh != null && inh.size() > 0)
+      { // type parameter was inherited, so get value from parameter of inherits call:
+        var call = inh.get(0);
+        if (CHECKS) check
+          (call.calledFeature() == f.outer());
+        o = (Clazz) _outer.getRuntimeData(call._sid + 0);
       }
-
     var ix = f.typeParameterIndex();
-    var oag = _outer.actualGenerics();
-    if (CHECKS) check
-      (ix >= 0 && ix < oag.length || Errors.count() > 0);
-
-    return ix < 0 || ix >= oag.length ? Clazzes.error.get() : oag[ix];
+    var oag = o.actualGenerics();
+    return inh == null || ix < 0 || ix >= oag.length ? Clazzes.error.get()
+                                                     : oag[ix];
   }
 
 
@@ -2208,7 +2202,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o)
+    while (i != null && i != o)
       {
         res =  i.hasOuterRef() ? res.lookup(i.outerRef(), pos).resultClazz()
                                : res._outer;
@@ -2216,9 +2210,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (i == o);
+      (Errors.count() > 0 || i == o);
 
-    return res;
+    return i == null ? Clazzes.error.get() : res;
   }
 
 
