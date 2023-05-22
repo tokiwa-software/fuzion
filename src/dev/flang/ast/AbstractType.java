@@ -1429,44 +1429,64 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check if constraints of this type are satisfied.
-   * Returns itself on success or t_ERROR if constraints are not met.
+   *
+   * @return itself on success or t_ERROR if constraints are not met.
    */
-  // NYI Can this result in an infinite recursion?
   public AbstractType checkConstraints(SourcePosition pos)
   {
-    // NYI caching?
     var result = this;
     if (!isGenericArgument())
       {
-        // NYI deduplicate this code?: also in Call.checkTypes()
-
-        // Check that generics match formal generic constraints
-        var fi = featureOfType().generics().list.iterator();
-        var gi = generics().iterator();
-        while (fi.hasNext() &&
-              gi.hasNext()    ) // NYI: handling of open generic arguments
+        if (!checkActualTypePars(pos, featureOfType(), generics()))
           {
-            var f = fi.next();
-            var g = gi.next();
-            g.checkConstraints(pos);
-            if (compareTo(f.constraint()) != 0)
-              {
-                f.constraint().checkConstraints(pos);
-              }
-
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null && g != null);
-            if (f != null && g != null &&
-                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
-              {
-                AstErrors.incompatibleActualGeneric(pos, f, g);
-                result = Types.t_ERROR;
-              }
+            result = Types.t_ERROR;
           }
       }
     return result;
   }
 
+
+  /**
+   * Check that given actuals match formal type parameter constraints of given
+   * feature.
+   *
+   * @param pos position where to report an error in case actuals do not match
+   * f's type parameter's constraints.
+   *
+   * @param f the feature that has formal type parameters
+   *
+   * @param actuals the actual type parameters
+   *
+   * @return true iff check was ok, false iff an error was found and reported
+   */
+  static boolean checkActualTypePars(SourcePosition pos, AbstractFeature called, List<AbstractType> actuals)
+  {
+    var result = true;
+    var fi = called.generics().list.iterator();
+    var ai = actuals.iterator();
+    while (fi.hasNext() &&
+           ai.hasNext()    ) // NYI: handling of open generic arguments
+      {
+        var f = fi.next();
+        var a = ai.next();
+        var c = Types.intern(f.constraint());
+        if (CHECKS) check
+          (Errors.count() > 0 || f != null && a != null);
+
+        if (f != null && a != null &&
+            !c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
+                                      // will be checked in SourceModule.checkTypes(Feature)
+            !c.constraintAssignableFrom(Types.intern(a)))
+          {
+            if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+              {
+                AstErrors.incompatibleActualGeneric(pos, f, a);
+                result = false;
+              }
+          }
+      }
+    return result;
+  }
 
 }
 
