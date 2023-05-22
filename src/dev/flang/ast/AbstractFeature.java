@@ -560,7 +560,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var of = outer();
         if (!isUniverse() && of != null && !of.isUniverse())
           {
-            result = new Type(result, of.thisType());
+            result = Type.newType(result, of.thisType());
           }
         result = Types.intern(result);
         if (innerFixed)

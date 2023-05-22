@@ -257,18 +257,31 @@ public class Type extends AbstractType
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  public Type(AbstractType t, AbstractType o)
+  public static Type newType(AbstractType t, AbstractType o)
   {
-    this(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), t.generics(), o, t.featureOfType(),
-         t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-         t.isRef()                                  ? RefOrVal.Boxed
-                                                    : RefOrVal.Value,
-         false);
-
     if (PRECONDITIONS) require
       (t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    checkedForGeneric = t.checkedForGeneric();
+    Type result;
+    if (t == Types.t_ERROR ||
+        o == Types.t_ERROR   )
+      {
+        result = Types.t_ERROR;
+      }
+    else
+      {
+        result = new Type(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), t.generics(), o, t.featureOfType(),
+                          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+                          t.isRef()                                  ? RefOrVal.Boxed
+                                                                     : RefOrVal.Value,
+                          false);
+
+        if (t.checkedForGeneric())
+          {
+            result.checkedForGeneric = true;
+          }
+      }
+    return result;
   }
 
 
