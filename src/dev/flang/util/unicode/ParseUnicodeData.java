@@ -230,6 +230,10 @@ public class ParseUnicodeData extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /**
+   * Constructor of ParseUnicodeData to be called with path of UnicodeData.txt
+   * @param name
+   */
   ParseUnicodeData(String name)
   {
     _name = name;
@@ -265,27 +269,6 @@ public class ParseUnicodeData extends ANY
       }
   }
 
-
-  private void PrintJava()
-  {
-    System.out.println("  /* Unicode data from '" + _name + "' last modified '" + _lastModified + "' */");
-
-    if (VERBOSE)
-      {
-        System.out.println("" +
-                           _letters + " letters in " + _letterBlocks + " blocks, " +
-                           _cats.size() + " categories in " + _blocks.size() + " blocks. ");
-      }
-
-    System.out.println("  static final int[] _START_ = start0();\n" +
-                       "  private static int[] start0() { return new int[] {"          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
-    System.out.println("  static final int[] _END_ = end0();\n" +
-                       "  private static int[] end0() { return new int[] {"            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
-    System.out.println("  static final String[] _CATEGORY_ = category0();\n"+
-                       "  private static String[] category0() { return new String[] {" + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
-    var c = Arrays.asList(_cats.keySet().toArray(new String[_cats.size()]));
-    System.out.println("  static final String[] _CATEGORIES_ = new String[] {" + table(c, x -> "\"" + x + "\"") + "\n  };");
-  }
 
   interface ToString<T>
   {
@@ -336,11 +319,11 @@ public class ParseUnicodeData extends ANY
 
         if (!args[0].equals("-fz"))
           {
-            new ParseUnicodeData(args[0]).PrintJava();
+            new ParseUnicodeData(args[0]).printJava();
           }
         else
           {
-            new ParseUnicodeData(args[1]).PrintFuzion();
+            new ParseUnicodeData(args[1]).printFuzion();
           }
       }
     catch (FatalError e)
@@ -353,7 +336,35 @@ public class ParseUnicodeData extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  private void PrintFuzion()
+  /**
+   * Print Java source code for file $(BUILD_DIR)/UnicodeData.java.generated
+   */
+  private void printJava()
+  {
+    System.out.println("  /* Unicode data from '" + _name + "' last modified '" + _lastModified + "' */");
+
+    if (VERBOSE)
+      {
+        System.out.println("" +
+                           _letters + " letters in " + _letterBlocks + " blocks, " +
+                           _cats.size() + " categories in " + _blocks.size() + " blocks. ");
+      }
+
+    System.out.println("  static final int[] _START_ = start0();\n" +
+                       "  private static int[] start0() { return new int[] {"          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
+    System.out.println("  static final int[] _END_ = end0();\n" +
+                       "  private static int[] end0() { return new int[] {"            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
+    System.out.println("  static final String[] _CATEGORY_ = category0();\n"+
+                       "  private static String[] category0() { return new String[] {" + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
+    var c = Arrays.asList(_cats.keySet().toArray(new String[_cats.size()]));
+    System.out.println("  static final String[] _CATEGORIES_ = new String[] {" + table(c, x -> "\"" + x + "\"") + "\n  };");
+  }
+
+
+  /**
+   * Print Fuzion source code for file unicode_data.fz
+   */
+  private void printFuzion()
   {
     // NYI performance, see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
     // NYI special casings: https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt
