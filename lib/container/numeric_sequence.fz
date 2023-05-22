@@ -34,8 +34,8 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     if is_empty
       nil
     else
-      cnt := (map_sequence N (_ -> first.one)).fold (numeric N).type.sum
-      sum := fold (numeric N).type.sum
+      cnt := (map_sequence N (_ -> first.one)).fold N.sum
+      sum := fold N.sum
       sum / cnt
 
 
@@ -45,8 +45,8 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     match average
       nil => nil
       avg N =>
-        cnt := (map_sequence N (_ -> first.one)).fold (numeric N).type.sum
-        sum := (map_sequence N (x -> (x - avg)**first.two)).fold (numeric N).type.sum
+        cnt := (map_sequence N (_ -> first.one           )).fold N.sum
+        sum := (map_sequence N (x -> (x - avg)**first.two)).fold N.sum
         sum / cnt
 
 
@@ -81,7 +81,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
 
   # equality check implementation for inherited equatable
   #
-  fixed type.equality(a, b numeric_sequence N) bool is
+  fixed type.equality(a, b container.numeric_sequence N) bool is
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

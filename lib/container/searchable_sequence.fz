@@ -122,7 +122,7 @@ is
 
   # equality check implementation for inherited equatable
   #
-  fixed type.equality(a, b searchable_sequence A) bool is
+  fixed type.equality(a, b container.searchable_sequence A) bool is
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

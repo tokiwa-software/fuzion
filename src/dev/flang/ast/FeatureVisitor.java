@@ -26,9 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.TreeMap;
-import java.util.Map;
-
 import dev.flang.util.ANY;
 
 

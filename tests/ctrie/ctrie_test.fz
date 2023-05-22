@@ -24,11 +24,11 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := c_trie i32 String
+  ctrie := (container.C_Trie i32 String).type.empty
 
-  all := ps_set 0..100
-  removed := ps_set 0..100:2
-  readded := ps_set 0..100:3
+  all := container.ps_set 0..100
+  removed := container.ps_set 0..100:2
+  readded := container.ps_set 0..100:3
 
   # snapshot
   no_items := ctrie.items
@@ -50,7 +50,7 @@ ctrie_test is
 
   # NYI Set should have `except()` feature
   no  := removed.filter (x -> !(readded.contains x))
-  yes := (ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
+  yes := (container.ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
 
   if no ∃  (k -> (ctrie.lookup k).exists)
     panic "value in slot that should be empty"

@@ -1,4 +1,7 @@
-## 2023-95-16: V0.082
+## 2023-**-**: V0.083
+
+
+## 2023-05-16: V0.082
 
 - Fuzion language
 
@@ -222,8 +225,8 @@
 
   - added `type.equality` to several features.
 
-  - `infix ⋃` and `infix ⋂` are now used for union and intersection instead of
-    `∪` and `∩`.
+  - `infix ∪` and `infix ∩` are now used for union and intersection instead of
+    `⋃` and `⋂`.
 
   - `unit.type.monoid` was added.
 

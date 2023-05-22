@@ -17,36 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature float_sequence
+#  Source code of Fuzion test Makefile
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# NYI
-# mode
-# Mean (geometric harmonic)
-# quartile
-# ...
+override NAME = issue1294
 
-# float_sequence -- a Sequence whose elements inherit from float
-#
-float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F from is
-
-  # create a list from this Sequence.
-  #
-  redef as_list => from.as_list
-
-
-  # the standard deviation of the sequence
-  # https://en.wikipedia.org/wiki/Standard_deviation
-  std_dev =>
-    variance.map (x -> first.sqrt x)
-
-
-  # the euclidean norm of this sequence
-  # i.e. the square of the sum of squares of this sequence
-  #
-  euclidean_norm F is
-    # NYI #500: sqrt,two and sum should be accessed via type
-    first.sqrt ((map_sequence (x)->x**first.two).fold (float F).type.sum)
+include ../simple.mk
