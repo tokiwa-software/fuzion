@@ -1,5 +1,191 @@
-## 2023-**-**: V0.081
+## 2023-**-**: V0.083
 
+
+## 2023-05-16: V0.082
+
+- Fuzion language
+
+  - semantics of boxed values have been revised: When using a value type that is
+    boxed into a corresponding `ref` type (e.g. an `i32` assigned to `Any`),
+    calls to function features will now be performed on the value type (`i32`)
+    within the boxed instance (`ref i32`). Only constructors will use the boxed
+    ref type as their outer type.  This fixed #1313 and #1296.
+
+  - dynamic binding is now permitted for features with type parameters
+
+  - An attempt to redefine a choice feature now results in an error (#1304).
+
+  - Fixed handling of the choice of syntax (#1289):
+
+        # no declaration of the apple, pear, or banana features here!
+        fruit : choice of apple, pear, banana.
+
+    The code in the example above used to work, but this broke and went unnoticed for a while.
+
+   - \' is no longer a valid escape in string constants. This is because ' is a
+     valid character in strings without an escape as well (#1315).
+
+   - The multi-line strings presented in the last Fuzion Update have been
+     extended to allow the dismissal of newlines. This allows wrapping long
+     strings in Fuzion code that is not supposed to contain line breaks (#1299).
+
+        s := """
+          hello \
+          world"""
+
+   - The `fun` keyword has been removed from Fuzion (#1321, #1325). Lambdas
+     should be used instead.
+
+   - the `redefine` keyword has been removed, `redef` should be used instead.
+
+- base library
+
+   - grouped complex, fraction and matrix feature in num outer feature
+
+   - renames according to naming conventions
+
+   - new effects io.file.use and io.file.open
+
+   - searchable_list has been merged into searchable_sequence (#1333).
+
+   - More features, including public-facing ones have been renamed to match the
+     Fuzion naming convention (#1337, #1338, #1339, #1340, #1341, #1345, #1356,
+     #1366, #1368).
+
+   - The spit feature has been removed (#1343) use the equivalent yak feature to
+     print text without a new line..
+
+   - Extended the exit effect to allow setting an exit code which is used later
+     when calling exit without arguments (#1346). This is useful in tests, for
+     instance.
+
+   - Many effects in the standard library now inherit from simpleEffect (#1370,
+     #1371, #1372, #1373, #1374, #1375). This decreases code complexity
+     significantly. interpreter backend
+
+   - The intrinsics for setting and clearing environment variables have been
+     implemented to always return failure. This is because Java does not support
+     modifying environment variables at runtime, but avoids compiler errors when
+     trying to use these features from the interpreter backend (#1336).
+
+- fz tool
+
+   - Allow specifying -1 as the maximum warning or error count. In this case, an unlimited amount of warnings respectively errors is shown (#1332).
+
+   - Compatibility with different versions of the Clang compiler has been
+     improved when compiling code from the C backend (#1384).  tests
+
+   - Tests for nested option have been added (#1316). This will ensure nested options continue to work as they do right now even though changes to their internals are planned.
+
+
+## 2023-04-05: V0.081
+
+- Fuzion language
+
+  - Introduced syntax sugar for lazy evaluation.
+
+  - The code for handling of outer types has been rewritten entirely.
+
+  - Parser has been improved to distinguish infix : from : used in inherits clause.
+
+  - Support for Multi-line strings literals
+
+  - Improved type inference of type parameters, e.g., `3 = f` now works for `f`
+    being of any numeric type, not only for `i32`.
+
+  - Using `universe.this.x` it is now possible to access a feature named `x`.
+
+  - type features can now access the type parameters of the underlying feature, e.g.,
+
+      Sequence (T type) is
+        ...
+        type.empty Sequence T is
+          lists.empty T
+
+   - added syntax for effects in feature declarations.
+
+      HelloWorls ! io.out is
+        say "HelloWorld!"
+
+- base library
+
+  - added Mutable_Linked_List and mutable_tree_map
+
+  - renamed has_equality as equatable
+
+  - lazy variants of some features where removed, the main variants are now lazy
+
+  - `Unary` function type has been introduced.
+
+  - `Monoid` no longer defines its own infix ==, but uses equatable
+
+  - `time.date_time` and `time.now` were added
+
+  - `mutate` now supports local mutation
+
+  - `comparable_sequence` was merged into `searchable_sequence`
+
+  - `CTrie` can now be created using a sequence of key-value pairs (#1073)
+
+  - uses of `stream` removed for planned removal of `stream` feature
+
+  - `String` now supports `split_n`, `split_after`, and `split_after_n`
+
+  - `list.init` was added.
+
+  - clean up in `fuzion.sys.fileio`
+
+  - on Windows, `stdout` and `stderr` is now opened in binary mode.
+
+  - documentation has been improved for many standard library features.
+
+  - more consistent naming: `string` -> `String`, `Object` -> `Any`, or `mapOf`
+    -> `map_of`
+
+  - equality testing now done using `type.equality`
+
+  - Haskell-style `infix :` operator for lazy lists was added
+
+  - added `Sequence.infix []` with no argument, returns a function that takes
+    an index, and returns the element of the sequence at the given index.
+
+  - Replaced `hasHash`, `partially_ordered`, and `ordered`by `has_hash`,
+    `has_partial_order`, and `has_total_order`.
+
+- fz tool
+
+  - quadratic compilation time was improved
+
+  - formatting of code in error messages more readable now
+
+  - on a call with wrong arg count, error message now proposes solution
+
+  - some error messages have been improved.
+
+  - output of `-XdumpFUIR`option improved for better debugging (#1110)
+
+  - fixed many bugs relating to type features
+
+- interpreter back-end
+
+  - clean-up in handling of open resources like files
+
+- C back-end
+
+  - windows support for fileio and env vars has been improved (#1087)
+
+
+- fzjava tool
+
+  - improved performance by lazily accessing data from dependent `.fum` files.
+
+- fzdocs tool
+
+   - now creates links to redefined features
+
+   - removed emojis in the page titles, 🎆 (effects) and 🌌 (universe)
+
+   - private features are now hidden from the documentation by default.
 
 ## 2023-01-12: V0.080
 
@@ -39,8 +225,8 @@
 
   - added `type.equality` to several features.
 
-  - `infix ⋃` and `infix ⋂` are now used for union and intersection instead of
-    `∪` and `∩`.
+  - `infix ∪` and `infix ∩` are now used for union and intersection instead of
+    `⋃` and `⋂`.
 
   - `unit.type.monoid` was added.
 

@@ -25,26 +25,26 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
+u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
 
   redef thiz => u8.this.val
 
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u8) => u8.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other u8) => false
+  redef overflow_on_add (other u8) => u8.type.max -° thiz < other
+  redef underflow_on_add(other u8) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other u8) => false
-  redef underflowOnSub(other u8) => thiz ⩻ other
+  redef overflow_on_sub (other u8) => false
+  redef underflow_on_sub(other u8) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u8) => as_i32 *° other.as_i32 ⩼ u8.type.max.as_i32
-  redef underflowOnMul(other u8) => false
+  redef overflow_on_mul (other u8) => as_i32 *° other.as_i32 > u8.type.max.as_i32
+  redef underflow_on_mul(other u8) => false
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° u8 is intrinsic
@@ -79,7 +79,7 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
     pre
       debug: thiz ≤ i8.type.max.as_u8
     is
-      castTo_i8
+      cast_to_i8
   as_i16 => as_i32.as_i16
   as_i32 i32 is intrinsic
   as_i64  => as_i32.as_i64
@@ -91,10 +91,10 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   as_u128 => as_i32.as_u128
   as_int  => int as_i64
 
-  castTo_i8 i8 is intrinsic
+  cast_to_i8 i8 is intrinsic
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
+  # from has_interval is abstract, fz should not complain about this conflict.
   redef max => u8 0xff
 
 
@@ -106,18 +106,18 @@ u8(val u8) : wrapping_integer u8, hasInterval u8, u8s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit u8 is
+  highest_one_bit u8 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u8 0)
-    (v1, s1) := if (v0 ⩻ u8 0x10) (v0, s0) else (v0 >> 4, s0 + 4)
-    (v2, s2) := if (v1 ⩻    u8 4) (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 ⩻    u8 2) (v2, s2) else (v2 >> 1, s2 + 1)
+    (v1, s1) := if (v0 < u8 0x10) (v0, s0) else (v0 >> 4, s0 + 4)
+    (v2, s2) := if (v1 <    u8 4) (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 <    u8 2) (v2, s2) else (v2 >> 1, s2 + 1)
     v3 << s3
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
+  trailing_zeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
     (v1, s1) := if (v0 & 0xf) != u8 0 then (v0, s0) else (v0 >> 4, s0 + 4)

@@ -31,12 +31,12 @@ stringtest is
   say "".is_empty
   say "notEmpty".is_empty
 
-  say ("hell😀"≟"hell😀")
-  say ("hell😀"≟"again")
+  say ("hell😀"="hell😀")
+  say ("hell😀"="again")
 
 
   match "13".parse_integer i32 10
-    n i32 => say n≟13
+    n i32 => say n=13
     error => say "FAIL"
 
   say 10

@@ -37,7 +37,7 @@ unboxOuterRef is
     g (v y) is
       vs := v.as_string
       say "in g: $vs $i"
-    f is
+    f unit is
 #     g y.this   # y.this is not assignable to y, should be type 'like y.this', see #167
       g (y i)
       unit

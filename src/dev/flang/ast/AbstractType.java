@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -558,7 +559,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        t != null,
        t.checkedForGeneric(),
        Errors.count() > 0 || !t.isOpenGeneric(),
-       isGenericArgument() || featureOfType().generics().sizeMatches(generics()));
+       Errors.count() > 0 || isGenericArgument() || featureOfType().generics().sizeMatches(generics()));
 
     AbstractType result;
     if (t._actualTypeCachedFor1 == this)
@@ -734,9 +735,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Helper for actualType_ to determine the actual type of a type feature's
-   * type. This needs special handling since the the type feature has one
-   * additional first type parameter --the underlying type: this_type--, and all
-   * other type parameters need converted to the actual type relative to that.
+   * type. This needs special handling since the type feature has one additional
+   * first type parameter --the underlying type: this_type--, and all other type
+   * parameters need converted to the actual type relative to that.
    *
    * @param this_type the first type parameter that contains the actual type.
    */
@@ -1012,13 +1013,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
    */
-  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
+                                                        BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
     do
       {
-        result = result.replace_this_type_by_actual_outer2(tt);
+        result = result.replace_this_type_by_actual_outer2(tt, foundRef);
         tt = tt.isGenericArgument() ? null : tt.outer();
       }
     while (tt != null);
@@ -1027,12 +1033,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Convenience version of replace_this_type_by_actual_outer with `null` as
+   * argument to `foundRef`.
+   *
+   * @param tt the type feature we are calling (`equatable.type` in the example)
+   * above).
+   */
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  {
+    return replace_this_type_by_actual_outer(tt, null);
+  }
+
+
+  /**
    * Helper for replace_this_type_by_actual_outer to replace `this.type` for
    * exactly tt, ignoring tt.outer().
    *
    * @param tt the type feature we are calling
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
    */
-  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt)
+  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
     if (isThisType())
@@ -1040,12 +1062,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
         if (att.featureOfType().inheritsFrom(featureOfType()))
           {
+            if (foundRef != null && tt.isRef())
+              {
+                foundRef.accept(this, tt);
+              }
             result = tt;
           }
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt));
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef));
       }
     return result;
   }
@@ -1403,44 +1429,64 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check if constraints of this type are satisfied.
-   * Returns itself on success or t_ERROR if constraints are not met.
+   *
+   * @return itself on success or t_ERROR if constraints are not met.
    */
-  // NYI Can this result in an infinite recursion?
   public AbstractType checkConstraints(SourcePosition pos)
   {
-    // NYI caching?
     var result = this;
     if (!isGenericArgument())
       {
-        // NYI deduplicate this code?: also in Call.checkTypes()
-
-        // Check that generics match formal generic constraints
-        var fi = featureOfType().generics().list.iterator();
-        var gi = generics().iterator();
-        while (fi.hasNext() &&
-              gi.hasNext()    ) // NYI: handling of open generic arguments
+        if (!checkActualTypePars(pos, featureOfType(), generics()))
           {
-            var f = fi.next();
-            var g = gi.next();
-            g.checkConstraints(pos);
-            if (compareTo(f.constraint()) != 0)
-              {
-                f.constraint().checkConstraints(pos);
-              }
-
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null && g != null);
-            if (f != null && g != null &&
-                !Types.intern(f.constraint()).constraintAssignableFrom(Types.intern(g)))
-              {
-                AstErrors.incompatibleActualGeneric(pos, f, g);
-                result = Types.t_ERROR;
-              }
+            result = Types.t_ERROR;
           }
       }
     return result;
   }
 
+
+  /**
+   * Check that given actuals match formal type parameter constraints of given
+   * feature.
+   *
+   * @param pos position where to report an error in case actuals do not match
+   * f's type parameter's constraints.
+   *
+   * @param f the feature that has formal type parameters
+   *
+   * @param actuals the actual type parameters
+   *
+   * @return true iff check was ok, false iff an error was found and reported
+   */
+  static boolean checkActualTypePars(SourcePosition pos, AbstractFeature called, List<AbstractType> actuals)
+  {
+    var result = true;
+    var fi = called.generics().list.iterator();
+    var ai = actuals.iterator();
+    while (fi.hasNext() &&
+           ai.hasNext()    ) // NYI: handling of open generic arguments
+      {
+        var f = fi.next();
+        var a = ai.next();
+        var c = Types.intern(f.constraint());
+        if (CHECKS) check
+          (Errors.count() > 0 || f != null && a != null);
+
+        if (f != null && a != null &&
+            !c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
+                                      // will be checked in SourceModule.checkTypes(Feature)
+            !c.constraintAssignableFrom(Types.intern(a)))
+          {
+            if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+              {
+                AstErrors.incompatibleActualGeneric(pos, f, a);
+                result = false;
+              }
+          }
+      }
+    return result;
+  }
 
 }
 

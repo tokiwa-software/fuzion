@@ -42,7 +42,7 @@ integer(I type : integer I) : numeric I is
     pre
       safety: other != zero
   is
-    thiz % other ≟ zero
+    thiz % other = zero
 
   # bitwise operations
   infix &  (other I) I is abstract
@@ -83,13 +83,13 @@ integer(I type : integer I) : numeric I is
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
   is
-    if b ≟ zero
+    if b = zero
       thiz
     else
       b.gcd(thiz % b)  # tail recursion
 
   # create a fraction
-  infix /-/ (other I) => (fraction thiz other).reduce
+  infix /-/ (other I) => (num.fraction thiz other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
   infix ⁄ (other I) => integer.this /-/ other
@@ -106,7 +106,7 @@ integer(I type : integer I) : numeric I is
   #
   as_string(base u32) String : character_encodings
     pre
-      debug: u32 1 ⩻ base ≤ (u32 36)
+      debug: u32 1 < base ≤ (u32 36)
   is
     b := from_u32 base
 
@@ -120,7 +120,7 @@ integer(I type : integer I) : numeric I is
       digit_as_utf8_byte(d u8) u8
       pre d ≤ (u8 35) # 35 would be a Z
       is
-        if d ⩻ u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
+        if d < u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
       as_list0 (power I) =>
         if power.sign <= 0
@@ -138,7 +138,7 @@ integer(I type : integer I) : numeric I is
   #
   as_string(len i32, base u32) String
     pre
-      debug: u32 1 ⩻ base ≤ (u32 36)
+      debug: u32 1 < base ≤ (u32 36)
     post
       debug: result.byte_length ≥ len
   is
@@ -146,7 +146,7 @@ integer(I type : integer I) : numeric I is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sgn, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
+    (sgn, digits) := if (integer.this.sign < 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * (max 0 (len - n.byte_length))

@@ -154,11 +154,29 @@ public class ValueSet extends Value
 
 
   /**
+   * Box this value. This works both for Instances as well as for value types
+   * such as i32, bool, etc.
+   */
+  Value box(DFA dfa, int vc, int rc, Context context)
+  {
+    Value result = null;
+    // NYI: performance in O(_components.size()²)
+    for (var v : _components.values())
+      {
+        var u = v.box(dfa, vc, rc, context);
+        result = result == null ? u : new ValueSet(result, u);
+      }
+    return result;
+  }
+
+
+  /**
    * Unbox this value.
    */
   Value unbox(int vc)
   {
     Value result = null;
+    // NYI: performance in O(_components.size()²)
     for (var v : _components.values())
       {
         var u = v.unbox(vc);

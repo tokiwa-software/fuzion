@@ -163,7 +163,7 @@ is
         f.setTitle "Fuzion's first window!"
 
         b := java.lang.System.getenv "BUTTON"
-        if !b.isNull && b = "TRUE"  # show a button
+        if !b.is_null && b = "TRUE"  # show a button
           match java.awt.Button.new "If you like Fuzion, click here!"
             e error => say "error: $e"
             b Java.java.awt.Button =>

@@ -1,0 +1,556 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test calls
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This tests calls to functions and constructors declared in value or ref
+# features that are called on targets that are value, ref or boxed types.
+#
+calls is
+
+  exit_code := mut 0
+  passed := mut 0
+  failed := mut 0
+
+  chck(str, expected String) =>
+    if str ≟ expected
+      say "PASSED: $str"
+      passed <- passed.get + 1
+    else
+      say "FAILED: $str /= $expected"
+      failed <- failed.get + 1
+      exit_code <- 1
+
+/*
+  We have the following possibilities when calling a feature `f` declared in do `on`
+  actual outer clazz `oa`:
+
+  inheritsCall: called normally or as a direct parent
+
+     # f called normally
+     r := oa.f
+
+     # f called as parent
+     g : oa.f is
+
+  function/constructor: f may be a constructor or a function.
+
+     on is
+       # function f
+       f result_type is
+         stmnts
+
+     on is
+       # constructor f
+       f is
+         stmnts
+
+  declared for value / declared for ref: `on` may be a `ref` instance
+
+     # f declared for value
+     on is
+       f ... is
+         stmnts
+     # f declared for ref
+     on ref is
+       f ... is
+         stmnts
+
+  called on value / ref / boxed: `oa` is a value instance, a ref instance, a boxed value instance
+
+     # f called on value:
+     oa : on is ...
+     t := oa
+     r := t.f
+
+     # f called on ref:
+     oa ref : on is ...
+     t := oa
+     r := t.f
+
+     # f called on boxed:
+     oa : on is ...
+     t ref oa := oa
+     r := t.f
+
+  So we have the following combinations
+
+  * normal (non-inherits) call
+    * function
+      * declared for value
+        * called on value
+          - oa.f
+        * called on ref
+          - oa.f
+        * called on boxed
+          - unbox(oa).f   -- target is uncopied value type.
+      * declared for ref
+        * called on value
+          - oa.f
+        * called on ref
+          - oa.f
+        * called on boxed
+          - unbox(oa).f   -- target is uncopied value type.
+    * constructor
+      * declared for value
+        * called on value
+          - oa.f
+        * called on ref
+          - (ref on).f
+        * called on boxed
+          - *** error ***
+      * declared for ref
+        * called on value
+          - oa.f    result type is oa.f, incompatible to on.f
+        * called on ref
+          - oa.f    result type is on.f?
+        * called on boxed
+          - oa.f    result type is on.f?
+  * inherits call
+    * function -- not allowed
+    * constructor
+      - same as for normal (non-inherits) call
+
+*/
+
+  case1 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for value
+    #        * called on value
+    #          - oa.f
+
+    on is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    t := oa
+    yak "case1a: "; chck t.f "f#1 in oa type calls.case1.oa"
+    yak "case1a: "; chck t.f "f#2 in oa type calls.case1.oa"
+    yak "case1a: "; chck t.f "f#3 in oa type calls.case1.oa"
+    yak "case1a: "; chck $t.cnt.get $3
+
+    t := on
+    yak "case1b: "; chck t.f "f#1 in on type calls.case1.on"
+    yak "case1b: "; chck t.f "f#2 in on type calls.case1.on"
+    yak "case1b: "; chck t.f "f#3 in on type calls.case1.on"
+    yak "case1b: "; chck $t.cnt.get $3
+
+  case1
+
+
+  case2 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for value
+    #        * called on ref
+    #          - oa.f
+
+    on is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa ref : on is
+      redef where => "oa"
+
+    oあ ref : on is
+      redef where => "oあ"
+
+    t := oa
+    yak "case2a: "; chck t.f "f#1 in oa type calls.case2.oa"
+    yak "case2a: "; chck t.f "f#2 in oa type calls.case2.oa"
+    yak "case2a: "; chck t.f "f#3 in oa type calls.case2.oa"
+    yak "case2a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "case2b: "; chck t.f "f#1 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck t.f "f#2 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck t.f "f#3 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck $t.cnt.get $3
+
+  case2
+
+
+  case3 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for value
+    #        * called on boxed
+    #          - unbox(oa).f   -- target is uncopied value type.
+
+    on is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    oa1 ref on is on
+    oa2 ref on is oa
+    oa3 ref oa is oa
+
+    t := oa1
+    yak "case3a: "; chck t.f "f#1 in on type calls.case3.on"
+    yak "case3a: "; chck t.f "f#2 in on type calls.case3.on"
+    yak "case3a: "; chck t.f "f#3 in on type calls.case3.on"
+    yak "case3a: "; chck $t.cnt.get $3
+
+    t := oa2
+    yak "case3b: "; chck t.f "f#1 in oa type calls.case3.oa"
+    yak "case3b: "; chck t.f "f#2 in oa type calls.case3.oa"
+    yak "case3b: "; chck t.f "f#3 in oa type calls.case3.oa"
+    yak "case3b: "; chck $t.cnt.get $3
+
+    t := oa3
+    yak "case3c: "; chck t.f "f#1 in oa type calls.case3.oa"
+    yak "case3c: "; chck t.f "f#2 in oa type calls.case3.oa"
+    yak "case3c: "; chck t.f "f#3 in oa type calls.case3.oa"
+    yak "case3c: "; chck $t.cnt.get $3
+
+  case3
+
+  case4 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for ref
+    #        * called on value
+    #          - oa.f
+
+    on ref is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    oあ : on is
+      redef where => "oあ"
+
+    t := oa
+    yak "case4a: "; chck t.f "f#1 in oa type calls.case4.oa"
+    yak "case4a: "; chck t.f "f#2 in oa type calls.case4.oa"
+    yak "case4a: "; chck t.f "f#3 in oa type calls.case4.oa"
+    yak "case4a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "case4b: "; chck t.f "f#1 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck t.f "f#2 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck t.f "f#3 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck $t.cnt.get $3
+
+  case4
+
+  case5 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for ref
+    #        * called on ref
+    #          - oa.f
+
+    on ref is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa ref : on is
+      redef where => "oa"
+
+    oあ ref : on is
+      redef where => "oあ"
+
+    t := oa
+    yak "case5a: "; chck t.f "f#1 in oa type calls.case5.oa"
+    yak "case5a: "; chck t.f "f#2 in oa type calls.case5.oa"
+    yak "case5a: "; chck t.f "f#3 in oa type calls.case5.oa"
+    yak "case5a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "case5b: "; chck t.f "f#1 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck t.f "f#2 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck t.f "f#3 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck $t.cnt.get $3
+
+  case5
+
+  case6 is
+    #  * normal (non-inherits) call
+    #    * function
+    #      * declared for ref
+    #        * called on boxed
+    #          - unbox(oa).f   -- target is uncopied value type.
+
+    on ref is
+      cnt := mut 0
+      f String is
+        cnt <- cnt.get + 1
+        "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    oあ : on is
+      redef where => "oあ"
+
+    oa1 on is oa
+    oあ1 on is oあ
+
+    t := oa1
+    yak "case6a: "; chck t.f "f#1 in oa type calls.case6.oa"
+    yak "case6a: "; chck t.f "f#2 in oa type calls.case6.oa"
+    yak "case6a: "; chck t.f "f#3 in oa type calls.case6.oa"
+    yak "case6a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "case6b: "; chck t.f "f#1 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck t.f "f#2 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck t.f "f#3 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck $t.cnt.get $3
+
+  case6
+
+  caseC1 is
+    #    * constructor
+    #      * declared for value
+    #        * called on value
+    #          - oa.f
+
+    on is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    t := oa
+    yak "caseC1a: "; chck t.f.s "f#1 in oa type calls.caseC1.oa"
+    yak "caseC1a: "; chck t.f.s "f#2 in oa type calls.caseC1.oa"
+    yak "caseC1a: "; chck t.f.s "f#3 in oa type calls.caseC1.oa"
+    yak "caseC1a: "; chck $t.cnt.get $3
+
+    t := on
+    yak "caseC1b: "; chck t.f.s "f#1 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck t.f.s "f#2 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck t.f.s "f#3 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck $t.cnt.get $3
+
+  caseC1
+
+  caseC2 is
+    #    * constructor
+    #      * declared for value
+    #        * called on ref
+    #          - (ref on).f
+
+    on is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa ref : on is
+      redef where => "oa"
+
+    oあ ref : on is
+      redef where => "oあ"
+
+    t := oa
+    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"    # NYI f#1..
+    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"
+    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"
+# NYI    yak "caseC2a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"    # NYI f#1..
+    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"
+# NYI    yak "caseC2b: "; chck $t.cnt.get $3
+
+  caseC2
+
+
+  caseC3 is
+    #    * constructor
+    #      * declared for value
+    #        * called on boxed
+    #          - *** error ***
+
+    on is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    oa1 ref on is on
+    oa2 ref on is oa
+    oa3 ref oa is oa
+
+    t := oa1
+    # yak "caseC3a: "; chck t.f.s "f#1 in oa type calls.caseC2.oa"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3a: "; chck t.f.s "f#2 in oa type calls.caseC2.oa"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3a: "; chck t.f.s "f#3 in oa type calls.caseC2.oa"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3a: "; chck $t.cnt.get $3
+
+    t := oa2
+    # yak "caseC3b: "; chck t.f.s "f#1 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3b: "; chck t.f.s "f#2 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3b: "; chck t.f.s "f#3 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3b: "; chck $t.cnt.get $3
+
+    t := oa3
+    # yak "caseC3c: "; chck t.f.s "f#1 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3c: "; chck t.f.s "f#2 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3c: "; chck t.f.s "f#3 in on type calls.caseC2.on"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
+    # yak "caseC3c: "; chck $t.cnt.get $3
+
+  caseC3
+
+/* NYI!
+  caseC4 is
+    #    * constructor
+    #      * declared for ref
+    #        * called on value
+    #          - oa.f    result type is oa.f, incompatible to on.f
+
+    on ref is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    t := oa
+    yak "caseC4a: "; chck t.f.s "f#1 in oa type calls.caseC4.oa"
+    yak "caseC4a: "; chck t.f.s "f#2 in oa type calls.caseC4.oa"
+    yak "caseC4a: "; chck t.f.s "f#3 in oa type calls.caseC4.oa"
+    yak "caseC4a: "; chck $t.cnt.get $3
+
+  caseC4
+*/
+
+  caseC5 is
+    #    * constructor
+    #      * declared for ref
+    #        * called on ref
+    #          - oa.f    result type is on.f
+
+    on ref is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa ref : on is
+      redef where => "oa"
+
+    oあ ref : on is
+      redef where => "oあ"
+
+    t := oa
+    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"    # NYI f#1..
+    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"
+    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"
+# NYI    yak "caseC5a: "; chck $t.cnt.get $3
+
+    t := oあ
+    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"    # NYI f#1..
+    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"
+# NYI   yak "caseC5b: "; chck $t.cnt.get $3
+
+  caseC5
+
+  caseC6 is
+    #    * constructor
+    #      * declared for ref
+    #        * called on boxed
+    #          - oa.f    result type is on.f
+
+    on ref is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    oa : on is
+      redef where => "oa"
+
+    oあ : on is
+      redef where => "oあ"
+
+    oa1 ref on is oa
+    oa2 ref on is oあ
+
+    t := oa1
+    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"    # NYI f#1..
+    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"
+    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"
+# NYI    yak "caseC6a: "; chck $t.cnt.get $3
+
+    t := oa2
+    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"    # NYI f#1..
+    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"
+# NYI    yak "caseC6b: "; chck $t.cnt.get $3
+
+  caseC6
+/*
+    #  * inherits call
+    #    * function -- not allowed
+    #    * constructor
+    #      - same as for normal (non-inherits) call
+
+*/
+
+  say "{failed.get} failed {passed.get} passed."
+  exit exit_code.get

@@ -31,49 +31,49 @@ public fuzion.java is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public getStaticField(T type, clazz String, field String) =>
-    c := stringToJavaObject clazz
-    f := stringToJavaObject field
-    getStaticField0 T c f
+  public get_static_field(T type, clazz String, field String) =>
+    c := string_to_java_object clazz
+    f := string_to_java_object field
+    get_static_field0 T c f
 
 
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public getField(T type, thiz JavaObject, field String) =>
-    f := stringToJavaObject field
-    getField0 T thiz f
+  public get_field(T type, thiz Java_Object, field String) =>
+    f := string_to_java_object field
+    get_field0 T thiz f
 
 
   # intrinsic to read static field
   #
-  private getStaticField0(T type, clazz JavaObject, field JavaObject) T is intrinsic_constructor
+  private get_static_field0(T type, clazz Java_Object, field Java_Object) T is intrinsic_constructor
 
 
   # intrinsic to read instance field
   #
-  private getField0(T type, thiz JavaObject, field JavaObject) T is intrinsic_constructor
+  private get_field0(T type, thiz Java_Object, field Java_Object) T is intrinsic_constructor
 
 
   # A Java reference
   #
-  public JavaObject(private javaRef Any) ref
+  public Java_Object(private Java_Ref Any) ref
   is
-    isNull bool is intrinsic
+    is_null bool is intrinsic
 
-    # dummy feature to make sure JavaObject.type exists. This is required since
-    # Java-related intrinsics may return an array of JavaObject and require JavaObject.type.
+    # dummy feature to make sure Java_Object.type exists. This is required since
+    # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
     #
-    _ignore_ => JavaObject.type
+    _ignore_ => Java_Object.type
 
 
   # A Java array
   #
-  public Array(redef T type, private redef javaRef Any) ref : Sequence T, JavaObject javaRef
+  public Array(redef T type, private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
   is
-    length                  => arrayLength T Array.this
+    length                  => array_length T Array.this
     redef finite            => true
-    redef index [ ] (i i32) => arrayGet    T Array.this i
+    redef index [ ] (i i32) => array_get    T Array.this i
     redef as_list => as_list 0
 
     # create list starting at index from
@@ -82,14 +82,14 @@ public fuzion.java is
       if length ≤ from
         nil
       else
-        arrayCons from
+        array_cons from
 
     # create a cons cell for a list of this array starting at the given
     # index
     #
-    private arrayCons (i i32) : Cons T (list T)
+    private array_cons (i i32) : Cons T (list T)
       pre
-        debug: 0 ≤ i ⩻ length
+        debug: 0 ≤ i < length
     is
       head => Array.this[i]
       tail => as_list i+1
@@ -98,164 +98,164 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public JavaString(private redef javaRef Any) ref : String, JavaObject javaRef
+  public Java_String(private redef Java_Ref Any) ref : String, Java_Object Java_Ref
   is
-    utf8 => (javaStringToString JavaString.this).utf8
+    utf8 => (java_string_to_string Java_String.this).utf8
 
 
   # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').
   #
-  public JavaVoid(forbiddenToCallDirectly void) : JavaObject(Any)
+  public java_void(forbidden_to_call_directly void) : Java_Object(Any)
   is
 
 
-  # Call a virtual Java method className.name with given signature signature
+  # Call a virtual Java method class_name.name with given signature signature
   # on instance thiz with given arguments
   #
-  public callVirtual(T type,
-                     className String,
+  public call_virtual(T type,
+                     class_name String,
                      name String,
                      signature String,
-                     thiz JavaObject,
-                     args array JavaObject) T
+                     thiz Java_Object,
+                     args array Java_Object) T
   pre
-    safety: !thiz.isNull
+    safety: !thiz.is_null
   is
-    c := stringToJavaObject className
-    n := stringToJavaObject name
-    s := stringToJavaObject signature
-    a := args.internalArray
-    callV0 T c n s thiz a
+    c := string_to_java_object class_name
+    n := string_to_java_object name
+    s := string_to_java_object signature
+    a := args.internal_array
+    call_v0 T c n s thiz a
 
 
   # Call a static Java method with given name and signature with given
   # arguments
   #
-  public callStatic(T type,
-                    className String,
+  public call_static(T type,
+                    class_name String,
                     name String,
                     signature String,
-                    args array JavaObject) T
+                    args array Java_Object) T
   is
-    c := stringToJavaObject className
-    n := stringToJavaObject name
-    s := stringToJavaObject signature
-    a := args.internalArray
-    callS0 T c n s a
+    c := string_to_java_object class_name
+    n := string_to_java_object name
+    s := string_to_java_object signature
+    a := args.internal_array
+    call_s0 T c n s a
 
 
   # Call a Java constructor with given signature for class with given name
   # with given arguments
   #
-  public callConstructor(T type,
-                         className String,
+  public call_constructor(T type,
+                         class_name String,
                          signature String,
-                         args array JavaObject) T
+                         args array Java_Object) T
   is
-    c := stringToJavaObject className
-    s := stringToJavaObject signature
-    a := args.internalArray
-    callC0 T c s a
+    c := string_to_java_object class_name
+    s := string_to_java_object signature
+    a := args.internal_array
+    call_c0 T c s a
 
 
   # intrinsic to call given Java instance method
   #
-  private callV0(T type,
-                 className JavaObject,
-                 name JavaObject,
-                 signature JavaObject,
-                 thiz JavaObject,
-                 args fuzion.sys.internal_array JavaObject) T is intrinsic_constructor
+  private call_v0(T type,
+                 class_name Java_Object,
+                 name Java_Object,
+                 signature Java_Object,
+                 thiz Java_Object,
+                 args fuzion.sys.internal_array Java_Object) T is intrinsic_constructor
 
   # intrinsic to call given Java static method
   #
-  private callS0(T type,
-                 className JavaObject,
-                 name JavaObject,
-                 signature JavaObject,
-                 args fuzion.sys.internal_array JavaObject) T is intrinsic_constructor
+  private call_s0(T type,
+                 class_name Java_Object,
+                 name Java_Object,
+                 signature Java_Object,
+                 args fuzion.sys.internal_array Java_Object) T is intrinsic_constructor
 
 
   # intrinsic to call given Java constructor
   #
-  private callC0(T type,
-                 className JavaObject,
-                 signature JavaObject,
-                 args fuzion.sys.internal_array JavaObject) T is intrinsic_constructor
+  private call_c0(T type,
+                 class_name Java_Object,
+                 signature Java_Object,
+                 args fuzion.sys.internal_array Java_Object) T is intrinsic_constructor
 
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  private arrayLength(T type, a Array T) i32 is intrinsic
+  private array_length(T type, a Array T) i32 is intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  private arrayGet(T type, a Array T, ix i32) T is intrinsic_constructor
+  private array_get(T type, a Array T, ix i32) T is intrinsic_constructor
 
 
   # convert a Sequence to a Java Array object
   #
-  public arrayToJavaObject(T type, a Sequence T) Array T is
-    arrayToJavaObject0 T a.as_array.internalArray.data
+  public array_to_java_object(T type, a Sequence T) Array T is
+    array_to_java_object0 T a.as_array.internal_array.data
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  private arrayToJavaObject0(T type, a Any) Array T is intrinsic_constructor
+  private array_to_java_object0(T type, a Any) Array T is intrinsic_constructor
 
 
   # convert a string to a Java String object
   #
-  public stringToJavaObject(s String) JavaObject is
-    stringToJavaObject0 s.utf8.as_array.internalArray.data
+  public string_to_java_object(s String) Java_Object is
+    string_to_java_object0 s.utf8.as_array.internal_array.data
 
 
   # intrinsic to convert a string to a Java String object
   #
-  private stringToJavaObject0(s Any) JavaObject is intrinsic_constructor
+  private string_to_java_object0(s Any) Java_Object is intrinsic_constructor
 
 
   # convert a Java String to a string
   #
-  private javaStringToString(js JavaString) String is intrinsic
+  private java_string_to_string(js Java_String) String is intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8ToJavaObject(v i8) JavaObject is intrinsic_constructor
+  public i8_to_java_object(v i8) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16ToJavaObject(v u16) JavaObject is intrinsic_constructor
+  public u16_to_java_object(v u16) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16ToJavaObject(v i16) JavaObject is intrinsic_constructor
+  public i16_to_java_object(v i16) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32ToJavaObject(v i32) JavaObject is intrinsic_constructor
+  public i32_to_java_object(v i32) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64ToJavaObject(v i64) JavaObject is intrinsic_constructor
+  public i64_to_java_object(v i64) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32ToJavaObject(v f32) JavaObject is intrinsic_constructor
+  public f32_to_java_object(v f32) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64ToJavaObject(v f64) JavaObject is intrinsic_constructor
+  public f64_to_java_object(v f64) Java_Object is intrinsic_constructor
 
 
   # intrinsic to convert a bool to a Java Boolean object
   #
-  public boolToJavaObject(b bool) JavaObject is intrinsic_constructor
+  public bool_to_java_object(b bool) Java_Object is intrinsic_constructor

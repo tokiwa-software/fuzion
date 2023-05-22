@@ -25,13 +25,12 @@
 
 genericstest is
 
-  exit_code := mut 0
-
   chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      set_exit_code 1 ? unit =>
+                      | error =>
       "FAILED: "
     say (s + msg)
 
@@ -96,10 +95,10 @@ genericstest is
   // generics from an operator consisting of multiple ">". So we check if such an
   // operator works here:
   q(a i32) is
-    infix >    (b i32) bool is a      ⩼ b
-    infix >>   (b i32) bool is a/10   ⩼ b
-    infix >>>  (b i32) bool is a/100  ⩼ b
-    infix >>>> (b i32) bool is a/1000 ⩼ b
+    infix >    (b i32) bool is a      > b
+    infix >>   (b i32) bool is a/10   > b
+    infix >>>  (b i32) bool is a/100  > b
+    infix >>>> (b i32) bool is a/1000 > b
 
     prefix >    i32 is a+1      // >q is 1 larger than q
     prefix >>   i32 is a+10     // >>q is 10 larger
@@ -174,8 +173,8 @@ genericstest is
       f(a A) unit is abstract
 
     G ref : F i32 bool i32 is
-      redefine f(a0 i32, a1 bool, a2 i32) unit is
-       chck (a0 ≟ a2) "f only called with first and last element equal"
+      redef f(a0 i32, a1 bool, a2 i32) unit is
+       chck (a0 = a2) "f only called with first and last element equal"
        chck a1        "f only called with a1 true"
        unit
 
@@ -188,4 +187,4 @@ genericstest is
     unit
   opengenerics12
 
-  exit exit_code.get
+  exit

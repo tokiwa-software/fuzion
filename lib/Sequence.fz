@@ -72,7 +72,7 @@ Sequence(T type) ref is
   count
     pre
       analysis: finite  # in practice, we do not always have this information
-    => (mapSequence i32 (_ -> 1)).fold i32.type.sum
+    => (map_sequence i32 (_ -> 1)).fold i32.type.sum
 
 
   # get the first element of this Sequence
@@ -224,7 +224,7 @@ Sequence(T type) ref is
   concat_sequences (s Sequence T) Sequence T is as_list.concat s.as_list
 
 
-  # infix operand synonym for concatSequences
+  # infix operand synonym for concat_sequences
   #
   infix ++ (s Sequence T) => as_list ++ s.as_list
 
@@ -256,7 +256,7 @@ Sequence(T type) ref is
 
   # call 'as_string' on the elements
   #
-  as_Strings => mapSequence c->c.as_string
+  as_strings => map_sequence c->c.as_string
 
 
   # map the Sequence to a new list applying function f to all elements
@@ -267,16 +267,16 @@ Sequence(T type) ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapSequence(B type, f T -> B) => as_list.map f
+  map_sequence(B type, f T -> B) => as_list.map f
 
 
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap(B type, f T -> Sequence B) =>
-  #   as_list.flatMap f
-  flatMapSequence(B type, f T -> Sequence B) =>
-    as_list.flatMap f
+  # flat_map(B type, f T -> Sequence B) =>
+  #   as_list.flat_map f
+  flat_map_sequence(B type, f T -> Sequence B) =>
+    as_list.flat_map f
 
 
   # fold the elements of this Sequence using the given monoid.
@@ -324,7 +324,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using the total order defined by less_or_equal
-  sort(less_or_equal (T, T) -> bool) => sorted_array Sequence.this less_or_equal
+  sort(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
 
 
   # sort this Sequence using total order defined for 'f a[i]'
@@ -359,7 +359,7 @@ Sequence(T type) ref is
   into(TA type, xf Transducer(Sequence(TA),TA,T)) Sequence(TA) is
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res := (Sequence TA).type.empty , red.call res el
+      res (Sequence TA) := (Sequence TA).type.empty , red.call res el
       el in Sequence.this do
     else
       res
@@ -388,7 +388,7 @@ Sequence(T type) ref is
   index [] (i i32) T
     pre
       debug: 0 ≤ i,
-      debug: finite: i ⩻ count,
+      debug: finite: i < count,
       debug: !finite: !(drop i-1).is_empty
   is
     (nth i).get
@@ -404,7 +404,7 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : hasInterval I, start_idx I) list (tuple I T) is
+  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
     zip (start_idx..) (a,b -> (b, a))
 
 
@@ -413,9 +413,9 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K type : has_hash, f T -> K) Map K (Sequence T) is
+  group_by(K type : has_hash, f T -> K) container.Map K (Sequence T) is
     # NYI It should be possible to choose the map implementation that is used.
-    res := CTrie K (Sequence T)
+    res := (container.C_Trie K (Sequence T)).type.empty
     for_each (x ->
       key := f x
       match res[key]
@@ -425,10 +425,24 @@ Sequence(T type) ref is
     res
 
 
+
+  # chop this Sequence into chunks of `chunk_size`.
+  # the last chunk may be smaller than `chunk_size`.
+  #
+  chunk(chunk_size i32) list (list T)
+  pre chunk_size > 0
+  is
+    if is_empty
+      nil
+    else
+      (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
+
+
+
   # create an empty list and return it as a Sequence
   #
-  type.empty Sequence T is
-    lists.empty T
+  type.empty list T is
+    (list T).type.empty
 
 
   # monoid of Sequences with infix concatentation operation.
@@ -441,7 +455,8 @@ Sequence(T type) ref is
 
     # identity element
     #
-    e => (Sequence T).type.empty
+    e Sequence T is
+      (Sequence T).type.empty
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring
@@ -454,9 +469,9 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  index_in(A type : equatable, l Sequence A, x A) => (searchable_sequence A l).index_of x
+  index_in(A type : equatable, l Sequence A, x A) => (container.searchable_sequence A l).index_of x
 
 
   # get the index of x within this Sequence or nil if it does not exist
   #
-  find(A type : equatable, l Sequence A, x Sequence A) => (searchable_sequence A l).find x
+  find(A type : equatable, l Sequence A, x Sequence A) => (container.searchable_sequence A l).find x

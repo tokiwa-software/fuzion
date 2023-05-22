@@ -36,7 +36,7 @@ has_total_order : has_partial_order
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.forAll2 T T fun(a, b T) => a <= b || b <= a,
+    analysis: quantors.for_all2 T T fun(a, b T) => a <= b || b <= a,
 */
 
 is

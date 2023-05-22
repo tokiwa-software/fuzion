@@ -98,7 +98,7 @@ generator_effect is
   #
   gen(T type,
       yield T->unit    # yield is called by code to yield values
-      ) : simpleEffect is
+      ) : simple_effect is
 
   # traverse a list and yield the elements
   #

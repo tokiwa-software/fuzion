@@ -631,9 +631,9 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
-                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
+                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME))
+      ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
       : i;
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
@@ -1119,7 +1119,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME));
+    i.set(new Call(_pos, FuzionConstants.ANY_NAME));
   }
 
 
@@ -1363,7 +1363,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
    * used for lazy boolean operations like &&, || and for compile-time constants
-   * safety, debugLevel, debug.
+   * safety, debug_level, debug.
    *
    * @param res the resolution instance.
    */
@@ -1637,20 +1637,22 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultType();
+        _resultType = resultTypeRaw();
+        if (_resultType == null)
+          {
+            AstErrors.failedToInferResultType(this);
+            _resultType = Types.t_ERROR;
+          }
         if (_resultType instanceof Type t)
           {
             t.checkChoice(_posOfReturnType);
           }
-        if (_resultType != null)
-          {
-            if (_resultType.isThisType() && _resultType.featureOfType() == this)
-              { // we are in the case of issue #1186: A routine returns itself:
-                //
-                //  a => a.this
-                AstErrors.routineCannotReturnItself(this);
-                _resultType = Types.t_ERROR;
-              }
+        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+          { // we are in the case of issue #1186: A routine returns itself:
+            //
+            //  a => a.this
+            AstErrors.routineCannotReturnItself(this);
+            _resultType = Types.t_ERROR;
           }
 
         /**
