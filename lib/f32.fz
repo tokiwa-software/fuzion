@@ -172,6 +172,11 @@ f32(val f32) : float f32, f32s is
     val.as_f32
 
 
+  fixed type.sinh (val f32) f32 is intrinsic
+  fixed type.cosh (val f32) f32 is intrinsic
+  fixed type.tanh (val f32) f32 is intrinsic
+
+
 # f32s -- unit type defining features related to f32 but not requiring an
 # instance
 #
@@ -200,7 +205,3 @@ f32s : floats f32 is
   redef acos(val f32) f32 is intrinsic
   redef atan(val f32) f32 is intrinsic
   redef atan2(y f32, x f32) f32 is intrinsic
-
-  redef sinh(val f32) f32 is intrinsic
-  redef cosh(val f32) f32 is intrinsic
-  redef tanh(val f32) f32 is intrinsic
