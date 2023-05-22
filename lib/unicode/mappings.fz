@@ -28,27 +28,27 @@ mappings is
 
   # cached map of:
   # codepoint value => lower case codepoint
-  lower_case Map u32 codepoint is
+  lower_case container.Map u32 codepoint is
     # cache key
-    lower_case(val Map u32 codepoint) is
+    lower_case(val container.Map u32 codepoint) is
 
     (cache lower_case (() -> lower_case unicode.data.lower_case_mappings)).val
 
 
   # cached map of:
   # codepoint value => upper case codepoint
-  upper_case Map u32 codepoint is
+  upper_case container.Map u32 codepoint is
     # cache key
-    upper_case(val Map u32 codepoint) is
+    upper_case(val container.Map u32 codepoint) is
 
     (cache upper_case (() -> upper_case unicode.data.upper_case_mappings)).val
 
 
   # cached map of:
   # codepoint value => title case codepoint
-  title_case Map u32 codepoint is
+  title_case container.Map u32 codepoint is
     # cache key
-    title_case(val Map u32 codepoint) is
+    title_case(val container.Map u32 codepoint) is
 
     (cache title_case (() -> title_case unicode.data.title_case_mappings)).val
 

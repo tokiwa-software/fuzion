@@ -4,7 +4,7 @@
 
 unicode.data is
 
-  lower_case_mappings => map_of [
+  lower_case_mappings => container.map_of [
     # A => a
     (u32 65, codepoint 97),
     # B => b
@@ -2873,7 +2873,7 @@ unicode.data is
     (u32 125217, codepoint 125251)]
 
 
-  upper_case_mappings => map_of [
+  upper_case_mappings => container.map_of [
     # a => A
     (u32 97, codepoint 65),
     # b => B
@@ -5776,7 +5776,7 @@ unicode.data is
     (u32 125251, codepoint 125217)]
 
 
-  title_case_mappings => map_of [
+  title_case_mappings => container.map_of [
     # a => A
     (u32 97, codepoint 65),
     # b => B
