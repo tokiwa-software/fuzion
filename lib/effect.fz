@@ -153,6 +153,9 @@ is
 
   # install this simple_effect and run code
   #
+  # In case of an `abort`, `use` returns silently (NYI: maybe this should better
+  # return an oucome with the abort wrapped in an error?).
+  #
   use(code ()->unit) unit is
     abortable (Effect_Call code)
 
@@ -161,7 +164,7 @@ is
   #
   go(T type, f ()->T) T is
     fo () -> option T is ()->f()
-    r := run fo (unit)->nil
+    r := run fo _->nil
     match r
       nil => panic "*** unexpected abort in {simple_effect.this.type}"
       v T => v

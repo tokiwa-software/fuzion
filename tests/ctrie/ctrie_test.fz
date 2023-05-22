@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := container.c_trie i32 String
+  ctrie := (container.C_Trie i32 String).type.empty
 
   all := container.ps_set 0..100
   removed := container.ps_set 0..100:2
