@@ -72,7 +72,7 @@ is
 
   redef as_string =>
     si :=
-      for c in ($imag).as_codepoint_sequence
+      for c in ($imag).as_codepoints
       until !("0123456789.+-".contains c)
         "($imag)"
       else

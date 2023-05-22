@@ -1775,7 +1775,7 @@ public class AstErrors extends ANY
           "It is not possible for a routine to return its own instance as a result.  Since the result is stored in the implicit " +
           sbn("result") + " field, this would produce cyclic field nesting.\n" +
           "To solve this, you could convert this feature into a constructor, i.e., instead of " +
-          code(old_code) + "write " + code(new_code) + "since constructor implictly returns its own instance.  Alternatively, you can use " +
+          code(old_code) + "write " + code(new_code) + "since constructor implicitly returns its own instance.  Alternatively, you can use " +
           code(new_code_ref) + "to return a reference.");
   }
 
