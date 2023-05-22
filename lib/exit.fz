@@ -115,7 +115,7 @@ exit_type is
 
 
   install_default is
-    if !effects.exists exit
+    if !effect.type.installed exit
       _ := exit default_exit_handler effect_mode.default unit
 
 

@@ -143,7 +143,7 @@ Random_Provider ref is
 randoms is
 
   install_default is
-    if !effects.exists random
+    if !effect.type.installed random
       _ := random simple_random_providers.default effect_mode.default
 
 

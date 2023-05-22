@@ -848,7 +848,7 @@ public class Intrinsics extends ANY
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         });
-    put("effects.exists"       , (c,cl,outer,in) ->
+    put("effect.type.installed"       , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));

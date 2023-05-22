@@ -475,7 +475,7 @@ public class CFG extends ANY
             }
         });
     put("effect.abort"                      , (cfg, cl) -> { } );
-    put("effects.exists"                    , (cfg, cl) -> { } );
+    put("effect.type.installed"                    , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
