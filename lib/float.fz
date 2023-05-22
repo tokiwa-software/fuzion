@@ -129,6 +129,13 @@ float(redef F type : float F) : numeric F, floats F is
   type.from_i64(val i64) float.this.type is abstract
 
 
+  # hyperbolicus
+
+  type.sinh (val float.this.type) float.this.type is abstract
+  type.cosh (val float.this.type) float.this.type is abstract
+  type.tanh (val float.this.type) float.this.type is abstract
+
+
 
 # floats -- unit type defining features related to float but not requiring
 # an instance
@@ -195,13 +202,6 @@ floats(F type : float F) : numerics F is
   acos(val F) F is abstract
   atan(val F) F is abstract
   atan2(y F, x F) F is abstract
-
-
-  # hyperbolicus
-
-  sinh (val F) F is abstract
-  cosh (val F) F is abstract
-  tanh (val F) F is abstract
 
 
   # arcus hyperbolicus

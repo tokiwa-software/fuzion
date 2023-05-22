@@ -183,6 +183,11 @@ f64(val f64) : float f64, f64s is
     val.as_f64
 
 
+  fixed type.sinh(val f64) f64 is intrinsic
+  fixed type.cosh(val f64) f64 is intrinsic
+  fixed type.tanh(val f64) f64 is intrinsic
+
+
 # f64s -- unit type defining features related to f64 but not requiring an
 # instance
 #
@@ -213,7 +218,3 @@ f64s : floats f64 is
   redef acos(val f64) f64 is intrinsic
   redef atan(val f64) f64 is intrinsic
   redef atan2(y f64, x f64) f64 is intrinsic
-
-  redef sinh(val f64) f64 is intrinsic
-  redef cosh(val f64) f64 is intrinsic
-  redef tanh(val f64) f64 is intrinsic
