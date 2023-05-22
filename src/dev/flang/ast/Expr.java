@@ -245,7 +245,7 @@ public abstract class Expr extends ANY implements Stmnt
    * `T`.
    *
    * However, when `v` is passed to a value of type `Lazy T`, it does not make
-   * sence to wrap this call into `Lazy` again. Instead. we would like to pass
+   * sense to wrap this call into `Lazy` again. Instead. we would like to pass
    * the lazy value `v` directly.  So this method gives the original value for a
    * lazy value `v` t was replaced by `v.call`.
    *

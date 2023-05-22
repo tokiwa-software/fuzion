@@ -43,11 +43,11 @@ outerNormalization is
   say "testZero.z is {testZero.z}"
 
 
-  # string.as_codepoint_sequence is a constructor that, if it was specialized for
+  # string.as_codepoints is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
   testCodepointsStream(s String) is
-      l := s.as_codepoint_sequence
+      l := s.as_codepoints
 
   say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
   say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
