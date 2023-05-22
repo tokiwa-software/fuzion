@@ -669,7 +669,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * In given type t, replace occurences of 'X.this.type' by the actual type
+   * In given type t, replace occurrences of 'X.this.type' by the actual type
    * from this Clazz.
    *
    * @param t a type
@@ -687,7 +687,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Special handling for features whose outer features are type features: Any
-   * references to x.this.type have to be replaced by the correspondig
+   * references to x.this.type have to be replaced by the corresponding
    * original. See example from #1260:
    *
    *   t is

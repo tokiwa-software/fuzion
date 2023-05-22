@@ -1068,7 +1068,7 @@ public class Call extends AbstractCall
          _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
          _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
          _actualsNew.isEmpty()                       &&   // dto.
-         originalLazyValue() == this                      // prevent repeated `l.call.call` wenn resolving the newly created Call to `call`.
+         originalLazyValue() == this                      // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
          ))
       {
         var wasLazy = _type.isLazyType();
@@ -1328,7 +1328,7 @@ public class Call extends AbstractCall
   {
     var is_THIS_TYPE = t.isGenericArgument() && t.genericArgument().feature().isTypeFeature() && t.genericArgument().index() == 0;
     var tt = is_THIS_TYPE && _target instanceof Call tc && tc._calledFeature.isTypeParameter()
-      ? // a call B.f for a type parameter target B. resulType() is the
+      ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
         tc._calledFeature.resultType().featureOfType().typeFeature(res).selfType()
@@ -1345,7 +1345,7 @@ public class Call extends AbstractCall
 
   /**
    * Helper for resolveType to process _select, i.e., check that _select is < 0
-   * and t is not open generic, or else _select choses the actual open generic
+   * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
    * @param t the result type of the called feature, might be open genenric.
@@ -1387,7 +1387,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Replace occurences of this.type in formal arg or result type depending on
+   * Replace occurrences of this.type in formal arg or result type depending on
    * the target of the call.
    *
    * @param t the formal type to be adjusted.
@@ -1445,7 +1445,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the result type of the called feature, adjustes for select, this type, etc.
+   * @param t the result type of the called feature, adjusts for select, this type, etc.
    *
    * @param tt target type or constraint.
    */

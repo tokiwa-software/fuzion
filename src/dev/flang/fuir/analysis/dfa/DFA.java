@@ -588,7 +588,7 @@ public class DFA extends ANY
 
 
   /**
-   * Maximun recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * Maximum recursive analysis of newly created Calls, see `analyzeNewCall` for
    * details.
    */
   private static int MAX_NEW_CALL_RECURSION = 20;
@@ -1514,11 +1514,11 @@ public class DFA extends ANY
 
   /**
    * Helper for newCall to analyze a newly created call immediately. This helps
-   * to avoid quadratic performance when analysing a sequence of calls as in
+   * to avoid quadratic performance when analyzing a sequence of calls as in
    *
    *  a 1; a 2; a 3; a 4; a 5; ...
    *
-   * Since a new call das not return, the analysis would stop for each iteration
+   * Since a new call does not return, the analysis would stop for each iteration
    * after the fist new call.
    *
    * However, we cannot analyze all calls immediately since a recursive call
