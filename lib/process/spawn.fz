@@ -26,11 +26,11 @@
 # spawn process with option to pass environment variables
 #
 # NYI env_vars should be map, issue #1313
-spawn(process_and_args array String, env_vars array String, code () -> T) outcome unit
+spawn(T type, process_and_args array String, env_vars array String)
 pre process_and_args.length > 0,
 # NYI allow utf-8?
-    process_and_args ∀ (x -> x.as_codepoint_sequence ∀ (y -> y.is_ascii)),
-    spawn.this.env_vars ∀ (x -> x.as_codepoint_sequence ∀ (y -> y.is_ascii)),
+    process_and_args ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii)),
+    spawn.this.env_vars ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii)),
     spawn.this.env_vars ∀ (x -> x.contains "=") # NYI check that only one =
 is
 
