@@ -1059,7 +1059,7 @@ public class Intrinsics extends ANY
         "effect.default"  ,
         "effect.abortable",
         "effect.abort"    , (interpreter, innerClazz) -> effect(interpreter, innerClazz));
-    put("effect.type.installed"  , (interpreter, innerClazz) -> args ->
+    put("effect.type.is_installed"  , (interpreter, innerClazz) -> args ->
         {
           var cl = innerClazz.actualGenerics()[0];
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );

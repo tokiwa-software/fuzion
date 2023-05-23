@@ -104,7 +104,7 @@ is
 
 
   # has an effect of the given type been installed?
-  type.installed(E type) bool is intrinsic
+  type.is_installed(E type) bool is intrinsic
 
 
 
