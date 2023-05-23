@@ -61,9 +61,6 @@ is
     else
       fraction (numerator / gcd) (denominator / gcd)
 
-  redef zero => fraction numerator.zero numerator.one
-  redef one  => fraction numerator.zero numerator.one
-
   # basic operations
   redef prefix + => a
   redef prefix - => fraction -a.numerator a.denominator
