@@ -144,6 +144,17 @@ float(redef F type : float F) : numeric F, floats F is
   type.epsilon F is abstract
 
 
+  # trigonometric
+
+  type.sin  (val float.this.type) float.this.type is abstract
+  type.cos  (val float.this.type) float.this.type is abstract
+  type.tan  (val float.this.type) float.this.type is abstract
+  type.asin (val float.this.type) float.this.type is abstract
+  type.acos (val float.this.type) float.this.type is abstract
+  type.atan (val float.this.type) float.this.type is abstract
+  type.atan2 (y, x float.this.type) float.this.type is abstract
+
+
   # hyperbolicus
 
   type.sinh (val float.this.type) float.this.type is abstract
@@ -194,17 +205,6 @@ floats(F type : float F) : numerics F is
   pre base > zero
   is
     (log val) / (log base)
-
-
-  # trigonometric
-
-  sin (val F) F is abstract
-  cos (val F) F is abstract
-  tan (val F) F is abstract
-  asin(val F) F is abstract
-  acos(val F) F is abstract
-  atan(val F) F is abstract
-  atan2(y F, x F) F is abstract
 
 
   # arcus hyperbolicus
