@@ -1,48 +1,49 @@
 test_process =>
 
-  proc := fuzion.sys.process
-
   test(str String) is
     say "===  Test: $str  ==="
 
   test "write to stdin of process"
-  match proc.create ["cat"]
-    p fuzion.sys.process.r_processes =>
+  match process.spawn ["cat"]
+    p process.spawned =>
       p.write_string "Hello from the other side."
       say "close write: {p.close_write}"
       say "close write again: {p.close_write}"
       say p.read_string
-      say "exit code: {p.exit}"
+      say "exit code: {p.exit_code}"
     error => say "error"
 
 
 
   test "read stdout of process"
-  match proc.create ["echo", "eecchhoo"]
-    p fuzion.sys.process.r_processes =>
+  match process.spawn ["echo", "eecchhoo"]
+    p process.spawned =>
       say p.read_string
-      say "exit code: {p.exit}"
+      say "exit code: {p.exit_code}"
     error => say "error"
 
 
 
   test "pass environment variable"
-  match proc.create ["printenv", "MYENVVAR"] ["MYENVVAR=content"]
-    p fuzion.sys.process.r_processes =>
+  match process.spawn ["printenv", "MYENVVAR"] (container.map_of [("MYENVVAR", "content")])
+    p process.spawned =>
       say p.read_string
-      say "exit code: {p.exit}"
+      say "exit code: {p.exit_code}"
     error => say "error"
 
 
 
   test "feed output of process 1 to process 2"
-  say ((proc.create ["echo", "'feed me to cat'"]) | (proc.create ["cat"]))
+  match (process.spawn ["echo", "'feed me to cat'"])
+    p process.spawned =>
+      p | ["cat"]
+    error => say "error"
 
 
 
   test "read stdout blocks until stdin closed"
-  match proc.create ["cat"]
-    p2 fuzion.sys.process.r_processes =>
+  match process.spawn ["cat"]
+    p2 process.spawned =>
 
       concur.thread.spawn (() ->
         time.nano.sleep (time.durations.ms 100)
@@ -51,7 +52,7 @@ test_process =>
 
       # this read should block until stdin is closed
       say "2) read: {p2.read_string}"
-      say "3) exit code: {p2.exit}"
+      say "3) exit code: {p2.exit_code}"
     error => say "error"
 
 
@@ -66,18 +67,22 @@ test_process =>
 
 
   test "100kb argument, piped to another process"
-  match (proc.create ["echo", "-n", (get_str 1E5)]) | (proc.create ["cat"])
-    p fuzion.sys.process.r_processes =>
-      say p.read_string.val.byte_length
-      say "exit code: {p.exit}"
+  match process.spawn ["echo", "-n", (get_str 1E5)]
+    p process.spawned =>
+      match p | ["cat"]
+        p2 process.spawned =>
+          say p.read_string.val.byte_length
+          say "exit code: {p.exit_code}"
+        e error =>
+          say e
     e error =>
       say e
 
 
 
   test "10mb write to stdin, piped to another process"
-  match proc.create ["cat"]
-    p3 fuzion.sys.process.r_processes =>
+  match process.spawn ["cat"]
+    p3 process.spawned =>
       concur.thread.spawn ()->
         time.nano.sleep (time.durations.s 1)
         say "start reading"
@@ -89,6 +94,6 @@ test_process =>
       # NYI write should block here?
       say (p3.write_bytes (get_str 1E7).utf8)
       p3.close_write
-      say "exit code: {p3.exit}"
+      say "exit code: {p3.exit_code}"
     error =>
 
