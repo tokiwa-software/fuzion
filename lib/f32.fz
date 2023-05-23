@@ -114,7 +114,7 @@ f32(val f32) : float f32, f32s is
 
   # the fraction of the floating point number
   redef fract f32 is
-    if f32s.is_NaN val
+    if f32.type.is_NaN val
       NaN
     else if val < (f32 0)
       -(-val).fract
@@ -172,6 +172,16 @@ f32(val f32) : float f32, f32s is
     val.as_f32
 
 
+  fixed type.is_NaN(val f32) bool is intrinsic
+
+
+  fixed type.min_exp i32 is intrinsic
+  fixed type.max_exp i32 is intrinsic
+  fixed type.min_positive f32 is intrinsic
+  fixed type.max f32 is intrinsic
+  fixed type.epsilon f32 is intrinsic
+
+
   fixed type.sinh (val f32) f32 is intrinsic
   fixed type.cosh (val f32) f32 is intrinsic
   fixed type.tanh (val f32) f32 is intrinsic
@@ -181,14 +191,6 @@ f32(val f32) : float f32, f32s is
 # instance
 #
 f32s : floats f32 is
-
-  redef is_NaN(val f32) bool is intrinsic
-
-  redef min_exp i32 is intrinsic
-  redef max_exp i32 is intrinsic
-  redef min_positive f32 is intrinsic
-  redef max f32 is intrinsic
-  redef epsilon f32 is intrinsic
 
   redef square_root(val f32) f32 is intrinsic
 

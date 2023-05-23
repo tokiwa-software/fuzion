@@ -90,10 +90,10 @@ floating_point_numbers is
     chck (three ** two = three + three + three)                            "{T.name}: 3 to the power 2 equals 9"
 
     # is_NaN
-    chck (one.is_NaN one.NaN)                                               "{T.name}: is_NaN NaN"
-    chck (!one.is_NaN zero  )                                               "{T.name}: is_NaN 0"
-    chck (!one.is_NaN T.π)                                                  "{T.name}: is_NaN π"
-    chck (!one.is_NaN one.infinity)                                         "{T.name}: is_NaN infinity"
+    chck (T.is_NaN one.NaN)                                                "{T.name}: is_NaN NaN"
+    chck (!T.is_NaN zero  )                                                "{T.name}: is_NaN 0"
+    chck (!T.is_NaN T.π)                                                   "{T.name}: is_NaN π"
+    chck (!T.is_NaN one.infinity)                                          "{T.name}: is_NaN infinity"
 
     # sqrt
     chck (one.sqrt (two * two) = two)                                      "{T.name}: sqrt (2*2) = 2"
@@ -105,7 +105,7 @@ floating_point_numbers is
 
     # trigonometric
     chck (one.sin zero     = zero  )                                       "{T.name}: sin 0  = 0"
-    chck (one.sin T.π    <  one.epsilon)                                   "{T.name}: sin π  ~= 0"
+    chck (one.sin T.π      < T.epsilon)                                    "{T.name}: sin π  ~= 0"
     chck (one.cos zero     = one  )                                        "{T.name}: cos 0  = 1"
     chck (one.cos T.π      = -one  )                                       "{T.name}: cos π  = -1"
     chck (one.tan zero     = zero  )                                       "{T.name}: tan 0  = 0"
@@ -114,8 +114,8 @@ floating_point_numbers is
     chck (one.atan zero    = zero  )                                       "{T.name}: atan 0 = 0"
 
     # atan2
-    chck (one.is_NaN (one.atan2 one.NaN one  ))                                                 "{T.name}: atan2 NaN 1            = NaN        "
-    chck (one.is_NaN (one.atan2 one   one.NaN))                                                 "{T.name}: atan2 1 NaN            = NaN        "
+    chck (T.is_NaN (one.atan2 one.NaN one  ))                                                  "{T.name}: atan2 NaN 1            = NaN        "
+    chck (T.is_NaN (one.atan2 one   one.NaN))                                                  "{T.name}: atan2 1 NaN            = NaN        "
     chck (one.atan2 +zero   one               = +zero  )                                       "{T.name}: atan2 +0 1             = +0         "
     chck (one.atan2 -zero   one               = -zero  )                                       "{T.name}: atan2 -0 1             = -0         "
     chck (one.atan2 +zero   -one              = +T.π)                                          "{T.name}: atan2 +0 -1            = +π         "
@@ -188,16 +188,16 @@ floating_point_numbers is
   chck ((f64s.positive_infinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)           "cast_to_u64 works for ∞"
 
   # min_exp, max_exp
-  chck (f32s.min_exp = -126)                                              "f32: min_exp is correct"
-  chck (f32s.max_exp = 127)                                               "f32: max_exp is correct"
-  chck (f64s.min_exp = -1022)                                             "f64: min_exp is correct"
-  chck (f64s.max_exp = 1023)                                              "f64: max_exp is correct"
+  chck (f32.type.min_exp = -126)                                         "f32: min_exp is correct"
+  chck (f32.type.max_exp = 127)                                          "f32: max_exp is correct"
+  chck (f64.type.min_exp = -1022)                                        "f64: min_exp is correct"
+  chck (f64.type.max_exp = 1023)                                         "f64: max_exp is correct"
 
   # min_positive, max
-  chck (f32s.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
-  chck (f32s.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
-  chck (f64s.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
-  chck (f64s.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
+  chck (f32.type.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
+  chck (f32.type.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
+  chck (f64.type.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
+  chck (f64.type.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
 
   # fits_in_i64
@@ -216,12 +216,12 @@ floating_point_numbers is
   # as_f64
   chck ((f32.type.π.as_f64.as_f32 = f32.type.π))                              "f32:  π  as_f64.as_f32 = f32.type.π"
   chck (f32s.positive_infinity.as_f64 = f64s.positive_infinity)               "f32:  ∞  as_f64        = f64s.∞ "
-  chck (f64s.is_NaN f32s.NaN.as_f64)                                          "f32: NaN as_f64 is_NaN "
+  chck (f64.type.is_NaN f32s.NaN.as_f64)                                      "f32: NaN as_f64 is_NaN "
 
   # as_f32
   chck (f64.type.π.as_f32 = f32.type.π)                                       "f64:  π  as_f32        = f32.type.π "
   chck (f64s.positive_infinity.as_f32 = f32s.positive_infinity)               "f64:  ∞  as_f32        = f32s.∞ "
-  chck (f32s.is_NaN f64s.NaN.as_f32)                                          "f64: NaN as_f32 is_NaN "
+  chck (f32.type.is_NaN f64s.NaN.as_f32)                                      "f64: NaN as_f32 is_NaN "
 
 
   # f32.fract

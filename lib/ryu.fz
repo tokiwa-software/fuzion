@@ -55,7 +55,7 @@ ryū is
   # convert f64 to string
   public as_string(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
     # trivial cases first
-    if (f64s.is_NaN val) then "NaN"
+    if (f64.type.is_NaN val) then "NaN"
     else if (val = f64s.positive_infinity) then "Infinity"
     else if (val = f64s.negative_infinity) then "-Infinity"
     else if (val = 0.0)

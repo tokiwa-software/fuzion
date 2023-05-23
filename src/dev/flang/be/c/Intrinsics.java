@@ -523,18 +523,18 @@ public class Intrinsics extends ANY
      * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
      * source: https://github.com/rust-lang/rust/issues/88734
      */
-    put("f32s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
-    put("f32s.max"             , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
-    put("f32s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
-    put("f64s.max"             , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
-    put("f64s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32s.is_NaN"          ,
-        "f64s.is_NaN"          , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.min_positive", (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
+    put("f32.type.max"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
+    put("f32.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
+    put("f64.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
+    put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
+    put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
+    put("f32.type.is_NaN"      ,
+        "f64.type.is_NaN"      , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()

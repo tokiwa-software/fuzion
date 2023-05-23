@@ -129,6 +129,21 @@ float(redef F type : float F) : numeric F, floats F is
   type.from_i64(val i64) float.this.type is abstract
 
 
+  type.exponent_range => -min_exp..max_exp
+
+
+  # is not a number?
+  #
+  type.is_NaN (val float.this.type) bool is abstract
+
+
+  type.min_exp i32 is abstract
+  type.max_exp i32 is abstract
+  type.min_positive F is abstract
+  type.max F is abstract
+  type.epsilon F is abstract
+
+
   # hyperbolicus
 
   type.sinh (val float.this.type) float.this.type is abstract
@@ -143,16 +158,11 @@ float(redef F type : float F) : numeric F, floats F is
 floats(F type : float F) : numerics F is
 
 
-  exponent_range => -min_exp..max_exp
-
   # non signaling not a number
   quiet_NaN => zero / zero
 
   # not a number
   NaN => quiet_NaN
-
-  # is not a number?
-  is_NaN(val F) bool is abstract
 
   negative_infinity => -one / zero
 
@@ -160,13 +170,6 @@ floats(F type : float F) : numerics F is
 
   # infinity
   infinity => positive_infinity
-
-  min_exp i32 is abstract
-  max_exp i32 is abstract
-  min_positive F is abstract
-  max F is abstract
-  epsilon F is abstract
-
 
   square_root(val F) F is abstract
   # square root
