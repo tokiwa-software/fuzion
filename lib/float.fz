@@ -212,7 +212,7 @@ float(F type : float F) : numeric F is
   type.tanh (val float.this.type) float.this.type is abstract
 
 
-  # arcus hyperbolicus
+  # area hyperbolicus
 
   type.asinh(val F) F is
     # ln(x+sqrt(x^2+1))
