@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-# A Fuzion implementation of C_Trie invented by Aleksandar Prokopec
-# C_Trie is a non-blocking concurrent hash trie
+# A Fuzion implementation of CTrie invented by Aleksandar Prokopec
+# CTrie is a non-blocking concurrent hash trie
 #
 # reference paper: Concurrent Tries with Efficient Non-Blocking Snapshots
 # https://aleksandar-prokopec.com/resources/docs/ctries-snapshot.pdf
@@ -259,8 +259,7 @@ private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK 
 
 
 # the ctrie
-# NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
-private C_Trie(CTK type : has_hash, CTV type, root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), read_only bool) ref : Map CTK CTV
+C_Trie(CTK type : has_hash, CTV type, private root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), private read_only bool) ref : Map CTK CTV
 is
 
   # compare and swap root of the ctrie
@@ -589,34 +588,39 @@ is
     if(rdcss_root (rdcss_descriptor r expmain (r.copy_to_gen (r.data.get.gen +° 1) C_Trie.this)))
       # NYI better type inference could make this tmp unecessary
       tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := r.copy_to_gen (r.data.get.gen +° 1) C_Trie.this
-      # new ctrie by increasing gen of root by one
+      # new C_Trie by increasing gen of root by one
       C_Trie CTK CTV (mut tmp) read_only
     else
       snapshot read_only
 
 
-  # a snapshot of the ctrie as sequence auf key-value tuples
+  # a snapshot of the C_Trie as sequence auf key-value tuples
   redef items Sequence (tuple CTK CTV) is
     (snapshot true)
       .read_root
       .as_list
 
-# initialize a new ctrie
-c_trie(CTK type : has_hash, CTV type) =>
-  # NYI better type inference could make this tmp unecessary
-  tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := Indirection_Node (mut (Main_Node (container_node CTK CTV 0 []) 0))
-  C_Trie CTK CTV (mut tmp) false
+
+  # initialize a new C_Trie
+  type.empty =>
+
+    initial_root_node :=
+      container.Indirection_Node (mut (container.Main_Node (container.container_node CTK CTV 0 []) 0))
+
+    container.C_Trie CTK CTV (mut (choice (container.Indirection_Node CTK CTV) (container.rdcss_descriptor CTK CTV)) initial_root_node) false
 
 
-# ctrie -- routine to initialize a ctrie from a sequence of key value tuples
-#
-# This feature creates an instance of a ctrie.
-#
-# example: ctrie [(key1, value1), (key2, value2)]
-#
-c_trie(K type : has_hash, V type, kvs Sequence (tuple K V)) C_Trie K V is
-  m := c_trie K V
-  kvs.for_each (kv ->
-    (k,v) := kv
-    m.add k v)
-  m
+  # C_Trie.type.from_entries -- routine to initialize a C_Trie from a sequence of key value tuples
+  #
+  # This feature creates an instance of a C_Trie.
+  #
+  # example: C_Trie.type.from_entries [(key1, value1), (key2, value2)]
+  #
+  type.from_entries(kvs Sequence (tuple CTK CTV)) container.C_Trie CTK CTV is
+
+    m := (container.C_Trie CTK CTV).type.empty
+    kvs.for_each (kv ->
+      (k,v) := kv
+      m.add k v)
+
+    m

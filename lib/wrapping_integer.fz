@@ -191,7 +191,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       is_bounded
   is
-    thiz ^ (wrapping_integer W).type.all_bits_set
+    thiz ^ W.all_bits_set
 
 
   # count the number of 1 bits in the binary representation of this
@@ -202,7 +202,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
 
   # this integer as an array of bytes (little endian)
   as_bytes array u8 is
-    bs := (wrapping_integer W).type.byte_size
+    bs := W.byte_size
     array u8 bs (idx ->
       shift W := from_u32 (bs.as_u32-idx.as_u32-1)*8
       (wrapping_integer.this>>shift).low8bits)

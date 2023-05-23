@@ -560,7 +560,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var of = outer();
         if (!isUniverse() && of != null && !of.isUniverse())
           {
-            result = new Type(result, of.thisType());
+            result = Type.newType(result, of.thisType());
           }
         result = Types.intern(result);
         if (innerFixed)
@@ -1501,7 +1501,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * Is this feature marked with the `fixed` modifier. If so, this feature is
-   * not inherited, i.e., we know that at runtime, the outher feature's type is
+   * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
    * could might be a heir.
    */

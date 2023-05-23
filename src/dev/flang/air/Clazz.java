@@ -358,12 +358,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
     this._type = (actualType != Types.t_ERROR && this._outer != null)
-      ? Types.intern(new Type(actualType, this._outer._type))
+      ? Types.intern(Type.newType(actualType, this._outer._type))
       : actualType;
     this._dynamicBinding = null;
 
-    if(POSTCONDITIONS) ensure
-      (!hasCycles());
+    if (POSTCONDITIONS) ensure
+      (Errors.count() > 0 || !hasCycles());
   }
 
 
@@ -669,7 +669,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * In given type t, replace occurences of 'X.this.type' by the actual type
+   * In given type t, replace occurrences of 'X.this.type' by the actual type
    * from this Clazz.
    *
    * @param t a type
@@ -687,7 +687,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Special handling for features whose outer features are type features: Any
-   * references to x.this.type have to be replaced by the correspondig
+   * references to x.this.type have to be replaced by the corresponding
    * original. See example from #1260:
    *
    *   t is
@@ -2148,25 +2148,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isTypeParameter());
 
     var f = feature();
-
-    if (_outer.feature() != f.outer())
-      {
-        if (Errors.count() == 0)
-          {
-            throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
-          }
-        else
-          {
-            return Clazzes.error.get();
-          }
+    var o = _outer;
+    var inh = o.feature().tryFindInheritanceChain(f.outer());
+    if (inh != null && inh.size() > 0)
+      { // type parameter was inherited, so get value from parameter of inherits call:
+        var call = inh.get(0);
+        if (CHECKS) check
+          (call.calledFeature() == f.outer());
+        o = (Clazz) _outer.getRuntimeData(call._sid + 0);
       }
-
     var ix = f.typeParameterIndex();
-    var oag = _outer.actualGenerics();
-    if (CHECKS) check
-      (ix >= 0 && ix < oag.length || Errors.count() > 0);
-
-    return ix < 0 || ix >= oag.length ? Clazzes.error.get() : oag[ix];
+    var oag = o.actualGenerics();
+    return inh == null || ix < 0 || ix >= oag.length ? Clazzes.error.get()
+                                                     : oag[ix];
   }
 
 
@@ -2208,7 +2202,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     var res = this;
     var i = feature();
-    while (i != o)
+    while (i != null && i != o)
       {
         res =  i.hasOuterRef() ? res.lookup(i.outerRef(), pos).resultClazz()
                                : res._outer;
@@ -2216,9 +2210,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (i == o);
+      (Errors.count() > 0 || i == o);
 
-    return res;
+    return i == null ? Clazzes.error.get() : res;
   }
 
 
@@ -2266,87 +2260,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         else if (!t.dependsOnGenerics())
           {
-            /* We have this situation:
+            result = actualClazz(t);
+            if (t.featureOfType().isTypeFeature() && f.implKind() == Impl.Kind.FieldDef)
+              { /* NYI: actualClazz fails for the result type of i.u.y in this example:
 
-               a is
-                 b is
-                   c is
-                     f t.u.v.w.x.y.z
-                 t is
-                   u is
-                     v is
-                       w is
-                         x is
-                           y is
-                             z is
+n is
 
-                p is
-                  q is
-                    r : a is
+  type.z n.this.type is abstract
 
-                p.q.r.b.c.f
+  u unit is
+    y := n.this.type
+    q := y.z
 
-               so f.depth is 4 (a.b.c.f),
-               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
-               inner.depth is 6 (p.q.r.b.c.f) and
-               depthInSource is 7 (t.u.v.w.x.y.z). We have to
-               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
-               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
-               to become p.q.r.t.u.v.w.x.y.z.
+i : n is
+  fixed type.z => i
 
-               f:                       a.b.c.f
-               t:                       a.t,u.v.w.x.y.z
-               inner:                   p.q.r.b.c.f
-               depthInSource              t.u.v.w.x.y.z
-               back 3:                  p.q.r.*
-               depthInSource part of t: *.t.u.v.w.x.y.z
-               plugged together:        p.q.r.t.u.v.w.x.y.z
+i.u
 
-             */
-            /* NYI: This implementation currently ignores depthInSource that could be determined via
-               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
-               type inference is used). We need proper tests for this and implement it for
-               depthInSource > 1.
-             */
-            int goBack = depth(f) - depth(t.featureOfType()) + 1;
-            var innerBase = this;
-            while (goBack > 0 &&
-                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
-                   )
-              {
-                innerBase = innerBase._outer;
-                goBack--;
-              }
-            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
-              {
-                t = t.replace_this_type_by_actual_outer(this._type);
-                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
-                  ? Clazzes.create(t, null)
-                  : innerBase.lookup(new FeatureAndActuals(t.featureOfType(), t.generics(), false), null);
-                if (t.isRef())
-                  {
-                    res = res.asRef();
-                  }
-                result = res;
-              }
-            else
-              {
-                // NYI: This branch should never be taken when rebasing above is implemented correctly.
-                if (f.implKind() == Impl.Kind.FieldDef)
-                  {
-                    result = Clazzes.clazz(f.initialValue(), _outer);
-                  }
-                else
-                  {
-                    if (f.implKind() == Impl.Kind.RoutineDef)
-                      {
-                    /* NYI: Do we need special handling for inferred routine result as well?
-                     *
-                     *   return Clazzes.clazz(f.initialValue(), this._outer);
-                     */
-                      }
-                    result = actualClazz(t);
-                  }
+                 */
+                result = Clazzes.clazz(f.initialValue(), _outer);
               }
           }
         else

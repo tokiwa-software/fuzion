@@ -29,7 +29,7 @@ nested_choice_negative =>
         choice choice nil String =>
           match choice
             nil nil => "inner nil"
-            String String => String
+            str String => str
         choice choice nil unit =>
           match choice
             nil nil => "inner nil"

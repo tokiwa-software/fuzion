@@ -555,12 +555,12 @@ public class Intrinsics extends ANY
     put("f64s.atan"            , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
     put("f32s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
     put("f64s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
-    put("f32s.sinh"            , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
-    put("f64s.sinh"            , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
-    put("f32s.cosh"            , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
-    put("f64s.cosh"            , (c,cl,outer,in) -> CExpr.call("cosh",   new List<>(A0)).ret());
-    put("f32s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
-    put("f64s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
+    put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
+    put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
+    put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
+    put("f64.type.cosh"        , (c,cl,outer,in) -> CExpr.call("cosh",   new List<>(A0)).ret());
+    put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
+    put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
     put("Any.hash_code"        , (c,cl,outer,in) ->
         {

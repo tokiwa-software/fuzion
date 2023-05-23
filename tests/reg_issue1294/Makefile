@@ -17,32 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test ctrie_threads
+#  Source code of Fuzion test Makefile
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-ctrie_threads is
+override NAME = issue1294
 
-  ctrie := (C_Trie i32 String).type.empty
-
-  one := ps_set 0..1000
-  two := ps_set 500..1500
-
-  run_in_thread(s Set i32, n i32) is
-    concur.thread.spawn (() ->
-      for k in s do
-        ctrie.add k "thread$n"
-      say "thread $n finished"
-      unit
-      )
-
-  run_in_thread one 1
-  run_in_thread two 2
-
-  # NYI can not wait for threads to finish currently
-  fuzion.std.nano_sleep 5E9
-
-  if ctrie.size != 2001
-    panic "compare and set in ctrie not implemented yet"
+include ../simple.mk
