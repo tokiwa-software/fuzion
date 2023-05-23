@@ -431,12 +431,12 @@ public class CFG extends ANY
     put("f64s.atan"                      , (cfg, cl) -> { } );
     put("f32s.atan2"                     , (cfg, cl) -> { } );
     put("f64s.atan2"                     , (cfg, cl) -> { } );
-    put("f32s.sinh"                      , (cfg, cl) -> { } );
-    put("f64s.sinh"                      , (cfg, cl) -> { } );
-    put("f32s.cosh"                      , (cfg, cl) -> { } );
-    put("f64s.cosh"                      , (cfg, cl) -> { } );
-    put("f32s.tanh"                      , (cfg, cl) -> { } );
-    put("f64s.tanh"                      , (cfg, cl) -> { } );
+    put("f32.type.sinh"                  , (cfg, cl) -> { } );
+    put("f64.type.sinh"                  , (cfg, cl) -> { } );
+    put("f32.type.cosh"                  , (cfg, cl) -> { } );
+    put("f64.type.cosh"                  , (cfg, cl) -> { } );
+    put("f32.type.tanh"                  , (cfg, cl) -> { } );
+    put("f64.type.tanh"                  , (cfg, cl) -> { } );
 
     put("Any.hash_code"                  , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
@@ -450,14 +450,14 @@ public class CFG extends ANY
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
 
-    put("fuzion.sys.net.bind0"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.connect0"         , (cfg, cl) -> { } );
+    put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
     put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
     put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.set_blocking0"    , (cfg, cl) -> { } );
+    put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
 
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
@@ -475,7 +475,7 @@ public class CFG extends ANY
             }
         });
     put("effect.abort"                      , (cfg, cl) -> { } );
-    put("effects.exists"                    , (cfg, cl) -> { } );
+    put("effect.type.is_installed"          , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );

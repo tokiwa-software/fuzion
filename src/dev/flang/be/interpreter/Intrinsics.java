@@ -994,7 +994,7 @@ public class Intrinsics extends ANY
     put("f32s.atan"             , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
     put("f32s.atan2"            , (interpreter, innerClazz) -> args -> new f32Value ((float)  Math.atan2(args.get(1).f32Value(),args.get(2).f32Value())));
     put("f32s.cos"              , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())));
-    put("f32s.cosh"             , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
+    put("f32.type.cosh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
     put("f32s.epsilon"          , (interpreter, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
     put("f32s.exp"              , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())));
     put("f32s.log"              , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(1).f32Value())));
@@ -1003,16 +1003,16 @@ public class Intrinsics extends ANY
     put("f32s.min_positive"     , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
     put("f32s.min_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
     put("f32s.sin"              , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())));
-    put("f32s.sinh"             , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
+    put("f32.type.sinh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
     put("f32s.square_root"      , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
     put("f32s.tan"              , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
-    put("f32s.tanh"             , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
+    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
     put("f64s.acos"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
     put("f64s.asin"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
     put("f64s.atan"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
     put("f64s.atan2"            , (interpreter, innerClazz) -> args -> new f64Value (         Math.atan2(args.get(1).f64Value(),args.get(2).f64Value())));
     put("f64s.cos"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(1).f64Value())));
-    put("f64s.cosh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
+    put("f64.type.cosh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
     put("f64s.epsilon"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
     put("f64s.exp"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(1).f64Value())));
     put("f64s.log"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(1).f64Value())));
@@ -1021,10 +1021,10 @@ public class Intrinsics extends ANY
     put("f64s.min_positive"     , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
     put("f64s.min_exp"          , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
     put("f64s.sin"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(1).f64Value())));
-    put("f64s.sinh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
+    put("f64.type.sinh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
     put("f64s.square_root"      , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64s.tan"              , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("f64s.tanh"             , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
+    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
     put("Any.hash_code"         , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
     put("Any.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
     put("fuzion.std.nano_time"  , (interpreter, innerClazz) -> args -> new u64Value (System.nanoTime()));
@@ -1059,7 +1059,7 @@ public class Intrinsics extends ANY
         "effect.default"  ,
         "effect.abortable",
         "effect.abort"    , (interpreter, innerClazz) -> effect(interpreter, innerClazz));
-    put("effects.exists"  , (interpreter, innerClazz) -> args ->
+    put("effect.type.is_installed", (interpreter, innerClazz) -> args ->
         {
           var cl = innerClazz.actualGenerics()[0];
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );

@@ -111,6 +111,6 @@ channel(T type, desc outcome i64, auto_close bool) =>
 
 # short hand to get the currently installed channel of type T
 channel(T type) =>
-  if !effects.exists (channel T)
+  if !effect.type.is_installed (channel T)
     channel T (error "not initialized") false effect_mode.default
   (channel T).env

@@ -33,7 +33,7 @@ private map_of_total_order (
   ) : effect em
 is
   type.install_default =>
-    if !effects.exists (container.map_of_total_order K V)
+    if !effect.type.is_installed (container.map_of_total_order K V)
       _ := container.map_of_total_order K V (ks,vs -> container.ordered_map ks vs) effect_mode.default unit
 
 

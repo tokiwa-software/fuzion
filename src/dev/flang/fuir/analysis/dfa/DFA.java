@@ -1175,12 +1175,12 @@ public class DFA extends ANY
     put("f64s.atan"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.atan2"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.atan2"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.sinh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.sinh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.cosh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.cosh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.type.sinh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.type.sinh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.type.cosh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.type.cosh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("Any.hash_code"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
@@ -1233,14 +1233,14 @@ public class DFA extends ANY
         });
 
     // NYI these intrinsics manipulate an array passed as an arg.
-    put("fuzion.sys.net.bind0"            , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.bind0"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.listen"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.accept"          , cl -> cl._dfa._bool );
     put("fuzion.sys.net.connect0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.read"            , cl -> cl._dfa._bool );
     put("fuzion.sys.net.write"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.close0"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.set_blocking0"    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.set_blocking0"   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
     put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1300,14 +1300,14 @@ public class DFA extends ANY
           // used to create the value produced by the effect.
           return null;
         });
-    put("effects.exists"                 , cl -> cl.getEffect(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
+    put("effect.type.is_installed"       , cl -> cl.getEffect(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
         ? cl._dfa._true
         : cl._dfa._bool  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
                           */
         );
 
-    put("fuzion.java.Java_Object.is_null"    , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.Java_Object.is_null"   , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.array_get"             , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.array_length"          , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.array_to_java_object0" , cl -> NYIintrinsicMissing(cl) );
