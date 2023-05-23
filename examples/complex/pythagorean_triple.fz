@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion example pythagoreanTriple
+#  Source code of Fuzion example pythagorean_triple
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# pyhtagoreanTriple -- demo using complex numbers bases on integers
+# pythagorean_triple -- demo using complex numbers bases on integers
 #
 # See Makefile for how to start fuzion to run this example.
 #
@@ -33,7 +33,7 @@
 # integer.  Since v².abs² = v².real² + v².imag², and v².abs = v.abs²,
 # we find a pythagorean triple (v².real, v².imag, v.abs²) for every such v.
 #
-pythagoreanTriple is
+pythagorean_triple is
 
   cₘₐₓ := 100    # max length of hypothenuse
 
@@ -44,7 +44,7 @@ pythagoreanTriple is
       # so we end imag at real-1
       imag in 1..real-1
 
-      v := complex real imag
+      v := num.complex real imag
       v² := v * v
       f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
       a := v².real / f

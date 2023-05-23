@@ -17,11 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion pythagoreanTriple example Makefile
+#  Source code of Fuzion pythagorean_triple example Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
 all:
-	../../bin/fz pythagoreanTriple
+	../../bin/fz pythagorean_triple
