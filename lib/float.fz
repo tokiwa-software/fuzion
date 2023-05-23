@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float(redef F type : float F) : numeric F, floats F is
+float(F type : float F) : numeric F is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -65,7 +65,7 @@ float(redef F type : float F) : numeric F, floats F is
     else if fract = zero
       thiz
     else
-      (thiz + one/two).floor
+      (thiz + one/F.two).floor
 
 
   # floor: the greatest integer lower or equal to this
@@ -212,20 +212,14 @@ float(redef F type : float F) : numeric F, floats F is
   type.tanh (val float.this.type) float.this.type is abstract
 
 
-
-# floats -- unit type defining features related to float but not requiring
-# an instance
-#
-floats(F type : float F) : numerics F is
-
   # arcus hyperbolicus
 
-  asinh(val F) F is
+  type.asinh(val F) F is
     # ln(x+sqrt(x^2+1))
-    F.log (val + F.sqrt (val ** two + one))
-  acosh(val F) F is
+    F.log (val + F.sqrt (val ** F.two + F.one))
+  type.acosh(val F) F is
     # ln(x+sqrt(x^2-1))
-    F.log (val + F.sqrt (val ** two - one))
-  atanh(val F) F is
+    F.log (val + F.sqrt (val ** F.two - F.one))
+  type.atanh(val F) F is
     # 1/2*ln((1+x)/(1-x))
-    F.log ((one + val)/(one - val)) / two
+    F.log ((F.one + val)/(F.one - val)) / F.two

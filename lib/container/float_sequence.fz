@@ -48,5 +48,4 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
   # i.e. the square of the sum of squares of this sequence
   #
   euclidean_norm F is
-    # NYI #500: sqrt,two and sum should be accessed via type
-    F.sqrt ((map_sequence (x)->x**first.two).fold F.sum)
+    F.sqrt ((map_sequence (x)->x**F.two).fold F.sum)

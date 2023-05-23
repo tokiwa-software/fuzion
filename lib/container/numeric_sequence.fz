@@ -46,7 +46,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
       nil => nil
       avg N =>
         cnt := (map_sequence N (_ -> first.one           )).fold N.sum
-        sum := (map_sequence N (x -> (x - avg)**first.two)).fold N.sum
+        sum := (map_sequence N (x -> (x - avg)**N.two)).fold N.sum
         sum / cnt
 
 
@@ -76,7 +76,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
       if arr.length % 2 = 1
         arr[arr.length / 2]
       else
-        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
+        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (N.two)
 
 
   # equality check implementation for inherited equatable

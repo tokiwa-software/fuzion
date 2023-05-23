@@ -140,8 +140,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     if      (other = zero) one
     else if (other = one ) thiz
     else
-      tmp := (thiz *° thiz) **° (other / two)
-      if other %% two
+      tmp := (thiz *° thiz) **° (other / W.two)
+      if other %% W.two
         tmp
       else
         tmp *° thiz
@@ -158,8 +158,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     if      (other = zero) one
     else if (other = one ) thiz
     else
-      tmp := (thiz *? thiz) **? (other / two)
-      if other %% two
+      tmp := (thiz *? thiz) **? (other / W.two)
+      if other %% W.two
         tmp
       else
         tmp *? thiz
@@ -179,7 +179,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
       safety: other ≥ zero
   is
     if overflow_on_exp other
-      if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% two)
+      if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% W.two)
         wrapping_integer.this.type.max.thiz
       else
         wrapping_integer.this.type.min.thiz

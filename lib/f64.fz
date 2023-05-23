@@ -29,7 +29,7 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float f64, f64s is
+f64(val f64) : float f64 is
 
   redef thiz        => f64.this.val
 
@@ -211,9 +211,3 @@ f64(val f64) : float f64, f64s is
   fixed type.sinh(val f64) f64 is intrinsic
   fixed type.cosh(val f64) f64 is intrinsic
   fixed type.tanh(val f64) f64 is intrinsic
-
-
-# f64s -- unit type defining features related to f64 but not requiring an
-# instance
-#
-f64s : floats f64 is

@@ -133,12 +133,12 @@ floating_point_numbers is
     chck (T.atan2 -T.infinity one           = -T.π/two)                                        "{T.name}: atan2 -infinity 1         = -π/two  "
 
     # hyperbolicus
-    chck (T.sinh zero       = zero  )                                           "{T.name}: sinh  0 = 0"
-    chck (T.cosh zero       = one  )                                            "{T.name}: cosh  0 = 1"
-    chck (T.tanh zero       = zero  )                                           "{T.name}: tanh  0 = 0"
-    chck (one.asinh zero    = zero  )                                           "{T.name}: asinh 0 = 0"
-    chck (one.acosh one     = zero  )                                           "{T.name}: acosh 1 = 0"
-    chck (one.atanh zero    = zero  )                                           "{T.name}: atanh 0 = 0"
+    chck (T.sinh zero       = zero)                                             "{T.name}: sinh  0 = 0"
+    chck (T.cosh zero       = one )                                             "{T.name}: cosh  0 = 1"
+    chck (T.tanh zero       = zero)                                             "{T.name}: tanh  0 = 0"
+    chck (T.asinh zero      = zero)                                             "{T.name}: asinh 0 = 0"
+    chck (T.acosh one       = zero)                                             "{T.name}: acosh 1 = 0"
+    chck (T.atanh zero      = zero)                                             "{T.name}: atanh 0 = 0"
 
     # round
     a_half := one   / two
