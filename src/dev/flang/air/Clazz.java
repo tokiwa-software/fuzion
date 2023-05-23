@@ -2249,41 +2249,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var ft = f.resultType();
         var t = _outer.actualType(ft, _select);
-
-        if (ft.isThisType())
+        result = actualClazz(t);
+        if (result.feature().isTypeFeature())
           {
-            // find outer clazz corresponding to ft:
-            var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
-            // even if outer changed from ref to value or vice versa, keep it as it was:
-            result = ft.featureOfType().selfType().isRef() ? res.asRef()
-                                                           : res.asValue();
-          }
-        else if (!t.dependsOnGenerics())
-          {
-            result = actualClazz(t);
-            if (t.featureOfType().isTypeFeature() && f.implKind() == Impl.Kind.FieldDef)
-              { /* NYI: actualClazz fails for the result type of i.u.y in this example:
-
-n is
-
-  type.z n.this.type is abstract
-
-  u unit is
-    y := n.this.type
-    q := y.z
-
-i : n is
-  fixed type.z => i
-
-i.u
-
-                 */
-                result = Clazzes.clazz(f.initialValue(), _outer);
-              }
-          }
-        else
-          {
-            result = actualClazz(t);
+            result = actualClazz(result._type.generics().get(0)).typeClazz();
           }
       }
     return result;
