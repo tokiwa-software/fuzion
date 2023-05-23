@@ -182,6 +182,12 @@ f32(val f32) : float f32, f32s is
   fixed type.epsilon f32 is intrinsic
 
 
+  fixed type.square_root(val f32) f32 is intrinsic
+
+  fixed type.exp(val f32) f32 is intrinsic
+  fixed type.log(val f32) f32 is intrinsic
+
+
   fixed type.sin(val f32) f32 is intrinsic
   fixed type.cos(val f32) f32 is intrinsic
   fixed type.tan(val f32) f32 is intrinsic
@@ -200,8 +206,3 @@ f32(val f32) : float f32, f32s is
 # instance
 #
 f32s : floats f32 is
-
-  redef square_root(val f32) f32 is intrinsic
-
-  redef exp(val f32) f32 is intrinsic
-  redef log(val f32) f32 is intrinsic

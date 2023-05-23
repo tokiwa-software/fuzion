@@ -96,12 +96,12 @@ floating_point_numbers is
     chck (!T.is_NaN one.infinity)                                          "{T.name}: is_NaN infinity"
 
     # sqrt
-    chck (one.sqrt (two * two) = two)                                      "{T.name}: sqrt (2*2) = 2"
+    chck (T.sqrt (two * two) = two)                                        "{T.name}: sqrt (2*2) = 2"
 
     # exponentation / logarithm
-    chck (one.exp zero     = one  )                                        "{T.name}: exp 0 = 1"
-    chck (one.exp one      = T.ℇ)                                          "{T.name}: exp 1 = ℇ"
-    chck (one.log one      = zero  )                                       "{T.name}: log 1 = 0"
+    chck (T.exp zero     = one  )                                          "{T.name}: exp 0 = 1"
+    chck (T.exp one      = T.ℇ)                                            "{T.name}: exp 1 = ℇ"
+    chck (T.log one      = zero  )                                         "{T.name}: log 1 = 0"
 
     # trigonometric
     chck (T.sin zero     = zero  )                                         "{T.name}: sin 0  = 0"

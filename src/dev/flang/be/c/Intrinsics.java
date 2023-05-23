@@ -539,12 +539,12 @@ public class Intrinsics extends ANY
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
-    put("f32s.exp"             , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
-    put("f64s.exp"             , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
-    put("f32s.log"             , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
-    put("f64s.log"             , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
+    put("f32.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
+    put("f64.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
+    put("f32.type.exp"         , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
+    put("f64.type.exp"         , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
+    put("f32.type.log"         , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
+    put("f64.type.log"         , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
     put("f32.type.sin"         , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
     put("f64.type.sin"         , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
     put("f32.type.cos"         , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());

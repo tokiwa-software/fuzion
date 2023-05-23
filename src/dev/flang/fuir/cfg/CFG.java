@@ -411,12 +411,12 @@ public class CFG extends ANY
     put("f64.type.min_positive"          , (cfg, cl) -> { } );
     put("f64.type.max"                   , (cfg, cl) -> { } );
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
-    put("f32s.square_root"               , (cfg, cl) -> { } );
-    put("f64s.square_root"               , (cfg, cl) -> { } );
-    put("f32s.exp"                       , (cfg, cl) -> { } );
-    put("f64s.exp"                       , (cfg, cl) -> { } );
-    put("f32s.log"                       , (cfg, cl) -> { } );
-    put("f64s.log"                       , (cfg, cl) -> { } );
+    put("f32.type.square_root"           , (cfg, cl) -> { } );
+    put("f64.type.square_root"           , (cfg, cl) -> { } );
+    put("f32.type.exp"                   , (cfg, cl) -> { } );
+    put("f64.type.exp"                   , (cfg, cl) -> { } );
+    put("f32.type.log"                   , (cfg, cl) -> { } );
+    put("f64.type.log"                   , (cfg, cl) -> { } );
     put("f32.type.sin"                   , (cfg, cl) -> { } );
     put("f64.type.sin"                   , (cfg, cl) -> { } );
     put("f32.type.cos"                   , (cfg, cl) -> { } );

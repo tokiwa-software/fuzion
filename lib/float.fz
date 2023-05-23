@@ -144,6 +144,27 @@ float(redef F type : float F) : numeric F, floats F is
   type.epsilon F is abstract
 
 
+  # square root
+  #
+  type.square_root (val float.this.type) float.this.type is abstract
+
+
+  # square root alias
+  #
+  type.sqrt (val float.this.type) => square_root val
+
+
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
+  type.exp (val float.this.type) float.this.type is abstract
+
+
+  # logarithm with base ℇ
+  #
+  type.log (val float.this.type) float.this.type is abstract
+
+
   # trigonometric
 
   type.sin  (val float.this.type) float.this.type is abstract
@@ -182,39 +203,23 @@ floats(F type : float F) : numerics F is
   # infinity
   infinity => positive_infinity
 
-  square_root(val F) F is abstract
-  # square root
-  sqrt(val F) => square_root val
-
-
-
-  # the `val`-th power of ℇ
-  # i.e. ℇᵛᵃˡ
-  #
-  exp (val F) F is abstract
-
-
-  # logarithm with base ℇ
-  #
-  log (val F) F is abstract
-
 
   # logarithm with base `base`
   #
   log (base, val F) F
   pre base > zero
   is
-    (log val) / (log base)
+    (F.log val) / (F.log base)
 
 
   # arcus hyperbolicus
 
   asinh(val F) F is
     # ln(x+sqrt(x^2+1))
-    log (val + sqrt (val ** two + one))
+    F.log (val + F.sqrt (val ** two + one))
   acosh(val F) F is
     # ln(x+sqrt(x^2-1))
-    log (val + sqrt (val ** two - one))
+    F.log (val + F.sqrt (val ** two - one))
   atanh(val F) F is
     # 1/2*ln((1+x)/(1-x))
-    log ((one + val)/(one - val)) / two
+    F.log ((one + val)/(one - val)) / two

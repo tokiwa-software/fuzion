@@ -193,6 +193,12 @@ f64(val f64) : float f64, f64s is
   fixed type.epsilon f64 is intrinsic
 
 
+  fixed type.square_root(val f64) f64 is intrinsic
+
+  fixed type.exp(val f64) f64 is intrinsic
+  fixed type.log(val f64) f64 is intrinsic
+
+
   fixed type.sin(val f64) f64 is intrinsic
   fixed type.cos(val f64) f64 is intrinsic
   fixed type.tan(val f64) f64 is intrinsic
@@ -211,8 +217,3 @@ f64(val f64) : float f64, f64s is
 # instance
 #
 f64s : floats f64 is
-
-  redef square_root(val f64) f64 is intrinsic
-
-  redef exp(val f64) f64 is intrinsic
-  redef log(val f64) f64 is intrinsic

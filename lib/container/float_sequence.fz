@@ -41,7 +41,7 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
   std_dev =>
-    variance.map (x -> first.sqrt x)
+    variance.map (x -> F.sqrt x)
 
 
   # the euclidean norm of this sequence
@@ -49,4 +49,4 @@ float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F fro
   #
   euclidean_norm F is
     # NYI #500: sqrt,two and sum should be accessed via type
-    first.sqrt ((map_sequence (x)->x**first.two).fold F.sum)
+    F.sqrt ((map_sequence (x)->x**first.two).fold F.sum)
