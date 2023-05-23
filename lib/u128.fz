@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
+u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   redef thiz => u128 hi lo
@@ -264,24 +264,3 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
   # identity element for 'infix *'
   #
   fixed type.one => u128 0 1
-
-
-# u128s -- unit type defining features related to u128 but not requiring an
-# instance
-#
-u128s : numerics u128 is
-
-  redef zero => u128 0 0
-  redef one  => u128 0 1
-
-
-# u128 -- returns value of unit type u128s
-#
-# This is a convenience feature that allows using, e.g., 'u128.sum' to
-# get the the monoid of (u128, infix +) instead of 'u128s.sum'.
-#
-# since this u128 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u128 with one
-# argument).
-#
-u128 => u128s

@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
+i16(val i16) : wrapping_integer i16, has_interval i16 is
 
   redef thiz => i16.this.val
 
@@ -188,25 +188,3 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
   # maximum
   #
   fixed type.max => i16 0x7fff
-
-
-
-# i16s -- unit type defining features related to i16 but not requiring an
-# instance
-#
-i16s : numerics i16 is
-
-  redef zero => i16 0
-  redef one  => i16 1
-
-
-# i16 -- returns value of unit type i16s
-#
-# This is a convenience feature that allows using, e.g., 'i16.sum' to
-# get the the monoid of (i16, infix +) instead of 'i16s.sum'.
-#
-# since this i16 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i16 with one
-# argument).
-#
-i16 => i16s

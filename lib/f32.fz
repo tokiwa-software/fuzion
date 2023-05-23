@@ -182,9 +182,6 @@ f32(val f32) : float f32, f32s is
 #
 f32s : floats f32 is
 
-  redef zero => f32 0
-  redef one  => f32 1
-
   redef is_NaN(val f32) bool is intrinsic
 
   redef min_exp i32 is intrinsic

@@ -47,13 +47,6 @@ is
     int plus uint.type.one
 
 
-  redef zero int is
-    int plus n.zero
-
-  redef one int is
-    int plus n.one
-
-
   redef prefix - int is
     match ns
       plus => int minus n

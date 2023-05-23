@@ -193,10 +193,6 @@ f64(val f64) : float f64, f64s is
 #
 f64s : floats f64 is
 
-  redef zero => f64 0
-  redef one  => f64 1
-
-
   redef is_NaN(val f64) bool is intrinsic
 
 

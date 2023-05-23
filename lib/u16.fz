@@ -25,7 +25,7 @@
 
 # u16 -- 16-bit unsigned integer values
 #
-u16(val u16) : wrapping_integer u16, has_interval u16, u16s is
+u16(val u16) : wrapping_integer u16, has_interval u16 is
 
   redef thiz => u16.this.val
 
@@ -185,26 +185,3 @@ u16(val u16) : wrapping_integer u16, has_interval u16, u16s is
   # maximum
   #
   fixed type.max => u16 0xffff
-
-
-
-# u16s -- unit type defining features related to u16 but not requiring an
-# instance
-#
-u16s : numerics u16 is
-
-  redef zero => u16 0
-  redef one  => u16 1
-
-
-
-# u16 -- returns value of unit type u16s
-#
-# This is a convenience feature that allows using, e.g., 'u16.sum' to
-# get the the monoid of (u16, infix +) instead of 'u16s.sum'.
-#
-# since this u16 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u16 with one
-# argument).
-#
-u16 => u16s
