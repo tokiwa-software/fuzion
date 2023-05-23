@@ -2260,87 +2260,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         else if (!t.dependsOnGenerics())
           {
-            /* We have this situation:
+            result = actualClazz(t);
+            if (t.featureOfType().isTypeFeature() && f.implKind() == Impl.Kind.FieldDef)
+              { /* NYI: actualClazz fails for the result type of i.u.y in this example:
 
-               a is
-                 b is
-                   c is
-                     f t.u.v.w.x.y.z
-                 t is
-                   u is
-                     v is
-                       w is
-                         x is
-                           y is
-                             z is
+n is
 
-                p is
-                  q is
-                    r : a is
+  type.z n.this.type is abstract
 
-                p.q.r.b.c.f
+  u unit is
+    y := n.this.type
+    q := y.z
 
-               so f.depth is 4 (a.b.c.f),
-               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
-               inner.depth is 6 (p.q.r.b.c.f) and
-               depthInSource is 7 (t.u.v.w.x.y.z). We have to
-               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
-               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
-               to become p.q.r.t.u.v.w.x.y.z.
+i : n is
+  fixed type.z => i
 
-               f:                       a.b.c.f
-               t:                       a.t,u.v.w.x.y.z
-               inner:                   p.q.r.b.c.f
-               depthInSource              t.u.v.w.x.y.z
-               back 3:                  p.q.r.*
-               depthInSource part of t: *.t.u.v.w.x.y.z
-               plugged together:        p.q.r.t.u.v.w.x.y.z
+i.u
 
-             */
-            /* NYI: This implementation currently ignores depthInSource that could be determined via
-               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
-               type inference is used). We need proper tests for this and implement it for
-               depthInSource > 1.
-             */
-            int goBack = depth(f) - depth(t.featureOfType()) + 1;
-            var innerBase = this;
-            while (goBack > 0 &&
-                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
-                   )
-              {
-                innerBase = innerBase._outer;
-                goBack--;
-              }
-            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
-              {
-                t = t.replace_this_type_by_actual_outer(this._type);
-                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
-                  ? Clazzes.create(t, null)
-                  : innerBase.lookup(new FeatureAndActuals(t.featureOfType(), t.generics(), false), null);
-                if (t.isRef())
-                  {
-                    res = res.asRef();
-                  }
-                result = res;
-              }
-            else
-              {
-                // NYI: This branch should never be taken when rebasing above is implemented correctly.
-                if (f.implKind() == Impl.Kind.FieldDef)
-                  {
-                    result = Clazzes.clazz(f.initialValue(), _outer);
-                  }
-                else
-                  {
-                    if (f.implKind() == Impl.Kind.RoutineDef)
-                      {
-                    /* NYI: Do we need special handling for inferred routine result as well?
-                     *
-                     *   return Clazzes.clazz(f.initialValue(), this._outer);
-                     */
-                      }
-                    result = actualClazz(t);
-                  }
+                 */
+                result = Clazzes.clazz(f.initialValue(), _outer);
               }
           }
         else

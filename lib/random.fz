@@ -95,18 +95,25 @@ is
      p.get % max  # NYI: This implementation is bad if max is big
 
 
+  # install default instance of random
+  #
+  type.install_default is
+    if !effects.exists random
+      _ := random simple_random_provider.type.default effect_mode.default
+
+
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
 random =>
-  randoms.install_default
+  random.type.install_default
   random.env
 
 simple_random(seed u64, rr ()->unit) =>
   _ := random (simple_random_provider seed seed) (effect_mode.inst rr)
 
 time_seeded_random(rr ()->unit) =>
-  _ := random simple_random_providers.time_seeded (effect_mode.inst rr)
+  _ := random simple_random_provider.type.time_seeded (effect_mode.inst rr)
 
 
 # Random_Provider -- abstract source of random numbers
@@ -138,15 +145,6 @@ Random_Provider ref is
   get u64 is abstract
 
 
-# type related to random declaring features not requiring an instance of random
-#
-randoms is
-
-  install_default is
-    if !effect.type.installed random
-      _ := random simple_random_providers.default effect_mode.default
-
-
 
 # simple random number provider for pseudo random numbers that are not safe
 # for security and that do not meet typical requirements for a good
@@ -170,11 +168,6 @@ simple_random_provider(seed1 u64, seed2 u64) : Random_Provider is
   get u64 is seed1
 
 
-# type related to simple_random_provider declaring features not requiring an instance
-# of simple_random_provider
-#
-simple_random_providers is
-
   # name of env var to provide default random seed.
   #
   # If set, this u64-value will be used too seed the default random number generator.
@@ -183,11 +176,11 @@ simple_random_providers is
   # If set to unparsable number, panic on installation of the default random
   # number generator.
   #
-  random_seed_env_var => "FUZION_RANDOM_SEED"
+  type.random_seed_env_var => "FUZION_RANDOM_SEED"
 
   # create the default random provider depending on the environment settings
   #
-  default =>
+  type.default =>
     match envir.vars.get random_seed_env_var
      s String =>
        match s.parse_u64
@@ -200,7 +193,7 @@ simple_random_providers is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  time_seeded Random_Provider is
+  type.time_seeded Random_Provider is
     # initialize with large numbers XORed with nano time
     #
     simple_random_provider (u64 77777777777777 ^ time.nano.read) 98765432109876543
@@ -209,5 +202,5 @@ simple_random_providers is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  time_seeded(rr ()->unit) =>
+  type.time_seeded(rr ()->unit) =>
     _ := random time_seeded (effect_mode.inst rr)
