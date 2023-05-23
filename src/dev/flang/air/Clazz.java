@@ -1143,37 +1143,33 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
-    if (fa._tp.isEmpty())
+    var iCs = _inner.get(fa);
+    if (select < 0)
       {
-        if (select < 0)
-          {
-            var iC = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iC == null || iC instanceof Clazz);
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz);
 
-            innerClazz =
-              iC == null              ? null :
-              iC instanceof Clazz iCC ? iCC
-                                      : Clazzes.error.get();
+        innerClazz =
+          iCs == null              ? null :
+          iCs instanceof Clazz iCC ? iCC
+                                   : Clazzes.error.get();
+      }
+    else
+      {
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
+        if (iCs == null || !(iCs instanceof Clazz[] iCA))
+          {
+            innerClazzes = new Clazz[replaceOpenCount(fa._f)];
+            _inner.put(fa, innerClazzes);
           }
         else
           {
-            var iCs = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
-            if (iCs == null || !(iCs instanceof Clazz[] iCA))
-              {
-                innerClazzes = new Clazz[replaceOpenCount(fa._f)];
-                _inner.put(fa, innerClazzes);
-              }
-            else
-              {
-                innerClazzes = iCA;
-              }
-            if (CHECKS) check
-              (Errors.count() > 0 || select < innerClazzes.length);
-            innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
+            innerClazzes = iCA;
           }
+        if (CHECKS) check
+          (Errors.count() > 0 || select < innerClazzes.length);
+        innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
       }
     if (innerClazz == null)
       {
