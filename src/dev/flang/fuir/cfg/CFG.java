@@ -450,14 +450,14 @@ public class CFG extends ANY
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
 
-    put("fuzion.sys.net.bind0"            , (cfg, cl) -> { } );
+    put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.connect0"         , (cfg, cl) -> { } );
+    put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
     put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
     put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.set_blocking0"    , (cfg, cl) -> { } );
+    put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
 
     put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
     put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
@@ -481,7 +481,7 @@ public class CFG extends ANY
             }
         });
     put("effect.abort"                      , (cfg, cl) -> { } );
-    put("effects.exists"                    , (cfg, cl) -> { } );
+    put("effect.type.is_installed"          , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
