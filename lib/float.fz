@@ -132,9 +132,30 @@ float(redef F type : float F) : numeric F, floats F is
   type.exponent_range => -min_exp..max_exp
 
 
+  # non signaling not a number
+  #
+  type.quiet_NaN => F.zero / F.zero
+
+
+  # not a number
+  #
+  type.NaN => quiet_NaN
+
+
   # is not a number?
   #
   type.is_NaN (val float.this.type) bool is abstract
+
+
+  type.negative_infinity => -F.one / F.zero
+
+
+  type.positive_infinity => F.one / F.zero
+
+
+  # infinity
+  #
+  type.infinity => positive_infinity
 
 
   type.min_exp i32 is abstract
@@ -196,21 +217,6 @@ float(redef F type : float F) : numeric F, floats F is
 # an instance
 #
 floats(F type : float F) : numerics F is
-
-
-  # non signaling not a number
-  quiet_NaN => zero / zero
-
-  # not a number
-  NaN => quiet_NaN
-
-  negative_infinity => -one / zero
-
-  positive_infinity => one / zero
-
-  # infinity
-  infinity => positive_infinity
-
 
   # arcus hyperbolicus
 

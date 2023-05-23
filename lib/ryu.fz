@@ -56,8 +56,8 @@ ryū is
   public as_string(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
     # trivial cases first
     if (f64.type.is_NaN val) then "NaN"
-    else if (val = f64s.positive_infinity) then "Infinity"
-    else if (val = f64s.negative_infinity) then "-Infinity"
+    else if (val = f64.type.positive_infinity) then "Infinity"
+    else if (val = f64.type.negative_infinity) then "-Infinity"
     else if (val = 0.0)
       if val.is_sign_bit_set then "-0.0" else "0.0"
     else
@@ -846,7 +846,7 @@ ryū is
       pre e >= 0,
           e <= 2620
       post
-        ( f64.type.log 10 (5.0 ** e.as_f64) = f64s.infinity
+        ( f64.type.log 10 (5.0 ** e.as_f64) = f64.type.infinity
           || floor_log₁₀_pow_5.this.result = (f64.type.log 10 (5.0 ** e.as_f64)).floor.as_i64)
       is
         e*732923 >> 20

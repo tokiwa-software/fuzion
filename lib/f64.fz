@@ -126,7 +126,7 @@ f64(val f64) : float f64, f64s is
   # the fraction of this floating point number
   redef fract f64 is
     if f64.type.is_NaN val
-      NaN
+      f64.type.NaN
     else if val < (f64 0)
       -(-val).fract
     else if val < (f64 1)
