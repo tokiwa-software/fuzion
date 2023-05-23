@@ -165,6 +165,14 @@ float(redef F type : float F) : numeric F, floats F is
   type.log (val float.this.type) float.this.type is abstract
 
 
+  # logarithm with base `base`
+  #
+  type.log (base, val F) F
+  pre base > F.zero
+  is
+    (F.log val) / (F.log base)
+
+
   # trigonometric
 
   type.sin  (val float.this.type) float.this.type is abstract
@@ -202,14 +210,6 @@ floats(F type : float F) : numerics F is
 
   # infinity
   infinity => positive_infinity
-
-
-  # logarithm with base `base`
-  #
-  log (base, val F) F
-  pre base > zero
-  is
-    (F.log val) / (F.log base)
 
 
   # arcus hyperbolicus
