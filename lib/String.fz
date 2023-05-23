@@ -177,7 +177,7 @@ String ref : equatable, has_hash, has_total_order is
 
     ) outcome T
 
-    pre base.one < base ≤ base.from_u32 36
+    pre T.one < base ≤ T.from_u32 36
 
   is
     match utf8.as_list
@@ -225,7 +225,7 @@ String ref : equatable, has_hash, has_total_order is
     match d
       e error => e
       b u8 =>
-        t := base.from_u32 b.as_u32  # i converted to T
+        t := T.from_u32 b.as_u32  # i converted to T
         if t ≥ base
           parse_error "invalid integer digit for base $base"
         else

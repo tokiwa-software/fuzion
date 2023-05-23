@@ -266,7 +266,3 @@ numerics(T type : numeric T) is
   # identity element for 'infix *'
   #
   one  T is T.one
-
-  # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) T is # T.from_u32 v
-    if v = (u32 0) T.zero else (from_u32 v-1) +^ T.one

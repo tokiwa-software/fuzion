@@ -108,7 +108,7 @@ integer(I type : integer I) : numeric I is
     pre
       debug: u32 1 < base ≤ (u32 36)
   is
-    b := from_u32 base
+    b := I.from_u32 base
 
     if thiz.sign < 0
       # there could be an overflow on negation
