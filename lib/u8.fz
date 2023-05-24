@@ -143,6 +143,19 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
 
 
 
+  # is this u8 an ASCII white-space character?
+  #
+  is_ascii_white_space =>
+    (val = (u8  9) ||  // HT
+     val = (u8 10) ||  // LF
+     val = (u8 11) ||  // VT
+     val = (u8 12) ||  // FF
+     val = (u8 13) ||  // CR
+     val = (u8 32)     // SPACE
+    )
+
+
+
   # -----------------------------------------------------------------------
   #
   # type features:
