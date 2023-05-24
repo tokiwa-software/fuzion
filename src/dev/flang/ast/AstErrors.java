@@ -983,12 +983,6 @@ public class AstErrors extends ANY
           solution);
   }
 
-  public static void cannotRedefineGeneric(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
-  {
-    cannotRedefine(pos, f, existing, "Cannot redefine feature with type parameters",
-                   "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
-  }
-
   public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",

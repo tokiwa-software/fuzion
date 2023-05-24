@@ -17,33 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Function
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# Function -- generic function with arbitrary number of arguments and result
-#
-# R is the result type of the function, A are the argument types of the function
-#
-Function(R type, A type...) ref is
-
-  # call this function on given arguments A...
-  #
-  call(a A) R is abstract
-
-
-# NYI: would be nice to have schönfinkeling defined here, could work like this:
-#
-#  curry(x A.0) Function(R, A.1...) is
-#    curried Function(R, A1...) is
-#      call(a A1...) is Function.this.call x a...
-#    curried
-#
-# --or, with different syntax sugar--
-#
-#  curry(x A.0) R->A.1... is x,a... -> call x a...
-#
-# where A.1... is the tail of type argument A (might be empty), and A.0 is the first element,
-# void (or unit?) if it does not exist.
+override NAME = redef_test
+include ../simple.mk

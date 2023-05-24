@@ -1,0 +1,4 @@
+x: Type of 'i32'
+x: Type of 'String'
+y: Type of 'f64'
+y: Type of 'option bool'
