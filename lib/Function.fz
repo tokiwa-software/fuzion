@@ -34,19 +34,6 @@ Function(R type, A type...) ref is
   call(a A) R is abstract
 
 
-# NYI: function composition: This needs a solution for either restricing A...
-# to a single argument or for converting a tuple result into A...
-#
-#  # compose f: B -> A with this: A -> R into this ∘ f: B -> R
-#  compose<B>(f fun (B) A) => fun(B b) R => call f b
-#
-#  # compose f: B -> A with this: A -> R into this ∘ f: B -> R
-#  compose<B>(f fun (B) tuple<A>) => fun(B b) R => call f b /* destructure result automatically? */
-#
-#  # short-hand infix operation for composition
-#  infix ∘ (f fun (B) A) => compose f
-
-
 # NYI: would be nice to have schönfinkeling defined here, could work like this:
 #
 #  curry(x A.0) Function(R, A.1...) is
@@ -60,16 +47,3 @@ Function(R type, A type...) ref is
 #
 # where A.1... is the tail of type argument A (might be empty), and A.0 is the first element,
 # void (or unit?) if it does not exist.
-
-
-# Functions -- unit type containing features related to functions but not requiring an instance
-#
-Functions is
-
-  # compose g ∘ f
-  #
-  compose(A,B,C type,
-          g B -> C,
-          f A -> B) A -> C
-  is
-    a -> g (f a)
