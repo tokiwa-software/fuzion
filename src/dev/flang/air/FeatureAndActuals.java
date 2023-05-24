@@ -51,7 +51,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureAndActuals extends ANY implements Comparable
+public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
 {
 
 
@@ -80,7 +80,9 @@ public class FeatureAndActuals extends ANY implements Comparable
 
   /**
    * in case _tp is null, this selects if this instance should be less (false)
-   * or larger (true) than all instances of the same feature.
+   * or more (true) than all instances of the same feature.
+   * This is used to extract a subset - containing all FeatureAndActuals having
+   * the same feature - from a Set of FeatureAndActuals.
    */
   public final boolean _max;
 
@@ -148,7 +150,7 @@ public class FeatureAndActuals extends ANY implements Comparable
    *
    * @return -1, 0, or +1
    */
-  public int compareTo(Object oo)
+  public int compareTo(FeatureAndActuals oo)
   {
     var o = (FeatureAndActuals) oo;
     var r = _f.compareTo(o._f);
