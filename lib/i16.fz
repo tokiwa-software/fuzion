@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
+i16(val i16) : wrapping_integer i16, has_interval i16 is
 
   redef thiz => i16.this.val
 
@@ -35,12 +35,12 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
   redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflow_on_add (other i16) => thiz > zero && i16.type.max -° thiz < other
-  redef underflow_on_add(other i16) => thiz < zero && i16.type.min -° thiz > other
+  redef overflow_on_add (other i16) => thiz > i16.type.zero && i16.type.max -° thiz < other
+  redef underflow_on_add(other i16) => thiz < i16.type.zero && i16.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflow_on_sub (other i16) => thiz > zero && thiz -° i16.type.max > other
-  redef underflow_on_sub(other i16) => thiz < zero && thiz -° i16.type.min < other
+  redef overflow_on_sub (other i16) => thiz > i16.type.zero && thiz -° i16.type.max > other
+  redef underflow_on_sub(other i16) => thiz < i16.type.zero && thiz -° i16.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.type.max.as_i32
@@ -55,11 +55,11 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
   # division and remainder with check for div-by-zero
   redef infix / (other i16)
     pre
-      safety: other != zero
+      safety: other != i16.type.zero
    => div(other)
   redef infix % (other i16)
     pre
-      safety: other != zero
+      safety: other != i16.type.zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -88,27 +88,27 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
 
   as_u8 u8
     pre
-      debug: (thiz ≥ zero) && (thiz ≤ u8.type.max.as_i16)
+      debug: (thiz ≥ i16.type.zero) && (thiz ≤ u8.type.max.as_i16)
     is
       low8bits
   as_u16 u16
     pre
-      debug: thiz ≥ zero
+      debug: thiz ≥ i16.type.zero
     is
       cast_to_u16
   as_u32 u32
     pre
-      debug: thiz ≥ zero
+      debug: thiz ≥ i16.type.zero
     is
       cast_to_u32
   as_u64 u64
     pre
-      debug: thiz ≥ zero
+      debug: thiz ≥ i16.type.zero
     is
       cast_to_u64
   as_u128 u128
     pre
-      debug: thiz ≥ zero
+      debug: thiz ≥ i16.type.zero
     is
       cast_to_u128
   as_int int is
@@ -188,25 +188,3 @@ i16(val i16) : wrapping_integer i16, has_interval i16, i16s is
   # maximum
   #
   fixed type.max => i16 0x7fff
-
-
-
-# i16s -- unit type defining features related to i16 but not requiring an
-# instance
-#
-i16s : numerics i16 is
-
-  redef zero => i16 0
-  redef one  => i16 1
-
-
-# i16 -- returns value of unit type i16s
-#
-# This is a convenience feature that allows using, e.g., 'i16.sum' to
-# get the the monoid of (i16, infix +) instead of 'i16s.sum'.
-#
-# since this i16 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i16 with one
-# argument).
-#
-i16 => i16s

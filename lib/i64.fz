@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
+i64(val i64) : wrapping_integer i64, has_interval i64 is
 
   redef thiz => i64.this.val
 
@@ -244,26 +244,3 @@ i64(val i64) : wrapping_integer i64, has_interval i64, i64s is
   # maximum
   #
   fixed type.max => i64 0x_7fff_ffff_ffff_ffff
-
-
-
-# i64s -- unit type defining features related to i64 but not requiring an
-# instance
-#
-i64s : numerics i64 is
-
-  redef zero => i64 0
-  redef one  => i64 1
-
-
-
-# i64 -- returns value of unit type i64s
-#
-# This is a convenience feature that allows using, e.g., 'i64.sum' to
-# get the the monoid of (i64, infix +) instead of 'i64s.sum'.
-#
-# since this i64 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i64 with one
-# argument).
-#
-i64 => i64s

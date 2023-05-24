@@ -37,7 +37,7 @@ String ref : equatable, has_hash, has_total_order is
   is_empty => utf8.is_empty
 
   # returns true if string is empty or contains whitespace only
-  is_blank => utf8 ∀ u -> is_ascii_white_space u
+  is_blank => utf8 ∀ u -> u.is_ascii_white_space
 
   # length of this string in bytes
   byte_length => utf8.count
@@ -177,7 +177,7 @@ String ref : equatable, has_hash, has_total_order is
 
     ) outcome T
 
-    pre base.one < base ≤ base.from_u32 36
+    pre T.one < base ≤ T.from_u32 36
 
   is
     match utf8.as_list
@@ -185,7 +185,7 @@ String ref : equatable, has_hash, has_total_order is
       c Cons =>
         negate := c.head = String.type.minus_char
         d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
-        parse_integer T base negate base.zero d c.tail
+        parse_integer T base negate T.zero d c.tail
 
 
   # recursive helper for parse_integer T
@@ -225,7 +225,7 @@ String ref : equatable, has_hash, has_total_order is
     match d
       e error => e
       b u8 =>
-        t := base.from_u32 b.as_u32  # i converted to T
+        t := T.from_u32 b.as_u32  # i converted to T
         if t ≥ base
           parse_error "invalid integer digit for base $base"
         else
@@ -473,18 +473,6 @@ String ref : equatable, has_hash, has_total_order is
     (container.searchable_sequence utf8).count_matches substring.utf8
 
 
-  # is c an ASCII white-space character?
-  #
-  private is_ascii_white_space(c u8) =>
-    (c = (u8  9) ||  // HT
-     c = (u8 10) ||  // LF
-     c = (u8 11) ||  // VT
-     c = (u8 12) ||  // FF
-     c = (u8 13) ||  // CR
-     c = (u8 32)     // SPACE
-     )
-
-
   # Split string separated by (ASCII) white space
   #
   # Leading and trailing white space is ignored, repeated white space is treated
@@ -493,13 +481,13 @@ String ref : equatable, has_hash, has_total_order is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list String is
-    l := utf8.as_list.drop_while (c -> is_ascii_white_space c)
+    l := utf8.as_list.drop_while (c -> c.is_ascii_white_space)
     if l.is_empty
       nil
     else
       ref : Cons String (list String)
-        head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
-        tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
+        head =>  String.type.from_bytes (l.take_while (c -> !c.is_ascii_white_space))
+        tail => (String.type.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
 
 
   # split string at s
@@ -584,8 +572,8 @@ String ref : equatable, has_hash, has_total_order is
   trim String is
     s0 := utf8
 
-    s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
-    s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
+    s1 := (s0.drop_while c->c.is_ascii_white_space).reverse
+    s2 := (s1.drop_while c->c.is_ascii_white_space).reverse
 
     String.type.from_bytes s2
 
@@ -593,13 +581,13 @@ String ref : equatable, has_hash, has_total_order is
   # remove leading white space from this string
   #
   trim_start =>
-    String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
+    String.type.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-    String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
+    String.type.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
   # is this part of given set

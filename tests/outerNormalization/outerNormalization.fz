@@ -32,15 +32,15 @@
 outerNormalization is
 
 
-  # call numeric.zero via a ref.  This only works if the actual clazz is
-  # i32.zero, it would fail for (numeric i32).zero or (integer i32).zero since
+  # call numeric.as_u8 via a ref.  This only works if the actual clazz is
+  # i32.as_u8, it would fail for (numeric i32).as_u8 or (integer i32).as_u8 since
   # zero is abstract in those clazzes
   #
-  testZero is
+  test_as_u8 is
     x ref i32 := 3
-    z := x.zero
+    z := x.as_u8
 
-  say "testZero.z is {testZero.z}"
+  say "test_as_u8.z is {test_as_u8.z}"
 
 
   # string.as_codepoints is a constructor that, if it was specialized for

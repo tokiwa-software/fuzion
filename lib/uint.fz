@@ -283,12 +283,6 @@ is
   fixed type.one uint is
     uint [u32 1] unit
 
-  redef zero uint is
-    uint [u32 0] unit
-
-  redef one uint is
-    uint [u32 1] unit
-
   redef thiz => uint b unit
 
 

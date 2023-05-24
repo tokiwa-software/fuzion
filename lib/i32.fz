@@ -25,7 +25,7 @@
 
 # i32 -- 32-bit signed integer values
 #
-i32(val i32) : wrapping_integer i32, has_interval i32, i32s is
+i32(val i32) : wrapping_integer i32, has_interval i32 is
 
   redef thiz => i32.this.val
 
@@ -199,26 +199,3 @@ i32(val i32) : wrapping_integer i32, has_interval i32, i32s is
   # maximum
   #
   fixed type.max => i32 0x_7fff_ffff
-
-
-
-# i32s -- unit type defining features related to i32 but not requiring an
-# instance
-#
-i32s : numerics i32 is
-
-  redef zero => 0
-  redef one  => 1
-
-
-
-# i32 -- returns value of unit type i32s
-#
-# This is a convenience feature that allows using, e.g., 'i32.sum' to
-# get the the monoid of (i32, infix +) instead of 'i32s.sum'.
-#
-# since this i32 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i32 with one
-# argument).
-#
-i32 => i32s

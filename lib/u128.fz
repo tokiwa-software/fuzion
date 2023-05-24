@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
+u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   redef thiz => u128 hi lo
@@ -44,7 +44,7 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
   redef underflow_on_sub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u128) => if (other = zero) false else (thiz *° other / other) != thiz
+  redef overflow_on_mul (other u128) => if (other = u128.type.zero) false else (thiz *° other / other) != thiz
   redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -84,27 +84,27 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
   # division and remainder with check for div-by-zero
   redef infix / (other u128)
     pre
-      safety: other != zero
+      safety: other != u128.type.zero
    => div other
   redef infix %  (other u128)
     pre
-      safety: other != zero
+      safety: other != u128.type.zero
    => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
     if thiz < other
-      zero
+      u128.type.zero
     else
       ob := other.highest_one_bit.trailing_zeros
       for
         rem := thiz, rem - s
-        bit := rem.highest_one_bit >> ob.as_u128, bit >> one
-        d := other << bit.trailing_zeros.as_u128, d >> one
-        s := if (rem < d) zero else d
-        p := if (rem < d) zero else bit
+        bit := rem.highest_one_bit >> ob.as_u128, bit >> u128.type.one
+        d := other << bit.trailing_zeros.as_u128, d >> u128.type.one
+        s := if (rem < d) u128.type.zero else d
+        p := if (rem < d) u128.type.zero else bit
         res := p, res + p
-      until bit = zero
+      until bit = u128.type.zero
         check
           debug: res *° other + rem = thiz
         res
@@ -264,24 +264,3 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128, u128s is
   # identity element for 'infix *'
   #
   fixed type.one => u128 0 1
-
-
-# u128s -- unit type defining features related to u128 but not requiring an
-# instance
-#
-u128s : numerics u128 is
-
-  redef zero => u128 0 0
-  redef one  => u128 0 1
-
-
-# u128 -- returns value of unit type u128s
-#
-# This is a convenience feature that allows using, e.g., 'u128.sum' to
-# get the the monoid of (u128, infix +) instead of 'u128s.sum'.
-#
-# since this u128 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u128 with one
-# argument).
-#
-u128 => u128s

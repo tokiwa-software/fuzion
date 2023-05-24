@@ -25,7 +25,7 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
+u8(val u8) : wrapping_integer u8, has_interval u8 is
 
   redef thiz => u8.this.val
 
@@ -55,11 +55,11 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
   # division and remainder with check for div-by-zero
   redef infix / (other u8)
     pre
-      safety: other != zero
+      safety: other != u8.type.zero
    => div(other)
   redef infix % (other u8)
     pre
-      safety: other != zero
+      safety: other != u8.type.zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -143,6 +143,19 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
 
 
 
+  # is this u8 an ASCII white-space character?
+  #
+  is_ascii_white_space =>
+    (val = (u8  9) ||  // HT
+     val = (u8 10) ||  // LF
+     val = (u8 11) ||  // VT
+     val = (u8 12) ||  // FF
+     val = (u8 13) ||  // CR
+     val = (u8 32)     // SPACE
+    )
+
+
+
   # -----------------------------------------------------------------------
   #
   # type features:
@@ -180,25 +193,3 @@ u8(val u8) : wrapping_integer u8, has_interval u8, u8s is
   # maximum
   #
   fixed type.max => u8 0xff
-
-
-
-# u8s -- unit type defining features related to u8 but not requiring an
-# instance
-#
-u8s : numerics u8 is
-
-  redef zero => u8 0
-  redef one  => u8 1
-
-
-# u8 -- returns value of unit type u8s
-#
-# This is a convenience feature that allows using, e.g., 'u8.sum' to
-# get the the monoid of (u8, infix +) instead of 'u8s.sum'.
-#
-# since this u8 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u8 with one
-# argument).
-#
-u8 => u8s
