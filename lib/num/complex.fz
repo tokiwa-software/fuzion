@@ -31,35 +31,33 @@
 complex (C type : numeric C,
          real,    # real part
          imag C   # imaginary part
-         ) : numeric (complex C), complexes C
+         ) : numeric (complex C)
 is
 
-# private:
-
-  # just for brevity
-  a => complex real imag
-
-# public:
 
   # enable generic features in ancestors
-  redef thiz => a
+  redef thiz => complex real imag
 
   # basic operations
-  redef prefix + => a
-  redef infix +  (b complex C) => complex a.real+b.real a.imag+b.imag
-  redef infix -  (b complex C) => complex a.real-b.real a.imag-b.imag
-  redef infix *  (b complex C) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
-  redef infix /  (b complex C) complex C
+  redef prefix + => thiz
+  redef infix + (b complex C) => complex real+b.real imag+b.imag
+  redef infix - (b complex C) => complex real-b.real imag-b.imag
+  redef infix * (b complex C) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  redef infix / (b complex C) complex C
     pre
-      safety: b != zero
+      # NYI: use type features
+      # safety: b != zero
+      safety: b.real != C.zero || b.imag != C.zero
   is
     n := b.real*b.real+b.imag*b.imag
-    complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
+    complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n
+
 
   # equality
   #
   fixed type.equality(a, b num.complex C) bool is
     a.real = b.real && a.imag = b.imag
+
 
   # total order ignoring imag
   #
@@ -68,7 +66,9 @@ is
   fixed type.lteq(a, b num.complex C) bool is
     a.real ≤ b.real
 
+
   abs² => real*real+imag*imag
+
 
   redef as_string =>
     si :=
@@ -80,42 +80,20 @@ is
     p := if (si.starts_with "-") then "" else "+"
     "{real}$p{si}i"
 
-  # NYI: these three should be implemented in complexes, not here:
-  redef zero => complex real.zero real.zero
-  redef one  => complex real.one real.zero
-  i => complex real.zero real.one
 
-
-# complexes -- unit type defining features related to complex
-#
-# complexes is a unit type defining features related to complex but not
-# requiring an instance.
-#
-# The plural form of complex is complexes or complices (archaic), according
-# to https://www.wordhippo.com/what-is/the-plural-of/complex.html, so we
-# use complexes.
-#
-complexes(E type : numeric E) : numerics (complex E) is
-
-  # NYI: There is currently no easy way to get hold of an instance of the unit
-  # type corresponding to E.
+  # identity element for 'infix +'
   #
-  #   redef zero => complex E.zero E.zero
-  #   redef one  => complex E.one  E.zero
+  fixed type.zero num.complex C is
+    num.complex C.zero C.zero
+
+
+  # identity element for 'infix *'
   #
-  # dummy implementations:
-  # redef zero => panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
-  # redef one  => panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
+  fixed type.one num.complex C is
+    num.complex C.one C.zero
 
 
-# complex -- returns value of unit type complexes
-#
-# This is a convenience feature that allows using, e.g.,
-# '(complex i32).sum' to get the the monoid of (complex, infix +) instead of
-# 'complexs.sum'.
-#
-# Since this complex with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with complex with two
-# arguments).
-#
-complex(E type : numeric E) => complexes E
+  # the imaginary unit
+  #
+  fixed type.i num.complex C is
+    num.complex C.zero C.one

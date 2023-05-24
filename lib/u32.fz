@@ -25,7 +25,7 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-u32(val u32) : wrapping_integer u32, has_interval u32, u32s is
+u32(val u32) : wrapping_integer u32, has_interval u32 is
 
   redef thiz => u32.this.val
 
@@ -181,7 +181,7 @@ u32(val u32) : wrapping_integer u32, has_interval u32, u32s is
   # the highest 1 bit in this integer
   #
   highest_bit u32 is
-    if val = zero
+    if val = u32.type.zero
       0
     else
       // NYI: should be possible to reuse v, s names
@@ -256,25 +256,3 @@ u32(val u32) : wrapping_integer u32, has_interval u32, u32s is
   # maximum
   #
   fixed type.max => u32 0x_ffff_ffff
-
-
-
-# u32s -- unit type defining features related to u32 but not requiring an
-# instance
-#
-u32s : numerics u32 is
-
-  redef zero => u32 0
-  redef one  => u32 1
-
-
-# u32 -- returns value of unit type u32s
-#
-# This is a convenience feature that allows using, e.g., 'u32.sum' to
-# get the the monoid of (u32, infix +) instead of 'u32s.sum'.
-#
-# since this u32 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u32 with one
-# argument).
-#
-u32 => u32s

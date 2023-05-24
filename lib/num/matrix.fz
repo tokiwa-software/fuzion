@@ -27,81 +27,74 @@
 #
 # matrix provides matrix operations based on an arbitray numeric type
 #
-matrix(redef M type : numeric M, e array2 M) : numeric (matrix M), matrices M
+matrix(M type : numeric M, e array2 M) : equatable
 is
 
-# private:
 
-  # just for brevity
-  a => matrix e
+  # basic operations: 'prefix +' (identity)
+  #
+  prefix + =>
+    matrix.this
 
-# public:
 
-  # enable generic features in ancestors
-  redef thiz => a
+  # basic operations: 'infix +' (addition)
+  #
+  infix + (b matrix M) =>
+    matrix (array2 M e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
 
-  # basic operations
-  redef prefix + => a
-  redef infix +  (b matrix M) => matrix (array2 M e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
-  redef infix -  (b matrix M) => matrix (array2 M e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
-  redef infix *  (b matrix M) =>
+
+  # basic operations: 'infix -' (subtraction)
+  #
+  infix - (b matrix M) =>
+    matrix (array2 M e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
+
+
+  # basic operations: 'infix *' (multiplication)
+  #
+  infix *  (b matrix M) =>
     matrix (array2 M e.length0 b.e.length1
                    (i,j ->
                      for
-                       v := e[0,0].zero, v+f
+                       v := M.zero, v+f
                        x in e.indices1
-                       f := a.e[i,x]*b.e[x,j]
+                       f := e[i,x]*b.e[x,j]
                      else
                        v
                      ))
-  redef infix /  (b matrix M) matrix M
-    pre
-      safety: false
-  is
-    panic "'matrix.infix /' not defined."
+
 
   # equality
   #
   fixed type.equality(a, b num.matrix M) =>
     for
       x in a.e
-      y in a.e
+      y in b.e
     until x != y
       false
     else
       true
 
-  # NYI: total order
-  #
-  fixed type.lteq(a, b num.matrix M) =>
-    panic "matrix does not define a total order"
 
+  # transpose
+  #
   transpose matrix M is
     matrix (array2 M e.length1 e.length0 i,j->e[j,i])
 
+
+  # prints this matrix as a string
+  #
   redef as_string => e.as_string
 
-  # NYI: these three should be implemented in matrices, not here:
-  redef zero => panic "matrix.zero not implemented"
-  redef one  => panic "matrix.one not implemented"
 
-  # NYI: 'matrix' misses imlementaton of many abstract features from
-  # 'numeric'. Maybe 'matrix' should not inherit from 'numeric' at all?
-
-
-# matrices -- unit type defining features related to matrix
-#
-# matrices is a unit type defining features related to matrix but not
-# requiring an instance.
-#
-matrices(M type : numeric M) : numerics (matrix M) is
-
-  # NYI: There is currently no easy way to get hold of an instance of the unit
-  # type corresponding to E.
+  # identity element for 'infix +'
   #
-  #   redef zero => matrix E.zero E.zero
-  #   redef one  => matrix E.one  E.zero
+  fixed type.zero (a, b i32) =>
+    num.matrix (array2 M a b ((i, j) -> M.zero))
+
+
+  # identity element for 'infix *'
   #
-  # dummy implementations:
-  redef zero => panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
-  redef one  => panic "NYI: matrices.one not implemented, needs to instantiate type arg E"
+  # note that this is only an identity element for square matrices
+  #
+  fixed type.one (a, b i32) =>
+    num.matrix (array2 M a b ((i, j) -> i = j ? M.one : M.zero))

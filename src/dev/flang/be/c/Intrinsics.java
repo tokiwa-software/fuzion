@@ -523,42 +523,42 @@ public class Intrinsics extends ANY
      * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
      * source: https://github.com/rust-lang/rust/issues/88734
      */
-    put("f32s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
-    put("f32s.max"             , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
-    put("f32s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64s.min_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64s.max_exp"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64s.min_positive"    , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
-    put("f64s.max"             , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
-    put("f64s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32s.is_NaN"          ,
-        "f64s.is_NaN"          , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.min_positive", (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
+    put("f32.type.max"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
+    put("f32.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
+    put("f64.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
+    put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
+    put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
+    put("f32.type.is_NaN"      ,
+        "f64.type.is_NaN"      , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64s.square_root"     , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
-    put("f32s.exp"             , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
-    put("f64s.exp"             , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
-    put("f32s.log"             , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
-    put("f64s.log"             , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
-    put("f32s.sin"             , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
-    put("f64s.sin"             , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
-    put("f32s.cos"             , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());
-    put("f64s.cos"             , (c,cl,outer,in) -> CExpr.call("cos",    new List<>(A0)).ret());
-    put("f32s.tan"             , (c,cl,outer,in) -> CExpr.call("tanf",   new List<>(A0)).ret());
-    put("f64s.tan"             , (c,cl,outer,in) -> CExpr.call("tan",    new List<>(A0)).ret());
-    put("f32s.asin"            , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(A0)).ret());
-    put("f64s.asin"            , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(A0)).ret());
-    put("f32s.acos"            , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(A0)).ret());
-    put("f64s.acos"            , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
-    put("f32s.atan"            , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
-    put("f64s.atan"            , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
-    put("f32s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
-    put("f64s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
+    put("f32.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
+    put("f64.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
+    put("f32.type.exp"         , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
+    put("f64.type.exp"         , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
+    put("f32.type.log"         , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
+    put("f64.type.log"         , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
+    put("f32.type.sin"         , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
+    put("f64.type.sin"         , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
+    put("f32.type.cos"         , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());
+    put("f64.type.cos"         , (c,cl,outer,in) -> CExpr.call("cos",    new List<>(A0)).ret());
+    put("f32.type.tan"         , (c,cl,outer,in) -> CExpr.call("tanf",   new List<>(A0)).ret());
+    put("f64.type.tan"         , (c,cl,outer,in) -> CExpr.call("tan",    new List<>(A0)).ret());
+    put("f32.type.asin"        , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(A0)).ret());
+    put("f64.type.asin"        , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(A0)).ret());
+    put("f32.type.acos"        , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(A0)).ret());
+    put("f64.type.acos"        , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
+    put("f32.type.atan"        , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
+    put("f64.type.atan"        , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
+    put("f32.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
+    put("f64.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
     put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
     put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
     put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());

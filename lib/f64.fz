@@ -29,7 +29,7 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float f64, f64s is
+f64(val f64) : float f64 is
 
   redef thiz        => f64.this.val
 
@@ -125,8 +125,8 @@ f64(val f64) : float f64, f64s is
 
   # the fraction of this floating point number
   redef fract f64 is
-    if f64s.is_NaN val
-      NaN
+    if f64.type.is_NaN val
+      f64.type.NaN
     else if val < (f64 0)
       -(-val).fract
     else if val < (f64 1)
@@ -183,38 +183,31 @@ f64(val f64) : float f64, f64s is
     val.as_f64
 
 
+  fixed type.is_NaN(val f64) bool is intrinsic
+
+
+  fixed type.min_exp i32 is intrinsic
+  fixed type.max_exp i32 is intrinsic
+  fixed type.min_positive f64 is intrinsic
+  fixed type.max f64 is intrinsic
+  fixed type.epsilon f64 is intrinsic
+
+
+  fixed type.square_root(val f64) f64 is intrinsic
+
+  fixed type.exp(val f64) f64 is intrinsic
+  fixed type.log(val f64) f64 is intrinsic
+
+
+  fixed type.sin(val f64) f64 is intrinsic
+  fixed type.cos(val f64) f64 is intrinsic
+  fixed type.tan(val f64) f64 is intrinsic
+  fixed type.asin(val f64) f64 is intrinsic
+  fixed type.acos(val f64) f64 is intrinsic
+  fixed type.atan(val f64) f64 is intrinsic
+  fixed type.atan2(y, x f64) f64 is intrinsic
+
+
   fixed type.sinh(val f64) f64 is intrinsic
   fixed type.cosh(val f64) f64 is intrinsic
   fixed type.tanh(val f64) f64 is intrinsic
-
-
-# f64s -- unit type defining features related to f64 but not requiring an
-# instance
-#
-f64s : floats f64 is
-
-  redef zero => f64 0
-  redef one  => f64 1
-
-
-  redef is_NaN(val f64) bool is intrinsic
-
-
-  redef min_exp i32 is intrinsic
-  redef max_exp i32 is intrinsic
-  redef min_positive f64 is intrinsic
-  redef max f64 is intrinsic
-  redef epsilon f64 is intrinsic
-
-  redef square_root(val f64) f64 is intrinsic
-
-  redef exp(val f64) f64 is intrinsic
-  redef log(val f64) f64 is intrinsic
-
-  redef sin(val f64) f64 is intrinsic
-  redef cos(val f64) f64 is intrinsic
-  redef tan(val f64) f64 is intrinsic
-  redef asin(val f64) f64 is intrinsic
-  redef acos(val f64) f64 is intrinsic
-  redef atan(val f64) f64 is intrinsic
-  redef atan2(y f64, x f64) f64 is intrinsic

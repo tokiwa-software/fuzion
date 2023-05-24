@@ -6,10 +6,10 @@ ryu_test =>
   max_positive  := 1.7976931348623157E308
 
   numbers := [ 0.0,
-              -f64s.zero,
-              f64s.positive_infinity,
-              f64s.negative_infinity,
-              f64s.quiet_NaN,
+              -f64.type.zero,
+              f64.type.positive_infinity,
+              f64.type.negative_infinity,
+              f64.type.quiet_NaN,
               0.3,
               1.0,
               1.5,
