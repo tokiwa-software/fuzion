@@ -694,7 +694,7 @@ public class Call extends AbstractCall
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != Types.f_ERROR,
-       Errors.count() > 0 || _target         != Types.f_ERROR,
+       Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
        calledFeature() != null,
        _target         != null);
   }
