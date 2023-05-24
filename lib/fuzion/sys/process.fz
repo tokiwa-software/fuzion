@@ -31,7 +31,7 @@ public process is
   # NYI stdin/out/err, pwd
   # NYI cleanup after process exit
   # NYI cleanup resources (process handle windows, close pipes)
-  create(args Any, arg_len i32, env_vars Any, env_vars_len i32, r Any, args_str Any, env_str Any) i32 is intrinsic
+  create(args Any, arg_len i32, env_vars Any, env_vars_len i32, res Any, args_str Any, env_str Any) i32 is intrinsic
 
 
   #
