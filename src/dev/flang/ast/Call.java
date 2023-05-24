@@ -496,7 +496,7 @@ public class Call extends AbstractCall
   private void findChainedBooleans(Resolution res, AbstractFeature thiz)
   {
     var cb = chainedBoolTarget(res, thiz);
-    if (cb != null && _actuals.size() == 1 && cb._actuals.getLast().typeIfKnown() != Types.t_ERROR)
+    if (cb != null && _actuals.size() == 1)
       {
         var b = cb._actuals.getLast();
         if (b.typeIfKnown() != Types.t_ERROR)
