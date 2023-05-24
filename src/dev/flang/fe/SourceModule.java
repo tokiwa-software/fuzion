@@ -773,14 +773,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     else if (existing == f)
       {
       }
-    else if (existing.generics() != FormalGenerics.NONE)
-      {
-        if (!existing.isTypeFeature() && Errors.count() == 0)
-          { // if this occurs for a type feature, this is likely a subsequent
-            // error for a duplicate feature declaration, so we suppress it:
-            AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
-          }
-      }
     else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       {
         AstErrors.redefineModifierMissing(f.pos(), outer, existing);

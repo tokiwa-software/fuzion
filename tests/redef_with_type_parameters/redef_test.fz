@@ -1,0 +1,113 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test redef_test
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+redef_test unit is
+
+  # first case, plainly redefining feature x.q
+  #
+  case1 =>
+    # example from #1387
+    x is
+      q(T type) => say "x: $T"
+
+    y : x is
+      redef q(T type) => say "y: $T"
+
+    x.q i32
+    x.q String
+    y.q f64
+    y.q (option bool)
+
+  case1
+
+  /* NYI: This does not work yet, causes error for type feature of `y`:
+
+/home/fridi/fuzion/fuzion/tests/redef_with_type_parameters/redef_test.fz:47:5: error 1: Wrong number of type parameters
+    y : x is
+----^
+Wrong number of actual type parameters in call:
+Called feature: redef_test.case2.type
+expected 2 generic arguments for 'THIS#TYPE, C'
+found 1: 'redef_test.case2 redef_test.case2.C'.
+
+one error.
+
+  # second case, redefining feature x.q whose type parameter has a
+  # constraint depending on outer feature's type parameter.
+  #
+  case2(C type, v C) =>
+    x is
+      q(U type: Sequence C) => say "x: $U $C"
+
+    y : x is
+      redef q(U type: Sequence C) => say "y: $U $C"
+
+    x.q (array C)
+    x.q (list C)
+    y.q (list C)
+
+  case2 String "str"
+  case2 f32 3.14
+
+  */
+
+  /* NYI: redefinition using types that use other type parameters does not work yet:
+
+  # thrid case, redefining feature x.q whose type parameter has a
+  # constraint depending same feature's type parameter.
+  #
+  case3 =>
+    x is
+      q(T type, U type: option T) => say "x: $T $U"
+
+    y : x is
+      redef q(T type, U type: option T) => say "y: $T $U"
+
+    x.q i32 (option i32)
+    y.q f64 (option f64)
+
+  case3
+
+  */
+
+
+  /* NYI: redefinition using types that use type parameters does not work yet:
+
+  # fourth case, redefining feature x.q whose type parameter is
+  # used in the formal type of a value parameter
+  #
+  case4 =>
+    x is
+      q(T type, v option T) => say "x: $T $v"
+
+    y : x is
+      redef q(T type, v option T) => say "y: $T $v"
+
+    x.q i32 (option 43)
+    y.q f64 (option 3.14)
+
+  case4
+
+  */
