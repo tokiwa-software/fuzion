@@ -50,7 +50,7 @@ has_interval(H type : has_interval H) : integer H is
     lower H is thiz
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
 
-    size H is if lower ≤ upper then upper - lower + H.one else zero
+    size H is if lower ≤ upper then upper - lower + H.one else H.zero
 
     # apply function f to all elements in this interval
     redef for_each(f H -> unit) unit is
@@ -85,8 +85,8 @@ has_interval(H type : has_interval H) : integer H is
       # list representation of values in this interval
       #
       redef as_list list H is
-        has_next_step => ((step > zero) && (lower ≤ upper) ||
-                          (step < zero) && (lower ≥ upper))
+        has_next_step => ((step > H.zero) && (lower ≤ upper) ||
+                          (step < H.zero) && (lower ≥ upper))
 
         if has_next_step
           tail =>

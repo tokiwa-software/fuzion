@@ -69,7 +69,9 @@ is
   redef infix *  (b fraction B) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
   redef infix /  (b fraction B) fraction B
     pre
-      safety: b != zero
+      # NYI: use type features
+      # safety: b != zero
+      safety: !b.numerator.is_zero
   is (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
   redef as_string => "" + numerator + "⁄" + denominator

@@ -181,7 +181,7 @@ u32(val u32) : wrapping_integer u32, has_interval u32 is
   # the highest 1 bit in this integer
   #
   highest_bit u32 is
-    if val = zero
+    if val = u32.type.zero
       0
     else
       // NYI: should be possible to reuse v, s names

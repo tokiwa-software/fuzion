@@ -44,7 +44,7 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
   redef underflow_on_sub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u128) => if (other = zero) false else (thiz *° other / other) != thiz
+  redef overflow_on_mul (other u128) => if (other = u128.type.zero) false else (thiz *° other / other) != thiz
   redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -84,27 +84,27 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
   # division and remainder with check for div-by-zero
   redef infix / (other u128)
     pre
-      safety: other != zero
+      safety: other != u128.type.zero
    => div other
   redef infix %  (other u128)
     pre
-      safety: other != zero
+      safety: other != u128.type.zero
    => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
     if thiz < other
-      zero
+      u128.type.zero
     else
       ob := other.highest_one_bit.trailing_zeros
       for
         rem := thiz, rem - s
         bit := rem.highest_one_bit >> ob.as_u128, bit >> u128.type.one
         d := other << bit.trailing_zeros.as_u128, d >> u128.type.one
-        s := if (rem < d) zero else d
-        p := if (rem < d) zero else bit
+        s := if (rem < d) u128.type.zero else d
+        p := if (rem < d) u128.type.zero else bit
         res := p, res + p
-      until bit = zero
+      until bit = u128.type.zero
         check
           debug: res *° other + rem = thiz
         res

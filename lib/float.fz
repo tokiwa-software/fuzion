@@ -60,9 +60,9 @@ float(F type : float F) : numeric F is
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   round F is
-    if thiz < zero
+    if thiz < F.zero
       -(-thiz).round
-    else if fract = zero
+    else if fract = F.zero
       thiz
     else
       (thiz + F.one/F.two).floor
@@ -70,7 +70,7 @@ float(F type : float F) : numeric F is
 
   # floor: the greatest integer lower or equal to this
   floor F is
-    if fract < zero
+    if fract < F.zero
       thiz - fract - F.one
     else
       thiz - fract
@@ -78,7 +78,7 @@ float(F type : float F) : numeric F is
 
   # ceiling: the smallest integer greater or equal to this
   ceil F is
-    if fract ≤ zero
+    if fract ≤ F.zero
       thiz - fract
     else
       thiz - fract + F.one

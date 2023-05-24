@@ -55,11 +55,11 @@ u16(val u16) : wrapping_integer u16, has_interval u16 is
   # division and remainder with check for div-by-zero
   redef infix / (other u16)
     pre
-      safety: other != zero
+      safety: other != u16.type.zero
    => div(other)
   redef infix % (other u16)
     pre
-      safety: other != zero
+      safety: other != u16.type.zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero

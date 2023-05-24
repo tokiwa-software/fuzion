@@ -55,7 +55,7 @@ is
     matrix (array2 M e.length0 b.e.length1
                    (i,j ->
                      for
-                       v := e[0,0].zero, v+f
+                       v := M.zero, v+f
                        x in e.indices1
                        f := e[i,x]*b.e[x,j]
                      else

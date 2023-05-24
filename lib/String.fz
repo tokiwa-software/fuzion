@@ -185,7 +185,7 @@ String ref : equatable, has_hash, has_total_order is
       c Cons =>
         negate := c.head = String.type.minus_char
         d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
-        parse_integer T base negate base.zero d c.tail
+        parse_integer T base negate T.zero d c.tail
 
 
   # recursive helper for parse_integer T

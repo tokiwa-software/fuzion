@@ -45,7 +45,9 @@ is
   redef infix * (b complex C) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
   redef infix / (b complex C) complex C
     pre
-      safety: b != zero
+      # NYI: use type features
+      # safety: b != zero
+      safety: b.real != C.zero || b.imag != C.zero
   is
     n := b.real*b.real+b.imag*b.imag
     complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n

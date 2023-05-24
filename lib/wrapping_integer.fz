@@ -111,7 +111,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   redef infix *? (other W) num_option W is if wrapped_on_mul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrapped_on_neg if thiz > zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
+  redef prefix -^          => if wrapped_on_neg if thiz > W.zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
   redef infix +^ (other W) => if overflow_on_add(other) then wrapping_integer.this.type.max.thiz else if underflow_on_add(other) then wrapping_integer.this.type.min.thiz else thiz + other
   redef infix -^ (other W) => if overflow_on_sub(other) then wrapping_integer.this.type.max.thiz else if underflow_on_sub(other) then wrapping_integer.this.type.min.thiz else thiz - other
   redef infix *^ (other W) => if overflow_on_mul(other) then wrapping_integer.this.type.max.thiz else if underflow_on_mul(other) then wrapping_integer.this.type.min.thiz else thiz * other
@@ -123,7 +123,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   #
   infix ** (other W) W
     pre
-      safety: other ≥ zero,
+      safety: other ≥ W.zero,
       debug: !overflow_on_exp(other)
   is
     thiz **° other
@@ -135,9 +135,9 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   #
   infix **° (other W) W
     pre
-      safety: other ≥ zero
+      safety: other ≥ W.zero
   is
-    if      (other = zero) W.one
+    if      (other = W.zero) W.one
     else if (other = W.one ) thiz
     else
       tmp := (thiz *° thiz) **° (other / W.two)
@@ -153,9 +153,9 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   #
   infix **? (other W) num_option W
     pre
-      safety: other ≥ zero
+      safety: other ≥ W.zero
   is
-    if      (other = zero) W.one
+    if      (other = W.zero) W.one
     else if (other = W.one ) thiz
     else
       tmp := (thiz *? thiz) **? (other / W.two)
@@ -176,7 +176,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   #
   infix **^ (other W) W
     pre
-      safety: other ≥ zero
+      safety: other ≥ W.zero
   is
     if overflow_on_exp other
       if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% W.two)
