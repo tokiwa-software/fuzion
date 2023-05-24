@@ -76,6 +76,10 @@ public abstract class Expr extends ANY implements Stmnt
       {
         return Types.t_ERROR;
       }
+      public String toString()
+      {
+        return Errors.ERROR_STRING;
+      }
     };
 
 
