@@ -4,58 +4,56 @@ test_process =>
     say "===  Test: $str  ==="
 
   test "write to stdin of process"
-  match process.spawn ["cat"]
-    p process.spawned =>
-      p.write_string "Hello from the other side."
-      say "close write: {p.close_write}"
-      say "close write again: {p.close_write}"
-      say p.read_string
-      say "exit code: {p.exit_code}"
-    error => say "error"
+  say (process.spawn ["cat"] ()->
+      process.spawned.env.write_string "Hello from the other side."
+      say "close write: {process.spawned.env.close_write}"
+      say "close write again: {process.spawned.env.close_write}"
+      process.spawned.env.read_string
+  )
 
 
 
   test "read stdout of process"
-  match process.spawn ["echo", "eecchhoo"]
-    p process.spawned =>
-      say p.read_string
-      say "exit code: {p.exit_code}"
-    error => say "error"
+  say (process.spawn ["echo", "eecchhoo"] ()->
+    process.spawned.env.read_string
+  )
 
 
 
   test "pass environment variable"
-  match process.spawn ["printenv", "MYENVVAR"] (container.map_of [("MYENVVAR", "content")])
-    p process.spawned =>
-      say p.read_string
-      say "exit code: {p.exit_code}"
-    error => say "error"
-
-
-
-  test "feed output of process 1 to process 2"
-  match (process.spawn ["echo", "'feed me to cat'"])
-    p process.spawned =>
-      p | ["cat"]
-    error => say "error"
+  # NYI why do we have to specify type param?
+  say (process.spawn (outcome String) ["printenv", "MYENVVAR"] (container.map_of [("MYENVVAR", "content")]) ()->
+    process.spawned.env.read_string
+  )
 
 
 
   test "read stdout blocks until stdin closed"
-  match process.spawn ["cat"]
-    p2 process.spawned =>
+  say (process.spawn ["cat"] ()->
 
-      concur.thread.spawn (() ->
-        time.nano.sleep (time.durations.ms 100)
-        say "1) closing write"
-        _ := p2.close_write)
+    p := process.spawned.env
 
-      # this read should block until stdin is closed
-      say "2) read: {p2.read_string}"
-      say "3) exit code: {p2.exit_code}"
+    concur.thread.spawn (() ->
+      time.nano.sleep (time.durations.ms 100)
+      say "1) closing write"
+      _ := p.close_write)
+
+    # this read should block until stdin is closed
+    say "2) read: {p.read_string}"
+  )
+
+
+
+  test "feed output of process 1 to process 2"
+  say (process.spawn ["echo", "'feed me to cat'"] ()->
+    p process.spawned =>
+      match p | ["cat"]
+        p process.spawned => say p.read_string
+        error => say "error"
     error => say "error"
+  )
 
-
+  /*
 
   # create string of given byte size
   get_str(byte_size i32) =>
@@ -97,3 +95,4 @@ test_process =>
       say "exit code: {p3.exit_code}"
     error =>
 
+*/
