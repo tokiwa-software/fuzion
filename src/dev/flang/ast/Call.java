@@ -2017,31 +2017,32 @@ public class Call extends AbstractCall
       }
     _resolvedFor = outer;
     loadCalledFeature(res, outer);
-    _generics = FormalGenerics.resolve(res, _generics, outer);
-    _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
 
     if (CHECKS) check
-      (Errors.count() > 0 || _calledFeature != null);
+      (_calledFeature != null);
 
-    ListIterator<Expr> i = _actuals.listIterator();
-    while (i.hasNext())
-      {
-        Expr actl = i.next();
-        if (actl instanceof Actual aa)
-          {
-            actl = aa.expr(this);
-          }
-        if (CHECKS) check
-          (actl != null);
-        i.set(actl);
-      }
-
-    if (_calledFeature == null)
+    if (_calledFeature == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
       }
     else
       {
+        _generics = FormalGenerics.resolve(res, _generics, outer);
+        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
+
+        ListIterator<Expr> i = _actuals.listIterator();
+        while (i.hasNext())
+          {
+            Expr actl = i.next();
+            if (actl instanceof Actual aa)
+              {
+                actl = aa.expr(this);
+              }
+            if (CHECKS) check
+                          (actl != null);
+            i.set(actl);
+          }
+
         if (needsToInferTypeParametersFromArgs())
           {
             inferGenericsFromArgs(res, outer);
