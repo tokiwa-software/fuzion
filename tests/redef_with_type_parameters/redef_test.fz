@@ -75,8 +75,8 @@ one error.
 
   /* NYI: redefinition using types that use other type parameters does not work yet:
 
-  # thrid case, redefining feature x.q whose type parameter has a
-  # constraint depending same feature's type parameter.
+  # third case, redefining feature x.q whose type parameter has a
+  # constraint depending on the same feature's type parameter.
   #
   case3 =>
     x is
