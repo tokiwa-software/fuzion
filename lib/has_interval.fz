@@ -50,12 +50,12 @@ has_interval(H type : has_interval H) : integer H is
     lower H is thiz
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
 
-    size H is if lower ≤ upper then upper - lower + one else zero
+    size H is if lower ≤ upper then upper - lower + H.one else zero
 
     # apply function f to all elements in this interval
     redef for_each(f H -> unit) unit is
       for
-        x := lower, x + one
+        x := lower, x + H.one
       while x ≤ upper
         f x
 
@@ -63,7 +63,7 @@ has_interval(H type : has_interval H) : integer H is
     redef as_stream ref : stream H is
       x := num_option lower
       redef has_next bool is x.exists && (x.val ≤ upper)
-      redef next H is res := x.val; set x := x +? one; res
+      redef next H is res := x.val; set x := x +? H.one; res
 
 
     # does this range contain the given value?
@@ -112,7 +112,7 @@ has_interval(H type : has_interval H) : integer H is
     redef as_list list H is
       cons (head H) : Cons H (list H) is
         tail list H is
-          if (head ≥ upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is has_interval i32, it should be i32.
+          if (head ≥ upper) nil else cons head+H.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is has_interval i32, it should be i32.
       if (lower > upper) nil else cons lower
 
 

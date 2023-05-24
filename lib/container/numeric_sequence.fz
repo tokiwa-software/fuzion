@@ -34,7 +34,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     if is_empty
       nil
     else
-      cnt := (map_sequence N (_ -> first.one)).fold N.sum
+      cnt := (map_sequence N (_ -> N.one)).fold N.sum
       sum := fold N.sum
       sum / cnt
 
@@ -45,7 +45,7 @@ numeric_sequence(N type : numeric N, redef from Sequence N) : searchable_sequenc
     match average
       nil => nil
       avg N =>
-        cnt := (map_sequence N (_ -> first.one           )).fold N.sum
+        cnt := (map_sequence N (_ -> N.one           )).fold N.sum
         sum := (map_sequence N (x -> (x - avg)**N.two)).fold N.sum
         sum / cnt
 

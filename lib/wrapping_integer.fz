@@ -137,8 +137,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other = zero) one
-    else if (other = one ) thiz
+    if      (other = zero) W.one
+    else if (other = W.one ) thiz
     else
       tmp := (thiz *° thiz) **° (other / W.two)
       if other %% W.two
@@ -155,8 +155,8 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
     pre
       safety: other ≥ zero
   is
-    if      (other = zero) one
-    else if (other = one ) thiz
+    if      (other = zero) W.one
+    else if (other = W.one ) thiz
     else
       tmp := (thiz *? thiz) **? (other / W.two)
       if other %% W.two

@@ -65,13 +65,13 @@ float(F type : float F) : numeric F is
     else if fract = zero
       thiz
     else
-      (thiz + one/F.two).floor
+      (thiz + F.one/F.two).floor
 
 
   # floor: the greatest integer lower or equal to this
   floor F is
     if fract < zero
-      thiz - fract - one
+      thiz - fract - F.one
     else
       thiz - fract
 
@@ -81,7 +81,7 @@ float(F type : float F) : numeric F is
     if fract ≤ zero
       thiz - fract
     else
-      thiz - fract + one
+      thiz - fract + F.one
 
 
   # number of bits used for mantissa,

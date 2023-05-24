@@ -99,8 +99,8 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
       ob := other.highest_one_bit.trailing_zeros
       for
         rem := thiz, rem - s
-        bit := rem.highest_one_bit >> ob.as_u128, bit >> one
-        d := other << bit.trailing_zeros.as_u128, d >> one
+        bit := rem.highest_one_bit >> ob.as_u128, bit >> u128.type.one
+        d := other << bit.trailing_zeros.as_u128, d >> u128.type.one
         s := if (rem < d) zero else d
         p := if (rem < d) zero else bit
         res := p, res + p

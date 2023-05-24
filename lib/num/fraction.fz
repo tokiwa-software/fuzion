@@ -56,7 +56,7 @@ is
   # reduce numerator and denominator by their gcd:
   reduce =>
     gcd := numerator.abs.gcd denominator
-    if gcd = numerator.one
+    if gcd = B.one
       a
     else
       fraction (numerator / gcd) (denominator / gcd)
