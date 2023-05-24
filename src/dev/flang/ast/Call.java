@@ -693,8 +693,10 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != null,
-       Errors.count() > 0 || _target         != null);
+      (Errors.count() > 0 || calledFeature() != Types.f_ERROR,
+       Errors.count() > 0 || _target         != Types.f_ERROR,
+       calledFeature() != null,
+       _target         != null);
   }
 
 
