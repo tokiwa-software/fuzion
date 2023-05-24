@@ -498,31 +498,32 @@ public class Call extends AbstractCall
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
       {
-        var bix = cb._actuals.size() - 1; // index of 'b' in first call 'a < b'
-        var b = cb._actuals.get(bix);
-        b = res.resolveType(b, thiz);
-        String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-        var tmp = new Feature(res,
-                              pos(),
-                              Visi.INVISIBLE,
-                              b.type(),
-                              tmpName,
-                              thiz);
-        Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-        Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-        Expr result = new Call(pos(), t2, _name, _actualsNew)
+        var b = cb._actuals.getLast();
+        if (b.typeIfKnown() != Types.t_ERROR)
           {
-            boolean isChainedBoolRHS() { return true; }
-          };
-        Stmnt as = new Assign(res, pos(), tmp, b, thiz);
-        t1 = res.resolveType(t1    , thiz);
-        as = res.resolveType(as    , thiz);
-        result = res.resolveType(result, thiz);
-        cb._actuals.set(cb._actuals.size()-1,
-                        new Block(b.pos(),new List<Stmnt>(as, t1)));
-        _actuals = new List<Expr>(result);
-        _calledFeature = Types.resolved.f_bool_AND;
-        _name = _calledFeature.featureName().baseName();
+            String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
+            var tmp = new Feature(res,
+                                  pos(),
+                                  Visi.INVISIBLE,
+                                  b.type(),
+                                  tmpName,
+                                  thiz);
+            Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+            Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+            Expr result = new Call(pos(), t2, _name, _actualsNew)
+              {
+                boolean isChainedBoolRHS() { return true; }
+              };
+            Stmnt as = new Assign(res, pos(), tmp, b, thiz);
+            t1 = res.resolveType(t1    , thiz);
+            as = res.resolveType(as    , thiz);
+            result = res.resolveType(result, thiz);
+            cb._actuals.set(cb._actuals.size()-1,
+                            new Block(b.pos(),new List<Stmnt>(as, t1)));
+            _actuals = new List<Expr>(result);
+            _calledFeature = Types.resolved.f_bool_AND;
+            _name = _calledFeature.featureName().baseName();
+          }
       }
   }
 
