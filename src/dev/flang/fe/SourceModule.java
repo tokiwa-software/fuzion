@@ -581,7 +581,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.initialValue() != null &&
+    if (inner.impl().initialValue() != null &&
         outer.pos()._sourceFile != inner.pos()._sourceFile &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
@@ -823,8 +823,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f       .implKind() == Impl.Kind.FieldDef &&
-            existing.implKind() == Impl.Kind.FieldDef    )
+        if (existing instanceof Feature ef &&
+            f .implKind() == Impl.Kind.FieldDef &&
+            ef.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
