@@ -94,8 +94,7 @@ is
 
   # identity element for 'infix *'
   #
-  # note that this is only an identity element if we are working
-  # on square matrices
+  # note that this is only an identity element for square matrices
   #
   fixed type.one (a, b i32) =>
     num.matrix (array2 M a b ((i, j) -> i = j ? M.one : M.zero))
