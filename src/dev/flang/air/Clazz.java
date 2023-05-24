@@ -1143,37 +1143,33 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
-    if (fa._tp.isEmpty())
+    var iCs = _inner.get(fa);
+    if (select < 0)
       {
-        if (select < 0)
-          {
-            var iC = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iC == null || iC instanceof Clazz);
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz);
 
-            innerClazz =
-              iC == null              ? null :
-              iC instanceof Clazz iCC ? iCC
-                                      : Clazzes.error.get();
+        innerClazz =
+          iCs == null              ? null :
+          iCs instanceof Clazz iCC ? iCC
+                                   : Clazzes.error.get();
+      }
+    else
+      {
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
+        if (iCs == null || !(iCs instanceof Clazz[] iCA))
+          {
+            innerClazzes = new Clazz[replaceOpenCount(fa._f)];
+            _inner.put(fa, innerClazzes);
           }
         else
           {
-            var iCs = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
-            if (iCs == null || !(iCs instanceof Clazz[] iCA))
-              {
-                innerClazzes = new Clazz[replaceOpenCount(fa._f)];
-                _inner.put(fa, innerClazzes);
-              }
-            else
-              {
-                innerClazzes = iCA;
-              }
-            if (CHECKS) check
-              (Errors.count() > 0 || select < innerClazzes.length);
-            innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
+            innerClazzes = iCA;
           }
+        if (CHECKS) check
+          (Errors.count() > 0 || select < innerClazzes.length);
+        innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
       }
     if (innerClazz == null)
       {
@@ -2249,41 +2245,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var ft = f.resultType();
         var t = _outer.actualType(ft, _select);
-
-        if (ft.isThisType())
+        result = actualClazz(t);
+        if (result.feature().isTypeFeature())
           {
-            // find outer clazz corresponding to ft:
-            var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
-            // even if outer changed from ref to value or vice versa, keep it as it was:
-            result = ft.featureOfType().selfType().isRef() ? res.asRef()
-                                                           : res.asValue();
-          }
-        else if (!t.dependsOnGenerics())
-          {
-            result = actualClazz(t);
-            if (t.featureOfType().isTypeFeature() && f.implKind() == Impl.Kind.FieldDef)
-              { /* NYI: actualClazz fails for the result type of i.u.y in this example:
-
-n is
-
-  type.z n.this.type is abstract
-
-  u unit is
-    y := n.this.type
-    q := y.z
-
-i : n is
-  fixed type.z => i
-
-i.u
-
-                 */
-                result = Clazzes.clazz(f.initialValue(), _outer);
-              }
-          }
-        else
-          {
-            result = actualClazz(t);
+            result = actualClazz(result._type.generics().get(0)).typeClazz();
           }
       }
     return result;

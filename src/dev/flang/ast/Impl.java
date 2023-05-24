@@ -76,9 +76,14 @@ public class Impl extends ANY
 
 
   /**
-   *
+   * For a field declared using `:=` or a function declared using `=>`, this
+   * gives the value of that field or function.
    */
   Expr _initialValue;
+  public Expr initialValue()
+  {
+    return _initialValue;
+  }
 
 
   AbstractFeature _outerOfInitialValue = null;

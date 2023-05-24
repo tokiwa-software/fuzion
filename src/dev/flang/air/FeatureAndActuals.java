@@ -187,6 +187,19 @@ public class FeatureAndActuals extends ANY implements Comparable
     return r;
   }
 
+
+  /**
+   * Convert this to a string for debugging:
+   */
+  public String toString()
+  {
+    return
+      (_preconditionClazz ? "pre " : "") +
+      _f.qualifiedName() +
+      (_tp != null ? (_tp.size() == 0 ? "" : " " + _tp)
+                   : (_max ? " MAX" : " MIN"));
+  }
+
 }
 
 /* end of file */
