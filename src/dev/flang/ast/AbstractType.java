@@ -330,9 +330,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var p: actual_type.featureOfType().inherits())
                   {
-                    var pt = Types.intern(actual_type
-                                          .applyTypePars(p.type())
-                                          .replace_this_type_by_actual_outer(actual_type));
+                    var pt = Types.intern(actual_type.actualType(p.type()));
                     if (actual_type.isRef())
                       {
                         pt = pt.asRef();
@@ -770,6 +768,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument());
 
     throw new Error("actualType not supported for "+getClass());
+  }
+
+
+  /**
+   * Use this type as a target type for a call using type `t` and determine the
+   * actual type corresponding to `t`. For this, type parameters used in `t` are
+   * replaced by the actual type parameters in `this` and `this.type` within `t`
+   * will be replaced by the actual type in `this`.
+   *
+   * @param t a type, must not be an open generic.
+   *
+   * @return t with type parameters replaced by the corresponding actual type
+   * parameters in `this` and `this.type`s replaced by the corresponding actual
+   * type in `this`.
+   */
+  public AbstractType actualType(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument());
+
+    return applyTypePars(t)
+      .replace_this_type_by_actual_outer(this);
   }
 
 

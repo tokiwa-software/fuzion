@@ -637,8 +637,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
       }
 
-    t = this._type.applyTypePars(t);
-    t = t.replace_this_type_by_actual_outer(_type);
+    t = this._type.actualType(t);
     if (this._outer != null)
       {
         t = this._outer.actualType(t);
