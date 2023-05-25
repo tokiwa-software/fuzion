@@ -662,12 +662,12 @@ String ref : equatable, has_hash, has_total_order is
 
   # convert this string to upper case
   upper_case String is
-    String.type.from_codepoint_sequence (as_codepoint_sequence.map_sequence (c -> unicode.mappings.upper_case[c.val].get c))
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.upper_case[c.val].get c))
 
 
   # convert this string to lower case
   lower_case String is
-    String.type.from_codepoint_sequence (as_codepoint_sequence.map_sequence (c -> unicode.mappings.lower_case[c.val].get c))
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.lower_case[c.val].get c))
 
 
 
