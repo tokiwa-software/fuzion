@@ -24,7 +24,7 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
+mutable_tree_map(LM type : mutate, KEY type : has_total_order, redef V type) : Map KEY V is
 
 
   # the root entry of this map
@@ -34,13 +34,27 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   #
   # if this map is entry, this is nil
   #
-  private root := LM.env.new (option (Entry LM K V)) nil
+  private root := LM.env.new (option (Entry LM KEY V)) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  size u32 is
-    fold u32 0 ((i, _) -> i + 1)
+  size i32 is
+    fold i32 0 ((i, _) -> i + 1)
+
+
+  # get the value k is mapped to, or nil if none.
+  #
+  index [] (k KEY) option V is
+    get k
+
+
+  # get a sequence of all key/value pairs in this map
+  #
+  items Sequence (tuple KEY V) is
+    match root.get
+      e Entry LM KEY V => e.items
+      nil => (Sequence (tuple KEY V)).type.empty
 
 
   # returns a string representation of the map
@@ -70,7 +84,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # get the value stored in this map at key k, nil if k is not
   # contained in this map
   #
-  get(k K) option V is
+  get(k KEY) option V is
     root.get ? nil => nil
              | e Entry => e.get k
 
@@ -80,7 +94,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  put(k K, v V) option V is
+  put(k KEY, v V) option V is
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -89,7 +103,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # in this step, the helper feature to actually add the mapping
     # is called first. then the AVL rebalancing is done
     #
-    private put_recursively(node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+    private put_recursively(node option (Entry LM KEY V)) tuple (option (Entry LM KEY V)) (option V) is
       (new_node, old_val) := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
@@ -102,10 +116,10 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # in this step, the actual addition of the mapping to the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private insert_or_modify_entries(node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+    private insert_or_modify_entries(node option (Entry LM KEY V)) tuple (option (Entry LM KEY V)) (option V) is
       match node
         nil =>
-          new_node := Entry LM K V k v
+          new_node := Entry LM KEY V k v
           (option new_node, option V nil)
         e Entry =>
           if k < e.key
@@ -118,7 +132,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
             (option e, old_val)
           else
             old_val := e.val
-            new_node := Entry LM K V k v
+            new_node := Entry LM KEY V k v
             new_node.left <- e.left.get
             new_node.right <- e.right.get
             (option new_node, option old_val)
@@ -134,7 +148,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # returns the value that k previously mapped to, or nil if
   # no mapping was actually removed
   #
-  remove(k K) option V is
+  remove(k KEY) option V is
     # helper feature to remove a mapping from this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns the reference to the node that was worked on.
@@ -142,7 +156,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # in this step, the helper feature to actually remove the
     # mapping is called first. then the AVL rebalancing is done
     #
-    private remove_recursively(k K, node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+    private remove_recursively(k KEY, node option (Entry LM KEY V)) tuple (option (Entry LM KEY V)) (option V) is
       (new_node, old_val) := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
@@ -153,7 +167,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # minimal here means the node with the smallest key, by the given
     # ordering of the keys
     #
-    minimum(node option (Entry LM K V)) option (Entry LM K V) is
+    minimum(node option (Entry LM KEY V)) option (Entry LM KEY V) is
       node ? nil => nil
            | e Entry =>
              e.left.get ? nil => e
@@ -167,9 +181,9 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # in this step, the actual removal of the mapping from the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private remove_or_modify_entries(k K, node option (Entry LM K V)) tuple (option (Entry LM K V)) (option V) is
+    private remove_or_modify_entries(k KEY, node option (Entry LM KEY V)) tuple (option (Entry LM KEY V)) (option V) is
       match node
-        nil => (option (Entry LM K V) nil, option V nil)
+        nil => (option (Entry LM KEY V) nil, option V nil)
         e Entry =>
           if k < e.key
             (node, old_val) := remove_recursively k e.left.get
@@ -189,7 +203,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
                   r Entry =>
                     m := minimum e.right.get
 
-                    new_node := Entry LM K V m.get.key m.get.val
+                    new_node := Entry LM KEY V m.get.key m.get.val
                     new_node.left <- l
 
                     (nr, old_val) := remove_recursively m.get.key e.right.get
@@ -207,11 +221,11 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  private rebalance(node option (Entry LM K V)) option (Entry LM K V) is
+  private rebalance(node option (Entry LM KEY V)) option (Entry LM KEY V) is
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    private height(node option (Entry LM K V)) i32 is
+    private height(node option (Entry LM KEY V)) i32 is
       match node
         nil => -1
         e Entry => e.height.get
@@ -220,7 +234,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    private balance_factor(node option (Entry LM K V)) i32 is
+    private balance_factor(node option (Entry LM KEY V)) i32 is
       match node
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -229,7 +243,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
     # recalculates and updates the heights of the subtrees in the
     # subtree whose root is the given node
     #
-    private fix_height(node option (Entry LM K V)) =>
+    private fix_height(node option (Entry LM KEY V)) =>
       match node
         nil =>
         e Entry =>
@@ -241,7 +255,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
 
     # rotate right at the given node
     #
-    private rotate_right(node option (Entry LM K V)) option (Entry LM K V) is
+    private rotate_right(node option (Entry LM KEY V)) option (Entry LM KEY V) is
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
@@ -258,7 +272,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
 
     # rotate left at the given node
     #
-    private rotate_left(node option (Entry LM K V)) option (Entry LM K V) is
+    private rotate_left(node option (Entry LM KEY V)) option (Entry LM KEY V) is
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -306,8 +320,8 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  fold(B type, init B, f (B, Entry LM K V) -> B) B is
-    private fold0(init B, node option (Entry LM K V)) B is
+  fold(B type, init B, f (B, Entry LM KEY V) -> B) B is
+    private fold0(init B, node option (Entry LM KEY V)) B is
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
 
@@ -316,15 +330,15 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
 
   # returns an empty tree of elements of type A.
   #
-  type.empty container.mutable_tree_map LM K V is
-    container.mutable_tree_map LM K V
+  type.empty container.mutable_tree_map LM KEY V is
+    container.mutable_tree_map LM KEY V
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  type.singleton(k K, v V) container.mutable_tree_map LM K V is
-    new_map := container.mutable_tree_map LM K V
-    new_entry := container.Entry LM K V k v
+  type.singleton(k KEY, v V) container.mutable_tree_map LM KEY V is
+    new_map := container.mutable_tree_map LM KEY V
+    new_entry := container.Entry LM KEY V k v
     new_map.root <- new_entry
 
     new_map
@@ -332,7 +346,7 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
 
   # initialize a map from an array of key value tuples
   #
-  type.from_array(kvs array (tuple K V)) =>
+  type.from_array(kvs array (tuple KEY V)) =>
     from_array kvs false
 
 
@@ -341,8 +355,8 @@ mutable_tree_map(LM type : mutate, K type : has_total_order, V type) is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the array.
   #
-  type.from_array(kvs array (tuple K V), freeze bool) container.mutable_tree_map LM K V is
-    new_map := container.mutable_tree_map LM K V
+  type.from_array(kvs array (tuple KEY V), freeze bool) container.mutable_tree_map LM KEY V is
+    new_map := container.mutable_tree_map LM KEY V
     kvs.for_each (x ->
       new_map.put x.values.0 x.values.1
       unit)

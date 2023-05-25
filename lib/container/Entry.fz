@@ -24,17 +24,17 @@
 
 # Entry -- an entry of a mutable tree map
 #
-private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) ref is
+private Entry(LM type : mutate, KEY type : has_total_order, redef V type, key KEY, val V) ref : Map KEY V is
 
 
   # reference to the left subtree at this entry, or, if it is empty, nil
   #
-  private left := LM.env.new (option (Entry LM K V)) nil
+  private left := LM.env.new (option (Entry LM KEY V)) nil
 
 
   # reference to the right subtree at this entry, or if it is empty, nil
   #
-  private right := LM.env.new (option (Entry LM K V)) nil
+  private right := LM.env.new (option (Entry LM KEY V)) nil
 
 
   # height of the subtree whose root is this entry
@@ -45,7 +45,7 @@ private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) 
   # get the value stored in this submap at key k, nil if k is not a key
   # in this submap
   #
-  private get(k K) option V is
+  private get(k KEY) option V is
     if k < key
       left.get ? nil => nil
                | e Entry => e.get k
@@ -54,3 +54,28 @@ private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) 
                 | e Entry => e.get k
     else
       val
+
+
+  # number of entries in this map
+  #
+  size i32 is
+    items.count
+
+
+  # get the value k is mapped to, or nil if none.
+  #
+  index [] (k KEY) option V is
+    get k
+
+
+  # get a sequence of all key/value pairs in this map
+  #
+  items Sequence (tuple KEY V) is
+
+    head := (key, val)
+
+    tail Lazy (list (tuple KEY V)) := ()->
+      ((left.get.map x->x.items).get ((list (tuple KEY V)).type.empty)) ++
+        ((right.get.map x->x.items).get ((list (tuple KEY V)).type.empty))
+
+    list head tail
