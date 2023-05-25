@@ -1200,8 +1200,8 @@ public class Call extends AbstractCall
               }
             else
               {
-                frmlT = targetTypeOrConstraint(res).actualType(frmlT);
-                frmlT = frmlT.actualType(_calledFeature, _generics);
+                frmlT = targetTypeOrConstraint(res).applyTypePars(frmlT);
+                frmlT = frmlT.applyTypePars(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
                 if (CHECKS) check
                   (frmlT != null);
@@ -1338,7 +1338,7 @@ public class Call extends AbstractCall
       : targetTypeOrConstraint(res);
 
     t = resolveSelect(t, tt);
-    t = tt.actualType(t);
+    t = tt.applyTypePars(t);
     t = t.resolve(res, tt.featureOfType());
     t = adjustThisTypeForTarget(t);
     t = resolveForCalledFeature(res, t, tt);
@@ -1463,7 +1463,7 @@ public class Call extends AbstractCall
             var tf = t.featureOfType().typeFeature(res);
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
-            t = tf.selfType().actualType(tf, tg);
+            t = tf.selfType().applyTypePars(tf, tg);
           }
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
@@ -1487,7 +1487,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        t = t.actualType(calledFeature(), _generics);
+        t = t.applyTypePars(calledFeature(), _generics);
       }
     return t;
   }
@@ -1842,7 +1842,7 @@ public class Call extends AbstractCall
                 var pt = p.typeIfKnown();
                 if (pt != null)
                   {
-                    var apt = actualType.actualType(pt);
+                    var apt = actualType.applyTypePars(pt);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
                   }
               }
@@ -1890,7 +1890,7 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         if (rg.feature() == cf && foundAt.get(ri) == null)
           {
-            var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, _generics);
+            var at = targetTypeOrConstraint(res).applyTypePars(formalType).applyTypePars(cf, _generics);
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);

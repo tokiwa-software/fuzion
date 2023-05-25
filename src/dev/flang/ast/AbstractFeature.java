@@ -658,7 +658,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         first = false;
       }
-    return t0.actualType(this, tl);
+    return t0.applyTypePars(this, tl);
   }
 
 
@@ -682,7 +682,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
             tl.add(ta);
           }
-        t = t.actualType(this, tl);
+        t = t.applyTypePars(this, tl);
       }
     t = t instanceof Type tt ? tt.clone(this) : t;
     return t;
@@ -971,7 +971,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var result = resultTypeRaw();
     if (result != null)
       {
-        result = result.actualType(this, actualGenerics);
+        result = result.applyTypePars(this, actualGenerics);
       }
 
     return result;
@@ -1269,7 +1269,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                           {
                             actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                           }
-                        ti = ti.actualType(c.calledFeature(), actualTypes);
+                        ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                         a[i] = Types.intern(ti);
                       }
                   }

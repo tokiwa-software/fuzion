@@ -637,7 +637,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
       }
 
-    t = this._type.actualType(t);
+    t = this._type.applyTypePars(t);
     t = t.replace_this_type_by_actual_outer(_type);
     if (this._outer != null)
       {
@@ -1194,7 +1194,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 _abstractCalled.add(aaf);
               }
 
-            AbstractType t = aaf.selfType().actualType(aaf, fa._tp);
+            AbstractType t = aaf.selfType().applyTypePars(aaf, fa._tp);
             t = actualType(t);
 
 /*
