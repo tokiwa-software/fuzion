@@ -711,7 +711,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : x.replace_this_type_by_actual_outer(this_type));
+                                          : this_type.actualType(x));
           }
         var o = t.outer();
         if (o != null)

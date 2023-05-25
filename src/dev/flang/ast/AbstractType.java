@@ -1058,7 +1058,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
    */
-  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  private AbstractType replace_this_type_by_actual_outer(AbstractType tt)
   {
     return replace_this_type_by_actual_outer(tt, null);
   }

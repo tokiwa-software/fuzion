@@ -1890,7 +1890,7 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         if (rg.feature() == cf && foundAt.get(ri) == null)
           {
-            var at = targetTypeOrConstraint(res).applyTypePars(formalType).applyTypePars(cf, _generics);
+            var at = targetTypeOrConstraint(res).actualType(formalType).applyTypePars(cf, _generics);
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);
