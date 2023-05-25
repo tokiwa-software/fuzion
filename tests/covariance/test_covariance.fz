@@ -102,17 +102,15 @@ run_test_covariance =>
   test(N type : test_covariance.num0, x, y N) =>
     say x
     say y
-    # NYI: all of the following do not work yet:
-    #
-    # say (x.plus y)
-    # say (x.plus x)
-    # say (y.plus y)
-    # z := y.plus y
-    # say z
-    # z := z.plus z
-    # say z
-    # z := z.plus z
-    # say z
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
+    say z
+    z := z.plus z
+    say z
+    z := z.plus z
+    say z
 
   x := test_covariance.intM2 true
   y := test_covariance.intM2 false
