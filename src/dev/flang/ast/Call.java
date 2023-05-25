@@ -1200,7 +1200,7 @@ public class Call extends AbstractCall
               }
             else
               {
-                frmlT = targetTypeOrConstraint(res).applyTypePars(frmlT);
+                frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.applyTypePars(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
                 if (CHECKS) check
