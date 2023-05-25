@@ -926,7 +926,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
     Type result = this;
@@ -977,7 +977,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
     if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
@@ -1029,7 +1029,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     if (!checkedForGeneric)
       {

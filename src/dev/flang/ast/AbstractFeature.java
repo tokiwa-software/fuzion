@@ -730,9 +730,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             name = name + FuzionConstants.TYPE_NAME;
 
             var p = pos();
+            var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
                                       visibility(),
-                                      outer().isUniverse() && featureName().baseName().equals(FuzionConstants.ANY_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
+                                      inh.isEmpty() ? 0 : Consts.MODIFIER_REDEFINE,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
@@ -750,43 +751,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                 typeArgs.add(ta);
               }
 
-            var inh = new List<AbstractCall>();
-            int ii = 0;
-            for (var pc: inherits())
-              {
-                var iif = ii;
-                var selfType = new Type(pos(),
-                                        FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                        new List<>(),
-                                        null);
-                var tp = new List<AbstractType>(selfType);
-                if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
-                  {
-                    for (var atp : pc.calledFeature().typeArguments())
-                      {
-                        tp.add(Types.t_UNDEFINED);
-                      }
-                    cpc.whenInferredTypeParameters(() ->
-                      {
-                        int i = 0;
-                        for (var atp : pc.actualTypeParameters())
-                          {
-                            tp.set(i+1, atp);
-                            ((Call)inh.get(iif))._generics.set(i+1, atp);
-                            i++;
-                          }
-                      });
-                  }
-                else
-                  {
-                    for (var atp : pc.actualTypeParameters())
-                      {
-                        tp.add(atp);
-                      }
-                  }
-                inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
-                ii++;
-              }
             if (inh.isEmpty())
               {
                 inh.add(new Call(pos(), "Type"));
@@ -795,6 +759,56 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
       }
     return _typeFeature;
+  }
+
+
+  /**
+   * Helper method for typeFeature(res) to create the list of inherits calls of
+   * this' type feature.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   */
+  private List<AbstractCall> typeFeatureInherits(Resolution res)
+  {
+    var inh = new List<AbstractCall>();
+    for (var pc: inherits())
+      {
+        if (pc.calledFeature() != Types.f_ERROR)
+          {
+            var iif = inh.size();
+            var selfType = new Type(pos(),
+                                    FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                    new List<>(),
+                                    null);
+            var tp = new List<AbstractType>(selfType);
+            if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
+              {
+                for (var atp : pc.calledFeature().typeArguments())
+                  {
+                    tp.add(Types.t_UNDEFINED);
+                  }
+                cpc.whenInferredTypeParameters(() ->
+                  {
+                    int i = 0;
+                    for (var atp : pc.actualTypeParameters())
+                      {
+                        tp.set(i+1, atp);
+                        ((Call)inh.get(iif))._generics.set(i+1, atp);
+                        i++;
+                      }
+                  });
+              }
+            else
+              {
+                for (var atp : pc.actualTypeParameters())
+                  {
+                    tp.add(atp);
+                  }
+              }
+            inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
+          }
+      }
+    return inh;
   }
 
 
