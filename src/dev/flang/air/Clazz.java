@@ -304,6 +304,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public int _idInFUIR = -1;
 
 
+  /**
+   * Cached result of parents(), null before first call to parents().
+   */
+  private Set<Clazz> _parents = null;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -578,21 +583,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Set<Clazz> parents()
   {
-    var result = new TreeSet<Clazz>();
-    result.add(this);
-    for (var p : directParents())
+    var result = _parents;
+    if (result == null)
       {
-        if (!result.contains(p))
+        result = new TreeSet<Clazz>();
+        result.add(this);
+        for (var p : directParents())
           {
-            for (var pp : p.parents())
+            if (!result.contains(p))
               {
-                if (isRef() && !pp.isVoidType())
+                for (var pp : p.parents())
                   {
-                    pp = pp.asRef();
+                    if (isRef() && !pp.isVoidType())
+                      {
+                        pp = pp.asRef();
+                      }
+                    result.add(pp);
                   }
-                result.add(pp);
               }
           }
+        _parents = result;
       }
     return result;
   }
