@@ -542,7 +542,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace generic types used in by this type by the actual types given in
+   * Replace generic types used by this type by the actual types given in
    * target.
    *
    * @param target a target type this is used in
@@ -578,7 +578,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace generic types used in by this type by the actual types given in
+   * Replace generic types used by this type by the actual types given in
    * target.
    *
    * Internal version of applyTypePars(target) that does not perform caching.
