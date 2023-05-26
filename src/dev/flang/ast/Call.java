@@ -1337,9 +1337,9 @@ public class Call extends AbstractCall
         tc._calledFeature.resultType().featureOfType().typeFeature(res).selfType()
       : targetTypeOrConstraint(res);
 
-    t = resolveSelect(t, tt);
-    t = tt.applyTypePars(t);
-    t = t.resolve(res, tt.featureOfType());
+    t = resolveSelect(t, tt)
+      .applyTypePars(tt)
+      .resolve(res, tt.featureOfType());
     t = adjustThisTypeForTarget(t);
     t = resolveForCalledFeature(res, t, tt);
     _type = Types.intern(t);
@@ -1842,7 +1842,7 @@ public class Call extends AbstractCall
                 var pt = p.typeIfKnown();
                 if (pt != null)
                   {
-                    var apt = actualType.applyTypePars(pt);
+                    var apt = pt.applyTypePars(actualType);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
                   }
               }
