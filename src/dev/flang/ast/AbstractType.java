@@ -431,7 +431,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     for (var p: actual.featureOfType().inherits())
                       {
-                        var pt = Types.intern(actual.applyTypePars(p.type()));
+                        var pt = Types.intern(p.type().applyTypePars(actual));
                         if (constraintAssignableFrom(pt))
                           {
                             result = true;
@@ -542,33 +542,33 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace generic types used in given type t by the actual generic arguments
-   * given in this.
+   * Replace generic types used in by this type by the actual types given in
+   * target.
    *
-   * @param t a possibly generic type, must not be an open generic.
+   * @param target a target type this is used in
    *
-   * @return t with all generic arguments from this.featureOfType._generics
-   * replaced by this._generics.
+   * @return this with all generic arguments from target.featureOfType._generics
+   * replaced by target._generics.
    */
-  public AbstractType applyTypePars(AbstractType t)
+  public AbstractType applyTypePars(AbstractType target)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric(),
-       t != null,
-       t.checkedForGeneric(),
-       Errors.count() > 0 || !t.isOpenGeneric(),
-       Errors.count() > 0 || isGenericArgument() || featureOfType().generics().sizeMatches(generics()));
+       target != null,
+       target.checkedForGeneric(),
+       Errors.count() > 0 || !isOpenGeneric(),
+       Errors.count() > 0 || target.isGenericArgument() || target.featureOfType().generics().sizeMatches(target.generics()));
 
     AbstractType result;
-    if (t._appliedTypeParsCachedFor1 == this)
+    if (_appliedTypeParsCachedFor1 == target)
       {
-        result = t._appliedTypeParsCache;
+        result = _appliedTypeParsCache;
       }
     else
       {
-        result = applyTypePars_(t);
-        t._appliedTypeParsCachedFor1 = this;
-        t._appliedTypeParsCache = result;
+        result = applyTypePars_(target);
+        _appliedTypeParsCachedFor1 = target;
+        _appliedTypeParsCache = result;
       }
 
     if (POSTCONDITIONS) ensure
@@ -578,35 +578,35 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace generic types used in given type t by the actual generic arguments
-   * given in this.
+   * Replace generic types used in by this type by the actual types given in
+   * target.
    *
-   * Internal version of applyTypePars(t) that does not perform caching.
+   * Internal version of applyTypePars(target) that does not perform caching.
    *
-   * @param t a possibly generic type, must not be an open generic.
+   * @param target a target type this is used in
    *
-   * @return t with all generic arguments from this.featureOfType._generics
-   * replaced by this._generics.
+   * @return this with all generic arguments from target.featureOfType._generics
+   * replaced by target._generics.
    */
-  private AbstractType applyTypePars_(AbstractType t)
+  private AbstractType applyTypePars_(AbstractType target)
   {
     /* NYI: Performance: This requires time in O(this.depth *
      * featureOfType.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
      * is used to alleviate this a bit, but this is probably not sufficient!
      */
-    var result = t;
-    if (result.dependsOnGenerics())
+    var result = this;
+    if (dependsOnGenerics())
       {
-        if (isGenericArgument())
+        if (target.isGenericArgument())
           {
-            result = genericArgument().constraint().applyTypePars(t);
+            result = result.applyTypePars(target.genericArgument().constraint());
           }
         else
           {
-            result = result.applyTypePars(featureOfType(), generics());
-            if (outer() != null)
+            result = result.applyTypePars(target.featureOfType(), target.generics());
+            if (target.outer() != null)
               {
-                result = outer().applyTypePars(result);
+                result = result.applyTypePars(target.outer());
               }
           }
       }
@@ -669,7 +669,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Internal version of applyTypePars(t) that does not perform caching.
+   * Internal version of applyTypePars(f, actualGenerics) that does not perform
+   * caching.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -788,7 +789,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return applyTypePars(t)
+    return t.applyTypePars(this)
       .replace_this_type_by_actual_outer(this);
   }
 
