@@ -551,7 +551,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (_heirs == null)
       {
         _heirs = new TreeSet<>();
-        _heirs.add(this);
       }
     return _heirs;
   }
