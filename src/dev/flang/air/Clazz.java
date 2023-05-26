@@ -544,6 +544,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
+   * This set is initialially empty, it will be filled by `registerAsHeir()`
+   * which is called for every new Clazz created via Clazzes.create().
+   *
    * @return the heirs including this.
    */
   public Set<Clazz> heirs()
@@ -551,7 +554,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (_heirs == null)
       {
         _heirs = new TreeSet<>();
-        _heirs.add(this);
       }
     return _heirs;
   }
