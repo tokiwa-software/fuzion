@@ -50,7 +50,7 @@
 # NYI this should be map implementation
 # agnostic via map effect. currently using mutate and ordered_map.
 #
-# NYI constraint for T should be equatable
+# NYI constraint for T should be has_total_order, has_hashcode, or has_ordinal
 #
 memoize(LM type : mutate, T type : has_total_order, R type, f T->R) T->R is
   ref : Unary(R, T)
