@@ -17,11 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature end_of_file
 #
 # -----------------------------------------------------------------------
 
-override NAME = SquareRoot
-include ../simple.mk
+
+# unit type to indicate an `end of file`
+# or the depletion of a source
+#
+end_of_file is
