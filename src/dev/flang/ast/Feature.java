@@ -1661,6 +1661,11 @@ public class Feature extends AbstractFeature implements Stmnt
             public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
 
+        if (isConstructor())
+          {
+            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+          }
+
         _state = State.TYPES_INFERENCED;
         res.scheduleForBoxing(this);
       }

@@ -304,6 +304,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public int _idInFUIR = -1;
 
 
+  /**
+   * Cached result of parents(), null before first call to parents().
+   */
+  private Set<Clazz> _parents = null;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -539,6 +544,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
+   * This set is initialially empty, it will be filled by `registerAsHeir()`
+   * which is called for every new Clazz created via Clazzes.create().
+   *
    * @return the heirs including this.
    */
   public Set<Clazz> heirs()
@@ -546,7 +554,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (_heirs == null)
       {
         _heirs = new TreeSet<>();
-        _heirs.add(this);
       }
     return _heirs;
   }
@@ -578,21 +585,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Set<Clazz> parents()
   {
-    var result = new TreeSet<Clazz>();
-    result.add(this);
-    for (var p : directParents())
+    var result = _parents;
+    if (result == null)
       {
-        if (!result.contains(p))
+        result = new TreeSet<Clazz>();
+        result.add(this);
+        for (var p : directParents())
           {
-            for (var pp : p.parents())
+            if (!result.contains(p))
               {
-                if (isRef() && !pp.isVoidType())
+                for (var pp : p.parents())
                   {
-                    pp = pp.asRef();
+                    if (isRef() && !pp.isVoidType())
+                      {
+                        pp = pp.asRef();
+                      }
+                    result.add(pp);
                   }
-                result.add(pp);
               }
           }
+        _parents = result;
       }
     return result;
   }
@@ -638,7 +650,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     t = this._type.actualType(t);
-    t = t.replace_this_type_by_actual_outer(_type);
     if (this._outer != null)
       {
         t = this._outer.actualType(t);
@@ -712,7 +723,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : x.replace_this_type_by_actual_outer(this_type));
+                                          : this_type.actualType(x));
           }
         var o = t.outer();
         if (o != null)
@@ -1194,7 +1205,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 _abstractCalled.add(aaf);
               }
 
-            AbstractType t = aaf.selfType().actualType(aaf, fa._tp);
+            AbstractType t = aaf.selfType().applyTypePars(aaf, fa._tp);
             t = actualType(t);
 
 /*

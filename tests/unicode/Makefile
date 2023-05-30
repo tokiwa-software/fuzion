@@ -23,5 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = SquareRoot
-include ../simple.mk
+export FUZION_JAVA_STACK_SIZE = 16m
+NAME = unicodetest
+include ../positive.mk

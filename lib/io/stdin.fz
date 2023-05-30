@@ -51,7 +51,43 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # returns end_of_file if stdin is depleted or
   # error in case of an error while reading the codepoint
   #
-  codepoint => codepoint0
+  codepoint choice codepoint io.end_of_file error is
+    match byte
+      b u8 =>
+        match codepoint.type.num_utf8_bytes b
+          n i32 =>
+            rest := (2..n)
+              # NYI use reduce_or_error once outcome is open generic
+              .reduce (choice (Sequence u8) io.end_of_file error) [b] (r,t ->
+                match r
+                  seq Sequence u8 =>
+                    match byte
+                      b u8 => seq ++ [b]
+                      io.end_of_file =>
+                        abort (choice (Sequence u8) io.end_of_file error) io.end_of_file
+                      e error =>
+                        abort (choice (Sequence u8) io.end_of_file error) e
+                  * => fuzion.std.panic "should not be possible"
+                )
+            match rest
+              l Sequence u8 =>
+                String
+                  .type
+                  .from_bytes l
+                  .as_codepoints
+                  .first
+              io.end_of_file => io.end_of_file
+              # error occurred while reading the rest of utf8 bytes
+              e error => e
+
+          # first byte is not the start of a utf8 codepoint
+          encoding_err error => encoding_err
+
+      # we are already at enf of file
+      io.end_of_file => io.end_of_file
+
+      # not even single byte could be read from stdin
+      stdin_err error => stdin_err
 
 
   # a - possibly infinite - list of codepoints read from stdin
@@ -62,19 +98,66 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # NYI: How can we lessen these imperfections?
   #
   codepoints list (choice codepoint io.end_of_file error) is
-    list codepoint0 ()->codepoints
+    list codepoint ()->codepoints
+
+
+  # outcome to be returned if stdin is already closed/depleted
+  private eof_error outcome String is
+    error "--- end of file ---"
 
 
   # read n codepoints from stdin or
   # less if an end_of_file is encountered
   # while reading
   #
-  read (n i32) => read0 n
+  read(n i32) outcome String
+  pre n ≥ 0
+  is
+    (1..n)
+      .reduce_or_error "" (r, t ->
+        match codepoint
+
+          c codepoint =>
+            r + c
+
+          io.end_of_file =>
+            if r.is_empty then
+              abort eof_error
+            else
+              abort (outcome r)
+
+          e error =>
+            abort (outcome String) e   // return only the error, discarding what we read so far
+        )
 
 
   # read from stdin until end of line or end of file
   #
-  read_line => read_line0
+  read_line outcome String is
+    ascii := character_encodings.ascii
+    codepoints
+      .reduce_or_error "" (r, t ->
+        match t
+
+          c codepoint =>
+            # end of line found, returning
+            if c.val = ascii.lf.as_u32
+              abort (outcome r)
+            # ignore carriage return
+            else if c.val = ascii.cr.as_u32
+              r
+            else
+              r + c
+
+          io.end_of_file =>
+            if r.is_empty then
+              abort eof_error
+            else
+              abort (outcome r)
+
+          e error =>
+            abort (outcome String) e
+      )
 
 
   # install default instance of stdin
@@ -101,75 +184,6 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
     get => r
 
 
-private read_line0 outcome String : character_encodings is
-  stdin.codepoints
-    .reduce_or_error "" (r, t ->
-      match t
-        c codepoint =>
-          if c.val = ascii.lf.as_u32 || c.val = ascii.cr.as_u32
-            if r.is_empty # we read nothing yet, so we just skip the lf/cr
-              r
-            else
-              abort (outcome r)
-          else
-            r + c
-        io.end_of_file =>
-          abort (outcome r)
-        e error =>
-          abort (outcome String) e
-    )
-
-
-# read n codepoints from stdin
-# may return less than n bytes if end of file is reached
-# or error if stdin can not be read right now
-#
-private read0(n i32) outcome String
-pre n ≥ 0
-is
-  (1..n)
-    .reduce_or_error "" (r, t ->
-      match codepoint0
-        c codepoint =>
-          r + c
-        io.end_of_file =>
-          abort (outcome r) // return what we read so far
-        e error =>
-          abort (outcome String) e   // return only the error, discarding what we read so far
-      )
-
-
-# try reading a codepoint from stdin
-#
-private codepoint0 choice codepoint io.end_of_file error is
-  match stdin.byte
-    b u8 =>
-      match codepoint.type.num_utf8_bytes b
-        n i32 =>
-          rest := (2..n)
-            # NYI use reduce_or_error once outcome is open generic
-            .reduce (choice (Sequence u8) io.end_of_file error) [b] (r,t ->
-              match r
-                seq Sequence u8 =>
-                  match stdin.byte
-                    b u8 => seq ++ [b]
-                    io.end_of_file =>
-                      abort (choice (Sequence u8) io.end_of_file error) io.end_of_file
-                    e error =>
-                      abort (choice (Sequence u8) io.end_of_file error) e
-                * => fuzion.std.panic "should not be possible"
-              )
-          match rest
-            l Sequence u8 => String.type.from_bytes l
-                                    .as_codepoints
-                                    .first
-            io.end_of_file => io.end_of_file
-            e error => e // error occurred while reading the rest of utf8 bytes
-        e error => e     // first byte is not the start of a utf8 codepoint
-    io.end_of_file => io.end_of_file
-    e error => e         // not even single byte could be read from stdin
-
-
 
 # short-hand for accessing stdin effect in current environment
 #
@@ -178,12 +192,18 @@ stdin =>
   stdin.env
 
 
+
+# Byte_Input_Handler -- abstract source of bytes
 Byte_Input_Handler ref is
 
-
+  # get the next instance of Byte_Input_Handler
+  # which will contain the next byte or an error.
+  #
   next io.Byte_Input_Handler is abstract
 
 
+  # get the byte or error stored in this instance
+  #
   # NYI using choice, until open generic for error in outcome is implemented
   #
   get choice u8 io.end_of_file error is abstract

@@ -19,10 +19,10 @@
 #
 #  Source code of Fuzion standard library feature end_of_file
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
 
 # unit type to indicate an `end of file`
+# or the depletion of a source
+#
 end_of_file is

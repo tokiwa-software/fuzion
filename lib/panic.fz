@@ -74,7 +74,7 @@ Panic_Provider ref is
 
   # panic with the given message
   #
-  # NYI: The result of do_panic should be returend by `use`, but there is
+  # NYI: The result of do_panic should be returned by `use`, but there is
   # currently no way we could do this.  One way would be to add a local
   # variable of type `Any` to `panic` and store the result there and then
   # cast it to the correct type in `use` (see
