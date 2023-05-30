@@ -213,31 +213,26 @@ String ref : equatable, has_hash, has_total_order is
 
   is
 
-    d u8 | error := if      (String.type.zero_char  ≤ c ≤ String.type.nine_char ) c - String.type.zero_char
-                    else if (String.type.a_char     ≤ c ≤ String.type.z_char    ) c - String.type.a_char    + 10
-                    else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
-                    else parse_error "non-digit found"
+    d outcome u8 :=
+      if      (String.type.zero_char  ≤ c ≤ String.type.nine_char ) c - String.type.zero_char
+      else if (String.type.a_char     ≤ c ≤ String.type.z_char    ) c - String.type.a_char    + 10
+      else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
+      else parse_error "non-digit found"
 
-    # NYI: with more syntactic sugar, the following 3 lines could become
-    #
-    # i := d?
-
-    match d
-      e error => e
-      b u8 =>
-        t := T.from_u32 b.as_u32  # i converted to T
-        if t ≥ base
-          parse_error "invalid integer digit for base $base"
-        else
-          hi := hi *? base;
-          v := if (neg) hi -? t
-               else     hi +? t
-          match s
-            c Cons =>
-              parse_integer T base neg v c.head c.tail
-            nil =>
-              v ? nil => parse_error "numerical overflow"
-                | u T => u
+    d.bind T b->
+      t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      if t ≥ base
+        parse_error "invalid integer digit for base $base"
+      else
+        hi := hi *? base;
+        v := if (neg) hi -? t
+              else     hi +? t
+        match s
+          c Cons =>
+            parse_integer T base neg v c.head c.tail
+          nil =>
+            v ? nil => parse_error "numerical overflow"
+              | u T => u
 
 
   # convert this string into an array of codepoints.
