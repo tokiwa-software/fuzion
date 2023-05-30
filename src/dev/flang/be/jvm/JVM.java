@@ -60,7 +60,7 @@ The JVM backend is a backend for Fuzion that create Java bytecode to run on a
 JVM.  There will be two major modes of operation:
 
 * On-the-fly generation of bytecode that is added to a running JVM and
-  generation (Using System.defineClass an similar APIs)
+  generation (Using System.defineClass an similar APIs), and
 
 * Static generation of Java .jar or .jmod files that contain the code for a
   Fuzion application.
@@ -68,7 +68,7 @@ JVM.  There will be two major modes of operation:
 The goal is to avoid overhead as much as possible and map Fuzion code to Java
 instances as much as possible, to even create Java code that is better than
 manually written Java code (e.g., by avoiding wrapping value types into heap
-instances).
+instances and hence avoiding allocation and increasing performance).
 
 Object model:
 ~~~~~~~~~~~~~
@@ -82,7 +82,7 @@ Primitive Features
 Where possible, Java primitive types (`boolean`, `byte`, `char`, `short`, `int`,
 `long`, `float`, `double`) are used to hold Fuzion instances.  Note that some
 Java primitives (`boolean`, `byte`, `char`, `short`) cannot be used to hold
-values on the Java stack, so these wil be `int` when on the stack.
+values on the Java stack, so these will be `int` when on the stack.
 
 [options="header",cols="1,1"]
 |====
@@ -123,7 +123,7 @@ Reference Features
 
 A reference feature corresponds to a Java class whose fields represent the
 corresponding value feature.  There should be one Java class generated for every
-Fuzion clazz, that class should interit from an abstract class `FuzionInstance`
+Fuzion clazz, that class should intherit from an abstract class `FuzionInstance`
 that may define methods required by the JVM backend.
 
 There should be no need for additional type information since different
@@ -145,8 +145,8 @@ Several variants of reference type could be collapsed into a single Java field.
 A choice consisting of only disjoint reference types and disjoint unit type
 values could be collapsed into a single reference type with special values used
 for the unit types, including the special value `null`.  Note that types like
-`choice Any | String`, which could be the result of type parameters in `choice T
-| U`, do not consist of disjoint reference types.
+`choice Any String`, which could be the result of type parameters in `choice T
+U`, do not consist of disjoint reference types.
 
 
 Arrays
@@ -272,7 +272,7 @@ calling `mutate.new.get` and `mutate.new.infix <-`.
         cur.x_mutable_value = v;
       }
 +
-This seams simpler.
+This seems simpler.
 
 Function results
 ^^^^^^^^^^^^^^^^
