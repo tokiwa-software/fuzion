@@ -1,0 +1,11 @@
+
+[32m--CURDIR--/SquareRoot.fz:30:9:[39m [1;31merror 1[0m[1m: Precondition does not hold[0m
+[34m      a ≥ 0
+[33m--------^[0m
+For call to SquareRoot.sqrt
+Call stack:
+SquareRoot: [32m--CURDIR--/SquareRoot.fz:45:21:[39m
+[34m  say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
+[33m--------------------^[0m
+
+*** fatal errors encountered, stopping.
