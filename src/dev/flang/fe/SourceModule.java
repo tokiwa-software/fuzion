@@ -582,7 +582,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       });
 
     if (inner.impl().initialValue() != null &&
-        outer.pos()._sourceFile != inner.pos()._sourceFile &&
+        !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
                                           *

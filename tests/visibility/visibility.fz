@@ -313,7 +313,7 @@ visibility is
     until a * (ix1 + ix2 + it1 + it2 + ix3 + b) > 1000000
       r := a + ix1 + ix2 + it1 + it2 + ix3 + b
     else
-      // s := a + ix1 + ix2   // NYI: field declaration in else clause does not work yet
+      s := a + ix1 + ix2
     t := a
   visi9
 
