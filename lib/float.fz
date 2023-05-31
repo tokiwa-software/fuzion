@@ -48,7 +48,14 @@ float(F type : float F) : numeric F is
 
   # convert a float value to i64 dropping any fraction.
   # the value must be in the range of i64
+  #
   as_i64 i64 is abstract
+
+
+  # convert a float value to i32 dropping any fraction.
+  # the value must be in the range of i32
+  #
+  as_i32 => as_i64.as_i32
 
 
   fract F is abstract
