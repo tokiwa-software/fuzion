@@ -53,9 +53,6 @@ issue293 is
   # a reducing function takes a previous result and a value and returns a new result
   reducing_fn(TACC, T type) ref : Function TACC TACC T is
 
-    # NYI redef call abstract is currently necessary because of bug in c backend
-    call(res TACC, val T) TACC is abstract
-
   # TACC result     type
   # B    input      type
   # C    transduced type

@@ -17,13 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Sequence
+#  Source code of Fuzion standard library feature transducer
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# transducers map one reducing function to another
+# transducers map one reducing function to
+# another reducing function. this enables composition
+# and reuse of map, filter, reduce etc.
 #
 # see https://clojure.org/reference/transducers
 # for in depth information on transducers
@@ -42,6 +44,8 @@
 # B    input      type
 # C    transduced type
 transducer(TA,B,C type, td ((TA,B) -> TA) ->  (TA,C) -> TA) is
+
+  # use the transducer with reducing function `rf`.
   call(rf (TA,B) -> TA) =>
     td rf
 
