@@ -50,17 +50,17 @@ public class JVM extends ANY
   /*
 --asciidoc--
 
-JVM backend design:
+JVM backend design
 -------------------
 
-Goals:
+Goals
 ~~~~~~
 
 The JVM backend is a backend for Fuzion that create Java bytecode to run on a
 JVM.  There will be two major modes of operation:
 
-* On-the-fly generation of bytecode that is added to a running JVM and
-  generation (Using System.defineClass an similar APIs), and
+* On-the-fly generation of bytecode that is added to a running JVM
+  using System.defineClass or similar APIs, and
 
 * Static generation of Java .jar or .jmod files that contain the code for a
   Fuzion application.
@@ -70,7 +70,7 @@ instances as much as possible, to even create Java code that is better than
 manually written Java code (e.g., by avoiding wrapping value types into heap
 instances and hence avoiding allocation and increasing performance).
 
-Object model:
+Object model
 ~~~~~~~~~~~~~
 
 The object model defines how Fuzion instances are represented in the target
@@ -115,7 +115,7 @@ will be represented by three Java values
     double point_y
     int point_col
 
-Whenever one value type is passed, as an argument or assigned to a field, this
+Whenever a value type is passed as an argument or assigned to a field this
 will be performed as several assignments in the Java code.
 
 Reference Features
@@ -123,13 +123,13 @@ Reference Features
 
 A reference feature corresponds to a Java class whose fields represent the
 corresponding value feature.  There should be one Java class generated for every
-Fuzion clazz, that class should intherit from an abstract class `FuzionInstance`
+Fuzion clazz, that class should inherit from an abstract class `FuzionInstance`
 that may define methods required by the JVM backend.
 
 There should be no need for additional type information since different
 reference features will become different Java classes.
 
-Boxed value types:
+Boxed value types
 ^^^^^^^^^^^^^^^^^^
 
 Boxed value types could be represented just like reference types.
@@ -291,18 +291,22 @@ To return other value types, we have to either
 
 * specialize the call for where the result is stored
 
+* add an extra argument to all methods that refers to a thread instance that
+  contains fields that can be used as thread local vars without the overhead of
+  going through Java's `ThreadLocal` API.
 
-Calls:
+
+Calls
 ~~~~~~
 
-Statically Bound Calls:
+Statically Bound Calls
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Calls to features whose target is a value type or whose target is a single
 Fuzion type do not need dynamic lookup.  The called features should be static
 features.
 
-Dynamically Bound Calls:
+Dynamically Bound Calls
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dynamically bounds calls are performed on a reference target, which means the
@@ -310,10 +314,10 @@ target instance has a unique corresponding Java class. This means we could
 leverage the Java class to perform this call, either by
 
 * adding an `id()` method to `FuzionInstance` that is redefined for each ref
-  type to return the corresponding clazz id. A lookupswitch could then be used
+  type to return the corresponding clazz id. A `lookupswitch` could then be used
   to perform the call (in O(log n)!)
 
-* adding interface classes for fuzion features that containt interface methods
+* adding interface classes for fuzion features that contain interface methods
   for inner features that are implemented by all heir features implementing
   these.  Then, an `invokeinterface` could be used, which uses a cached search
   (also in O(log n)), but this is currently being improved
@@ -321,14 +325,14 @@ leverage the Java class to perform this call, either by
   lookup could reduce the call overhead to O(1)
   https://www.usenix.org/legacy/publications/library/proceedings/jvm01/full_papers/siebert/siebert.pdf[JVM01/siebert.pdf].
 
-Assignments:
+Assignments
 ~~~~~~~~~~~~
 
 In Fuzion, an assignment may require dynamic binding if the assigned field is in
 an outer instance that is a reference type.  So we must handle assignment like
 dynamically bound calls in this case.
 
-Java interface:
+Java interface
 ~~~~~~~~~~~~~~~
 
 The JVM backend should be aware of the Java interfaces create by `fzjava` and
