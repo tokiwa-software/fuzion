@@ -44,6 +44,9 @@ import dev.flang.be.effects.Effects;
 
 import dev.flang.be.interpreter.Interpreter;
 
+import dev.flang.be.jvm.JVM;
+import dev.flang.be.jvm.JVMOptions;
+
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
@@ -147,6 +150,28 @@ class Fuzion extends Tool
     },
 
     java       ("-java"),
+
+    jvm        ("-jvm")
+    {
+      String usage()
+      {
+        return "[-Xdfa=(on|off)] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
+            result = true;
+          }
+        return result;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new JVM(new JVMOptions(options, _xdfa_), fuir).compile();
+      }
+    },
 
     classes    ("-classes"),
 
