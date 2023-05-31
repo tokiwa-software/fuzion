@@ -90,7 +90,7 @@ is
           (ks++[k]).as_array
           (vs++[v]).as_array)
       V =>
-        va := array size (i -> if ks[i] = k then v else vs[i])
+        va := (array V).type.new size (i -> if ks[i] = k then v else vs[i])
         (ordered_map ks va)
 
 

@@ -154,7 +154,7 @@ O(n log n).
       if (size & sz) = 0
         ps_map ndata nsize dest+sz
       else
-        tmp := array (tuple PK V) sz (i -> ndata[dest+i])
+        tmp := (array (tuple PK V)).type.new sz (i -> ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
@@ -227,7 +227,7 @@ O(n log n).
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz ≤ size
         if (size & sz) != 0
-          tmp := array PK rsz (i -> r[i])
+          tmp := (array PK).type.new rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
@@ -242,7 +242,7 @@ O(n log n).
 
     if size != 0
       join fill-1 1 0 0
-    array r unit unit unit
+    array r
 
 
   # get an array of all key/value pairs in this map

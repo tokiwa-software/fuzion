@@ -181,7 +181,7 @@ is
   # return an array of length n
   # initialized with u32 zeros.
   private zeros(n i32) =>
-    array n (_ -> u32 0)
+    (array u32).type.new n (_ -> u32 0)
 
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication

@@ -37,4 +37,4 @@ private args =>
     is intrinsic
 
   # return the arguments in an array
-  array String count (i -> get i)
+  (array String).type.new count (i -> get i)

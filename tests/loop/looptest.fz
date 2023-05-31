@@ -41,7 +41,7 @@ looptest is
   #
   # so we put '-2*i' in parentheses:
   #
-  a := array i32 100 (i -> if (i % 23 = 0) (-2*i) else i*i)
+  a := (array i32).type.new 100 (i -> if (i % 23 = 0) (-2*i) else i*i)
 
   say "testLoop0: plain while loop"
   testLoop0(data array i32, isWhatWeWant (i32) -> bool) is

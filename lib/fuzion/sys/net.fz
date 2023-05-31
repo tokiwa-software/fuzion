@@ -123,10 +123,10 @@ net is
     arr array i64 := [0]
     if read descriptor buff.data max_bytes arr.internal_array.data
       if arr[0].as_i32 = max_bytes
-        array u8 buff unit unit unit
+        array u8 buff
       else
         # NYI there should be a way to use a slice of internal_array to init array
-        array u8 arr[0].as_i32 (idx -> buff[idx])
+        (array u8).type.new arr[0].as_i32 (idx -> buff[idx])
     else
       error "error: {arr[0]}"
 

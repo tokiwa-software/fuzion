@@ -203,7 +203,7 @@ wrapping_integer(W type : wrapping_integer W) : integer W is
   # this integer as an array of bytes (little endian)
   as_bytes array u8 is
     bs := W.byte_size
-    array u8 bs (idx ->
+    (array u8).type.new bs (idx ->
       shift W := W.from_u32 (bs.as_u32-idx.as_u32-1)*8
       (wrapping_integer.this>>shift).low8bits)
 

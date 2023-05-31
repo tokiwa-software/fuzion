@@ -56,7 +56,7 @@ sorted_array
 
   )
 
-  : array T (sort from.as_array 1).internal_array unit unit unit
+  : array T (sort from.as_array 1).internal_array
 
 is
 
@@ -89,7 +89,7 @@ is
       # of array.
       h1 := 0;
 
-      na := array T a.length (i ->
+      na := (array T).type.new a.length (i ->
         # index in current pair of heaps
         hi := i & (heap_size*2-1)
         # reset h1 in case we start new pair of heaps

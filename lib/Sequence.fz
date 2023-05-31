@@ -116,7 +116,7 @@ Sequence(T type) ref is
   #
   as_array array T is
     s := as_stream
-    array T count i->s.next
+    (array T).type.new count i->s.next
 
 
   # create a stream and call 'for_each f' on it

@@ -87,7 +87,7 @@ is
   post
     result.has_last
   is
-    na := array T count+1 (i -> if (i < count) ar[i] else w)
+    na := (array T).type.new count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
 
 
@@ -177,12 +177,12 @@ is
 # short-hand for creating and installing an empty set of handles of given type.
 #
 handles(T type, rr ()->unit) =>
-  handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
+  handles T unit unit ((array T).type.new 0 x->do) (effect_mode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles_(T type) => handles T unit unit (array T 0 x->do) effect_mode.plain
+handles_(T type) => handles T unit unit ((array T).type.new 0 x->do) effect_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -226,7 +226,7 @@ handles_type(T type) is
   # install default instance of handles
   #
   install_default unit is
-    handles T unit unit (array T 0 x->do) effect_mode.default
+    handles T unit unit ((array T).type.new 0 x->do) effect_mode.default
     unit
 
 

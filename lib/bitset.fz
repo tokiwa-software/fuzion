@@ -50,7 +50,7 @@ is
     else
       match bitset.this
         _ nil   => bit
-        x u64   => array bool (max bit x).as_i32+1 (i -> i.as_u64 = bit || i.as_u64 = x)
+        x u64   => (array bool).type.new (max bit x).as_i32+1 (i -> i.as_u64 = bit || i.as_u64 = x)
         a array => a.put bit.as_i32 true false
 
   # union of two bitsets
@@ -64,7 +64,7 @@ is
           _ nil   => bitset.this
           x u64   => bitset.this.put x
           b array =>
-            array bool (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
+            (array bool).type.new (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
 
   # get the highest bit in this bitset
   #
