@@ -25,9 +25,9 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-u32(val u32) : wrapping_integer u32, has_interval u32 is
+u32(val u32) : wrapping_integer, has_interval is
 
-  redef thiz => u32.this.val
+  fixed redef thiz => u32.this.val
 
   # overflow checking
 
@@ -35,29 +35,29 @@ u32(val u32) : wrapping_integer u32, has_interval u32 is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflow_on_add (other u32) => u32.type.max -° thiz < other
-  redef underflow_on_add(other u32) => false
+  fixed overflow_on_add (other u32) => u32.type.max -° thiz < other
+  fixed underflow_on_add(other u32) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflow_on_sub (other u32) => false
-  redef underflow_on_sub(other u32) => thiz < other
+  fixed overflow_on_sub (other u32) => false
+  fixed underflow_on_sub(other u32) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.type.max.as_i64
-  redef underflow_on_mul(other u32) => false
+  fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.type.max.as_i64
+  fixed underflow_on_mul(other u32) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -° u32 is intrinsic
-  redef infix +° (other u32) u32 is intrinsic
-  redef infix -° (other u32) u32 is intrinsic
-  redef infix *° (other u32) u32 is intrinsic
+  fixed prefix -° u32 is intrinsic
+  fixed infix +° (other u32) u32 is intrinsic
+  fixed infix -° (other u32) u32 is intrinsic
+  fixed infix *° (other u32) u32 is intrinsic
 
   # division and remainder with check for div-by-zero
-  redef infix / (other u32)
+  fixed infix / (other u32)
     pre
       safety: other != u32 0
    => div(other)
-  redef infix % (other u32)
+  fixed infix % (other u32)
     pre
       safety: other != u32 0
    => mod(other)
@@ -67,13 +67,13 @@ u32(val u32) : wrapping_integer u32, has_interval u32 is
   private mod (other u32) u32 is intrinsic
 
   # bitwise and, or and xor operations
-  redef infix &  (other u32) u32 is intrinsic
-  redef infix |  (other u32) u32 is intrinsic
-  redef infix ^  (other u32) u32 is intrinsic
+  fixed infix &  (other u32) u32 is intrinsic
+  fixed infix |  (other u32) u32 is intrinsic
+  fixed infix ^  (other u32) u32 is intrinsic
 
   # shift operations (unsigned)
-  redef infix >> (other u32) u32 is intrinsic
-  redef infix << (other u32) u32 is intrinsic
+  fixed infix >> (other u32) u32 is intrinsic
+  fixed infix << (other u32) u32 is intrinsic
 
   # this u32 as an i8
   as_i8 i8
@@ -156,7 +156,7 @@ u32(val u32) : wrapping_integer u32, has_interval u32 is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
-  redef max => u32 0x_ffff_ffff
+  fixed redef max => u32 0x_ffff_ffff
 
 
   # create hash code from this number
@@ -245,7 +245,7 @@ u32(val u32) : wrapping_integer u32, has_interval u32 is
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => u32 0x_ffff_ffff
+  fixed redef type.all_bits_set => u32 0x_ffff_ffff
 
 
   # minimum

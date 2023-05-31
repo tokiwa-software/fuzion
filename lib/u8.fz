@@ -25,9 +25,9 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrapping_integer u8, has_interval u8 is
+u8(val u8) : wrapping_integer, has_interval is
 
-  redef thiz => u8.this.val
+  fixed redef thiz => u8.this.val
 
   # overflow checking
 
@@ -35,29 +35,29 @@ u8(val u8) : wrapping_integer u8, has_interval u8 is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflow_on_add (other u8) => u8.type.max -° thiz < other
-  redef underflow_on_add(other u8) => false
+  fixed overflow_on_add (other u8) => u8.type.max -° thiz < other
+  fixed underflow_on_add(other u8) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflow_on_sub (other u8) => false
-  redef underflow_on_sub(other u8) => thiz < other
+  fixed overflow_on_sub (other u8) => false
+  fixed underflow_on_sub(other u8) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u8) => as_i32 *° other.as_i32 > u8.type.max.as_i32
-  redef underflow_on_mul(other u8) => false
+  fixed overflow_on_mul (other u8) => as_i32 *° other.as_i32 > u8.type.max.as_i32
+  fixed underflow_on_mul(other u8) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -° u8 is intrinsic
-  redef infix +° (other u8) u8 is intrinsic
-  redef infix -° (other u8) u8 is intrinsic
-  redef infix *° (other u8) u8 is intrinsic
+  fixed prefix -° u8 is intrinsic
+  fixed infix +° (other u8) u8 is intrinsic
+  fixed infix -° (other u8) u8 is intrinsic
+  fixed infix *° (other u8) u8 is intrinsic
 
   # division and remainder with check for div-by-zero
-  redef infix / (other u8)
+  fixed infix / (other u8)
     pre
       safety: other != u8.type.zero
    => div(other)
-  redef infix % (other u8)
+  fixed infix % (other u8)
     pre
       safety: other != u8.type.zero
    => mod(other)
@@ -67,13 +67,13 @@ u8(val u8) : wrapping_integer u8, has_interval u8 is
   private mod (other u8) u8 is intrinsic
 
   # bitwise and, or and xor operations
-  redef infix &  (other u8) u8 is intrinsic
-  redef infix |  (other u8) u8 is intrinsic
-  redef infix ^  (other u8) u8 is intrinsic
+  fixed infix &  (other u8) u8 is intrinsic
+  fixed infix |  (other u8) u8 is intrinsic
+  fixed infix ^  (other u8) u8 is intrinsic
 
   # shift operations (unsigned)
-  redef infix >> (other u8) u8 is intrinsic
-  redef infix << (other u8) u8 is intrinsic
+  fixed infix >> (other u8) u8 is intrinsic
+  fixed infix << (other u8) u8 is intrinsic
 
   as_i8 i8
     pre
@@ -95,7 +95,7 @@ u8(val u8) : wrapping_integer u8, has_interval u8 is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
-  redef max => u8 0xff
+  fixed redef max => u8 0xff
 
 
   # create hash code from this number
@@ -182,7 +182,7 @@ u8(val u8) : wrapping_integer u8, has_interval u8 is
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => u8 0xff
+  fixed type.all_bits_set => u8 0xff
 
 
   # minimum

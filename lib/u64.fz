@@ -25,9 +25,9 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrapping_integer u64, has_interval u64 is
+u64(val u64) : wrapping_integer, has_interval is
 
-  redef thiz => u64.this.val
+  fixed redef thiz => u64.this.val
 
   # overflow checking
 
@@ -35,29 +35,29 @@ u64(val u64) : wrapping_integer u64, has_interval u64 is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflow_on_add (other u64) => u64.type.max -° thiz < other
-  redef underflow_on_add(other u64) => false
+  fixed overflow_on_add (other u64) => u64.type.max -° thiz < other
+  fixed underflow_on_add(other u64) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflow_on_sub (other u64) => false
-  redef underflow_on_sub(other u64) => thiz < other
+  fixed overflow_on_sub (other u64) => false
+  fixed underflow_on_sub(other u64) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u64) => if other = (u64 0) false else (thiz *° other / other) != thiz
-  redef underflow_on_mul(other u64) => false
+  fixed overflow_on_mul (other u64) => if other = (u64 0) false else (thiz *° other / other) != thiz
+  fixed underflow_on_mul(other u64) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -° u64 is intrinsic
-  redef infix +° (other u64) u64 is intrinsic
-  redef infix -° (other u64) u64 is intrinsic
-  redef infix *° (other u64) u64 is intrinsic
+  fixed prefix -° u64 is intrinsic
+  fixed infix +° (other u64) u64 is intrinsic
+  fixed infix -° (other u64) u64 is intrinsic
+  fixed infix *° (other u64) u64 is intrinsic
 
   # division and remainder with check for div-by-zero
-  redef infix / (other u64)
+  fixed infix / (other u64)
     pre
       safety: other != u64 0
    => div(other)
-  redef infix %  (other u64)
+  fixed infix %  (other u64)
     pre
       safety: other != u64 0
    => mod(other)
@@ -67,13 +67,13 @@ u64(val u64) : wrapping_integer u64, has_interval u64 is
   private mod (other u64) u64 is intrinsic
 
   # bitwise and, or and xor operations
-  redef infix &  (other u64) u64 is intrinsic
-  redef infix |  (other u64) u64 is intrinsic
-  redef infix ^  (other u64) u64 is intrinsic
+  fixed infix &  (other u64) u64 is intrinsic
+  fixed infix |  (other u64) u64 is intrinsic
+  fixed infix ^  (other u64) u64 is intrinsic
 
   # shift operations (unsigned)
-  redef infix >> (other u64) u64 is intrinsic
-  redef infix << (other u64) u64 is intrinsic
+  fixed infix >> (other u64) u64 is intrinsic
+  fixed infix << (other u64) u64 is intrinsic
 
   # this u64 as an i8
   as_i8 i8
@@ -170,7 +170,7 @@ u64(val u64) : wrapping_integer u64, has_interval u64 is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
-  redef max u64 is 0x_ffff_ffff_ffff_ffff
+  fixed redef max u64 is 0x_ffff_ffff_ffff_ffff
 
 
   # create hash code from this number
@@ -245,7 +245,7 @@ u64(val u64) : wrapping_integer u64, has_interval u64 is
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+  fixed redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
