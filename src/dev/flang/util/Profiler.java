@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.awt.Desktop;
 
 import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
@@ -90,14 +91,16 @@ public class Profiler extends ANY
 
 
   /**
-   * File to write data to, either a .svg file with a flame graph or a text
-   * file.
+   * File to write data to, either a .prof file (for classic profile data), a
+   * .txt file that serves as input to generate a flame graph of a .svg file
+   * which is the flame graph.
    */
   private static String _file = null;
 
 
   /**
-   * In case we create a _file, this collects the unique lines in temporal order
+   * In case we collectFrameGraphData(), this collects the unique lines in
+   * temporal order
    *
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
@@ -106,8 +109,8 @@ public class Profiler extends ANY
 
 
   /**
-   * In case we create a _file, this collects the counts for each line in unique
-   * order.
+   * In case we collectFrameGraphData(), this collects the counts for each line
+   * in unique order.
    *
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
@@ -115,7 +118,41 @@ public class Profiler extends ANY
   private static Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
 
 
+  /**
+   * Desktop instance to display framegraph results.  Since the flame graph is
+   * created in the shutdown hook and desktop itself cannto be created during
+   * shutdown, we create this early.
+   */
+  static Desktop _desktop;
+
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * There are two modes of operation: creating flame graph data (which are
+   * single lines for each sample of the form
+   *
+   *   main;abc;def 1345
+   *
+   * to be preocessed by flame graph.pl, or classic profile output showing a
+   * single line for each source code that occured during a sample sorted by
+   * frequency.
+   *
+   * @return ture to collect frame graph data, false to collect classic data.
+   */
+  static boolean collectFrameGraphData()
+  {
+    return _file == null || !_file.endsWith(".prof");
+  }
+
+  /**
+   * Should the flame graph be open in the default application?
+   */
+  static boolean showFlameGraph()
+  {
+    return _file == null;
+  }
 
 
   /**
@@ -134,7 +171,7 @@ public class Profiler extends ANY
             t.getState() == Thread.State.RUNNABLE)
           {
             var st = t.getStackTrace();
-            if (_file == null)
+            if (!collectFrameGraphData())
               {
                 var duplicates = new HashSet<StackTraceElement>();
                 for (var s : st)
@@ -223,24 +260,32 @@ public class Profiler extends ANY
             {
               _running_ = false;
             }
-          if (_file == null)
+          if (!collectFrameGraphData())
             {
               StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
               var c = new Comparator<>()
-              {
-                public int compare(Object o1, Object o2)
                 {
-                  return _results_.get(o1) - _results_.get(o2);
-                }
+                  public int compare(Object o1, Object o2)
+                  {
+                    return _results_.get(o1) - _results_.get(o2);
+                  }
                 };
               Arrays.sort(s,c);
               if (s.length > 0)
                 {
-                  System.out.println("Fuzion sample-based Java profiling results:");
-                  var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
-                  for(var m : s)
+                  System.out.println(" + " + _file);
+                  try (PrintWriter out = new PrintWriter(_file))
                     {
-                      System.out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                      out.println("Fuzion sample-based Java profiling results:");
+                      var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
+                      for(var m : s)
+                        {
+                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                        }
+                    }
+                  catch (IOException e)
+                    {
+                      Errors.error("could not save profile data to `" + _file + "`: " + e);
                     }
                 }
             }
@@ -254,12 +299,13 @@ public class Profiler extends ANY
                     .append(_resultsForFlameGraph_.get(key))
                     .append("\n");
                 }
-              if (_file.equals("-"))
+              if (_file != null && _file.equals("-"))
                 {
                   System.out.print(result);
                 }
-              else if (!_file.endsWith(".svg"))
+              else if (_file != null && !_file.endsWith(".svg"))
                 {
+                  System.out.println(" + " + _file);
                   try (PrintWriter out = new PrintWriter(_file))
                     {
                       out.print(result);
@@ -282,9 +328,19 @@ public class Profiler extends ANY
                       tempFile.deleteOnExit();
                       ProcessBuilder pb = new ProcessBuilder();
                       pb.redirectInput(tempFile);
-                      pb.redirectOutput(new File(_file));
+                      var svg = _file != null
+                        ? new File(_file)
+                        : (false // we cannot use File.createTempFile since /tmp seems not to be accessible by browser
+                           ? File.createTempFile("pid"+pid+"-fuzion-XjavaProf-", ".svg")
+                           : new File("pid"+pid+"-fuzion-XjavaProf-flamegraph.svg"));
+                      System.out.println(" + " + svg);
+                      pb.redirectOutput(svg);
                       pb.command(FLAMEGRAPH_PL);
                       pb.start().waitFor();
+                      if (_desktop != null && _desktop.isSupported(Desktop.Action.BROWSE))
+                        {
+                          _desktop.browse(svg.toURI());
+                        }
                     }
                   catch (IOException e)
                     {
@@ -307,6 +363,10 @@ public class Profiler extends ANY
    */
   public static void start()
   {
+    if (showFlameGraph())
+      { // We cannot create Desktop in in shutdown hook, so we have to do it early:
+        _desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+      }
     if (Profiler._samplingFrequency_ != 0)
       {
         installShutdownHook();
