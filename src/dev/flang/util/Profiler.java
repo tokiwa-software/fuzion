@@ -26,6 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+
+import java.io.ByteArrayInputStream;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -52,6 +60,13 @@ public class Profiler extends ANY
   private static int DEFAULT_SAMPLING_FREQUENCY = 100;
 
 
+
+  /**
+   * Command to be exucuted to create flame graph
+   */
+  private static String FLAMEGRAPH_PL = "flamegraph.pl";
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -74,6 +89,32 @@ public class Profiler extends ANY
   private static Map<StackTraceElement, Integer> _results_ = new HashMap<>();
 
 
+  /**
+   * File to write data to, either a .svg file with a flame graph or a text
+   * file.
+   */
+  private static String _file = null;
+
+
+  /**
+   * In case we create a _file, this collects the unique lines in temporal order
+   *
+   * The lines consist of a ";"-separated string of "class.method" strings
+   * created from the call stack.
+   */
+  private static ArrayList<String> _resultsForFlameGraphKeys_ = new ArrayList<>();
+
+
+  /**
+   * In case we create a _file, this collects the counts for each line in unique
+   * order.
+   *
+   * The lines consist of a ";"-separated string of "class.method" strings
+   * created from the call stack.
+   */
+  private static Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -92,14 +133,40 @@ public class Profiler extends ANY
             t != Thread.currentThread() &&
             t.getState() == Thread.State.RUNNABLE)
           {
-            var duplicates = new HashSet<StackTraceElement>();
-            for (var s : t.getStackTrace())
+            var st = t.getStackTrace();
+            if (_file == null)
               {
-                if (!duplicates.contains(s))
+                var duplicates = new HashSet<StackTraceElement>();
+                for (var s : st)
                   {
-                    duplicates.add(s);
-                    _results_.put(s, _results_.getOrDefault(s, 0) + 1);
+                    if (!duplicates.contains(s))
+                      {
+                        duplicates.add(s);
+                        _results_.put(s, _results_.getOrDefault(s, 0) + 1);
+                      }
                   }
+              }
+            else
+              {
+                StringBuilder sb = new StringBuilder();
+                for (var i = st.length-1; i>0; i--)
+                  {
+                    var s = st[i];
+                    if (sb.length() > 0)
+                      {
+                        sb.append(";");
+                      }
+                    sb.append(s.getClassName())
+                      .append(".")
+                      .append(s.getMethodName());
+                  }
+                var key = sb.toString();
+                var c = _resultsForFlameGraph_.getOrDefault(key, 0);
+                if (c == 0)
+                  {
+                    _resultsForFlameGraphKeys_.add(key);
+                  }
+                _resultsForFlameGraph_.put(key, c + 1);
               }
           }
       }
@@ -156,22 +223,78 @@ public class Profiler extends ANY
             {
               _running_ = false;
             }
-          StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
-          var c = new Comparator<>()
-          {
-            public int compare(Object o1, Object o2)
+          if (_file == null)
             {
-              return _results_.get(o1) - _results_.get(o2);
-            }
-          };
-          Arrays.sort(s,c);
-          if (s.length > 0)
-            {
-              System.out.println("Fuzion sample-based Java profiling results:");
-              var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
-              for(var m : s)
+              StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
+              var c = new Comparator<>()
+              {
+                public int compare(Object o1, Object o2)
                 {
-                  System.out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                  return _results_.get(o1) - _results_.get(o2);
+                }
+                };
+              Arrays.sort(s,c);
+              if (s.length > 0)
+                {
+                  System.out.println("Fuzion sample-based Java profiling results:");
+                  var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
+                  for(var m : s)
+                    {
+                      System.out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                    }
+                }
+            }
+          else
+            {
+              StringBuilder result = new StringBuilder();
+              for (var key : _resultsForFlameGraphKeys_)
+                {
+                  result.append(key)
+                    .append(" ")
+                    .append(_resultsForFlameGraph_.get(key))
+                    .append("\n");
+                }
+              if (_file.equals("-"))
+                {
+                  System.out.print(result);
+                }
+              else if (!_file.endsWith(".svg"))
+                {
+                  try (PrintWriter out = new PrintWriter(_file))
+                    {
+                      out.print(result);
+                    }
+                  catch (IOException e)
+                    {
+                      Errors.error("could not save profile data to `" + _file + "`: " + e);
+                    }
+                }
+              else
+                {
+                  var pid = ProcessHandle.current().pid();
+                  try
+                    {
+                      var tempFile = File.createTempFile("pid"+pid+"-fuzion-XjavaProf-", ".txt");
+                      try (PrintWriter out = new PrintWriter(new FileOutputStream(tempFile)))
+                        {
+                          out.print(result);
+                        }
+                      tempFile.deleteOnExit();
+                      ProcessBuilder pb = new ProcessBuilder();
+                      pb.redirectInput(tempFile);
+                      pb.redirectOutput(new File(_file));
+                      pb.command(FLAMEGRAPH_PL);
+                      pb.start().waitFor();
+                    }
+                  catch (IOException e)
+                    {
+                      Errors.error("could not create flame graph: " + e + "\n" +
+                                   "Check that `" + FLAMEGRAPH_PL + "` is present in current environment (see https://github.com/brendangregg/FlameGraph/).");
+                    }
+                  catch (InterruptedException e)
+                    {
+                      Errors.error("could not save profiling data: " + e);
+                    }
                 }
             }
         }
@@ -189,6 +312,18 @@ public class Profiler extends ANY
         installShutdownHook();
         startSampler();
       }
+  }
+
+
+  /**
+   * start profiling in a parallel thread and save the results as a text file in
+   * the flamegraph.pl input format or, if file.endsWith(".svg"), directly
+   * create a flame graph using "flamegraph.pl".
+   */
+  public static void start(String file)
+  {
+    _file = file;
+    start();
   }
 
 
