@@ -17,37 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stdin
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion standard library feature Read_Provider
 #
 # -----------------------------------------------------------------------
 
+Read_Provider(T type) ref is
+  read(count i32) choice (array T) io.end_of_file error
+  # NYI
+  # post match result
+  #        a (array T) => !a.is_empty
+  #        io.end_of_file => true
+  #        error => true
+  is abstract
 
-# short-hand to return an io.reader with a read provider
-# allowing to read from stdin.
-#
-# usage example:
-# ```
-# line_or_error := io.stdin.on ()->
-#   io.buffered.read_line
-# ```
-#
-public stdin =>
-
-
-  read_provider : io.Read_Provider u8 is
-
-    read(count i32) choice (array u8) io.end_of_file error is
-      v := fuzion.sys.stdin.next_byte
-      if v = -1
-        io.end_of_file
-      else if v < -1
-        error "an error occurred while reading stdin"
-      else
-        [v.as_u8]
-
-
-  # NYI #169 backward type propagation for []
-  empty array u8 := []
-  io.buffered.reader read_provider 1 empty

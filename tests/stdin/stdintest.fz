@@ -25,36 +25,39 @@
 
 stdintest =>
 
-  read(n i32) => io.stdin.read n
-  read_line => io.stdin.read_line
+  io.stdin.on (()->
 
-  a := read 1
-  # read 0 should not lead to next_byte being called
-  read 0
-  b := read 1
-  # read 0 should not lead to next_byte being called
-  read 0
-  # read 1 utf8
-  smiley := read 1
+    read(n i32) => io.buffered.read_string n
+    read_line => io.buffered.read_line
 
-  # printing repeatedly should always yield the same string
-  say "😀: $smiley"
-  say "😀: $smiley"
-  say "b: $b"
-  say "b: $b"
-  say "a: $a"
-  say "a: $a"
+    a := read 1
+    # read 0 should not lead to next_byte beeing called
+    read 0
+    b := read 1
+    # read 0 should not lead to next_byte beeing called
+    read 0
+    # read 1 utf8
+    smiley := read 1
+
+    # printing repeatedly should always yield the same string
+    say "😀: $smiley"
+    say "😀: $smiley"
+    say "b: $b"
+    say "b: $b"
+    say "a: $a"
+    say "a: $a"
 
 
-  line := read_line
-  line2 := read_line
+    line := read_line
+    line2 := read_line
 
-  # printing repeatedly should always yield the same string
-  say "%s😀: $line"
-  say "%s😀: $line"
-  say "123456: $line2"
-  say "123456: $line2"
+    # printing repeatedly should always yield the same string
+    say "%s😀: $line"
+    say "%s😀: $line"
+    say "123456: $line2"
+    say "123456: $line2"
 
-  # when stdin is empty, read_line should return an empty string
-  say "nothing: $read_line."
-  say "nothing: {read 1}."
+    # when stdin is empty, read_line should return an empty string
+    say "nothing: $read_line."
+    say "nothing: {read 1}."
+  )

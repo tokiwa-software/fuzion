@@ -8,5 +8,5 @@ a: a
 %s😀: %s😀
 123456: 123456
 123456: 123456
-nothing: --error: --- end of file -----.
-nothing: --error: --- end of file -----.
+nothing: --nil--.
+nothing: --nil--.
