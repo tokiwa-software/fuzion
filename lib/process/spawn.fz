@@ -82,7 +82,8 @@ Handler ref is
   read_bytes(count i32) choice error io.end_of_file (Sequence u8) is abstract
   write_bytes(bytes Sequence u8) outcome i32 is abstract
   close_write bool is abstract
-  pipe_to(T type, process_and_args array String, env_vars container.Map String String, code () -> T) outcome T is abstract
+  finalize is abstract
+  pipe_to(process_and_args array String, env_vars container.Map String String) outcome unit is abstract
 
 
 
@@ -92,10 +93,6 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
   # close stdin of child process
   #
   close_write bool is
-    close_write std_in
-
-
-  private close_write(desc i64) bool is
     fuzion.sys.pipe.close std_in = 0
 
 
@@ -142,6 +139,14 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
       arr.slice 0 res
 
 
+  finalize is
+    close_write
+    fuzion.sys.process.wait pid
+    fuzion.sys.pipe.close std_out
+    fuzion.sys.pipe.close std_err
+    # NYI cleanup process handle
+    # fuzion.sys.process.close id
+
 
   pipe_to(T type, process_and_args array String, env_vars container.Map String String, code () -> T) outcome T is
 
@@ -164,7 +169,7 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
             match p1rb
               s Sequence u8 => (write_bytes pipe_to.this.std_in s).ok
               * => false
-          _ := close_write pipe_to.this.std_in
+          _ := fuzion.sys.pipe.close pipe_to.this.std_in
 
         eff := spawned (process.Default_Handler pid Default_Handler.this.std_in std_out std_err)
         t := eff
