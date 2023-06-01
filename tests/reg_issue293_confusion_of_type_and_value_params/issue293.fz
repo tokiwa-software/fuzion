@@ -30,36 +30,33 @@ issue293 is
   ages := map (Sequence i32) human i32 (x -> x.age)
   say (into i32 human [human 4, human 12, human 30] ages)
 
-  into(TAcc, T type, seq Sequence T, xf transducer(Sequence TAcc, TAcc, T)) Sequence TAcc is
-    rf := ref : reducing_fn((Sequence TAcc),TAcc)
-      call(res Sequence TAcc, val TAcc) Sequence(TAcc) is
+  into(TACC, T type, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC is
+    rf := ref : reducing_fn((Sequence TACC),TACC)
+      call(res Sequence TACC, val TACC) Sequence(TACC) is
         res ++ [val]
     red := xf.call rf
     for
-      res Sequence TAcc := (Sequence TAcc).type.empty, red.call res el
+      res Sequence TACC := (Sequence TACC).type.empty, red.call res el
       el in seq do
     else
       res
 
-  # a transducer mappping values from T to U
-  map(TAcc, T, U type, mapper T -> U) transducer(TAcc, U, T) is
-    ref : transducer TAcc U T
-      call(red reducing_fn TAcc U) =>
-        ref : reducing_fn TAcc T
-          call(res TAcc, val T) =>
+  # a Transducer mappping values from T to U
+  map(TACC, T, U type, mapper T -> U) Transducer TACC U T is
+    ref : Transducer TACC U T
+      call(red reducing_fn TACC U) =>
+        ref : reducing_fn TACC T
+          call(res TACC, val T) =>
             red.call res (mapper val)
 
 
   # a reducing function takes a previous result and a value and returns a new result
-  reducing_fn(TAcc, T type) ref : Function TAcc TAcc T is
+  reducing_fn(TACC, T type) ref : Function TACC TACC T is
 
-    # NYI redef call abstract is currently necessary because of bug in c backend
-    call(res TAcc, val T) TAcc is abstract
-
-  # TAcc result     type
+  # TACC result     type
   # B    input      type
   # C    transduced type
-  transducer(TAcc, B, C type) ref : Function(reducing_fn TAcc C, reducing_fn TAcc B) is
+  Transducer(TACC, B, C type) ref : Function(reducing_fn TACC C, reducing_fn TACC B) is
 
     # NYI redef call abstract is currently necessary because of bug in c backend
-    call(rf reducing_fn TAcc B) reducing_fn TAcc C is abstract
+    call(rf reducing_fn TACC B) reducing_fn TACC C is abstract

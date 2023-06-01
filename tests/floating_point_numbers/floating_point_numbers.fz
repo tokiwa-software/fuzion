@@ -47,11 +47,11 @@ floating_point_numbers is
     # serialize floating point numbers
     # NYI serialization will be done in fuzion and then we won't have
     # different results for interpreter- / c- backend
-    chck ("{one.quiet_NaN}" =  "nan" || "{one.quiet_NaN}" =  "NaN")          "{T.name}: quiet nan serializes correctly"
-    chck ("{one.negative_infinity}"
+    chck ("{T.quiet_NaN}" =  "nan" || "{T.quiet_NaN}" =  "NaN")            "{T.name}: quiet nan serializes correctly"
+    chck ("{T.negative_infinity}"
       .replace("I", "i")
       .substring(0, 4) =  "-inf")                                          "{T.name}: neg inf serializes correctly"
-    chck ("{one.positive_infinity}"
+    chck ("{T.positive_infinity}"
       .replace("I", "i")
       .substring(0, 3) =  "inf")                                           "{T.name}: pos inf serializes correctly"
     chck ("{zero}".starts_with "0")                                        "{T.name}: 0 serializes to string"
@@ -73,8 +73,8 @@ floating_point_numbers is
     # negation operator
     chck ((-(-zero) = zero) &&
           (-(-one) = one) &&
-          (-(-one.positive_infinity) = one.positive_infinity) &&
-          (-(-one.negative_infinity) = one.negative_infinity))               "{T.name}: double negation is same number"
+          (-(-T.positive_infinity) = T.positive_infinity) &&
+          (-(-T.negative_infinity) = T.negative_infinity))                 "{T.name}: double negation is same number"
 
     # operator +,-,*,/ test
     chck (zero + one = one)                                                "{T.name}: plus operator"
@@ -90,55 +90,55 @@ floating_point_numbers is
     chck (three ** two = three + three + three)                            "{T.name}: 3 to the power 2 equals 9"
 
     # is_NaN
-    chck (one.is_NaN one.NaN)                                               "{T.name}: is_NaN NaN"
-    chck (!one.is_NaN zero  )                                               "{T.name}: is_NaN 0"
-    chck (!one.is_NaN T.π)                                                  "{T.name}: is_NaN π"
-    chck (!one.is_NaN one.infinity)                                         "{T.name}: is_NaN infinity"
+    chck (T.is_NaN T.NaN)                                                  "{T.name}: is_NaN NaN"
+    chck (!T.is_NaN zero  )                                                "{T.name}: is_NaN 0"
+    chck (!T.is_NaN T.π)                                                   "{T.name}: is_NaN π"
+    chck (!T.is_NaN T.infinity)                                            "{T.name}: is_NaN infinity"
 
     # sqrt
-    chck (one.sqrt (two * two) = two)                                      "{T.name}: sqrt (2*2) = 2"
+    chck (T.sqrt (two * two) = two)                                        "{T.name}: sqrt (2*2) = 2"
 
     # exponentation / logarithm
-    chck (one.exp zero     = one  )                                        "{T.name}: exp 0 = 1"
-    chck (one.exp one      = T.ℇ)                                          "{T.name}: exp 1 = ℇ"
-    chck (one.log one      = zero  )                                       "{T.name}: log 1 = 0"
+    chck (T.exp zero     = one  )                                          "{T.name}: exp 0 = 1"
+    chck (T.exp one      = T.ℇ)                                            "{T.name}: exp 1 = ℇ"
+    chck (T.log one      = zero  )                                         "{T.name}: log 1 = 0"
 
     # trigonometric
-    chck (one.sin zero     = zero  )                                       "{T.name}: sin 0  = 0"
-    chck (one.sin T.π    <  one.epsilon)                                   "{T.name}: sin π  ~= 0"
-    chck (one.cos zero     = one  )                                        "{T.name}: cos 0  = 1"
-    chck (one.cos T.π      = -one  )                                       "{T.name}: cos π  = -1"
-    chck (one.tan zero     = zero  )                                       "{T.name}: tan 0  = 0"
-    chck (one.asin zero    = zero  )                                       "{T.name}: asin 0 = 0"
-    chck (one.acos one     = zero  )                                       "{T.name}: acos 1 = 0"
-    chck (one.atan zero    = zero  )                                       "{T.name}: atan 0 = 0"
+    chck (T.sin zero     = zero  )                                         "{T.name}: sin 0  = 0"
+    chck (T.sin T.π      < T.epsilon)                                      "{T.name}: sin π  ~= 0"
+    chck (T.cos zero     = one  )                                          "{T.name}: cos 0  = 1"
+    chck (T.cos T.π      = -one  )                                         "{T.name}: cos π  = -1"
+    chck (T.tan zero     = zero  )                                         "{T.name}: tan 0  = 0"
+    chck (T.asin zero    = zero  )                                         "{T.name}: asin 0 = 0"
+    chck (T.acos one     = zero  )                                         "{T.name}: acos 1 = 0"
+    chck (T.atan zero    = zero  )                                         "{T.name}: atan 0 = 0"
 
     # atan2
-    chck (one.is_NaN (one.atan2 one.NaN one  ))                                                 "{T.name}: atan2 NaN 1            = NaN        "
-    chck (one.is_NaN (one.atan2 one   one.NaN))                                                 "{T.name}: atan2 1 NaN            = NaN        "
-    chck (one.atan2 +zero   one               = +zero  )                                       "{T.name}: atan2 +0 1             = +0         "
-    chck (one.atan2 -zero   one               = -zero  )                                       "{T.name}: atan2 -0 1             = -0         "
-    chck (one.atan2 +zero   -one              = +T.π)                                          "{T.name}: atan2 +0 -1            = +π         "
-    chck (one.atan2 -zero   -one              = -T.π)                                          "{T.name}: atan2 -0 -1            = -π         "
-    chck (one.atan2 one   zero                = +T.π/two)                                      "{T.name}: atan2 1 0              = +π/two     "
-    chck (one.atan2 -one   zero               = -T.π/two)                                      "{T.name}: atan2 -1 0             = -π/two     "
-    chck (one.atan2 +one.infinity +one.infinity   = +T.π/one.from_u32(4))                      "{T.name}: atan2 +infinity +infinity   = +π/4  "
-    chck (one.atan2 -one.infinity +one.infinity   = -T.π/one.from_u32(4))                      "{T.name}: atan2 -infinity +infinity   = -π/4  "
-    chck (one.atan2 +one.infinity -one.infinity   = one.from_u32(3)*T.π/one.from_u32(4))       "{T.name}: atan2 +infinity -infinity   = 3*π/4 "
-    chck (one.atan2 -one.infinity -one.infinity   = -one.from_u32(3)*T.π/one.from_u32(4))      "{T.name}: atan2 -infinity -infinity   = -3*π/4"
-    chck (one.atan2 one   +one.infinity         = zero  )                                      "{T.name}: atan2 1 +infinity         = 0       "
-    chck (one.atan2 one   -one.infinity         = +T.π)                                        "{T.name}: atan2 1 -infinity         = +π      "
-    chck (one.atan2 -one   -one.infinity        = -T.π)                                        "{T.name}: atan2 -1 -infinity        = -π      "
-    chck (one.atan2 +one.infinity one           = +T.π/two)                                    "{T.name}: atan2 +infinity 1         = +π/two  "
-    chck (one.atan2 -one.infinity one           = -T.π/two)                                    "{T.name}: atan2 -infinity 1         = -π/two  "
+    chck (T.is_NaN (T.atan2 T.NaN one  ))                                                      "{T.name}: atan2 NaN 1            = NaN        "
+    chck (T.is_NaN (T.atan2 one   T.NaN))                                                      "{T.name}: atan2 1 NaN            = NaN        "
+    chck (T.atan2 +zero   one               = +zero  )                                         "{T.name}: atan2 +0 1             = +0         "
+    chck (T.atan2 -zero   one               = -zero  )                                         "{T.name}: atan2 -0 1             = -0         "
+    chck (T.atan2 +zero   -one              = +T.π)                                            "{T.name}: atan2 +0 -1            = +π         "
+    chck (T.atan2 -zero   -one              = -T.π)                                            "{T.name}: atan2 -0 -1            = -π         "
+    chck (T.atan2 one   zero                = +T.π/two)                                        "{T.name}: atan2 1 0              = +π/two     "
+    chck (T.atan2 -one   zero               = -T.π/two)                                        "{T.name}: atan2 -1 0             = -π/two     "
+    chck (T.atan2 +T.infinity +T.infinity   = +T.π/T.from_u32(4))                              "{T.name}: atan2 +infinity +infinity   = +π/4  "
+    chck (T.atan2 -T.infinity +T.infinity   = -T.π/T.from_u32(4))                              "{T.name}: atan2 -infinity +infinity   = -π/4  "
+    chck (T.atan2 +T.infinity -T.infinity   = T.from_u32(3)*T.π/T.from_u32(4))                 "{T.name}: atan2 +infinity -infinity   = 3*π/4 "
+    chck (T.atan2 -T.infinity -T.infinity   = -T.from_u32(3)*T.π/T.from_u32(4))                "{T.name}: atan2 -infinity -infinity   = -3*π/4"
+    chck (T.atan2 one   +T.infinity         = zero  )                                          "{T.name}: atan2 1 +infinity         = 0       "
+    chck (T.atan2 one   -T.infinity         = +T.π)                                            "{T.name}: atan2 1 -infinity         = +π      "
+    chck (T.atan2 -one   -T.infinity        = -T.π)                                            "{T.name}: atan2 -1 -infinity        = -π      "
+    chck (T.atan2 +T.infinity one           = +T.π/two)                                        "{T.name}: atan2 +infinity 1         = +π/two  "
+    chck (T.atan2 -T.infinity one           = -T.π/two)                                        "{T.name}: atan2 -infinity 1         = -π/two  "
 
     # hyperbolicus
-    chck (one.sinh zero     = zero  )                                           "{T.name}: sinh  0 = 0"
-    chck (one.cosh zero     = one  )                                            "{T.name}: cosh  0 = 1"
-    chck (one.tanh zero     = zero  )                                           "{T.name}: tanh  0 = 0"
-    chck (one.asinh zero    = zero  )                                           "{T.name}: asinh 0 = 0"
-    chck (one.acosh one     = zero  )                                           "{T.name}: acosh 1 = 0"
-    chck (one.atanh zero    = zero  )                                           "{T.name}: atanh 0 = 0"
+    chck (T.sinh zero       = zero)                                             "{T.name}: sinh  0 = 0"
+    chck (T.cosh zero       = one )                                             "{T.name}: cosh  0 = 1"
+    chck (T.tanh zero       = zero)                                             "{T.name}: tanh  0 = 0"
+    chck (T.asinh zero      = zero)                                             "{T.name}: asinh 0 = 0"
+    chck (T.acosh one       = zero)                                             "{T.name}: acosh 1 = 0"
+    chck (T.atanh zero      = zero)                                             "{T.name}: atanh 0 = 0"
 
     # round
     a_half := one   / two
@@ -168,60 +168,60 @@ floating_point_numbers is
 
 
   # cast_to_f32, 0, -∞, ∞
-  chck ((u32 0x_8000_0000).cast_to_f32 = (-f32s.zero))                 "cast_to_f32 works, bit representation for 0 is correct"
-  chck ((u32 0x_FF80_0000).cast_to_f32 = (f32s.negative_infinity))     "cast_to_f32 works, bit representation for -∞ is correct"
-  chck ((u32 0x_7F80_0000).cast_to_f32 = (f32s.positive_infinity))     "cast_to_f32 works, bit representation for ∞ is correct"
+  chck ((u32 0x_8000_0000).cast_to_f32 = (-f32.type.zero))             "cast_to_f32 works, bit representation for 0 is correct"
+  chck ((u32 0x_FF80_0000).cast_to_f32 = (f32.type.negative_infinity)) "cast_to_f32 works, bit representation for -∞ is correct"
+  chck ((u32 0x_7F80_0000).cast_to_f32 = (f32.type.positive_infinity)) "cast_to_f32 works, bit representation for ∞ is correct"
 
   # cast_to_u32
-  chck ((-f32s.zero).cast_to_u32 = u32 0x_8000_0000)                       "cast_to_u32 works for -0"
-  chck ((f32s.negative_infinity).cast_to_u32 = u32 0x_FF80_0000)           "cast_to_u32 works for -∞"
-  chck ((f32s.positive_infinity).cast_to_u32 = u32 0x_7F80_0000)           "cast_to_u32 works for ∞"
+  chck ((-f32.type.zero).cast_to_u32 = u32 0x_8000_0000)                       "cast_to_u32 works for -0"
+  chck ((f32.type.negative_infinity).cast_to_u32 = u32 0x_FF80_0000)       "cast_to_u32 works for -∞"
+  chck ((f32.type.positive_infinity).cast_to_u32 = u32 0x_7F80_0000)       "cast_to_u32 works for ∞"
 
   # cast_to_f64, 0, -∞, ∞
-  chck ((u64 0x_8000_0000_0000_0000).cast_to_f64 = (-f64s.zero))                 "cast_to_f64 works, bit representation for 0 is correct"
-  chck ((u64 0x_FFF0_0000_0000_0000).cast_to_f64 = (f64s.negative_infinity))     "cast_to_f64 works, bit representation for -∞ is correct"
-  chck ((u64 0x_7FF0_0000_0000_0000).cast_to_f64 = (f64s.positive_infinity))     "cast_to_f64 works, bit representation for ∞ is correct"
+  chck ((u64 0x_8000_0000_0000_0000).cast_to_f64 = (-f64.type.zero))             "cast_to_f64 works, bit representation for 0 is correct"
+  chck ((u64 0x_FFF0_0000_0000_0000).cast_to_f64 = (f64.type.negative_infinity)) "cast_to_f64 works, bit representation for -∞ is correct"
+  chck ((u64 0x_7FF0_0000_0000_0000).cast_to_f64 = (f64.type.positive_infinity)) "cast_to_f64 works, bit representation for ∞ is correct"
 
   # cast_to_u64
-  chck ((-f64s.zero).cast_to_u64 = u64 0x_8000_0000_0000_0000)                       "cast_to_u64 works for -0"
-  chck ((f64s.negative_infinity).cast_to_u64 = u64 0x_FFF0_0000_0000_0000)           "cast_to_u64 works for -∞"
-  chck ((f64s.positive_infinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)           "cast_to_u64 works for ∞"
+  chck ((-f64.type.zero).cast_to_u64 = u64 0x_8000_0000_0000_0000)                   "cast_to_u64 works for -0"
+  chck ((f64.type.negative_infinity).cast_to_u64 = u64 0x_FFF0_0000_0000_0000)       "cast_to_u64 works for -∞"
+  chck ((f64.type.positive_infinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)       "cast_to_u64 works for ∞"
 
   # min_exp, max_exp
-  chck (f32s.min_exp = -126)                                              "f32: min_exp is correct"
-  chck (f32s.max_exp = 127)                                               "f32: max_exp is correct"
-  chck (f64s.min_exp = -1022)                                             "f64: min_exp is correct"
-  chck (f64s.max_exp = 1023)                                              "f64: max_exp is correct"
+  chck (f32.type.min_exp = -126)                                         "f32: min_exp is correct"
+  chck (f32.type.max_exp = 127)                                          "f32: max_exp is correct"
+  chck (f64.type.min_exp = -1022)                                        "f64: min_exp is correct"
+  chck (f64.type.max_exp = 1023)                                         "f64: max_exp is correct"
 
   # min_positive, max
-  chck (f32s.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
-  chck (f32s.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
-  chck (f64s.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
-  chck (f64s.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
+  chck (f32.type.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
+  chck (f32.type.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
+  chck (f64.type.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
+  chck (f64.type.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
 
   # fits_in_i64
-  chck !f64s.positive_infinity.fits_in_i64                                     "f64: ∞    not representable by i64"
-  chck !f64s.negative_infinity.fits_in_i64                                     "f64: -∞   not representable by i64"
-  chck !f64s.NaN.fits_in_i64                                                   "f64: NaN  not representable by i64"
-  chck f64s.zero.fits_in_i64                                                   "f64: 0    is  representable by i64"
+  chck !f64.type.positive_infinity.fits_in_i64                                 "f64: ∞    not representable by i64"
+  chck !f64.type.negative_infinity.fits_in_i64                                 "f64: -∞   not representable by i64"
+  chck !f64.type.NaN.fits_in_i64                                               "f64: NaN  not representable by i64"
+  chck f64.type.zero.fits_in_i64                                               "f64: 0    is  representable by i64"
 
   # as_i64
   chck (f64.type.π.as_i64 = i64 3)                                            "f64:  π  as_i64        =  3"
   chck ((-f64.type.π).as_i64 = i64 -3)                                        "f64: -π  as_i64        = -3"
-  chck (f64s.positive_infinity.as_i64_lax = i64.type.max)                     "f64:  ∞  as_i64_lax    = i64.type.max"
-  chck (f64s.negative_infinity.as_i64_lax = i64.type.min)                     "f64: -∞  as_i64_lax    = i64.type.min"
-  chck (f64s.NaN.as_i64_lax = i64 0)                                          "f64: NaN as_i64_lax    = 0"
+  chck (f64.type.positive_infinity.as_i64_lax = i64.type.max)                 "f64:  ∞  as_i64_lax    = i64.type.max"
+  chck (f64.type.negative_infinity.as_i64_lax = i64.type.min)                 "f64: -∞  as_i64_lax    = i64.type.min"
+  chck (f64.type.NaN.as_i64_lax = i64 0)                                      "f64: NaN as_i64_lax    = 0"
 
   # as_f64
   chck ((f32.type.π.as_f64.as_f32 = f32.type.π))                              "f32:  π  as_f64.as_f32 = f32.type.π"
-  chck (f32s.positive_infinity.as_f64 = f64s.positive_infinity)               "f32:  ∞  as_f64        = f64s.∞ "
-  chck (f64s.is_NaN f32s.NaN.as_f64)                                          "f32: NaN as_f64 is_NaN "
+  chck (f32.type.positive_infinity.as_f64 = f64.type.positive_infinity)       "f32:  ∞  as_f64        = f64s.∞ "
+  chck (f64.type.is_NaN f32.type.NaN.as_f64)                                  "f32: NaN as_f64 is_NaN "
 
   # as_f32
   chck (f64.type.π.as_f32 = f32.type.π)                                       "f64:  π  as_f32        = f32.type.π "
-  chck (f64s.positive_infinity.as_f32 = f32s.positive_infinity)               "f64:  ∞  as_f32        = f32s.∞ "
-  chck (f32s.is_NaN f64s.NaN.as_f32)                                          "f64: NaN as_f32 is_NaN "
+  chck (f64.type.positive_infinity.as_f32 = f32.type.positive_infinity)       "f64:  ∞  as_f32        = f32s.∞ "
+  chck (f32.type.is_NaN f64.type.NaN.as_f32)                                  "f64: NaN as_f32 is_NaN "
 
 
   # f32.fract

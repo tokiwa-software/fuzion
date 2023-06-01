@@ -54,11 +54,59 @@ is
     => p.set_exit_code code
 
 
+  # install default instance of exit
+  #
+  type.install_default is
+    if !effect.type.is_installed exit
+      _ := exit default_exit_handler effect_mode.default unit
+
+
+  # default exit handler
+  #
+  type.default_exit_handler : Exit_Handler is
+
+
+    # mutable value of the current exit code set
+    #
+    exit_code := mut 0
+
+
+    # exit with the given code
+    #
+    exit(code i32) =>
+      fuzion.std.exit code
+
+
+    # exit with the stored code
+    #
+    exit =>
+      fuzion.std.exit exit_code.get
+
+
+    # set the stored exit code
+    #
+    set_exit_code(code i32) outcome unit
+      pre
+        0 ≤ code ≤ 127
+      post
+        code != 0 : !exit_code.open
+      is
+        if exit_code.open
+          exit_code <- code
+
+          if code != 0
+            exit_code.close
+            unit
+        else
+          error "exit code is already set"
+
+
+
 # exit with no argument returns exit.env, the currently installed
 # exit handler.
 #
 exit0 =>
-  exit_type.install_default
+  exit.type.install_default
   exit.env
 
 
@@ -107,53 +155,3 @@ Exit_Handler ref is
     pre
       0 ≤ code ≤ 127
     is abstract
-
-
-# type related to exit declaring features not requiring an instance of exit
-#
-exit_type is
-
-
-  install_default is
-    if !effects.exists exit
-      _ := exit default_exit_handler effect_mode.default unit
-
-
-  # default exit handler
-  #
-  default_exit_handler : Exit_Handler is
-
-
-    # mutable value of the current exit code set
-    #
-    exit_code := mut 0
-
-
-    # exit with the given code
-    #
-    exit(code i32) =>
-      fuzion.std.exit code
-
-
-    # exit with the stored code
-    #
-    exit =>
-      fuzion.std.exit exit_code.get
-
-
-    # set the stored exit code
-    #
-    set_exit_code(code i32) outcome unit
-      pre
-        0 ≤ code ≤ 127
-      post
-        code != 0 : !exit_code.open
-      is
-        if exit_code.open
-          exit_code <- code
-
-          if code != 0
-            exit_code.close
-            unit
-        else
-          error "exit code is already set"

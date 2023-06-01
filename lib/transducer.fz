@@ -1,0 +1,75 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature transducer
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# transducers map one reducing function to
+# another reducing function. this enables composition
+# and reuse of map, filter, reduce etc.
+#
+# see https://clojure.org/reference/transducers
+# for in depth information on transducers
+#
+# usage example:
+#
+# human(age i32) is
+# td := (transducer (Sequence i32) i32 human).type
+# ages := td.map (x -> x.age)
+# gt_ten := td.filter (x -> x > 10)
+# xf := ages ∘ gt_ten
+# say ([human 4, human 12, human 30].into xf) # [12,30]
+#
+#
+# TA   result     type
+# B    input      type
+# C    transduced type
+transducer(TA,B,C type, td ((TA,B) -> TA) ->  (TA,C) -> TA) is
+
+  # use the transducer with reducing function `rf`.
+  call(rf (TA,B) -> TA) =>
+    td rf
+
+
+  # left-to-right composition of transducers
+  compose (A type, o transducer(TA,A,B)) =>
+    transducer(TA,A,C,((re) -> transducer.this.call (o.call re)))
+
+
+  # left-to-right composition of transducers
+  infix ∘ (A type, o transducer(TA,A,B)) =>
+    transducer.this.compose o
+
+
+  # a transducer filtering values based on evaluation of predicate
+  type.filter(predicate B -> bool) transducer TA B B is
+    transducer TA B B (red -> (res, val) -> if predicate val then red.call res val else res)
+
+
+  # a transducer mapping values from C to B
+  type.map(mapper C -> B) transducer TA B C is
+    transducer TA B C (red -> (res, val) -> red.call res (mapper val))
+
+
+
+  # NYI: cat, mapcat, remove, take, take_while, drop, drop_while, takeEveryNth,
+  # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...

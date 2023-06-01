@@ -35,13 +35,7 @@ looptest is
       "FAILED: "
     say (s + msg)
 
-  # NYI: The following code does not work, see issue #39:
-  #
-  # a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
-  #
-  # so we put '-2*i' in parentheses:
-  #
-  a := array i32 100 (i -> if (i % 23 = 0) (-2*i) else i*i)
+  a := array i32 100 (i -> if (i % 23 = 0) then -2*i else i*i)
 
   say "testLoop0: plain while loop"
   testLoop0(data array i32, isWhatWeWant (i32) -> bool) is

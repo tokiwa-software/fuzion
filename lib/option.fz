@@ -59,10 +59,6 @@ is
   # take an option string and you would like to add a filename suffix to
   # this string if it is present. Then you can do this as follows:
   #
-  #   add_txt(o option string) => o >>= s -> option string is s + ".txt"
-  #
-  # NYI: With better type inference and syntactic sugar, this should be
-  #
   #   add_txt(o option string) => o >>= s -> s + ".txt"
   #
   # NYI: Should maybe have generic parameter B and result in option B

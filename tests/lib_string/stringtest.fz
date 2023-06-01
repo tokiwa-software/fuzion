@@ -42,6 +42,6 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (String.type.from_codepoint_sequence "hell😀".as_codepoint_sequence)
+  say (String.type.from_codepoints "hell😀".as_codepoints)
 
   say (String.type.from_array ((marray Any).type.new 1 nil))

@@ -549,7 +549,7 @@ public class Type extends AbstractType
    * @return a new type with same featureOfType(), but using g2/o2 as generics
    * and outer type.
    */
-  public AbstractType actualType(List<AbstractType> g2, AbstractType o2)
+  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     if (PRECONDITIONS) require
       (!isGenericArgument());
@@ -926,7 +926,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
     Type result = this;
@@ -977,7 +977,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
     if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
@@ -1029,7 +1029,7 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     if (!checkedForGeneric)
       {

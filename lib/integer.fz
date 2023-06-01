@@ -34,15 +34,15 @@ integer(I type : integer I) : numeric I is
   # division remainder
   redef infix % (other I) I
     pre
-      safety: other != zero
+      safety: other != I.zero
   is abstract
 
   # test divisibility by other
   infix %% (other I) bool
     pre
-      safety: other != zero
+      safety: other != I.zero
   is
-    thiz % other = zero
+    thiz % other = I.zero
 
   # bitwise operations
   infix &  (other I) I is abstract
@@ -83,7 +83,7 @@ integer(I type : integer I) : numeric I is
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
   is
-    if b = zero
+    if b = I.zero
       thiz
     else
       b.gcd(thiz % b)  # tail recursion
@@ -108,7 +108,7 @@ integer(I type : integer I) : numeric I is
     pre
       debug: u32 1 < base ≤ (u32 36)
   is
-    b := from_u32 base
+    b := I.from_u32 base
 
     if thiz.sign < 0
       # there could be an overflow on negation

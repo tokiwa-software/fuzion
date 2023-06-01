@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float(redef F type : float F) : numeric F, floats F is
+float(F type : float F) : numeric F is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -60,28 +60,28 @@ float(redef F type : float F) : numeric F, floats F is
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   round F is
-    if thiz < zero
+    if thiz < F.zero
       -(-thiz).round
-    else if fract = zero
+    else if fract = F.zero
       thiz
     else
-      (thiz + one/two).floor
+      (thiz + F.one/F.two).floor
 
 
   # floor: the greatest integer lower or equal to this
   floor F is
-    if fract < zero
-      thiz - fract - one
+    if fract < F.zero
+      thiz - fract - F.one
     else
       thiz - fract
 
 
   # ceiling: the smallest integer greater or equal to this
   ceil F is
-    if fract ≤ zero
+    if fract ≤ F.zero
       thiz - fract
     else
-      thiz - fract + one
+      thiz - fract + F.one
 
 
   # number of bits used for mantissa,
@@ -129,89 +129,97 @@ float(redef F type : float F) : numeric F, floats F is
   type.from_i64(val i64) float.this.type is abstract
 
 
+  type.exponent_range => -min_exp..max_exp
 
-# floats -- unit type defining features related to float but not requiring
-# an instance
-#
-floats(F type : float F) : numerics F is
-
-
-  exponent_range => -min_exp..max_exp
 
   # non signaling not a number
-  quiet_NaN => zero / zero
+  #
+  type.quiet_NaN => F.zero / F.zero
+
 
   # not a number
-  NaN => quiet_NaN
+  #
+  type.NaN => quiet_NaN
+
 
   # is not a number?
-  is_NaN(val F) bool is abstract
+  #
+  type.is_NaN (val float.this.type) bool is abstract
 
-  negative_infinity => -one / zero
 
-  positive_infinity => one / zero
+  type.negative_infinity => -F.one / F.zero
+
+
+  type.positive_infinity => F.one / F.zero
+
 
   # infinity
-  infinity => positive_infinity
-
-  min_exp i32 is abstract
-  max_exp i32 is abstract
-  min_positive F is abstract
-  max F is abstract
-  epsilon F is abstract
+  #
+  type.infinity => positive_infinity
 
 
-  square_root(val F) F is abstract
+  type.min_exp i32 is abstract
+  type.max_exp i32 is abstract
+  type.min_positive F is abstract
+  type.max F is abstract
+  type.epsilon F is abstract
+
+
   # square root
-  sqrt(val F) => square_root val
+  #
+  type.square_root (val float.this.type) float.this.type is abstract
 
+
+  # square root alias
+  #
+  type.sqrt (val float.this.type) => square_root val
 
 
   # the `val`-th power of ℇ
   # i.e. ℇᵛᵃˡ
   #
-  exp (val F) F is abstract
+  type.exp (val float.this.type) float.this.type is abstract
 
 
   # logarithm with base ℇ
   #
-  log (val F) F is abstract
+  type.log (val float.this.type) float.this.type is abstract
 
 
   # logarithm with base `base`
   #
-  log (base, val F) F
-  pre base > zero
+  type.log (base, val F) F
+  pre base > F.zero
   is
-    (log val) / (log base)
+    (F.log val) / (F.log base)
 
 
   # trigonometric
 
-  sin (val F) F is abstract
-  cos (val F) F is abstract
-  tan (val F) F is abstract
-  asin(val F) F is abstract
-  acos(val F) F is abstract
-  atan(val F) F is abstract
-  atan2(y F, x F) F is abstract
+  type.sin  (val float.this.type) float.this.type is abstract
+  type.cos  (val float.this.type) float.this.type is abstract
+  type.tan  (val float.this.type) float.this.type is abstract
+  type.asin (val float.this.type) float.this.type is abstract
+  type.acos (val float.this.type) float.this.type is abstract
+  type.atan (val float.this.type) float.this.type is abstract
+  type.atan2 (y, x float.this.type) float.this.type is abstract
 
 
   # hyperbolicus
 
-  sinh (val F) F is abstract
-  cosh (val F) F is abstract
-  tanh (val F) F is abstract
+  type.sinh (val float.this.type) float.this.type is abstract
+  type.cosh (val float.this.type) float.this.type is abstract
+  type.tanh (val float.this.type) float.this.type is abstract
 
 
-  # arcus hyperbolicus
+  # area hyperbolicus
 
-  asinh(val F) F is
+  type.asinh(val F) F is
     # ln(x+sqrt(x^2+1))
-    log (val + sqrt (val ** two + one))
-  acosh(val F) F is
+    F.log (val + F.sqrt (val ** F.two + F.one))
+  type.acosh(val F) F is
     # ln(x+sqrt(x^2-1))
-    log (val + sqrt (val ** two - one))
-  atanh(val F) F is
+    F.log (val + F.sqrt (val ** F.two - F.one))
+  type.atanh(val F) F is
     # 1/2*ln((1+x)/(1-x))
-    log ((one + val)/(one - val)) / two
+    F.log ((F.one + val)/(F.one - val)) / F.two

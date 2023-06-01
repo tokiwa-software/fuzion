@@ -74,7 +74,7 @@ is
     cf := Effect_Call f
     abortable cf
     match cf.res
-      nil => def(unit)
+      nil => def unit
       x R => x
 
 
@@ -102,17 +102,18 @@ is
     abortable (Effect_Call code)
 
 
+
+  # has an effect of the given type been installed?
+  type.is_installed(E type) bool is intrinsic
+
+
+
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
 private Effect_Call(redef R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()
-
-effects is
-
-  # has an effect of the given type been installed?
-  exists(E type) bool is intrinsic
 
 
 # effect mode is an enum that determines how an instance of effect is used

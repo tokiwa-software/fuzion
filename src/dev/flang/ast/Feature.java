@@ -797,22 +797,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * get the initial value of this feature.
-   */
-  public Expr initialValue()
-  {
-    // if (PRECONDITIONS) require
-    //  (switch (implKind()) { case FieldInit, FieldDef, FieldActual, FieldIter -> true; default -> false; });
-
-    return
-      switch (implKind())
-        {
-        case FieldInit, FieldDef, FieldActual, FieldIter -> _impl._initialValue;
-        default -> null;
-        };
-  }
-
-  /**
    * get the code of this feature.
    */
   public Expr code()
@@ -1676,6 +1660,11 @@ public class Feature extends AbstractFeature implements Stmnt
             public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
             public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
+
+        if (isConstructor())
+          {
+            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+          }
 
         _state = State.TYPES_INFERENCED;
         res.scheduleForBoxing(this);

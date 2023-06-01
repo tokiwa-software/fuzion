@@ -498,31 +498,32 @@ public class Call extends AbstractCall
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
       {
-        var bix = cb._actuals.size() - 1; // index of 'b' in first call 'a < b'
-        var b = cb._actuals.get(bix);
-        b = res.resolveType(b, thiz);
-        String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-        var tmp = new Feature(res,
-                              pos(),
-                              Visi.INVISIBLE,
-                              b.type(),
-                              tmpName,
-                              thiz);
-        Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-        Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-        Expr result = new Call(pos(), t2, _name, _actualsNew)
+        var b = cb._actuals.getLast();
+        if (b.typeIfKnown() != Types.t_ERROR)
           {
-            boolean isChainedBoolRHS() { return true; }
-          };
-        Stmnt as = new Assign(res, pos(), tmp, b, thiz);
-        t1 = res.resolveType(t1    , thiz);
-        as = res.resolveType(as    , thiz);
-        result = res.resolveType(result, thiz);
-        cb._actuals.set(cb._actuals.size()-1,
-                        new Block(b.pos(),new List<Stmnt>(as, t1)));
-        _actuals = new List<Expr>(result);
-        _calledFeature = Types.resolved.f_bool_AND;
-        _name = _calledFeature.featureName().baseName();
+            String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
+            var tmp = new Feature(res,
+                                  pos(),
+                                  Visi.INVISIBLE,
+                                  b.type(),
+                                  tmpName,
+                                  thiz);
+            Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+            Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+            Expr result = new Call(pos(), t2, _name, _actualsNew)
+              {
+                boolean isChainedBoolRHS() { return true; }
+              };
+            Stmnt as = new Assign(res, pos(), tmp, b, thiz);
+            t1 = res.resolveType(t1    , thiz);
+            as = res.resolveType(as    , thiz);
+            result = res.resolveType(result, thiz);
+            cb._actuals.set(cb._actuals.size()-1,
+                            new Block(b.pos(),new List<Stmnt>(as, t1)));
+            _actuals = new List<Expr>(result);
+            _calledFeature = Types.resolved.f_bool_AND;
+            _name = _calledFeature.featureName().baseName();
+          }
       }
   }
 
@@ -693,8 +694,10 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != null,
-       Errors.count() > 0 || _target         != null);
+      (Errors.count() > 0 || calledFeature() != Types.f_ERROR,
+       Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
+       calledFeature() != null,
+       _target         != null);
   }
 
 
@@ -1068,7 +1071,7 @@ public class Call extends AbstractCall
          _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
          _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
          _actualsNew.isEmpty()                       &&   // dto.
-         originalLazyValue() == this                      // prevent repeated `l.call.call` wenn resolving the newly created Call to `call`.
+         originalLazyValue() == this                      // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
          ))
       {
         var wasLazy = _type.isLazyType();
@@ -1198,7 +1201,7 @@ public class Call extends AbstractCall
             else
               {
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
-                frmlT = frmlT.actualType(_calledFeature, _generics);
+                frmlT = frmlT.applyTypePars(_calledFeature, _generics);
                 frmlT = Types.intern(frmlT);
                 if (CHECKS) check
                   (frmlT != null);
@@ -1328,15 +1331,15 @@ public class Call extends AbstractCall
   {
     var is_THIS_TYPE = t.isGenericArgument() && t.genericArgument().feature().isTypeFeature() && t.genericArgument().index() == 0;
     var tt = is_THIS_TYPE && _target instanceof Call tc && tc._calledFeature.isTypeParameter()
-      ? // a call B.f for a type parameter target B. resulType() is the
+      ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
         tc._calledFeature.resultType().featureOfType().typeFeature(res).selfType()
       : targetTypeOrConstraint(res);
 
-    t = resolveSelect(t, tt);
-    t = tt.actualType(t);
-    t = t.resolve(res, tt.featureOfType());
+    t = resolveSelect(t, tt)
+      .applyTypePars(tt)
+      .resolve(res, tt.featureOfType());
     t = adjustThisTypeForTarget(t);
     t = resolveForCalledFeature(res, t, tt);
     _type = Types.intern(t);
@@ -1345,7 +1348,7 @@ public class Call extends AbstractCall
 
   /**
    * Helper for resolveType to process _select, i.e., check that _select is < 0
-   * and t is not open generic, or else _select choses the actual open generic
+   * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
    * @param t the result type of the called feature, might be open genenric.
@@ -1387,7 +1390,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Replace occurences of this.type in formal arg or result type depending on
+   * Replace occurrences of this.type in formal arg or result type depending on
    * the target of the call.
    *
    * @param t the formal type to be adjusted.
@@ -1445,7 +1448,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the result type of the called feature, adjustes for select, this type, etc.
+   * @param t the result type of the called feature, adjusts for select, this type, etc.
    *
    * @param tt target type or constraint.
    */
@@ -1460,7 +1463,7 @@ public class Call extends AbstractCall
             var tf = t.featureOfType().typeFeature(res);
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
-            t = tf.selfType().actualType(tf, tg);
+            t = tf.selfType().applyTypePars(tf, tg);
           }
       }
     else if (_calledFeature == Types.resolved.f_Types_get)
@@ -1484,7 +1487,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        t = t.actualType(calledFeature(), _generics);
+        t = t.applyTypePars(calledFeature(), _generics);
       }
     return t;
   }
@@ -1839,7 +1842,7 @@ public class Call extends AbstractCall
                 var pt = p.typeIfKnown();
                 if (pt != null)
                   {
-                    var apt = actualType.actualType(pt);
+                    var apt = pt.applyTypePars(actualType);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
                   }
               }
@@ -1887,7 +1890,7 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         if (rg.feature() == cf && foundAt.get(ri) == null)
           {
-            var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, _generics);
+            var at = targetTypeOrConstraint(res).actualType(formalType).applyTypePars(cf, _generics);
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);
@@ -2017,31 +2020,32 @@ public class Call extends AbstractCall
       }
     _resolvedFor = outer;
     loadCalledFeature(res, outer);
-    _generics = FormalGenerics.resolve(res, _generics, outer);
-    _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
 
     if (CHECKS) check
-      (Errors.count() > 0 || _calledFeature != null);
+      (_calledFeature != null);
 
-    ListIterator<Expr> i = _actuals.listIterator();
-    while (i.hasNext())
-      {
-        Expr actl = i.next();
-        if (actl instanceof Actual aa)
-          {
-            actl = aa.expr(this);
-          }
-        if (CHECKS) check
-          (actl != null);
-        i.set(actl);
-      }
-
-    if (_calledFeature == null)
+    if (_calledFeature == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
       }
     else
       {
+        _generics = FormalGenerics.resolve(res, _generics, outer);
+        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
+
+        ListIterator<Expr> i = _actuals.listIterator();
+        while (i.hasNext())
+          {
+            Expr actl = i.next();
+            if (actl instanceof Actual aa)
+              {
+                actl = aa.expr(this);
+              }
+            if (CHECKS) check
+                          (actl != null);
+            i.set(actl);
+          }
+
         if (needsToInferTypeParametersFromArgs())
           {
             inferGenericsFromArgs(res, outer);

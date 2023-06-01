@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
+numeric(T type : numeric T) : has_hash, has_total_order is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs)
@@ -44,7 +44,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   prefix - T
     pre
       safety: -!thiz
-  is zero - thiz
+  is T.zero - thiz
 
   # basic operations: 'infix +' (addition)
   infix +  (other T) T
@@ -68,21 +68,21 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   infix /  (other T) T
     pre
       safety: thiz /! other,
-      safety: other != zero
+      safety: other != T.zero
   is abstract
 
   # basic operations: 'infix %' (division remainder)
   infix %  (other T) T
     pre
       safety: thiz %! other,
-      safety: other != zero
+      safety: other != T.zero
   is abstract
 
   # basic operations: 'infix **' (exponentiation)
   infix ** (other T) T
     pre
       safety: thiz **! other,
-      safety: other ≥ zero
+      safety: other ≥ T.zero
   is abstract
 
 
@@ -129,7 +129,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
     pre
       debug: numeric.this ≥ numeric.this.type.zero
   is
-    if (numeric.this ≥ numeric.this.type.one) ((thiz - one).to_u32 + 1)
+    if (numeric.this ≥ numeric.this.type.one) ((thiz - T.one).to_u32 + 1)
     else 0
 
 
@@ -146,7 +146,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
     pre
       debug: thiz.sign ≥ 0
     post
-      debug: (numeric.this = numeric.this.type.zero: result = one),
+      debug: (numeric.this = numeric.this.type.zero: result = T.one),
       debug: (numeric.this != numeric.this.type.zero: thiz / b < result ≤ thiz)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
@@ -155,7 +155,7 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #     integer.this != zero: integer.this / b < result <= integer.this
   is
     for
-      bs := one, bs * b
+      bs := T.one, bs * b
     while thiz / b ≥ bs
 
 
@@ -196,8 +196,18 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   #
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
-  type.from_u32(v u32) numeric.this.type is
-    if v = (u32 0) zero else one # NYI: #706: (from_u32 v-1) +^ one
+  type.from_u32(v u32) T is
+    if v = (u32 0) T.zero else (from_u32 v-1) +^ T.one
+
+
+  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  #
+  type.two => from_u32(2)
+
+
+  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  #
+  type.ten => from_u32(10)
 
 
   # equality
@@ -242,27 +252,3 @@ numeric(redef T type : numeric T) : has_hash, has_total_order, numerics T is
   type.product_saturating : Monoid T is
     redef infix ∙ (a, b T) => a *^ b
     redef e => one.thiz
-
-
-# numerics -- unit type defining features related to numeric but not
-# requiring an instance
-#
-numerics(T type : numeric T) is
-
-  # identity element for 'infix +'
-  #
-  zero T is abstract # NYI: #706: T.zero
-
-  # identity element for 'infix *'
-  #
-  one  T is abstract # NYI: #706: T.one
-
-  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
-  two => from_u32(2)
-
-  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
-  ten => from_u32(10)
-
-  # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) T is # T.from_u32 v
-    if v = (u32 0) zero else (from_u32 v-1) +^ one

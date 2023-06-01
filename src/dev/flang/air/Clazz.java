@@ -304,6 +304,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public int _idInFUIR = -1;
 
 
+  /**
+   * Cached result of parents(), null before first call to parents().
+   */
+  private Set<Clazz> _parents = null;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -539,6 +544,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
+   * This set is initialially empty, it will be filled by `registerAsHeir()`
+   * which is called for every new Clazz created via Clazzes.create().
+   *
    * @return the heirs including this.
    */
   public Set<Clazz> heirs()
@@ -546,7 +554,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (_heirs == null)
       {
         _heirs = new TreeSet<>();
-        _heirs.add(this);
       }
     return _heirs;
   }
@@ -578,21 +585,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Set<Clazz> parents()
   {
-    var result = new TreeSet<Clazz>();
-    result.add(this);
-    for (var p : directParents())
+    var result = _parents;
+    if (result == null)
       {
-        if (!result.contains(p))
+        result = new TreeSet<Clazz>();
+        result.add(this);
+        for (var p : directParents())
           {
-            for (var pp : p.parents())
+            if (!result.contains(p))
               {
-                if (isRef() && !pp.isVoidType())
+                for (var pp : p.parents())
                   {
-                    pp = pp.asRef();
+                    if (isRef() && !pp.isVoidType())
+                      {
+                        pp = pp.asRef();
+                      }
+                    result.add(pp);
                   }
-                result.add(pp);
               }
           }
+        _parents = result;
       }
     return result;
   }
@@ -638,7 +650,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     t = this._type.actualType(t);
-    t = t.replace_this_type_by_actual_outer(_type);
     if (this._outer != null)
       {
         t = this._outer.actualType(t);
@@ -669,7 +680,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * In given type t, replace occurences of 'X.this.type' by the actual type
+   * In given type t, replace occurrences of 'X.this.type' by the actual type
    * from this Clazz.
    *
    * @param t a type
@@ -687,7 +698,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Special handling for features whose outer features are type features: Any
-   * references to x.this.type have to be replaced by the correspondig
+   * references to x.this.type have to be replaced by the corresponding
    * original. See example from #1260:
    *
    *   t is
@@ -712,7 +723,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : x.replace_this_type_by_actual_outer(this_type));
+                                          : this_type.actualType(x));
           }
         var o = t.outer();
         if (o != null)
@@ -1143,37 +1154,33 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
-    if (fa._tp.isEmpty())
+    var iCs = _inner.get(fa);
+    if (select < 0)
       {
-        if (select < 0)
-          {
-            var iC = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iC == null || iC instanceof Clazz);
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz);
 
-            innerClazz =
-              iC == null              ? null :
-              iC instanceof Clazz iCC ? iCC
-                                      : Clazzes.error.get();
+        innerClazz =
+          iCs == null              ? null :
+          iCs instanceof Clazz iCC ? iCC
+                                   : Clazzes.error.get();
+      }
+    else
+      {
+        if (CHECKS) check
+          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
+        if (iCs == null || !(iCs instanceof Clazz[] iCA))
+          {
+            innerClazzes = new Clazz[replaceOpenCount(fa._f)];
+            _inner.put(fa, innerClazzes);
           }
         else
           {
-            var iCs = _inner.get(fa);
-            if (CHECKS) check
-              (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
-            if (iCs == null || !(iCs instanceof Clazz[] iCA))
-              {
-                innerClazzes = new Clazz[replaceOpenCount(fa._f)];
-                _inner.put(fa, innerClazzes);
-              }
-            else
-              {
-                innerClazzes = iCA;
-              }
-            if (CHECKS) check
-              (Errors.count() > 0 || select < innerClazzes.length);
-            innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
+            innerClazzes = iCA;
           }
+        if (CHECKS) check
+          (Errors.count() > 0 || select < innerClazzes.length);
+        innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
       }
     if (innerClazz == null)
       {
@@ -1198,7 +1205,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 _abstractCalled.add(aaf);
               }
 
-            AbstractType t = aaf.selfType().actualType(aaf, fa._tp);
+            AbstractType t = aaf.selfType().applyTypePars(aaf, fa._tp);
             t = actualType(t);
 
 /*
@@ -2260,103 +2267,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var ft = f.resultType();
         var t = _outer.actualType(ft, _select);
-
-        if (ft.isThisType())
+        result = actualClazz(t);
+        if (result.feature().isTypeFeature())
           {
-            // find outer clazz corresponding to ft:
-            var res = (f.isField() ? _outer : this).findOuter(ft.featureOfType(), feature());
-            // even if outer changed from ref to value or vice versa, keep it as it was:
-            result = ft.featureOfType().selfType().isRef() ? res.asRef()
-                                                           : res.asValue();
-          }
-        else if (!t.dependsOnGenerics())
-          {
-            /* We have this situation:
-
-               a is
-                 b is
-                   c is
-                     f t.u.v.w.x.y.z
-                 t is
-                   u is
-                     v is
-                       w is
-                         x is
-                           y is
-                             z is
-
-                p is
-                  q is
-                    r : a is
-
-                p.q.r.b.c.f
-
-               so f.depth is 4 (a.b.c.f),
-               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
-               inner.depth is 6 (p.q.r.b.c.f) and
-               depthInSource is 7 (t.u.v.w.x.y.z). We have to
-               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
-               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
-               to become p.q.r.t.u.v.w.x.y.z.
-
-               f:                       a.b.c.f
-               t:                       a.t,u.v.w.x.y.z
-               inner:                   p.q.r.b.c.f
-               depthInSource              t.u.v.w.x.y.z
-               back 3:                  p.q.r.*
-               depthInSource part of t: *.t.u.v.w.x.y.z
-               plugged together:        p.q.r.t.u.v.w.x.y.z
-
-             */
-            /* NYI: This implementation currently ignores depthInSource that could be determined via
-               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
-               type inference is used). We need proper tests for this and implement it for
-               depthInSource > 1.
-             */
-            int goBack = depth(f) - depth(t.featureOfType()) + 1;
-            var innerBase = this;
-            while (goBack > 0 &&
-                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
-                   )
-              {
-                innerBase = innerBase._outer;
-                goBack--;
-              }
-            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
-              {
-                t = t.replace_this_type_by_actual_outer(this._type);
-                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR || t.featureOfType().outer() == null
-                  ? Clazzes.create(t, null)
-                  : innerBase.lookup(new FeatureAndActuals(t.featureOfType(), t.generics(), false), null);
-                if (t.isRef())
-                  {
-                    res = res.asRef();
-                  }
-                result = res;
-              }
-            else
-              {
-                // NYI: This branch should never be taken when rebasing above is implemented correctly.
-                if (f.implKind() == Impl.Kind.FieldDef)
-                  {
-                    result = Clazzes.clazz(f.initialValue(), _outer);
-                  }
-                else
-                  {
-                    if (f.implKind() == Impl.Kind.RoutineDef)
-                      {
-                    /* NYI: Do we need special handling for inferred routine result as well?
-                     *
-                     *   return Clazzes.clazz(f.initialValue(), this._outer);
-                     */
-                      }
-                    result = actualClazz(t);
-                  }
-              }
-          }
-        else
-          {
-            result = actualClazz(t);
+            result = actualClazz(result._type.generics().get(0)).typeClazz();
           }
       }
     return result;

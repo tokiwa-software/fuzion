@@ -667,10 +667,11 @@ public class AstErrors extends ANY
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
-          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " +
+          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
+          "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
+          "argument type should be: " +
           // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-          typeWithFrom(originalArgType, originalArg.resultType()) + ".  " +
+          typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
           "Original argument declared at " + originalArg.pos().show() + "\n" +
           (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
                               : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
@@ -684,10 +685,11 @@ public class AstErrors extends ANY
       {
         error(redefinedFeature.pos(),
               "Wrong result type in redefined feature",
-              "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-              "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
+              "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
+              "result type is       : " + s(redefinedFeature.resultType()) + "\n" +
+              "result type should be: " +
               // originalFeature.resultType() might be a type parameter that has been replaced by originalType:
-              typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
+              typeWithFrom(originalType, originalFeature.resultType()) + "\n\n" +
               "Original feature declared at " + originalFeature.pos().show() + "\n" +
               (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
                                   : "To solve this, change type of result to " + s(originalType)));
@@ -981,12 +983,6 @@ public class AstErrors extends ANY
           "original feature: " + s(existing) + "\n" +
           "original feature defined in " + existing.pos().fileNameWithPosition()+ "\n" +
           solution);
-  }
-
-  public static void cannotRedefineGeneric(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
-  {
-    cannotRedefine(pos, f, existing, "Cannot redefine feature with type parameters",
-                   "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
   public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
@@ -1775,7 +1771,7 @@ public class AstErrors extends ANY
           "It is not possible for a routine to return its own instance as a result.  Since the result is stored in the implicit " +
           sbn("result") + " field, this would produce cyclic field nesting.\n" +
           "To solve this, you could convert this feature into a constructor, i.e., instead of " +
-          code(old_code) + "write " + code(new_code) + "since constructor implictly returns its own instance.  Alternatively, you can use " +
+          code(old_code) + "write " + code(new_code) + "since constructor implicitly returns its own instance.  Alternatively, you can use " +
           code(new_code_ref) + "to return a reference.");
   }
 

@@ -29,7 +29,7 @@
 # f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f32(val f32) : float f32, f32s is
+f32(val f32) : float f32 is
 
   redef thiz        => f32.this.val
 
@@ -114,8 +114,8 @@ f32(val f32) : float f32, f32s is
 
   # the fraction of the floating point number
   redef fract f32 is
-    if f32s.is_NaN val
-      NaN
+    if f32.type.is_NaN val
+      f32.type.NaN
     else if val < (f32 0)
       -(-val).fract
     else if val < (f32 1)
@@ -172,35 +172,31 @@ f32(val f32) : float f32, f32s is
     val.as_f32
 
 
-# f32s -- unit type defining features related to f32 but not requiring an
-# instance
-#
-f32s : floats f32 is
+  fixed type.is_NaN(val f32) bool is intrinsic
 
-  redef zero => f32 0
-  redef one  => f32 1
 
-  redef is_NaN(val f32) bool is intrinsic
+  fixed type.min_exp i32 is intrinsic
+  fixed type.max_exp i32 is intrinsic
+  fixed type.min_positive f32 is intrinsic
+  fixed type.max f32 is intrinsic
+  fixed type.epsilon f32 is intrinsic
 
-  redef min_exp i32 is intrinsic
-  redef max_exp i32 is intrinsic
-  redef min_positive f32 is intrinsic
-  redef max f32 is intrinsic
-  redef epsilon f32 is intrinsic
 
-  redef square_root(val f32) f32 is intrinsic
+  fixed type.square_root(val f32) f32 is intrinsic
 
-  redef exp(val f32) f32 is intrinsic
-  redef log(val f32) f32 is intrinsic
+  fixed type.exp(val f32) f32 is intrinsic
+  fixed type.log(val f32) f32 is intrinsic
 
-  redef sin(val f32) f32 is intrinsic
-  redef cos(val f32) f32 is intrinsic
-  redef tan(val f32) f32 is intrinsic
-  redef asin(val f32) f32 is intrinsic
-  redef acos(val f32) f32 is intrinsic
-  redef atan(val f32) f32 is intrinsic
-  redef atan2(y f32, x f32) f32 is intrinsic
 
-  redef sinh(val f32) f32 is intrinsic
-  redef cosh(val f32) f32 is intrinsic
-  redef tanh(val f32) f32 is intrinsic
+  fixed type.sin(val f32) f32 is intrinsic
+  fixed type.cos(val f32) f32 is intrinsic
+  fixed type.tan(val f32) f32 is intrinsic
+  fixed type.asin(val f32) f32 is intrinsic
+  fixed type.acos(val f32) f32 is intrinsic
+  fixed type.atan(val f32) f32 is intrinsic
+  fixed type.atan2(y, x f32) f32 is intrinsic
+
+
+  fixed type.sinh (val f32) f32 is intrinsic
+  fixed type.cosh (val f32) f32 is intrinsic
+  fixed type.tanh (val f32) f32 is intrinsic

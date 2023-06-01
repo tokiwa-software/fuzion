@@ -37,13 +37,13 @@ String ref : equatable, has_hash, has_total_order is
   is_empty => utf8.is_empty
 
   # returns true if string is empty or contains whitespace only
-  is_blank => utf8 ∀ u -> is_ascii_white_space u
+  is_blank => utf8 ∀ u -> u.is_ascii_white_space
 
   # length of this string in bytes
   byte_length => utf8.count
 
   # length of this string in codepoints
-  codepoint_length => as_codepoint_sequence.count
+  codepoint_length => as_codepoints.count
 
   # concatenate string with string representation of another object
   infix + (other Any) String is
@@ -177,7 +177,7 @@ String ref : equatable, has_hash, has_total_order is
 
     ) outcome T
 
-    pre base.one < base ≤ base.from_u32 36
+    pre T.one < base ≤ T.from_u32 36
 
   is
     match utf8.as_list
@@ -185,7 +185,7 @@ String ref : equatable, has_hash, has_total_order is
       c Cons =>
         negate := c.head = String.type.minus_char
         d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
-        parse_integer T base negate base.zero d c.tail
+        parse_integer T base negate T.zero d c.tail
 
 
   # recursive helper for parse_integer T
@@ -213,42 +213,37 @@ String ref : equatable, has_hash, has_total_order is
 
   is
 
-    d u8 | error := if      (String.type.zero_char  ≤ c ≤ String.type.nine_char ) c - String.type.zero_char
-                    else if (String.type.a_char     ≤ c ≤ String.type.z_char    ) c - String.type.a_char    + 10
-                    else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
-                    else parse_error "non-digit found"
+    d outcome u8 :=
+      if      (String.type.zero_char  ≤ c ≤ String.type.nine_char ) c - String.type.zero_char
+      else if (String.type.a_char     ≤ c ≤ String.type.z_char    ) c - String.type.a_char    + 10
+      else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
+      else parse_error "non-digit found"
 
-    # NYI: with more syntactic sugar, the following 3 lines could become
-    #
-    # i := d?
-
-    match d
-      e error => e
-      b u8 =>
-        t := base.from_u32 b.as_u32  # i converted to T
-        if t ≥ base
-          parse_error "invalid integer digit for base $base"
-        else
-          hi := hi *? base;
-          v := if (neg) hi -? t
-               else     hi +? t
-          match s
-            c Cons =>
-              parse_integer T base neg v c.head c.tail
-            nil =>
-              v ? nil => parse_error "numerical overflow"
-                | u T => u
+    d.bind T b->
+      t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      if t ≥ base
+        parse_error "invalid integer digit for base $base"
+      else
+        hi := hi *? base;
+        v := if (neg) hi -? t
+              else     hi +? t
+        match s
+          c Cons =>
+            parse_integer T base neg v c.head c.tail
+          nil =>
+            v ? nil => parse_error "numerical overflow"
+              | u T => u
 
 
   # convert this string into an array of codepoints.
   #
-  codepoint_array => as_codepoint_sequence.as_array
+  codepoint_array => as_codepoints.as_array
 
 
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  as_codepoint_sequence Sequence codepoint is
+  as_codepoints Sequence codepoint is
     codepoints_and_errors
       .map (x ->
         match x
@@ -280,7 +275,7 @@ String ref : equatable, has_hash, has_total_order is
     codepoints_and_errors utf8.as_list
 
 
-  # the list instance returned by as_codepoint_sequence
+  # the list instance returned by as_codepoints
   #
   private codepoints_and_errors(l list u8) list (outcome codepoint) is
     match l
@@ -366,22 +361,9 @@ String ref : equatable, has_hash, has_total_order is
   substring(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
+    # NYI check if from/to are valid start/end bytes?
   is
-    # NYI: #776: put this code from substring0 here, to avoid an unnecessary feature
-    # ref : string
-    #   redef utf8 Sequence u8 is
-    #     string.this.utf8.slice from to
-    Substring0 from to
-
-
-  # create substring of the string consisting of bytes from (inclusive) .. to (exclusive).
-  #
-  private Substring0(from, to i32) ref : String
-    pre
-      debug: 0 ≤ from ≤ to ≤ String.this.byte_length
-  is
-    redef utf8 Sequence u8 is
-      String.this.utf8.slice from to
+    String.type.from_bytes (String.this.utf8.slice from to)
 
 
   # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
@@ -473,18 +455,6 @@ String ref : equatable, has_hash, has_total_order is
     (container.searchable_sequence utf8).count_matches substring.utf8
 
 
-  # is c an ASCII white-space character?
-  #
-  private is_ascii_white_space(c u8) =>
-    (c = (u8  9) ||  // HT
-     c = (u8 10) ||  // LF
-     c = (u8 11) ||  // VT
-     c = (u8 12) ||  // FF
-     c = (u8 13) ||  // CR
-     c = (u8 32)     // SPACE
-     )
-
-
   # Split string separated by (ASCII) white space
   #
   # Leading and trailing white space is ignored, repeated white space is treated
@@ -493,13 +463,13 @@ String ref : equatable, has_hash, has_total_order is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list String is
-    l := utf8.as_list.drop_while (c -> is_ascii_white_space c)
+    l := utf8.as_list.drop_while (c -> c.is_ascii_white_space)
     if l.is_empty
       nil
     else
       ref : Cons String (list String)
-        head =>  String.type.from_bytes (l.take_while (c -> !is_ascii_white_space c))
-        tail => (String.type.from_bytes (l.drop_while (c -> !is_ascii_white_space c))).split
+        head =>  String.type.from_bytes (l.take_while (c -> !c.is_ascii_white_space))
+        tail => (String.type.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
 
 
   # split string at s
@@ -584,8 +554,8 @@ String ref : equatable, has_hash, has_total_order is
   trim String is
     s0 := utf8
 
-    s1 := (s0.drop_while (c->is_ascii_white_space c)).reverse
-    s2 := (s1.drop_while (c->is_ascii_white_space c)).reverse
+    s1 := (s0.drop_while c->c.is_ascii_white_space).reverse
+    s2 := (s1.drop_while c->c.is_ascii_white_space).reverse
 
     String.type.from_bytes s2
 
@@ -593,13 +563,13 @@ String ref : equatable, has_hash, has_total_order is
   # remove leading white space from this string
   #
   trim_start =>
-    String.type.from_bytes (utf8.drop_while (c->is_ascii_white_space c))
+    String.type.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-    String.type.from_bytes (utf8.as_list.reverse.drop_while (c->is_ascii_white_space c)).reverse
+    String.type.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
   # is this part of given set
@@ -636,7 +606,7 @@ String ref : equatable, has_hash, has_total_order is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
     i := state_wrapper (list String).type.empty false 0 0
-    last_state := as_codepoint_sequence.reduce state_wrapper i ((r, c) ->
+    last_state := as_codepoints.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
           match r.in_run
@@ -670,6 +640,17 @@ String ref : equatable, has_hash, has_total_order is
         before := String.type.from_bytes (utf8.slice 0 i)
         after := String.type.from_bytes (utf8.slice (i + sepl) l)
         (before, after, true)
+
+
+  # convert this string to upper case
+  upper_case String is
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.upper_case[c.val].get c))
+
+
+  # convert this string to lower case
+  lower_case String is
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.lower_case[c.val].get c))
+
 
 
   # monoid of strings with infix + operation.
@@ -733,7 +714,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # create string from the given codepoints
   #
-  type.from_codepoint_sequence(codepoints Sequence codepoint) String is
+  type.from_codepoints(codepoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
         codepoints
