@@ -259,10 +259,10 @@ visibility is
 // NYI:   visi5
 
   visi6 is
-    x := 2;                             say "x is $x"
-    // NYI:    x := x as f64;           say "x is $x"
-    x := x * 3 / 100 /* NYI: 3.14   */; say "x is $x"
-    x := x.as_string  /* NYI: as i32 */; say "x is $x"
+    x := 2;        chck $x="2"                                    "x := 2"
+    x := x.as_f64; chck ($x="2.0" || $x="2")                      "x := x.as_f64"
+    x := x * 3.14; chck ($x="6.28"|| $x="6.28000000000000024869") "x := x * 3.14"
+    x := x.as_i32; chck $x="6"                                    "x := x.as_i32"
   visi6
 
   visi7 is
@@ -313,7 +313,7 @@ visibility is
     until a * (ix1 + ix2 + it1 + it2 + ix3 + b) > 1000000
       r := a + ix1 + ix2 + it1 + it2 + ix3 + b
     else
-      // s := a + ix1 + ix2   // NYI: field declaration in else clause does not work yet
+      // s := a + ix1 + ix2   // NYI: #1550: field declaration in else clause does not work yet
     t := a
   visi9
 
