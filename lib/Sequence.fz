@@ -119,12 +119,12 @@ Sequence(T type) ref is
     array T count i->s.next
 
 
-  # create a stream and call 'for_each f' on it
+  # create a list and call 'for_each f' on it
   #
-  for_each(f T -> unit) unit is as_stream.for_each f
+  for_each(f T -> unit) unit is as_list.for_each f
 
 
-  # create a stream and have it consumed by f, infix operator synonym of for_each.
+  # create a list and have it consumed by f, infix operator synonym of for_each.
   #
   infix | (f T -> unit) => for_each f
 
@@ -134,30 +134,33 @@ Sequence(T type) ref is
   postfix | => as_stream
 
 
-  # create a new stream and apply 'f' to each element 'e' as long as 'f e'
+  # apply 'f' to each element 'e' as long as 'f e'
   #
-  for_while(f T -> bool) unit is as_stream.for_while f
+  for_while(f T -> bool) unit is
+    take_while f
+      .for_each _->unit
 
 
-  # create a new stream that contains the first elements of this stream for
-  # which 'f e' is false
+  # create a new list that contains the first elements of
+  # this Sequence for which 'f e' is false
   #
-  before(f T -> bool) stream T is as_stream.before f
+  before(f T -> bool) list T is
+    take_while (x -> !(f x))
 
 
-  # create a new stream and filter its elements using predicate f
+  # filter elements using predicate f
   # values for which f is false are dropped
   #
-  filter   (f T -> bool) Sequence T is as_list.filter f
+  filter   (f T -> bool) list T is as_list.filter f
 
 
-  # create a new stream and filter its elements using predicate f, infix operator
+  # filter elements using predicate f, infix operator
   # synonym of filter.
   #
   infix |& (f T -> bool) => filter f
 
 
-  # create a new stream and filter its elements using predicate f, infix operator
+  # filter elements using predicate f, infix operator
   # synonym of filter.
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
@@ -165,18 +168,18 @@ Sequence(T type) ref is
   infix & (f T -> bool) => filter f
 
 
-  # create a stream and check if predicate f holds for all elements produced
+  # check if predicate f holds for all elements
   #
-  infix ∀ (f T -> bool) bool is as_stream ∀ f
+  infix ∀ (f T -> bool) bool is as_list ∀ f
 
 
-  # create a stream and check if predicate f holds for at least one element produced
+  # check if predicate f holds for at least one element
   #
-  infix ∃ (f T -> bool) bool is as_stream ∃ f
+  infix ∃ (f T -> bool) bool is as_list ∃ f
 
 
   # create a list that consists only of the first n elements of this
-  # Sequence, fewer if this stream has fewer elements
+  # Sequence, fewer if this Sequence has fewer elements
   #
   take (n i32) => as_list.take n
 
@@ -221,7 +224,7 @@ Sequence(T type) ref is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  concat_sequences (s Sequence T) Sequence T is as_list.concat s.as_list
+  concat_sequences (s Sequence T) list T is as_list.concat s.as_list
 
 
   # infix operand synonym for concat_sequences
@@ -281,7 +284,7 @@ Sequence(T type) ref is
 
   # fold the elements of this Sequence using the given monoid.
   #
-  # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
+  # e.g., to sum the elements of a Sequence of i32, use s.fold i32.sum
   #
   fold (m Monoid T) => as_list.fold m.e m
 
@@ -356,10 +359,10 @@ Sequence(T type) ref is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  into(TA type, xf transducer (Sequence TA) TA T) Sequence TA is
+  into(TA type, xf transducer (Sequence TA) TA T) list TA is
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (Sequence TA) := (Sequence TA).type.empty , red.call res el
+      res (list TA) := (Sequence TA).type.empty , (red.call res el).as_list
       el in Sequence.this do
     else
       res
@@ -413,14 +416,14 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K type : has_hash, f T -> K) container.Map K (Sequence T) is
+  group_by(K type : has_hash, f T -> K) container.Map K (list T) is
     # NYI It should be possible to choose the map implementation that is used.
-    res := (container.C_Trie K (Sequence T)).type.empty
+    res := (container.C_Trie K (list T)).type.empty
     for_each (x ->
       key := f x
       match res[key]
-        nil => res.add key [x]
-        s Sequence T => res.add key (s ++ [x])
+        nil => res.add key [x].as_list
+        s list T => res.add key (s ++ [x].as_list)
       )
     res
 

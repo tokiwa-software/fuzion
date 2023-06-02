@@ -311,6 +311,25 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   redef infix ++ (t Sequence A) => concat t.as_list
 
 
+
+  # check if predicate f holds for all elements
+  #
+  redef infix ∀ (f A -> bool) bool is
+    match list.this
+      c Cons => f c.head && (c.tail ∀ f)
+      nil    => true
+
+
+
+  # check if predicate f holds for at least one element
+  #
+  redef infix ∃ (f A -> bool) bool is
+    match list.this
+      c Cons => f c.head || (c.tail ∃ f)
+      nil    => false
+
+
+
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
@@ -361,7 +380,7 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   # The result contains exactly those elements for which p
   # is true.
   #
-  redef filter (p A -> bool) Sequence A is
+  redef filter (p A -> bool) list A is
     filter0 p
 
 
