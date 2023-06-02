@@ -139,11 +139,11 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
       arr.slice 0 res
 
 
-  finalize is
+  finalize unit is
     close_write
-    fuzion.sys.process.wait pid
+    fuzion.sys.process.wait process_id
     fuzion.sys.pipe.close std_out
-    fuzion.sys.pipe.close std_err
+    _ := fuzion.sys.pipe.close std_err
     # NYI cleanup process handle
     # fuzion.sys.process.close id
 
