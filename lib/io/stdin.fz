@@ -33,10 +33,10 @@
 #   io.buffered.read_line
 # ```
 #
-public stdin =>
+public stdin io.buffered.reader is
 
 
-  read_provider : io.Read_Provider u8 is
+  read_provider : io.Read_Provider is
 
     read(count i32) choice (array u8) io.end_of_file error is
       v := fuzion.sys.stdin.next_byte

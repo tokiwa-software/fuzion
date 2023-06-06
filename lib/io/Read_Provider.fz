@@ -21,11 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-Read_Provider(T type) ref is
-  read(count i32) choice (array T) io.end_of_file error
+Read_Provider ref is
+  read(count i32) choice (array u8) io.end_of_file error
   # NYI
   # post match result
-  #        a (array T) => !a.is_empty
+  #        a array => !a.is_empty
   #        io.end_of_file => true
   #        error => true
   is abstract

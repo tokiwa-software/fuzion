@@ -27,36 +27,37 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-reader(redef T type, private rp Read_Provider T, buf_size i32, buffer array T | io.end_of_file) : try T is
+reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : try io.buffered.reader is
 
 
   # read returns the current buffer or end of file.
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  read array T | io.end_of_file is
+  read array u8 | io.end_of_file is
     match buffer
-      b array T => if !b.is_empty then b else fill_buffer
+      b array =>
+        if !b.is_empty
+          fill_buffer
+        buffer
       io.end_of_file => io.end_of_file
 
 
 
   # fill the currently empty buffer
   #
-  private fill_buffer array T | io.end_of_file
+  private fill_buffer
   pre match buffer
-        a array T => a.is_empty
+        a array => a.is_empty
         io.end_of_file => false
   is
     match rp.read buf_size
-      a array T =>
+      a array =>
         set buffer := a
         replace
-        a
       eof io.end_of_file =>
         set buffer := eof
         replace
-        io.end_of_file
       e error => raise e
 
 
@@ -67,7 +68,7 @@ reader(redef T type, private rp Read_Provider T, buf_size i32, buffer array T | 
   pre n >= 0
   is
     match buffer
-      b array T =>
+      b array =>
         set buffer := (b.drop n).as_array
         replace
       io.end_of_file =>
@@ -80,29 +81,19 @@ reader(redef T type, private rp Read_Provider T, buf_size i32, buffer array T | 
   discard_all
   is
     match buffer
-      b array T =>
+      b array =>
         # NYI #169 backward type propagation for []
-        e array T := []
+        e array u8 := []
         set buffer := e
         replace
       io.end_of_file =>
 
 
 
-  # set the buffer size to be used in this buffered reader
-  #
-  set_buffer_size(n i32)
-  pre n > 0
-  is
-    set buf_size := n
-    replace
-
-
-
 # short hand for getting the currently installed `buffer.reader u8`
 #
 byte_reader =>
-  (io.buffered.reader u8).env
+  io.buffered.reader.env
 
 
 
