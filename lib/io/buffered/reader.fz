@@ -37,7 +37,7 @@ reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : try i
   read array u8 | io.end_of_file is
     match buffer
       b array =>
-        if !b.is_empty
+        if b.is_empty
           fill_buffer
         buffer
       io.end_of_file => io.end_of_file
