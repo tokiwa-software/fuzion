@@ -235,6 +235,8 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.close"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.seek"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
     put("fuzion.sys.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.sys.err.flush"           , (cfg, cl) -> { } );
     put("fuzion.sys.stdin.next_byte"     , (cfg, cl) -> { } );
