@@ -174,6 +174,9 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_concur;
+    public final AbstractFeature f_concur_atomic;
+    public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
@@ -234,6 +237,9 @@ public class Types extends ANY
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
+      f_concur                     = universe.get(mod, "concur");
+      f_concur_atomic              = f_concur.get(mod, "atomic");
+      f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
