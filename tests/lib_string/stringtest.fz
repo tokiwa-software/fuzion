@@ -44,4 +44,4 @@ stringtest is
 
   say (String.type.from_codepoints "hell😀".as_codepoints)
 
-  say (String.type.from_array ((marray Any).type.new 1 nil))
+  say (String.type.from_array (mut.array Any 1 nil))
