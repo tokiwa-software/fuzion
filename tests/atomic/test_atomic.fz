@@ -60,14 +60,14 @@ test_atomic is
   test "A" "B" "C" "D"
   test (p 1 1) (p 2 2) (p 3 3) (p 4 4)
 
-  if false  # NYI: disable the following tests, they crash both interpreter and compiler
+  a := concur.atomic i64 0x0000000080000000
+  c1 := concur.atomic i64 0
+  s1 := concur.atomic i64 -1
+  c2 := concur.atomic i64 0
+  s2 := concur.atomic i64 -1
 
-    a := concur.atomic i64 0x1000000010000000
-    c1 := concur.atomic i64 0
-    s1 := concur.atomic i64 -1
-    c2 := concur.atomic i64 0
-    s2 := concur.atomic i64 -1
-
+  if false  # NYI: The tail recursion is not properly recognized in this case yet,
+            #      resulting in stack overflow for the C and interpreter backends:
     concur.thread.spawn (()->
       end := time.nano.read + (time.durations.seconds 5).nanos
       for
@@ -96,11 +96,63 @@ test_atomic is
         s2.write s
       )
 
-    while s1.read < 0 do
-      time.nano.sleep (time.durations.ms 500)
-    while s2.read < 0 do
-      time.nano.sleep (time.durations.ms 500)
+  else
+    # alternative avoiding loops/tail recursion
+    end := time.nano.read + (time.durations.ms 100).nanos
+    concur.thread.spawn (()->
+      rec(d i32) (i32, i32) is
+        if time.nano.read < end
+          if d > 0
+            (succ0,count0) := (rec d-1)
+            (succ1,count1) := (rec d-1)
+            (succ0 + succ1, count0 + count1)
+          else
+            v := a.read
+            n := v + 0x1
+            o := a.compare_and_swap v n
+            if o = v
+              (1,1)
+            else
+              (0,1)
+        else
+          (0, 0)
+      (s, c) := rec 32
+      c1.write c.as_i64
+      s1.write s.as_i64
+      )
+    concur.thread.spawn (()->
+      rec(d i32) (i32, i32) is
+        if time.nano.read < end
+          if d > 0
+            (succ0,count0) := (rec d-1)
+            (succ1,count1) := (rec d-1)
+            (succ0 + succ1, count0 + count1)
+          else
+            v := a.read
+            n := v + 0x1_0000_0000
+            o := a.compare_and_swap v n
+            if o = v
+              (1,1)
+            else
+              (0,1)
+        else
+          (0, 0)
+      (s, c) := rec 32
+      c2.write c.as_i64
+      s2.write s.as_i64
+      )
 
-    say "thread 1: "+s1.read+"/"+c1.read
-    say "thread 2: "+s2.read+"/"+c2.read
+  while s1.read < 0 || s2.read < 0 do
+    time.nano.sleep (time.durations.ms 20)
+
+  chck s1.read>0 true
+  chck s1.read=(a.read & 0x7fff_ffff) true
+  chck s2.read>0 true
+  chck s2.read=(a.read >> 32 & 0x7fff_ffff) true
+
+  # use `-debug` argument to show CAS success / failure statistics:
+  #
+  if ((envir.args.nth 1).get "")="-debug"
+    say "thread 1: CAS successful: "+s1.read+" failed "+(c1.read-s1.read)+" total "+c1.read
+    say "thread 2: CAS successful: "+s2.read+" failed "+(c2.read-s2.read)+" total "+c2.read
     say "a is "+a.read.hex

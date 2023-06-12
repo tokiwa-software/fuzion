@@ -31,3 +31,7 @@ PASSED 2,2 = 2,2
 PASSED 2,2 = 2,2
 PASSED 3,3 = 3,3
 PASSED 3,3 = 3,3
+PASSED true = true
+PASSED true = true
+PASSED true = true
+PASSED true = true
