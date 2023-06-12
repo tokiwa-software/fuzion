@@ -216,6 +216,14 @@ public class CFG extends ANY
   static
   {
     put("Type.name"                      , (cfg, cl) -> { } );
+
+    put("concur.atomic.compare_and_swap0", (cfg, cl) -> { } );
+    put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
+    put("concur.atomic.read0"            , (cfg, cl) -> { } );
+    put("concur.atomic.write0"           , (cfg, cl) -> { } );
+    put("concur.util.loadFence"          , (cfg, cl) -> { } );
+    put("concur.util.storeFence"         , (cfg, cl) -> { } );
+
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debug_level"                    , (cfg, cl) -> { } );

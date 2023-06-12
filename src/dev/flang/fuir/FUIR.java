@@ -1843,6 +1843,20 @@ hw25 is
 
 
   /**
+   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   *
+   * @param cl index of a clazz representing cl's value field
+   */
+  public int lookupAtomicValue(int cl)
+  {
+    var cc = clazz(cl);
+    var v = Types.resolved.f_concur_atomic_v;
+    var ic = cc.lookup(v);
+    return id(ic);
+  }
+
+
+  /**
    * Get a string representation of the expr at the given index in given code
    * block.  Useful for debugging.
    *

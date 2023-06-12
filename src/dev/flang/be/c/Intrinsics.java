@@ -72,6 +72,20 @@ public class Intrinsics extends ANY
    */
   static CIdent errno = new CIdent("errno");
 
+  /**
+   * Wrap code into a pthread_mutex_lock/unlock using CNames.GLOBAL_LOCK.  This
+   * ensured atomicity with respect to any other code that is locked.
+   */
+  static CStmnt locked(CExpr lock,
+                       CStmnt code)
+  {
+    var res = new CIdent("res");
+    return CStmnt.seq(CExpr.decl("int", res, CExpr.call("pthread_mutex_lock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf()))),
+                      CExpr.call("assert", new List<>(CExpr.eq(res, new CIdent("0")))),
+                      code,
+                      CExpr.call("pthread_mutex_unlock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf())));
+  }
+
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
@@ -84,6 +98,125 @@ public class Intrinsics extends ANY
           return CStmnt.seq(c.constString(str, tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
+
+    put("concur.atomic.compare_and_swap0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var expected  = A0;
+          var new_value = A1;
+          var tmp = new CIdent("tmp");
+          var code = CStmnt.EMPTY;
+          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            {
+              var f = c.accessField(outer, ac, v);
+              CExpr eq;
+              if (c._fuir.clazzIsRef(rc) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                {
+                  eq = CExpr.eq(tmp, expected);
+                }
+              else
+                {
+                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                }
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
+                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                  CStmnt.iff(eq,
+                                                             f.assign(new_value)))),
+                                tmp.ret());
+            }
+          return code;
+        });
+
+    put("concur.atomic.racy_accesses_supported",  (c,cl,outer,in) ->
+        {
+          var v = c._fuir.lookupAtomicValue(c._fuir.clazzOuterClazz(cl));
+          var rc  = c._fuir.clazzResultClazz(v);
+          var r =
+            c._fuir.clazzIsRef(rc) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+          return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
+        });
+
+    put("concur.atomic.read0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var tmp = new CIdent("tmp");
+          CStmnt code;
+          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            { // A unit-type read should be at least a load/store fence. For now, we enter the lock
+              code = locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+                                locked(CNames.GLOBAL_LOCK, tmp.assign(f)),
+                                tmp.ret());
+            }
+          return code;
+        });
+
+    put("concur.atomic.write0", (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var new_value = A0;
+          var tmp = new CIdent("tmp");
+          var code = CStmnt.EMPTY;
+          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            { // A unit-type write should at least be a load/store fence. For new, we enter the lock:
+              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY));
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = locked(CNames.GLOBAL_LOCK, f.assign(new_value));
+            }
+          return code;
+        });
+
+    put("concur.util.loadFence", (c,cl,outer,in) ->
+        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
+          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        });
+
+    put("concur.util.storeFence", (c,cl,outer,in) ->
+        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
+          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        });
+
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());

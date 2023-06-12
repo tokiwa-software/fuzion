@@ -370,20 +370,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            var resa = new Value[] { null };
-            tvalue.forAll(t ->
-                          {
-                            var r = t.readField(DFA.this, cc);
-                            if (resa[0] == null)
-                              {
-                                resa[0] = r;
-                              }
-                            else
-                              {
-                                resa[0] = resa[0].join(r);
-                              }
-                          });
-            res = resa[0];
+            res = callField(tvalue, cc);
             if (_reportResults && _options.verbose(9))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
@@ -959,6 +946,64 @@ public class DFA extends ANY
   static
   {
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
+
+    put("concur.atomic.compare_and_swap0",  cl ->
+        {
+          var v = cl._dfa._fuir.lookupAtomicValue(cl._dfa._fuir.clazzOuterClazz(cl._cc));
+
+          if (CHECKS) check
+            (cl._dfa._fuir.clazzNeedsCode(v));
+
+          var atomic    = cl._target;
+          var expected  = cl._args.get(0);
+          var new_value = cl._args.get(1);
+          var res = cl._dfa.callField(atomic, v);
+
+          // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
+          atomic.setField(cl._dfa, v, new_value);
+          return res;
+        });
+
+    put("concur.atomic.racy_accesses_supported",  cl ->
+        {
+          // NYI: racy_accesses_supported could return true or false depending on the backend's behaviour.
+          return cl._dfa._bool;
+        });
+
+    put("concur.atomic.read0",  cl ->
+        {
+          var v = cl._dfa._fuir.lookupAtomicValue(cl._dfa._fuir.clazzOuterClazz(cl._cc));
+
+          if (CHECKS) check
+            (cl._dfa._fuir.clazzNeedsCode(v));
+
+          var atomic = cl._target;
+          return cl._dfa.callField(atomic, v);
+        });
+
+    put("concur.atomic.write0", cl ->
+        {
+          var v = cl._dfa._fuir.lookupAtomicValue(cl._dfa._fuir.clazzOuterClazz(cl._cc));
+
+          if (CHECKS) check
+            (cl._dfa._fuir.clazzNeedsCode(v));
+
+          var atomic    = cl._target;
+          var new_value = cl._args.get(0);
+          atomic.setField(cl._dfa, v, new_value);
+          return Value.UNIT;
+        });
+
+    put("concur.util.loadFence", cl ->
+        {
+          return Value.UNIT;
+        });
+
+    put("concur.util.storeFence", cl ->
+        {
+          return Value.UNIT;
+        });
+
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
     put("debug_level"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
@@ -1509,6 +1554,35 @@ public class DFA extends ANY
         analyzeNewCall(r);
       }
     return e;
+  }
+
+
+  /**
+   * Create a call to a field
+   *
+   * @param tvalue the target of the call
+   *
+   * @param cc the inner value of the field that is called.
+   */
+  Value callField(Value tvalue, int cc)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cc) == FUIR.FeatureKind.Field);
+
+    var resa = new Value[] { null };
+    tvalue.forAll(t ->
+                  {
+                    var r = t.readField(DFA.this, cc);
+                    if (resa[0] == null)
+                      {
+                        resa[0] = r;
+                      }
+                    else
+                      {
+                        resa[0] = resa[0].join(r);
+                      }
+                  });
+    return resa[0];
   }
 
 
