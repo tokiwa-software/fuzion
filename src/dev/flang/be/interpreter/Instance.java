@@ -441,7 +441,7 @@ public class Instance extends ValueWithClazz
     Instance cur    = slot.container;
     int      offset = slot.offset;
 
-    for (int i=0; i < size; i++)
+    for (int i=0; result && i < size; i++)
       {
         result = cur.refs   [offset + i] == refs   [voffset + i] &&
                  cur.nonrefs[offset + i] == nonrefs[voffset + i];
