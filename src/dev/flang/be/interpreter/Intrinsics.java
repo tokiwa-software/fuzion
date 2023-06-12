@@ -236,11 +236,12 @@ public class Intrinsics extends ANY
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
-          synchronized(LOCK_FOR_ATOMIC)
+          synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = interpreter.getField(f, a, thiz, false);
+              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
               if (interpreter.compareField(f, -1, a, thiz, expected))
                 {
+                  res = expected;   // NYI: HACK: workaround since res was not cloned
                   interpreter.setField(f, -1, a, thiz, new_value);
                 }
               return res;
@@ -265,7 +266,7 @@ public class Intrinsics extends ANY
           var a = innerClazz._outer;
           var f = Types.resolved.f_concur_atomic_v;
           var thiz = args.get(0);
-          synchronized(LOCK_FOR_ATOMIC)
+          synchronized (LOCK_FOR_ATOMIC)
             {
               return interpreter.getField(f, a, thiz, false);
             }
@@ -275,7 +276,7 @@ public class Intrinsics extends ANY
           var a = innerClazz._outer;
           var f = Types.resolved.f_concur_atomic_v;
           var thiz = args.get(0);
-          synchronized(LOCK_FOR_ATOMIC)
+          synchronized (LOCK_FOR_ATOMIC)
             {
               interpreter.setField(f, -1, a, thiz, args.get(1));
             }
@@ -284,13 +285,13 @@ public class Intrinsics extends ANY
 
     put("concur.util.loadFence",   (interpreter, innerClazz) -> args ->
         {
-          synchronized(LOCK_FOR_ATOMIC) { };
+          synchronized (LOCK_FOR_ATOMIC) { };
           return new Instance(Clazzes.c_unit.get());
         });
 
     put("concur.util.storeFence",  (interpreter, innerClazz) -> args ->
         {
-          synchronized(LOCK_FOR_ATOMIC) { };
+          synchronized (LOCK_FOR_ATOMIC) { };
           return new Instance(Clazzes.c_unit.get());
         });
 
