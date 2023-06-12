@@ -36,6 +36,9 @@
 # add, lookup, remove                     : O(log n)
 # snapshot, amortized size retrieval, clear  : O(1)
 #
+# While CTrie is lock-free and guaranteed to make progress as a whole
+# it is not wait-free and thus no such guarantee is given per thread.
+#
 # NYI (atomic) cas
 # NYI addif
 #
