@@ -85,7 +85,7 @@ is
   # write this value in a way that is atomic with respect to read and write
   # operations performed by concurrent threads
   #
-  write(new_value T)  ! atomic_access is
+  write(new_value T) unit ! atomic_access is
     atomic_access_env.replace
     write0 new_value
 
@@ -112,7 +112,7 @@ is
   # and write operations performed by concurrent threads
   #
   /* NYI: priv */
-  write0(new_value T) is intrinsic
+  write0(new_value T) unit is intrinsic
 
 
   # intrinsic to perform a bit-wise comparison of the value contained in this atomic
