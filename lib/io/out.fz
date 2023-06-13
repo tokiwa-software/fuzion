@@ -33,7 +33,7 @@ private out (redef p Can_Print) : print_effect p is
 
 
   type.default_print_to_out : io.Can_Print is
-    print(s Any) => stdout.print s
+    print(s Any) => fuzion.sys.out.print s
 
 
 # short-hand for accessing out effect in current environment
