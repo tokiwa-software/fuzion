@@ -60,10 +60,11 @@ has_interval : integer is
         f x
 
     # create a stream of all the elements of this interval, in order.
-    redef as_stream ref : stream has_interval.this.type is
-      x := num_option lower
-      redef has_next bool is x.exists && (x.val ≤ upper)
-      redef next has_interval.this.type is res := x.val; set x := x +? has_interval.this.type.one; res
+    redef as_stream =>
+      ref : stream has_interval.this.type
+        x := num_option lower
+        redef has_next bool is x.exists && (x.val ≤ upper)
+        redef next has_interval.this.type is res := x.val; set x := x +? has_interval.this.type.one; res
 
 
     # does this range contain the given value?
