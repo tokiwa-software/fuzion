@@ -25,24 +25,39 @@
 
 ctrie_threads is
 
-  ctrie := (C_Trie i32 String).type.empty
+  ctrie := (container.C_Trie i32 i32).type.empty
 
-  one := ps_set 0..1000
-  two := ps_set 500..1500
+  num_threads := 10
+  keys := 1..999
 
-  run_in_thread(s Set i32, n i32) is
-    concur.thread.spawn (() ->
-      for k in s do
-        ctrie.add k "thread$n"
-      say "thread $n finished"
-      unit
-      )
+  for t in 1..num_threads do
+    concur.thread.spawn ()->
+      for k in keys
+          snap := ctrie, if k=500 then ctrie.snapshot true else snap
+      do
+        ctrie.add k t
+        if k % 3 = 0
+          ctrie.remove k
 
-  run_in_thread one 1
-  run_in_thread two 2
+      else
+        # NYI snapshots do not work yet
+        # say "snapshot size is: {snap.size}"
+
 
   # NYI can not wait for threads to finish currently
-  fuzion.std.nano_sleep 5E9
+  time.nano.sleep (time.durations.s 5)
 
-  if ctrie.size != 2001
-    panic "compare and set in ctrie not implemented yet"
+  say ctrie.size # the number of the beast = 666
+
+  say (ctrie.lookup 1).exists
+  say (ctrie.lookup 2).exists
+  say (ctrie.lookup 3).is_nil
+  say (ctrie.lookup 997).exists
+  say (ctrie.lookup 998).exists
+  say (ctrie.lookup 999).is_nil
+
+  if ((envir.args.nth 1).get "")="-debug"
+    say "==="
+    say (ctrie.items.map_sequence x->"{x.values.0} was inserted by thread {x.values.1}")
+    say "==="
+    say ((ctrie.items.map_sequence x->x.values.1).group_by x->x)

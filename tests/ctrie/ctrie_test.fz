@@ -30,20 +30,17 @@ ctrie_test is
   removed := container.ps_set 0..100:2
   readded := container.ps_set 0..100:3
 
-  # snapshot
-  no_items := ctrie.items
+  no_items := ctrie.snapshot true
 
   for k in all do
     ctrie.add k "v$k"
 
-  # snapshot
-  all_items := ctrie.items
+  all_items := ctrie.snapshot true
 
   for k in removed do
     ctrie.remove k
 
-  # snapshot
-  half_of_items := ctrie.items
+  half_of_items := ctrie.snapshot true
 
   for k in readded do
     ctrie.add k "v$k"
@@ -52,22 +49,14 @@ ctrie_test is
   no  := removed.filter (x -> !(readded.contains x))
   yes := (container.ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
 
-  if no ∃  (k -> (ctrie.lookup k).exists)
-    panic "value in slot that should be empty"
+  say (no  ∀ (k -> (ctrie.lookup k).is_nil))
 
-  if yes ∃ (k -> (ctrie.lookup k).get != "v$k")
-    panic "a lookup for a key returns incorrect value or none at all"
+  say (yes ∀ (k -> (ctrie.lookup k).get = "v$k"))
 
-  if ctrie.size != yes.size
-    panic "ctrie size is incorrect"
+  say (ctrie.size = yes.size)
 
-  if no_items.count != 0
-    panic "no items count should be zero"
+  say no_items.items.count # 0
 
-  if all_items.count != 101
-    panic "all items count should be 101"
+  say all_items.items.count # 101
 
-  if half_of_items.count != 50
-    panic "half of items should be 50"
-
-  say "all 😀"
+  say half_of_items.items.count # 50

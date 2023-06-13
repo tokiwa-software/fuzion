@@ -1,0 +1,2 @@
+currently does not work in interpreter:
+Exception in thread "Thread-1" java.lang.Error: ensure-condition failed: dev.flang.air.Clazz:setRuntimeData:1617

@@ -39,7 +39,6 @@
 # While CTrie is lock-free and guaranteed to make progress as a whole
 # it is not wait-free and thus no such guarantee is given per thread.
 #
-# NYI (atomic) cas
 # NYI addif
 #
 # glossary:
@@ -120,11 +119,34 @@ private container_node(CTK type : has_hash, CTV type, bmp u32, array array (bran
                  .as_list
 
 
+# a prev_node is used in the generation aware compare and swap
+#
+# Main_Node.prev is initially nil
+# when a Main_Node is replaced it is put into
+# the successors `prev`-field.
+#
+private prev_node(CTK type : has_hash, CTV type) : choice (failed_node CTK CTV) (Main_Node CTK CTV) nil, equatable is
+  fixed type.equality(a, b container.prev_node CTK CTV) bool is
+    match a
+      af container.failed_node =>
+        match b
+          bf container.failed_node => af = bf
+          * => false
+      an container.Main_Node =>
+        match b
+          bn container.Main_Node => an = bn
+          * => false
+      nil =>
+        match b
+          nil => true
+          * => false
+
+
 # a container, tomb or linked list node
 private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : equatable is
 
   # a previous node that gets set during a generational aware compare and set
-  prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
+  prev := concur.atomic (prev_node CTK CTV) nil
 
   redef as_string =>
     match data
@@ -138,7 +160,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
     a.hash_code = b.hash_code
 
   as_list
-  pre match prev.get
+  pre match prev.read
     nil => true
     * => false
    =>
@@ -148,42 +170,33 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
       list_node list_node => list_node.map_sequence (sn -> (sn.k, sn.v))
 
   # compare and update `prev`
-  cas_prev(o,n choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) =>
-    # NYI
-    match n
-      f failed_node =>
-        prev <- f
-      * =>
-        prev <- nil
-    true
+  cas_prev(o,n prev_node CTK CTV) =>
+    prev.compare_and_swap o n = o
 
 
 # a failed node where the previous indirection node contains a main node
-private failed_node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) is
+private failed_node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) : equatable is
+  fixed type.equality(a, b failed_node.this.type) bool is
+    a.prev = b.prev
 
 # an indirection node
-private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_Node CTK CTV)) ref : equatable is
+private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main_Node CTK CTV)) ref : equatable is
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
-    # NYI this must be atomic
-    # if(main.hash != old_n.hash)
-    #   false
-    # else
-    data <- new_n
-    true
+    data.compare_and_swap old_n new_n = old_n
 
   # completes the generation sensitive compare and set
   private gcas_commit(m Main_Node CTK CTV, ct ref C_Trie CTK CTV) Main_Node CTK CTV is
     # abortably read root and get the current gen
-    gen := (ct.read_root true).data.get.gen
-    match m.prev.get
+    gen := (ct.read_root true).data.read.gen
+    match m.prev.read
       nil => m
       fn failed_node =>
         if cas m fn.prev
           fn.prev
         else
-          gcas_commit data.get ct
+          gcas_commit data.read ct
       n Main_Node =>
         if gen = m.gen && !ct.read_only
           if m.cas_prev n nil
@@ -192,12 +205,12 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
             gcas_commit m ct
         else
           m.cas_prev n (failed_node n)
-          gcas_commit data.get ct
+          gcas_commit data.read ct
 
   # read `data`, if prev is set commit first
   private gcas_read(ct ref C_Trie CTK CTV) Main_Node CTK CTV is
-    m := data.get
-    match m.prev.get
+    m := data.read
+    match m.prev.read
       nil => m
       * => (gcas_commit m ct)
 
@@ -206,7 +219,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
     n.cas_prev o nil
     if(cas o n)
       gcas_commit n ct
-      match n.prev.get
+      match n.prev.read
         nil => ctrie_ok
         * => restart
     else
@@ -217,7 +230,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
   private copy_to_gen(new_gen i32, ct ref C_Trie CTK CTV) Indirection_Node CTK CTV is
     m := gcas_read ct
     # increase the generation of node by one
-    Indirection_Node (mut (Main_Node m.data new_gen))
+    Indirection_Node (concur.atomic (Main_Node m.data new_gen))
 
   # equality - NYI
   #
@@ -227,10 +240,10 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
   redef as_string => "Indirection_Node($data)"
 
   as_list list (tuple CTK CTV)
-  pre match data.get.prev.get
+  pre match data.read.prev.read
     nil => true
     * => false
-  is data.get.as_list
+  is data.read.as_list
 
 
 # a linked list node
@@ -257,26 +270,42 @@ private ctrie_ok is
 private not_found is
   redef as_string => "not found"
 
+
 # descriptor for double-compare-single-swap operation
-private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
+private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) : equatable is
+  fixed type.equality(a, b container.rdcss_descriptor CTK CTV) bool is
+    a.ov = b.ov && a.exp = b.exp && a.nv = b.nv
+
+
+# the root node of the ctrie, normally an indirection node.
+# in case the root node is currently replaced it is a rdcss_descriptor temporarily.
+private root_node(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV), equatable is
+  fixed type.equality(a, b container.root_node CTK CTV) bool is
+    match a
+      ai container.Indirection_Node =>
+        match b
+          bi container.Indirection_Node => ai = bi
+          * => false
+      ad container.rdcss_descriptor =>
+        match b
+          bd container.rdcss_descriptor => ad = bd
+          * => false
 
 
 # the ctrie
-C_Trie(CTK type : has_hash, CTV type, private root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), private read_only bool) ref : Map CTK CTV
+C_Trie(CTK type : has_hash, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) ref : Map CTK CTV
 is
 
   # compare and swap root of the ctrie
-  private cas_root(ov, nv choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)) =>
-    # NYI cas
-    root <- nv
-    true
+  private cas_root(ov, nv (root_node CTK CTV)) =>
+    root.compare_and_swap ov nv = ov
 
 
   # complete the double compare and swap
   # of the root node
   private rdcss_complete(abort bool) Indirection_Node CTK CTV
   is
-    match root.get
+    match root.read
       # there is nothing to do
       n Indirection_Node => n
 
@@ -306,7 +335,7 @@ is
   # Then (try) commiting the descriptor first
   private read_root(abort bool) Indirection_Node CTK CTV
   is
-    match root.get
+    match root.read
       n Indirection_Node => n
       d rdcss_descriptor => rdcss_complete abort
 
@@ -416,7 +445,7 @@ is
       yidx := ((hash y.k.hash) >> lev) & 0x1f
       bmp := (u32 1 << xidx) | (u32 1 << yidx)
       if xidx = yidx
-        sub_node := Indirection_Node CTK CTV (mut (dual x y (lev + width) gen))
+        sub_node := Indirection_Node CTK CTV (concur.atomic (dual x y (lev + width) gen))
         Main_Node (container_node CTK CTV bmp [sub_node]) gen
       else
         if (xidx < yidx)
@@ -430,7 +459,7 @@ is
   # lookup key k
   lookup(k CTK) option CTV is
     r := read_root
-    res := lookup r k 0 nil r.data.get.gen
+    res := lookup r k 0 nil r.data.read.gen
     match res
       r restart =>
         lookup k
@@ -452,7 +481,7 @@ is
         else
           match cn.array[pos.as_i32]
             sin Indirection_Node =>
-              if read_only || gen = sin.data.get.gen
+              if read_only || gen = sin.data.read.gen
                 lookup sin k (lev + width) i gen
               else
                 match i.gcas m (Main_Node (cn.renewed gen C_Trie.this) gen) C_Trie.this
@@ -480,7 +509,7 @@ is
   # if key is already present value is updated
   add(k CTK, v CTV) unit is
     r := read_root
-    match add r k v 0 nil r.data.get.gen
+    match add r k v 0 nil r.data.read.gen
       r restart =>
         add k v
       ctrie_ok =>
@@ -508,7 +537,7 @@ is
                   restart => restart
             sn singleton_node =>
               if sn.k != k
-                nin := Indirection_Node (mut (dual sn (singleton_node k v) (lev + width) i.data.get.gen))
+                nin := Indirection_Node (concur.atomic (dual sn (singleton_node k v) (lev + width) i.data.read.gen))
                 ncn := (if m.gen = gen then cn else cn.renewed gen C_Trie.this).updated pos nin
                 i.gcas m (Main_Node ncn gen) C_Trie.this
               else
@@ -518,13 +547,13 @@ is
         clean parent (lev - width) gen
         restart
       ln list_node =>
-        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k)))) i.data.get.gen) C_Trie.this
+        i.gcas m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k)))) i.data.read.gen) C_Trie.this
 
 
   # remove key from ctrie
   remove(k CTK) choice not_found CTV is
     r := read_root
-    match remove r k 0 nil r.data.get.gen
+    match remove r k 0 nil r.data.read.gen
       r restart => remove k
       n not_found => n
       v CTV => v
@@ -542,7 +571,7 @@ is
         else
           res choice restart not_found CTV := match cn.array[pos.as_i32]
             sin Indirection_Node =>
-              if sin.data.get.gen = gen
+              if sin.data.read.gen = gen
                 remove sin k (lev + width) i gen
               else
                 match (i.gcas m (Main_Node (cn.renewed gen C_Trie.this) gen) C_Trie.this)
@@ -569,7 +598,7 @@ is
         restart
       ln list_node =>
         fln := list_node ln.filter(sn -> sn.k != k)
-        nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) i.data.get.gen else Main_Node fln i.data.get.gen
+        nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) i.data.read.gen else Main_Node fln i.data.read.gen
         match (i.gcas m nln C_Trie.this)
           ctrie_ok => find ln k
           restart => restart
@@ -584,15 +613,16 @@ is
   redef index [] (k CTK) option CTV is
     lookup k
 
+
   # take a snapshot of the ctrie
   snapshot(read_only bool) C_Trie CTK CTV is
     r := read_root
     expmain := r.gcas_read C_Trie.this
-    if(rdcss_root (rdcss_descriptor r expmain (r.copy_to_gen (r.data.get.gen +° 1) C_Trie.this)))
+    if(rdcss_root (rdcss_descriptor r expmain (r.copy_to_gen (r.data.read.gen +° 1) C_Trie.this)))
       # NYI better type inference could make this tmp unecessary
-      tmp choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV) := r.copy_to_gen (r.data.get.gen +° 1) C_Trie.this
+      tmp root_node CTK CTV := r.copy_to_gen (r.data.read.gen +° 1) C_Trie.this
       # new C_Trie by increasing gen of root by one
-      C_Trie CTK CTV (mut tmp) read_only
+      C_Trie CTK CTV (concur.atomic tmp) read_only
     else
       snapshot read_only
 
@@ -607,10 +637,10 @@ is
   # initialize a new C_Trie
   type.empty =>
 
-    initial_root_node :=
-      container.Indirection_Node (mut (container.Main_Node (container.container_node CTK CTV 0 []) 0))
+    initial_root_node container.root_node CTK CTV:=
+      container.Indirection_Node (concur.atomic (container.Main_Node (container.container_node CTK CTV 0 []) 0))
 
-    container.C_Trie CTK CTV (mut (choice (container.Indirection_Node CTK CTV) (container.rdcss_descriptor CTK CTV)) initial_root_node) false
+    container.C_Trie CTK CTV (concur.atomic initial_root_node) false
 
 
   # C_Trie.type.from_entries -- routine to initialize a C_Trie from a sequence of key value tuples
