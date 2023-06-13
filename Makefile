@@ -1026,7 +1026,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
 	cp $(BUILD_DIR)/UnicodeData.java $(SRC)/dev/flang/util/UnicodeData.java
-	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/unicode/data.fz
+	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/character_encodings/unicode/data.fz
 
 # generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
 $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
