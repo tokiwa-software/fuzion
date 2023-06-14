@@ -38,6 +38,9 @@ env:
 
 jobs:
   run_tests:
+    strategy:
+      matrix:
+        backend: [int, c]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
@@ -60,5 +63,12 @@ jobs:
       - name: build (no java modules)
         run: make no-java
 
-      - name: run tests
+      - if: matrix.backend == 'int'
+        name: run tests (${{ matrix.backend }})
         run: make run_tests_parallel
+
+      - if: matrix.backend == 'c'
+        name: run tests (${{ matrix.backend }})
+        env:
+          FUZION_BACKEND_C_ARGS: -useGC
+        run: make run_tests_c_parallel
