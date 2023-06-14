@@ -34,4 +34,4 @@ int:
 	$(FUZION) $(NAME) 2>err.txt
 
 c:
-	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt
+	($(FUZION) -c $(FUZION_BACKEND_C_ARGS) -o=testbin $(NAME) && ./testbin) 2>err.txt

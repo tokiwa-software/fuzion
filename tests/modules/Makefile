@@ -27,7 +27,7 @@ a: modules/a.fum
 
 # compile to C code and run example using a.fum and sources from src_b and src
 a_c: modules/a.fum
-	($(FZ) -sourceDirs=./src_b,./src -modules=a   -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
+	($(FZ) -sourceDirs=./src_b,./src -modules=a   -moduleDirs=modules -c $(FUZION_BACKEND_C_ARGS) test_modules -o=testbin && ./testbin) $(CHECK)
 
 # compile src_b into b.fum
 modules/b.fum: modules/a.fum
@@ -40,7 +40,7 @@ ab: modules/a.fum modules/b.fum
 
 # compile to C code and run example using a.fum and b.fum and sources src
 ab_c: modules/a.fum modules/b.fum
-	($(FZ) -sourceDirs=./src         -modules=a,b -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
+	($(FZ) -sourceDirs=./src         -modules=a,b -moduleDirs=modules -c $(FUZION_BACKEND_C_ARGS) test_modules -o=testbin && ./testbin) $(CHECK)
 
 # run example using b.fum and sources src.
 # a.fum is not added automatically, so this causes errors, see #484

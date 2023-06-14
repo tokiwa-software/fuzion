@@ -42,7 +42,7 @@ ENV = \
 
 compile_server_c:
 	rm -f server
-	$(FUZION_RUN) -c -o=server sockets_test_server.fz
+	$(FUZION_RUN) -c $(FUZION_BACKEND_C_ARGS) -o=server sockets_test_server.fz
 
 
 int: IPv4_TCP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv4 tcp > /dev/null & echo $$!)
