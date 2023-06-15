@@ -25,39 +25,71 @@
 
 ctrie_threads is
 
-  ctrie := (container.C_Trie i32 i32).type.empty
-
   num_threads := 10
   keys := 1..999
 
-  for t in 1..num_threads do
-    concur.thread.spawn ()->
-      for k in keys
-          snap := ctrie, if k=500 then ctrie.snapshot true else snap
-      do
-        ctrie.add k t
-        if k % 3 = 0
-          ctrie.remove k
+  test1 is
+    ctrie := (container.ctrie i32 i32).type.empty
 
-      else
-        # NYI snapshots do not work yet
-        # say "snapshot size is: {snap.size}"
+    empty := ctrie.snapshot true
+
+    for t in 1..num_threads do
+      concur.thread.spawn ()->
+        for k in keys
+            snap := ctrie, if k=501 then ctrie.snapshot true else snap
+            snap_size := snap.size, (if k!=501 && snap_size != snap.size then panic "snapshot changed" else snap.size)
+        do
+          ctrie.add k t
+          if k % 3 = 0
+            ctrie.remove k
+        else
+          # snapshot happens when after k=500 => size is at least ⌊500/3*2⌋ = 333
+          say (333 < snap.size)
+          # snapshot must not contain all items.
+          # under unfavorable conditions where one thread
+          # is much faster or much slower than others this check
+          # may fail...
+          say (snap.size < 666)
 
 
-  # NYI can not wait for threads to finish currently
-  time.nano.sleep (time.durations.s 5)
+    # NYI can not wait for threads to finish currently
+    time.nano.sleep (time.durations.s 20)
 
-  say ctrie.size # the number of the beast = 666
+    say empty.size # should still be zero
+    say ctrie.size # the number of the beast = 666
 
-  say (ctrie.lookup 1).exists
-  say (ctrie.lookup 2).exists
-  say (ctrie.lookup 3).is_nil
-  say (ctrie.lookup 997).exists
-  say (ctrie.lookup 998).exists
-  say (ctrie.lookup 999).is_nil
+    # all keys which are multiples of 3 should have been removed
+    say (ctrie.items ∀ (x -> x.values.0 % 3 != 0))
 
-  if ((envir.args.nth 1).get "")="-debug"
-    say "==="
-    say (ctrie.items.map_sequence x->"{x.values.0} was inserted by thread {x.values.1}")
-    say "==="
-    say ((ctrie.items.map_sequence x->x.values.1).group_by x->x)
+    if ((envir.args.nth 1).get "")="-debug"
+      say "==="
+      say (ctrie.items.map_sequence x->"{x.values.0} was inserted by thread {x.values.1}")
+      say "==="
+      say ((ctrie.items.map_sequence x->x.values.1).group_by x->x)
+
+
+  test2 is
+    ctrie := (container.ctrie i32 i32).type.empty
+
+    for t in 1..num_threads do
+      concur.thread.spawn ()->
+        for k in keys do
+
+          if k = 500
+            concur.thread.spawn ()->
+              for k in keys.take 900 do
+                ctrie.remove k
+
+          if k%100 = 0
+            ctrie.snapshot true
+
+          ctrie.add k t
+
+    # NYI can not wait for threads to finish currently
+    time.nano.sleep (time.durations.s 10)
+
+    say ctrie.size # 999-900 = 99
+
+
+  test1
+  _ := test2

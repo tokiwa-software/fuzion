@@ -418,7 +418,7 @@ Sequence(T type) ref is
   #
   group_by(K type : has_hash, f T -> K) container.Map K (list T) is
     # NYI It should be possible to choose the map implementation that is used.
-    res := (container.C_Trie K (list T)).type.empty
+    res := (container.ctrie K (list T)).type.empty
     for_each (x ->
       key := f x
       match res[key]
