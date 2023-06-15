@@ -247,6 +247,25 @@ public class Intrinsics extends ANY
               return res;
             }
         });
+    put("concur.atomic.compare_and_set0",  (interpreter, innerClazz) -> args ->
+        {
+          var a = innerClazz._outer;
+          var f = Types.resolved.f_concur_atomic_v;
+          var thiz      = args.get(0);
+          var expected  = args.get(1);
+          var new_value = args.get(2);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
+              if (interpreter.compareField(f, -1, a, thiz, expected))
+                {
+                  res = expected;   // NYI: HACK: workaround since res was not cloned
+                  interpreter.setField(f, -1, a, thiz, new_value);
+                  return new boolValue(true);
+                }
+              return new boolValue(false);
+            }
+        });
     put("concur.atomic.racy_accesses_supported",  (interpreter, innerClazz) -> args ->
         {
           var t = innerClazz._outer._type.generics().get(0);
