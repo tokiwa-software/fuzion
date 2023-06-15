@@ -40,8 +40,7 @@
 # it is not wait-free and thus no such guarantee is given per thread.
 #
 # NYI addif
-# NYI equality comparison of nodes, should be replaced
-#     by comparison if refs are equal. use compare_and_set instead
+# NYI equality comparison could be ref equality
 # NYI generation might overflow, which might lead to weird effects.
 #
 # glossary:
@@ -121,11 +120,7 @@ Nil ref is
 # when a Main_Node is replaced it is put into
 # the successors `prev`-field.
 #
-private prev_node(CTK type : has_hash, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil, equatable is
-
-  # NYI ref equality
-  fixed type.equality(a, b container.prev_node CTK CTV) bool is
-    a.hash_code = b.hash_code
+private prev_node(CTK type : has_hash, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil is
 
   redef as_string =>
     match prev_node.this
@@ -141,7 +136,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
-    prev.compare_and_swap o n = o
+    prev.compare_and_set o n
 
   # a previous node that gets set during a generational aware compare and set
   prev := concur.atomic (prev_node CTK CTV) Nil
@@ -156,7 +151,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
   # equality - NYI
   #
   fixed type.equality(a, b container.Main_Node CTK CTV) bool is
-    a.hash_code = b.hash_code
+    a.data.hash_code = b.data.hash_code
 
   as_list
   pre match prev.read
@@ -188,11 +183,11 @@ private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main
   # NYI ref equality
   #
   fixed type.equality(a, b container.Indirection_Node CTK CTV) bool is
-    a.hash_code = b.hash_code
+    a.gen = b.gen && a.data.read = b.data.read
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
-    data.compare_and_swap old_n new_n = old_n
+    data.compare_and_set old_n new_n
 
   redef as_string => "Indirection_Node[gen=$gen]({data})"
 
@@ -250,11 +245,7 @@ private Rdcss_Descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK 
 
 # the root node of the ctrie, normally an indirection node.
 # in case the root node is currently replaced it is a Rdcss_Descriptor temporarily.
-private root_node(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (Rdcss_Descriptor CTK CTV), equatable is
-
-  # NYI ref equality
-  fixed type.equality(a, b container.root_node CTK CTV) bool is
-    a.hash_code = b.hash_code
+private root_node(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (Rdcss_Descriptor CTK CTV) is
 
   redef as_string =>
     s := match root_node.this
@@ -274,7 +265,7 @@ is
 
   # compare and swap root of the ctrie
   private cas_root(ov, nv root_node CTK CTV) =>
-    root.compare_and_swap ov nv = ov
+    root.compare_and_set ov nv
 
 
   # copy an indirection node to a new generation
