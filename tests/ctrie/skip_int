@@ -1,0 +1,2 @@
+currently does not work in interpreter:
+java.lang.StackOverflowError
