@@ -298,17 +298,23 @@ public class Interpreter extends ANY
         FuzionThread.current()._callStack.push(c);
 
         var d = staticClazz.getRuntimeData(c._sid + 0);
-        var od = d;
-        if (d instanceof Clazz innerClazz)
+        if (d instanceof Clazz)  // Clazz means we have not created a Callable yet
           {
-            var tclazz = (Clazz) staticClazz.getRuntimeData(c._sid + 1);
-            var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
-            d = callable(dyn, innerClazz, tclazz);
-            if (d == null)
+            synchronized (staticClazz)  // this might be done in parallel, so synchronize and check again
               {
-                d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
+                d = staticClazz.getRuntimeData(c._sid + 0);
+                if (d instanceof Clazz innerClazz)
+                  {
+                    var tclazz = (Clazz) staticClazz.getRuntimeData(c._sid + 1);
+                    var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
+                    d = callable(dyn, innerClazz, tclazz);
+                    if (d == null)
+                      {
+                        d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
+                      }
+                    staticClazz.setRuntimeData(c._sid + 0, d);  // cache callable
+                  }
               }
-            staticClazz.setRuntimeData(c._sid + 0, d);  // cache callable
           }
         Callable ca;
         if (d instanceof Callable dca)
