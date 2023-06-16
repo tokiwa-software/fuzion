@@ -439,6 +439,42 @@ public class Call extends AbstractCall
 
 
   /**
+   * Is the target of this call a type parameter?
+   *
+   * @return true for a call to `T.xyz`, `U.xyz` or `V.xyz` in a feature
+   * `f(T,U,V type)`, false otherwise.
+   */
+  private boolean targetIsTypeParameter()
+  {
+    return _target instanceof Call tc && tc._calledFeature.isTypeParameter();
+  }
+
+
+  /**
+   * Get the type of the target as seen by this call
+   *
+   * When calling `X.f` and `X` is a type parameter and `f` is a constructor,
+   * then `X`'s type is the type `X`, while for a function `f` the type is `X`'s
+   * constraint.
+   *
+   * @return the type of the target.
+   */
+  private AbstractType targetType(Resolution res)
+  {
+    return
+      // NYI: CLEANUP: For a type parameter, the feature result type is the type
+      // is abused and holds the type parameter constraint. As a consequence, we
+      // have to fix this here and set the type of the target explicitly here.
+      //
+      // Would be better if AbstractFeature.resultType() would do this for us:
+      _target instanceof Call tc &&
+      targetIsTypeParameter()          ? new Type(pos(), new Generic(tc.calledFeature())) :
+      calledFeature().isConstructor()  ? _target.typeForCallTarget()
+                                       : targetTypeOrConstraint(res);
+  }
+
+
+  /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -1329,17 +1365,18 @@ public class Call extends AbstractCall
    */
   private void resolveType(Resolution res, AbstractType t)
   {
-    var is_THIS_TYPE = t.isGenericArgument() && t.genericArgument().feature().isTypeFeature() && t.genericArgument().index() == 0;
-    var tt = is_THIS_TYPE && _target instanceof Call tc && tc._calledFeature.isTypeParameter()
+    var tt =
+      targetIsTypeParameter() && t.isThisTypeInTypeFeature()
       ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
-        tc._calledFeature.resultType().featureOfType().typeFeature(res).selfType()
-      : targetTypeOrConstraint(res);
+        // NYI: CLEANUP: remove this special handling!
+        _target.typeForCallTarget().featureOfType().selfType()
+      : targetType(res);
 
-    t = resolveSelect(t, tt)
-      .applyTypePars(tt)
-      .resolve(res, tt.featureOfType());
+    t = resolveSelect(t, tt);
+    t = t.applyTypePars(tt);
+    t = tt.isGenericArgument() ? t : t.resolve(res, tt.featureOfType());
     t = adjustThisTypeForTarget(t);
     t = resolveForCalledFeature(res, t, tt);
     _type = Types.intern(t);
@@ -1483,7 +1520,7 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
-        t = Type.newType(t, _target.typeForCallTarget());
+        t = Type.newType(t, tt);
       }
     else
       {

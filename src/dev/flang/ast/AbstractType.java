@@ -682,23 +682,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   private AbstractType applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
+    if (PRECONDITIONS) require
+      (f != null);
+
     /* NYI: Performance: This requires time in O(this.depth *
      * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
-    if (f != null)
+    for (var i : f.inherits())
       {
-        for (var i : f.inherits())
-          {
-            result = result.applyTypePars(i.calledFeature(),
-                                          i.actualTypeParameters());
-          }
+        result = result.applyTypePars(i.calledFeature(),
+                                      i.actualTypeParameters());
       }
     if (result.isGenericArgument())
       {
         Generic g = result.genericArgument();
-        if (f != null && g.formalGenerics() == f.generics())  // t is replaced by corresponding actualGenerics entry
+        if (g.formalGenerics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+          {
+            g = g.typeFeatureOrigin();
+          }
+        if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
             result = result.ensureNotOpen() ? g.replace(actualGenerics)
                                             : Types.t_ERROR;
@@ -1077,17 +1081,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
-    if (isThisType())
+    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
+    if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+        ||
+        isThisType() && att.featureOfType().inheritsFrom(featureOfType())  // we have abc.this.type with att inheriting from abc, so use tt
+        )
       {
-        var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
-        if (att.featureOfType().inheritsFrom(featureOfType()))
+        if (foundRef != null && tt.isRef())
           {
-            if (foundRef != null && tt.isRef())
-              {
-                foundRef.accept(this, tt);
-              }
-            result = tt;
+            foundRef.accept(this, tt);
           }
+        result = tt;
       }
     else
       {
@@ -1336,6 +1340,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * For a feature `f(A, B type)` the corresponding type feature has an implicit
+   * THIS#TYPE type parameter: `f.type(THIS#TYPE, A, B type)`.
+   *
+   + This checks if this type is this implicit type parameter.
+   */
+  boolean isThisTypeInTypeFeature()
+  {
+    return isGenericArgument() && genericArgument().isThisTypeInTypeFeature();
   }
 
 
