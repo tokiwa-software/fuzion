@@ -145,10 +145,11 @@ test_atomic is
   while s1.read < 0 || s2.read < 0 do
     time.nano.sleep (time.durations.ms 20)
 
-  chck s1.read>0 true
+  chck s1.read>=0 true
   chck s1.read=(a.read & 0x7fff_ffff) true
-  chck s2.read>0 true
+  chck s2.read>=0 true
   chck s2.read=(a.read >> 32 & 0x7fff_ffff) true
+  chck (c1.read+c2.read>0 : s1.read+s2.read>0) true
 
   # use `-debug` argument to show CAS success / failure statistics:
   #
