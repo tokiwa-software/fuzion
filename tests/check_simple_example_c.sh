@@ -59,10 +59,12 @@ else
 
     rm -f testbin
 
-    ( (FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -c "$FUZION_BACKEND_C_ARGS" "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
+    # word splitting of FUZION_BACKEND_C_ARGS is intentional
+    # shellcheck disable=SC2086
+     ( (FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -c ${FUZION_BACKEND_C_ARGS:-} "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
-    # (($1 -c "$FUZION_BACKEND_C_ARGS" $2 -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
+    # (($1 -c ${FUZION_BACKEND_C_ARGS:-} "$2" -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
 
