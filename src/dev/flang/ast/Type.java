@@ -741,7 +741,7 @@ public class Type extends AbstractType
         if (f != null)
           {
             var qn = f.qualifiedName();
-            if (f.isTypeFeature() && qn.endsWith(".type") && n == FuzionConstants.TYPE_FEATURE_THIS_TYPE)
+            if (generic.isThisTypeInTypeFeature())
               {
                 qn = qn.substring(0, qn.lastIndexOf(".type"));
                 n = "this.type (in type feature)";
