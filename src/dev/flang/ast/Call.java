@@ -462,9 +462,9 @@ public class Call extends AbstractCall
   private AbstractType targetType(Resolution res)
   {
     return
-      // NYI: CLEANUP: For a type parameter, the feature result type is the type
-      // is abused and holds the type parameter constraint. As a consequence, we
-      // have to fix this here and set the type of the target explicitly here.
+      // NYI: CLEANUP: For a type parameter, the feature result type is abused
+      // and holds the type parameter constraint.  As a consequence, we have to
+      // fix this here and set the type of the target explicitly here.
       //
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
