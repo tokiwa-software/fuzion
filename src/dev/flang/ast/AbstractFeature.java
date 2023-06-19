@@ -550,7 +550,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * is created is fixed.  In this case. the type is exactly selfType(), and not
    * a placeholder for any possible child's type.
    */
-  AbstractType thisType(boolean innerFixed)
+  public AbstractType thisType(boolean innerFixed)
   {
     AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
 

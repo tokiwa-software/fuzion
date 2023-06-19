@@ -1146,13 +1146,31 @@ public class SourceModule extends Module implements SrcModule, MirModule
        (to.featureOfType() == original    .outer()             ) &&
        (tr.featureOfType() == redefinition.outer()             )   ) ||
 
-      /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.selfType.
+      /* to depends on original.this.type, redefinition is fixed and tr is
+       * equals the actual type of to as seen by redefinition.outer.
+       *
+       * Ex.
+       *
+       *   p is
+       *     maybe option p.this.type
+       *     is abstract
+       *
+       *   h : p is
+       *     fixed redef maybe option h
+       *     is
+       *       if random.next_bool then
+       *         nil
+       *       else
+       *         h
+       *
+       * here, the result type of inherited `p.maybe` is `option p.this.type`,
+       * which gets turned into `option h.this.type` when inherited. However,
+       * since `h.maybe` is fixed, we can use the actual type in the outer
+       * feature `h`, i.e., `option h`, which is equal to the result type of the
+       * redefinition `h.maybe`.
        */
-      ((to.isThisType()                                        ) &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
+      (((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0         ) &&
+       redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0    ) ||
 
       /* original and redefinition are inner features of type features, to is
        * THIS_TYPE and tr is the underlying non-type features selfType.

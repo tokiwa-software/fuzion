@@ -230,15 +230,43 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
+    this(t, g, o, false);
+
+    if (PRECONDITIONS) require
+      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
+        t == Types.t_ERROR || (t.outer() == null) == (o == null));
+
+    checkedForGeneric = t.checkedForGeneric();
+  }
+
+
+  /**
+   * Constructor to create a type from an existing type after formal generics
+   * have been replaced in the generics arguments and in the outer type.
+   *
+   * @param t the original type
+   *
+   * @param g the actual generic arguments that replace t.generics
+   *
+   * @param o the actual outer type, or null, that replaces t.outer
+   *
+   * @param fixOuterThisType NYI: CLEANUP: #737, see below, unclear why this is needed.
+   */
+  public Type(AbstractType t, List<AbstractType> g, AbstractType o, boolean fixOuterThisType)
+  {
     this(t.pos2BeRemoved(),
          t.name(),
          g,
          o,
          t instanceof Type tt ? tt.feature   : t.featureOfType(),
+
+         // NYI: CLEANUP: This seems unnecessarily complex:
          t instanceof Type tt ? tt._refOrVal : (t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
                                                 t.isRef() ? RefOrVal.Boxed
                                                 : RefOrVal.Value),
-         true);
+
+         fixOuterThisType);
 
     if (PRECONDITIONS) require
       ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
