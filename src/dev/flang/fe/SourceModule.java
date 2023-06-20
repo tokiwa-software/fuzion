@@ -1125,49 +1125,80 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param redefinition the heir feature.
    *
-   * @param to original argument type in 'original'.
+   * @param to original argument type in `original`.
    *
-   * @param tr new argument type in 'redefinition'.
+   * @param tr new argument type in `redefinition`.
    *
-   * @return true if 'to' may be replaced with 'tr'.
+   * @param fixed true to perform the test as if `redefinition` is `fixed`. This
+   * is used in two ways: first, to check if `redefition` is fixed, and then,
+   * when an error is reported, to suggest adding `fixed` if that would solve
+   * the error.
+   *
+   * @return true if `to` may be replaced with `tr` or if `to` or `tr` contain
+   * an error.
    */
   boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr,
-                                   boolean ignoreFixedModifier)
+                                   boolean fixed)
   {
     return
-      /* to is original    .this.type  and
-       * tr is redefinition.this.type
+      /* to contains original    .this.type and
+       * tr contains redefinition.this.type
        */
-      ((to.isThisType()                                        ) &&
-       (tr.isThisType()                                        ) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
+      to.replace_this_type(original.outer(), redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
 
-      /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.selfType.
-       */
-      ((to.isThisType()                                        ) &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
-
-      /* original and redefinition are inner features of type features, to is
-       * THIS_TYPE and tr is the underlying non-type features selfType.
+      /* to depends on original.this.type, redefinition is fixed and tr is
+       * equals the actual type of to as seen by redefinition.outer.
        *
-       * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
-       * numeric.this.type)
+       * Ex.
+       *
+       *   p is
+       *     maybe option p.this.type
+       *     is abstract
+       *
+       *   h : p is
+       *     fixed redef maybe option h
+       *     is
+       *       if random.next_bool then
+       *         nil
+       *       else
+       *         h
+       *
+       * here, the result type of inherited `p.maybe` is `option p.this.type`,
+       * which gets turned into `option h.this.type` when inherited. However,
+       * since `h.maybe` is fixed, we can use the actual type in the outer
+       * feature `h`, i.e., `option h`, which is equal to the result type of the
+       * redefinition `h.maybe`.
        */
-      (original    .outer().isTypeFeature()                                                                                            &&
-       redefinition.outer().isTypeFeature()                                                                                            &&
-       to.isGenericArgument()                                                                                                          &&
-       to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       !tr.isGenericArgument()                                                                                                         &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().selfTypeInTypeFeature()) == 0                                               );
+      fixed &&
+      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
+
+      /* original and redefinition are inner features of type features, `to` is
+       * `this.type` and `tr` is the underlying non-type feature's selfType.
+       *
+       * E.g.,
+       *
+       *   fixed i32.type.equality(a, b i32) bool is ...
+       *
+       * redefines
+       *
+       *   equatable.type.equality(a, b equatable.this.type) bool is abstract
+       *
+       * so we allow `equatable.this.type` to become `i32`.
+       */
+      fixed                                &&
+      original    .outer().isTypeFeature() &&
+      redefinition.outer().isTypeFeature() &&
+      to.replace_this_type_in_type_feature(redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
+
+      /* avoid reporting errors in case of previous errors
+       */
+      to.containsError() ||
+      tr.containsError();
   }
 
 
@@ -1182,6 +1213,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var args = f.arguments();
     int ean = args.size();
+    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());
@@ -1196,9 +1228,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1.compareTo(t2) != 0 &&
-                    !isLegalCovariantThisType(o, f, t1, t2, false) &&
-                    !t1.containsError() && !t2.containsError())
+                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1229,7 +1259,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
                  t2 != Types.resolved.t_void &&
-                 !isLegalCovariantThisType(o, f, t1, t2, false))
+                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }
