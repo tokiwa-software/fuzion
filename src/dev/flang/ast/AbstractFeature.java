@@ -537,7 +537,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * Create '.this.type' for this feature.
    */
-  AbstractType thisType()
+  public AbstractType thisType()
   {
     return thisType(false);
   }

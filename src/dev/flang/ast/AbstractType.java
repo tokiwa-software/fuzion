@@ -1102,6 +1102,30 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check this and, recursively, all types contained in this' type parameters
+   * and outer types if isThisTypeInTypeFeature() is true and the surrounding
+   * type feature equals typeFeature.  Replace all matches by the original
+   * feature's self type.
+   *
+   * As an examples, in the code
+   *
+   *   f is
+   *     fixed type.x option f.this.type is abstract
+   *
+   * when called on the result type of `f.type.x` argument `f.type`, this will
+   * result in `option f`.
+   *
+   * @param typeFeature the type feature whose this.type we are replacing
+   */
+  public AbstractType replace_this_type_in_type_feature(AbstractFeature typeFeature)
+  {
+    return isThisTypeInTypeFeature() && typeFeature  == genericArgument().typeParameter().outer()
+      ? typeFeature.typeFeatureOrigin().selfTypeInTypeFeature()
+      : applyToGenericsAndOuter(g -> g.replace_this_type_in_type_feature(typeFeature));
+  }
+
+
+  /**
    * For a given type t, get the type of t's type feature. E.g., for t==string,
    * this will return the type of string.type.
    *
@@ -1349,7 +1373,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    + This checks if this type is this implicit type parameter.
    */
-  boolean isThisTypeInTypeFeature()
+  public boolean isThisTypeInTypeFeature()
   {
     return isGenericArgument() && genericArgument().isThisTypeInTypeFeature();
   }
