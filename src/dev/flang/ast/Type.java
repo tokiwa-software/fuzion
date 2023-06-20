@@ -236,8 +236,6 @@ public class Type extends AbstractType
       ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
-
-    checkedForGeneric = t.checkedForGeneric();
   }
 
 
