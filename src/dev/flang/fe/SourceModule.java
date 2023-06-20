@@ -1147,9 +1147,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       /* to contains original    .this.type and
        * tr contains redefinition.this.type
        */
-      to.applyToGenericsAndOuter(g -> g.isThisType() && g.featureOfType() == original.outer()
-                                      ? redefinition.outer().thisType()
-                                      : g)
+      to.replace_this_type(original.outer(), redefinition.outer())
         .compareTo(tr) == 0                                                       ||
 
       /* to depends on original.this.type, redefinition is fixed and tr is
