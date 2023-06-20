@@ -1127,7 +1127,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check this and, recursively, all types contained in this' type parameters
-   * and outer types if `this.isThisType && this.featureOfType() == paent` is
+   * and outer types if `this.isThisType && this.featureOfType() == parent` is
    * true.  Replace all matches by the `heir.thisType()`.
    *
    * As an examples, in the code
