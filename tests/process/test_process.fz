@@ -1,59 +1,6 @@
 test_process =>
 
-  test(str String) is
-    say "===  Test: $str  ==="
-
-  test "write to stdin of process"
-  say (process.spawn ["cat"] ()->
-      process.spawned.env.write_string "Hello from the other side."
-      say "close write: {process.spawned.env.close_write}"
-      say "close write again: {process.spawned.env.close_write}"
-      process.spawned.env.read_string
-  )
-
-
-
-  test "read stdout of process"
-  say (process.spawn ["echo", "eecchhoo"] ()->
-    process.spawned.env.read_string
-  )
-
-
-
-  test "pass environment variable"
-  # NYI why do we have to specify type param?
-  say (process.spawn (outcome String) ["printenv", "MYENVVAR"] (container.map_of [("MYENVVAR", "content")]) ()->
-    process.spawned.env.read_string
-  )
-
-
-
-  test "read stdout blocks until stdin closed"
-  say (process.spawn ["cat"] ()->
-
-    p := process.spawned.env
-
-    concur.thread.spawn (() ->
-      time.nano.sleep (time.durations.ms 100)
-      say "1) closing write"
-      _ := p.close_write)
-
-    # this read should block until stdin is closed
-    say "2) read: {p.read_string}"
-  )
-
-
-
-  test "feed output of process 1 to process 2"
-  say (process.spawn ["echo", "'feed me to cat'"] ()->
-    p process.spawned =>
-      match p | ["cat"]
-        p process.spawned => say p.read_string
-        error => say "error"
-    error => say "error"
-  )
-
-  /*
+  spawned => process.spawned.env
 
   # create string of given byte size
   get_str(byte_size i32) =>
@@ -62,37 +9,83 @@ test_process =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
 
+  test(str String) is
+    say "===  Test: $str  ==="
+
+
+
+  test "write to stdin of process"
+  say (process.spawn ["cat"] ()->
+      spawned.write_string "Hello from the other side."
+      say "close write: {spawned.close_write}"
+      say "close write again: {spawned.close_write}"
+      spawned.read_string
+  )
+
+
+
+  test "read stdout of process"
+  say (process.spawn ["echo", "eecchhoo"] ()->
+    spawned.read_string
+  )
+
+
+
+  test "pass environment variable"
+  # NYI why do we have to specify type param?
+  say (process.spawn (outcome String) ["printenv", "MYENVVAR"] (container.map_of [("MYENVVAR", "content")]) ()->
+    spawned.read_string
+  )
+
+
+
+  test "read stdout blocks until stdin closed"
+  concur.thread.spawn ()->
+    say (process.spawn ["cat"] ()->
+
+
+      # this read should block until stdin is closed
+      a := spawned.read_string
+      say "not reached, because read_string blocks"
+    )
+  time.nano.sleep (time.durations.ms 100)
+
+
+
+  test "feed output of process 1 to process 2"
+  say (process.spawn ["echo", "'feed me to cat'"] ()->
+    spawned.pipe_to ["cat"] ()->spawned.read_string
+  )
+
 
 
   test "100kb argument, piped to another process"
-  match process.spawn ["echo", "-n", (get_str 1E5)]
-    p process.spawned =>
-      match p | ["cat"]
-        p2 process.spawned =>
-          say p.read_string.val.byte_length
-          say "exit code: {p.exit_code}"
-        e error =>
-          say e
-    e error =>
-      say e
+  say (process.spawn ["echo", "-n", (get_str 1E5)] ()->
+    spawned.pipe_to ["cat"] ()->
+      say spawned.read_string.val.byte_length
+      say "exit code: {spawned.exit_code}"
+      # execute exit_code twice:
+      say "exit code: {spawned.exit_code}"
+  )
+
 
 
 
   test "10mb write to stdin, piped to another process"
-  match process.spawn ["cat"]
-    p3 process.spawned =>
-      concur.thread.spawn ()->
-        time.nano.sleep (time.durations.s 1)
-        say "start reading"
-        while
-          match p3.read_bytes 100
-            Sequence => true
-            * => false
+  say (process.spawn ["cat"] ()->
+    p := spawned
+    concur.thread.spawn ()->
+      time.nano.sleep (time.durations.s 1)
+      say "start reading"
+      while
+        match p.read_bytes 100
+          Sequence => true
+          * => false
 
-      # NYI write should block here?
-      say (p3.write_bytes (get_str 1E7).utf8)
-      p3.close_write
-      say "exit code: {p3.exit_code}"
-    error =>
+    # NYI write should block here?
+    say (spawned.write_bytes (get_str 1E7).utf8)
+    spawned.close_write
+    say "exit code: {spawned.exit_code}"
+  )
 
-*/
+

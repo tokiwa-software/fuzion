@@ -21,13 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
-private spawned(h process.Handler) : simple_effect
+private spawned(h process.Default_Handler /* NYI should be Handler. can not inherit (pipe T)*/) : simple_effect
 is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
   # NYI move this to effect?
   private read_chunk_size := 512
+
+  # NYI use buffered reader here
 
   read_bytes(count i32) choice error io.end_of_file (Sequence u8) is
     h.read_bytes count
@@ -68,22 +70,24 @@ is
   close_write =>
     h.close_write
 
+  exit_code =>
+    h.exit_code
 
-/*
-  infix | (process_and_args array String) outcome process.spawned is
-    h.pipe_to process_and_args (container.ordered_map String String).type.empty
 
-  infix | (process_and_args array String, env_vars container.Map String String) outcome process.spawned is
-    h.pipe_to process_and_args env_vars
-*/
+  pipe_to (T type, process_and_args array String, code () -> T) outcome T is
+    h.pipe_to process_and_args (container.ordered_map String String).type.empty code
+
+  pipe_to (T type, process_and_args array String, env_vars container.Map String String, code () -> T) outcome T is
+    h.pipe_to process_and_args env_vars code
+
 
 
 Handler ref is
   read_bytes(count i32) choice error io.end_of_file (Sequence u8) is abstract
   write_bytes(bytes Sequence u8) outcome i32 is abstract
   close_write bool is abstract
-  finalize is abstract
-  pipe_to(process_and_args array String, env_vars container.Map String String) outcome unit is abstract
+  exit_code u32 is abstract
+  # pipe_to(T type, process_and_args array String, env_vars container.Map String String, code () -> T) outcome T is abstract
 
 
 
@@ -139,13 +143,16 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
       arr.slice 0 res
 
 
-  finalize unit is
+  exit_code u32 is
     close_write
-    fuzion.sys.process.wait process_id
+    # NYI does not work yet
+    # r := fuzion.sys.process.wait process_id
     fuzion.sys.pipe.close std_out
-    _ := fuzion.sys.pipe.close std_err
-    # NYI cleanup process handle
-    # fuzion.sys.process.close id
+    fuzion.sys.pipe.close std_err
+    # # NYI cleanup process handle
+    # # fuzion.sys.process.close id
+    # r
+    0
 
 
   pipe_to(T type, process_and_args array String, env_vars container.Map String String, code () -> T) outcome T is
@@ -189,8 +196,20 @@ private Default_Handler(private process_id, std_in, std_out, std_err i64) ref : 
 
       e error => e
 
+/*
+# spawn process
+#
+public spawn(process_and_args array String) spawned is
 
-# spawn process - shorthand without environment variables
+
+
+# spawn process with option to pass environment variables
+#
+public spawn(process_and_args array String, env_vars container.Map String String) spawned is
+*/
+
+
+# spawn process including args
 #
 public spawn(T type, process_and_args array String, code () -> T) outcome T is
   spawn T process_and_args (container.ordered_map String String).type.empty code
