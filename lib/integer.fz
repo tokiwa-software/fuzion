@@ -37,6 +37,8 @@ integer : numeric is
       safety: other != integer.this.type.zero
   is abstract
 
+  # NYI: These redefinitions are required to avoid errors in some tests when
+  # removing the type parameter from numeric. Why?
   redef infix / (other integer.this.type) integer.this.type is abstract
 
   # test divisibility by other

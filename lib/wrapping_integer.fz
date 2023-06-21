@@ -110,6 +110,8 @@ wrapping_integer : integer is
   redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else thiz - other
   redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else thiz * other
 
+  # NYI: These redefinitions are required to avoid errors in some tests when
+  # removing the type parameter from numeric. Why?
   redef infix / (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
   redef infix % (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
 

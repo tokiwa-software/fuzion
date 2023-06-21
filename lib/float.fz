@@ -45,6 +45,8 @@ float : numeric is
   redef infix %! (other float.this.type) bool is true
   redef infix **!(other float.this.type) bool is true
 
+  # NYI: These redefinitions are required to avoid errors when removing the
+  # type parameter from numeric. Why?
   redef infix + (other float.this.type) float.this.type is abstract
   redef infix - (other float.this.type) float.this.type is abstract
   redef infix * (other float.this.type) float.this.type is abstract
