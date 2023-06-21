@@ -101,6 +101,16 @@ is
     compare_and_swap0 expected new_value
 
 
+  # Perform a bit-wise comparison of the value contained in this atomic and
+  # `expected`.  In case both values are equal, replace this value with `new_value`.
+  #
+  # returns true, if successful
+  #
+  compare_and_set(expected, new_value T) bool ! atomic_access is
+    atomic_access_env.replace
+    compare_and_set0 expected new_value
+
+
   # intrinsic to read this value in a way that is atomic with respect to write
   # operations performed by concurrent threads
   #
@@ -123,3 +133,12 @@ is
   #
   /* NYI: priv */
   compare_and_swap0(expected, new_value T) T is intrinsic
+
+
+  # intrinsic to perform a bit-wise comparison of the value contained in this atomic
+  # and `expected`.  In case both values are equal, replace this value with `new_value`.
+  #
+  # returns true, if successful
+  #
+  /* NYI: priv */
+  compare_and_set0(expected, new_value T) bool is intrinsic
