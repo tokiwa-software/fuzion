@@ -17,27 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature out
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature character_encodings.unicode
 #
 # -----------------------------------------------------------------------
 
-# out -- effect providing an output stream
+# unicode -- unit feature to group unicode related features
 #
-private out (redef p Can_Print) : print_effect p is
-
-
-  type.install_default =>
-    (io.out default_print_to_out).default
-
-
-  type.default_print_to_out : io.Can_Print is
-    print(s Any) => fuzion.sys.out.print s
-
-
-# short-hand for accessing out effect in current environment
-#
-out =>
-  out.type.install_default
-  io.out.env
+unicode is

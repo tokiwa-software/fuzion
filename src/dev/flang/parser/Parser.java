@@ -2779,7 +2779,6 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
    * Parse IndexVars
    *
 indexVars   : "for" indexVar (semi indexVars)
-            |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)

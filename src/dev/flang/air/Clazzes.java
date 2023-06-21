@@ -782,6 +782,8 @@ public class Clazzes extends ANY
              ec._type.isAssignableFrom(vc._type.asRef())))
           {
             rc = vc.asRef();
+            if (CHECKS) check
+              (Errors.count() >= 0 || ec._type.isAssignableFrom(rc._type));
           }
         if (b._valAndRefClazzId < 0)
           {

@@ -730,7 +730,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForTypeFeature(o);
           }
-        t = Types.intern(new Type(t, g, o));
+        t = Types.intern(new Type(t, g, o, true));
       }
     return t;
   }

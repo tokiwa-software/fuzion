@@ -17,27 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature out
+#  Source code of Fuzion standard library feature concur.util
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# out -- effect providing an output stream
+# util -- low-level utility features for concurrency
 #
-private out (redef p Can_Print) : print_effect p is
+util is
 
 
-  type.install_default =>
-    (io.out default_print_to_out).default
+  # Ensure that load or store operation performed before this fence will not be
+  # re-ordered with load operations after this fence
+  #
+  loadFence unit is intrinsic
 
 
-  type.default_print_to_out : io.Can_Print is
-    print(s Any) => fuzion.sys.out.print s
-
-
-# short-hand for accessing out effect in current environment
-#
-out =>
-  out.type.install_default
-  io.out.env
+  # Ensure that load or store operation performed before this fence will not be
+  # re-ordered with store operations after this fence
+  #
+  storeFence unit is intrinsic

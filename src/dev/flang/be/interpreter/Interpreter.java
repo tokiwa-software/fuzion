@@ -298,17 +298,23 @@ public class Interpreter extends ANY
         FuzionThread.current()._callStack.push(c);
 
         var d = staticClazz.getRuntimeData(c._sid + 0);
-        var od = d;
-        if (d instanceof Clazz innerClazz)
+        if (d instanceof Clazz)  // Clazz means we have not created a Callable yet
           {
-            var tclazz = (Clazz) staticClazz.getRuntimeData(c._sid + 1);
-            var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
-            d = callable(dyn, innerClazz, tclazz);
-            if (d == null)
+            synchronized (staticClazz)  // this might be done in parallel, so synchronize and check again
               {
-                d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
+                d = staticClazz.getRuntimeData(c._sid + 0);
+                if (d instanceof Clazz innerClazz)
+                  {
+                    var tclazz = (Clazz) staticClazz.getRuntimeData(c._sid + 1);
+                    var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
+                    d = callable(dyn, innerClazz, tclazz);
+                    if (d == null)
+                      {
+                        d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
+                      }
+                    staticClazz.setRuntimeData(c._sid + 0, d);  // cache callable
+                  }
               }
-            staticClazz.setRuntimeData(c._sid + 0, d);  // cache callable
           }
         Callable ca;
         if (d instanceof Callable dca)
@@ -1369,6 +1375,64 @@ public class Interpreter extends ANY
         LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
       }
+  }
+
+
+  /**
+   * compareFieldSlot does a bitwise comparison of a value with the contents of
+   * a field.
+   *
+   * @param fclazz is the static type of the field to be written to
+   *
+   * @param slot is the address of the field to be written
+   *
+   * @param v the value to be stored in slot
+   */
+  private static boolean compareFieldSlot(AbstractFeature thiz, Clazz fclazz, LValue slot, Value v)
+  {
+    if (PRECONDITIONS) require
+      (fclazz != null,
+       slot != null,
+       v != null || thiz.isChoice() || fclazz._type.compareTo(Types.resolved.t_unit) == 0);
+
+    if (fclazz.isRef())
+      {
+        return slot.container.refs[slot.offset] == v;
+      }
+    else
+      {
+        return v.equalsBitWise(slot, Layout.get(fclazz).size());
+      }
+  }
+
+
+  /**
+   * compareField does a bitwise comparison of a value and the contents of a
+   * field
+   *
+   * @param staticClazz is the static type of the clazz that contains the
+   * written field
+   *
+   * @param select in case thiz is a field of open generic type, this selects
+   * the actual field. -1 otherwise.
+   *
+   * @param curValue the Instance or LValue of that contains the written field
+   *
+   * @param v the value to be compared to the field
+   *
+   * @return true iff both are equal
+   */
+  public static boolean compareField(AbstractFeature thiz, int select, Clazz staticClazz, Value curValue, Value v)
+  {
+    if (PRECONDITIONS) require
+      (thiz.isField(),
+       (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
+       staticClazz != null,
+       Clazzes.isUsed(thiz));
+
+    Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
+    LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
+    return compareFieldSlot(thiz, fclazz, slot, v);
   }
 
 

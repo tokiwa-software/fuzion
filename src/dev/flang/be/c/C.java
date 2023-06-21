@@ -665,6 +665,9 @@ public class C extends ANY
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
     cf.print
       (CStmnt.decl("char **", _names.GLOBAL_ARGV));
+    cf.print
+      (CStmnt.decl("pthread_mutex_t", _names.GLOBAL_LOCK));
+
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
@@ -737,6 +740,15 @@ public class C extends ANY
     cf.println(" _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode");
     cf.println(" _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode");
     cf.println("#endif");
+
+    cf.println(" {\n" +
+               "  pthread_mutexattr_t attr;\n" +
+               "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
+               "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
+               "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
+               "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
+               "  assert(res);\n" +
+               " }\n");
 
     if (_options._useBoehmGC)
       {

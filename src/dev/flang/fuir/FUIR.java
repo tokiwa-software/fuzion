@@ -1077,6 +1077,7 @@ hw25 is
             (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
+            && !cc.isBoxed()
             // NYI: this should not depend on string comparison!
             && !(cc.feature().qualifiedName().equals("void.absurd"))
             ;
@@ -1838,6 +1839,20 @@ hw25 is
     var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
     var ic = cc.lookup(call);
+    return id(ic);
+  }
+
+
+  /**
+   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   *
+   * @param cl index of a clazz representing cl's value field
+   */
+  public int lookupAtomicValue(int cl)
+  {
+    var cc = clazz(cl);
+    var v = Types.resolved.f_concur_atomic_v;
+    var ic = cc.lookup(v);
     return id(ic);
   }
 

@@ -644,12 +644,12 @@ String ref : equatable, has_hash, has_total_order is
 
   # convert this string to upper case
   upper_case String is
-    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.upper_case[c.val].get c))
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> character_encodings.unicode.mappings.upper_case[c.val].get c))
 
 
   # convert this string to lower case
   lower_case String is
-    String.type.from_codepoints (as_codepoints.map_sequence (c -> unicode.mappings.lower_case[c.val].get c))
+    String.type.from_codepoints (as_codepoints.map_sequence (c -> character_encodings.unicode.mappings.lower_case[c.val].get c))
 
 
 
@@ -697,9 +697,9 @@ String ref : equatable, has_hash, has_total_order is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  type.from_array(a marray Any) ref : String is
+  type.from_marray(a marray Any) ref : String is
     redef infix + (other Any) String is
-      from_array (a.add other)
+      from_marray (a.add other)
 
     redef utf8 Sequence u8 is
       a.flat_map_sequence u8 ai->ai.as_string.utf8

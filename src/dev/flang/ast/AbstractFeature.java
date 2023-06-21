@@ -537,7 +537,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * Create '.this.type' for this feature.
    */
-  AbstractType thisType()
+  public AbstractType thisType()
   {
     return thisType(false);
   }
@@ -550,7 +550,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * is created is fixed.  In this case. the type is exactly selfType(), and not
    * a placeholder for any possible child's type.
    */
-  AbstractType thisType(boolean innerFixed)
+  public AbstractType thisType(boolean innerFixed)
   {
     AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
 
@@ -849,7 +849,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  AbstractFeature _typeFeatureOrigin;
+  public AbstractFeature _typeFeatureOrigin;
 
 
   /**

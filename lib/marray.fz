@@ -27,7 +27,7 @@
 #
 # NYI: marray should be rewritten using effects.
 #
-marray
+private marray
   (
    # type of elements stored in this array
    redef T type,
@@ -36,7 +36,9 @@ marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.internal_array T
+   private data fuzion.sys.internal_array T,
+
+   _ unit
    ) : Sequence T
 
   pre
@@ -93,7 +95,7 @@ is
           new_data[i] := data[i]
         new_data
     d[length] := o
-    marray T length+1 d
+    marray T length+1 d unit
 
 
   # infix operator synonym for add
@@ -143,8 +145,7 @@ is
       fold i+1 (m.op s marray.this[i]) m
 
 
-  # This feature provides a convenient constructor for marray T length,
-  # fuzion.sys.internal_array T unit.
+  # marray -- initialize one-dimensional mutable array
   #
   type.new
    (# length of the marray to create
@@ -161,4 +162,17 @@ is
     for x in data.indices do
       data[x] := init
 
-    marray length data
+    marray T length data unit
+
+
+  # initialize an empty mutable array of type T
+  #
+  type.new marray T is
+    marray T 0 (fuzion.sys.internal_array_init T 0) unit
+
+
+
+# marray -- initialize one-dimensional mutable array
+#
+marray(T type, length i32, init T) marray T is
+  (marray T).type.new length init
