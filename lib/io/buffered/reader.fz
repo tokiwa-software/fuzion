@@ -27,7 +27,26 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : try io.buffered.reader is
+reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+
+
+  # mutuable field to receive the error in case raise is called
+  #
+  private reader_err option error := nil
+
+  # install this effect and execute 'f'. Wrap the result of 'f' into an
+  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
+  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
+  # resulting 'outcome'.
+  #
+  with(R type, f ()->R) outcome R is
+    run (outcome R) (()->outcome f()) (_)->reader_err.get
+
+  # terminate immediately with the given error wrapped in 'option'.
+  #
+  private raise(e error) =>
+    set reader_err := e
+    abort
 
 
   # read returns the current buffer or end of file.
@@ -92,7 +111,7 @@ reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : try i
 
 # short hand for getting the currently installed `buffer.reader u8`
 #
-byte_reader =>
+reader =>
   io.buffered.reader.env
 
 
@@ -100,15 +119,15 @@ byte_reader =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is or count is less than n, end of file has been reached.
 #
-read_bytes(n i32) Sequence u8 ! reader u8 is
+read_bytes(n i32) Sequence u8 ! reader is
 
   res := mut ((marray (array u8)).type.new)
 
   while ((res.get.flat_map_sequence u8 x->x).count < n &&
-    match byte_reader.read
+    match reader.read
       io.end_of_file => false
       a (array u8) =>
-        byte_reader.discard a.count
+        reader.discard a.count
         res <- res.get.add a
         true
     )
@@ -121,104 +140,93 @@ read_bytes(n i32) Sequence u8 ! reader u8 is
 
 
 # read string, up to n codepoints or until end of file
-# returns nil if alread at end of file.
-# requires `buffered.reader u8` effect to be installed.
+# requires `buffered.reader` effect to be installed.
 #
-read_string(n i32) option String ! reader u8 is
-  t is
-  (try t String ()->
+read_string(n i32) String ! reader is
 
-    as_string(x array u8 | io.end_of_file) =>
-      match x
-        io.end_of_file => ""
-        a array => String.type.from_bytes a
+  as_string(x array u8 | io.end_of_file) =>
+    match x
+      io.end_of_file => ""
+      a array => String.type.from_bytes a
 
-    valid_codepoints(str String) =>
-      str
-        .codepoints_and_errors
-        .filter x->
-          match x
-            codepoint => true
-            error => false
-        .count
+  valid_codepoints(str String) =>
+    str
+      .codepoints_and_errors
+      .filter x->
+        match x
+          codepoint => true
+          error => false
+      .count
 
-    codepoints(str_arr marray String) =>
-      (str_arr.map_sequence (str -> valid_codepoints str)).fold i32.type.sum
+  codepoints(str_arr marray String) =>
+    (str_arr.map_sequence (str -> valid_codepoints str)).fold i32.type.sum
 
 
-    for str_arr := (marray String).type.new 1 (as_string byte_reader.read), str_arr.add (as_string byte_reader.read)
-    while (codepoints str_arr < n &&
-      match byte_reader.read
-        io.end_of_file =>
-          # if we have not read anything yet, raise end of file error
-          if str_arr.count = 1
-            (try t).env.raise (error "-- end of file --")
-          false
-        a array =>
-          byte_reader.discard_all
-          true)
-    else
+  for str_arr := (marray String).type.new 1 (as_string reader.read), str_arr.add (as_string reader.read)
+  while (codepoints str_arr < n &&
+    match reader.read
+      io.end_of_file =>
+        # if we have not read anything yet, raise end of file error
+        if str_arr.count = 1
+          reader.raise (error "-- end of file --")
+        false
+      a array =>
+        reader.discard_all
+        true)
+  else
 
-      str := String.type.join str_arr
-      res := str.substring_codepoint 0 n
+    str := String.type.join str_arr
+    res := str.substring_codepoint 0 n
 
-      # discard only the bytes we are using
-      byte_reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
+    # discard only the bytes we are using
+    reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
 
-      res
-  ).as_option
+    res
 
 
 
 # use the currently installed byte reader effect
 # to read until a line feed occurs.
-# returns the line or nil if already at end of file
+# returns the line
 #
-read_line option String ! reader u8 is
-  t is
-  (try t String ()->
+read_line String ! reader is
 
-    res := mut ((marray (array u8)).type.new)
+  res := mut ((marray (array u8)).type.new)
 
-    while
-      match byte_reader.read
-        io.end_of_file =>
-          # if we have not read anything yet, raise end of file error
-          if res.get.is_empty
-            (try t).env.raise (error "-- end of file --")
-          false
-        a array =>
+  while
+    match reader.read
+      io.end_of_file =>
+        false
+      a array =>
 
-          # trailing carriage returns are dropped
-          add_to_res(a array u8) is
-            if !a.is_empty
-              res <- res.get.add (if a.last = character_encodings.ascii.cr
-                                    (a.slice 0 a.count-1).as_array
-                                  else
-                                    a)
+        # trailing carriage returns are dropped
+        add_to_res(a array u8) is
+          if !a.is_empty
+            res <- res.get.add (if a.last = character_encodings.ascii.cr
+                                  (a.slice 0 a.count-1).as_array
+                                else
+                                  a)
 
-          match (container.searchable_sequence a).index_of character_encodings.ascii.lf
-            idx i32 =>
-              add_to_res (a.slice 0 idx).as_array
-              byte_reader.discard idx+1
-              false
-            nil =>
-              add_to_res a
-              byte_reader.discard_all
-              true
+        match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+          idx i32 =>
+            add_to_res (a.slice 0 idx).as_array
+            reader.discard idx+1
+            false
+          nil =>
+            add_to_res a
+            reader.discard_all
+            true
 
-    bytes :=
-      res
-        .get
-        .flat_map_sequence u8 x->x
-        .as_array
+  bytes :=
+    res
+      .get
+      .flat_map_sequence u8 x->x
+      .as_array
 
 
-    # NYI #1561 Incompatible types, actual type found: long.feature.name.#anonymous0
-    a String := ref : String
-      utf8 Sequence u8 is
-        bytes
-    a
-
-  ).as_option
+  # NYI #1561 Incompatible types, actual type found: long.feature.name.#anonymous0
+  a String := ref : String
+    utf8 Sequence u8 is
+      bytes
+  a
 
