@@ -713,11 +713,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g2 = applyTypePars(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
+        /* types of type features require special handling since the type
+         * feature has one additional first type parameter --the underlying
+         * type: this_type--, and all other type parameters need to be converted
+         * to the actual type relative to that.
+         */
         if (isTypeType())
           {
             var this_type = g2.get(0);
-            g2 = g2.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                            : x.actualTypeType(this_type));
+            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
+                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
+                                                           : this_type.actualType(x));
           }
 
         if (g2 != result.generics() ||
@@ -732,26 +738,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
-  }
-
-
-  /**
-   * Helper for applyTypePars_ to determine the actual type of a type feature's
-   * type. This needs special handling since the type feature has one additional
-   * first type parameter --the underlying type: this_type--, and all other type
-   * parameters need converted to the actual type relative to that.
-   *
-   * @param this_type the first type parameter that contains the actual type.
-   */
-  private AbstractType actualTypeType(AbstractType this_type)
-  {
-    var t = replace_this_type_by_actual_outer(this_type);
-    if (!this_type.isGenericArgument() && !this_type.featureOfType().isUniverse())
-      {
-        t = t.actualTypeType(this_type.outer());
-        t = this_type.actualType(t);
-      }
-    return t;
   }
 
 
