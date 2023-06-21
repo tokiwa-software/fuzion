@@ -8,5 +8,4 @@ a: a
 %s😀: %s😀
 123456: 123456
 123456: 123456
-nothing: --nil--.
-nothing: --nil--.
+nothing: ''.
