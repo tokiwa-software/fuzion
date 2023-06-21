@@ -49,6 +49,7 @@ float : numeric is
   redef infix - (other float.this.type) float.this.type is abstract
   redef infix * (other float.this.type) float.this.type is abstract
   redef infix / (other float.this.type) float.this.type is abstract
+  redef infix % (other float.this.type) float.this.type is abstract
   redef infix ** (other float.this.type) float.this.type is abstract
 
 
