@@ -165,6 +165,12 @@ is
     marray T length data unit
 
 
+  # initialize an empty mutable array of type T
+  #
+  type.new marray T is
+    marray T 0 (fuzion.sys.internal_array_init T 0) unit
+
+
 
 # marray -- initialize one-dimensional mutable array
 #
