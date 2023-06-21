@@ -2179,7 +2179,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_typeClazz == null)
       {
-        _typeClazz = feature().isUniverse() ? this
+        _typeClazz = _type.containsError()  ? Clazzes.error.get() :
+                     feature().isUniverse() ? this
                                             : Clazzes.create(_type.typeType(),
                                                              _outer.typeClazz());
       }
