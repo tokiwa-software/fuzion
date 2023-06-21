@@ -72,7 +72,7 @@ stream(redef T type) ref : Sequence T is
   #
   redef take (n i32) =>
     for
-      a := marray T 0 (fuzion.sys.internal_array_init T 0) unit, a.add x
+      a := (marray T).type.new, a.add x
       i in (1..n)
     while has_next
       x := next
@@ -161,7 +161,7 @@ stream(redef T type) ref : Sequence T is
   #
   redef as_array array T is
     for
-      a := marray T 0 (fuzion.sys.internal_array_init T 0) unit, a.add x
+      a := (marray T).type.new, a.add x
     while has_next
       x := next
     else
@@ -179,7 +179,7 @@ stream(redef T type) ref : Sequence T is
   # create a string from the elements of this stream
   #
   redef as_string ref String is
-    (map String (x -> x.as_string))
+    map String (x -> x.as_string)
       .fold (String.type.concat ", ")
 
 

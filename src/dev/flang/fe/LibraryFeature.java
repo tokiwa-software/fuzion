@@ -177,6 +177,15 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _kind = lib.featureKindEnum(index);
+
+    var tf = existingTypeFeature();
+    if (tf != null)
+      {
+        // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
+        // in the fum file would contain a reference to the origin such that we
+        // do not need to patch this into the type feature's field.
+        tf._typeFeatureOrigin = this;
+      }
   }
 
 

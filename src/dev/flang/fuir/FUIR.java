@@ -1077,6 +1077,7 @@ hw25 is
             (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
+            && !cc.isBoxed()
             // NYI: this should not depend on string comparison!
             && !(cc.feature().qualifiedName().equals("void.absurd"))
             ;

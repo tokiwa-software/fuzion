@@ -964,6 +964,23 @@ public class DFA extends ANY
           return res;
         });
 
+    put("concur.atomic.compare_and_set0",  cl ->
+        {
+          var v = cl._dfa._fuir.lookupAtomicValue(cl._dfa._fuir.clazzOuterClazz(cl._cc));
+
+          if (CHECKS) check
+            (cl._dfa._fuir.clazzNeedsCode(v));
+
+          var atomic    = cl._target;
+          var expected  = cl._args.get(0);
+          var new_value = cl._args.get(1);
+          var res = cl._dfa.callField(atomic, v);
+
+          // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
+          atomic.setField(cl._dfa, v, new_value);
+          return cl._dfa._bool;
+        });
+
     put("concur.atomic.racy_accesses_supported",  cl ->
         {
           // NYI: racy_accesses_supported could return true or false depending on the backend's behaviour.

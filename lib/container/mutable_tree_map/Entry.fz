@@ -61,7 +61,7 @@ private Entry(LM type : mutate, K type : has_total_order, V type, key K, val V) 
     head := (key, val)
 
     tail Lazy (list (tuple K V)) := ()->
-      (left.get.map x->x.items).get ((list (tuple K V)).type.empty) ++
-        (right.get.map x->x.items).get ((list (tuple K V)).type.empty)
+      (left.get.map x->x.items).get (list (tuple K V)).type.empty ++
+        (right.get.map x->x.items).get (list (tuple K V)).type.empty
 
     list head tail

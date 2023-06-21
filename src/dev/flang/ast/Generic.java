@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -132,6 +133,18 @@ public class Generic extends ANY
 
 
   /**
+   * For a feature `f(A, B type)` the corresponding type feature has an implicit
+   * THIS#TYPE type parameter: `f.type(THIS#TYPE, A, B type)`.
+   *
+   + This checks if this Generic is this implicit type parameter.
+   */
+  boolean isThisTypeInTypeFeature()
+  {
+    return typeParameter().outer().isTypeFeature() && index() == 0;
+  }
+
+
+  /**
    * Return the index of this formal generic within formalGenerics().list.
    *
    * @return the index such that formalGenerics.get(result)) this
@@ -139,6 +152,32 @@ public class Generic extends ANY
   public int index()
   {
     return typeParameter().typeParameterIndex();
+  }
+
+
+  /**
+   * If this is a Generic in a type feature, return the original generic for the
+   * type feature origin.
+   *
+   * e.g., for
+   *
+   *    stack(E type) is
+   *
+   *      type.empty => stack E
+   *
+   * the `stack.type.E` that is used in `type.empty` would be replaced by `stack.E`.
+   *
+   * @return the origin of `E` if it is in a type feature, `this` otherwise.
+   */
+  Generic typeFeatureOrigin()
+  {
+    var result = this;
+    var o = typeParameter().outer();
+    if (!isThisTypeInTypeFeature() && o.isTypeFeature())
+      {
+        result = o.typeFeatureOrigin().generics().list.get(index()-1);
+      }
+    return result;
   }
 
 
@@ -156,7 +195,7 @@ public class Generic extends ANY
     int i = index();
     if (CHECKS) check
       (Errors.count() > 0 || actuals.size() > i);
-    return actuals.size() > index() ? actuals.get(index()) : Types.t_ERROR;
+    return actuals.size() > i ? actuals.get(i) : Types.t_ERROR;
   }
 
 

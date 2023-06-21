@@ -218,6 +218,7 @@ public class CFG extends ANY
     put("Type.name"                      , (cfg, cl) -> { } );
 
     put("concur.atomic.compare_and_swap0", (cfg, cl) -> { } );
+    put("concur.atomic.compare_and_set0",  (cfg, cl) -> { } );
     put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
     put("concur.atomic.read0"            , (cfg, cl) -> { } );
     put("concur.atomic.write0"           , (cfg, cl) -> { } );
