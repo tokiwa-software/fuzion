@@ -749,7 +749,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (!this_type.isGenericArgument() && !this_type.featureOfType().isUniverse())
       {
         t = t.actualTypeType(this_type.outer());
-        t = t.applyTypePars(this_type.featureOfType(), this_type.generics());
+        t = this_type.actualType(t);
       }
     return t;
   }
