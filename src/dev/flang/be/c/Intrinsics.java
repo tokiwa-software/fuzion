@@ -141,6 +141,53 @@ public class Intrinsics extends ANY
           return code;
         });
 
+    put("concur.atomic.compare_and_set0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var expected  = A0;
+          var new_value = A1;
+          var tmp = new CIdent("tmp");
+          var res = new CIdent("set_successful");
+          var code = CStmnt.EMPTY;
+          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            {
+              var f = c.accessField(outer, ac, v);
+              CExpr eq;
+              if (c._fuir.clazzIsRef(rc) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                {
+                  eq = CExpr.eq(tmp, expected);
+                }
+              else
+                {
+                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                }
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
+                                locked(CNames.GLOBAL_LOCK,
+                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                  CStmnt.iff(eq,
+                                                             CStmnt.seq(
+                                                              f.assign(new_value),
+                                                              res.assign(new CIdent("true"))
+                                                              )))),
+                                CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
+            }
+          return code;
+        });
+
     put("concur.atomic.racy_accesses_supported",  (c,cl,outer,in) ->
         {
           var v = c._fuir.lookupAtomicValue(c._fuir.clazzOuterClazz(cl));
