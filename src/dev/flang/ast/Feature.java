@@ -1554,12 +1554,13 @@ public class Feature extends AbstractFeature implements Stmnt
         p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
 
-    _choiceTag = new Feature(res,
-                             _pos,
+    _choiceTag = new Feature(_pos,
                              Visi.PRIVATE,
+                             Consts.MODIFIER_FIXED,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
-                             this);
+                             null);
+    res._module.findDeclarations(_choiceTag, this);
     _choiceTag.scheduleForResolution(res);
   }
 

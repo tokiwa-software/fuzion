@@ -442,7 +442,7 @@ class Fuzion extends Tool
   /**
    * When saving a library, should we erase internal names?
    */
-  boolean _eraseInternalNamesInLib = true;
+  boolean _eraseInternalNamesInLib = false;
 
 
   /**
