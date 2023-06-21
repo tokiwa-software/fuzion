@@ -401,14 +401,15 @@ Sequence(T type) ref is
   # every element in the sequence
   #
   indexed list (tuple i32 T) is
-    indexed 0
+    # indexed 0
+    zip i32 (tuple i32 T) (0..) (a, b -> (b, a))
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
-    zip (start_idx..) (a,b -> (b, a))
+  #indexed(I type : has_interval, start_idx I) list (tuple I T) is
+  #  zip (start_idx..) (a,b -> (b, a))
 
 
 
