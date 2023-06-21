@@ -599,7 +599,7 @@ is
 
   # a snapshot of the C_Trie as sequence auf key-value tuples
   redef items Sequence (tuple CTK CTV) is
-    (snapshot true)
+    snapshot true
       .read_root
       .as_list
 
