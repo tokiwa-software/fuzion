@@ -1,24 +1,8 @@
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-true
-0
-666
-true
+test: in 8 threads, adding 999 keys, removing every third key and taking a snapshot at key=500.
+empty snapshot size: 0
+ctrie size: 666
+all keys multiple of three removed: true
+test: in 8 threads, add keys while taking snapshots, removing keys while taking snaphots.
+99
+test: in 8 threads, add keys while taking snapshots, removing keys while taking snaphots.
 99

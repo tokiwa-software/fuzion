@@ -58,22 +58,30 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) is
+private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) : equatable is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
+  fixed type.equality(a, b container.tomb_node CTK CTV) bool is
+    a.sn = b.sn
+
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) is
+private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) : equatable  is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
+  fixed type.equality(a, b container.singleton_node CTK CTV) bool is
+    a.k = b.k
+
+
 # an indirection or a singleton node
-private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
+# these are put into a container node
+private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), equatable is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -84,10 +92,21 @@ private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV
       indirection_node Indirection_Node => indirection_node.as_list
       singleton_node singleton_node => singleton_node.as_list
 
+  fixed type.equality(a, b container.branch CTK CTV) bool is
+    match a
+      ai container.Indirection_Node =>
+        match b
+          bi container.Indirection_Node => ai = bi
+          bs container.singleton_node => false
+      as container.singleton_node =>
+        match b
+          bi container.Indirection_Node => false
+          bs container.singleton_node => as = bs
+
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : has_hash, CTV type, bmp u32, array array (branch CTK CTV)) is
+private container_node(CTK type : has_hash, CTV type, bmp u32, array array (branch CTK CTV)) : equatable is
 
   # update a child node and return a new container_node
   update(pos u32, node branch CTK CTV) =>
@@ -109,6 +128,10 @@ private container_node(CTK type : has_hash, CTV type, bmp u32, array array (bran
   as_list => array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list)
                  .as_list
 
+  fixed type.equality(a, b container.container_node CTK CTV) bool is
+    a.bmp = b.bmp
+      && (container.searchable_sequence a.array) = (container.searchable_sequence b.array)
+
 
 # NYI ref, work around for issue #1604
 Nil ref is
@@ -120,7 +143,7 @@ Nil ref is
 # when a Main_Node is replaced it is put into
 # the successors `prev`-field.
 #
-private prev_node(CTK type : has_hash, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil is
+private prev_node(CTK type : has_hash, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil, equatable is
 
   redef as_string =>
     match prev_node.this
@@ -128,11 +151,29 @@ private prev_node(CTK type : has_hash, CTV type) : choice (Failed_Node CTK CTV) 
       m container.Main_Node => m.as_string
       Nil => nil.as_string
 
+  fixed type.equality(a, b container.prev_node CTK CTV) bool is
+    match a
+      fa container.Failed_Node =>
+        match b
+          fb container.Failed_Node => fa = fb
+          m container.Main_Node => false
+          container.Nil => false
+      ma container.Main_Node =>
+        match b
+          f container.Failed_Node => false
+          mb container.Main_Node => ma = mb
+          container.Nil => false
+      container.Nil =>
+        match b
+          f container.Failed_Node => false
+          m container.Main_Node => false
+          container.Nil => true
+
 
 # a container, tomb or linked list node, with a previous field
 # to support the generational compare and swap
 #
-private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) ref : equatable is
+private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) ref /* needs ref, cyclic layout container->indirection->main*/ : equatable is
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
@@ -148,10 +189,27 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
       list_node list_node => "$list_node"
     "Main_Node[prev={prev.read}]($s)"
 
-  # equality - NYI
+  # equality
   #
   fixed type.equality(a, b container.Main_Node CTK CTV) bool is
-    a.data.hash_code = b.data.hash_code
+    a.prev.read = b.prev.read &&
+      (match a.data
+         ca container.container_node =>
+          match b.data
+            cb container.container_node => ca = cb
+            tb container.tomb_node => false
+            lb container.list_node => false
+         ta container.tomb_node =>
+          match b.data
+            cb container.container_node => false
+            tb container.tomb_node => ta = tb
+            lb container.list_node => false
+         la container.list_node =>
+          match b.data
+            cb container.container_node => false
+            tb container.tomb_node => false
+            lb container.list_node => la = lb
+      )
 
   as_list
   pre match prev.read
@@ -166,10 +224,13 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
 
 # a failed node where the previous indirection node contains a main node
 # NYI ref, work around for issue #1604
-private Failed_Node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) ref is
+private Failed_Node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) ref : equatable is
 
   redef as_string =>
     "Failed_Node($prev)"
+
+  fixed type.equality(a, b container.Failed_Node CTK CTV) bool is
+    a.prev = b.prev
 
 
 # shorthand for creating a new indirection node from Main_Node and gen
@@ -178,7 +239,7 @@ private indirection_node(CTK type : has_hash, CTV type, data Main_Node CTK CTV, 
 
 
 # an indirection node
-private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main_Node CTK CTV), gen i32) ref : equatable is
+private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main_Node CTK CTV), gen i32) ref /* NYI removing this ref leads to segfaults */ : equatable is
 
   # NYI ref equality
   #
@@ -189,7 +250,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main
   private cas(old_n, new_n Main_Node CTK CTV) bool is
     data.compare_and_set old_n new_n
 
-  redef as_string => "Indirection_Node[gen=$gen]({data})"
+  redef as_string => "Indirection_Node[gen=$gen]({data.read})"
 
   as_list list (tuple CTK CTV)
   pre match data.read.prev.read
@@ -200,7 +261,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
+private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), equatable
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef as_list => from.as_list
@@ -217,6 +278,9 @@ is
     match drop_while(sn -> sn.k != k).head
           nil => not_found
           sn singleton_node => sn.v
+
+  fixed type.equality(a, b container.list_node CTK CTV) bool is
+    (container.searchable_sequence a.from) = (container.searchable_sequence b.from)
 
 
 # unit type to indicate an operation did not succeed yet
@@ -291,18 +355,18 @@ is
 
   # complete the double compare and swap
   # of the root node
-  private rdcss_complete(abort bool) Indirection_Node CTK CTV
+  private rdcss_complete(abortable bool) Indirection_Node CTK CTV
   is
     match root.read
       # there is nothing to do
       n Indirection_Node => n
 
       desc Rdcss_Descriptor =>
-        if abort
+        if abortable
           if cas_root desc desc.ov
             desc.ov
           else
-            rdcss_complete abort
+            rdcss_complete abortable
         else
           old_main := gcas_read desc.ov
           if old_main = desc.exp
@@ -310,23 +374,23 @@ is
               desc.committed.write true
               desc.nv
             else
-              rdcss_complete abort
+              rdcss_complete abortable
           else
             if cas_root desc desc.ov
               desc.ov
             else
-              rdcss_complete abort
+              rdcss_complete abortable
 
 
   # read root
   # if root is currently a descriptor we are in the middle
   # of a double compare and swap.
   # Then (try) committing the descriptor first
-  private read_root(abort bool) Indirection_Node CTK CTV
+  private read_root(abortable bool) Indirection_Node CTK CTV
   is
     match root.read
       n Indirection_Node => n
-      d Rdcss_Descriptor => rdcss_complete abort
+      d Rdcss_Descriptor => rdcss_complete abortable
 
 
   # read root none abortably
@@ -337,11 +401,12 @@ is
   # 1. try compare and swap root
   # 2. if successful complete committing the descriptor
   private rdcss_root(desc Rdcss_Descriptor CTK CTV) =>
-    if cas_root desc.ov desc
+    try_commit =>
       rdcss_complete false
       desc.committed.read
-    else
-      false
+
+    cas_root desc.ov desc &&
+      try_commit
 
   # completes the generation sensitive compare and set
   private gcas_commit(i Indirection_Node CTK CTV, m Main_Node CTK CTV) Main_Node CTK CTV is
@@ -378,8 +443,12 @@ is
   # but this compare and swap only succeeds if the root
   # generation does not increase while this compare and
   # swap is taking place.
-  private gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n Main_Node CTK CTV) choice restart ctrie_ok is
-    n.cas_prev o Nil
+  private gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n Main_Node CTK CTV) choice restart ctrie_ok
+  pre (match n.prev.read
+        Nil => true
+        * => false),
+      n.cas_prev n.prev.read o
+  is
     if i.cas o n
       gcas_commit i n
       match n.prev.read
@@ -387,6 +456,7 @@ is
         * => restart
     else
       restart
+
 
   # the width of the branching factor, 2^5 = 32
   private width := u32 5
