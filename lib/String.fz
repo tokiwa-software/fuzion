@@ -170,7 +170,7 @@ String ref : equatable, has_hash, has_total_order is
   #
   parse_integer(
     # the integer type
-    T type : integer T,
+    T type : integer,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -192,7 +192,7 @@ String ref : equatable, has_hash, has_total_order is
   #
   private parse_integer(
     # the integer type
-    T type : integer T,
+    T type : integer,
 
     # base gives the base, between 2 and 36
     base T,

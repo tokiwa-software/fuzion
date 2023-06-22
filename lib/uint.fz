@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-uint (b Sequence u32, _ unit) : has_interval uint
+uint (b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.
@@ -36,17 +36,17 @@ is
   # bitwise operations
 
   # bitwise and
-  infix & (other uint) uint is
+  fixed infix & (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x&y) unit
 
   # bitwise or
-  infix | (other uint) uint is
+  fixed infix | (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x|y) unit
 
   # bitwise xor
-  infix ^ (other uint) uint is
+  fixed infix ^ (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x^y) unit
 
@@ -54,7 +54,7 @@ is
   # shift operations
 
   # shift right
-  infix >> (other uint) uint
+  fixed infix >> (other uint) uint
   pre other ≤ uint i32.type.max.as_u64
   is
     if other = uint.type.zero
@@ -74,7 +74,7 @@ is
 
 
   # shift left
-  infix << (other uint) uint
+  fixed infix << (other uint) uint
   pre other ≤ uint i32.type.max.as_u64
   is
     if other = uint.type.zero
@@ -142,7 +142,7 @@ is
 
 
   # add two unsigned ints
-  infix +  (other uint) uint is
+  fixed infix +  (other uint) uint is
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
       .reverse
@@ -159,7 +159,7 @@ is
 
 
   # subtract other from this unsigned int
-  infix - (other uint) uint
+  fixed infix - (other uint) uint
   pre thiz ≥ other
   is
     two_pow_32 := ((u64 1)<<32)
@@ -186,7 +186,7 @@ is
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
-  infix *  (other uint) uint is
+  fixed infix *  (other uint) uint is
     data
       .reverse
       .indexed
@@ -207,7 +207,7 @@ is
 
 
   # divide these unsigned ints
-  infix /  (other uint) uint
+  fixed infix /  (other uint) uint
   pre other != uint.type.zero
   is
     (quotient,_) := (divide_with_remainder other)
@@ -216,14 +216,14 @@ is
 
   # modulo
   # returns the remainder of the division
-  infix %  (other uint) uint is
+  fixed infix %  (other uint) uint is
     (_,remainder) := (divide_with_remainder other)
     remainder
 
 
   # exponentation operator:
   # this uint to the power of other
-  infix ** (other uint) uint
+  fixed infix ** (other uint) uint
   is
     if other = uint.type.zero
       uint.type.one
@@ -263,19 +263,19 @@ is
 
   # checks if operations are allowed
 
-  prefix -! bool is thiz = uint.type.zero
-  infix +! (other uint) bool is true
-  infix -! (other uint) bool is thiz ≥ other
-  infix *! (other uint) bool is true
-  infix /! (other uint) bool is other != uint.type.zero
-  infix %! (other uint) bool is true
-  infix **!(other uint) bool is true
+  fixed prefix -! bool is thiz = uint.type.zero
+  fixed infix +! (other uint) bool is true
+  fixed infix -! (other uint) bool is thiz ≥ other
+  fixed infix *! (other uint) bool is true
+  fixed infix /! (other uint) bool is other != uint.type.zero
+  fixed infix %! (other uint) bool is true
+  fixed infix **!(other uint) bool is true
 
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  infix **?(other uint) num_option uint is thiz ** other
-  infix **^(other uint) uint is thiz ** other
+  fixed infix **?(other uint) num_option uint is thiz ** other
+  fixed infix **^(other uint) uint is thiz ** other
 
   fixed type.zero uint is
     uint [u32 0] unit
@@ -283,7 +283,7 @@ is
   fixed type.one uint is
     uint [u32 1] unit
 
-  redef thiz => uint b unit
+  fixed redef thiz => uint b unit
 
 
   # this uint as an i32

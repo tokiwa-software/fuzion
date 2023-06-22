@@ -90,7 +90,7 @@ scenario3 is
 
   fs f64
 
-  fs(F type : float F) =>
+  fs(F type : float) =>
     _ := F.sum.e
 
 scenario3

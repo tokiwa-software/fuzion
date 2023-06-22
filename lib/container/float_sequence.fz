@@ -31,7 +31,7 @@
 
 # float_sequence -- a Sequence whose elements inherit from float
 #
-float_sequence(F type : float F, redef from Sequence F) : numeric_sequence F from is
+float_sequence(F type : float, redef from Sequence F) : numeric_sequence F from is
 
   # create a list from this Sequence.
   #
