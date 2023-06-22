@@ -108,9 +108,41 @@ ctrie_threads is
       say ctrie.as_string_internal
 
 
+  test3 is
+    say "test: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
+
+    ctrie := (container.ctrie i32 i32).type.empty
+
+    for t in 1..num_threads do
+      concur.thread.spawn ()->
+        for k in keys do
+          kt := (1000*t)+k
+
+          ctrie.add kt kt
+          if ctrie[kt].get != kt
+            panic "added key/value does not match $kt != {ctrie[kt].get}"
+
+          if k%100 = 0
+            ctrie.snapshot true
+
+          ctrie.remove kt
+          if ctrie[kt].exists
+            panic "removed key $kt still present"
+
+          if k%100 = 0
+            ctrie.snapshot true
+
+          ctrie.add kt kt
+
+    # NYI can not wait for threads to finish currently
+    time.nano.sleep (time.durations.s 10)
+
+
+
   test1
   test2 false
   test2 true
+  test3
 
 
   unit
