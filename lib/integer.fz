@@ -39,6 +39,9 @@ integer : numeric is
 
   # NYI: These redefinitions are required to avoid errors in some tests when
   # removing the type parameter from numeric. Why?
+  redef infix + (other integer.this.type) integer.this.type is abstract
+  redef infix - (other integer.this.type) integer.this.type is abstract
+  redef infix * (other integer.this.type) integer.this.type is abstract
   redef infix / (other integer.this.type) integer.this.type is abstract
 
   # test divisibility by other
@@ -91,6 +94,13 @@ integer : numeric is
       thiz
     else
       b.gcd(thiz % b)  # tail recursion
+
+
+  # create a fraction
+  infix /-/ (other integer.this.type) => (num.fraction integer.this other).reduce
+
+  # create a fraction via unicode fraction slash \u2044 '⁄ '
+  infix ⁄ (other integer.this.type) => integer.this /-/ other
 
 
   # convert this to a decimal number in a string.  If negative, add "-" as
