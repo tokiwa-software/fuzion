@@ -27,7 +27,7 @@
 #
 u64(val u64) : wrapping_integer, has_interval is
 
-  fixed redef thiz => u64.this.val
+  thiz => u64.this.val
 
   # overflow checking
 

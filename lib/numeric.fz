@@ -27,61 +27,57 @@
 #
 numeric : has_hash, has_total_order is
 
-  # get numeric.this value of type T.  This is used for a generic implemention
-  # of some features (e.g. prefix -, abs)
-  thiz numeric.this.type is numeric.this
-
   is_zero => numeric.this = numeric.this.type.zero
   is_one  => numeric.this = numeric.this.type.one
 
   # basic operations: 'prefix +' (identity)
   prefix + numeric.this.type
     pre
-      safety: +!thiz
-  is thiz
+      safety: +!numeric.this
+  is numeric.this
 
   # basic operations: 'prefix -' (negation)
   prefix - numeric.this.type
     pre
-      safety: -!thiz
-  is numeric.this.type.zero - thiz
+      safety: -!numeric.this
+  is numeric.this.type.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
   infix +  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz +! other
+      safety: numeric.this +! other
   is abstract
 
   # basic operations: 'infix -' (subtraction)
   infix -  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz -! other
+      safety: numeric.this -! other
   is abstract
 
   # basic operations: 'infix *' (multiplication)
   infix *  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz *! other
+      safety: numeric.this *! other
   is abstract
 
   # basic operations: 'infix /' (division)
   infix /  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz /! other,
+      safety: numeric.this /! other,
       safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix %' (division remainder)
   infix %  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz %! other,
+      safety: numeric.this %! other,
       safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix **' (exponentiation)
   infix ** (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz **! other,
+      safety: numeric.this **! other,
       safety: other ≥ numeric.this.type.zero
   is abstract
 
@@ -103,23 +99,23 @@ numeric : has_hash, has_total_order is
 
 
   # overflow checking operations
-  prefix -? num_option numeric.this.type is - thiz
-  infix +? (other numeric.this.type) num_option numeric.this.type is thiz + other
-  infix -? (other numeric.this.type) num_option numeric.this.type is thiz - other
-  infix *? (other numeric.this.type) num_option numeric.this.type is thiz * other
+  prefix -? num_option numeric.this.type is - numeric.this
+  infix +? (other numeric.this.type) num_option numeric.this.type is numeric.this + other
+  infix -? (other numeric.this.type) num_option numeric.this.type is numeric.this - other
+  infix *? (other numeric.this.type) num_option numeric.this.type is numeric.this * other
   infix **?(other numeric.this.type) num_option numeric.this.type is abstract
 
   # saturating  operations
-  prefix -^  numeric.this.type is - thiz
-  infix +^ (other numeric.this.type) numeric.this.type is thiz + other
-  infix -^ (other numeric.this.type) numeric.this.type is thiz - other
-  infix *^ (other numeric.this.type) numeric.this.type is thiz * other
+  prefix -^  numeric.this.type is - numeric.this
+  infix +^ (other numeric.this.type) numeric.this.type is numeric.this + other
+  infix -^ (other numeric.this.type) numeric.this.type is numeric.this - other
+  infix *^ (other numeric.this.type) numeric.this.type is numeric.this * other
   infix **^(other numeric.this.type) numeric.this.type is abstract
 
 
   sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
 
-  abs => if sign ≥ 0 then thiz else -thiz
+  abs => if sign ≥ 0 then numeric.this else -numeric.this
 
 
   # the u32 value corresponding to this
@@ -129,7 +125,7 @@ numeric : has_hash, has_total_order is
     pre
       debug: numeric.this ≥ numeric.this.type.zero
   is
-    if (numeric.this ≥ numeric.this.type.one) ((thiz - numeric.this.type.one).to_u32 + 1)
+    if (numeric.this ≥ numeric.this.type.one) ((numeric.this - numeric.this.type.one).to_u32 + 1)
     else 0
 
 
@@ -140,14 +136,14 @@ numeric : has_hash, has_total_order is
   is abstract
 
 
-  # find the highest power of b that is less or equal than thiz.
+  # find the highest power of b that is less or equal than numeric.this.
   #
   private highest(b numeric.this.type) numeric.this.type
     pre
-      debug: thiz.sign ≥ 0
+      debug: numeric.this.sign ≥ 0
     post
       debug: (numeric.this = numeric.this.type.zero: result = numeric.this.type.one),
-      debug: (numeric.this != numeric.this.type.zero: thiz / b < result ≤ thiz)
+      debug: (numeric.this != numeric.this.type.zero: numeric.this / b < result ≤ numeric.this)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
   # not of type T.
@@ -156,7 +152,7 @@ numeric : has_hash, has_total_order is
   is
     for
       bs := numeric.this.type.one, bs * b
-    while thiz / b ≥ bs
+    while numeric.this / b ≥ bs
 
 
   # is this part of given set
@@ -166,7 +162,7 @@ numeric : has_hash, has_total_order is
   # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
   # and it would work for all set types.
   #
-  element_of(s container.Set numeric.this.type) => s.contains thiz
+  element_of(s container.Set numeric.this.type) => s.contains numeric.this
   infix ∈ (s container.Set numeric.this.type) => numeric.this.element_of s
 
 

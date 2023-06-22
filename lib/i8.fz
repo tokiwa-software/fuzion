@@ -27,7 +27,7 @@
 #
 i8(val i8) : wrapping_integer, has_interval is
 
-  fixed redef thiz => i8.this.val
+  thiz => i8.this.val
 
   # overflow checking
 

@@ -51,7 +51,7 @@ is
 # public:
 
   # enable generic features in ancestors
-  fixed redef thiz => a
+  thiz => a
 
   # reduce numerator and denominator by their gcd:
   reduce =>

@@ -49,7 +49,7 @@ integer : numeric is
     pre
       safety: other != integer.this.type.zero
   is
-    thiz % other = integer.this.type.zero
+    integer.this % other = integer.this.type.zero
 
   # bitwise operations
   infix &  (other integer.this.type) integer.this.type is abstract
@@ -64,7 +64,7 @@ integer : numeric is
 
   # bitwise NOT (Unicode alias)
   prefix ¬ integer.this.type is
-    ~thiz
+    ~integer.this
 
   # shift operations
   infix >> (other integer.this.type) integer.this.type
@@ -91,9 +91,9 @@ integer : numeric is
       safety: b.sign ≥ 0
   is
     if b = integer.this.type.zero
-      thiz
+      integer.this
     else
-      b.gcd(thiz % b)  # tail recursion
+      b.gcd(integer.this % b)  # tail recursion
 
 
   # create a fraction
@@ -118,11 +118,11 @@ integer : numeric is
   is
     b := integer.this.type.from_u32 base
 
-    if thiz.sign < 0
+    if integer.this.sign < 0
       # there could be an overflow on negation
-      match -? thiz
+      match -? integer.this
         v integer.this.type => "-" + v.as_string base
-        nil => ("-" + (-(thiz / b)).as_string base) + (-(thiz % b)).as_string base
+        nil => ("-" + (-(integer.this / b)).as_string base) + (-(integer.this % b)).as_string base
     else
       # this digit as an UTF-8 byte
       digit_as_utf8_byte(d u8) u8
@@ -134,10 +134,10 @@ integer : numeric is
         if power.sign <= 0
           nil
         else
-          digit := (thiz / power % b).as_u8
+          digit := (integer.this / power % b).as_u8
           list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
 
-      String.type.from_bytes (as_list0 (thiz.highest b))
+      String.type.from_bytes (as_list0 (integer.this.highest b))
 
 
   # convert this to a number using the given base.  If negative, add "-" as

@@ -28,7 +28,7 @@
 u128(hi, lo u64) : wrapping_integer, has_interval is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
-  fixed redef thiz => u128 hi lo
+  thiz => u128 hi lo
 
   # overflow checking
 
