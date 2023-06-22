@@ -47,7 +47,7 @@ has_interval : integer is
   #   a >  b: an empty interval
   infix .. (upper has_interval.this.type) : container.Set has_interval.this.type is
 
-    lower has_interval.this.type is thiz
+    lower has_interval.this.type is has_interval.this
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
 
     size has_interval.this.type is if lower ≤ upper then upper - lower + has_interval.this.type.one else has_interval.this.type.zero

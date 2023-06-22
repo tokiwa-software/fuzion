@@ -32,20 +32,20 @@ wrapping_integer : integer is
 
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation -wrapping_integer.this cause an overflow?
   wrapped_on_neg bool is abstract
 
-  # would addition thiz + other cause an overflow or underflow?
+  # would addition wrapping_integer.this + other cause an overflow or underflow?
   overflow_on_add(other wrapping_integer.this.type) bool is abstract
   underflow_on_add(other wrapping_integer.this.type) bool is abstract
   wrapped_on_add(other wrapping_integer.this.type) => overflow_on_add(other) || underflow_on_add(other)
 
-  # would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction wrapping_integer.this - other cause an overflow or underflow?
   overflow_on_sub(other wrapping_integer.this.type) bool is abstract
   underflow_on_sub(other wrapping_integer.this.type) bool is abstract
   wrapped_on_sub(other wrapping_integer.this.type) => overflow_on_sub(other) || underflow_on_sub(other)
 
-  # would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication wrapping_integer.this * other cause an overflow or underflow?
   overflow_on_mul(other wrapping_integer.this.type) bool is abstract
   underflow_on_mul(other wrapping_integer.this.type) bool is abstract
   wrapped_on_mul(other wrapping_integer.this.type) => overflow_on_mul(other) || underflow_on_mul(other)
@@ -81,34 +81,34 @@ wrapping_integer : integer is
   redef prefix - wrapping_integer.this.type
     pre
       debug: !wrapped_on_neg
-  is -° thiz
+  is -° wrapping_integer.this
 
   # addition, with check for overflow
   redef infix +  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_add(other),
       debug: !underflow_on_add(other)
-  is thiz +° other
+  is wrapping_integer.this +° other
 
   # subtraction, with check for overflow
   redef infix -  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_sub(other),
       debug: !underflow_on_sub(other)
-  is thiz -° other
+  is wrapping_integer.this -° other
 
   # multiplication, with check for overflow
   redef infix *  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_mul(other),
       debug: !underflow_on_mul(other)
-  is thiz *° other
+  is wrapping_integer.this *° other
 
   # overflow checking operations
-  redef prefix -?          num_option wrapping_integer.this.type is if wrapped_on_neg        then nil else -thiz
-  redef infix +? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_add(other) then nil else thiz + other
-  redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else thiz - other
-  redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else thiz * other
+  redef prefix -?          num_option wrapping_integer.this.type is if wrapped_on_neg        then nil else -wrapping_integer.this
+  redef infix +? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_add(other) then nil else wrapping_integer.this + other
+  redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else wrapping_integer.this - other
+  redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else wrapping_integer.this * other
 
   # NYI: These redefinitions are required to avoid errors in some tests when
   # removing the type parameter from numeric. Why?
@@ -116,10 +116,10 @@ wrapping_integer : integer is
   redef infix % (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
 
   # saturating  operations
-  redef prefix -^          => if wrapped_on_neg if thiz > wrapping_integer.this.type.zero then wrapping_integer.this.type.min.thiz else wrapping_integer.this.type.max.thiz else - thiz
-  redef infix +^ (other wrapping_integer.this.type) => if overflow_on_add(other) then wrapping_integer.this.type.max.thiz else if underflow_on_add(other) then wrapping_integer.this.type.min.thiz else thiz + other
-  redef infix -^ (other wrapping_integer.this.type) => if overflow_on_sub(other) then wrapping_integer.this.type.max.thiz else if underflow_on_sub(other) then wrapping_integer.this.type.min.thiz else thiz - other
-  redef infix *^ (other wrapping_integer.this.type) => if overflow_on_mul(other) then wrapping_integer.this.type.max.thiz else if underflow_on_mul(other) then wrapping_integer.this.type.min.thiz else thiz * other
+  redef prefix -^          => if wrapped_on_neg if wrapping_integer.this > wrapping_integer.this.type.zero then wrapping_integer.this.type.min else wrapping_integer.this.type.max else - wrapping_integer.this
+  redef infix +^ (other wrapping_integer.this.type) => if overflow_on_add(other) then wrapping_integer.this.type.max else if underflow_on_add(other) then wrapping_integer.this.type.min else wrapping_integer.this + other
+  redef infix -^ (other wrapping_integer.this.type) => if overflow_on_sub(other) then wrapping_integer.this.type.max else if underflow_on_sub(other) then wrapping_integer.this.type.min else wrapping_integer.this - other
+  redef infix *^ (other wrapping_integer.this.type) => if overflow_on_mul(other) then wrapping_integer.this.type.max else if underflow_on_mul(other) then wrapping_integer.this.type.min else wrapping_integer.this * other
 
 
   # exponentiation for positive exponent
@@ -131,7 +131,7 @@ wrapping_integer : integer is
       safety: other ≥ wrapping_integer.this.type.zero,
       debug: !overflow_on_exp(other)
   is
-    thiz **° other
+    wrapping_integer.this **° other
 
 
   # exponentiation with wrap-around semantics
@@ -143,13 +143,13 @@ wrapping_integer : integer is
       safety: other ≥ wrapping_integer.this.type.zero
   is
     if      (other = wrapping_integer.this.type.zero) wrapping_integer.this.type.one
-    else if (other = wrapping_integer.this.type.one ) thiz
+    else if (other = wrapping_integer.this.type.one ) wrapping_integer.this
     else
-      tmp := (thiz *° thiz) **° (other / wrapping_integer.this.type.two)
+      tmp := (wrapping_integer.this *° wrapping_integer.this) **° (other / wrapping_integer.this.type.two)
       if other %% wrapping_integer.this.type.two
         tmp
       else
-        tmp *° thiz
+        tmp *° wrapping_integer.this
 
 
   # exponentiation with overflow checking semantics
@@ -161,18 +161,18 @@ wrapping_integer : integer is
       safety: other ≥ wrapping_integer.this.type.zero
   is
     if      (other = wrapping_integer.this.type.zero) wrapping_integer.this.type.one
-    else if (other = wrapping_integer.this.type.one ) thiz
+    else if (other = wrapping_integer.this.type.one ) wrapping_integer.this
     else
-      tmp := (thiz *? thiz) **? (other / wrapping_integer.this.type.two)
+      tmp := (wrapping_integer.this *? wrapping_integer.this) **? (other / wrapping_integer.this.type.two)
       if other %% wrapping_integer.this.type.two
         tmp
       else
-        tmp *? thiz
+        tmp *? wrapping_integer.this
 
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  overflow_on_exp(other wrapping_integer.this.type) => (thiz **? other)!!
+  overflow_on_exp(other wrapping_integer.this.type) => (wrapping_integer.this **? other)!!
 
 
   # exponentiation with saturating semantics
@@ -185,18 +185,18 @@ wrapping_integer : integer is
   is
     if overflow_on_exp other
       if (wrapping_integer.this ≥ wrapping_integer.this.type.zero) || (other %% wrapping_integer.this.type.two)
-        wrapping_integer.this.type.max.thiz
+        wrapping_integer.this.type.max
       else
-        wrapping_integer.this.type.min.thiz
+        wrapping_integer.this.type.min
     else
-      thiz ** other
+      wrapping_integer.this ** other
 
   # bitwise NOT
   redef prefix ~ wrapping_integer.this.type
     pre
       is_bounded
   is
-    thiz ^ wrapping_integer.this.type.all_bits_set
+    wrapping_integer.this ^ wrapping_integer.this.type.all_bits_set
 
 
   # count the number of 1 bits in the binary representation of this

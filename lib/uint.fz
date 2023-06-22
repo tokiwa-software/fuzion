@@ -283,7 +283,7 @@ is
   fixed type.one uint is
     uint [u32 1] unit
 
-  fixed redef thiz => uint b unit
+  thiz => uint b unit
 
 
   # this uint as an i32

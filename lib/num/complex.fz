@@ -36,7 +36,7 @@ is
 
 
   # enable generic features in ancestors
-  fixed redef thiz => complex real imag
+  thiz => complex real imag
 
   # basic operations
   fixed redef prefix + => thiz

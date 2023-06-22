@@ -31,8 +31,6 @@
 #
 f32(val f32) : float is
 
-  fixed redef thiz        => f32.this.val
-
 
   # basic operations: 'prefix -' (negation)
   fixed redef prefix - f32 is intrinsic

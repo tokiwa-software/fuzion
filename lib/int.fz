@@ -35,7 +35,7 @@ is
     panic "invalid, there is no max int."
 
 
-  fixed redef thiz => int ns n
+  thiz => int ns n
 
   name String is
     "int"
