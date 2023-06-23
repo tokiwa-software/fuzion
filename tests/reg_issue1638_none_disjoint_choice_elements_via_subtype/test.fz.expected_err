@@ -1,0 +1,13 @@
+
+[32m--CURDIR--/test.fz:10:10:[39m [1;31merror 1[0m[1m: Ambiguous assignment to '[33mtest.this.type.a[39m' from '[33mtest.this.type.ref b[39m'[0m
+[34m  c a := b
+[33m---------^[0m
+'[33mtest.this.type.ref b[39m' is assignable to '[33mSequence u8[39m', '[33mString[39m'
+
+
+[32m--CURDIR--/test.fz:11:10:[39m [1;31merror 2[0m[1m: Ambiguous assignment to '[33mtest.this.type.a[39m' from '[33mConst_String[39m'[0m
+[34m  d a := "hallo"
+[33m---------^[0m
+'[33mConst_String[39m' is assignable to '[33mSequence u8[39m', '[33mString[39m'
+
+2 errors.

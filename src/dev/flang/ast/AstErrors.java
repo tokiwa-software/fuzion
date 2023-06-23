@@ -1696,11 +1696,11 @@ public class AstErrors extends ANY
         );
   }
 
-  public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
+  public static void ambiguousAssignmentToChoice(SourcePosition pos, AbstractType frmlT, AbstractType type)
   {
-    error(value.pos(),
-      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
-          .filter(cg -> cg.isAssignableFrom(value.type()))
+    error(pos,
+      "Ambiguous assignment to " + s(frmlT) + " from " + s(type), s(type) + " is assignable to " + frmlT.choiceGenerics().stream()
+          .filter(cg -> cg.isAssignableFrom(type))
           .map(cg -> s(cg))
           .collect(Collectors.joining(", "))
       );

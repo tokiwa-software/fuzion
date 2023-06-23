@@ -222,6 +222,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * returns the choice generics that `type` is directly assignable to.
+   * @param type
+   * @return
+   */
+  public List<AbstractType> directlyAssignableChoiceGenerics(AbstractType type)
+  {
+    return this
+              .choiceGenerics()
+              .stream()
+              .filter(cg -> cg.isDirectlyAssignableFrom(type))
+              .collect(List.collector());
+  }
+
+
+  /**
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
   public boolean containsError()
