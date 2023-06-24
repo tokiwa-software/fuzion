@@ -296,6 +296,12 @@ public abstract class Value extends ANY
   }
 
 
+  public int tag()
+  {
+    throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
+  }
+
+
 }
 
 /* end of file */

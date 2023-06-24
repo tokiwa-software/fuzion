@@ -262,15 +262,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * If this clazz is a choice clazz that requires a tag, this is the tag.  null
-   * otherwise.
-   *
-   * This is initialized after Clazz creation by dependencies().
-   */
-  Clazz _choiceTag;
-
-
-  /**
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
@@ -418,7 +409,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     _resultField    = isBoxed() ? null : determineResultField();
     _resultClazz    = isBoxed() ? null : determineResultClazz();
     _outerRef       = isBoxed() ? null : determineOuterRef();
-    _choiceTag      = isBoxed() ? null : determineChoiceTag();
     _asValue        = determineAsValue();
   }
 
@@ -804,23 +794,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
     // Object layout will later report an error for this case.
     _isUnitType = YesNo.no;
 
-    if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
+    if (isRef() || feature().isBuiltInPrimitive() || isVoidType() || isChoice())
       {
         return false;
-      }
-    if (isChoice())
-      {
-        if (choiceTag() != null)
-          {
-            return false;
-          }
-        for (var cg : choiceGenerics())
-          {
-            if (!cg.isUnitType())
-              {
-                return false;
-              }
-          }
       }
     else
       {
@@ -2393,35 +2369,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
             }
           break;
         }
-      }
-    return result;
-  }
-
-
-  /**
-   * If this clazz is a choice clazz that requires a tag, this will return the
-   * tag.  null otherwise.
-   */
-  public Clazz choiceTag()
-  {
-    return _choiceTag;
-  }
-
-
-  /**
-   * If this is a choice clazz that requires a tag, determine the clazz of this
-   * tag field.
-   *
-   * @return the tag field, or null if this is not a choice or this is a choice
-   * that does not need a tag.
-   */
-  private Clazz determineChoiceTag()
-  {
-    Clazz result = null;
-    if (isChoice() && !isChoiceOfOnlyRefs())
-      {
-        var f = feature();
-        result = lookup(f.choiceTag(), f);
       }
     return result;
   }

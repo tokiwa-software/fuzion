@@ -413,6 +413,8 @@ public class Interpreter extends ANY
                                                             */
         Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
+        if (CHECKS) check
+          (sf.isChoice());
         int tag;
         Value refVal = null;
         if (staticSubjectClazz.isChoiceOfOnlyRefs())
@@ -426,7 +428,7 @@ public class Interpreter extends ANY
           }
         else
           {
-            tag = getField(sf.choiceTag(), staticSubjectClazz, sub, false).i32Value();
+            tag = sub.tag();
           }
         Clazz subjectClazz = tag < 0
           ? ((ValueWithClazz) refVal).clazz()
@@ -696,7 +698,7 @@ public class Interpreter extends ANY
             {
               // result = (args) -> getField(f, outerClazz, args.get(0));
               //
-              // specialize for i32.val and bool.tag
+              // specialize for i32.val
               var ocv = outerClazz.asValue();
               if (builtInVal || ocv == Clazzes.bool.getIfCreated())
                 {
@@ -710,8 +712,7 @@ public class Interpreter extends ANY
                      ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
                      ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
                      ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
-                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
-                     ocv != Clazzes.bool.getIfCreated() || f == Types.resolved.f_bool.choiceTag());
+                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"));
                   result = (args) -> args.get(0);
                 }
               else
@@ -964,11 +965,15 @@ public class Interpreter extends ANY
       }
     else
       { // store tag and value separately
-        setField(thiz.choiceTag(), -1, choiceClazz, choice, new i32Value(tag));
+        LValue slot   = choice.at(vclazz, 0);
+        (new i32Value(tag)).storeNonRef(slot, 1);
       }
     if (CHECKS) check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
     setFieldSlot(thiz, vclazz, valSlot, v);
+
+    if (POSTCONDITIONS) ensure
+      (choiceClazz.isChoiceOfOnlyRefs() || choice.container.nonrefs[0] >= 0);
   }
 
 
@@ -1297,7 +1302,7 @@ public class Interpreter extends ANY
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
       {
         if (CHECKS) check
-          (thiz == Types.resolved.f_bool.choiceTag());
+          (false);
         result = curValue;
       }
     else

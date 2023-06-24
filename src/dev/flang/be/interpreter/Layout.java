@@ -125,13 +125,8 @@ class Layout extends ANY
     _size = Integer.MIN_VALUE;
     if (_clazz.isChoice())
       {
-        var tag = _clazz.choiceTag();
-        if (tag != null)
-          {
-            _offsets.put(tag, _size - Integer.MIN_VALUE);
-            _offsets0.put(tag.feature(), _size - Integer.MIN_VALUE);
-            _size += get(tag.resultClazz()).size();
-          }
+        // reserved for tagging
+        _size += (_clazz.isChoiceOfOnlyRefs() ? 0 : 1);
         int maxSz = 0;
         for (var cg : _clazz.choiceGenerics())
           {
@@ -232,7 +227,8 @@ class Layout extends ANY
     if (PRECONDITIONS) require
       (_clazz.isRoutine() || _clazz.isChoice(),
        f.resultType().isOpenGeneric() == (select >= 0),
-       sizeAvailable());
+       sizeAvailable(),
+       _offsets0.containsKey(f));
 
     var o = _offsets0.get(f);
     var result = select < 0 ? ((Integer) o)
@@ -248,7 +244,8 @@ class Layout extends ANY
   {
     if (PRECONDITIONS) require
       (_clazz.isRoutine() || _clazz.isChoice(),
-       sizeAvailable());
+       sizeAvailable(),
+       _offsets.containsKey(f));
 
     return _offsets.get(f);
   }
@@ -262,7 +259,7 @@ class Layout extends ANY
     if (PRECONDITIONS) require
       (_clazz.isChoice() && sizeAvailable());
 
-    return _clazz.choiceTag() != null ? 1 : 0;
+    return _clazz.isChoiceOfOnlyRefs() ? 0 : 1;
   }
 
 

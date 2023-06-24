@@ -638,22 +638,6 @@ public class FUIR extends IR
 
 
   /**
-   * Get the choice tag field of a choice clazz
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of cl's choice tag or -1 if cl is not a choice or does not
-   * need a choice tag.
-   */
-  public int clazzChoiceTag(int cl)
-  {
-    var cc = clazz(cl);
-    var ct = cc.choiceTag();
-    return ct == null ? -1 : id(ct);
-  }
-
-
-  /**
    * Get the choice tag id for a given value clazz in a choice clazz
    *
    * @param cl a clazz id of a choice clazz

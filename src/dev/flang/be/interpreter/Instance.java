@@ -460,6 +460,19 @@ public class Instance extends ValueWithClazz
   }
 
 
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = nonrefs[0];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
+  }
+
+
   /**
    * toString
    *

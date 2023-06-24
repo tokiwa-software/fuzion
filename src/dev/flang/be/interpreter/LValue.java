@@ -313,6 +313,19 @@ public class LValue extends ValueWithClazz
   }
 
 
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = container.nonrefs[offset];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
+  }
+
+
   /**
    * toString
    *

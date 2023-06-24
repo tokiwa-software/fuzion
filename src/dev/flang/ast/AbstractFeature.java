@@ -1579,9 +1579,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
-  // following are used in IR/Clazzes middle end or later only:
-  public abstract AbstractFeature choiceTag();
-
   // following used in MIR or later
   public abstract Expr code();
 

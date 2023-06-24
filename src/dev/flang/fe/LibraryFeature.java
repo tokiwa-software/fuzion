@@ -357,29 +357,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * For choice feature (i.e., isChoice() holds): The tag field that holds in
-   * i32 that identifies the index of the actual generic argument to choice that
-   * is represented.
-   *
-   * @return the choice tag or null if this !isChoice().
-   */
-  public AbstractFeature choiceTag()
-  {
-    AbstractFeature result = null;
-    if (isChoice())
-      {
-        var i = innerFeatures();
-        result = i.get(arguments().size());  // first entry after arguments is the choice tag
-      }
-
-    if (CHECKS) check
-      (isChoice() == (result != null));
-
-    return result;
-  }
-
-
-  /**
    * If we have an existing type feature (store in a .fum library file), return that
    * type feature. return null otherwise.
    */

@@ -241,18 +241,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For choice feature (i.e., isChoice() holds): The tag field that holds in
-   * i32 that identifies the index of the actual generic argument to choice that
-   * is represented.
-   *
-   * This might not become part of the runtime clazz if isChoiceOfOnlyRefs()
-   * holds for that class.
-   */
-  public Feature _choiceTag = null;
-  public AbstractFeature choiceTag() { return _choiceTag; }
-
-
-  /**
    * Is this a loop's index variable that is automatically updated by the loops
    * for-clause.  If so, assignments outside the loop prolog or nextIteration
    * parts are not allowed.
@@ -1480,7 +1468,7 @@ public class Feature extends AbstractFeature implements Stmnt
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef() && (p != p.outer().choiceTag()))
+        if (p.isField() && !p.isOuterRef())
           {
             AstErrors.choiceMustNotContainFields(_pos,p);
           }
@@ -1553,15 +1541,6 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
-
-    _choiceTag = new Feature(_pos,
-                             Visi.PRIVATE,
-                             Consts.MODIFIER_FIXED,
-                             Types.resolved.t_i32,
-                             FuzionConstants.CHOICE_TAG_NAME,
-                             null);
-    res._module.findDeclarations(_choiceTag, this);
-    _choiceTag.scheduleForResolution(res);
   }
 
 
