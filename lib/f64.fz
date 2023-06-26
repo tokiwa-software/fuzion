@@ -44,6 +44,26 @@ f64(val f64) : float is
   fixed infix ** (other f64) f64 is intrinsic
 
 
+  # comparision
+  #
+  # These infixes compare floating point numbers according to the IEEE
+  # standards. They shadow the infixes provided globally by type.equality
+  # so that someone who expects floating point comparision operators to
+  # behave according to IEEE standards will not be surprised.
+  #
+  # If comparision based on a proper equivalence relation or partial order
+  # is desired, this can still be achieved by using the implementations of
+  # type.equality and type.lteq. These additionally define NaN = NaN and
+  # NaN <= x for all x in f64, respectively.
+  #
+  infix = (other f64) bool is intrinsic
+  infix != (other f64) bool is !(infix = other)
+  infix <= (other f64) bool is intrinsic
+  infix >= (other f64) bool is other <= thiz
+  infix > (other f64) bool is !(infix <= other)
+  infix < (other f64) bool is !(other <= thiz)
+
+
   # conversion
 
   # NaN is converted to 0
@@ -162,12 +182,14 @@ f64(val f64) : float is
 
   # equality
   #
-  fixed type.equality(a, b f64) bool is intrinsic
+  fixed type.equality(a, b f64) bool is
+    a.infix = b || (is_NaN a && is_NaN b)
 
 
   # total order
   #
-  fixed type.lteq(a, b f64) bool is intrinsic
+  fixed type.lteq(a, b f64) bool is
+    a.infix <= b || is_NaN a
 
 
   fixed type.bytes => 8

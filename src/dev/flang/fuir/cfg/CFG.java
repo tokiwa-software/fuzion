@@ -396,10 +396,10 @@ public class CFG extends ANY
     put("f64.infix %"                    , (cfg, cl) -> { } );
     put("f32.infix **"                   , (cfg, cl) -> { } );
     put("f64.infix **"                   , (cfg, cl) -> { } );
-    put("f32.type.equality"              , (cfg, cl) -> { } );
-    put("f64.type.equality"              , (cfg, cl) -> { } );
-    put("f32.type.lteq"                  , (cfg, cl) -> { } );
-    put("f64.type.lteq"                  , (cfg, cl) -> { } );
+    put("f32.infix ="                    , (cfg, cl) -> { } );
+    put("f64.infix ="                    , (cfg, cl) -> { } );
+    put("f32.infix <="                   , (cfg, cl) -> { } );
+    put("f64.infix <="                   , (cfg, cl) -> { } );
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
