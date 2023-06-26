@@ -745,7 +745,11 @@ public class C extends ANY
                "  pthread_mutexattr_t attr;\n" +
                "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
                "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
+               "  #if _WIN32\n" +
+               "  // NYI #1646 setprotocol returns EINVAL on windows. \n" +
+               "  #else\n" +
                "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
+               "  #endif\n" +
                "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
                "  assert(res);\n" +
                " }\n");
