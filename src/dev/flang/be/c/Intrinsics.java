@@ -859,7 +859,8 @@ public class Intrinsics extends ANY
                                                                                    arg))),
                                 CExpr.iff(res.ne(CExpr.int32const(0)),
                                           CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+                                pt.castTo("int64_t").ret());
               // NYI: free(pt)!
             }
           else
@@ -867,6 +868,13 @@ public class Intrinsics extends ANY
               return CStmnt.EMPTY;
             }
         });
+    put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
+    {
+      return CStmnt.seq(
+        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */)),
+        CExpr.call("free", new List<>(A0.castTo("pthread_t *")) )
+      );
+    });
     put("fuzion.std.nano_time", (c,cl,outer,in) ->
         {
           var result = new CIdent("result");

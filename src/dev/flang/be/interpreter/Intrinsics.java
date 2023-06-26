@@ -127,6 +127,14 @@ public class Intrinsics extends ANY
     }
   };
 
+  /**
+   * This contains all started threads.
+   */
+  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
+     @Override
+     protected boolean close(Thread f) {return true;};
+   };
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -744,7 +752,22 @@ public class Intrinsics extends ANY
           var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
           t.setDaemon(true);
           t.start();
-          return new Instance(Clazzes.c_unit.get());
+          return new i64Value(_startedThreads_.add(t));
+        });
+    put("fuzion.sys.thread.join0", (interpreter, innerClazz) -> args ->
+        {
+          try
+            {
+              _startedThreads_.get(args.get(1).i64Value()).join();
+              _startedThreads_.remove(args.get(1).i64Value());
+            }
+          catch (InterruptedException e)
+            {
+              // NYI handle this exception
+              System.err.println("Joining of threads was interrupted: " + e);
+              System.exit(1);
+            }
+          return Value.EMPTY_VALUE;
         });
 
 
