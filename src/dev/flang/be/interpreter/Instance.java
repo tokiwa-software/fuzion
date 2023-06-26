@@ -460,6 +460,9 @@ public class Instance extends ValueWithClazz
   }
 
 
+  /**
+   * Return the tag of this choice.
+   */
   public int tag()
   {
     if (PRECONDITIONS) require
