@@ -35,7 +35,7 @@ ctrie_threads is
 
     empty := ctrie.snapshot true
 
-    for t in 1..num_threads do
+    (array num_threads t->
       concur.thread.spawn ()->
         for k in keys
             snap := ctrie.snapshot true, if k=500 then ctrie.snapshot true else snap
@@ -44,10 +44,7 @@ ctrie_threads is
           ctrie.add k t
           if k % 3 = 0
             ctrie.remove k
-
-
-    # NYI can not wait for threads to finish currently
-    time.nano.sleep (time.durations.s 20)
+      ).for_each t->t.join
 
     say "empty snapshot size: {empty.size}" # should still be zero
     say "ctrie size: {ctrie.size}" # the number of the beast = 666
@@ -63,11 +60,11 @@ ctrie_threads is
 
 
   test2(take_snapshots bool) is
-    say "test: in {$num_threads} threads, add keys while taking snapshots, removing keys while taking snaphots."
+    say "test: in {$num_threads} threads, {if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys."}"
 
     ctrie := (container.ctrie i32 i32).type.empty
 
-    for t in 1..num_threads do
+    (array num_threads t->
       concur.thread.spawn ()->
         for k in keys do
 
@@ -81,11 +78,10 @@ ctrie_threads is
               panic "snap size changed: $s1 $s2"
             if !(k <= s1 <= 999)
               panic "illegal snap size: $k $s1"
+    ).for_each t->t.join
 
-    # NYI can not wait for threads to finish currently
-    time.nano.sleep (time.durations.s 10)
 
-    for t in 1..num_threads do
+    (array num_threads t->
       concur.thread.spawn ()->
         for k in keys.take 900 do
 
@@ -99,9 +95,7 @@ ctrie_threads is
               panic "snap size changed: $s1 $s2"
             if !(0 <= s1 <= 999-k)
               panic "illegal snap size: $k $s1"
-
-    # NYI can not wait for threads to finish currently
-    time.nano.sleep (time.durations.s 10)
+    ).for_each t->t.join
 
     say ctrie.size # 999-900 = 99
     if ctrie.size != 99
@@ -113,7 +107,7 @@ ctrie_threads is
 
     ctrie := (container.ctrie i32 i32).type.empty
 
-    for t in 1..num_threads do
+    (array num_threads t->
       concur.thread.spawn ()->
         for k in keys do
           kt := (1000*t)+k
@@ -133,9 +127,7 @@ ctrie_threads is
             ctrie.snapshot true
 
           ctrie.add kt kt
-
-    # NYI can not wait for threads to finish currently
-    time.nano.sleep (time.durations.s 10)
+    ).for_each t->t.join
 
 
 

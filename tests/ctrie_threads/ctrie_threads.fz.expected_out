@@ -2,8 +2,8 @@ test: in 4 threads, adding 999 keys, removing every third key and taking a snaps
 empty snapshot size: 0
 ctrie size: 666
 all keys multiple of three removed: true
-test: in 4 threads, add keys while taking snapshots, removing keys while taking snaphots.
+test: in 4 threads, add keys, remove keys.
 99
-test: in 4 threads, add keys while taking snapshots, removing keys while taking snaphots.
+test: in 4 threads, adding keys while taking snapshots, removing keys while taking snapshots.
 99
 test: in 4 threads, add non-overlapping keys, then remove key, test if added/removed.
