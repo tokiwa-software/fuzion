@@ -1158,10 +1158,10 @@ public class Call extends AbstractCall
       (frmlT == Types.intern(frmlT));
 
     var declF = _calledFeature.outer();
-    var heirF = targetTypeOrConstraint(res).featureOfType();
-    if (declF != heirF)
+    var heir = _target.typeForCallTarget();
+    if (!heir.isGenericArgument() && declF != heir.featureOfType())
       {
-        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heirF);
+        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.featureOfType());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
