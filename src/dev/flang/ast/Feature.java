@@ -2164,10 +2164,10 @@ public class Feature extends AbstractFeature implements Stmnt
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
         result = from.typeIfKnown();
-        if (!(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get) &&
-            result != null &&
+        if (result != null &&
             !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature())
+            result.featureOfType().isTypeFeature() &&
+            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
           {
             result = Types.resolved.f_Type.selfType();
           }
