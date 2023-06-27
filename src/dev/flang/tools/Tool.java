@@ -64,7 +64,7 @@ public abstract class Tool extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] " +
+  private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] [-XjavaProf=<graph.svg>] " +
     "[" + Errors.MAX_ERROR_MESSAGES_OPTION   + "=<n>] " +
     "[" + Errors.MAX_WARNING_MESSAGES_OPTION + "=<n>] ";
 
@@ -258,6 +258,10 @@ public abstract class Tool extends ANY
     else if (a.equals("-XjavaProf"))
       {
         Profiler.start();
+      }
+    else if (a.startsWith("-XjavaProf="))
+      {
+        Profiler.start(a.substring(a.indexOf("=")+1));
       }
     else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION) && a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {

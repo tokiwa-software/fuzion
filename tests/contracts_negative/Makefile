@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = SquareRoot
-include ../negative.mk
+include ../simple.mk

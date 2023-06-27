@@ -25,6 +25,6 @@
 issue238 =>
 
   say ([0,1,2,3,4]
-    .group_by (x -> if x % 2 ≟ 0 then "even" else "uneven")
-    .items.mapSequence (kv -> (k,v):=kv; "$k => $v")
+    .group_by (x -> if x % 2 = 0 then "even" else "uneven")
+    .items.map_sequence (kv -> (k,v):=kv; "$k => $v")
     .fold (String.type.concat "\n"))

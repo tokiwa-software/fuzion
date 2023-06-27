@@ -63,11 +63,28 @@ public class Intrinsics extends ANY
   static CIdent A0 = new CIdent("arg0");
   static CIdent A1 = new CIdent("arg1");
   static CIdent A2 = new CIdent("arg2");
+  static CIdent A3 = new CIdent("arg3");
+  static CIdent A4 = new CIdent("arg4");
+  static CIdent A5 = new CIdent("arg5");
 
   /**
    * Predefined identifier to access errno macro.
    */
   static CIdent errno = new CIdent("errno");
+
+  /**
+   * Wrap code into a pthread_mutex_lock/unlock using CNames.GLOBAL_LOCK.  This
+   * ensured atomicity with respect to any other code that is locked.
+   */
+  static CStmnt locked(CExpr lock,
+                       CStmnt code)
+  {
+    var res = new CIdent("res");
+    return CStmnt.seq(CExpr.decl("int", res, CExpr.call("pthread_mutex_lock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf()))),
+                      CExpr.call("assert", new List<>(CExpr.eq(res, new CIdent("0")))),
+                      code,
+                      CExpr.call("pthread_mutex_unlock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf())));
+  }
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
@@ -81,14 +98,180 @@ public class Intrinsics extends ANY
           return CStmnt.seq(c.constString(str, tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
+
+    put("concur.atomic.compare_and_swap0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var expected  = A0;
+          var new_value = A1;
+          var tmp = new CIdent("tmp");
+          var code = CStmnt.EMPTY;
+          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            {
+              var f = c.accessField(outer, ac, v);
+              CExpr eq;
+              if (c._fuir.clazzIsRef(rc) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                {
+                  eq = CExpr.eq(tmp, expected);
+                }
+              else
+                {
+                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                }
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
+                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                  CStmnt.iff(eq,
+                                                             f.assign(new_value)))),
+                                tmp.ret());
+            }
+          return code;
+        });
+
+    put("concur.atomic.compare_and_set0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var expected  = A0;
+          var new_value = A1;
+          var tmp = new CIdent("tmp");
+          var res = new CIdent("set_successful");
+          var code = CStmnt.EMPTY;
+          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            {
+              var f = c.accessField(outer, ac, v);
+              CExpr eq;
+              if (c._fuir.clazzIsRef(rc) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                {
+                  eq = CExpr.eq(tmp, expected);
+                }
+              else
+                {
+                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                }
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
+                                locked(CNames.GLOBAL_LOCK,
+                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                  CStmnt.iff(eq,
+                                                             CStmnt.seq(
+                                                              f.assign(new_value),
+                                                              res.assign(new CIdent("true"))
+                                                              )))),
+                                CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
+            }
+          return code;
+        });
+
+    put("concur.atomic.racy_accesses_supported",  (c,cl,outer,in) ->
+        {
+          var v = c._fuir.lookupAtomicValue(c._fuir.clazzOuterClazz(cl));
+          var rc  = c._fuir.clazzResultClazz(v);
+          var r =
+            c._fuir.clazzIsRef(rc) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 ) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
+            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+          return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
+        });
+
+    put("concur.atomic.read0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var tmp = new CIdent("tmp");
+          CStmnt code;
+          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            { // A unit-type read should be at least a load/store fence. For now, we enter the lock
+              code = locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+                                locked(CNames.GLOBAL_LOCK, tmp.assign(f)),
+                                tmp.ret());
+            }
+          return code;
+        });
+
+    put("concur.atomic.write0", (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupAtomicValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var new_value = A0;
+          var tmp = new CIdent("tmp");
+          var code = CStmnt.EMPTY;
+          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+            { // A unit-type write should at least be a load/store fence. For new, we enter the lock:
+              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY));
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              // NYI: Use __sync_val_compare_and_swap() or similar primitive
+              // where available and avoid using locked() in these cases.
+              code = locked(CNames.GLOBAL_LOCK, f.assign(new_value));
+            }
+          return code;
+        });
+
+    put("concur.util.loadFence", (c,cl,outer,in) ->
+        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
+          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        });
+
+    put("concur.util.storeFence", (c,cl,outer,in) ->
+        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
+          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        });
+
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
-    put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
-    put("fuzion.sys.args.count", (c,cl,outer,in) -> c._names.GLOBAL_ARGC.ret());
+    put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
+    put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
           var tmp = new CIdent("tmp");
-          var str = c._names.GLOBAL_ARGV.index(A0);
+          var str = CNames.GLOBAL_ARGV.index(A0);
           var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(c.constString(str,CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
@@ -452,16 +635,16 @@ public class Intrinsics extends ANY
     put("u8.as_i32"            , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("u16.as_i32"           , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
     put("u32.as_i64"           , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
-    put("i8.castTo_u8"         , (c,cl,outer,in) -> outer.castTo("fzT_1u8").ret());
-    put("i16.castTo_u16"       , (c,cl,outer,in) -> outer.castTo("fzT_1u16").ret());
-    put("i32.castTo_u32"       , (c,cl,outer,in) -> outer.castTo("fzT_1u32").ret());
-    put("i64.castTo_u64"       , (c,cl,outer,in) -> outer.castTo("fzT_1u64").ret());
-    put("u8.castTo_i8"         , (c,cl,outer,in) -> outer.castTo("fzT_1i8").ret());
-    put("u16.castTo_i16"       , (c,cl,outer,in) -> outer.castTo("fzT_1i16").ret());
-    put("u32.castTo_i32"       , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
-    put("u32.castTo_f32"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f32*").deref().ret());
-    put("u64.castTo_i64"       , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
-    put("u64.castTo_f64"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f64*").deref().ret());
+    put("i8.cast_to_u8"        , (c,cl,outer,in) -> outer.castTo("fzT_1u8").ret());
+    put("i16.cast_to_u16"      , (c,cl,outer,in) -> outer.castTo("fzT_1u16").ret());
+    put("i32.cast_to_u32"      , (c,cl,outer,in) -> outer.castTo("fzT_1u32").ret());
+    put("i64.cast_to_u64"      , (c,cl,outer,in) -> outer.castTo("fzT_1u64").ret());
+    put("u8.cast_to_i8"        , (c,cl,outer,in) -> outer.castTo("fzT_1i8").ret());
+    put("u16.cast_to_i16"      , (c,cl,outer,in) -> outer.castTo("fzT_1i16").ret());
+    put("u32.cast_to_i32"      , (c,cl,outer,in) -> outer.castTo("fzT_1i32").ret());
+    put("u32.cast_to_f32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f32*").deref().ret());
+    put("u64.cast_to_i64"      , (c,cl,outer,in) -> outer.castTo("fzT_1i64").ret());
+    put("u64.cast_to_f64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1f64*").deref().ret());
     put("u16.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret());
     put("u32.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret());
     put("u64.low8bits"         , (c,cl,outer,in) -> outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret());
@@ -504,8 +687,8 @@ public class Intrinsics extends ANY
                             outer.castTo("fzT_1i64").ret()
                             );
         });
-    put("f32.castTo_u32"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
-    put("f64.castTo_u64"       , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
+    put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
+    put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
     put("f32.as_string"        ,
         "f64.as_string"        , (c,cl,outer,in) ->
         {
@@ -520,55 +703,55 @@ public class Intrinsics extends ANY
      * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
      * source: https://github.com/rust-lang/rust/issues/88734
      */
-    put("f32s.minExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
-    put("f32s.max"             , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
-    put("f32s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64s.minExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64s.maxExp"          , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64s.minPositive"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
-    put("f64s.max"             , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
-    put("f64s.epsilon"         , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32s.isNaN"           ,
-        "f64s.isNaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f32.type.min_positive", (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
+    put("f32.type.max"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
+    put("f32.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
+    put("f64.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
+    put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
+    put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
+    put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
+    put("f32.type.is_NaN"      ,
+        "f64.type.is_NaN"      , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64s.squareRoot"      , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
-    put("f32s.exp"             , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
-    put("f64s.exp"             , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
-    put("f32s.log"             , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
-    put("f64s.log"             , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
-    put("f32s.sin"             , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
-    put("f64s.sin"             , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
-    put("f32s.cos"             , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());
-    put("f64s.cos"             , (c,cl,outer,in) -> CExpr.call("cos",    new List<>(A0)).ret());
-    put("f32s.tan"             , (c,cl,outer,in) -> CExpr.call("tanf",   new List<>(A0)).ret());
-    put("f64s.tan"             , (c,cl,outer,in) -> CExpr.call("tan",    new List<>(A0)).ret());
-    put("f32s.asin"            , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(A0)).ret());
-    put("f64s.asin"            , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(A0)).ret());
-    put("f32s.acos"            , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(A0)).ret());
-    put("f64s.acos"            , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
-    put("f32s.atan"            , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
-    put("f64s.atan"            , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
-    put("f32s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
-    put("f64s.atan2"           , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
-    put("f32s.sinh"            , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
-    put("f64s.sinh"            , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
-    put("f32s.cosh"            , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
-    put("f64s.cosh"            , (c,cl,outer,in) -> CExpr.call("cosh",   new List<>(A0)).ret());
-    put("f32s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
-    put("f64s.tanh"            , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
+    put("f32.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
+    put("f64.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
+    put("f32.type.exp"         , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
+    put("f64.type.exp"         , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
+    put("f32.type.log"         , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
+    put("f64.type.log"         , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
+    put("f32.type.sin"         , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
+    put("f64.type.sin"         , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
+    put("f32.type.cos"         , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());
+    put("f64.type.cos"         , (c,cl,outer,in) -> CExpr.call("cos",    new List<>(A0)).ret());
+    put("f32.type.tan"         , (c,cl,outer,in) -> CExpr.call("tanf",   new List<>(A0)).ret());
+    put("f64.type.tan"         , (c,cl,outer,in) -> CExpr.call("tan",    new List<>(A0)).ret());
+    put("f32.type.asin"        , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(A0)).ret());
+    put("f64.type.asin"        , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(A0)).ret());
+    put("f32.type.acos"        , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(A0)).ret());
+    put("f64.type.acos"        , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
+    put("f32.type.atan"        , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
+    put("f64.type.atan"        , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
+    put("f32.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
+    put("f64.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
+    put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
+    put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
+    put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
+    put("f64.type.cosh"        , (c,cl,outer,in) -> CExpr.call("cosh",   new List<>(A0)).ret());
+    put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
+    put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.hashCode"         , (c,cl,outer,in) ->
+    put("Any.hash_code"        , (c,cl,outer,in) ->
         {
           var or = c._fuir.clazzOuterRef(cl);
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
-            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hashCode relies on non-compacting GC
-            : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
+            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hash_code relies on non-compacting GC
+            : CExpr.int32const(42);  // NYI: This implementation of hash_code is stupid
           return hc.ret();
         });
     put("Any.as_string"        , (c,cl,outer,in) ->
@@ -730,16 +913,68 @@ public class Intrinsics extends ANY
             A0.castTo("fzT_1i32 *").index(5).assign(CExpr.int32const(0)));
       });
 
+
+    put("fuzion.sys.net.bind0",    (c,cl,outer,in) ->
+      CExpr.call("fzE_bind", new List<CExpr>(
+        A0.castTo("int"),       // family
+        A1.castTo("int"),       // socktype
+        A2.castTo("int"),       // protocol
+        A3.castTo("char *"),    // host
+        A4.castTo("char *"),    // port
+        A5.castTo("int64_t *")  // result
+    )).ret());
+
+    put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
+      A0.castTo("int"), // socket descriptor
+      A1.castTo("int")  // size of backlog
+    )).ret());
+
+    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_accept", new List<CExpr>(
+      A0.castTo("int") // socket descriptor
+    )), A1));
+
+    put("fuzion.sys.net.connect0",    (c,cl,outer,in) ->
+    CExpr.call("fzE_connect", new List<CExpr>(
+      A0.castTo("int"),       // family
+      A1.castTo("int"),       // socktype
+      A2.castTo("int"),       // protocol
+      A3.castTo("char *"),    // host
+      A4.castTo("char *"),    // port
+      A5.castTo("int64_t *")  // result (err or descriptor)
+  )).ret());
+
+    put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
+      A0.castTo("int"),    // socket descriptor
+      A1.castTo("void *"), // buffer
+      A2.castTo("size_t")  // buffer length
+    )), A3));
+
+    put("fuzion.sys.net.write", (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
+      A0.castTo("int"),    // socket descriptor
+      A1.castTo("void *"), // buffer
+      A2.castTo("size_t")  // buffer length
+    )).ret());
+
+    put("fuzion.sys.net.close0", (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
+      A0.castTo("int") // socket descriptor
+    )).ret());
+
+    put("fuzion.sys.net.set_blocking0", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
+      A0.castTo("int"), // socket descriptor
+      A1.castTo("int")  // blocking
+    )).ret());
+
+
     put("effect.replace"       ,
         "effect.default"       ,
         "effect.abortable"     ,
         "effect.abort"         , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectType(cl);
-          var ev  = c._names.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          var evj = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
-          var o   = c._names.OUTER;
+          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
+          var o   = CNames.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
             switch (in)
@@ -793,35 +1028,35 @@ public class Intrinsics extends ANY
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         });
-    put("effects.exists"       , (c,cl,outer,in) ->
+    put("effect.type.is_installed"       , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
-          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
 
     IntrinsicCode noJava = (c,cl,outer,in) ->
       CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.java.JavaObject.isNull"  , noJava);
-    put("fuzion.java.arrayGet"           , noJava);
-    put("fuzion.java.arrayLength"        , noJava);
-    put("fuzion.java.arrayToJavaObject0" , noJava);
-    put("fuzion.java.boolToJavaObject"   , noJava);
-    put("fuzion.java.callC0"             , noJava);
-    put("fuzion.java.callS0"             , noJava);
-    put("fuzion.java.callV0"             , noJava);
-    put("fuzion.java.f32ToJavaObject"    , noJava);
-    put("fuzion.java.f64ToJavaObject"    , noJava);
-    put("fuzion.java.getField0"          , noJava);
-    put("fuzion.java.getStaticField0"    , noJava);
-    put("fuzion.java.i16ToJavaObject"    , noJava);
-    put("fuzion.java.i32ToJavaObject"    , noJava);
-    put("fuzion.java.i64ToJavaObject"    , noJava);
-    put("fuzion.java.i8ToJavaObject"     , noJava);
-    put("fuzion.java.javaStringToString" , noJava);
-    put("fuzion.java.stringToJavaObject0", noJava);
-    put("fuzion.java.u16ToJavaObject"    , noJava);
+    put("fuzion.java.Java_Object.is_null"   , noJava);
+    put("fuzion.java.array_get"             , noJava);
+    put("fuzion.java.array_length"          , noJava);
+    put("fuzion.java.array_to_java_object0" , noJava);
+    put("fuzion.java.bool_to_java_object"   , noJava);
+    put("fuzion.java.call_c0"               , noJava);
+    put("fuzion.java.call_s0"               , noJava);
+    put("fuzion.java.call_v0"               , noJava);
+    put("fuzion.java.f32_to_java_object"    , noJava);
+    put("fuzion.java.f64_to_java_object"    , noJava);
+    put("fuzion.java.get_field0"            , noJava);
+    put("fuzion.java.get_static_field0"     , noJava);
+    put("fuzion.java.i16_to_java_object"    , noJava);
+    put("fuzion.java.i32_to_java_object"    , noJava);
+    put("fuzion.java.i64_to_java_object"    , noJava);
+    put("fuzion.java.i8_to_java_object"     , noJava);
+    put("fuzion.java.java_string_to_string" , noJava);
+    put("fuzion.java.string_to_java_object0", noJava);
+    put("fuzion.java.u16_to_java_object"    , noJava);
   }
 
 
@@ -961,6 +1196,42 @@ public class Intrinsics extends ANY
     var rs = ru.castTo(st);
 
     return rs;
+  }
+
+
+  /**
+   * if result of expr is -1 return false and assign
+   * the result fzE_net_error to res[0]
+   * else return true and assign the result of expr to res[0]
+   * @param c
+   * @param expr
+   * @param res
+   * @return
+   */
+  static CStmnt assignNetErrorOnError(C c,CExpr expr, CIdent res)
+  {
+    var expr_res = new CIdent("expr_res");
+    return CStmnt.seq(
+      CExpr.decl("int", expr_res),
+      expr_res.assign(expr),
+      // error
+      CExpr.iff(CExpr.eq(expr_res, CExpr.int32const(-1)),
+        CStmnt.seq(
+          res
+            .castTo("fzT_1i32 *")
+            .index(CExpr.int32const(0))
+            .assign(CExpr.call("fzE_net_error", new List<>())),
+          c._names.FZ_FALSE.ret()
+        )
+      ),
+      // success
+      CStmnt.seq(
+        res
+          .castTo("fzT_1i32 *")
+          .index(CExpr.int32const(0))
+          .assign(expr_res),
+        c._names.FZ_TRUE.ret()
+      ));
   }
 
 }

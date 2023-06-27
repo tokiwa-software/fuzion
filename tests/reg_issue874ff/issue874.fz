@@ -68,25 +68,25 @@ test_this2
 #
 test_this3 is
 
-  num is
+  num0 is
 
-    type.zero num.this.type is abstract
-    type.one  num.this.type is abstract
-    lessThan(other num.this.type) bool is abstract
-    minus(other num.this.type) num.this.type is abstract
+    type.zero num0.this.type is abstract
+    type.one  num0.this.type is abstract
+    lessThan(other num0.this.type) bool is abstract
+    minus(other num0.this.type) num0.this.type is abstract
 
     to_u32_loop =>
       for
-        x := num.this, x.minus num.this.type.one
+        x := num0.this, x.minus num0.this.type.one
         u := u32 0, u+1
-      while num.this.type.zero.lessThan x
+      while num0.this.type.zero.lessThan x
 
-    redef as_string => "num.this.type {to_u32_loop} 'as_string'"
+    redef as_string => "num0.this.type {to_u32_loop} 'as_string'"
 
-  intM5(v u8) : num is
+  intM5(v u8) : num0 is
     fixed type.zero => test_this3.intM5 0
     fixed type.one => test_this3.intM5 1
-    fixed lessThan(other intM5) => v ⩻ other.v
+    fixed lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed minus(other intM5) => intM5 (v - other.v)%5
 
@@ -97,28 +97,28 @@ say (y.plus y)
 #
 test_this4 is
 
-  num is
+  num0 is
 
-    type.zero num.this.type is abstract
-    type.one  num.this.type is abstract
-    lessThan(other num.this.type) bool is abstract
-    minus(other num.this.type) num.this.type is abstract
+    type.zero num0.this.type is abstract
+    type.one  num0.this.type is abstract
+    lessThan(other num0.this.type) bool is abstract
+    minus(other num0.this.type) num0.this.type is abstract
 
     to_u32_loop =>
       for
-        x := num.this, x.minus num.this.type.one
+        x := num0.this, x.minus num0.this.type.one
         u := u32 0, u+1
-      while num.this.type.zero.lessThan x
+      while num0.this.type.zero.lessThan x
       else
         u
 
-    redef as_string => "num.this.type {to_u32_loop} 'as_string'"
+    redef as_string => "num0.this.type {to_u32_loop} 'as_string'"
 
 
-  intM5(v u8) : num is
+  intM5(v u8) : num0 is
     fixed type.zero => test_this4.intM5 0
     fixed type.one => test_this4.intM5 1
-    fixed lessThan(other intM5) => v ⩻ other.v
+    fixed lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed minus(other intM5) => intM5 (v - other.v)%5
 
@@ -141,7 +141,7 @@ test_cov is
 
     redef as_string => "{f}"
 
-  i(isZero bool) : n is
+  i(is_zero bool) : n is
     fixed p(other i) => other
 
 say (test_cov.i false)
@@ -179,7 +179,7 @@ test_cov2 is
 
     redef as_string => "{f}"
 
-  i(isZero bool) : n is
+  i(is_zero bool) : n is
     fixed p(other i) => other
 
 s := (test_cov2.i false).as_string
@@ -198,7 +198,7 @@ test_cov2a0 is
       x := n.this
       y := x.p n.this
 
-  i(isZero bool) : n is
+  i(is_zero bool) : n is
     fixed p(other i) => other
 
 _ := (test_cov2a0.i false).f

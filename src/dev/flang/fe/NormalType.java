@@ -137,7 +137,7 @@ public class NormalType extends LibraryType
    * @return a new type with same featureOfType(), but using g2/o2 as generics
    * and outer type.
    */
-  public AbstractType actualType(List<AbstractType> g2, AbstractType o2)
+  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     if (PRECONDITIONS) require
       (!isGenericArgument());

@@ -1,0 +1,12 @@
+
+[32m--CURDIR--/call.fz:49:10:[39m [1;31merror 1[0m[1m: Call has an ambiguous result type since target of the call is a '[35mref[39m' type.[0m
+[34m  x := v.g   # error! ambiguous result type
+[33m---------^[0m
+The result type of this call depends on the target type.  Since the target type is a '[35mref[39m' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: '[35mcall_with_ambiguous_result_type.r.g[39m'
+Raw result type: '[33mcall_with_ambiguous_result_type.this.type.r.this.type.e[39m'
+Type depending on target: '[33mcall_with_ambiguous_result_type.this.type.r.this.type[39m'
+Target type: '[33mcall_with_ambiguous_result_type.this.type.r[39m'
+To solve this, you could try to use a value type as the target type of the call or change the result type of '[35mcall_with_ambiguous_result_type.r.g[39m' to no longer depend on '[33mcall_with_ambiguous_result_type.this.type.r.this.type[39m'.
+
+one error.

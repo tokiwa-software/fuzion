@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -77,9 +76,14 @@ public class Impl extends ANY
 
 
   /**
-   *
+   * For a field declared using `:=` or a function declared using `=>`, this
+   * gives the value of that field or function.
    */
   Expr _initialValue;
+  public Expr initialValue()
+  {
+    return _initialValue;
+  }
 
 
   AbstractFeature _outerOfInitialValue = null;

@@ -31,12 +31,14 @@
 # threads being delayed for more then a few ms during test run.  Disable this
 # test on systems with unstable performance!
 #
-concur_simple : time.durations =>
+concur_simple =>
+
+  d := time.durations
 
   N := 5
-  t1 := ms 60
-  t2 := ms 120
-  t3 := ms 180
+  t1 := d.ms 60
+  t2 := d.ms 120
+  t3 := d.ms 180
 
   count(s String, t0, t time.duration) =>
     time.nano.sleep t0
@@ -44,9 +46,9 @@ concur_simple : time.durations =>
       time.nano.sleep t
       yak s
 
-  concur.thread.spawn (()->count "/"  (ms 20) t1)
-  concur.thread.spawn (()->count "\\" (ms 40) t2)
-  concur.thread.spawn (()->count "."  (ms 60) t3)
+  concur.thread.spawn (()->count "/"  (d.ms 20) t1)
+  concur.thread.spawn (()->count "\\" (d.ms 40) t2)
+  concur.thread.spawn (()->count "."  (d.ms 60) t3)
 
-  time.nano.sleep (ms t3.millis*N.as_u64+500)
+  time.nano.sleep (d.ms t3.millis*N.as_u64+500)
   say

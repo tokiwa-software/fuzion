@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.client
+#
+# -----------------------------------------------------------------------
+
+
+
+# open a new client-channel.
+# Any active channel with same type will
+# be closed on succesful connection.
+# Blocks until connection is establised.
+# NYI blocking / none blocking
+#
+client(T type, f net.family.val, p net.protocol.val, host String, port u16) outcome unit
+is
+  s := net.socket_type.by_protocol p
+  match fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
+    desc i64 =>
+      channel T desc true
+      unit
+    err error =>
+      err

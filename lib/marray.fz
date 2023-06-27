@@ -27,7 +27,7 @@
 #
 # NYI: marray should be rewritten using effects.
 #
-marray
+private marray
   (
    # type of elements stored in this array
    redef T type,
@@ -36,7 +36,9 @@ marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.internal_array T
+   private data fuzion.sys.internal_array T,
+
+   _ unit
    ) : Sequence T
 
   pre
@@ -64,7 +66,7 @@ is
   #
   redef index [ ] (i i32) T
     pre
-      safety: 0 ≤ i ⩻ length
+      safety: 0 ≤ i < length
   is
     data[i]
 
@@ -72,9 +74,9 @@ is
   #
   set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i ⩻ length
+      safety: 0 ≤ i < length
   # post   NYI: no '==' for Any yet
-  #   marray.this[i] ≟ o
+  #   marray.this[i] = o
   is
     data[i] := o
 
@@ -83,17 +85,17 @@ is
   #
   add (o T) marray T
     post
-      debug: result.length ≟ length + 1
-      # debug: result[length] ≟ o  -- there is no 'infix =' defined for T
+      debug: result.length = length + 1
+      # debug: result[length] = o  -- there is no 'infix =' defined for T
   is
-    d := if (data.length ⩼ length) data
+    d := if (data.length > length) data
       else
-        newData := fuzion.sys.internal_array_init T (max 8 data.length*2)
+        new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
         for i in indices do
-          newData[i] := data[i]
-        newData
+          new_data[i] := data[i]
+        new_data
     d[length] := o
-    marray T length+1 d
+    marray T length+1 d unit
 
 
   # infix operator synonym for add
@@ -137,14 +139,13 @@ is
     pre
       debug: 0 ≤ i ≤ length
   is
-    if i ≟ length
+    if i = length
       s
     else
       fold i+1 (m.op s marray.this[i]) m
 
 
-  # This feature provides a convenient constructor for marray T length,
-  # fuzion.sys.internal_array T unit.
+  # marray -- initialize one-dimensional mutable array
   #
   type.new
    (# length of the marray to create
@@ -161,4 +162,17 @@ is
     for x in data.indices do
       data[x] := init
 
-    marray length data
+    marray T length data unit
+
+
+  # initialize an empty mutable array of type T
+  #
+  type.new marray T is
+    marray T 0 (fuzion.sys.internal_array_init T 0) unit
+
+
+
+# marray -- initialize one-dimensional mutable array
+#
+marray(T type, length i32, init T) marray T is
+  (marray T).type.new length init

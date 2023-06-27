@@ -41,13 +41,13 @@ tupletest is
   g1 "Hello" // should infer String
   g1 123 // should infer i32
 # chck g1("Hello").a.length=5, "g1 A infer A==string"   // NYI: string.length
-  chck g1(123).a≟123 "g1 A infer A==i32"
+  chck g1(123).a=123 "g1 A infer A==i32"
 
   g1a(A type, a A) A is a
   itaa := g1a "String"  // should infer String
   itab := g1a 123  // should infer i32
 # chck itaa.length=6, "g1a A infer A==string"   // NYI: string.length
-  chck itab≟123 "g1a A infer A==i32"
+  chck itab=123 "g1a A infer A==i32"
 
   g1b(AAAA type, a,b,c AAAA) is
   g1bv1 := g1b true true false  // should infer bool
@@ -101,10 +101,10 @@ tupletest is
 # set (one17)    := tuple i32 (42); p "one17 is $one17" // one-tuple using destructure and inferring generic
 # set (one18)    :=           (42); p "one18 is $one18" // one-tuple using destructure and tuple syntax sugar
 # chck one1.values.0=42 "one1"
-  chck one2.values.0≟42 "one2"
+  chck one2.values.0=42 "one2"
 # chck one7.values.0=42 "one7"
 # chck one8.values.0=42 "one8"
-  chck one10≟42 "one10"
+  chck one10=42 "one10"
 # chck one11=42 "one11"
 # chck one13=42 "one13"
 # chck one14=42 "one14"
@@ -130,46 +130,46 @@ tupletest is
 #  set (two16a, two16b) := tuple i32 i32  4 2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
   set (two17a, two17b) := tuple          4 2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
   set (two18a, two18b) :=               (4,2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
-# chck (two1.values.0≟4 && two1.values.1≟2) "two1"
-  chck (two2.values.0≟4 && two2.values.1≟2) "two2"
-  chck (two3.values.0≟4 && two3.values.1≟2) "two3"
-# chck (two7.values.0≟4 && two7.values.1≟2) "two7"
-# chck (two8.values.0≟4 && two8.values.1≟2) "two8"
-  chck (two9.values.0≟4 && two9.values.1≟2) "two9"
-# chck (two10a≟4 && two10b≟2) "two10"
-  chck (two11a≟4 && two11b≟2) "two11"
-  chck (two12a≟4 && two12b≟2) "two12"
-# chck (two13a≟4 && two13b≟2) "two13"
-  chck (two14a≟4 && two14b≟2) "two14"
-  chck (two15a≟4 && two15b≟2) "two15"
-# chck (two16a≟4 && two16b≟2) "two16"
-  chck (two17a≟4 && two17b≟2) "two17"
-  chck (two18a≟4 && two18b≟2) "two18"
+# chck (two1.values.0=4 && two1.values.1=2) "two1"
+  chck (two2.values.0=4 && two2.values.1=2) "two2"
+  chck (two3.values.0=4 && two3.values.1=2) "two3"
+# chck (two7.values.0=4 && two7.values.1=2) "two7"
+# chck (two8.values.0=4 && two8.values.1=2) "two8"
+  chck (two9.values.0=4 && two9.values.1=2) "two9"
+# chck (two10a=4 && two10b=2) "two10"
+  chck (two11a=4 && two11b=2) "two11"
+  chck (two12a=4 && two12b=2) "two12"
+# chck (two13a=4 && two13b=2) "two13"
+  chck (two14a=4 && two14b=2) "two14"
+  chck (two15a=4 && two15b=2) "two15"
+# chck (two16a=4 && two16b=2) "two16"
+  chck (two17a=4 && two17b=2) "two17"
+  chck (two18a=4 && two18b=2) "two18"
 
 # t10 (i32, bool) { (3, false) }
   t10 tuple i32 bool is (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
-  chck t10.values.0≟3       "t10.values.0"
+  chck t10.values.0=3       "t10.values.0"
   chck t10.values.1<=>false "t10.values.1"
 
   t10a := t10
   p "tuple t10a is {t10a.values.0}, {t10a.values.1}"
-  chck t10a.values.0≟3       "t10a.values.0"
+  chck t10a.values.0=3       "t10a.values.0"
   chck t10a.values.1<=>false "t10a.values.1"
 
   t10aa => (42, "the answer")
   p "tuple t10aa is {t10aa.values.0}, {t10aa.values.1}"
-  chck t10aa.values.0≟42        "t10aa.values.0"
+  chck t10aa.values.0=42        "t10aa.values.0"
 # chck t10aa.values.1.length=10 "t10aa.values.1"   // NYI: string.length
 
   t10aaa => ("devil's number", 666)
   p "tuple t10aaa is {t10aaa.values.0}, {t10aaa.values.1}"
 # chck t10aaa.values.0.length=14 "t10aaa.values.0"   // NYI: string.length
-  chck t10aaa.values.1≟666       "t10aaa.values.1"
+  chck t10aaa.values.1=666       "t10aaa.values.1"
 
   (t10a1, t10a2) := t10
   p "tuple t10a1/2 is {t10a1}, {t10a2}"
-  chck t10a1≟3 "t10a1"
+  chck t10a1=3 "t10a1"
   chck !t10a2  "t10a2"
 
   t10b1 i32 := 42
@@ -177,12 +177,12 @@ tupletest is
   ib (i i32, b bool) is
   set (t10b1, t10b2) := ib 33 true
   p "tuple t10b1/2 = ib is {t10b1}, {t10b2}"
-  chck t10b1≟33 "t10b1"
+  chck t10b1=33 "t10b1"
   chck t10b2    "t10b2"
 
   set (t10b1, t10b2) := t10
   p "tuple t10b1/2 = t10 is {t10b1}, {t10b2}"
-  chck t10b1≟3 "t10b1"
+  chck t10b1=3 "t10b1"
   chck !t10b2  "t10b2"
 
 # (t10b1, t10b2, t10b2) = t10   // should cause error: too many destructuring variables
@@ -190,49 +190,49 @@ tupletest is
 
   (t10c1 i32, t10c2 bool) := t10
   p "tuple t10c1/2 is {t10c1}, {t10c2}"
-  chck t10c1≟3 "t10c1"
+  chck t10c1=3 "t10c1"
   chck !t10c2  "t10c2"
 
   t11 (a i32) => (a, a*a, a*a*a)
   t11a := t11 5
   p "tuple t11a is {t11a.values.0}, {t11a.values.1}, {t11a.values.2}"
-  chck t11a.values.0≟5   "first must be 5"
-  chck t11a.values.1≟25  "second must be 25"
-  chck t11a.values.2≟125 "third must be 125"
+  chck t11a.values.0=5   "first must be 5"
+  chck t11a.values.1=25  "second must be 25"
+  chck t11a.values.2=125 "third must be 125"
 
   t12a1,t12a2,t12a3 i32 := 42
   set (t12a1,t12a2,t12a3) := t11 4
-  chck t12a1≟4   "first must be 4"
-  chck t12a2≟16  "second must be 16"
-  chck t12a3≟64  "third must be 64"
-# (t12a1,t12a1,t12a1) ≟ t11 4 // 18. should flag an error, repeated elements in destructuring
+  chck t12a1=4   "first must be 4"
+  chck t12a2=16  "second must be 16"
+  chck t12a3=64  "third must be 64"
+# (t12a1,t12a1,t12a1) = t11 4 // 18. should flag an error, repeated elements in destructuring
 
-# (t12b1,t12b1,t12b3 i32) ≟ t11 4 // 19. should flag an error, repeated elements in destructuring
-# (t12c1,t12c2,t12c2 i32) ≟ t11 4 // 20. should flag an error, repeated elements in destructuring
+# (t12b1,t12b1,t12b3 i32) = t11 4 // 19. should flag an error, repeated elements in destructuring
+# (t12c1,t12c2,t12c2 i32) = t11 4 // 20. should flag an error, repeated elements in destructuring
   (t12d1,t12d2,t12d3 i32) := t11 6
-  chck t12d1≟6   "first must be 6"
-  chck t12d2≟36  "second must be 36"
-  chck t12d3≟216 "third must be 216"
+  chck t12d1=6   "first must be 6"
+  chck t12d2=36  "second must be 36"
+  chck t12d3=216 "third must be 216"
 
 # (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
 # (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
   (t12g1,t12g2,t12g3) := t11 7
-  chck t12g1≟7   "first must be 7"
-  chck t12g2≟49  "second must be 49"
-  chck t12g3≟343 "third must be 343"
+  chck t12g1=7   "first must be 7"
+  chck t12g2=49  "second must be 49"
+  chck t12g3=343 "third must be 343"
 
   t12h1, t12h2, t12h3 i32 := 42
-  set (_,_,t12h3) := t11 8; chck t12h3≟512 "t12h3 must be 512"
-  set (_,t12h2,_) := t11 8; chck t12h2≟64  "t12h2 must be 64"
-  set (t12h1,_,_) := t11 8; chck t12h1≟8   "t12h1 must be 8"
+  set (_,_,t12h3) := t11 8; chck t12h3=512 "t12h3 must be 512"
+  set (_,t12h2,_) := t11 8; chck t12h2=64  "t12h2 must be 64"
+  set (t12h1,_,_) := t11 8; chck t12h1=8   "t12h1 must be 8"
 
-  (_,_,t12i3) := t11 9; chck t12i3≟729 "t12i3 must be 729"
-  (_,t12i2,_) := t11 9; chck t12i2≟81  "t12i2 must be 81"
-  (t12i1,_,_) := t11 9; chck t12i1≟9   "t12i1 must be 9"
+  (_,_,t12i3) := t11 9; chck t12i3=729 "t12i3 must be 729"
+  (_,t12i2,_) := t11 9; chck t12i2=81  "t12i2 must be 81"
+  (t12i1,_,_) := t11 9; chck t12i1=9   "t12i1 must be 9"
 
-  (_,_,t12j3 i32) := t11 10; chck t12j3≟1000 "t12j3 must be 1000"
-  (_,t12j2,_ i32) := t11 10; chck t12j2≟100  "t12j2 must be 100"
-  (t12j1,_,_ i32) := t11 10; chck t12j1≟10   "t12j1 must be 10"
+  (_,_,t12j3 i32) := t11 10; chck t12j3=1000 "t12j3 must be 1000"
+  (_,t12j2,_ i32) := t11 10; chck t12j2=100  "t12j2 must be 100"
+  (t12j1,_,_ i32) := t11 10; chck t12j1=10   "t12j1 must be 10"
 
   set (_,_) := (12, 23)
   set (_,_) := (true, 23)
@@ -243,39 +243,39 @@ tupletest is
 
   t13a1, t13a3 i32 := 42
   t13a2 bool := false
-  set (t13a1,_,_) := (01, 12, 23); chck t13a1≟01 "t13a1 must be 01"
+  set (t13a1,_,_) := (01, 12, 23); chck t13a1=01 "t13a1 must be 01"
 # set (_,t13a2,_) := (01, 12, 23); // 24. should flag an error, illegal type
-  set (_,_,t13a3) := (01, 12, 23); chck t13a3≟23 "t13a3 must be 23"
-  (t13b1, _, _ i32) := (01, 12, 23); chck t13b1≟01 "t13b1 must be 01"
-  (_, t13b2, _ i32) := (01, 12, 23); chck t13b2≟12 "t13b2 must be 12"
-  (_, _, t13b3 i32) := (01, 12, 23); chck t13b3≟23 "t13b3 must be 23"
+  set (_,_,t13a3) := (01, 12, 23); chck t13a3=23 "t13a3 must be 23"
+  (t13b1, _, _ i32) := (01, 12, 23); chck t13b1=01 "t13b1 must be 01"
+  (_, t13b2, _ i32) := (01, 12, 23); chck t13b2=12 "t13b2 must be 12"
+  (_, _, t13b3 i32) := (01, 12, 23); chck t13b3=23 "t13b3 must be 23"
 # (t13c1 i32, _ bool, _ i32) := (01, 12, 23); // 25. should flag an error, illegal type
 # (_ i32, t13c2 bool, _ i32) := (01, 12, 23); // 26. should flag an error, illegal type
 # (_ i32, _ bool, t13c3 i32) := (01, 12, 23); // 27. should flag an error, illegal type
-  (t13d1,_,_) := (01, 12, 23); chck t13d1≟01 "t13d1 must be 01"
-  (_,t13d2,_) := (01, 12, 23); chck t13d2≟12 "t13d2 must be 12"
-  (_,_,t13d3) := (01, 12, 23); chck t13d3≟23 "t13d3 must be 23"
+  (t13d1,_,_) := (01, 12, 23); chck t13d1=01 "t13d1 must be 01"
+  (_,t13d2,_) := (01, 12, 23); chck t13d2=12 "t13d2 must be 12"
+  (_,_,t13d3) := (01, 12, 23); chck t13d3=23 "t13d3 must be 23"
 
   t14a1, t14a3 i32 := 42
   t14a2 bool := false
-  set (t14a1,_,_) := (01, true, 23); chck t14a1≟01 "t14a1 must be 01"
+  set (t14a1,_,_) := (01, true, 23); chck t14a1=01 "t14a1 must be 01"
   set (_,t14a2,_) := (01, true, 23); chck t14a2    "t14a2 must be true"
-  set (_,_,t14a3) := (01, true, 23); chck t14a3≟23 "t14a3 must be 23"
+  set (_,_,t14a3) := (01, true, 23); chck t14a3=23 "t14a3 must be 23"
 # (t14b1,_,_ i32) := (01, true, 23); // 28. should flag an error, illegal type
 # (_,t14b2,_ i32) := (01, true, 23); // 29. should flag an error, illegal type
 # (_,_,t14b3 i32) := (01, true, 23); // 30. should flag an error, illegal type
-  (t14c1 i32, _ bool, _ i32) := (01, true, 23); chck t14c1≟01 "t14c1 must be 01"
+  (t14c1 i32, _ bool, _ i32) := (01, true, 23); chck t14c1=01 "t14c1 must be 01"
   (_ i32, t14c2 bool, _ i32) := (01, true, 23); chck t14c2    "t14c2 must be true"
-  (_ i32, _ bool, t14c3 i32) := (01, true, 23); chck t14c3≟23 "t14c3 must be 23"
-  (t14d1,_,_) := (01, true, 23); chck t14d1≟01 "t14d1 must be 01"
+  (_ i32, _ bool, t14c3 i32) := (01, true, 23); chck t14c3=23 "t14c3 must be 23"
+  (t14d1,_,_) := (01, true, 23); chck t14d1=01 "t14d1 must be 01"
   (_,t14d2,_) := (01, true, 23); chck t14d2    "t14d2 must be true"
-  (_,_,t14d3) := (01, true, 23); chck t14d3≟23 "t14d3 must be 23"
+  (_,_,t14d3) := (01, true, 23); chck t14d3=23 "t14d3 must be 23"
 
   t15a1, t15a3 i32 := 42
   t15a2 bool := false
-  set (t15a1,_,_) := (01, true, 23); chck t15a1≟01 "t15a1 must be 01"
+  set (t15a1,_,_) := (01, true, 23); chck t15a1=01 "t15a1 must be 01"
   set (_,t15a2,_) := (01, true, 23); chck t15a2    "t15a2 must be true"
-  set (_,_,t15a3) := (01, true, 23); chck t15a3≟23 "t15a3 must be 23"
+  set (_,_,t15a3) := (01, true, 23); chck t15a3=23 "t15a3 must be 23"
 # (t15a1,_,_ i32) := (01, true, 23); // 28. should flag an error, duplicate declaration
 # (_,t15a2,_ i32) := (01, true, 23); // 28. should flag an error, duplicate declaration
 # (_,_,t15a3 i32) := (01, true, 23); // 28. should flag an error, duplicate declaration

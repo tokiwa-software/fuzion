@@ -1,0 +1,100 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature matrix
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# matrix -- matrix based on arbitrary numeric type
+#
+# matrix provides matrix operations based on an arbitray numeric type
+#
+matrix(M type : numeric, e array2 M) : equatable
+is
+
+
+  # basic operations: 'prefix +' (identity)
+  #
+  prefix + =>
+    matrix.this
+
+
+  # basic operations: 'infix +' (addition)
+  #
+  infix + (b matrix M) =>
+    matrix (array2 M e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
+
+
+  # basic operations: 'infix -' (subtraction)
+  #
+  infix - (b matrix M) =>
+    matrix (array2 M e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
+
+
+  # basic operations: 'infix *' (multiplication)
+  #
+  infix *  (b matrix M) =>
+    matrix (array2 M e.length0 b.e.length1
+                   (i,j ->
+                     for
+                       v := M.zero, v+f
+                       x in e.indices1
+                       f := e[i,x]*b.e[x,j]
+                     else
+                       v
+                     ))
+
+
+  # equality
+  #
+  fixed type.equality(a, b num.matrix M) =>
+    for
+      x in a.e
+      y in b.e
+    until x != y
+      false
+    else
+      true
+
+
+  # transpose
+  #
+  transpose matrix M is
+    matrix (array2 M e.length1 e.length0 i,j->e[j,i])
+
+
+  # prints this matrix as a string
+  #
+  redef as_string => e.as_string
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero (a, b i32) =>
+    num.matrix (array2 M a b ((i, j) -> M.zero))
+
+
+  # identity element for 'infix *'
+  #
+  # note that this is only an identity element for square matrices
+  #
+  fixed type.one (a, b i32) =>
+    num.matrix (array2 M a b ((i, j) -> i = j ? M.one : M.zero))

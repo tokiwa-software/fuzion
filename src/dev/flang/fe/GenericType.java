@@ -149,7 +149,7 @@ public class GenericType extends LibraryType
   {
     return switch (_refOrVal)
       {
-      case Ref -> true;
+      case Boxed -> true;
       case Value -> false;
       case LikeUnderlyingFeature -> false;
       case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpected ThisType for GenericType '"+this+"'");
@@ -161,11 +161,11 @@ public class GenericType extends LibraryType
    */
   public boolean isThisType()
   {
-    return switch (this._refOrVal)
+    if (this._refOrVal == Type.RefOrVal.ThisType)
       {
-      case Ref, Value, LikeUnderlyingFeature -> false;
-      case ThisType                          -> throw new Error("Unexpected ThisType in GenericType");
-      };
+        throw new Error("Unexpected ThisType in GenericType");
+      }
+    return false;
   }
 
   public AbstractType outer()
@@ -179,8 +179,8 @@ public class GenericType extends LibraryType
   {
     return switch (_refOrVal)
       {
-      case Ref -> this;
-      default -> new GenericType(_libModule, _at, _generic, Type.RefOrVal.Ref);
+      case Boxed -> this;
+      default -> new GenericType(_libModule, _at, _generic, Type.RefOrVal.Boxed);
       };
   }
   public AbstractType asValue()

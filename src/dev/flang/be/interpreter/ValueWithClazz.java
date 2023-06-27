@@ -87,7 +87,7 @@ public abstract class ValueWithClazz extends Value
   {
     Clazz result = _clazz;
     if (CHECKS) check
-      ((result == null) || result.isRef() || result.isDynamicOuterRef());
+      (result == null || result.isRef() || result.isUsedAsDynamicOuterRef());
     return result;
   }
 

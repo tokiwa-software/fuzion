@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-transducertest : transducers is
+transducertest is
 
   exit_code := mut 0
 
@@ -34,20 +34,23 @@ transducertest : transducers is
       say "FAILED: $msg"
       exit_code <- 1
 
-  xf_filter := filter (Sequence i32) i32 (x -> x ⩼ 3)
+  td1 := (transducer (Sequence i32) i32 human).type
+
+  xf_filter := td1.filter (x -> x > 3)
   r := (1..5).into xf_filter
-  chck ((searchable_sequence r) ≟ (searchable_sequence [4, 5]))                            "filter transducer"
+  chck ((container.searchable_sequence r) = (container.searchable_sequence [4, 5]))                            "filter transducer"
 
 
-  xf_map := map (Sequence bool) i32 bool (x -> x ⩼ 3)
+  td2 := (transducer (Sequence bool) bool i32).type
+  xf_map := td2.map (x -> x > 3)
   r := (1..5).into xf_map
-  chck ((searchable_sequence r) ≟ (searchable_sequence [false, false, false, true, true])) "map transducer"
+  chck ((container.searchable_sequence r) = (container.searchable_sequence [false, false, false, true, true])) "map transducer"
 
 
   human(age i32) is
-  ages := map (Sequence i32) human i32 (x -> x.age)
-  gt_ten := filter (Sequence i32) i32 (x -> x ⩼ 10)
-  r := [human(4), human(12), human(30)].into (ages ∘ gt_ten)
-  chck ((searchable_sequence r) ≟ (searchable_sequence [12, 30]))                          "compose transducers"
+  ages := td1.map (x -> x.age)
+  gt_ten := td1.filter (x -> x > 10)
+  r := [human 4, human 12, human 30].into (ages ∘ gt_ten)
+  chck ((container.searchable_sequence r) = (container.searchable_sequence [12, 30]))                          "compose transducers"
 
   exit exit_code.get

@@ -42,20 +42,20 @@ test_equals =>
   #
   eq3(a, b String) => equals a b
 
-  # compare two strings using infix ≟ without infix syntax and without
+  # compare two strings using infix = without infix syntax and without
   # type inference for the type parameter
   #
-  eq4(a, b String) => infix ≟ String a b
+  eq4(a, b String) => infix = String a b
 
-  # compare two strings using infix ≟ without infix syntax and with type
+  # compare two strings using infix = without infix syntax and with type
   # inference for the type parameter
   #
-  eq5(a, b String) => infix ≟ a b
+  eq5(a, b String) => infix = a b
 
-  # compare two strings using infix ≟ with infix syntax and with type
+  # compare two strings using infix = with infix syntax and with type
   # inference for the type parameter
   #
-  eq6(a, b String) => a ≟ b
+  eq6(a, b String) => a = b
 
   say "comparing A and B {eq1 "A" "B"}"
   say "comparing A and A {eq1 "A" "A"}"
@@ -83,19 +83,19 @@ test_equals =>
   say "comparing blue cat and blue dog as Has_color: {test_equals_types.eq_color blue_cat blue_dog}"
   say "comparing red cat and blue cat as colored_text: {equals red_cat blue_cat}"
   say "comparing red cat and red cat as colored_text: {equals red_cat red_cat}"
-  say "comparing red cat and blue cat as colored_text: {infix ≟ red_cat blue_cat}"
-  say "comparing red cat and red cat as colored_text: {infix ≟ red_cat red_cat}"
-  say "comparing red cat and blue cat as colored_text: {red_cat ≟ blue_cat}"
-  say "comparing red cat and red cat as colored_text: {red_cat ≟ red_cat}"
-  say "comparing red cat, blue cat and blue dog as colored_text: {red_cat ≟ blue_cat ≟ blue_dog}"
-  say "comparing blue dog, blue dog and blue dog as colored_text: {blue_dog ≟ blue_dog ≟ blue_dog}"
-  say "comparing red dog, blue dog and blue dog as colored_text: {red_dog ≟ blue_dog ≟ blue_dog}"
-  say "comparing blue dog, blue dog and blue cat as colored_text: {blue_dog ≟ blue_dog ≟ blue_cat}"
-  say "comparing red dog, red dog, red dog and red dog as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_dog}"
-  say "comparing red cat, red dog, red dog and red dog as colored_text: {red_cat ≟ red_dog ≟ red_dog ≟ red_dog}"
-  say "comparing red dog, red cat, red dog and red dog as colored_text: {red_dog ≟ red_cat ≟ red_dog ≟ red_dog}"
-  say "comparing red dog, red dog, red cat and red dog as colored_text: {red_dog ≟ red_dog ≟ red_cat ≟ red_dog}"
-  say "comparing red dog, red dog, red dog and red cat as colored_text: {red_dog ≟ red_dog ≟ red_dog ≟ red_cat}"
+  say "comparing red cat and blue cat as colored_text: {infix = red_cat blue_cat}"
+  say "comparing red cat and red cat as colored_text: {infix = red_cat red_cat}"
+  say "comparing red cat and blue cat as colored_text: {red_cat = blue_cat}"
+  say "comparing red cat and red cat as colored_text: {red_cat = red_cat}"
+  say "comparing red cat, blue cat and blue dog as colored_text: {red_cat = blue_cat = blue_dog}"
+  say "comparing blue dog, blue dog and blue dog as colored_text: {blue_dog = blue_dog = blue_dog}"
+  say "comparing red dog, blue dog and blue dog as colored_text: {red_dog = blue_dog = blue_dog}"
+  say "comparing blue dog, blue dog and blue cat as colored_text: {blue_dog = blue_dog = blue_cat}"
+  say "comparing red dog, red dog, red dog and red dog as colored_text: {red_dog = red_dog = red_dog = red_dog}"
+  say "comparing red cat, red dog, red dog and red dog as colored_text: {red_cat = red_dog = red_dog = red_dog}"
+  say "comparing red dog, red cat, red dog and red dog as colored_text: {red_dog = red_cat = red_dog = red_dog}"
+  say "comparing red dog, red dog, red cat and red dog as colored_text: {red_dog = red_dog = red_cat = red_dog}"
+  say "comparing red dog, red dog, red dog and red cat as colored_text: {red_dog = red_dog = red_dog = red_cat}"
 
 
 test_equals
@@ -132,7 +132,7 @@ test_equals_types is
 
   # compare two instances of Has_color
   #
-  eq_color(a, b Has_color) => infix ≟ a b
+  eq_color(a, b Has_color) => infix = a b
 
   # a colored_text is a string with an associated color:
   #

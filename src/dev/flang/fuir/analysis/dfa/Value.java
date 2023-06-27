@@ -296,7 +296,7 @@ public class Value extends ANY
    */
   Value unbox(int vc)
   {
-    throw new Error("Unbox not possible for " + getClass());
+    return this;
   }
 
 

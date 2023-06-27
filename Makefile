@@ -29,7 +29,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
-FUZION_BIN_BASH = /bin/bash
+FUZION_BIN_SH = /bin/sh
 
 JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
 JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
@@ -51,6 +51,7 @@ JAVA_FILES_OPT               = $(wildcard $(SRC)/dev/flang/opt/*.java           
 JAVA_FILES_BE_INTERPRETER    = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
 JAVA_FILES_BE_C              = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
 JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
+JAVA_FILES_BE_JVM            = $(wildcard $(SRC)/dev/flang/be/jvm/*.java        )
 JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
 JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
@@ -73,6 +74,7 @@ CLASS_FILES_OPT               = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER    = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
 CLASS_FILES_BE_C              = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
 CLASS_FILES_BE_EFFECTS        = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
+CLASS_FILES_BE_JVM            = $(CLASSES_DIR)/dev/flang/be/jvm/__marker_for_make__
 CLASS_FILES_TOOLS             = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA      = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_TOOLS_DOCS        = $(CLASSES_DIR)/dev/flang/tools/docs/__marker_for_make__
@@ -359,6 +361,10 @@ SHELL_SCRIPTS = \
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
+# everything but rarely used java modules
+.PHONY: min-java
+min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(FUZION_FILES)
+
 # everything but the java modules
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
@@ -470,7 +476,12 @@ $(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
+	touch $@
+
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -546,22 +557,22 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 $(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0"
+# wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0"
 	touch $@
 
 $(MOD_JAVA_XML_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -modules=java.base -verbose=0"
+# wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 
 $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
+# wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
 # NYI: cleanup: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/sun/datatransfer_pkg.fz $(BUILD_DIR)/modules/java.datatransfer/
@@ -571,8 +582,8 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 $(MOD_JAVA_DESKTOP_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
+# wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
 # NYI: cleanup: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.desktop/Java/com/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
@@ -586,262 +597,262 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 $(MOD_JAVA_COMPILER_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.compiler -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.compiler -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_INSTRUMENT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.instrument -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.instrument -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_LOGGING_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.logging -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.logging -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_MANAGEMENT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.management -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.management -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_MANAGEMENT_RMI_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_RMI)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.management.rmi -to=$(@D) -modules=java.base,java.management,java.rmi -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.management.rmi -to=$(@D) -modules=java.base,java.management,java.rmi -verbose=0"
 	touch $@
 $(MOD_JAVA_NAMING_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.naming -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.naming -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_NET_HTTP_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.net.http -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.net.http -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_PREFS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.prefs -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.prefs -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_RMI_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.rmi -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.rmi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SCRIPTING_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.scripting -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.scripting -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SE_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_SQL_ROWSET) $(MOD_JAVA_XML_CRYPTO) $(MOD_JAVA_MANAGEMENT_RMI) $(MOD_JAVA_SECURITY_JGSS) $(MOD_JAVA_SECURITY_SASL) $(MOD_JAVA_SCRIPTING) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_COMPILER) $(MOD_JAVA_INSTRUMENT) $(MOD_JAVA_NET_HTTP) $(MOD_JAVA_PREFS)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.se -to=$(@D) -modules=java.base,java.naming,java.transaction.xa,java.logging,java.scripting,java.xml,java.datatransfer,java.prefs,java.sql,java.desktop,java.compiler,java.instrument,java.rmi,java.management,java.net.http,java.sql.rowset,java.xml.crypto,java.management.rmi,java.security.jgss,java.security.sasl -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.se -to=$(@D) -modules=java.base,java.naming,java.transaction.xa,java.logging,java.scripting,java.xml,java.datatransfer,java.prefs,java.sql,java.desktop,java.compiler,java.instrument,java.rmi,java.management,java.net.http,java.sql.rowset,java.xml.crypto,java.management.rmi,java.security.jgss,java.security.sasl -verbose=0"
 	touch $@
 $(MOD_JAVA_SECURITY_JGSS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.security.jgss -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.security.jgss -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SECURITY_SASL_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.security.sasl -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.security.sasl -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SMARTCARDIO_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.smartcardio -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.smartcardio -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SQL_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_LOGGING) $(MOD_JAVA_XML) $(MOD_JAVA_TRANSACTION_XA)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.sql -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.sql -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa -verbose=0"
 	touch $@
 $(MOD_JAVA_SQL_ROWSET_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_SQL) $(MOD_JAVA_NAMING) $(MOD_JAVA_LOGGING) $(MOD_JAVA_XML) $(MOD_JAVA_TRANSACTION_XA)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.sql.rowset -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa,java.sql,java.naming -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.sql.rowset -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa,java.sql,java.naming -verbose=0"
 	touch $@
 $(MOD_JAVA_TRANSACTION_XA_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.transaction.xa -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.transaction.xa -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_XML_CRYPTO_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_XML)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava java.xml.crypto -to=$(@D) -modules=java.xml,java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava java.xml.crypto -to=$(@D) -modules=java.xml,java.base -verbose=0"
 	touch $@
 $(MOD_JDK_ACCESSIBILITY_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.accessibility -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.accessibility -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop -verbose=0"
 	touch $@
 $(MOD_JDK_ATTACH_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.attach -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.attach -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_CHARSETS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.charsets -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.charsets -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_COMPILER_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_COMPILER)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.compiler -to=$(@D) -modules=java.base,java.compiler -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.compiler -to=$(@D) -modules=java.base,java.compiler -verbose=0"
 	touch $@
 $(MOD_JDK_CRYPTO_CRYPTOKI_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.crypto.cryptoki -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.crypto.cryptoki -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_CRYPTO_EC_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.crypto.ec -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.crypto.ec -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_DYNALINK_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.dynalink -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.dynalink -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_EDITPAD_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.editpad -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.editpad -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_HTTPSERVER_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.httpserver -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.httpserver -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JARTOOL_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jartool -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jartool -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JAVADOC_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JDK_COMPILER)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.javadoc -to=$(@D) -modules=java.base,java.compiler,jdk.compiler -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.javadoc -to=$(@D) -modules=java.base,java.compiler,jdk.compiler -verbose=0"
 	touch $@
 $(MOD_JDK_JCONSOLE_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_MANAGEMENT)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jconsole -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop,java.management -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jconsole -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop,java.management -verbose=0"
 	touch $@
 $(MOD_JDK_JDEPS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdeps -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdeps -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JDI_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdi -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JDWP_AGENT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdwp.agent -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jdwp.agent -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JFR_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jfr -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jfr -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JLINK_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jlink -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jlink -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JPACKAGE_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jpackage -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jpackage -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JSHELL_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_COMPILER) $(MOD_JAVA_PREFS) $(MOD_JDK_JDI)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jshell -to=$(@D) -modules=java.base,java.compiler,java.prefs,jdk.jdi -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jshell -to=$(@D) -modules=java.base,java.compiler,java.prefs,jdk.jdi -verbose=0"
 	touch $@
 $(MOD_JDK_JSOBJECT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jsobject -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jsobject -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JSTATD_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.jstatd -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.jstatd -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_LOCALEDATA_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.localedata -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.localedata -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.management -to=$(@D) -modules=java.base,java.management -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.management -to=$(@D) -modules=java.base,java.management -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_AGENT_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.management.agent -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.management.agent -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_JFR_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JDK_JFR)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.management.jfr -to=$(@D) -modules=java.base,java.management,jdk.jfr -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.management.jfr -to=$(@D) -modules=java.base,java.management,jdk.jfr -verbose=0"
 	touch $@
 $(MOD_JDK_NAMING_DNS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.naming.dns -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.naming.dns -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NAMING_RMI_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.naming.rmi -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.naming.rmi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NET_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.net -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.net -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NIO_MAPMODE_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.nio.mapmode -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.nio.mapmode -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_SCTP_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.sctp -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.sctp -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_SECURITY_AUTH_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_NAMING)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.security.auth -to=$(@D) -modules=java.base,java.naming -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.security.auth -to=$(@D) -modules=java.base,java.naming -verbose=0"
 	touch $@
 $(MOD_JDK_SECURITY_JGSS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_SECURITY_JGSS)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.security.jgss -to=$(@D) -modules=java.base,java.security.jgss -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.security.jgss -to=$(@D) -modules=java.base,java.security.jgss -verbose=0"
 	touch $@
 $(MOD_JDK_XML_DOM_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_XML)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.xml.dom -to=$(@D) -modules=java.base,java.xml -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.xml.dom -to=$(@D) -modules=java.base,java.xml -verbose=0"
 	touch $@
 $(MOD_JDK_ZIPFS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(FUZION_BIN_BASH) -c "$(BUILD_DIR)/bin/fzjava jdk.zipfs -to=$(@D) -modules=java.base -verbose=0"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava jdk.zipfs -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 
 $(MOD_JAVA_BASE): $(MOD_JAVA_BASE_FZ_FILES)
@@ -986,9 +997,13 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
 
 .phony: doc
-doc: $(DOCUMENTATION)
+doc: $(DOCUMENTATION) $(BUILD_DIR)/doc/jvm.html
 
 $(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
+
+$(BUILD_DIR)/doc/jvm.html: $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
 	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
@@ -1009,8 +1024,13 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
 # be a circular dependency
 .phony: unicode
-unicode: $(BUILD_DIR)/UnicodeData.java
-	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
+unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
+	cp $(BUILD_DIR)/UnicodeData.java $(SRC)/dev/flang/util/UnicodeData.java
+	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/character_encodings/unicode/data.fz
+
+# generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
+$(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt > $@
 
 # phony target to regenerate Fuzion logo.
 # This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
@@ -1079,3 +1099,9 @@ show_release_notes:
 .PHONY: spellcheck
 spellcheck:
 	bin/spell_check_java.sh
+
+# target to do a syntax check of fz files.
+# currently only examples/ are checked.
+.PHONY: syntaxcheck
+syntaxcheck: min-java
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 ./build/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend

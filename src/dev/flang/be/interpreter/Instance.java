@@ -97,7 +97,56 @@ public class Instance extends ValueWithClazz
   }
 
 
+  /**
+   * Constructor used by LValue.cloneValue() to create a clone of a value
+   * embedded in another Instance.
+   *
+   * @param clazz the new, unboxed clazz of the result
+   *
+   * @param from the original Instance.
+   *
+   * @param offset the position of the value within from.
+   */
+  Instance(Clazz clazz, Instance from, int offset)
+  {
+    this(clazz);
+    int sz = Layout.get(clazz).size();
+    for (int i = 0; i<sz; i++)
+      {
+        this.nonrefs[i] = from.nonrefs[offset + i];
+        this.refs   [i] = from.refs   [offset + i];
+      }
+  }
+
+
+  /**
+   * Constructor used by cloneValue() to create a clone of this Instance.
+   *
+   * @param clazz the new, unboxed clazz of the result
+   *
+   * @param from the original Instance.
+   */
+  private Instance(Clazz clazz, Instance from)
+  {
+    this(clazz, from, 0);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Create a copy (clone) of this value.  Used for boxing values into
+   * ref-types.
+   */
+  Instance cloneValue(Clazz cl)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == cl,
+       !cl.isRef());
+
+    return new Instance(cl, this);
+  }
 
 
   /**
@@ -268,7 +317,7 @@ public class Instance extends ValueWithClazz
     if (PRECONDITIONS) require
       (_clazz == Clazzes.c_TRUE .getIfCreated() ||
        _clazz == Clazzes.c_FALSE.getIfCreated() ||
-       _clazz.isRef() && _clazz.asValue() == Clazzes.bool.getIfCreated());
+       _clazz.asValue() == Clazzes.bool.getIfCreated());
 
     return
       _clazz == Clazzes.c_TRUE .getIfCreated() ? true  :
@@ -354,6 +403,50 @@ public class Instance extends ValueWithClazz
         cur.refs   [offset + i] = refs   [voffset + i];
         cur.nonrefs[offset + i] = nonrefs[voffset + i];
       }
+  }
+
+
+  /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    if (PRECONDITIONS)
+      require(size == Layout.get(_clazz).size());
+
+    return equalsBitWise(slot, size, 0);
+  }
+
+
+  /**
+   * Does a value of given size stored at voffset in this instance equal the
+   * value in slot on a low-level bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   *
+   * @param voffset the offset of the value in this instance.
+   */
+  boolean equalsBitWise(LValue slot, int size, int voffset)
+  {
+    var result = true;
+    Instance cur    = slot.container;
+    int      offset = slot.offset;
+
+    for (int i=0; result && i < size; i++)
+      {
+        result = cur.refs   [offset + i] == refs   [voffset + i] &&
+                 cur.nonrefs[offset + i] == nonrefs[voffset + i];
+      }
+    return result;
   }
 
 

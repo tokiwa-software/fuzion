@@ -46,26 +46,20 @@ public class Consts extends ANY
   /**
    *
    */
-  public static final String[] MODIFIER_STRINGS = {"lazy", "redef", "fixed"};
+  public static final String[] MODIFIER_STRINGS = {"redef", "fixed"};
 
 
   /**
    *
    */
-  public static final int MODIFIER_LAZY         = 0x01;
-  static { if (CHECKS) check(modifierToString(MODIFIER_LAZY).trim().equals("lazy")); }
-
-  /**
-   *
-   */
-  public static final int MODIFIER_REDEFINE     = 0x02;
+  public static final int MODIFIER_REDEFINE     = 0x01;
   static { if (CHECKS) check(modifierToString(MODIFIER_REDEFINE).trim().equals("redef")); }
 
   /**
    * 'fixed' modifier to force feature to be fixed, i.e., not inherited by
    * heirs.
    */
-  public static final int MODIFIER_FIXED        = 0x04;
+  public static final int MODIFIER_FIXED        = 0x02;
   static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
 
 

@@ -671,9 +671,9 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
-                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
+                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME))
+      ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
       : i;
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
@@ -835,22 +835,6 @@ public class Feature extends AbstractFeature implements Stmnt
     return _impl == Impl.INTRINSIC_CONSTRUCTOR;
   }
 
-
-  /**
-   * get the initial value of this feature.
-   */
-  public Expr initialValue()
-  {
-    // if (PRECONDITIONS) require
-    //  (switch (implKind()) { case FieldInit, FieldDef, FieldActual, FieldIter -> true; default -> false; });
-
-    return
-      switch (implKind())
-        {
-        case FieldInit, FieldDef, FieldActual, FieldIter -> _impl._initialValue;
-        default -> null;
-        };
-  }
 
   /**
    * get the code of this feature.
@@ -1159,7 +1143,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME));
+    i.set(new Call(_pos, FuzionConstants.ANY_NAME));
   }
 
 
@@ -1403,7 +1387,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
    * used for lazy boolean operations like &&, || and for compile-time constants
-   * safety, debugLevel, debug.
+   * safety, debug_level, debug.
    *
    * @param res the resolution instance.
    */
@@ -1677,7 +1661,12 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultType();
+        _resultType = resultTypeRaw();
+        if (_resultType == null)
+          {
+            AstErrors.failedToInferResultType(this);
+            _resultType = Types.t_ERROR;
+          }
         if (_resultType instanceof Type t)
           {
             if (CHECKS) check
@@ -1685,15 +1674,12 @@ public class Feature extends AbstractFeature implements Stmnt
 
             t.checkChoice(_posOfReturnType);
           }
-        if (_resultType != null)
-          {
-            if (_resultType.isThisType() && _resultType.featureOfType() == this)
-              { // we are in the case of issue #1186: A routine returns itself:
-                //
-                //  a => a.this
-                AstErrors.routineCannotReturnItself(this);
-                _resultType = Types.t_ERROR;
-              }
+        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+          { // we are in the case of issue #1186: A routine returns itself:
+            //
+            //  a => a.this
+            AstErrors.routineCannotReturnItself(this);
+            _resultType = Types.t_ERROR;
           }
 
         /**
@@ -1717,6 +1703,11 @@ public class Feature extends AbstractFeature implements Stmnt
             public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
             public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
+
+        if (isConstructor())
+          {
+            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+          }
 
         _state = State.TYPES_INFERENCED;
         res.scheduleForBoxing(this);
@@ -2216,10 +2207,10 @@ public class Feature extends AbstractFeature implements Stmnt
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
         result = from.typeIfKnown();
-        if (!(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get) &&
-            result != null &&
+        if (result != null &&
             !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature())
+            result.featureOfType().isTypeFeature() &&
+            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
           {
             result = Types.resolved.f_Type.selfType();
           }

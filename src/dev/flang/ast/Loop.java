@@ -398,7 +398,7 @@ public class Loop extends ANY
    * (until condition holds) or failed (while condition is false or iteration
    * ended) execution.
    *
-   * This is the case loops that have an until condition and that are iterating
+   * This is the case for loops that have an until condition and that are iterating
    * or have a while condition and that have neither a else nor a success block.
    */
   private boolean booleanAsImplicitResult(Expr whileCond, Expr untilCond)

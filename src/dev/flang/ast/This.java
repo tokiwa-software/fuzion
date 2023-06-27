@@ -208,7 +208,6 @@ public class This extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    Type type;
     if (_qual != null)
       {
         int d = getThisDepth(outer);

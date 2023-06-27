@@ -139,10 +139,10 @@ public class Types extends ANY
     public final AbstractType t_ref_f32 ;
     public final AbstractType t_ref_f64 ;
     public final AbstractType t_bool;
-    public final AbstractType t_object;
+    public final AbstractType t_any;
     private final AbstractType t_fuzion;
     public final AbstractType t_string;
-    public final AbstractType t_conststring;
+    public final AbstractType t_Const_String;
     public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
@@ -163,17 +163,20 @@ public class Types extends ANY
     public final AbstractFeature f_bool_OR;
     public final AbstractFeature f_bool_IMPLIES;
     public final AbstractFeature f_debug;
-    public final AbstractFeature f_debugLevel;
+    public final AbstractFeature f_debug_level;
     public final AbstractFeature f_function;
     public final AbstractFeature f_function_call;
     public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
-    public final AbstractFeature f_array_internalArray;
+    public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_concur;
+    public final AbstractFeature f_concur_atomic;
+    public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
@@ -209,9 +212,9 @@ public class Types extends ANY
       t_bool          = ct.type("bool"        , false);
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type(FuzionConstants.STRING_NAME, false);
-      t_conststring   = ct.type("conststring" , false);
-      t_object        = ct.type(FuzionConstants.OBJECT_NAME, false);
-      t_unit          = ct.type("unit"        , false);
+      t_Const_String  = ct.type("Const_String" , false);
+      t_any           = ct.type(FuzionConstants.ANY_NAME, false);
+      t_unit          = ct.type(FuzionConstants.UNIT_NAME, false);
       t_void          = ct.type("void"        , false);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
@@ -223,24 +226,27 @@ public class Types extends ANY
       f_bool_OR       = f_bool.get(mod, "infix ||");
       f_bool_IMPLIES  = f_bool.get(mod, "infix :");
       f_debug         = universe.get(mod, "debug", 0);
-      f_debugLevel    = universe.get(mod, "debugLevel");
+      f_debug_level   = universe.get(mod, "debug_level");
       f_function      = universe.get(mod, FUNCTION_NAME);
       f_function_call = f_function.get(mod, "call");
       f_safety        = universe.get(mod, "safety");
       f_array         = universe.get(mod, "array", 5);
-      f_array_internalArray = f_array.get(mod, "internalArray");
+      f_array_internal_array = f_array.get(mod, "internal_array");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
+      f_concur                     = universe.get(mod, "concur");
+      f_concur_atomic              = f_concur.get(mod, "atomic");
+      f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.OBJECT_NAME));
+      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
@@ -262,8 +268,8 @@ public class Types extends ANY
         t_bool       ,
         t_fuzion     ,
         t_string     ,
-        t_conststring,
-        t_object     ,
+        t_Const_String,
+        t_any        ,
         t_unit       ,
         t_void       };
 

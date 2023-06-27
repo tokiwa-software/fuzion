@@ -26,9 +26,9 @@
 # try -- simple exception effect
 #
 # try provides an operation 'raise' that immediately stops execution and
-# returns an 'error' wrapped in an 'oucome'.
+# returns an 'error' wrapped in an 'outcome'.
 #
-try : effect effectMode.plain
+try : effect effect_mode.plain
 is
 
   # mutuable field to receive the error in case raise is called
@@ -41,7 +41,7 @@ is
   # resulting 'outcome'.
   #
   on(R type, f ()->R) outcome R is
-    (run (outcome R) (()->outcome f()) (_)->err.get)
+    run (outcome R) (()->outcome f()) (_)->err.get
 
   # terminate immediately with the given error wrapped in 'option'.
   #
@@ -59,7 +59,7 @@ try(R type, f ()->R) =>
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-tryOrPanic(R type, f ()->R) outcome R is
+try_or_panic(R type, f ()->R) outcome R is
   match try.on f
     e error => panic $e
     r R => r

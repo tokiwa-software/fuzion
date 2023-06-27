@@ -25,5 +25,5 @@
 issue1013 is
   for m in (i64 -1)..1 do
     for n in (i64 -1)..1 do
-      x bool := ((m ≟ n) ≟ ((int m) ≟ (int n)))
+      x bool := ((m = n) = ((int m) = (int n)))
       say x

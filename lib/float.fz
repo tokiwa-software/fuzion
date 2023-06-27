@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float(redef F type : float F) : numeric F, floats F is
+float : numeric is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -38,20 +38,36 @@ float(redef F type : float F) : numeric F, floats F is
   #
   redef prefix +! bool is true
   redef prefix -! bool is true
-  redef infix +! (other F) bool is true
-  redef infix -! (other F) bool is true
-  redef infix *! (other F) bool is true
-  redef infix /! (other F) bool is true
-  redef infix %! (other F) bool is true
-  redef infix **!(other F) bool is true
+  redef infix +! (other float.this.type) bool is true
+  redef infix -! (other float.this.type) bool is true
+  redef infix *! (other float.this.type) bool is true
+  redef infix /! (other float.this.type) bool is true
+  redef infix %! (other float.this.type) bool is true
+  redef infix **!(other float.this.type) bool is true
+
+  # NYI: These redefinitions are required to avoid errors when removing the
+  # type parameter from numeric. Why?
+  redef infix + (other float.this.type) float.this.type is abstract
+  redef infix - (other float.this.type) float.this.type is abstract
+  redef infix * (other float.this.type) float.this.type is abstract
+  redef infix / (other float.this.type) float.this.type is abstract
+  redef infix % (other float.this.type) float.this.type is abstract
+  redef infix ** (other float.this.type) float.this.type is abstract
 
 
   # convert a float value to i64 dropping any fraction.
   # the value must be in the range of i64
+  #
   as_i64 i64 is abstract
 
 
-  fract F is abstract
+  # convert a float value to i32 dropping any fraction.
+  # the value must be in the range of i32
+  #
+  as_i32 => as_i64.as_i32
+
+
+  fract float.this.type is abstract
 
 
   # round floating point number
@@ -59,29 +75,29 @@ float(redef F type : float F) : numeric F, floats F is
   #
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
-  round F is
-    if thiz ⩻ zero
-      -(-thiz).round
-    else if fract ≟ zero
-      thiz
+  round float.this.type is
+    if float.this < float.this.type.zero
+      -(-float.this).round
+    else if fract = float.this.type.zero
+      float.this
     else
-      (thiz + one/two).floor
+      (float.this + float.this.type.one/float.this.type.two).floor
 
 
   # floor: the greatest integer lower or equal to this
-  floor F is
-    if fract ⩻ zero
-      thiz - fract - one
+  floor float.this.type is
+    if fract < float.this.type.zero
+      float.this - fract - float.this.type.one
     else
-      thiz - fract
+      float.this - fract
 
 
   # ceiling: the smallest integer greater or equal to this
-  ceil F is
-    if fract ≤ zero
-      thiz - fract
+  ceil float.this.type is
+    if fract ≤ float.this.type.zero
+      float.this - fract
     else
-      thiz - fract + one
+      float.this - fract + float.this.type.one
 
 
   # number of bits used for mantissa,
@@ -129,75 +145,97 @@ float(redef F type : float F) : numeric F, floats F is
   type.from_i64(val i64) float.this.type is abstract
 
 
+  type.exponent_range => -min_exp..max_exp
 
-# floats -- unit type defining features related to float but not requiring
-# an instance
-#
-floats(F type : float F) : numerics F is
-
-
-  exponentRange => -minExp..maxExp
 
   # non signaling not a number
-  quietNaN => zero / zero
+  #
+  type.quiet_NaN => zero / zero
+
 
   # not a number
-  NaN => quietNaN
+  #
+  type.NaN => quiet_NaN
+
 
   # is not a number?
-  isNaN(val F) bool is abstract
+  #
+  type.is_NaN (val float.this.type) bool is abstract
 
-  negativeInfinity => -one / zero
 
-  positiveInfinity => one / zero
+  type.negative_infinity => -one / zero
+
+
+  type.positive_infinity => one / zero
+
 
   # infinity
-  infinity => positiveInfinity
-
-  minExp i32 is abstract
-  maxExp i32 is abstract
-  minPositive F is abstract
-  max F is abstract
-  epsilon F is abstract
+  #
+  type.infinity => positive_infinity
 
 
-  squareRoot(val F) F is abstract
+  type.min_exp i32 is abstract
+  type.max_exp i32 is abstract
+  type.min_positive float.this.type is abstract
+  type.max float.this.type is abstract
+  type.epsilon float.this.type is abstract
+
+
   # square root
-  sqrt(val F) => squareRoot val
+  #
+  type.square_root (val float.this.type) float.this.type is abstract
 
 
-  # exponentiation, logarithm
+  # square root alias
+  #
+  type.sqrt (val float.this.type) => square_root val
 
-  exp (val F) F is abstract
-  log (val F) F is abstract
+
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
+  type.exp (val float.this.type) float.this.type is abstract
+
+
+  # logarithm with base ℇ
+  #
+  type.log (val float.this.type) float.this.type is abstract
+
+
+  # logarithm with base `base`
+  #
+  type.log (base, val float.this.type) float.this.type
+  pre base > zero
+  is
+    (log val) / (log base)
 
 
   # trigonometric
 
-  sin (val F) F is abstract
-  cos (val F) F is abstract
-  tan (val F) F is abstract
-  asin(val F) F is abstract
-  acos(val F) F is abstract
-  atan(val F) F is abstract
-  atan2(y F, x F) F is abstract
+  type.sin  (val float.this.type) float.this.type is abstract
+  type.cos  (val float.this.type) float.this.type is abstract
+  type.tan  (val float.this.type) float.this.type is abstract
+  type.asin (val float.this.type) float.this.type is abstract
+  type.acos (val float.this.type) float.this.type is abstract
+  type.atan (val float.this.type) float.this.type is abstract
+  type.atan2 (y, x float.this.type) float.this.type is abstract
 
 
   # hyperbolicus
 
-  sinh (val F) F is abstract
-  cosh (val F) F is abstract
-  tanh (val F) F is abstract
+  type.sinh (val float.this.type) float.this.type is abstract
+  type.cosh (val float.this.type) float.this.type is abstract
+  type.tanh (val float.this.type) float.this.type is abstract
 
 
-  # arcus hyperbolicus
+  # area hyperbolicus
 
-  asinh(val F) F is
+  type.asinh(val float.this.type) float.this.type is
     # ln(x+sqrt(x^2+1))
     log (val + sqrt (val ** two + one))
-  acosh(val F) F is
+  type.acosh(val float.this.type) float.this.type is
     # ln(x+sqrt(x^2-1))
     log (val + sqrt (val ** two - one))
-  atanh(val F) F is
+  type.atanh(val float.this.type) float.this.type is
     # 1/2*ln((1+x)/(1-x))
     log ((one + val)/(one - val)) / two

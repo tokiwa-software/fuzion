@@ -206,8 +206,8 @@ semiOrFlatLF: semi
    */
   boolean semiOrFlatLF()
   {
-    int last = lastPos();
-    boolean result = last >= 0 && lineNum(last) != lineNum(pos());
+    int last = lastTokenPos();
+    boolean result = last >= 0 && lineNum(last) != lineNum(tokenPos());
     if (!result)
       {
         match(Token.t_semicolon, "semicolon or flat line break");
@@ -246,7 +246,7 @@ modAndNames : visibility
    */
   FList feature()
   {
-    var pos = posObject();
+    var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
     var n = featNames();
@@ -622,7 +622,7 @@ name        : IDENT                            // all parts of name must be in s
   String name(boolean mayBeAtMinIndent, boolean ignoreError)
   {
     String result = Errors.ERROR_STRING;
-    int pos = pos();
+    int pos = tokenPos();
     if (isNamePrefix(mayBeAtMinIndent))
       {
         var oldLine = sameLine(line());
@@ -779,10 +779,8 @@ opName      : "infix"   op
 modifiers   : modifier modifiers
             |
             ;
-modifier    : "lazy"
-            | "redef"
-            | "redefine"
-            | "dyn"
+modifier    : "redef"
+            | "fixed"
             ;
    *
    * @return logically or'ed set of Consts.MODIFIER_* constants found.
@@ -790,25 +788,23 @@ modifier    : "lazy"
   int modifiers()
   {
     int ms = 0;
-    int pos = pos();
+    int pos = tokenPos();
     while (isModifiersPrefix())
       {
         int m;
-        int p2 = pos();
+        int p2 = tokenPos();
         switch (current())
           {
-          case t_lazy        : m = Consts.MODIFIER_LAZY        ; break;
           case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
           {
-            Errors.error(posObject(pos),
+            Errors.error(sourcePos(pos),
                          "Syntax error: modifier '"+current().keyword()+"' specified repeatedly.",
                          "Within one feature declaration, each modifier may at most appear once.\n" +
-                         "Second occurrence of modifier at " + posObject(p2) + "\n" +
+                         "Second occurrence of modifier at " + sourcePos(p2) + "\n" +
                          "Parse stack: " + parseStack());
           }
         ms = ms | m;
@@ -828,9 +824,7 @@ modifier    : "lazy"
   {
     switch (current())
       {
-      case t_lazy        :
       case t_redef       :
-      case t_redefine    :
       case t_fixed       : return true;
       default            : return false;
       }
@@ -915,7 +909,7 @@ argType     : type
                                 var result = new List<Feature>();
                                 do
                                   {
-                                    SourcePosition pos = posObject();
+                                    SourcePosition pos = tokenSourcePos();
                                     Visi v = visibility();
                                     int m = modifiers();
                                     List<String> n = argNames();
@@ -925,7 +919,7 @@ argType     : type
                                       {
                                         i = typeType();
                                         t = skipColon() ? type()
-                                                        : new Type(FuzionConstants.OBJECT_NAME);
+                                                        : new Type(FuzionConstants.ANY_NAME);
                                       }
                                     else
                                       {
@@ -1342,7 +1336,7 @@ actuals     : actualArgs
    */
   Call call(Expr target)
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     String n = name();
     Call result;
     var skippedDot = false;
@@ -1362,18 +1356,18 @@ actuals     : actualArgs
               {
                 AstErrors.illegalSelect(pos, select, e);
               }
-            result = new Call(pos, target, n, s);
+            result = new ParsedCall(pos, target, n, s);
           }
         else
           {
-            result = new Call(pos, target, n);
+            result = new ParsedCall(pos, target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new Call(pos, target, n, l);
+        result = new ParsedCall(pos, target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1394,7 +1388,7 @@ indexTail   : ":=" exprInLine
     Call result;
     do
       {
-        SourcePosition pos = posObject();
+        SourcePosition pos = tokenSourcePos();
         var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualList());
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
@@ -1680,7 +1674,7 @@ actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
    */
   Actual actualSpace()
   {
-    var eas = endAtSpace(pos());
+    var eas = endAtSpace(tokenPos());
     var result = actual();
     endAtSpace(eas);
     return result;
@@ -1712,9 +1706,9 @@ actual   : expr | type
         e = expr();
         // we might have an expr 'a.x+d(4)' while the type parsed is
         // just 'a.x', so eagerly take the expr in this case:
-        t = f.pos() == pos() ? t0 : null;
+        t = f.tokenPos() == tokenPos() ? t0 : null;
         if (CHECKS) check
-          (f.pos() <= pos());
+          (f.tokenPos() <= tokenPos());
       }
     else if (hasExpr)
       {
@@ -1795,7 +1789,7 @@ expr        : opExpr
   Expr expr()
   {
     Expr result = opExpr();
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     var f0 = fork();
     if (f0.skip(Token.t_question))
       {
@@ -1893,7 +1887,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
    */
   Expr klammer()
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     var f = fork();
     var tupleElements = new List<Actual>();
     bracketTermWithNLs(PARENS, "klammer",
@@ -1924,7 +1918,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
         // s9a := i16 -(32768)
         return (actual instanceof NumLiteral)
           ? actual
-          : new Block(pos, posObject(), new List<>(actual));
+          : new Block(pos, tokenSourcePos(), new List<>(actual));
       }
     // a tuple
     else
@@ -1973,7 +1967,7 @@ lambda      : contract "->" block
    */
   Expr lambda(List<String> n)
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
     Contract   c = contract();
     matchOperator("->", "lambda");
@@ -2049,14 +2043,14 @@ addSemiElmts: SEMI semiSepElmts
    */
   Expr inlineArray()
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     var elements = new List<Expr>();
     bracketTermWithNLs(CROCHETS, "inlineArray",
                        () -> {
                          elements.add(expr());
                          var sep = current();
                          var s = sep;
-                         var p1 = pos();
+                         var p1 = tokenPos();
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
@@ -2067,7 +2061,7 @@ addSemiElmts: SEMI semiSepElmts
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                                {
-                                 AstErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
+                                 AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
                                  reportedMixed = true;
                                }
                            }
@@ -2088,7 +2082,6 @@ term        : simpleterm ( indexCall
                                      )
             ;
 simpleterm  : bracketTerm
-            | fun
             | stringTerm
             | NUM_LITERAL
             | match
@@ -2102,7 +2095,7 @@ simpleterm  : bracketTerm
   Expr term()
   {
     Expr result;
-    int p1 = pos();
+    int p1 = tokenPos();
     switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
       case env : result = dotEnv(); break;
@@ -2113,7 +2106,6 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_fun       :         result = fun();                                    break;
           case t_numliteral: var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
@@ -2121,7 +2113,7 @@ simpleterm  : bracketTerm
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourcePos(p1), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2139,7 +2131,7 @@ simpleterm  : bracketTerm
                 if (result == null)
                   {
                     syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                    result = new Call(posObject(), null, Errors.ERROR_STRING);
+                    result = new Call(tokenSourcePos(), null, Errors.ERROR_STRING);
                   }
               }
             break;
@@ -2183,20 +2175,20 @@ stringTermB : '}any chars&quot;'
         if (isString(t))
           {
             var ps = string(multiLineIndentation);
-            var str = new StrConst(posObject(), ps._v0);
-            result = concatString(posObject(), leftString, str);
+            var str = new StrConst(tokenSourcePos(), ps._v0);
+            result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
               {
                 var old = setMinIndent(-1);
                 var b = block();
                 setMinIndent(old);
-                result = stringTerm(concatString(posObject(), result, b), ps._v1);
+                result = stringTerm(concatString(tokenSourcePos(), result, b), ps._v1);
               }
           }
         else
           {
-            Errors.expectedStringContinuation(posObject(), currentAsString());
+            Errors.expectedStringContinuation(tokenSourcePos(), currentAsString());
           }
         return result;
       });
@@ -2233,7 +2225,6 @@ stringTermB : '}any chars&quot;'
       case t_lparen    :
       case t_lcrochet  :
       case t_lbrace    :
-      case t_fun       :
       case t_numliteral:
       case t_match     : return true;
       default          :
@@ -2257,33 +2248,8 @@ op          : OPERATOR
     if (PRECONDITIONS) require
       (current() == Token.t_op);
 
-    Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
+    Operator result = new Operator(tokenSourcePos(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
-    return result;
-  }
-
-
-  /**
-   * Parse fun
-   *
-fun         : "fun" call
-            ;
-   */
-  Expr fun()
-  {
-    Expr result;
-    SourcePosition pos = posObject();
-    match(Token.t_fun, "fun");
-    var c = call(null);
-    if (c.actuals().size() == 0)
-      {
-        result = new Function(pos, c);
-      }
-    else
-      {
-        syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
-        result = c;
-      }
     return result;
   }
 
@@ -2297,7 +2263,7 @@ match       : "match" exprInLine BRACEL cases BRACER
   Expr match()
   {
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = posObject();
+        SourcePosition pos = tokenSourcePos();
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
@@ -2395,7 +2361,7 @@ caseStar    : STAR       caseBlock
    */
   Case caze()
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     if (skip('*'))
       {
         return new Case(pos, caseBlock());
@@ -2429,7 +2395,7 @@ caseBlock   : ARROW          // if followed by '|'
     sameLine(oldLine);
     if (bar)
       {
-        SourcePosition pos1 = posObject();
+        SourcePosition pos1 = tokenSourcePos();
         result = new Block(pos1, pos1, new List<>());
       }
     else
@@ -2505,8 +2471,8 @@ block       : stmnts
    */
   Block block()
   {
-    var p1 = pos();
-    var pos1 = posObject();
+    var p1 = tokenPos();
+    var pos1 = tokenSourcePos();
     if (current() == Token.t_semicolon)
       { // we have code like
         //
@@ -2533,7 +2499,7 @@ block       : stmnts
              *
              * so we set start and end pos to the position after `x i32 is`.
              */
-            pos1 = posObject(lineEndPos(lineNum(p1)-1));
+            pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
             pos2 = pos1;
           }
         return new Block(pos1, pos2, l);
@@ -2553,11 +2519,11 @@ brblock     : BRACEL stmnts BRACER
    */
   Block brblock()
   {
-    SourcePosition pos1 = posObject();
+    SourcePosition pos1 = tokenSourcePos();
     return bracketTermWithNLs(BRACES, "block",
                               () -> {
                                 var l = stmnts();
-                                var pos2 = posObject();
+                                var pos2 = tokenSourcePos();
                                 return new Block(pos1, pos2, l);
                               });
   }
@@ -2645,8 +2611,8 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
     Indentation()
     {
       mayIndent      = !isRestrictedToLine();
-      firstPos       = pos();
-      if (lastPos() >= 0 && lineNum(lastPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
+      firstPos       = tokenPos();
+      if (lastTokenPos() >= 0 && lineNum(lastTokenPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
         {
           oldSameLine    = sameLine(line());
           next();
@@ -2670,7 +2636,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     void next()
     {
-      if (mayIndent && current() == Token.t_lineLimit && indent(pos()) >= indent(firstPos))
+      if (mayIndent && current() == Token.t_lineLimit && indent(tokenPos()) >= indent(firstPos))
         {
           startIndent();
         }
@@ -2684,7 +2650,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       sameLine(-1);
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpace(Integer.MAX_VALUE);
-      oldIndentPos = setMinIndent(pos());
+      oldIndentPos = setMinIndent(tokenPos());
     }
 
 
@@ -2696,7 +2662,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
     boolean ok()
     {
       var lastPos = okPos;
-      okPos = pos();
+      okPos = tokenPos();
       var progress = lastPos < okPos;
       if (CHECKS) check
         (Errors.count() > 0 || progress);
@@ -2709,7 +2675,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)
                 {
-                  Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
+                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail("stmnts"));
                 }
               setMinIndent(okPos);
               okLineNum = lineNum(okPos);
@@ -2780,13 +2746,13 @@ loopBody    : "while" exprInLine      block
             |                    "do" block
             ;
 loopEpilog  : "until" exprInLine thenPart elseBlock
-            |                             "else" Block
+            |                             "else" block
             ;
    */
   Expr loop()
   {
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = posObject();
+        SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
@@ -2801,7 +2767,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
-            syntaxError(pos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+            syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
           }
         return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
       });
@@ -2812,7 +2778,6 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
    * Parse IndexVars
    *
 indexVars   : "for" indexVar (semi indexVars)
-            |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
@@ -2849,7 +2814,7 @@ nextValue   : COMMA exprInLine
    */
   void indexVar(List<Feature> indexVars, List<Feature> nextValues)
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     Parser forked = fork();  // tricky: in case there is no nextValue, we
                              // re-parse the initial value expr and use it
                              // as nextValue
@@ -2870,8 +2835,8 @@ nextValue   : COMMA exprInLine
     if (       skip(Token.t_in) &&
         forked.skip(Token.t_in)    )
       {
-        p1 = new Impl(posObject(),        exprInLine(), Impl.Kind.FieldIter);
-        p2 = new Impl(posObject(), forked.exprInLine(), Impl.Kind.FieldIter);
+        p1 = new Impl(tokenSourcePos(),        exprInLine(), Impl.Kind.FieldIter);
+        p2 = new Impl(tokenSourcePos(), forked.exprInLine(), Impl.Kind.FieldIter);
       }
     else
       {
@@ -2939,7 +2904,7 @@ ifstmnt      : "if" exprInLine thenPart elseBlock
   If ifstmnt()
   {
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = posObject();
+        SourcePosition pos = tokenSourcePos();
         match(Token.t_if, "ifstmnt");
         Expr e = exprInLine();
         Block b = thenPart(false);
@@ -2964,10 +2929,10 @@ thenPart    : "then" block
    */
   Block thenPart(boolean emptyBlockIfNoBlockPresent)
   {
-    var p = pos();
+    var p = tokenPos();
     skip(Token.t_then);
     var result = block();
-    return emptyBlockIfNoBlockPresent && p == pos() ? null : result;
+    return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
   }
 
 
@@ -3012,7 +2977,7 @@ checkstmnt   : "check" cond
   Stmnt checkstmnt()
   {
     match(Token.t_check, "checkstmnt");
-    return new Check(posObject(), cond());
+    return new Check(tokenSourcePos(), cond());
   }
 
 
@@ -3038,7 +3003,7 @@ assign      : "set" name ":=" exprInLine
   {
     match(Token.t_set, "assign");
     String n = name();
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     matchOperator(":=", "assign");
     return new Assign(pos, n, exprInLine());
   }
@@ -3087,7 +3052,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
     if (fork().skipFormArgs())
       {
         var a = formArgs();
-        var pos = posObject();
+        var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
         return Destructure.create(pos, a, null, false, exprInLine());
       }
@@ -3097,7 +3062,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         match(Token.t_lparen, "destructure");
         var names = argNames();
         match(Token.t_rparen, "destructure");
-        var pos = posObject();
+        var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
         return Destructure.create(pos, null, names, !hasSet, exprInLine());
       }
@@ -3190,7 +3155,7 @@ universeCall      : "universe" dot "this" dot call
    */
   Expr universeCall()
   {
-    var pos = posObject();
+    var pos = tokenSourcePos();
     match(Token.t_universe, "universeCall");
     matchOperator(".",      "universeCall");
     match(Token.t_this,     "universeCall");
@@ -3211,7 +3176,7 @@ anonymous   : "ref"
   Expr anonymous()
   {
     var sl = sameLine(line());
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
@@ -3273,7 +3238,7 @@ qualThis    : name ( dot name )* dot "this"
                 syntaxError("'.'", "qualThis");
               }
           }
-        pos = posObject();
+        pos = tokenSourcePos();
         done = skip(Token.t_this);
         if (asType)
           {
@@ -3355,7 +3320,7 @@ dotEnv      : simpletype dot "env"
     var t = typeInParens();
     skipDot();
     match(Token.t_env, "env");
-    return new Env(posObject(), t);
+    return new Env(tokenSourcePos(), t);
   }
 
 
@@ -3371,7 +3336,7 @@ dotType     : simpletype dot "type"
     var t = typeInParens();
     skipDot();
     match(Token.t_type, "type");
-    return new DotType(posObject(), t);
+    return new DotType(tokenSourcePos(), t);
   }
 
 
@@ -3556,7 +3521,7 @@ implRout    : block
    */
   Impl implRout()
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     Impl result;
     var startRoutine = (currentAtMinIndent() == Token.t_lbrace || skip(true, Token.t_is));
     if      (startRoutine    ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
@@ -3568,7 +3533,7 @@ implRout    : block
     else if (skipFullStop()  ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
     else
       {
-        syntaxError(pos(), "'is', '{' or '=>' in routine declaration", "implRout");
+        syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
         result = Impl.ERROR;
       }
     return result;
@@ -3599,7 +3564,7 @@ implFldOrRout   : implRout
       }
     else
       {
-        syntaxError(pos(), "'is', ':=' or '{'", "impl");
+        syntaxError(tokenPos(), "'is', ':=' or '{'", "impl");
         return Impl.FIELD;
       }
   }
@@ -3613,10 +3578,10 @@ implFldInit : ":=" exprInLine
    */
   Impl implFldInit(boolean hasType)
   {
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     if (!skip(":="))
       {
-        syntaxError(pos(), "':='", "implFldInit");
+        syntaxError(tokenPos(), "':='", "implFldInit");
       }
     return new Impl(pos,
                     exprInLine(),
@@ -3834,7 +3799,7 @@ typeOpt     : type
   AbstractType onetype()
   {
     AbstractType result;
-    SourcePosition pos = posObject();
+    SourcePosition pos = tokenSourcePos();
     if (skip(Token.t_ref))
       {
         var r = simpletype(null);
@@ -3909,7 +3874,7 @@ typeOpt     : type
         if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
           {
             result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
-            var p = pos();
+            var p = tokenPos();
             if (skip("->"))
               {
                 result =
@@ -3925,7 +3890,7 @@ typeOpt     : type
               {
                 result = result && skipTypeTail();
               }
-            result = result && (allowTypeInParentheses || p < pos());
+            result = result && (allowTypeInParentheses || p < tokenPos());
           }
         else
           {
@@ -3947,7 +3912,7 @@ simpletype  : name typePars typeTail
    */
   ParsedType simpletype(ParsedType lhs)
   {
-    var p = posObject();
+    var p = tokenSourcePos();
     var n = name();
     var a = typePars();
     lhs = new ParsedType(p, n, a, lhs);
@@ -4065,15 +4030,15 @@ typeInParens: "(" typeInParens ")"
     AbstractType result;
     if (current() == Token.t_lparen)
       {
-        var pos = pos();
+        var pos = tokenPos();
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
-        var eas = endAtSpace(pos());
+        var eas = endAtSpace(tokenPos());
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
-            result = ParsedType.funType(posObject(pos), type(), l);
+            result = ParsedType.funType(sourcePos(pos), type(), l);
           }
         else if (l.size() == 1)
           {
@@ -4092,7 +4057,7 @@ typeInParens: "(" typeInParens ")"
       }
     else
       {
-        var eas = endAtSpace(pos());
+        var eas = endAtSpace(tokenPos());
         result = type();
         endAtSpace(eas);
       }
@@ -4138,10 +4103,10 @@ typeInParens: "(" typeInParens ")"
     if (isTypePrefix())
       {
         var f = fork();
-        f.endAtSpace(pos());
+        f.endAtSpace(tokenPos());
         if (f.skipType())
           {
-            var eas = endAtSpace(pos());
+            var eas = endAtSpace(tokenPos());
             skipType();
             endAtSpace(eas);
             return true;

@@ -130,11 +130,11 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals(FuzionConstants.OBJECT_NAME))
+        else if (s.equals(FuzionConstants.ANY_NAME))
           {
             // NYI: Due to #40, we cannot declare an inner feature with name 'Object',
             // so we replace it by '_jObject'.
-            s = "_j" + FuzionConstants.OBJECT_NAME;
+            s = "_j" + FuzionConstants.ANY_NAME;
           }
         else if (s.equals("List"))
           {

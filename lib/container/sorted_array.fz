@@ -1,0 +1,202 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature sorted_array
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# sorted_array -- sorted one-dimensional immutable array
+#
+# This takes an unsorted array and a compare function as an arguments and
+# returns a sorted one.
+#
+# Non-mutating heap sort is used internally. This gives guaranteed peformance in
+# O(n log n) comparisons and assignments for an array of size n.
+#
+# This is a little wasteful on allocated memory, which is also O(n log n) since
+# partially sorted arrays are thrown away.  This might be improved to use an
+# in-place heap sort to bring allocated memory down to O(n).
+#
+sorted_array
+  (
+  # array element type
+  redef T type,
+
+  # orginal, unsorted Sequence
+  #
+  from Sequence T,
+
+  # predicate defining total order on T.
+  #
+  # must satisfy:
+  #
+  #   for_all a,b: less_or_equal(a, b) <=> (a = b)
+  #   for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
+  #   for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
+  #
+  less_or_equal (T, T) -> bool
+
+  )
+
+  : array T (sort from.as_array 1).internal_array unit unit unit
+
+is
+
+  # perform heap sort on the given array
+  #
+  # result is a new array that is sorted
+  #
+  sort
+    (
+    # array with sub-heaps of heap_size sorted
+    a array T,
+
+    # the current heap size, 1 on initial call, must be power of 2
+    heap_size i32
+    ) array T
+
+    pre
+      debug: heap_size ≥ 0,
+      debug: (heap_size & (heap_size-1)) = 0
+      # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
+  is
+    # check if the array is fully sorted
+    if heap_size ≥ a.length
+      a.as_array  # NYI: #167: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
+    else
+      # h1 is the mutable index within the current first heap, this is updated
+      # by the function passed to the array constructor.
+      #
+      # NYI: This might eventually be done using a monad with monadic lifting
+      # of array.
+      h1 := 0;
+
+      na := array T a.length (i ->
+        # index in current pair of heaps
+        hi := i & (heap_size*2-1)
+        # reset h1 in case we start new pair of heaps
+        set h1 := if (hi = 0) 0 else h1
+        # index within second heap
+        h2 := hi - h1
+
+        # absolute indices in first and second heap
+        i1 := i - hi + h1;
+        i2 := i - hi + heap_size + h2;
+
+        # did we reach end of first or second heap?
+        heap1_empty := h1 ≥ heap_size
+        heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
+
+        # check if next element comes from first heap
+        if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
+          # if so, increment index in first heap and return element from first heap
+          set h1 := h1 + 1
+          a[i1]
+        else
+          # otherwise, return element from second heap
+          a[i2]
+        )
+
+      # continue sorting with doubled heap size
+      sort na 2*heap_size
+
+
+  # find index of given key using binary search
+  #
+  # The guaranteed performance is in O(log n) comparisons.
+  #
+  # result is the index where key was found or nil if key is not
+  # in this array.  In case several instance equal to key are in
+  # this sorted_array, the index of one of the matching keys will be
+  # returned, but is not specified which one.
+  #
+  find_key (key T) option i32
+    post
+      match result
+        i i32 => # sorted_array.this[i] = key, but we do not have 'infix =' available, so
+                 # use less_or_equal instead:
+                 #
+                 less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
+  is
+    binary_search(l, r i32) option i32 is
+      m := (l + r) / 2
+      if l > r                                     then nil
+      else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
+      else if !less_or_equal sorted_array.this[m] key then binary_search l m-1
+      else                                                 m
+
+    binary_search 0 length-1
+
+
+  # find index of key for which cmp returns 0
+  #
+  # The guaranteed performance is in O(log n) comparisons.
+  #
+  # result is the index where cmp results in 0 or nil if no such index
+  # was found in this array.  In case several instance equal match,
+  # the index of one matching key will be returned, but is not
+  # specified which one.
+  #
+  find (
+
+    # cmp must be < 0 (> 0) if key is less (larger) than desired key.
+    #
+    # cmp must implement the same total order as 'T.infix <='.
+    #
+    cmp T -> i32
+
+    ) option i32
+
+    post
+      match result
+        i i32 => (cmp sorted_array.this[i]) = 0
+        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
+  is
+    binary_search(l, r i32) option i32 is
+      m := (l + r) / 2
+      if l > r
+        nil
+      else
+        c := cmp sorted_array.this[m]
+        if      c < 0 then binary_search m+1 r
+        else if c > 0 then binary_search l m-1
+        else               m
+
+    binary_search 0 length-1
+
+
+# sorted_array_of -- sorted one-dimensional immutable array of ordered elements
+#
+# This takes an unsorted array as an argument and returns a sorted one using
+# the order defined by the type of the elements T.
+#
+# See sorted_array from less_or_equal for details
+#
+sorted_array_of
+  (
+  T type : has_total_order,
+  # orginal, unsorted Sequence
+  from Sequence T
+  ) sorted_array T
+
+is
+  sorted_array T from (a,b -> a ≤ b)

@@ -26,7 +26,7 @@
 #
 # Represents a coordinated universal date and time (UTC) in the gregorian calendar.
 #
-date_time(year, day_in_year, hour, minute, second, nano_second i32)
+date_time(year, day_in_year, hour, minute, second, nano_second i32) : has_total_order
 pre
   day_in_year ≥ 1  & day_in_year  ≤ days_in_year year,  # leap years have 366 days
   hour        ≥ 0  & hour         ≤ 23,
@@ -107,6 +107,34 @@ is
 
 
 
+  # defines equality for date time
+  # this is normally used via infix operator =
+  type.equality(a, b date_time.this.type) bool is
+    a.nano_second = b.nano_second &
+     a.year = b.year &
+     a.day_in_year = b.day_in_year &
+     a.hour = b.hour &
+     a.minute = b.minute &
+     a.second = b.second
+
+
+
+  # defines partial order for date time
+  # this is normally used via infix operators <, >, <= etc.
+  type.lteq(a, b date_time.this.type) bool is
+    [(a.year, b.year),
+     (a.day_in_year, b.day_in_year),
+     (a.hour, b.hour),
+     (a.minute, b.minute),
+     (a.second, b.second),
+     (a.nano_second, b.nano_second)]
+      .reduce true (r, t)->
+        if t.values.0 > t.values.1
+          abort false
+        else
+          r
+
+
 # how many days does the given year have?
 private days_in_year(year i32) =>
   if is_leap_year year then 366 else 365
@@ -115,5 +143,5 @@ private days_in_year(year i32) =>
 
 # is the given year a leap year?
 private is_leap_year(year i32) =>
-  (year % 4 ≟ 0 & !(year % 100 ≟ 0)) |
-    ((year % 100 ≟ 0) & (year % 400 ≟ 0))
+  (year % 4 = 0 & year % 100 != 0) |
+    ((year % 100 = 0) & (year % 400 = 0))

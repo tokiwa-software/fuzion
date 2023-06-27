@@ -31,33 +31,33 @@ test_covariance is
   # a simple, numeric type providing special elements zero and one and operations
   # lessThan, plus, minus and to_u32
   #
-  num is
+  num0 is
 
     # special values
     #
-    type.zero num.this.type is abstract
-    type.one  num.this.type is abstract
+    type.zero num0.this.type is abstract
+    type.one  num0.this.type is abstract
 
-    # if num.this less than other?
+    # if num0.this less than other?
     #
-    lessThan(other num.this.type) bool is abstract
+    lessThan(other num0.this.type) bool is abstract
 
-    plus (other num.this.type) num.this.type is abstract
-    minus(other num.this.type) num.this.type is abstract
+    plus (other num0.this.type) num0.this.type is abstract
+    minus(other num0.this.type) num0.this.type is abstract
 
     to_u32_loop =>
       for
-        x := num.this, x.minus num.this.type.one
+        x := num0.this, x.minus num0.this.type.one
         u := u32 0, u+1
-      while num.this.type.zero.lessThan x
+      while num0.this.type.zero.lessThan x
       else
         u
 
     # convert this to corresponding values as an 'u32'
     #
     to_u32 u32 is
-      t := num.this.type
-      if t.zero.lessThan num.this
+      t := num0.this.type
+      if t.zero.lessThan num0.this
         (minus t.one).to_u32 + 1
       else
         0
@@ -65,7 +65,7 @@ test_covariance is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    redef as_string => "num.this.type {to_u32} {to_u32_loop} '$valueString'"
+    redef as_string => "num0.this.type {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -73,46 +73,44 @@ test_covariance is
     valueString String is abstract
 
 
-  # integer mod 2 implementation of num
+  # integer mod 2 implementation of num0
   #
-  intM2(isZero bool) : num is
+  intM2(is_zero bool) : num0 is
     fixed z => intM2 true
     fixed o => intM2 false
     fixed type.zero => test_covariance.intM2 true
     fixed type.one => test_covariance.intM2 false
-    fixed lessThan(other intM2) => isZero && !other.isZero
-    fixed plus(other intM2) => if isZero then other else intM2 !other.isZero
+    fixed lessThan(other intM2) => is_zero && !other.is_zero
+    fixed plus(other intM2) => if is_zero then other else intM2 !other.is_zero
     fixed minus(other intM2) => plus other
-    redef valueString => if isZero then "0 mod 2" else "1 mod 2"
+    redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
-  # integer mod 5 implementation of num
+  # integer mod 5 implementation of num0
   #
-  intM5(v u8) : num is
+  intM5(v u8) : num0 is
     fixed z => intM5 0
     fixed o => intM5 1
     fixed type.zero => test_covariance.intM5 0
     fixed type.one => test_covariance.intM5 1
-    fixed lessThan(other intM5) => v ⩻ other.v
+    fixed lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed minus(other intM5) => intM5 (v - other.v)%5
     redef valueString => "$v mod 5"
 
 run_test_covariance =>
 
-  test(N type : test_covariance.num, x, y N) =>
+  test(N type : test_covariance.num0, x, y N) =>
     say x
     say y
-    # NYI: all of the following do not work yet:
-    #
-    # say (x.plus y)
-    # say (x.plus x)
-    # say (y.plus y)
-    # z := y.plus y
-    # say z
-    # z := z.plus z
-    # say z
-    # z := z.plus z
-    # say z
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
+    say z
+    z := z.plus z
+    say z
+    z := z.plus z
+    say z
 
   x := test_covariance.intM2 true
   y := test_covariance.intM2 false
@@ -218,7 +216,7 @@ test_this_type =>
   chck $Z       "vwxZ"
 
   chck(s1, s2 String) =>
-    say (if s1 ≟ s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
+    say (if s1 = s2 then "PASS: $s1 = $s2" else "*** FAIL ***: $s1 /= $s2")
 
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.
@@ -229,16 +227,16 @@ test_this_type_in_type_feature =>
     def(s String) is
       ghi is
         jkl(val i32, msg String) is
-          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val ⩻ b.val then a else b
-          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val ⩻ b.val then a else b
+          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
 
           type.choose1L(a, b     def.this.type)     def.this.type is a
           type.choose1R(a, b     def.this.type)     def.this.type is b

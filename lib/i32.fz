@@ -25,39 +25,39 @@
 
 # i32 -- 32-bit signed integer values
 #
-i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
+i32(val i32) : wrapping_integer, has_interval is
 
-  redef thiz => i32.this.val
+  thiz => i32.this.val
 
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => isMin
+  redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i32) => thiz ⩼ 0 && i32.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other i32) => thiz ⩻ 0 && i32.type.min -° thiz ⩼ other
+  fixed overflow_on_add (other i32) => thiz > 0 && i32.type.max -° thiz < other
+  fixed underflow_on_add(other i32) => thiz < 0 && i32.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i32) => thiz ⩼ 0 && thiz -° i32.type.max ⩼ other
-  redef underflowOnSub(other i32) => thiz ⩻ 0 && thiz -° i32.type.min ⩻ other
+  fixed overflow_on_sub (other i32) => thiz > 0 && thiz -° i32.type.max > other
+  fixed underflow_on_sub(other i32) => thiz < 0 && thiz -° i32.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i32) => as_i64 *° other.as_i64 ⩼ i32.type.max.as_i64
-  redef underflowOnMul(other i32) => as_i64 *° other.as_i64 ⩻ i32.type.min.as_i64
+  fixed overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.type.max.as_i64
+  fixed underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.type.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -° i32 is intrinsic
-  redef infix +° (other i32) i32 is intrinsic
-  redef infix -° (other i32) i32 is intrinsic
-  redef infix *° (other i32) i32 is intrinsic
+  fixed prefix -° i32 is intrinsic
+  fixed infix +° (other i32) i32 is intrinsic
+  fixed infix -° (other i32) i32 is intrinsic
+  fixed infix *° (other i32) i32 is intrinsic
 
   # division and remainder with check for div-by-zero
-  redef infix / (other i32)
+  fixed infix / (other i32)
     pre
       safety: other != 0
    => div(other)
-  redef infix % (other i32)
+  fixed infix % (other i32)
     pre
       safety: other != 0
    => mod(other)
@@ -67,13 +67,13 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   private mod (other i32) i32 is intrinsic
 
   # bitwise and, or and xor operations
-  redef infix &  (other i32) i32 is intrinsic
-  redef infix |  (other i32) i32 is intrinsic
-  redef infix ^  (other i32) i32 is intrinsic
+  fixed infix &  (other i32) i32 is intrinsic
+  fixed infix |  (other i32) i32 is intrinsic
+  fixed infix ^  (other i32) i32 is intrinsic
 
   # shift operations (signed)
-  redef infix >> (other i32) i32 is intrinsic
-  redef infix << (other i32) i32 is intrinsic
+  fixed infix >> (other i32) i32 is intrinsic
+  fixed infix << (other i32) i32 is intrinsic
 
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
@@ -81,13 +81,13 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
       thiz ≥ i8.type.min.as_i32,
       thiz ≤ i8.type.max.as_i32
     is
-      low8bits.castTo_i8
+      low8bits.cast_to_i8
   as_i16 i16
     pre
       thiz ≥ i16.type.min.as_i32,
       thiz ≤ i16.type.max.as_i32
     is
-      low16bits.castTo_i16
+      low16bits.cast_to_i16
   as_i64 i64 is intrinsic
 # as_i128 NYI
   as_u8 u8
@@ -106,7 +106,7 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
     pre
       debug: thiz ≥ 0
     is
-      castTo_u32
+      cast_to_u32
   as_u64 u64
     pre
       debug: thiz ≥ 0
@@ -122,44 +122,44 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
 
   # casting bit representation to unsigned
-  low8bits    u8   is castTo_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
-  low16bits   u16  is castTo_u32.low16bits  # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
-  castTo_u32  u32  is intrinsic             # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
-  castTo_u64  u64  is castTo_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
-  castTo_u128 u128 is castTo_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
+  low8bits    u8   is cast_to_u32.low8bits    # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
+  low16bits   u16  is cast_to_u32.low16bits   # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
+  cast_to_u32  u32  is intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
+  cast_to_u64  u64  is cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
+  cast_to_u128 u128 is cast_to_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
 
   # conversion to float
   as_f64 f64 is intrinsic
   as_f32 => as_f64.as_f32
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval i32 is abstract, fz should not complain about this conflict.
-  redef max => 0x_7fff_ffff
+  # from has_interval i32 is abstract, fz should not complain about this conflict.
+  fixed redef max => 0x_7fff_ffff
 
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit i32 is
-    val.castTo_u32.highestOneBit.castTo_i32
+  highest_one_bit i32 is
+    val.cast_to_u32.highest_one_bit.cast_to_i32
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
-    val.castTo_u32.trailingZeros
+  trailing_zeros i32 is
+    val.cast_to_u32.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
   ones_count i32 is
-    val.castTo_u32.ones_count
+    val.cast_to_u32.ones_count
 
 
   # -----------------------------------------------------------------------
@@ -188,7 +188,7 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => i32 -1
+  fixed redef type.all_bits_set => i32 -1
 
 
   # minimum
@@ -199,26 +199,3 @@ i32(val i32) : wrapping_integer i32, hasInterval i32, i32s is
   # maximum
   #
   fixed type.max => i32 0x_7fff_ffff
-
-
-
-# i32s -- unit type defining features related to i32 but not requiring an
-# instance
-#
-i32s : numerics i32 is
-
-  redef zero => 0
-  redef one  => 1
-
-
-
-# i32 -- returns value of unit type i32s
-#
-# This is a convenience feature that allows using, e.g., 'i32.sum' to
-# get the the monoid of (i32, infix +) instead of 'i32s.sum'.
-#
-# since this i32 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i32 with one
-# argument).
-#
-i32 => i32s

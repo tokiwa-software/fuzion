@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature memoize
+#
+# -----------------------------------------------------------------------
+
+
+# memoize `f`.
+# wraps f so that f will only be called once for every unique input.
+#
+# The term "memoization" was coined by Donald Michie in 1968 and
+# is derived from the Latin word "memorandum" ("to be remembered"),
+# usually truncated as "memo" in American English, and thus carries
+# the meaning of "turning a function into something to be remembered".
+# https://en.wikipedia.org/wiki/Memoization
+#
+# example:
+# ```
+# m : mutate is
+#
+# m.go (()->
+#   mem := memoize m i32 String ((x)->
+#     say "computing $x"
+#     x.as_string)
+#
+#   say (mem 1)
+#   say (mem 2)
+#   say (mem 1)
+#   say (mem 3)
+# )
+# ```
+#
+# NYI this should be map implementation
+# agnostic via map effect. currently using mutate and ordered_map.
+#
+# NYI constraint for T should be has_total_order, has_hashcode, or has_ordinal
+#
+memoize(LM type : mutate, T type : has_total_order, R type, f T->R) T->R is
+  ref : Unary R T
+
+    # the memory
+    private store := LM.env.new (container.ordered_map T R [] [])
+
+    # implementation of abstract feature Unary.call
+    #
+    call(a T) R is
+      # compute if not yet computed
+      if store.get[a].is_nil
+        store.put (store.get.add a (f a))
+      store.get[a].get

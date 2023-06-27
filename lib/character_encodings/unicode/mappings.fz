@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature character_encodings.unicode.mappings
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# groups features returning mappings for unicode codepoints
+mappings is
+
+  # cached map of:
+  # codepoint value => lower case codepoint
+  lower_case container.Map u32 codepoint is
+    # cache key
+    lower_case(val container.Map u32 codepoint) is
+
+    (cache lower_case (() -> lower_case unicode.data.lower_case_mappings)).val
+
+
+  # cached map of:
+  # codepoint value => upper case codepoint
+  upper_case container.Map u32 codepoint is
+    # cache key
+    upper_case(val container.Map u32 codepoint) is
+
+    (cache upper_case (() -> upper_case unicode.data.upper_case_mappings)).val
+
+
+  # cached map of:
+  # codepoint value => title case codepoint
+  title_case container.Map u32 codepoint is
+    # cache key
+    title_case(val container.Map u32 codepoint) is
+
+    (cache title_case (() -> title_case unicode.data.title_case_mappings)).val
+

@@ -29,19 +29,19 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float f64, f64s is
+f64(val f64) : float is
 
-  redef thiz        => f64.this.val
+  thiz => f64.this.val
 
 
   # basic operations: 'prefix -' (negation)
-  redef prefix - f64 is intrinsic
-  infix + (other f64) f64 is intrinsic
-  infix - (other f64) f64 is intrinsic
-  infix * (other f64) f64 is intrinsic
-  infix / (other f64) f64 is intrinsic
-  infix % (other f64) f64 is intrinsic
-  infix ** (other f64) f64 is intrinsic
+  fixed redef prefix - f64 is intrinsic
+  fixed infix + (other f64) f64 is intrinsic
+  fixed infix - (other f64) f64 is intrinsic
+  fixed infix * (other f64) f64 is intrinsic
+  fixed infix / (other f64) f64 is intrinsic
+  fixed infix % (other f64) f64 is intrinsic
+  fixed infix ** (other f64) f64 is intrinsic
 
 
   # conversion
@@ -66,17 +66,17 @@ f64(val f64) : float f64, f64s is
 
 
   # casting bit representation to u64
-  castTo_u64 u64 is intrinsic
+  cast_to_u64 u64 is intrinsic
 
 
   # create hash code from this number
   hash u64 is
-    castTo_u64.hash
+    cast_to_u64.hash
 
 
   # is the sign bit set?
   is_sign_bit_set bool is
-    castTo_u64 >= 1P63
+    cast_to_u64 >= 1P63
 
 
   # number of bits used for mantissa,
@@ -103,7 +103,7 @@ f64(val f64) : float f64, f64s is
 
 
   # the biased exponent
-  exponent_biased => ((castTo_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
+  exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
 
 
   # the normalized exponent
@@ -116,7 +116,7 @@ f64(val f64) : float f64, f64s is
 
   # the normalized mantissa
   mantissa =>
-    m := castTo_u64 & f64.type.mantissa_mask
+    m := cast_to_u64 & f64.type.mantissa_mask
     if exponent_biased = 0
       m
     else
@@ -124,18 +124,18 @@ f64(val f64) : float f64, f64s is
 
 
   # the fraction of this floating point number
-  redef fract f64 is
-    if f64s.isNaN val
-      NaN
-    else if val ⩻ (f64 0)
+  fixed redef fract f64 is
+    if f64.type.is_NaN val
+      f64.type.NaN
+    else if val < (f64 0)
       -(-val).fract
-    else if val ⩻ (f64 1)
+    else if val < (f64 1)
       val
     else
       shift := (f64.type.mantissa_bits - exponent)
       if (shift > 0)
-        whole := castTo_u64 & (u64.type.max << shift.as_u64)
-        val - whole.castTo_f64
+        whole := cast_to_u64 & (u64.type.max << shift.as_u64)
+        val - whole.cast_to_f64
       else
         0.0
 
@@ -183,37 +183,31 @@ f64(val f64) : float f64, f64s is
     val.as_f64
 
 
-# f64s -- unit type defining features related to f64 but not requiring an
-# instance
-#
-f64s : floats f64 is
-
-  redef zero => f64 0
-  redef one  => f64 1
+  fixed type.is_NaN(val f64) bool is intrinsic
 
 
-  redef isNaN(val f64) bool is intrinsic
+  fixed type.min_exp i32 is intrinsic
+  fixed type.max_exp i32 is intrinsic
+  fixed type.min_positive f64 is intrinsic
+  fixed type.max f64 is intrinsic
+  fixed type.epsilon f64 is intrinsic
 
 
-  redef minExp i32 is intrinsic
-  redef maxExp i32 is intrinsic
-  redef minPositive f64 is intrinsic
-  redef max f64 is intrinsic
-  redef epsilon f64 is intrinsic
+  fixed type.square_root(val f64) f64 is intrinsic
 
-  redef squareRoot(val f64) f64 is intrinsic
+  fixed type.exp(val f64) f64 is intrinsic
+  fixed type.log(val f64) f64 is intrinsic
 
-  redef exp(val f64) f64 is intrinsic
-  redef log(val f64) f64 is intrinsic
 
-  redef sin(val f64) f64 is intrinsic
-  redef cos(val f64) f64 is intrinsic
-  redef tan(val f64) f64 is intrinsic
-  redef asin(val f64) f64 is intrinsic
-  redef acos(val f64) f64 is intrinsic
-  redef atan(val f64) f64 is intrinsic
-  redef atan2(y f64, x f64) f64 is intrinsic
+  fixed type.sin(val f64) f64 is intrinsic
+  fixed type.cos(val f64) f64 is intrinsic
+  fixed type.tan(val f64) f64 is intrinsic
+  fixed type.asin(val f64) f64 is intrinsic
+  fixed type.acos(val f64) f64 is intrinsic
+  fixed type.atan(val f64) f64 is intrinsic
+  fixed type.atan2(y, x f64) f64 is intrinsic
 
-  redef sinh(val f64) f64 is intrinsic
-  redef cosh(val f64) f64 is intrinsic
-  redef tanh(val f64) f64 is intrinsic
+
+  fixed type.sinh(val f64) f64 is intrinsic
+  fixed type.cosh(val f64) f64 is intrinsic
+  fixed type.tanh(val f64) f64 is intrinsic

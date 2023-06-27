@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -57,10 +56,7 @@ public abstract class Expr extends ANY implements Stmnt
    * Dummy Expr value. Used in 'Actual' to represent non-existing value version
    * of the actual.
    */
-  public static final Call NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
-    {
-      { _type = Types.t_ERROR; }
-    };
+  public static Call NO_VALUE;
 
 
   /**
@@ -79,6 +75,10 @@ public abstract class Expr extends ANY implements Stmnt
       AbstractType typeIfKnown()
       {
         return Types.t_ERROR;
+      }
+      public String toString()
+      {
+        return Errors.ERROR_STRING;
       }
     };
 
@@ -249,7 +249,7 @@ public abstract class Expr extends ANY implements Stmnt
    * `T`.
    *
    * However, when `v` is passed to a value of type `Lazy T`, it does not make
-   * sence to wrap this call into `Lazy` again. Instead. we would like to pass
+   * sense to wrap this call into `Lazy` again. Instead. we would like to pass
    * the lazy value `v` directly.  So this method gives the original value for a
    * lazy value `v` t was replaced by `v.call`.
    *
@@ -548,6 +548,18 @@ public abstract class Expr extends ANY implements Stmnt
   boolean producesResult()
   {
     return true;
+  }
+
+
+  /**
+   * Reset static fields
+   */
+  public static void reset()
+  {
+    NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    {
+      { _type = Types.t_ERROR; }
+    };
   }
 
 

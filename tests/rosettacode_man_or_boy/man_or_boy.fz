@@ -46,7 +46,7 @@ man_or_boy is
   a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
     b =>
       set k := k - 1
-      a k (fun b) x1 x2 x3 x4
+      a k (()->b) x1 x2 x3 x4
 
     if (k ≤ 0) x4() + x5() else b
     // k <= 0 ? x4() + x5() : b
@@ -66,6 +66,6 @@ man_or_boy is
   // K(n i32) => fun i32 { n }
   // K(n i32) => fun () => n
   // K(n i32) => fun => n
-  K(n i32) => fun n
+  K(n i32) Function i32 is ()->n
 
   (0..8) | n -> say "manorboy a($n) = {a n K(1) K(-1) K(-1) K(1) K(0)}"

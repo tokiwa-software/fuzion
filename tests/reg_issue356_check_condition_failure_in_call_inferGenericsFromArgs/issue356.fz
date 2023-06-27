@@ -25,4 +25,4 @@
 
 issue356 =>
   a : choice is
-  b : Map String a is
+  b : container.Map String a is
