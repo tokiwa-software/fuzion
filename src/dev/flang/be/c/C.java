@@ -208,9 +208,9 @@ public class C extends ANY
     /**
      * Get the current instance
      */
-    public Pair<CExpr, CStmnt> current(int cl)
+    public Pair<CExpr, CStmnt> current(int cl, boolean pre)
     {
-      return new Pair<>(C.this.current(cl), CStmnt.EMPTY);
+      return new Pair<>(C.this.current(cl, pre), CStmnt.EMPTY);
     }
 
 
@@ -268,7 +268,7 @@ public class C extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr sub)
+    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, boolean pre, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
       var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
@@ -310,13 +310,13 @@ public class C extends ANY
           if (field != -1)
             {
               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var f      = field(cl, C.this.current(cl), field);
+              var f      = field(cl, C.this.current(cl, pre), field);
               var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
                            _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(ai.process(cl, _fuir.matchCaseCode(c, i, mc))._v1);
+          sl.add(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))._v1);
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -1372,8 +1372,8 @@ public class C extends ANY
     if (!pre && _fuir.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(cl).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(cl).ret()                              // a constructor, return current instance
+        l.add(rf != -1 ? current(cl, pre).field(_names.fieldName(rf)).ret()  // a routine, return result field
+                       : current(cl, pre).ret()                              // a constructor, return current instance
               );
       }
     return CStmnt.seq(CStmnt.lineComment(pre                       ? "for precondition only, need to check if it may escape" :
@@ -1389,8 +1389,12 @@ public class C extends ANY
    * Return the current instance of the currently compiled clazz cl. This is a C
    * pointer in case _fuir.clazzIsRef(cl), or the C struct corresponding to cl
    * otherwise.
+   *
+   * @param cl id of clazz we are generating code for
+   *
+   * @param pre true iff generating code for cl's precondition, false for cl itself.
    */
-  CExpr current(int cl)
+  CExpr current(int cl, boolean pre)
   {
     var res1 = _names.CURRENT;
     var res2 = _fuir.clazzIsRef(cl)      ? res1 : res1.deref();

@@ -407,7 +407,7 @@ public class DFA extends ANY
     /**
      * Get the current instance
      */
-    public Pair<Value, Unit> current(int cl)
+    public Pair<Value, Unit> current(int cl, boolean pre)
     {
       return new Pair<>(_call._instance, _unit_);
     }
@@ -464,7 +464,7 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<Value, Unit> match(AbstractInterpreter<Value,Unit> ai, int cl, int c, int i, Value subv)
+    public Pair<Value, Unit> match(AbstractInterpreter<Value,Unit> ai, int cl, boolean pre, int c, int i, Value subv)
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
@@ -504,7 +504,7 @@ public class DFA extends ANY
 
           if (taken)
             {
-              var resv = ai.process(cl, _fuir.matchCaseCode(c, i, mc));
+              var resv = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
               if (resv._v0 != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
                   r = Value.UNIT;
