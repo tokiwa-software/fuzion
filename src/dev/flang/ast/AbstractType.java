@@ -1127,7 +1127,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * the result type of the inherited `f.x` is converted from `f.this.type` to
    * `g.this.type?` when checking types for the redefinition `g.x`.
    *
-   * @param parent the parent feature we are inherting `this` type from.
+   * @param parent the parent feature we are inheriting `this` type from.
    *
    * @param heir the redefining feature
    */
