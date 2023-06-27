@@ -1776,10 +1776,10 @@ public class AstErrors extends ANY
   }
 
 
-  public static void outerTypeMayNotBeRefType(Type t)
+  public static void outerTypeMayNotBeRefType(ParsedType t)
   {
     var o = t.outer();
-    error(t.featureOfType().pos(),
+    error(t.pos(),
           "A type may not use a boxed (explicit " + code("ref") + ") type as its outer type.",
           "The problem is that for a value type " + type("v") + " any inner constructor " + code("v.c") +
           "will always create a value of type " + type("v.c") + " even if called on an outer ref type, i.e., in " + code("rv ref v := v; rc := rv.c") +

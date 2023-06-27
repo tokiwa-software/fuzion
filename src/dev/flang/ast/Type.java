@@ -179,11 +179,6 @@ public class Type extends AbstractType
   public Type(String n, List<AbstractType> g, AbstractType o)
   {
     this(n,g,o,null, RefOrVal.LikeUnderlyingFeature);
-    if (_outer != null && _outer.isRef())
-      {
-        AstErrors.outerTypeMayNotBeRefType(this);
-        this.name = Errors.ERROR_STRING;
-      }
   }
 
 

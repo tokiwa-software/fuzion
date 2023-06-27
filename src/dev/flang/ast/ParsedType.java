@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -58,7 +59,16 @@ public class ParsedType extends Type
   public ParsedType(SourcePosition pos, String name, List<AbstractType> generics, AbstractType outer)
   {
     super(name, generics, outer);
+
+    if (CHECKS) check
+      (pos != null);
+
     _pos = pos;
+    if (outer != null && outer.isRef())
+      {
+        AstErrors.outerTypeMayNotBeRefType(this);
+        this.name = Errors.ERROR_STRING;
+      }
   }
 
 
@@ -83,6 +93,10 @@ public class ParsedType extends Type
     AbstractFeature featureOfType, RefOrVal refOrVal)
   {
     super(name, generics, outer, featureOfType, refOrVal);
+
+    if (CHECKS) check
+      (pos != null);
+
     _pos = pos;
   }
 
@@ -100,6 +114,7 @@ public class ParsedType extends Type
   {
     if (PRECONDITIONS) require
       (returnType != null,
+       pos != null,
        arguments != null);
 
     // This is called during parsing,
