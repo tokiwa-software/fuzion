@@ -144,17 +144,10 @@ public class EmbeddedValue extends Value
   {
     super(value._clazz);
 
-    try {
     if (PRECONDITIONS) require
       ((instance != null) != (code != -1 && index != -1),
        value != null,
        instance == null || value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
-    } catch (Error e)
-      {
-        System.out.println("value._clazz: "+value._clazz+" "+value);
-        throw e;
-      }
-
 
     this._instance = instance;
     this._cl = cl;
@@ -212,13 +205,7 @@ public class EmbeddedValue extends Value
   Value callField(DFA dfa, int cc)
   {
     var res = _value.callField(dfa, cc);
-    try {
     return res == null || res._clazz == -1 || dfa._fuir.clazzIsRef(res._clazz) ? res : new EmbeddedValue(_instance, _cl, _code, _index, res);
-    } catch (Error | RuntimeException e)
-      {
-        //        System.out.println("res._clazz: "+res._clazz+" "+res);
-        throw e;
-      }
   }
 
   /**
