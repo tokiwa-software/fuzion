@@ -30,7 +30,6 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
-import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.util.ANY;
@@ -368,12 +367,6 @@ should be avoided as much as possible.
 
 
   /**
-   * The escape analysis.
-   */
-  final Escape _escape;
-
-
-  /**
    * Abstract interpreter framework used to walk through the code.
    */
   // final AbstractInterpreter<CExpr, CStmnt> _ai;
@@ -395,7 +388,6 @@ should be avoided as much as possible.
     _options = opt;
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
-    _escape = new Escape(fuir);
     // _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     Errors.showAndExit();

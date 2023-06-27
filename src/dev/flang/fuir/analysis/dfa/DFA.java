@@ -232,7 +232,7 @@ public class DFA extends ANY
       var res = Value.UNIT;
       if (ccP != -1)
         {
-          res = call0(cl, tvalue, args, c, i, ccP, true);
+          res = call0(cl, tvalue, args, c, i, ccP, true, tvalue);
         }
       if (res != null && !_fuir.callPreconditionOnly(cl, c, i))
         {
@@ -278,7 +278,7 @@ public class DFA extends ANY
                   _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
-                  var r = access0(cl, c, i, t, args, cc);
+                  var r = access0(cl, c, i, t, args, cc, tvalue);
                   if (r != null)
                     {
                       resf[0] = resf[0] == null ? r : resf[0].join(r);
@@ -300,7 +300,7 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Value access0(int cl, int c, int i, Value tvalue, List<Value> args, int cc)
+    Value access0(int cl, int c, int i, Value tvalue, List<Value> args, int cc, Value original_tvalue /* NYI: ugly */)
     {
       var cs = site(cl, c, i);
       cs._accesses.add(cc);
@@ -308,7 +308,7 @@ public class DFA extends ANY
       Value r;
       if (isCall)
         {
-          r = call0(cl, tvalue, args, c, i, cc, false);
+          r = call0(cl, tvalue, args, c, i, cc, false, original_tvalue);
         }
       else
         {
@@ -344,7 +344,7 @@ public class DFA extends ANY
      *
      * @return result values of the call
      */
-    Value call0(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre)
+    Value call0(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre, Value original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
       tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
@@ -361,6 +361,24 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, pre, tvalue, args, _call._env, _call);
                 res = ca.result();
+                if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
+                  {
+                    res = new EmbeddedValue(cl, c, i, res);
+                  }
+                if (tvalue == _call._instance || original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance)
+                  {
+                    _call.escapes();
+                  }
+                else if (original_tvalue instanceof EmbeddedValue ev &&
+                         !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)) &&
+                         !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)) &&
+                         _fuir.clazzOuterRef(cc) != -1 &&
+                         _fuir.clazzFieldIsAdrOfValue(_fuir.clazzOuterRef(cc)) &&
+                         ev._cl != -1)
+                  {
+                    tempEscapes(cl, c, i, ev._cl, ev._code, ev._index);
+                  }
+
                 if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
@@ -370,7 +388,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            res = callField(tvalue, cc);
+            res = original_tvalue.rewrap(DFA.this, tvalue.callField(DFA.this, cc));
             if (_reportResults && _options.verbose(9))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
@@ -389,7 +407,7 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> box(Value val, int vc, int rc)
     {
-      var boxed = val.box(DFA.this, vc, rc, _call);
+      var boxed = val.unwrap().box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);
     }
 
@@ -475,7 +493,7 @@ public class DFA extends ANY
           for (var t : _fuir.matchCaseTags(cl, c, i, mc))
             {
               subv.forAll(s -> {
-                  if (s instanceof TaggedValue tv)
+                  if (s.unwrap() instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
@@ -551,6 +569,49 @@ public class DFA extends ANY
 
   }
 
+
+  /**
+   * Class representing the position of a statement in the code.
+   */
+  static class CodePos implements Comparable<CodePos>
+  {
+    /**
+     * Clazz, code block index and statement index of this position.
+     */
+    int _cl, _code, _ix;
+
+    /**
+     * Constructor
+     *
+     * @param cl the clazz containing the code
+     *
+     * @param code the code block
+     *
+     * @param ix the index in the code block
+     */
+    CodePos(int cl, int code, int ix)
+    {
+      _cl = cl;
+      _code = code;
+      _ix = ix;
+    }
+
+
+    /**
+     * Compare this to another instance.
+     */
+    public int compareTo(CodePos other)
+    {
+      return
+        _cl < other._cl ? -1 :
+        _cl > other._cl ? +1 :
+        _code < other._code ? -1 :
+        _code > other._code ? +1 :
+        _ix < other._ix     ? -1 :
+        _ix > other._ix     ? 1
+                            : 0;
+    }
+  }
 
   /*----------------------------  constants  ----------------------------*/
 
@@ -767,6 +828,83 @@ public class DFA extends ANY
             case Choice             -> true;
             };
         }
+
+
+        /**
+         * Determine the lifetime of the instance of a call to clazz cl.
+         *
+         * @param cl a clazz id of any kind
+         *
+         * @param pre true to analyse the instance created for cl's precondition,
+         * false to analyse the instance created for a call to cl
+         *
+         * @return A conservative estimate of the lifespan of cl's instance.
+         * Undefined if a call to cl does not create an instance, Call if it is
+         * guaranteed that the instance is inaccessible after the call returned.
+         */
+        public LifeTime lifeTime(int cl, boolean pre)
+        {
+          var result =
+            pre ? (switch (clazzKind(cl))
+                     {
+                     case Choice    -> LifeTime.Undefined;
+                     case Abstract  ,
+                          Intrinsic ,
+                          Field     ,
+                          Routine   -> currentEscapes(cl, pre) ? LifeTime.Unknown :
+                                                                 LifeTime.Call;
+                     })
+                : (switch (clazzKind(cl))
+                     {
+                     case Abstract  -> LifeTime.Undefined;
+                     case Choice    -> LifeTime.Undefined;
+                     case Intrinsic -> LifeTime.Undefined;
+                     case Field     -> LifeTime.Call;
+                     case Routine   -> currentEscapes(cl, pre) ? LifeTime.Unknown :
+                                                                 LifeTime.Call;
+                     });
+
+          return result;
+        }
+
+
+        /**
+         * For a call to cl (or cl's precondition), does the instance of cl
+         * escape the call?
+         *
+         * @param cl a call's inner clazz
+         *
+         * @param pre true iff precondition is called.
+         *
+         * @return true iff the instance of the call must be allocated on the
+         * heap.
+         */
+        private boolean currentEscapes(int cl, boolean pre)
+        {
+          return (pre ? _escapesPre : _escapes).contains(cl) ||
+            !pre && _fuir.clazzResultField(cl)==-1 /* <==> _fuir.isConstructor(cl) */;
+        }
+
+
+        /**
+         * For a call in cl in code block c at index i, does the result escape
+         * the current clazz stack frame (such that it cannot be stored in a
+         * local var in the stack frame of cl)
+         *
+         * @param cl the outer clazz of the call
+         *
+         * @param c the code block containing the call
+         *
+         * @param i the index of the call in the code block
+         *
+         * @return true iff the result of the call must be cloned on the heap.
+         */
+        public boolean doesResultEscape(int cl, int c, int i)
+        {
+          return _escapesCode.contains(new CodePos(cl, c, i));
+        }
+
+
         public int[] accessedClazzes(int cl, int c, int ix)
         {
           var ccs = super.accessedClazzes(cl, c, ix);
@@ -943,6 +1081,56 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * Set of clazzes whose instance may escape the call to the clazz's routine.
+   */
+  TreeSet<Integer> _escapes = new TreeSet<>();
+
+  /**
+   * Set of clazzes whose instance may escape the call to the clazz's
+   * precondition.
+   */
+  TreeSet<Integer> _escapesPre = new TreeSet<>();
+
+  /**
+   * Set of code positions of calls whose result value may escape the caller's
+   * context (since a pointer to that value may be passed to a call).
+   */
+  TreeSet<CodePos> _escapesCode = new TreeSet<>();
+
+
+  /**
+   * Record that the given clazz (or its precondition) escape the call to the
+   * routine (or precondition).  If it escapes. the instance cannot be allocated
+   * on the stack.
+   *
+   * @param cc the clazz to check
+   *
+   * @param pre true iff we need info on the precondition and not the routine
+   * cc.
+   */
+  void escapes(int cc, boolean pre)
+  {
+    if (pre)
+      {
+        _escapesPre.add(cc);
+      }
+    else
+      {
+        _escapes.add(cc);
+      }
+  }
+
+
+  void tempEscapes(int cl0, int c0, int ix0, int cl, int code, int ix)
+  {
+    var cp = new CodePos(cl, code, ix);
+    _escapesCode.add(cp);
+  }
+
+
+
+
   static
   {
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
@@ -957,7 +1145,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1);
-          var res = cl._dfa.callField(atomic, v);
+          var res = atomic.callField(cl._dfa, v);
 
           // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -974,7 +1162,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1);
-          var res = cl._dfa.callField(atomic, v);
+          var res = atomic.callField(cl._dfa, v);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -995,7 +1183,7 @@ public class DFA extends ANY
             (cl._dfa._fuir.clazzNeedsCode(v));
 
           var atomic = cl._target;
-          return cl._dfa.callField(atomic, v);
+          return atomic.callField(cl._dfa, v);
         });
 
     put("concur.atomic.write0", cl ->
@@ -1252,7 +1440,7 @@ public class DFA extends ANY
           var array = cl._args.get(0);
           var index = cl._args.get(1);
           var value = cl._args.get(2);
-          if (array instanceof SysArray sa)
+          if (array.unwrap() instanceof SysArray sa)
             {
               sa.setel(index, value);
               return Value.UNIT;
@@ -1266,7 +1454,7 @@ public class DFA extends ANY
         {
           var array = cl._args.get(0);
           var index = cl._args.get(1);
-          if (array instanceof SysArray sa)
+          if (array.unwrap() instanceof SysArray sa)
             {
               return sa.get(index);
             }
@@ -1571,35 +1759,6 @@ public class DFA extends ANY
         analyzeNewCall(r);
       }
     return e;
-  }
-
-
-  /**
-   * Create a call to a field
-   *
-   * @param tvalue the target of the call
-   *
-   * @param cc the inner value of the field that is called.
-   */
-  Value callField(Value tvalue, int cc)
-  {
-    if (PRECONDITIONS) require
-      (_fuir.clazzKind(cc) == FUIR.FeatureKind.Field);
-
-    var resa = new Value[] { null };
-    tvalue.forAll(t ->
-                  {
-                    var r = t.readField(DFA.this, cc);
-                    if (resa[0] == null)
-                      {
-                        resa[0] = r;
-                      }
-                    else
-                      {
-                        resa[0] = resa[0].join(r);
-                      }
-                  });
-    return resa[0];
   }
 
 

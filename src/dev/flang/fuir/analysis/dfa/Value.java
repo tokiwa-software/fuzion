@@ -62,6 +62,8 @@ public class Value extends ANY
        */
       public int compare(Value a, Value b)
       {
+        a = a.unwrap();
+        b = b.unwrap();
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
@@ -226,6 +228,40 @@ public class Value extends ANY
 
 
   /**
+   * In case this is an embedded value, embed res the same way.
+   *
+   */
+  Value rewrap(DFA dfa, Value res)
+  {
+    return res;
+  }
+
+
+  /**
+   * Create a call to a field
+   *
+   * @param cc the inner value of the field that is called.
+   */
+  Value callField(DFA dfa, int cc)
+  {
+    var resa = new Value[] { null };
+    forAll(t ->
+           {
+             var r = t.readField(dfa, cc);
+             if (resa[0] == null)
+               {
+                 resa[0] = r;
+               }
+             else
+               {
+                 resa[0] = resa[0].join(r);
+               }
+           });
+    return resa[0];
+  }
+
+
+  /**
    * Get set of values of given field within this instance.
    */
   Value readFieldFromInstance(DFA dfa, int field)
@@ -325,6 +361,17 @@ public class Value extends ANY
   public void forAll(ValueConsumer c)
   {
     c.accept(this);
+  }
+
+
+  /**
+   * In case this value is wrapped in an instance that contains additional
+   * information unrelated to the actual value (e.g. EmbeddedValue), get the
+   * actual value.
+   */
+  Value unwrap()
+  {
+    return this;
   }
 
 }
