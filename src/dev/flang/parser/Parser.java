@@ -281,7 +281,7 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var a = formArgsOpt();
-    var rPos = posObject();
+    var rPos = tokenSourcePos();
     var r = returnType();
     var eff = effects();
     var hasType = r != NoType.INSTANCE;
@@ -2825,9 +2825,9 @@ nextValue   : COMMA exprInLine
     String     n1  =        name();
     String     n2  = forked.name();
     boolean hasType = isType();
-    SourcePosition r1Pos = posObject();
+    SourcePosition r1Pos = tokenSourcePos();
     ReturnType r1 = hasType ? new FunctionReturnType(type()) : NoType.INSTANCE;
-    SourcePosition r2Pos = forked.posObject();
+    SourcePosition r2Pos = forked.tokenSourcePos();
     ReturnType r2 = hasType ? new FunctionReturnType(forked.type()) : NoType.INSTANCE;
     Contract   c1 =        contract();
     Contract   c2 = forked.contract();
@@ -3735,7 +3735,7 @@ thistype    : qualThis dot "type"
    */
   Expr thistypeAsExpr()
   {
-    var pos = posObject();
+    var pos = tokenSourcePos();
     var result = thistype();
     return new DotType(pos, result);
   }
