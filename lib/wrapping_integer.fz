@@ -110,10 +110,6 @@ wrapping_integer : integer is
   redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else wrapping_integer.this - other
   redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else wrapping_integer.this * other
 
-  # NYI: These redefinitions are required to avoid errors in some tests when
-  # removing the type parameter from numeric. Why?
-  redef infix / (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
-  redef infix % (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
 
   # saturating  operations
   redef prefix -^          => if wrapped_on_neg if wrapping_integer.this > wrapping_integer.this.type.zero then wrapping_integer.this.type.min else wrapping_integer.this.type.max else - wrapping_integer.this
