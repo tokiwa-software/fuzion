@@ -121,7 +121,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      */
-    public abstract RESULT              assign(int cl, int c, int i, VALUE tvalue, VALUE avalue);
+    public abstract RESULT              assign(int cl, boolean pre, int c, int i, VALUE tvalue, VALUE avalue);
 
     /**
      * Perform a call of a feature with target instance tvalue with given
@@ -130,8 +130,20 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of call in current code block
+     *
+     * @param tvalue target value the call is performed on
+     *
+     * @param args argument values passed to the call
      */
-    public abstract Pair<VALUE, RESULT> call  (int cl, int c, int i, VALUE tvalue, List<VALUE> args);
+    public abstract Pair<VALUE, RESULT> call  (int cl, boolean pre, int c, int i, VALUE tvalue, List<VALUE> args);
 
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
@@ -545,7 +557,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
               var tc = _fuir.accessTargetClazz(cl, c, i);
               var tvalue = pop(stack, tc);
               var avalue = pop(stack, ft);
-              return _processor.assign(cl, c, i, tvalue, avalue);
+              return _processor.assign(cl, pre, c, i, tvalue, avalue);
             }
           else
             {
@@ -591,7 +603,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(cl, c, i);
           var tvalue = pop(stack, tc);
-          var r = _processor.call(cl, c, i, tvalue, args);
+          var r = _processor.call(cl, pre, c, i, tvalue, args);
           if (r._v0 == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);

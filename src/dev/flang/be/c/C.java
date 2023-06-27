@@ -148,7 +148,7 @@ public class C extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      */
-    public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
+    public CStmnt assign(int cl, boolean pre, int c, int i, CExpr tvalue, CExpr avalue)
     {
       return access(cl, c, i, tvalue, new List<>(avalue))._v1;
     }
@@ -162,7 +162,7 @@ public class C extends ANY
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
-    public Pair<CExpr, CStmnt> call(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
+    public Pair<CExpr, CStmnt> call(int cl, boolean pre, int c, int i, CExpr tvalue, List<CExpr> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz            (cl, c, i);
