@@ -25,18 +25,18 @@
 
 # i128 -- 128-bit signed integer values
 #
-i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
-  redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
-  redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
-  redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
-  redef infix / (other i128) i128 is panic "NYI: i128 is not supported"
+i128(hi i64, lo u64) : wrapping_integer, has_interval is
+  fixed redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
+  fixed redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
+  fixed redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
+  fixed redef infix / (other i128) i128 is panic "NYI: i128 is not supported"
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  # from has_interval is abstract, fz should not complain about this conflict.
+  fixed redef max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
+  fixed redef type.all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
@@ -47,26 +47,3 @@ i128(hi i64, lo u64) : wrapping_integer i128, hasInterval i128, i128s is
   # maximum
   #
   fixed type.max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
-
-
-
-# i128s -- unit type defining features related to i128 but not requiring an
-# instance
-#
-i128s : numerics i128 is
-
-  redef zero => i128 0 0
-  redef one  => i128 0 1
-
-
-
-# i128 -- returns value of unit type i128s
-#
-# This is a convenience feature that allows using, e.g., 'i128.sum' to
-# get the the monoid of (i128, infix +) instead of 'i128s.sum'.
-#
-# since this i128 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with i128 with one
-# argument).
-#
-i128 => i128s

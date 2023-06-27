@@ -29,43 +29,50 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer(I type : integer I) : numeric I is
+integer : numeric is
 
   # division remainder
-  redef infix % (other I) I
+  redef infix % (other integer.this.type) integer.this.type
     pre
-      safety: other != zero
+      safety: other != integer.this.type.zero
   is abstract
 
+  # NYI: These redefinitions are required to avoid errors in some tests when
+  # removing the type parameter from numeric. Why?
+  redef infix + (other integer.this.type) integer.this.type is abstract
+  redef infix - (other integer.this.type) integer.this.type is abstract
+  redef infix * (other integer.this.type) integer.this.type is abstract
+  redef infix / (other integer.this.type) integer.this.type is abstract
+
   # test divisibility by other
-  infix %% (other I) bool
+  infix %% (other integer.this.type) bool
     pre
-      safety: other != zero
+      safety: other != integer.this.type.zero
   is
-    thiz % other ≟ zero
+    thiz % other = integer.this.type.zero
 
   # bitwise operations
-  infix &  (other I) I is abstract
-  infix |  (other I) I is abstract
-  infix ^  (other I) I is abstract
+  infix &  (other integer.this.type) integer.this.type is abstract
+  infix |  (other integer.this.type) integer.this.type is abstract
+  infix ^  (other integer.this.type) integer.this.type is abstract
 
   # bitwise NOT
-  prefix ~ I
+  prefix ~ integer.this.type
     pre
       is_bounded
   is abstract
 
   # bitwise NOT (Unicode alias)
-  prefix ¬ I is
+  prefix ¬ integer.this.type is
     ~thiz
 
   # shift operations
-  infix >> (other I) I
+  infix >> (other integer.this.type) integer.this.type
     pre
       safety: other.sign ≥ 0
   is abstract
 
-  infix << (other I) I
+  infix << (other integer.this.type) integer.this.type
     pre
       safety: other.sign ≥ 0
   is abstract
@@ -78,21 +85,22 @@ integer(I type : integer I) : numeric I is
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
-  gcd(b I) I
+  gcd(b integer.this.type) integer.this.type
     pre
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
   is
-    if b ≟ zero
+    if b = integer.this.type.zero
       thiz
     else
       b.gcd(thiz % b)  # tail recursion
 
+
   # create a fraction
-  infix /-/ (other I) => (fraction thiz other).reduce
+  infix /-/ (other integer.this.type) => (num.fraction integer.this other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  infix ⁄ (other I) => integer.this /-/ other
+  infix ⁄ (other integer.this.type) => integer.this /-/ other
 
 
   # convert this to a decimal number in a string.  If negative, add "-" as
@@ -106,23 +114,23 @@ integer(I type : integer I) : numeric I is
   #
   as_string(base u32) String : character_encodings
     pre
-      debug: u32 1 ⩻ base ≤ (u32 36)
+      debug: u32 1 < base ≤ (u32 36)
   is
-    b := from_u32 base
+    b := integer.this.type.from_u32 base
 
     if thiz.sign < 0
       # there could be an overflow on negation
       match -? thiz
-        v I => "-" + v.as_string base
+        v integer.this.type => "-" + v.as_string base
         nil => ("-" + (-(thiz / b)).as_string base) + (-(thiz % b)).as_string base
     else
       # this digit as an UTF-8 byte
       digit_as_utf8_byte(d u8) u8
       pre d ≤ (u8 35) # 35 would be a Z
       is
-        if d ⩻ u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
+        if d < u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
-      as_list0 (power I) =>
+      as_list0 (power integer.this.type) =>
         if power.sign <= 0
           nil
         else
@@ -138,7 +146,7 @@ integer(I type : integer I) : numeric I is
   #
   as_string(len i32, base u32) String
     pre
-      debug: u32 1 ⩻ base ≤ (u32 36)
+      debug: u32 1 < base ≤ (u32 36)
     post
       debug: result.byte_length ≥ len
   is
@@ -146,7 +154,7 @@ integer(I type : integer I) : numeric I is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sgn, digits) := if (integer.this.sign ⩻ 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
+    (sgn, digits) := if (integer.this.sign < 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * (max 0 (len - n.byte_length))

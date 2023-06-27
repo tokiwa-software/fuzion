@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example pythagorean_triple
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# pythagorean_triple -- demo using complex numbers bases on integers
+#
+# See Makefile for how to start fuzion to run this example.
+#
+# inspired by 3Blue1Brown https://www.youtube.com/watch?v=QJYmyhnaaek
+#
+# For any complex number v with v.real/v.imag integers, v.abs² is also an
+# integer.  Since v².abs² = v².real² + v².imag², and v².abs = v.abs²,
+# we find a pythagorean triple (v².real, v².imag, v.abs²) for every such v.
+#
+pythagorean_triple is
+
+  cₘₐₓ := 100    # max length of hypothenuse
+
+  # iterate over all interesting real/imag pairs while c<max
+  for real in 1..cₘₐₓ do
+    for
+      # imag >= real is not interesting, v².real or v².imag would be negative
+      # so we end imag at real-1
+      imag in 1..real-1
+
+      v := num.complex real imag
+      v² := v * v
+      f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
+      a := v².real / f
+      b := v².imag / f
+      c := v .abs² / f
+    while c < cₘₐₓ
+      if real.gcd imag = 1  # filter duplicates
+        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"

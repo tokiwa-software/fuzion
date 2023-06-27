@@ -36,21 +36,16 @@ import java.nio.file.Path;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
-import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
@@ -62,7 +57,7 @@ import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -164,7 +159,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
-   * @return the main feature found or null if none
+   * @return the main feature found or _defaultMain if none
    */
   String parseMain()
   {
@@ -179,9 +174,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1)
+                if (stmnts.size() == 1 && !f.isField())
                   {
-                    res =  f.featureName().baseName();
+                    res = f.featureName().baseName();
                   }
               }
           }
@@ -573,7 +568,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
               if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
 
-              if (c.calledFeature() instanceof Feature cf)
+              if (c.calledFeature() instanceof Feature cf
+                  // fixes issue #1358
+                  && cf.state() == State.LOADING)
                 {
                   findDeclarations(cf, outer);
                 }
@@ -583,8 +580,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
         public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.initialValue() != null &&
-        outer.pos()._sourceFile != inner.pos()._sourceFile &&
+    if (inner.impl().initialValue() != null &&
+        !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
                                           *
@@ -775,25 +772,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
     else if (existing == f)
       {
       }
-    else if (existing.outer() == outer)
-      {
-        if (existing.isTypeFeature())
-          {
-            // NYI: see #461: type features may currently be declared repeatedly in different modules
-          }
-        else if (Errors.count() == 0)
-          { // This can happen only as the result of previous errors since this
-            // case was already handled in addDeclaredInnerFeature:
-            throw new Error();
-          }
-      }
-    else if (existing.generics() != FormalGenerics.NONE)
-      {
-        AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
-      }
     else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-      {
-        AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+      { /* previous duplicate feature declaration could result in this error for
+         * type features, so suppress them in this case. See flang.dev's
+         * design/examples/typ_const2.fz as an example.
+         */
+        if (Errors.count() == 0 || !f.isTypeFeature())
+          {
+            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+          }
       }
     else
       {
@@ -816,7 +803,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * Add inner to the set of declared inner features of outer.
    *
    * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * in a different module.  E.g. universe is declared in stdlib, while an
    * inner feature 'main' may be declared in the application's module.
    *
    * @param outer the declaring feature
@@ -833,8 +820,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f       .implKind() == Impl.Kind.FieldDef &&
-            existing.implKind() == Impl.Kind.FieldDef    )
+        if (existing instanceof Feature ef &&
+            f .implKind() == Impl.Kind.FieldDef &&
+            ef.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -1136,49 +1124,80 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param redefinition the heir feature.
    *
-   * @param to original argument type in 'original'.
+   * @param to original argument type in `original`.
    *
-   * @param tr new argument type in 'redefinition'.
+   * @param tr new argument type in `redefinition`.
    *
-   * @return true if 'to' may be replaced with 'tr'.
+   * @param fixed true to perform the test as if `redefinition` is `fixed`. This
+   * is used in two ways: first, to check if `redefition` is fixed, and then,
+   * when an error is reported, to suggest adding `fixed` if that would solve
+   * the error.
+   *
+   * @return true if `to` may be replaced with `tr` or if `to` or `tr` contain
+   * an error.
    */
   boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr,
-                                   boolean ignoreFixedModifier)
+                                   boolean fixed)
   {
     return
-      /* to is original    .this.type  and
-       * tr is redefinition.this.type
+      /* to contains original    .this.type and
+       * tr contains redefinition.this.type
        */
-      ((to.isThisType()                                        ) &&
-       (tr.isThisType()                                        ) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
+      to.replace_this_type(original.outer(), redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
 
-      /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.selfType.
-       */
-      ((to.isThisType()                                        ) &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
-
-      /* original and redefinition are inner features of type features, to is
-       * THIS_TYPE and tr is the underlying non-type features selfType.
+      /* to depends on original.this.type, redefinition is fixed and tr is
+       * equals the actual type of to as seen by redefinition.outer.
        *
-       * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
-       * numeric.this.type)
+       * Ex.
+       *
+       *   p is
+       *     maybe option p.this.type
+       *     is abstract
+       *
+       *   h : p is
+       *     fixed redef maybe option h
+       *     is
+       *       if random.next_bool then
+       *         nil
+       *       else
+       *         h
+       *
+       * here, the result type of inherited `p.maybe` is `option p.this.type`,
+       * which gets turned into `option h.this.type` when inherited. However,
+       * since `h.maybe` is fixed, we can use the actual type in the outer
+       * feature `h`, i.e., `option h`, which is equal to the result type of the
+       * redefinition `h.maybe`.
        */
-      (original    .outer().isTypeFeature()                                                                                            &&
-       redefinition.outer().isTypeFeature()                                                                                            &&
-       to.isGenericArgument()                                                                                                          &&
-       to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       !tr.isGenericArgument()                                                                                                         &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().selfTypeInTypeFeature()) == 0                                               );
+      fixed &&
+      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
+
+      /* original and redefinition are inner features of type features, `to` is
+       * `this.type` and `tr` is the underlying non-type feature's selfType.
+       *
+       * E.g.,
+       *
+       *   fixed i32.type.equality(a, b i32) bool is ...
+       *
+       * redefines
+       *
+       *   equatable.type.equality(a, b equatable.this.type) bool is abstract
+       *
+       * so we allow `equatable.this.type` to become `i32`.
+       */
+      fixed                                &&
+      original    .outer().isTypeFeature() &&
+      redefinition.outer().isTypeFeature() &&
+      to.replace_this_type_in_type_feature(redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
+
+      /* avoid reporting errors in case of previous errors
+       */
+      to.containsError() ||
+      tr.containsError();
   }
 
 
@@ -1193,6 +1212,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var args = f.arguments();
     int ean = args.size();
+    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());
@@ -1207,9 +1227,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1.compareTo(t2) != 0 &&
-                    !isLegalCovariantThisType(o, f, t1, t2, false) &&
-                    !t1.containsError() && !t2.containsError())
+                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1240,7 +1258,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
                  t2 != Types.resolved.t_void &&
-                 !isLegalCovariantThisType(o, f, t1, t2, false))
+                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }

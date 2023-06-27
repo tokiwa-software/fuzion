@@ -44,6 +44,9 @@ import dev.flang.be.effects.Effects;
 
 import dev.flang.be.interpreter.Interpreter;
 
+import dev.flang.be.jvm.JVM;
+import dev.flang.be.jvm.JVMOptions;
+
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
@@ -147,6 +150,28 @@ class Fuzion extends Tool
     },
 
     java       ("-java"),
+
+    jvm        ("-jvm")
+    {
+      String usage()
+      {
+        return "[-Xdfa=(on|off)] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
+            result = true;
+          }
+        return result;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new JVM(new JVMOptions(options, _xdfa_), fuir).compile();
+      }
+    },
 
     classes    ("-classes"),
 
@@ -261,6 +286,19 @@ class Fuzion extends Tool
                   }
               }
           }
+      }
+    },
+
+    /**
+     * This backend does nothing except showing
+     * any errors that happened in the frontend.
+     * Can be used for syntax checking of fz files.
+     */
+    noBackend("-no-backend")
+    {
+      void processFrontEnd(Fuzion f, FrontEnd fe)
+      {
+        Errors.showAndExit();
       }
     },
 
@@ -408,7 +446,7 @@ class Fuzion extends Tool
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
+   * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
    * not allowed if run in a web playground.
    */
   boolean _enableUnsafeIntrinsics = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");

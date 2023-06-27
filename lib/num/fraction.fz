@@ -1,0 +1,104 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fraction
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fraction
+#
+#
+# fraction provides fraction numbers based on an integer type to represent the
+# numerator and the denominator.
+#
+# basic numeric operations +, -, * and comparison are supported. numerator and
+# denominator are reduced after each operation.
+#
+# there are currently no checks or preconditions for overflows in the numerator
+# or the denominator.
+#
+fraction(B type : integer,
+         numerator,
+         denominator B
+        ) : numeric
+  pre
+    safety: denominator.sign > 0 # denominator must be positive
+is
+
+# private:
+
+  # just for brevity
+  a => fraction numerator denominator
+
+# public:
+
+  # enable generic features in ancestors
+  fixed redef thiz => a
+
+  # reduce numerator and denominator by their gcd:
+  reduce =>
+    gcd := numerator.abs.gcd denominator
+    if gcd = B.one
+      a
+    else
+      fraction (numerator / gcd) (denominator / gcd)
+
+  # basic operations
+  fixed redef prefix + => a
+  fixed redef prefix - => fraction -a.numerator a.denominator
+  fixed redef infix +  (b fraction.this.type) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
+  fixed redef infix -  (b fraction.this.type) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
+  fixed redef infix *  (b fraction.this.type) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
+  fixed redef infix /  (b fraction.this.type)
+    pre
+      # NYI: use type features
+      # safety: b != zero
+      safety: !b.numerator.is_zero
+    => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
+
+  redef as_string => "" + numerator + "⁄" + denominator
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed type.zero => B.zero ⁄ B.one
+
+
+  # identity element for 'infix *'
+  #
+  fixed type.one => B.one ⁄ B.one
+
+
+  # equality
+  #
+  fixed type.equality(a, b num.fraction B) =>
+    (a - b).numerator.is_zero
+
+
+  # total order
+  #
+  fixed type.lteq(a, b num.fraction B) =>
+    (a - b).numerator.sign ≤ 0

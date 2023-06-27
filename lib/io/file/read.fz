@@ -25,11 +25,7 @@
 
 # read -- effect providing byte reading operations from files
 #
-private read(
-  ro Read_Operation,
-  redef r effectMode.val,
-  _ unit
-  ) : reads, effect r is
+private read(ro Read_Operation) : simple_effect is
 
 
   # how much of a file do we read at a time, in bytes
@@ -54,14 +50,10 @@ private read(
   # this just calls the read operation and returns the result in a more useful
   # format for the use case of read_file(fd, tmp).
   #
-  private read_proxy(fd i64, n u64) tuple (outcome (array u8)) i32 is
+  private read_proxy(fd i64, n u64) outcome (array u8) is
     a := ro.read fd n
     replace
-
-    if a.ok
-      (a, a.val.length)
-    else
-      (a, 0)
+    a
 
 
   # helper feature for read_file to allow recursion
@@ -69,46 +61,33 @@ private read(
   private read_file(fd i64, tmp array u8) outcome (array u8) is
     t := read_proxy fd bufsize
 
-    t.values.0.bind (array u8) (a->
-      if t.values.1 ⩼ 0
+    t.bind (array u8) (a->
+      if a.length > 0
         read_file fd (tmp ++ a).as_array
       else
         tmp)
 
 
-# short-hand for installing and creating effects
-#
-read_custom(f () -> unit) => read_custom default_read_operation f
+  # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
+  #
+  type.default_read_operation : io.file.Read_Operation is
+    read(fd i64, n u64) =>
+      fuzion.sys.fileio.read fd n
 
-# short-hand for installing and creating effects
-#
-read_custom(ro Read_Operation, f () -> unit) =>
-  s := read ro effectMode.new unit
-  s.use0 f
-  unit
+
+  # install default effect io.file.read
+  type.install_default =>
+    (io.file.read default_read_operation).default
+
 
 # short-hand for accessing read effect in current environment
 #
-read => 
-  reads.installDefault
+read =>
+  read.type.install_default
   read.env
+
 
 # reference to the reading operations that could take place
 #
 Read_Operation ref is
   read(fd i64, n u64) outcome (array u8) is abstract
-
-# the default file reading operation reading bytes from files via fuzion.sys.fileio.read
-#
-default_read_operation : Read_Operation is
-  read(fd i64, n u64) =>
-    fuzion.sys.fileio.read fd n
-
-# unit type feature defining features related to read effect but not requiring an
-# instance.
-#
-reads is
-  # install default effect io.file.read
-  installDefault unit is 
-    if !(effects.exists io.file.read)
-      _ := read default_read_operation effectMode.default unit

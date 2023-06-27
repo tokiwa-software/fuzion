@@ -45,12 +45,12 @@ is
 
   # Does this option contain no value of type T?
   #
-  isNil => !exists
+  is_nil => !exists
 
 
-  # short-hand postfix operator for 'isNil'
+  # short-hand postfix operator for 'is_nil'
   #
-  postfix !! => isNil
+  postfix !! => is_nil
 
 
   # monadic operator
@@ -59,11 +59,7 @@ is
   # take an option string and you would like to add a filename suffix to
   # this string if it is present. Then you can do this as follows:
   #
-  #   addTxt(o option string) => o >>= s -> option string is s + ".txt"
-  #
-  # NYI: With better type inference and syntactic sugar, this should be
-  #
-  #   addTxt(o option string) => o >>= s -> s + ".txt"
+  #   add_txt(o option string) => o >>= s -> s + ".txt"
   #
   # NYI: Should maybe have generic parameter B and result in option B
   #
@@ -80,7 +76,7 @@ is
 
 
   # synonym for infix >>=
-  andThen (f T -> option T) => option.this >>= f
+  and_then (f T -> option T) => option.this >>= f
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v

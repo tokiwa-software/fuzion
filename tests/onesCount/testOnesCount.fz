@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# A simple test for integer ones_count, highestOneBit and trailingZeros
+# A simple test for integer ones_count, highest_one_bit and trailing_zeros
 #
 # The test should be run and its output should be compared to the expected
 # output.
@@ -31,12 +31,12 @@
 testOnesCount is
 
   show(x u64) =>
-    yak ((x.bin 64) + ": " + x.ones_count+" "+x.castTo_i64.ones_count+" "+x.low32bits.ones_count+" "+x.low32bits.castTo_i32.ones_count + " ")
-    yak ($x.low16bits.ones_count+" "+x.low16bits.castTo_i16.ones_count+" "+x.low8bits.ones_count+" "+x.low8bits.castTo_i8.ones_count + " ")
-    yak ($x.highestOneBit+" "+x.castTo_i64.highestOneBit+" "+x.low32bits.highestOneBit+" "+x.low32bits.castTo_i32.highestOneBit + " ")
-    yak ($x.low16bits.highestOneBit+" "+x.low16bits.castTo_i16.highestOneBit+" "+x.low8bits.highestOneBit+" "+x.low8bits.castTo_i8.highestOneBit + " ")
-    yak ($x.trailingZeros+" "+x.castTo_i64.trailingZeros+" "+x.low32bits.trailingZeros+" "+x.low32bits.castTo_i32.trailingZeros + " ")
-    yak ($x.low16bits.trailingZeros+" "+x.low16bits.castTo_i16.trailingZeros+" "+x.low8bits.trailingZeros+" "+x.low8bits.castTo_i8.trailingZeros + ".")
+    yak ((x.bin 64) + ": " + x.ones_count+" "+x.cast_to_i64.ones_count+" "+x.low32bits.ones_count+" "+x.low32bits.cast_to_i32.ones_count + " ")
+    yak ($x.low16bits.ones_count+" "+x.low16bits.cast_to_i16.ones_count+" "+x.low8bits.ones_count+" "+x.low8bits.cast_to_i8.ones_count + " ")
+    yak ($x.highest_one_bit+" "+x.cast_to_i64.highest_one_bit+" "+x.low32bits.highest_one_bit+" "+x.low32bits.cast_to_i32.highest_one_bit + " ")
+    yak ($x.low16bits.highest_one_bit+" "+x.low16bits.cast_to_i16.highest_one_bit+" "+x.low8bits.highest_one_bit+" "+x.low8bits.cast_to_i8.highest_one_bit + " ")
+    yak ($x.trailing_zeros+" "+x.cast_to_i64.trailing_zeros+" "+x.low32bits.trailing_zeros+" "+x.low32bits.cast_to_i32.trailing_zeros + " ")
+    yak ($x.low16bits.trailing_zeros+" "+x.low16bits.cast_to_i16.trailing_zeros+" "+x.low8bits.trailing_zeros+" "+x.low8bits.cast_to_i8.trailing_zeros + ".")
     say
 
   show 0
@@ -44,10 +44,10 @@ testOnesCount is
   show 2
   show 3
   show 4
-  show (-1).castTo_u32.as_u64
-  show (-2).castTo_u32.as_u64
-  show (-1).as_i64.castTo_u64
-  show (-2).as_i64.castTo_u64
+  show (-1).cast_to_u32.as_u64
+  show (-2).cast_to_u32.as_u64
+  show (-1).as_i64.cast_to_u64
+  show (-2).as_i64.cast_to_u64
   show 0x_ffffffff_ffffffff
   show 0x_55555555_55555555
   show 0x_aaaaaaaa_aaaaaaaa

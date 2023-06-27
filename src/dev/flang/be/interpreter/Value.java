@@ -78,6 +78,16 @@ public abstract class Value extends ANY
 
 
   /**
+   * Create a copy (clone) of this value.  Used for boxing values into
+   * ref-types.
+   */
+  Value cloneValue(Clazz cl)
+  {
+    return this;
+  }
+
+
+  /**
    * toString
    *
    * @return
@@ -234,6 +244,21 @@ public abstract class Value extends ANY
   void storeNonRef(LValue slot, int size)
   {
     throw new Error("Cannot store " + getClass() + " as non-ref");
+  }
+
+
+  /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    throw new Error("value "+ this + " not allowed for equalsBitWise");
   }
 
 

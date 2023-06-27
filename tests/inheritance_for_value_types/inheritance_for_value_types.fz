@@ -44,17 +44,17 @@ inheritance_for_value_types is
       exit_code <- 1
 
   a is
-    x (msg String, expected i32) unit is chck msg expected≟1
+    x (msg String, expected i32) unit is chck msg expected=1
     y (msg String, expected i32) unit is x msg expected
     z (msg String, expected i32) =>      x msg expected
     q (msg String, expected i32) is
       xx is z msg expected
 
   b : a is
-    redef x (msg String, expected i32) unit is chck msg expected≟2
+    redef x (msg String, expected i32) unit is chck msg expected=2
 
   c : a is
-    redef x (msg String, expected i32) unit is chck msg expected≟3
+    redef x (msg String, expected i32) unit is chck msg expected=3
 
   v (v a.q) is
     v.xx

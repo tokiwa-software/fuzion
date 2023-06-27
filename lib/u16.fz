@@ -25,41 +25,41 @@
 
 # u16 -- 16-bit unsigned integer values
 #
-u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
+u16(val u16) : wrapping_integer, has_interval is
 
-  redef thiz => u16.this.val
+  fixed redef thiz => u16.this.val
 
   # overflow checking
 
   # would negation -thiz cause an overflow?
-  redef wrappedOnNeg => !isZero
+  redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u16) => u16.type.max -° thiz ⩻ other
-  redef underflowOnAdd(other u16) => false
+  fixed overflow_on_add (other u16) => u16.type.max -° thiz < other
+  fixed underflow_on_add(other u16) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other u16) => false
-  redef underflowOnSub(other u16) => thiz ⩻ other
+  fixed overflow_on_sub (other u16) => false
+  fixed underflow_on_sub(other u16) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u16) => as_i32 *° other.as_i32 ⩼ u16.type.max.as_i32
-  redef underflowOnMul(other u16) => false
+  fixed overflow_on_mul (other u16) => as_i32 *° other.as_i32 > u16.type.max.as_i32
+  fixed underflow_on_mul(other u16) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -° u16 is intrinsic
-  redef infix +° (other u16) u16 is intrinsic
-  redef infix -° (other u16) u16 is intrinsic
-  redef infix *° (other u16) u16 is intrinsic
+  fixed prefix -° u16 is intrinsic
+  fixed infix +° (other u16) u16 is intrinsic
+  fixed infix -° (other u16) u16 is intrinsic
+  fixed infix *° (other u16) u16 is intrinsic
 
   # division and remainder with check for div-by-zero
-  redef infix / (other u16)
+  fixed infix / (other u16)
     pre
-      safety: other != zero
+      safety: other != u16.type.zero
    => div(other)
-  redef infix % (other u16)
+  fixed infix % (other u16)
     pre
-      safety: other != zero
+      safety: other != u16.type.zero
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -67,24 +67,24 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   private mod (other u16) u16 is intrinsic
 
   # bitwise and, or and xor operations
-  redef infix &  (other u16) u16 is intrinsic
-  redef infix |  (other u16) u16 is intrinsic
-  redef infix ^  (other u16) u16 is intrinsic
+  fixed infix &  (other u16) u16 is intrinsic
+  fixed infix |  (other u16) u16 is intrinsic
+  fixed infix ^  (other u16) u16 is intrinsic
 
   # shift operations (unsigned)
-  redef infix >> (other u16) u16 is intrinsic
-  redef infix << (other u16) u16 is intrinsic
+  fixed infix >> (other u16) u16 is intrinsic
+  fixed infix << (other u16) u16 is intrinsic
 
   as_i8 i8
     pre
       debug: thiz ≤ i8.type.max.as_u16
     is
-      castTo_i16.as_i8
+      cast_to_i16.as_i8
   as_i16 i16
     pre
       debug: thiz ≤ i16.type.max.as_u16
     is
-      castTo_i16
+      cast_to_i16
   as_i32 i32 is intrinsic
   as_i64  => thiz.as_i32.as_i64
 # as_i128 => thiz.as_i32.as_i128
@@ -99,11 +99,11 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   as_int  => int as_i64
 
   low8bits u8 is intrinsic
-  castTo_i16 i16 is intrinsic
+  cast_to_i16 i16 is intrinsic
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max => u16 0xffff
+  # from has_interval is abstract, fz should not complain about this conflict.
+  fixed redef max => u16 0xffff
 
 
   # create hash code from this number
@@ -114,19 +114,19 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highestOneBit u16 is
+  highest_one_bit u16 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u16 0    )
-    (v1, s1) := if (v0 ⩻ (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
-    (v2, s2) := if (v1 ⩻  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
-    (v3, s3) := if (v2 ⩻     (u16 4)) (v2, s2) else (v2 >>  2, s2 +  2)
-    (v4, s4) := if (v3 ⩻     (u16 2)) (v3, s3) else (v3 >>  1, s3 +  1)
+    (v1, s1) := if (v0 < (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
+    (v2, s2) := if (v1 <  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
+    (v3, s3) := if (v2 <     (u16 4)) (v2, s2) else (v2 >>  2, s2 +  2)
+    (v4, s4) := if (v3 <     (u16 2)) (v3, s3) else (v3 >>  1, s3 +  1)
     v4 << s4
 
 
   # count the number of trailing zeros in this integer.
   #
-  trailingZeros i32 is
+  trailing_zeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
     (v1, s1) := if (v0 & 0xff) != u16 0 then (v0, s0) else (v0 >> 8, s0 + 8)
@@ -174,7 +174,7 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => u16 0xffff
+  fixed redef type.all_bits_set => u16 0xffff
 
 
   # minimum
@@ -185,26 +185,3 @@ u16(val u16) : wrapping_integer u16, hasInterval u16, u16s is
   # maximum
   #
   fixed type.max => u16 0xffff
-
-
-
-# u16s -- unit type defining features related to u16 but not requiring an
-# instance
-#
-u16s : numerics u16 is
-
-  redef zero => u16 0
-  redef one  => u16 1
-
-
-
-# u16 -- returns value of unit type u16s
-#
-# This is a convenience feature that allows using, e.g., 'u16.sum' to
-# get the the monoid of (u16, infix +) instead of 'u16s.sum'.
-#
-# since this u16 with no arguments is a routine and not a constructor, it
-# does not define a type (which would cause a name clash with u16 with one
-# argument).
-#
-u16 => u16s

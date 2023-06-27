@@ -537,7 +537,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * Create '.this.type' for this feature.
    */
-  AbstractType thisType()
+  public AbstractType thisType()
   {
     return thisType(false);
   }
@@ -550,7 +550,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * is created is fixed.  In this case. the type is exactly selfType(), and not
    * a placeholder for any possible child's type.
    */
-  AbstractType thisType(boolean innerFixed)
+  public AbstractType thisType(boolean innerFixed)
   {
     AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
 
@@ -560,7 +560,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var of = outer();
         if (!isUniverse() && of != null && !of.isUniverse())
           {
-            result = new Type(result, of.thisType());
+            result = Type.newType(result, of.thisType());
           }
         result = Types.intern(result);
         if (innerFixed)
@@ -658,7 +658,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         first = false;
       }
-    return t0.actualType(this, tl);
+    return t0.applyTypePars(this, tl);
   }
 
 
@@ -682,7 +682,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var ta = new Type(ta0.featureName().baseName(), Type.NONE, null);
             tl.add(ta);
           }
-        t = t.actualType(this, tl);
+        t = t.applyTypePars(this, tl);
       }
     t = t instanceof Type tt ? tt.clone(this) : t;
     return t;
@@ -730,9 +730,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             name = name + FuzionConstants.TYPE_NAME;
 
             var p = pos();
+            var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
                                       visibility(),
-                                      outer().isUniverse() && featureName().baseName().equals(FuzionConstants.OBJECT_NAME) ? 0 : Consts.MODIFIER_REDEFINE,
+                                      inh.isEmpty() ? 0 : Consts.MODIFIER_REDEFINE,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
@@ -750,42 +751,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                 typeArgs.add(ta);
               }
 
-            var inh = new List<AbstractCall>();
-            int ii = 0;
-            for (var pc: inherits())
-              {
-                var iif = ii;
-                var selfType = new Type(FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                        new List<>(),
-                                        null);
-                var tp = new List<AbstractType>(selfType);
-                if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
-                  {
-                    for (var atp : pc.calledFeature().typeArguments())
-                      {
-                        tp.add(Types.t_UNDEFINED);
-                      }
-                    cpc.whenInferredTypeParameters(() ->
-                      {
-                        int i = 0;
-                        for (var atp : pc.actualTypeParameters())
-                          {
-                            tp.set(i+1, atp);
-                            ((Call)inh.get(iif))._generics.set(i+1, atp);
-                            i++;
-                          }
-                      });
-                  }
-                else
-                  {
-                    for (var atp : pc.actualTypeParameters())
-                      {
-                        tp.add(atp);
-                      }
-                  }
-                inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
-                ii++;
-              }
             if (inh.isEmpty())
               {
                 inh.add(new Call(pos(), "Type"));
@@ -794,6 +759,55 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
       }
     return _typeFeature;
+  }
+
+
+  /**
+   * Helper method for typeFeature(res) to create the list of inherits calls of
+   * this' type feature.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   */
+  private List<AbstractCall> typeFeatureInherits(Resolution res)
+  {
+    var inh = new List<AbstractCall>();
+    for (var pc: inherits())
+      {
+        if (pc.calledFeature() != Types.f_ERROR)
+          {
+            var iif = inh.size();
+            var selfType = new Type(FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                    new List<>(),
+                                    null);
+            var tp = new List<AbstractType>(selfType);
+            if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
+              {
+                for (var atp : pc.calledFeature().typeArguments())
+                  {
+                    tp.add(Types.t_UNDEFINED);
+                  }
+                cpc.whenInferredTypeParameters(() ->
+                  {
+                    int i = 0;
+                    for (var atp : pc.actualTypeParameters())
+                      {
+                        tp.set(i+1, atp);
+                        ((Call)inh.get(iif))._generics.set(i+1, atp);
+                        i++;
+                      }
+                  });
+              }
+            else
+              {
+                for (var atp : pc.actualTypeParameters())
+                  {
+                    tp.add(atp);
+                  }
+              }
+            inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
+          }
+      }
+    return inh;
   }
 
 
@@ -834,7 +848,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  AbstractFeature _typeFeatureOrigin;
+  public AbstractFeature _typeFeatureOrigin;
 
 
   /**
@@ -956,7 +970,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var result = resultTypeRaw();
     if (result != null)
       {
-        result = result.actualType(this, actualGenerics);
+        result = result.applyTypePars(this, actualGenerics);
       }
 
     return result;
@@ -1140,21 +1154,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Are calls to this feature performed using dynamic binding?
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (this == Types.f_ERROR || outer() != null);
-
-    return
-      this != Types.f_ERROR &&
-      generics() == FormalGenerics.NONE &&
-      !outer().isChoice();
-  }
-
-
-  /**
    * Is this a constructor returning a reference result?
    */
   public abstract boolean isThisRef();
@@ -1269,7 +1268,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                           {
                             actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                           }
-                        ti = ti.actualType(c.calledFeature(), actualTypes);
+                        ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                         a[i] = Types.intern(ti);
                       }
                   }
@@ -1515,7 +1514,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   /**
    * Is this feature marked with the `fixed` modifier. If so, this feature is
-   * not inherited, i.e., we know that at runtime, the outher feature's type is
+   * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
    * could might be a heir.
    */
@@ -1581,15 +1580,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract AbstractFeature choiceTag();
-
-  // following are used in IR/Clazzes middle end or later only:
-  public Impl.Kind implKind() { return Impl.Kind.Routine; /* NYI! */ }      // NYI: remove, used only in Clazz.java for some obscure case
-
-  public Expr initialValue()   // NYI: remove, used only in Clazz.java for some obscure case
-  {
-    throw new Error("AbstractFeature.initialValue");
-  }
-
 
   // following used in MIR or later
   public abstract Expr code();
@@ -1707,12 +1697,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return visibility() + " " +
       Consts.modifierToString(modifiers()) +
+      (isTypeFeature() ? "type." : "") +
       featureName().baseName() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
-       +  "is " + implKind().toString();
+       +  "is " + kind();
 
   }
 

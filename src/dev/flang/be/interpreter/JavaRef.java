@@ -26,11 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-import dev.flang.util.Errors;
-
 
 /**
  * JavaRef wraps a Java reference into a Value used by the interpreter
@@ -75,7 +70,7 @@ public class JavaRef extends Value
    */
   public String toString()
   {
-    return "javaRef[" + _javaRef + "]";
+    return "Java_Ref[" + _javaRef + "]";
   }
 
 }

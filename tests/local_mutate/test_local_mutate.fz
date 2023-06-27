@@ -78,21 +78,21 @@ test_local_mutate is
         option s
 
       # NYI: move this into negative test
-      if envir.args.count ≟ 2
+      if envir.args.count = 2
         say count    # *** will cause an error, requires m to be installed
 
       # NYI: move this into negative test
-      if envir.args.count ≟ 3
+      if envir.args.count = 3
         s := m.go ()->count2
         say s        # *** will cause an error, requires m to be installed
 
       # handler for negative tests that cause panic:
       #
-      myPanic : Panic_Provider is
+      my_panic : Panic_Provider is
         do_panic(msg String) =>
           say "*** got '$msg' ***"
 
-      say (myPanic.use ()->neg_test4 ()->"ok")
+      say (my_panic.use ()->neg_test4 ()->"ok")
 
       neg_test4 =>
         s := m.go ()->count2
@@ -101,7 +101,7 @@ test_local_mutate is
           say s
         "** failed, did not panic **"
 
-      say (myPanic.use ()->neg_test5 ()->"ok")
+      say (my_panic.use ()->neg_test5 ()->"ok")
 
       neg_test5 =>
         q =>
@@ -123,14 +123,13 @@ test_local_mutate is
 
     quicksort(T type: has_total_order, data Sequence T) array T is
       c := data.count
-      if c ≟ 0
+      if c = 0
         []
       else
         m : mutate is
 
         # execute code with mutate effect `m`:
-        # m.go (()->         --- NYI go does not work yet
-        iqs =>
+        m.go (()->
           swap(i,j i32) =>
             t := arr[i]
             arr[i] := arr[j]
@@ -142,8 +141,8 @@ test_local_mutate is
             for
               a := l, a + (sw ? 0 : 1)
               b := r, b - (sw ? 1 : 0)
-              sw := arr[a] ⩼ pv
-            while a ⩻ b
+              sw := arr[a] > pv
+            while a < b
               if sw
                 swap a b-1
             else
@@ -151,7 +150,7 @@ test_local_mutate is
               b
 
           qs(l, r i32) unit is # =>  does not work
-            if l ⩻ r
+            if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
               qs pi+1 r
@@ -161,14 +160,13 @@ test_local_mutate is
             arr[i] := data[i]
 
           qs 0 c-1
-          arr.as_array
+          arr.as_array)
 
-        m.go ()->iqs
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
-      say (quicksort 0..i)
-      say (quicksort (i..0 : -1))
+      say (quicksort i32 0..i)
+      say (quicksort i32 (i..0 : -1))
 
   test_quicksort
 
@@ -177,10 +175,10 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    cell(T type, LM type : mutate, data T) ref is
-      n := LM.env.new (cell T LM) cell.this
-      p := LM.env.new (cell T LM) cell.this
-      link(ne, pr cell T LM) is
+    Cell(T type, LM type : mutate, data T) ref is
+      n := LM.env.new (Cell T LM) Cell.this
+      p := LM.env.new (Cell T LM) Cell.this
+      link(ne, pr Cell T LM) is
         n <- ne
         p <- pr
 
@@ -193,8 +191,8 @@ test_local_mutate is
      =>
       m : mutate is
 
-      ring2(from list T) cell T m is   # NYI '=>' causes error cyclic type inference
-        c := cell T m from.head.get
+      ring2(from list T) Cell T m is   # NYI '=>' causes error cyclic type inference
+        c := Cell T m from.head.get
         match from.tail
           nil    => c
           t Cons => f := ring2 t
@@ -204,7 +202,7 @@ test_local_mutate is
                     l.link c l.p.get
         c
 
-      ring3(from list T) cell T m is
+      ring3(from list T) Cell T m is
         r := ring2 from
 
         for
@@ -240,42 +238,40 @@ test_local_mutate is
 
     # abstract type for 'ring'
     #
-    ring(T type) ref is
-      next, prev ring T is abstract
+    Ring(T type) ref is
+      next, prev Ring T is abstract
       data T is abstract
 
       redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
           # e2 := r, e2.next    # NYI causes crash!
-          e ring T := ring.this, e.next
+          e Ring T := Ring.this, e.next
           i in 0..3
         else
           s + " ... ]"
 
     # ring type for mutable rings
     #
-    # on call to `mut_ring LM T data` creates a minimal ring consisting of only
+    # on call to `Mut_Ring LM T data` creates a minimal ring consisting of only
     # one single cell.  To create larger rings, you can either call `insert` to
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
-    mut_ring(# mutate effect to be used to create mutable variables
+    Mut_Ring(# mutate effect to be used to create mutable variables
              LM type : mutate,
 
              # type of data stored in ring cells
              redef T type,
 
              # the data stored in this cell.
-             data T) ref : ring T is
+             data T) ref : Ring T is
 
-      # NYI: `me` is just to avoid bugs in Fuzion when using mut_ring.this
-      me mut_ring LM T := mut_ring.this
 
       # mutable references to next and previous. Initalizes to refer to
-      # mut_ring.this to form a minimal ring
+      # Mut_Ring.this to form a minimal ring
       #
-      private n := LM.env.new me #  mut_ring.this   -- NYI: mut_ring.this causes crash!
-      private p := LM.env.new me
+      private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this
+      private p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
 
 
       # short-hand features to get the mutable references from `n` and `p`
@@ -286,7 +282,7 @@ test_local_mutate is
 
       # add a cell containing `data` to this ring.
       #
-      # mut_ring.this is 'a':
+      # Mut_Ring.this is 'a':
       #
       #  +-> a <-> b <-> c ... m <-+
       #  |                         |
@@ -300,13 +296,13 @@ test_local_mutate is
       #  +-------------------------------+
       #
       insert(data T) =>
-        r2 := mut_ring LM T data
+        r2 := Mut_Ring LM T data
         merge r2
 
 
       # merge two rings as follows:
       #
-      # mut_ring.this is 'a':
+      # Mut_Ring.this is 'a':
       #
       #  +-> a <-> b <-> c ... m <-+
       #  |                         |
@@ -324,8 +320,8 @@ test_local_mutate is
       #  |                                                 |
       #  +-------------------------------------------------+
       #
-      merge(n mut_ring LM T) =>
-        a := mut_ring.this
+      merge(n Mut_Ring LM T) =>
+        a := Mut_Ring.this
         m := a.p.get
         z := n.n.get
         a.p <- z
@@ -352,9 +348,9 @@ test_local_mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
-      create_ring2(from list T) ring T is
-        c := mut_ring m T from.head.get
-        from.as_list.tail.for_each (x->c.merge (mut_ring m T x))
+      create_ring2(from list T) Ring T is
+        c := Mut_Ring m T from.head.get
+        from.as_list.tail.for_each (x->c.merge (Mut_Ring m T x))
         c.freeze
         c
 

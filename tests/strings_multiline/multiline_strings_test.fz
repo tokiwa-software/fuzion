@@ -77,3 +77,9 @@ else
     "hell😀 world"!
     ""hell😀 world""!
   """
+
+
+  # multiline string where a newline is dismissed
+  say """
+    hello \
+    world"""

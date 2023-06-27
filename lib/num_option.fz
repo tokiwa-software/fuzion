@@ -29,7 +29,7 @@
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
 #
-num_option(T type : numeric T) :
+num_option(T type : numeric) :
   choice T nil,
   monad T (num_option T)
 is
@@ -47,12 +47,12 @@ is
 
   # Does this option contain no value of type T?
   #
-  isNil => !exists
+  is_nil => !exists
 
 
-  # short-hand postfix operator for 'isNil'
+  # short-hand postfix operator for 'is_nil'
   #
-  postfix !! => isNil
+  postfix !! => is_nil
 
 
   # value of an option that is known to contain a value
@@ -76,7 +76,7 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind(B type : numeric T, f T -> num_option B) num_option B is
+  bind(B type : numeric, f T -> num_option B) num_option B is
     num_option.this ? v T => f v
                     | nil => nil
 
@@ -98,25 +98,25 @@ is
   infix **?(other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v **? w
   infix /? (other num_option T) num_option T
     pre
-      safety: !other.isZero
+      safety: !other.is_zero
   is
     num_option.this >>= v -> other >>= w -> v / w
 
   infix %? (other num_option T) num_option T
     pre
-      safety: !other.isZero
+      safety: !other.is_zero
   is
     num_option.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≟ w
+  infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v = w
   infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
-  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩻  w
+  infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
   infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≤ w
-  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ⩼  w
+  infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
   infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
 
-  isZero => sign ==? 0
+  is_zero => sign ==? 0
 
   sign num_option i32 is
     num_option.this ? v T => v.sign
@@ -146,4 +146,4 @@ is
 #
 #   o num_option TypeOfX := x
 #
-num_option(T type : numeric T, o num_option T) => o
+num_option(T type : numeric, o num_option T) => o

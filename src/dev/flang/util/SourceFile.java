@@ -938,6 +938,18 @@ public class SourceFile extends ANY
     return result;
   }
 
+
+  /**
+   * Check if this SourceFile operates on the same byte array as other.
+   *
+   * This ensures that any clones created via `new SourceFile(origin)` will be
+   * considered to be the same.
+   */
+  public boolean sameAs(SourceFile other)
+  {
+    return _bytes == other._bytes;
+  }
+
 }
 
 /* end of file */

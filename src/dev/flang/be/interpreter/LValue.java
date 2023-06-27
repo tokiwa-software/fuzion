@@ -82,6 +82,20 @@ public class LValue extends ValueWithClazz
 
 
   /**
+   * Create a copy (clone) of this value.  Used for boxing values into
+   * ref-types.
+   */
+  Instance cloneValue(Clazz cl)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == cl,
+       !cl.isRef());
+
+    return new Instance(cl, container, offset);
+  }
+
+
+  /**
    * For a value of type i8, return the value.
    *
    * @return the integer value
@@ -237,6 +251,21 @@ public class LValue extends ValueWithClazz
       require(size == Layout.get(_clazz).size());
 
     container.storeNonRef(slot, size, offset);
+  }
+
+
+  /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    return container.equalsBitWise(slot, size, offset);
   }
 
 

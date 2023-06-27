@@ -515,11 +515,11 @@ visibility_negative is
   visi6
 
   visi7 =>
-    e := fun => "x is "+x+""   // 272. should flag an error: feature used before it is declared
-    x := 2;          f := fun => "x is "+x+""
-    x := x*x*x*x;    g := fun => "x is "+x+""
-    x := x.as_string; h := fun => "x is "+x+""
-    x := x * 5;      i := fun => "x is "+x+""
+    e := ()->"x is "+x+""   // 272. should flag an error: feature used before it is declared
+    x := 2;          f := ()->"x is "+x+""
+    x := x*x*x*x;    g := ()->"x is "+x+""
+    x := x.as_string; h := ()->"x is "+x+""
+    x := x * 5;      i := ()->"x is "+x+""
     chck (f.call == "x is 2") "x is 2"
     chck (g.call == "x is 16") "x is 16"
     chck (h.call == "x is 16") "x is 16"

@@ -1,0 +1,100 @@
+
+[32m--CURDIR--/calls.fz:434:29:[39m [1;31merror 1[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3a: "; chck t.f.s "f#1 in oa type calls.caseC2.oa"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:435:29:[39m [1;31merror 2[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3a: "; chck t.f.s "f#2 in oa type calls.caseC2.oa"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:436:29:[39m [1;31merror 3[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3a: "; chck t.f.s "f#3 in oa type calls.caseC2.oa"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:440:29:[39m [1;31merror 4[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3b: "; chck t.f.s "f#1 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:441:29:[39m [1;31merror 5[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3b: "; chck t.f.s "f#2 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:442:29:[39m [1;31merror 6[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3b: "; chck t.f.s "f#3 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref on).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.on[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref on).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref on[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.on[39m' at [32m--CURDIR--/calls.fz:419:5:[39m
+[34m    on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:446:29:[39m [1;31merror 7[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3c: "; chck t.f.s "f#1 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.oa[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref oa[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.oa[39m' at [32m--CURDIR--/calls.fz:426:5:[39m
+[34m    oa : on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:447:29:[39m [1;31merror 8[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3c: "; chck t.f.s "f#2 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.oa[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref oa[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.oa[39m' at [32m--CURDIR--/calls.fz:426:5:[39m
+[34m    oa : on is
+[33m----^[0m
+
+
+[32m--CURDIR--/calls.fz:448:29:[39m [1;31merror 9[0m[1m: Call performed on a boxed (explicit '[35mref[39m') type not permitted here.[0m
+[34m    yak "caseC3c: "; chck t.f.s "f#3 in on type calls.caseC2.on"     # ******  NEGATIVE TEST, causes ERROR!  ******
+[33m----------------------------^[0m
+The problem is that the call result type '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m' contains the outer, boxed type while the call will create the corresponding value type of the dynamic target type, which might be a different type inheriting from '[35mcalls.caseC3.oa[39m'.
+Type with boxed outer type: '[33m(calls.this.type.caseC3.this.type.ref oa).f[39m'
+Boxed outer type          : '[33mcalls.this.type.caseC3.this.type.ref oa[39m'
+To solve this, remove the use of '[35mref[39m' in the declaration of the type of the call target or add '[35mref[39m' to the declaration of the corresponding feature '[35mcalls.caseC3.oa[39m' at [32m--CURDIR--/calls.fz:426:5:[39m
+[34m    oa : on is
+[33m----^[0m
+
+9 errors.

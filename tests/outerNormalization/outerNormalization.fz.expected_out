@@ -1,4 +1,4 @@
-testZero.z is 0
+test_as_u8.z is 3
 testCodepointsStream of $1234 is [1,2,3,4]
 testCodepointsStream of $true is [t,r,u,e]
 testConstructor: 4

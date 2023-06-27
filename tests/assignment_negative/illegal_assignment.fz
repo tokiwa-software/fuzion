@@ -44,20 +44,20 @@ illegal_assignment is
 
   B ref : A is
     say "B's body"
-    redefine x is say "B.x"
+    redef x is say "B.x"
     xb is say "B.xb"
 
   C ref : A is
-    redefine x is say "C.x"
+    redef x is say "C.x"
     xc is say "C.xc"
 
   D ref : B, C is
-    redefine x is say "D.x"
+    redef x is say "D.x"
 
   E ref : D is
-    redefine x  is say "E.x"
-    redefine xb is say "E.xb"
-    redefine xc is say "E.xc"
+    redef x  is say "E.x"
+    redef xb is say "E.xb"
+    redef xc is say "E.xc"
 
   bi := B
   ci Q.C := C  // 1. should flag an error: illegal assignment

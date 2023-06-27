@@ -25,17 +25,17 @@
 
 # int -- signed integer values of arbitrary size
 #
-int (s sign, n uint) : hasInterval int
+int (s sign, n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
-  ns := if n ≟ uint.type.zero then plus else s
+  ns := if n = uint.type.zero then plus else s
 
-  max int is
+  fixed max int is
     panic "invalid, there is no max int."
 
 
-  redef thiz => int ns n
+  fixed redef thiz => int ns n
 
   name String is
     "int"
@@ -47,22 +47,15 @@ is
     int plus uint.type.one
 
 
-  redef zero int is
-    int plus n.zero
-
-  redef one int is
-    int plus n.one
-
-
-  redef prefix - int is
+  fixed redef prefix - int is
     match ns
       plus => int minus n
       minus => int plus n
 
 
   # add this int to other
-  infix +  (other int) int is
-    if ns ≟ other.ns
+  fixed infix +  (other int) int is
+    if ns = other.ns
       int ns n+other.n
     else
       match ns
@@ -71,7 +64,7 @@ is
 
 
   # subtract other from this int
-  infix - (other int) int is
+  fixed infix - (other int) int is
     match other.ns
       plus =>
         match ns
@@ -88,16 +81,16 @@ is
   # the sign of the result of the
   # multiplication or division of thiz and other
   private result_sign_mul_div(other int) sign is
-    if ns ≟ other.ns then plus else minus
+    if ns = other.ns then plus else minus
 
 
   # multiply this int by other
-  infix *  (other int) int is
+  fixed infix *  (other int) int is
     int (result_sign_mul_div other) n*other.n
 
 
   # divide this int by other
-  infix /  (other int) int
+  fixed infix /  (other int) int
   pre other != int.type.zero
   is
     s sign := result_sign_mul_div other
@@ -106,13 +99,13 @@ is
 
   # modulo, returns the remainder of the
   # division of this int by other
-  infix %  (other int) int is
+  fixed infix %  (other int) int is
     int ns n%other.n
 
 
   # exponentation operator:
   # this int to the power of other
-  infix ** (other int) int
+  fixed infix ** (other int) int
   pre other ≥ int.type.zero
   is
     match s
@@ -126,23 +119,23 @@ is
   # except for division where we need to
   # check for division by zero
 
-  prefix -! bool is true
-  infix +! (other int) bool is true
-  infix -! (other int) bool is true
-  infix *! (other int) bool is true
-  infix /! (other int) bool is
+  fixed prefix -! bool is true
+  fixed infix +! (other int) bool is true
+  fixed infix -! (other int) bool is true
+  fixed infix *! (other int) bool is true
+  fixed infix /! (other int) bool is
     other != int.type.zero
-  infix %! (other int) bool is true
+  fixed infix %! (other int) bool is true
 
-  infix **!(other int) bool is
+  fixed infix **!(other int) bool is
     other ≥ int.type.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  infix **?(other int) num_option int is
+  fixed infix **?(other int) num_option int is
     match other.ns
       plus => thiz ** other
       minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  infix **^(other int) int is
+  fixed infix **^(other int) int is
     match other.ns
       plus => thiz ** other
       minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
@@ -150,7 +143,7 @@ is
   # equality: are these two ints equal?
   #
   fixed type.equality(a, b int) bool is
-    (a.ns ≟ b.ns) & (a.n ≟ b.n)
+    (a.ns = b.ns) & (a.n = b.n)
 
   # total order
   #
@@ -209,10 +202,10 @@ is
 
   # helper feature to init int via an i64
   type.from_i64(val i64) int is
-    s sign := if val ⩻ (i64 0) then minus else plus
-    n u64 := if val ≟ i64.type.min
+    s sign := if val < (i64 0) then minus else plus
+    n u64 := if val = i64.type.min
                i64.type.max.as_u64 + 1
-             else if val ⩻ (i64 0)
+             else if val < (i64 0)
                (-val).as_u64
              else val.as_u64
     int s (uint n)

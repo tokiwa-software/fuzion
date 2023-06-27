@@ -1,0 +1,28 @@
+
+[32m--CURDIR--/type.fz:47:14:[39m [1;31merror 1[0m[1m: A type may not use a boxed (explicit '[35mref[39m') type as its outer type.[0m
+[34m  x4 (ref v).e := panic "create void"   # error!
+[33m-------------^[0m
+The problem is that for a value type '[33mv[39m' any inner constructor '[35mv.c[39m'will always create a value of type '[33mv.c[39m' even if called on an outer ref type, i.e., in '[35mrv ref v := v; rc := rv.c[39m'the type of '[36mrc[39m' will be '[33mv.c[39m'.
+Type with boxed outer type: '[33m(ref v).e[39m'
+Boxed outer type          : '[33mref v[39m'
+To solve this, remove the '[35mref[39m' modifier from the outer type or add '[35mref[39m' to the declaration of the outer feature.
+
+
+[32m--CURDIR--/type.fz:49:15:[39m [1;31merror 2[0m[1m: A type may not use a boxed (explicit '[35mref[39m') type as its outer type.[0m
+[34m  f(a (ref v).e) is                     # error!
+[33m--------------^[0m
+The problem is that for a value type '[33mv[39m' any inner constructor '[35mv.c[39m'will always create a value of type '[33mv.c[39m' even if called on an outer ref type, i.e., in '[35mrv ref v := v; rc := rv.c[39m'the type of '[36mrc[39m' will be '[33mv.c[39m'.
+Type with boxed outer type: '[33m(ref v).e[39m'
+Boxed outer type          : '[33mref v[39m'
+To solve this, remove the '[35mref[39m' modifier from the outer type or add '[35mref[39m' to the declaration of the outer feature.
+
+
+[32m--CURDIR--/type.fz:52:20:[39m [1;31merror 3[0m[1m: A type may not use a boxed (explicit '[35mref[39m') type as its outer type.[0m
+[34m  g(a i32) (ref v).e is                # error!
+[33m-------------------^[0m
+The problem is that for a value type '[33mv[39m' any inner constructor '[35mv.c[39m'will always create a value of type '[33mv.c[39m' even if called on an outer ref type, i.e., in '[35mrv ref v := v; rc := rv.c[39m'the type of '[36mrc[39m' will be '[33mv.c[39m'.
+Type with boxed outer type: '[33m(ref v).e[39m'
+Boxed outer type          : '[33mref v[39m'
+To solve this, remove the '[35mref[39m' modifier from the outer type or add '[35mref[39m' to the declaration of the outer feature.
+
+3 errors.

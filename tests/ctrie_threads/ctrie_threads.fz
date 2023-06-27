@@ -25,16 +25,16 @@
 
 ctrie_threads is
 
-  ctrie := CTrie<i32, String>
+  ctrie := (C_Trie i32 String).type.empty
 
   one := ps_set 0..1000
   two := ps_set 500..1500
 
-  run_in_thread(s Set<i32>, num i32) is
+  run_in_thread(s Set i32, n i32) is
     concur.thread.spawn (() ->
       for k in s do
-        ctrie.add k "thread$num"
-      say "thread $num finished"
+        ctrie.add k "thread$n"
+      say "thread $n finished"
       unit
       )
 

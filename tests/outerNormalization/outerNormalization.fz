@@ -32,22 +32,22 @@
 outerNormalization is
 
 
-  # call numeric.zero via a ref.  This only works if the actual clazz is
-  # i32.zero, it would fail for (numeric i32).zero or (integer i32).zero since
+  # call numeric.as_u8 via a ref.  This only works if the actual clazz is
+  # i32.as_u8, it would fail for (numeric i32).as_u8 or (integer i32).as_u8 since
   # zero is abstract in those clazzes
   #
-  testZero is
+  test_as_u8 is
     x ref i32 := 3
-    z := x.zero
+    z := x.as_u8
 
-  say "testZero.z is {testZero.z}"
+  say "test_as_u8.z is {test_as_u8.z}"
 
 
-  # string.as_codepoint_sequence is a constructor that, if it was specialized for
+  # string.as_codepoints is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
   testCodepointsStream(s String) is
-      l := s.as_codepoint_sequence
+      l := s.as_codepoints
 
   say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
   say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
@@ -138,7 +138,7 @@ outerNormalization is
   testNormalize2
 
 
-  # An (open) interval such as '0..' is of type '(hasInterval i32).infix ..', but
+  # An (open) interval such as '0..' is of type '(has_interval i32).infix ..', but
   # that should be converted to 'i32.infix ..' in FUIR:
   #
   testInterval is
@@ -147,8 +147,7 @@ outerNormalization is
     z := y.has_next
     for i in 0.. do
       say $i
-    until i ⩼ 3
-    unit # NYI #1066: This has to be added since the loop result is bool. A loop should not force the bool result upon us if we do not need it.
+    until i > 3
 
   testInterval
 

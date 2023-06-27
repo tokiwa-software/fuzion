@@ -30,12 +30,16 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -59,7 +63,7 @@ public class ParseUnicodeData extends ANY
   /**
    * Class representing a line in UnicodeData.txt that represents on code point.
    */
-  class CP
+  class CP implements Comparable<CP>
   {
     int _code;
     String _name;
@@ -132,6 +136,14 @@ public class ParseUnicodeData extends ANY
     {
       return _name.startsWith("<") && _name.endsWith(", Last>");
     }
+
+    /*
+     * compare this CP to other
+     */
+    public int compareTo(CP other)
+    {
+      return this._code - other._code;
+    }
   }
 
 
@@ -160,6 +172,12 @@ public class ParseUnicodeData extends ANY
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * All parsed codepoints.
+   */
+  Set<CP> _codepoints = new HashSet<CP>();
 
 
   /**
@@ -197,16 +215,35 @@ public class ParseUnicodeData extends ANY
   CP _lastCP = null;
 
 
+  /**
+   * Filepath of UnicodeData.txt
+   */
+  private String _name;
+
+
+  /**
+   * Last modified time of UnicodeData.txt
+   */
+  private FileTime _lastModified;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /**
+   * Constructor of ParseUnicodeData to be called with path of UnicodeData.txt
+   * @param name
+   */
   ParseUnicodeData(String name)
   {
+    _name = name;
     var p = Path.of(name);
     try
       {
+        _lastModified = Files.readAttributes(p, BasicFileAttributes.class).lastModifiedTime();
         Files.lines(p).forEach(s -> {
             var e = new CP(s);
+            _codepoints.add(e);
             if (_lastCP != null && e._code <= _lastCP._code)
               {
                 Errors.fatal("*** error, expected unicode data to be sorted");
@@ -221,9 +258,6 @@ public class ParseUnicodeData extends ANY
               }
             _lastCP = e;
           });
-
-        var attr = Files.readAttributes(p, BasicFileAttributes.class);
-        System.out.println("  /* Unicode data from '" + name + "' last modified '" + attr.lastModifiedTime() + "' */");
       }
     catch (IOException | UncheckedIOException e)
       {
@@ -233,23 +267,8 @@ public class ParseUnicodeData extends ANY
       {
         finishBlock();
       }
-    if (VERBOSE)
-      {
-        System.out.println("" +
-                           _letters + " letters in " + _letterBlocks + " blocks, " +
-                           _cats.size() + " categories in " + _blocks.size() + " blocks. ");
-      }
-
-    System.out.println("  static final int[] _START_ = start0();\n" +
-                       "  private static int[] start0() { return new int[] {"          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
-    System.out.println("  static final int[] _END_ = end0();\n" +
-                       "  private static int[] end0() { return new int[] {"            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
-    System.out.println("  static final String[] _CATEGORY_ = category0();\n"+
-                       "  private static String[] category0() { return new String[] {" + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
-    var c = Arrays.asList(_cats.keySet().toArray(new String[_cats.size()]));
-    System.out.println("  static final String[] _CATEGORIES_ = new String[] {" + table(c, x -> "\"" + x + "\"") + "\n  };");
-
   }
+
 
   interface ToString<T>
   {
@@ -289,15 +308,23 @@ public class ParseUnicodeData extends ANY
   /*--------------------------  static methods  -------------------------*/
 
 
-  public static void main(String[] args) throws IOException
+  public static void main(String[] args)
   {
     try
       {
-        if (args.length != 1)
+        if (!(args.length == 2 && args[0].equals("-fz") || args.length == 1))
           {
-            Errors.fatal("Usage: ParseUnicodeData <UnicodeData.txt>");
+            Errors.fatal("Usage: ParseUnicodeData [-fz] <UnicodeData.txt>");
           }
-        new ParseUnicodeData(args[0]);
+
+        if (!args[0].equals("-fz"))
+          {
+            new ParseUnicodeData(args[0]).printJava();
+          }
+        else
+          {
+            new ParseUnicodeData(args[1]).printFuzion();
+          }
       }
     catch (FatalError e)
       {
@@ -307,6 +334,86 @@ public class ParseUnicodeData extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Print Java source code for file $(BUILD_DIR)/UnicodeData.java.generated
+   */
+  private void printJava()
+  {
+    System.out.println("  /* Unicode data from '" + _name + "' last modified '" + _lastModified + "' */");
+
+    if (VERBOSE)
+      {
+        System.out.println("" +
+                           _letters + " letters in " + _letterBlocks + " blocks, " +
+                           _cats.size() + " categories in " + _blocks.size() + " blocks. ");
+      }
+
+    System.out.println("  static final int[] _START_ = start0();\n" +
+                       "  private static int[] start0() { return new int[] {"          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
+    System.out.println("  static final int[] _END_ = end0();\n" +
+                       "  private static int[] end0() { return new int[] {"            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
+    System.out.println("  static final String[] _CATEGORY_ = category0();\n"+
+                       "  private static String[] category0() { return new String[] {" + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
+    var c = Arrays.asList(_cats.keySet().toArray(new String[_cats.size()]));
+    System.out.println("  static final String[] _CATEGORIES_ = new String[] {" + table(c, x -> "\"" + x + "\"") + "\n  };");
+  }
+
+
+  /**
+   * Print Fuzion source code for file unicode_data.fz
+   */
+  private void printFuzion()
+  {
+    // NYI performance, see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
+    // NYI special casings: https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt
+
+    var lTable = _codepoints
+      .stream()
+      .sorted()
+      .filter(cp -> !cp._lowercaseMapping.isBlank())
+      .map(cp -> {
+        var m = Integer.parseInt(cp._lowercaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
+      })
+      .collect(Collectors.joining(",\n    "));
+
+    var uTable = _codepoints
+      .stream()
+      .sorted()
+      .filter(cp -> !cp._uppercaseMapping.isBlank())
+      .map(cp -> {
+        var m = Integer.parseInt(cp._uppercaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
+      })
+      .collect(Collectors.joining(",\n    "));
+
+    var tTable = _codepoints
+      .stream()
+      .sorted()
+      .filter(cp -> !cp._titlecaseMapping.isBlank())
+      .map(cp -> {
+        var m = Integer.parseInt(cp._titlecaseMapping, 16);
+        return "# " + new String(new int[] { cp._code }, 0, 1) + " => " + new String(new int[] { m }, 0, 1) + "\n" +
+          "    (u32 " + cp._code + ", codepoint " + m + ")";
+      })
+      .collect(Collectors.joining(",\n    "));
+
+    System.out.println("# DO NOT EDIT - AUTOMATICALLY GENERATED");
+    System.out.println("# GENERATED BY ./src/dev/flang/util/unicode/ParseUnicodeData.java");
+    System.out.println("# Unicode data from '" + _name + "' last modified '" + _lastModified + "'");
+
+    System.out.println();
+
+    System.out.println("unicode.data is" + "\n\n"
+      + "  lower_case_mappings => " + "container.map_of [\n    " + lTable + "]\n\n\n"
+      + "  upper_case_mappings => " + "container.map_of [\n    " + uTable + "]\n\n\n"
+      + "  title_case_mappings => " + "container.map_of [\n    " + tTable + "]"
+      );
+  }
 
 
   void finishBlock()

@@ -38,17 +38,17 @@ inheritance is
     x unit is abstract
   B ref : A is
     say "B's body$ident"
-    redefine x unit is say "B.x"
+    redef x unit is say "B.x"
     xb unit is say "B.xb"
   C ref : A is
-    redefine x unit is say "C.x"
+    redef x unit is say "C.x"
     xc unit is say "C.xc"
   D ref : B, C is
-    redefine x unit is say "D.x"
+    redef x unit is say "D.x"
   E ref : D is
-    redefine x  unit is say "E.x"
-    redefine xb unit is say "E.xb"
-    redefine xc unit is say "E.xc"
+    redef x  unit is say "E.x"
+    redef xb unit is say "E.xb"
+    redef xc unit is say "E.xc"
   bi B := B
   ci C := C
   aa A := bi
@@ -164,9 +164,9 @@ inheritance is
 
 
   // Inheritance from outer: stream.before inherits from stream:
-  (1..).before (x -> x ⩼ 100)
-       .before (x -> x ⩼ 40)
-       .before (x -> x ⩼ 20)
+  (1..).before (x -> x > 100)
+       .before (x -> x > 40)
+       .before (x -> x > 20)
        .for_each (x -> say x)
 
   // test for recursive inheritance/outer relation with refs
@@ -203,7 +203,7 @@ inheritance is
   Z
   Z ref is
     BB ref : Z is
-    if cnt ⩻ 10
+    if cnt < 10
       set cnt := cnt + 1
       _ := BB
 
@@ -216,7 +216,7 @@ inheritance is
         BB ref is
           q ref : ZZ is
             say "tricky_Inheritance.ZZ.B.q: $cnt"
-        if cnt ⩻ 10
+        if cnt < 10
           set cnt := cnt + 1
           _ := BB.q
     unit
@@ -241,19 +241,19 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
       DD(i i32) is
         say i
-        chck i≟1 "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       BB ref : x, CC, DD BB.this.y is
 
     AA.BB
-    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
@@ -275,19 +275,19 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
       DD(i i32) is
         say i
-        chck i≟1 "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       BB ref : x, CC, DD BB.this.y is
 
     AA.BB
-    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y≟1 "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
@@ -297,7 +297,7 @@ inheritance is
       x => say "A.x: FAILED."; exit_code <- 1
     BB ref : AA is
       a
-      redefine x unit is say "B.x: PASSED."
+      redef x unit is say "B.x: PASSED."
     BB
     unit
   check_dyn_binding_when_inheriting_value
@@ -321,19 +321,19 @@ inheritance is
         0
 
       CC ref : AA is
-        redefine y i32 is
+        redef y i32 is
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
       DD(i i32) is
         say i
-        chck i≟1 "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       BB ref : x, CC, DD BB.this.y is
 
     AA.BB
-    chck cnt_A_y≟1 "inherits calls to x must be performed in outer feature A"
-    chck cnt_C_y≟1 "C.y must be called exactly once via x as argument to parent D(x)"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
   inheritOuter is
@@ -393,7 +393,7 @@ inheritance is
     chck "test Ecnt" Ecnt 6
     chck "test Fcnt" Fcnt 3
     chck(msg String, v, expected i32) =>
-      if v ≟ expected
+      if v = expected
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
