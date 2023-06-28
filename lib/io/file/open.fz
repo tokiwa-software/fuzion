@@ -44,7 +44,7 @@ priv open(T type, priv fd i64, pub file_name String) : simple_effect is
 
 
   # mmap effect
-  private mmap(public data marray u8) : simple_effect is
+  priv mmap(pub data marray u8) : simple_effect is
 
 
   # shorthand to get the memory mapped file as an array
