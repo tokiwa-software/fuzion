@@ -47,12 +47,12 @@ infix !=(T type : equatable, a, b T) => !equals T a b
 # lteq -- feature that compares two values using the lteq relation
 # defined in their type
 #
-lteq(T type : has_partial_order, a, b T) => T.lteq a b
+lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
 
 
 # infix ≤ -- infix operation as short-hand for 'lteq'
 #
-infix ≤(T type : has_partial_order, a, b T) => lteq T a b
+infix ≤(T type : property.partially_orderable, a, b T) => lteq T a b
 
 
 # does this come after other?
@@ -87,7 +87,7 @@ infix ⋄(T type : property.orderable, a, b T) i32 is
 
 # infix <= -- infix operation as short-hand for 'lteq'
 #
-infix <=(T type : has_partial_order, a, b T) => lteq T a b
+infix <=(T type : property.partially_orderable, a, b T) => lteq T a b
 
 
 # does this come after other?
