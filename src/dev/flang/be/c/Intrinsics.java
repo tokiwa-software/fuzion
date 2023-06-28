@@ -871,8 +871,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
     {
       return CStmnt.seq(
-        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */)),
-        CExpr.call("free", new List<>(A0.castTo("pthread_t *")) )
+        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */))
       );
     });
     put("fuzion.std.nano_time", (c,cl,outer,in) ->
