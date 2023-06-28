@@ -7,10 +7,10 @@ In call to          : '[35mex_nested_lazy.lazy1[39m'
 expected formal type: '[33mFunction (Lazy i32)[39m'
 actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
+                      '[33mproperty.ref hashable[39m',
                       '[33mproperty.ref orderable[39m',
                       '[33mproperty.ref partially_orderable[39m',
                       '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
                       '[33mref has_interval[39m',
                       '[33mref i32[39m',
                       '[33mref integer[39m',
@@ -27,10 +27,10 @@ assignment to field : '[35mex_nested_lazy.#fun5.call.result[39m'
 expected formal type: '[33mFunction i32[39m'
 actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
+                      '[33mproperty.ref hashable[39m',
                       '[33mproperty.ref orderable[39m',
                       '[33mproperty.ref partially_orderable[39m',
                       '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
                       '[33mref has_interval[39m',
                       '[33mref i32[39m',
                       '[33mref integer[39m',
@@ -51,10 +51,10 @@ assignment to field : '[35mex_nested_lazy.#fun8.call.result[39m'
 expected formal type: '[33mLazy i32[39m'
 actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
+                      '[33mproperty.ref hashable[39m',
                       '[33mproperty.ref orderable[39m',
                       '[33mproperty.ref partially_orderable[39m',
                       '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
                       '[33mref has_interval[39m',
                       '[33mref i32[39m',
                       '[33mref integer[39m',
