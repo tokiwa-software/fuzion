@@ -312,11 +312,13 @@ return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
 }
 
 #ifdef _WIN32
+// for 64-bit offset returns the 32 highest bits as a DWORD
 DWORD high_word(off_t value) {
   return sizeof(off_t) == 4
     ? 0
     : (DWORD)(value >> 32);
 }
+// for 64-bit offset returns the 32 lowest bits as a DWORD
 DWORD low_word(off_t value) {
   return (DWORD)(value & ((1ULL << 32) - 1));
 }
@@ -339,7 +341,16 @@ long fzE_get_file_size(FILE* file) {
   return size;
 }
 
-// -1 NULL, 0 address
+/*
+ * create a memory map of a file at an offset.
+ * unix:    the offset must be a multiple of the page size, usually 4096 bytes.
+ * windows: the offset must be a multiple of the memory allocation granularity, usually 65536 bytes
+ *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
+ *
+ * returns:
+ *   - error   :  result[0]=-1 and NULL
+ *   - success :  result[0]=0  and an address where the file was mapped to
+ */
 void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
 
   if (fzE_get_file_size(file) < (offset + size)){
@@ -388,6 +399,7 @@ void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
 }
 
 
+// unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
 #ifdef _WIN32
