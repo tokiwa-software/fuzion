@@ -404,7 +404,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  private Type(boolean ref, String n)
+  protected Type(boolean ref, String n)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);

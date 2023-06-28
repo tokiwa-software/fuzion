@@ -455,6 +455,18 @@ public class List<T>
 
 
   /**
+   * Create a mapping of this list by applying f to all elements
+   */
+  public <B> List<B> map_to(Function<T,B> f)
+  {
+    return this
+      .stream()
+      .map(x -> f.apply(x))
+      .collect(collector());
+  }
+
+
+  /**
    * Create a String by applying f to all elements and concatenating the result
    * in order.
    *

@@ -103,14 +103,14 @@ public class Types extends ANY
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static Type t_ADDRESS;
+  public static ParsedType t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
-  public static Type t_UNDEFINED;
+  public static ParsedType t_UNDEFINED;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static Type t_ERROR;
+  public static ParsedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
   public static Feature f_ERROR = new Feature(true);
@@ -293,9 +293,9 @@ public class Types extends ANY
   {
     types = new TreeMap<>();
     resolved = null;
-    t_ADDRESS   = new Type(ADDRESS_NAME  );
-    t_UNDEFINED = new Type(UNDEFINED_NAME);
-    t_ERROR     = new Type(ERROR_NAME    );
+    t_ADDRESS   = new ParsedType(ADDRESS_NAME  );
+    t_UNDEFINED = new ParsedType(UNDEFINED_NAME);
+    t_ERROR     = new ParsedType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
   }
 

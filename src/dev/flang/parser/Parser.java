@@ -1448,9 +1448,9 @@ typeList    : type ( COMMA typeList
                    )
             ;
    */
-  List<AbstractType> typeList()
+  List<ParsedType> typeList()
   {
-    List<AbstractType> result = new List<>(type());
+    List<ParsedType> result = new List<>(type());
     while (skipComma())
       {
         result.add(type());
@@ -2374,7 +2374,7 @@ caseStar    : STAR       caseBlock
       }
     else
       {
-        return new Case(pos, typeList(), caseBlock());
+        return new Case(pos, typeList().map_to(x->x), caseBlock());
       }
   }
 
@@ -3222,7 +3222,7 @@ qualThis    : name ( dot name )* dot "this"
   {
     SourcePosition pos;
     List<String> q = asType ? null : new List<>();
-    Type result = null;
+    ParsedType result = null;
     var done = false;
     do
       {
@@ -3615,9 +3615,9 @@ type        : thistype
             | onetype ( PIPE onetype ) *
             ;
    */
-  AbstractType type()
+  ParsedType type()
   {
-    AbstractType result;
+    ParsedType result;
     if (isThistype())
       {
         result = thistype();
@@ -3627,7 +3627,7 @@ type        : thistype
         result = onetype();
         if (isOperator('|'))
           {
-            var pos = ((ParsedType)result).pos();
+            var pos = result.pos();
             List<AbstractType> l = new List<>(result);
             while (skip('|'))
               {
@@ -3796,9 +3796,9 @@ typeOpt     : type
             |
             ;
    */
-  AbstractType onetype()
+  ParsedType onetype()
   {
-    AbstractType result;
+    ParsedType result;
     SourcePosition pos = tokenSourcePos();
     if (skip(Token.t_ref))
       {
@@ -3808,18 +3808,18 @@ typeOpt     : type
       }
     else if (current() == Token.t_lparen)
       {
-        var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
+        var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : new List<ParsedType>());
         if (skip("->"))
           {
-            result = ParsedType.funType(pos, type(), a);
+            result = ParsedType.funType(pos, type(), a.map_to(x->x));
           }
         else if (a.size() == 1)
           {
-            result = typeTail((ParsedType) a.getFirst());
+            result = typeTail(a.getFirst());
           }
         else
           {
-            result = new ParsedType(pos, "tuple", a, null);
+            result = new ParsedType(pos, "tuple", a.map_to(x->x), null);
           }
       }
     else
@@ -3915,7 +3915,7 @@ simpletype  : name typePars typeTail
     var p = tokenSourcePos();
     var n = name();
     var a = typePars();
-    lhs = new ParsedType(p, n, a, lhs);
+    lhs = new ParsedType(p, n, a.map_to(x->x), lhs);
     return typeTail(lhs);
   }
 
@@ -3995,11 +3995,11 @@ typePars    : typeInParens typePars
             |
             ;
    */
-  List<AbstractType> typePars()
+  List<ParsedType> typePars()
   {
     if (ignoredTokenBefore() || current() != Token.t_lparen)
       {
-        var res = new List<AbstractType>();
+        var res = new List<ParsedType>();
         while (isTypePrefix())
           {
             res.add(typeInParens());
@@ -4025,27 +4025,27 @@ typeInParens: "(" typeInParens ")"
             | type         // no white space except enclosed in { }, [ ], or ( ).
             ;
    */
-  AbstractType typeInParens()
+  ParsedType typeInParens()
   {
-    AbstractType result;
+    ParsedType result;
     if (current() == Token.t_lparen)
       {
         var pos = tokenPos();
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
-                                   () -> new List<AbstractType>());
+                                   () -> new List<ParsedType>());
         var eas = endAtSpace(tokenPos());
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
-            result = ParsedType.funType(sourcePos(pos), type(), l);
+            result = ParsedType.funType(sourcePos(pos), type(), l.map_to(x->x));
           }
         else if (l.size() == 1)
           {
             result = l.get(0);
             if (!ignoredTokenBefore())
               {
-                result = typeTail((ParsedType) result);
+                result = typeTail(result);
               }
           }
         else

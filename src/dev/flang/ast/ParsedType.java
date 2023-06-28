@@ -46,6 +46,18 @@ public class ParsedType extends Type
 
 
   /**
+   * Constructor for artificial types such as t_Error.
+   *
+   * @param n the name
+   */
+  public ParsedType(String n)
+  {
+    super(false, n);
+    _pos = SourcePosition.builtIn;
+  }
+
+
+  /**
    * Constructor
    *
    * @param pos
@@ -110,7 +122,7 @@ public class ParsedType extends Type
    *
    * @return a Type instance that represents this function
    */
-  public static AbstractType funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
+  public static ParsedType funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
