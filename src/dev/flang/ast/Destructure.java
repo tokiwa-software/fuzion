@@ -179,7 +179,7 @@ public class Destructure extends ANY implements Stmnt
             for (String name : names)
               {
                 fields.add(new Feature(pos,
-                                       Visi.LOCAL,
+                                       Visi.PRIVPRIV,
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
                                        new List<String>(name),
@@ -291,7 +291,7 @@ public class Destructure extends ANY implements Stmnt
           .forEach(n -> AstErrors.destructuringRepeatedEntry(_pos, n, Collections.frequency(_names, n)));
         Feature tmp = new Feature(res,
                                   _pos,
-                                  Visi.PRIVATE,
+                                  Visi.PRIVPRIV,
                                   t,
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);

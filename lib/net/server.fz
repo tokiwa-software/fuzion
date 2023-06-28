@@ -33,7 +33,7 @@
 # 3) Use the now installed channel for reading/writing.
 # `(channel server).read ...` / `(channel server).write ...`
 #
-private server(
+priv server(
   state outcome i64,
   p protocol.val,
   m effect_mode.val,
@@ -143,7 +143,7 @@ Server_Provider ref is
 
 
 # opens sockets, binds to port and sets socket to listening
-private init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 is
+priv init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 is
   backlog := 10
   s := socket_type.by_protocol p
 

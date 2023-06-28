@@ -83,7 +83,7 @@ mutate : simple_effect is
 
     # check that this effect is installed and replace it.
     #
-    private check_and_replace is
+    priv check_and_replace is
       if my_id != mutate.this.type.env.id
         panic "*** invalid mutate for {mutate.this.type}"
       mutate.this.type.env.replace
@@ -105,7 +105,7 @@ mutate : simple_effect is
     T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
-    private mutable_value T
+    priv mutable_value T
     ) : mutable_element
   is
 
@@ -184,7 +184,7 @@ mutate : simple_effect is
          init T
         ) : Sequence T, mutable_element
   is
-    private ma := (marray T).type.new length init
+    priv ma := (marray T).type.new length init
 
     # a sequence of all valid indices to access this array. Useful e.g., for
     # `for`-loops:

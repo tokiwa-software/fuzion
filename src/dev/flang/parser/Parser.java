@@ -489,23 +489,16 @@ visiList    : visi ( COMMA visiList
   */
   Visi visibility()
   {
-    Visi v = Visi.LOCAL;
+    Visi v = Visi.PRIVPRIV;
     if (isNonEmptyVisibilityPrefix())
       {
-        if (skip(Token.t_export))
-          {
-            var l = new List<List<String>>(visi());
-            while (skipComma())
-              {
-                l.add(visi());
-              }
-            // NYI: Do something with l
-            v = null;
-          }
-        else if (skip(Token.t_private  )) { v = Visi.PRIVATE  ; }
-        else if (skip(Token.t_protected)) { v = Visi.CHILDREN ; }
-        else if (skip(Token.t_public   )) { v = Visi.PUBLIC   ; }
-        else                              { throw new Error();               }
+        if      (skip(Token.t_priv   )) { v = Visi.PRIVPRIV; }
+        else if (skip(Token.t_privmod)) { v = Visi.PRIVMODULE; }
+        else if (skip(Token.t_privpub)) { v = Visi.PRIVPUB; }
+        else if (skip(Token.t_mod    )) { v = Visi.MODULEMODULE; }
+        else if (skip(Token.t_modpub )) { v = Visi.MODULEPUB; }
+        else if (skip(Token.t_pub    )) { v = Visi.PUB; }
+        else                            { throw new Error();     }
       }
     return v;
   }
@@ -520,10 +513,12 @@ visiList    : visi ( COMMA visiList
   {
     switch (current())
       {
-      case t_export   :
-      case t_private  :
-      case t_protected:
-      case t_public   : return true;
+      case t_priv     :
+      case t_privmod  :
+      case t_privpub  :
+      case t_mod      :
+      case t_modpub   :
+      case t_pub      : return true;
       default         : return false;
       }
   }

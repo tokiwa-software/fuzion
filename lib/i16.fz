@@ -62,9 +62,9 @@ i16(val i16) : wrapping_integer, has_interval is
       safety: other != i16.type.zero
    => mod(other)
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other i16) i16 is intrinsic
-  private mod (other i16) i16 is intrinsic
+  # priv division and remainder with crash in case of div-by-zero
+  priv div (other i16) i16 is intrinsic
+  priv mod (other i16) i16 is intrinsic
 
   # bitwise and, or and xor operations
   fixed infix &  (other i16) i16 is intrinsic

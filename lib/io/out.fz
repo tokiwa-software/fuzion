@@ -25,7 +25,7 @@
 
 # out -- effect providing an output stream
 #
-private out (redef p Can_Print) : print_effect p is
+priv out (redef p Can_Print) : print_effect p is
 
 
   type.install_default =>

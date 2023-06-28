@@ -25,7 +25,7 @@
 
 # fuzion.sys.stdin
 # NYI name in does not work right now since in is reserved keyword
-public stdin is
+pub stdin is
 
   # read next byte from stdin
   #
@@ -34,4 +34,4 @@ public stdin is
   # -1 at end of file
   # -2 for any other error
   #
-  private next_byte i32 is intrinsic
+  priv next_byte i32 is intrinsic

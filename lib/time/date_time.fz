@@ -36,13 +36,13 @@ pre
 is
 
   # how many days does february have in the given year?
-  private days_in_february =>
+  priv days_in_february =>
     if is_leap_year year then 29 else 28
 
 
   # the days in the months of the year
   # starting at january, february, ..., december
-  private days_in_months =>
+  priv days_in_months =>
     [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
@@ -136,12 +136,12 @@ is
 
 
 # how many days does the given year have?
-private days_in_year(year i32) =>
+priv days_in_year(year i32) =>
   if is_leap_year year then 366 else 365
 
 
 
 # is the given year a leap year?
-private is_leap_year(year i32) =>
+priv is_leap_year(year i32) =>
   (year % 4 = 0 & year % 100 != 0) |
     ((year % 100 = 0) & (year % 400 = 0))

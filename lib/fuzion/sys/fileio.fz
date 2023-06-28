@@ -26,7 +26,7 @@
 # fuzion.sys.fileio -- fileio presents basic features to handle File I/O operations
 #
 
-public fileio is
+pub fileio is
 
   # reads n bytes of a file opened as fd
   #
@@ -48,7 +48,7 @@ public fileio is
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
   # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
   #
-  private read(
+  priv read(
                # the file descriptor
                fd i64,
                # the internal array data representing the container for the bytes to be read from the file
@@ -59,7 +59,7 @@ public fileio is
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
-  private get_file_size(
+  priv get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 is
     md := array 4 i->(i64 0)
@@ -72,7 +72,7 @@ public fileio is
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(fd i64, content array u8) outcome unit is
+  pub write(fd i64, content array u8) outcome unit is
     res := write fd content.internal_array.data content.length
 
     if res = i8 0
@@ -84,7 +84,7 @@ public fileio is
   # returns i8 0 in case of success
   # and the error number/ -1 in the interpreter in case of failure
   #
-  private write(
+  priv write(
                 # the file descriptor
                 fd i64,
                 # the internal array data representing the content bytes to insert in file
@@ -97,7 +97,7 @@ public fileio is
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
   #
-  public delete(
+  pub delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -109,7 +109,7 @@ public fileio is
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
   # and FALSE in case of failure
   #
-  private delete(
+  priv delete(
                  # the internal array data representing the file/dir path in bytes
                  path Any,
                  # dummy parameter to avoid duplicate feature name
@@ -120,7 +120,7 @@ public fileio is
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
   # returns a unit type as outcome in case of success and error in case of failure
   #
-  public move(
+  pub move(
               # the old (relative or absolute) file name, using platform specific path separators
               old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
@@ -134,7 +134,7 @@ public fileio is
 
   # intrinsic that returns TRUE in case the move was successful and FALSE in case not
   #
-  private move(
+  priv move(
                # the internal array data representing the old file/dir path in bytes
                old_path Any,
                # the internal array data representing the new file/dir path in bytes
@@ -146,7 +146,7 @@ public fileio is
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
   #
-  public create_dir(
+  pub create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
                     path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -157,7 +157,7 @@ public fileio is
 
   # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
   #
-  private create_dir(
+  priv create_dir(
                      # the internal array data representing the dir path in bytes
                      path Any,
                      # dummy parameter to enable overloading
@@ -191,7 +191,7 @@ public fileio is
   # returns outcome i64 representing the file descriptor in success
   # returns an error in failure
   #
-  public open(
+  pub open(
               # a Fuzion Object represention the path for the source to be opened
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
@@ -206,7 +206,7 @@ public fileio is
   # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
   # after opening the source represented by the path parameter
   #
-  private open(
+  priv open(
                # a Fuzion Any represention the path for the source to be opened
                path Any,
                # open_results[file descriptor, error number] as a Fuzion Any
@@ -218,7 +218,7 @@ public fileio is
   # Closes an IO source using an i64 representing the source handler (file descriptor)
   # returns outcome unit in case of success and an error in case of failure
   #
-  public close(
+  pub close(
                # file descriptor
                fd i64) outcome unit is
     closing_result := close fd unit
@@ -231,7 +231,7 @@ public fileio is
   # returns an i8 to represent the result of the operation
   # 0 in case no errors occurred and the error number in case the operation failed in the C back-end/ -1 in the interpreter
   #
-  private close(
+  priv close(
                 # file descriptor
                 fd i64,
                 # dummy variable to enable overload
@@ -242,7 +242,7 @@ public fileio is
   # returns an outcome i64 that represents the new offset
   # returns an error in case of failure
   #
-  public seek(
+  pub seek(
               # file descriptor
               fd i64,
               # the offset to seek from the beginning of this file
@@ -259,7 +259,7 @@ public fileio is
   # and fills a Fuzion object with the new offset
   # and the error number from the C back-end/ -1 in the interpreter
   #
-  private seek(
+  priv seek(
                # file descriptor
                fd i64,
                # the offset to seek from the beginning of this file
@@ -272,7 +272,7 @@ public fileio is
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  public file_position(
+  pub file_position(
                        # file descriptor
                        fd i64) outcome i64 is
     arr := array 2 (i -> i64 0)
@@ -285,7 +285,7 @@ public fileio is
   # intrinsic that fills a Fuzion object with the current file stream position
   # and the error number from C back-end/ -1 in the interpreter
   #
-  private file_position(
+  priv file_position(
                         # file descriptor
                         fd i64,
                         # Array data [new file position, error number]

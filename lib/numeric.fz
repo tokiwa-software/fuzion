@@ -138,7 +138,7 @@ numeric : has_hash, has_total_order is
 
   # find the highest power of b that is less or equal than numeric.this.
   #
-  private highest(b numeric.this.type) numeric.this.type
+  priv highest(b numeric.this.type) numeric.this.type
     pre
       debug: numeric.this.sign ≥ 0
     post

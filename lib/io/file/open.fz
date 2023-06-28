@@ -25,7 +25,7 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-private open(T type, private fd i64, public file_name String) : simple_effect is
+priv open(T type, priv fd i64, pub file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -57,7 +57,7 @@ open(T type) =>
 # unit type used internally by open- and use-
 # short hands which can be used when one does not need
 # to distinguish between several open files.
-private open_unique_type is
+priv open_unique_type is
 
 
 

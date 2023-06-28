@@ -27,7 +27,7 @@
 # stdin -- effect providing several features
 # for consuming the given Byte_Input_Handler
 #
-private stdin(ip io.Byte_Input_Handler) : simple_effect is
+priv stdin(ip io.Byte_Input_Handler) : simple_effect is
 
 
   # read a single byte from stdin
@@ -102,7 +102,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
 
 
   # outcome to be returned if stdin is already closed/depleted
-  private eof_error outcome String is
+  priv eof_error outcome String is
     error "--- end of file ---"
 
 

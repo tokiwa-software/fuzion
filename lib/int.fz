@@ -80,7 +80,7 @@ is
 
   # the sign of the result of the
   # multiplication or division of thiz and other
-  private result_sign_mul_div(other int) sign is
+  priv result_sign_mul_div(other int) sign is
     if ns = other.ns then plus else minus
 
 

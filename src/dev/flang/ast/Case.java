@@ -105,7 +105,7 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Visi.PRIVATE, t, n), null, c);
+    this(pos, new Feature(pos, Visi.PRIVPRIV, t, n), null, c);
   }
 
 

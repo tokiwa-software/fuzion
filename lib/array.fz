@@ -31,13 +31,13 @@
 # Note: This uses dummy unit-type args to avoid
 # name clash with routine array(T,length,init).
 #
-private array(redef T type,
+priv array(redef T type,
       internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
       _ unit) : Sequence T is
 
-# public:
+# pub:
 
   length => internal_array.length
 
@@ -217,7 +217,7 @@ private array(redef T type,
       safety: length ≥ 0
   is
 
-    private indices => 0..length-1
+    priv indices => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
     for x in indices do

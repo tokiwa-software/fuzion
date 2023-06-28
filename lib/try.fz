@@ -33,7 +33,7 @@ is
 
   # mutuable field to receive the error in case raise is called
   #
-  private err option error := nil
+  priv err option error := nil
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early

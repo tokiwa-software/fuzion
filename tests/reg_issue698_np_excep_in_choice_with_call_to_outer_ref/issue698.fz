@@ -11,7 +11,7 @@ ex_tree is
       tree.this ? nil    => 0
                 | n Node => n.count
 
-    private smart (datum A, left, right tree A) tree A is
+    priv smart (datum A, left, right tree A) tree A is
       ref : Node A (tree A) (tree A)
         datum A is smart.this.datum
         count i32 is (1 + smart.this.left.size + smart.this.right.size)

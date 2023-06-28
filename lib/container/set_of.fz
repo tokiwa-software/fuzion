@@ -36,7 +36,7 @@ set_of_ordered(K type : has_total_order, vs Sequence K) Set K is ps_set vs
 #
 set_of_hashable(K type : has_hash, vs (container.C_Trie K unit) | (Sequence K)) Set K is
 
-  private map container.C_Trie K unit :=
+  priv map container.C_Trie K unit :=
     match vs
       vss (Sequence K) => (container.C_Trie K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
       vsc (container.C_Trie K unit) => vsc

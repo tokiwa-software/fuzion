@@ -25,7 +25,7 @@
 
 # err -- effect providing an output stream
 #
-private err (redef p Can_Print) : print_effect p is
+priv err (redef p Can_Print) : print_effect p is
 
 
   type.install_default =>

@@ -27,7 +27,7 @@
 #
 # NYI: marray should be rewritten using effects.
 #
-private marray
+priv marray
   (
    # type of elements stored in this array
    redef T type,
@@ -36,7 +36,7 @@ private marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.internal_array T,
+   priv data fuzion.sys.internal_array T,
 
    _ unit
    ) : Sequence T

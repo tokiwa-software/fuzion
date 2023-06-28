@@ -62,9 +62,9 @@ i32(val i32) : wrapping_integer, has_interval is
       safety: other != 0
    => mod(other)
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other i32) i32 is intrinsic
-  private mod (other i32) i32 is intrinsic
+  # priv division and remainder with crash in case of div-by-zero
+  priv div (other i32) i32 is intrinsic
+  priv mod (other i32) i32 is intrinsic
 
   # bitwise and, or and xor operations
   fixed infix &  (other i32) i32 is intrinsic

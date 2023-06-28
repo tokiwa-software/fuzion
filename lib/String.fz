@@ -103,7 +103,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # internal helper to create error for failed parsing
   #
-  private parse_error(msg String) => error "failed to parse '{String.this}': $msg"
+  priv parse_error(msg String) => error "failed to parse '{String.this}': $msg"
 
 
   # parse this string as a signed 32-bit integer value
@@ -190,7 +190,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # recursive helper for parse_integer T
   #
-  private parse_integer(
+  priv parse_integer(
     # the integer type
     T type : integer,
 
@@ -277,7 +277,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # the list instance returned by as_codepoints
   #
-  private codepoints_and_errors(l list u8) list (outcome codepoint) is
+  priv codepoints_and_errors(l list u8) list (outcome codepoint) is
     match l
       nil => nil
       c1 Cons =>
@@ -377,7 +377,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
-  private substring_codepoint(from, to i32) String
+  priv substring_codepoint(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.codepoint_length
   is
@@ -389,7 +389,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
   #
-  private substring_codepoint(from i32) String
+  priv substring_codepoint(from i32) String
     pre
       debug: 0 ≤ from ≤ codepoint_length
   is
@@ -425,7 +425,7 @@ String ref : equatable, has_hash, has_total_order is
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
-  private find_last(substring String, found option i32) option i32 is
+  priv find_last(substring String, found option i32) option i32 is
     match find substring
       nil => found >>= (pos -> pos - substring.byte_length)
       idx i32 =>
@@ -525,7 +525,7 @@ String ref : equatable, has_hash, has_total_order is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  private split0(s String, limit option u32, split_after bool) list String
+  priv split0(s String, limit option u32, split_after bool) list String
     pre
       !s.is_empty,
       match limit
