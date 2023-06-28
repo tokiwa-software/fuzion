@@ -196,6 +196,12 @@ public class CNames extends ANY
 
 
   /**
+   * global C variable to hold global lock
+   */
+  static final CIdent GLOBAL_LOCK = new CIdent("fzG_lock");
+
+
+  /**
    * Prefix for thread related things
    */
   private static final String THRD_PREFIX = "fzThrd_";

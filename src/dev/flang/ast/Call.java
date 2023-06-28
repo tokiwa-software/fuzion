@@ -439,6 +439,75 @@ public class Call extends AbstractCall
 
 
   /**
+   * Convert a formal argument type in this call to the actual type defined by
+   * the target of this call and the actual type parameters given in this call.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param frmlT the formal type. Might contain Types.t_UNDEFINED since this is
+   * used during type resolution and type inference
+   *
+   * @return the actual type applying actual type parameters known from the
+   * target of this call and actual type parameters given in this call.  Result
+   * is interned.xs
+   */
+  private AbstractType actualArgType(Resolution res, AbstractType frmlT)
+  {
+    if (PRECONDITIONS) require
+      (!frmlT.isOpenGeneric());
+
+    var result = adjustThisTypeForTarget(frmlT);
+    result = targetTypeOrConstraint(res)
+      .actualType(result)
+      .applyTypePars(_calledFeature, _generics);
+    result = Types.intern(result);
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
+
+  /**
+   * Is the target of this call a type parameter?
+   *
+   * @return true for a call to `T.xyz`, `U.xyz` or `V.xyz` in a feature
+   * `f(T,U,V type)`, false otherwise.
+   */
+  private boolean targetIsTypeParameter()
+  {
+    return _target instanceof Call tc && tc._calledFeature.isTypeParameter();
+  }
+
+
+  /**
+   * Get the type of the target as seen by this call
+   *
+   * When calling `X.f` and `X` is a type parameter and `f` is a constructor,
+   * then `X`'s type is the type `X`, while for a function `f` the type is `X`'s
+   * constraint.
+   *
+   * @return the type of the target.
+   */
+  private AbstractType targetType(Resolution res)
+  {
+    return
+      // NYI: CLEANUP: For a type parameter, the feature result type is abused
+      // and holds the type parameter constraint.  As a consequence, we have to
+      // fix this here and set the type of the target explicitly here.
+      //
+      // Would be better if AbstractFeature.resultType() would do this for us:
+      _target instanceof Call tc &&
+      targetIsTypeParameter()          ? new Type(pos(), new Generic(tc.calledFeature())) :
+      calledFeature().isConstructor()  ? _target.typeForCallTarget()
+                                       : targetTypeOrConstraint(res);
+  }
+
+
+  /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -1100,32 +1169,29 @@ public class Call extends AbstractCall
 
   /**
    * Helper routine for resolveFormalArgumentTypes to determine the actual type
-   * of a formal argument after inheritance.
+   * of a formal argument after inheritance and determination of actual type
+   * from the target type and generics provided to the call.
    *
-   * The result will be stored in
-   * _resolvedFormalArgumentTypes[argnum..argnum+result-1].
+   * The result will be stored in _resolvedFormalArgumentTypes[argnum..].
    *
    * @param res Resolution instance
    *
    * @param argnum the number of this formal argument
    *
    * @param frml the formal argument
-   *
-   * @return the number of arguments that correspond to argnum after handing
-   * down.
    */
-  private int handDownFormalArg(Resolution res, int argnum, AbstractFeature frml)
+  private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
   {
-    int result = 1;
+    int cnt = 1;
     var frmlT = frml.resultType();
     if (CHECKS) check
       (frmlT == Types.intern(frmlT));
 
     var declF = _calledFeature.outer();
-    var heirF = targetTypeOrConstraint(res).featureOfType();
-    if (declF != heirF)
+    var heir = _target.typeForCallTarget();
+    if (!heir.isGenericArgument() && declF != heir.featureOfType())
       {
-        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heirF);
+        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.featureOfType());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1141,52 +1207,22 @@ public class Call extends AbstractCall
               }
           }
         addToResolvedFormalArgumentTypes(res, argnum, a, frml);
-        result = a.length;
+        cnt = a.length;
       }
     else
       {
-        if (CHECKS) check
-          (Errors.count() > 0 || argnum <= _resolvedFormalArgumentTypes.length);
-
-        if (argnum < _resolvedFormalArgumentTypes.length)
-          {
-            if (CHECKS) check
-              (frmlT != null);
-            _resolvedFormalArgumentTypes[argnum] = adjustThisTypeForTarget(frmlT);
-          }
+        _resolvedFormalArgumentTypes[argnum] = frmlT;
       }
-    return result;
-  }
 
-
-  /**
-   * Helper routine for resolveFormalArgumentTypes to determine the actual type
-   * of a formal argument from the target type and generics provided to the call.
-   *
-   * The type(s) will be takenb from
-   * _resolvedFormalArgumentTypes[argnum..argnum+n-1], the result will be stored
-   * in _resolvedFormalArgumentTypes[argnum..].
-   *
-   * @param res Resolution instance
-   *
-   * @param argnum the number of this formal argument
-   *
-   * @param n the number of arguments. This might be != 1 if
-   * frml.resultType().isOpenGeneric() and this type has been replaced with no
-   * or several actual types.
-   *
-   * @param frml the formal argument
-   */
-  private void replaceGenericsInFormalArg(Resolution res, int argnum, int n, AbstractFeature frml)
-  {
-    for (int i = 0; i < n; i++)
+    // next, replace generics given in the target type and in this call
+    for (int i = 0; i < cnt; i++)
       {
         if (CHECKS) check
           (Errors.count() > 0 || argnum + i <= _resolvedFormalArgumentTypes.length);
 
         if (argnum + i < _resolvedFormalArgumentTypes.length)
           {
-            var frmlT = _resolvedFormalArgumentTypes[argnum + i];
+            frmlT = _resolvedFormalArgumentTypes[argnum + i];
 
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
@@ -1195,17 +1231,12 @@ public class Call extends AbstractCall
                                            ? _generics
                                            : _target.type().generics());
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
-                i = i + frmlTs.size() - 1;
-                n = n + frmlTs.size() - 1;
+                i   = i   + frmlTs.size() - 1;
+                cnt = cnt + frmlTs.size() - 1;
               }
             else
               {
-                frmlT = targetTypeOrConstraint(res).actualType(frmlT);
-                frmlT = frmlT.applyTypePars(_calledFeature, _generics);
-                frmlT = Types.intern(frmlT);
-                if (CHECKS) check
-                  (frmlT != null);
-                _resolvedFormalArgumentTypes[argnum + i] = frmlT;
+                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT);
               }
           }
       }
@@ -1213,7 +1244,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper routine for handDownFormalArg and replaceGenericsInFormalArg to
+   * Helper routine for resolveFormalArg and replaceGenericsInFormalArg to
    * extend the _resolvedFormalArgumentTypes array.
    *
    * In case frml.resultType().isOpenGeneric(), this will call frml.select() for
@@ -1265,19 +1296,13 @@ public class Call extends AbstractCall
     var fargs = _calledFeature.valueArguments();
     _resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
                                                      : new AbstractType[fargs.size()];
-    Arrays.fill(_resolvedFormalArgumentTypes, Types.t_ERROR);
+    Arrays.fill(_resolvedFormalArgumentTypes, Types.t_UNDEFINED);
     int count = 0;
     for (var frml : fargs)
       {
         int argnum = count;  // effectively final copy of count
         frml.whenResolvedTypes
-          (() ->
-           {
-             // first, replace generics according to inheritance:
-             int n = handDownFormalArg (res, argnum,    frml);
-             // next, replace generics given in the target type and in this call
-             replaceGenericsInFormalArg(res, argnum, n, frml);
-           });
+          (() -> resolveFormalArg(res, argnum, frml));
         count++;
       }
     if (POSTCONDITIONS) ensure
@@ -1325,24 +1350,25 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the result type of the called feature, might be open genenric.
+   * @param frmlT the result type of the called feature, might be open genenric.
    */
-  private void resolveType(Resolution res, AbstractType t)
+  private void setActualResultType(Resolution res, AbstractType frmlT)
   {
-    var is_THIS_TYPE = t.isGenericArgument() && t.genericArgument().feature().isTypeFeature() && t.genericArgument().index() == 0;
-    var tt = is_THIS_TYPE && _target instanceof Call tc && tc._calledFeature.isTypeParameter()
+    var tt =
+      targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
       ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
-        tc._calledFeature.resultType().featureOfType().typeFeature(res).selfType()
-      : targetTypeOrConstraint(res);
+        // NYI: CLEANUP: remove this special handling!
+        _target.typeForCallTarget().featureOfType().selfType()
+      : targetType(res);
 
-    t = resolveSelect(t, tt)
-      .applyTypePars(tt)
-      .resolve(res, tt.featureOfType());
-    t = adjustThisTypeForTarget(t);
-    t = resolveForCalledFeature(res, t, tt);
-    _type = Types.intern(t);
+    var t1 = resolveSelect(frmlT, tt);
+    var t2 = t1.applyTypePars(tt);
+    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.featureOfType());
+    var t4 = adjustThisTypeForTarget(t3);
+    var t5 = resolveForCalledFeature(res, t4, tt);
+    _type = Types.intern(t5);
   }
 
 
@@ -1483,7 +1509,7 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
-        t = Type.newType(t, _target.typeForCallTarget());
+        t = Type.newType(t, tt);
       }
     else
       {
@@ -1887,10 +1913,9 @@ public class Call extends AbstractCall
       {
         var rg = formalType.generics().get(0).genericArgument();
         var ri = rg.index();
-        var cf = _calledFeature;
-        if (rg.feature() == cf && foundAt.get(ri) == null)
+        if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
           {
-            var at = targetTypeOrConstraint(res).actualType(formalType).applyTypePars(cf, _generics);
+            var at = actualArgType(res, formalType);
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);
@@ -2065,7 +2090,7 @@ public class Call extends AbstractCall
 
             if (t != null)
               {
-                resolveType(res, t);
+                setActualResultType(res, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
@@ -2073,7 +2098,7 @@ public class Call extends AbstractCall
             if (t == null || isTailRecursive(outer))
               {
                 cf.whenResolvedTypes
-                  (() -> resolveType(res, cf.resultTypeForTypeInference(pos(), res, _generics)));
+                  (() -> setActualResultType(res, cf.resultTypeForTypeInference(pos(), res, _generics)));
               }
           }
         else

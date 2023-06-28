@@ -407,8 +407,9 @@ Sequence(T type) ref is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  indexed(I type : has_interval I, start_idx I) list (tuple I T) is
-    zip (start_idx..) (a,b -> (b, a))
+  indexed(I type : has_interval, start_idx I) list (tuple I T) is
+    # NYI: This should work without the type hints again.
+    zip I (tuple I T) (start_idx..) (a,b -> (b, a))
 
 
 
@@ -460,21 +461,3 @@ Sequence(T type) ref is
     #
     e Sequence T is
       (Sequence T).type.empty
-
-
-# Sequences -- unit type defining features related to Sequence but not requiring
-# an instance
-#
-Sequences is
-
-
-  # determine the index of element x within Sequence l.  0 if x is at the head
-  # of the list, 1 if it comes directly after head, etc. nil if x is not
-  # in the list.
-  #
-  index_in(A type : equatable, l Sequence A, x A) => (container.searchable_sequence A l).index_of x
-
-
-  # get the index of x within this Sequence or nil if it does not exist
-  #
-  find(A type : equatable, l Sequence A, x Sequence A) => (container.searchable_sequence A l).find x

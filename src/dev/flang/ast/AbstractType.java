@@ -682,23 +682,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   private AbstractType applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
+    if (PRECONDITIONS) require
+      (f != null);
+
     /* NYI: Performance: This requires time in O(this.depth *
      * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
-    if (f != null)
+    for (var i : f.inherits())
       {
-        for (var i : f.inherits())
-          {
-            result = result.applyTypePars(i.calledFeature(),
-                                          i.actualTypeParameters());
-          }
+        result = result.applyTypePars(i.calledFeature(),
+                                      i.actualTypeParameters());
       }
     if (result.isGenericArgument())
       {
         Generic g = result.genericArgument();
-        if (f != null && g.formalGenerics() == f.generics())  // t is replaced by corresponding actualGenerics entry
+        if (g.formalGenerics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+          {
+            g = g.typeFeatureOrigin();
+          }
+        if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
             result = result.ensureNotOpen() ? g.replace(actualGenerics)
                                             : Types.t_ERROR;
@@ -709,11 +713,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g2 = applyTypePars(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
+        /* types of type features require special handling since the type
+         * feature has one additional first type parameter --the underlying
+         * type: this_type--, and all other type parameters need to be converted
+         * to the actual type relative to that.
+         */
         if (isTypeType())
           {
             var this_type = g2.get(0);
-            g2 = g2.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                            : x.actualTypeType(this_type));
+            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
+                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
+                                                           : this_type.actualType(x));
           }
 
         if (g2 != result.generics() ||
@@ -728,26 +738,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
-  }
-
-
-  /**
-   * Helper for applyTypePars_ to determine the actual type of a type feature's
-   * type. This needs special handling since the type feature has one additional
-   * first type parameter --the underlying type: this_type--, and all other type
-   * parameters need converted to the actual type relative to that.
-   *
-   * @param this_type the first type parameter that contains the actual type.
-   */
-  private AbstractType actualTypeType(AbstractType this_type)
-  {
-    var t = replace_this_type_by_actual_outer(this_type);
-    if (!this_type.isGenericArgument() && !this_type.featureOfType().isUniverse())
-      {
-        t = t.actualTypeType(this_type.outer());
-        t = t.applyTypePars(this_type.featureOfType(), this_type.generics());
-      }
-    return t;
   }
 
 
@@ -1077,23 +1067,75 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
-    if (isThisType())
+    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
+    if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+        ||
+        isThisType() && att.featureOfType().inheritsFrom(featureOfType())  // we have abc.this.type with att inheriting from abc, so use tt
+        )
       {
-        var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
-        if (att.featureOfType().inheritsFrom(featureOfType()))
+        if (foundRef != null && tt.isRef())
           {
-            if (foundRef != null && tt.isRef())
-              {
-                foundRef.accept(this, tt);
-              }
-            result = tt;
+            foundRef.accept(this, tt);
           }
+        result = tt;
       }
     else
       {
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef));
       }
     return result;
+  }
+
+
+  /**
+   * Check this and, recursively, all types contained in this' type parameters
+   * and outer types if isThisTypeInTypeFeature() is true and the surrounding
+   * type feature equals typeFeature.  Replace all matches by typeFeature's self
+   * type.
+   *
+   * As an examples, in the code
+   *
+   *   f is
+   *     fixed type.x option f.this.type is abstract
+   *
+   * when called on the result type of `f.type.x` argument `f.type`, this will
+   * result in `option f`.
+   *
+   * @param typeFeature the type feature whose this.type we are replacing
+   */
+  public AbstractType replace_this_type_in_type_feature(AbstractFeature typeFeature)
+  {
+    return isThisTypeInTypeFeature() && typeFeature  == genericArgument().typeParameter().outer()
+      ? typeFeature.typeFeatureOrigin().selfTypeInTypeFeature()
+      : applyToGenericsAndOuter(g -> g.replace_this_type_in_type_feature(typeFeature));
+  }
+
+
+  /**
+   * Check this and, recursively, all types contained in this' type parameters
+   * and outer types if `this.isThisType && this.featureOfType() == parent` is
+   * true.  Replace all matches by the `heir.thisType()`.
+   *
+   * As an examples, in the code
+   *
+   *   f is
+   *     x option f.this.type is ...
+   *
+   *   g : f is
+   *     redef x option g.this.type is ...
+   *
+   * the result type of the inherited `f.x` is converted from `f.this.type` to
+   * `g.this.type?` when checking types for the redefinition `g.x`.
+   *
+   * @param parent the parent feature we are inheriting `this` type from.
+   *
+   * @param heir the redefining feature
+   */
+  public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir)
+  {
+    return isThisType() && featureOfType() == parent
+      ? heir.thisType()
+      : applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir));
   }
 
 
@@ -1336,6 +1378,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * For a feature `f(A, B type)` the corresponding type feature has an implicit
+   * THIS#TYPE type parameter: `f.type(THIS#TYPE, A, B type)`.
+   *
+   + This checks if this type is this implicit type parameter.
+   */
+  public boolean isThisTypeInTypeFeature()
+  {
+    return isGenericArgument() && genericArgument().isThisTypeInTypeFeature();
   }
 
 

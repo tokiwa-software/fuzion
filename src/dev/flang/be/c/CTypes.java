@@ -91,10 +91,7 @@ public class CTypes extends ANY
    */
   String clazzField(int cf)
   {
-    var rc = _fuir.clazzResultClazz(cf);
-    return (_fuir.clazzIsVoidType(rc)
-            ? "struct { }"
-            : clazz(rc)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
+    return clazz(_fuir.clazzResultClazz(cf)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
   }
 
 
@@ -308,7 +305,12 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
-                els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+                var t = _fuir.clazzResultClazz(f);
+                if (!_fuir.clazzIsUnitType(t) &&
+                    !_fuir.clazzIsVoidType(t))
+                  {
+                    els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+                  }
               }
           }
         l.add(CStmnt.struct(_names.struct(cl), els));

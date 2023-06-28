@@ -248,6 +248,21 @@ public abstract class Value extends ANY
 
 
   /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    throw new Error("value "+ this + " not allowed for equalsBitWise");
+  }
+
+
+  /**
    * Debugging only: Check that this value is valid as the current instance for
    * a feature with given static clazz.
    *

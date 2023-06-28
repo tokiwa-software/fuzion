@@ -25,64 +25,60 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(T type : numeric T) : has_hash, has_total_order is
-
-  # get numeric.this value of type T.  This is used for a generic implemention
-  # of some features (e.g. prefix -, abs)
-  thiz T is abstract
+numeric : has_hash, has_total_order is
 
   is_zero => numeric.this = numeric.this.type.zero
   is_one  => numeric.this = numeric.this.type.one
 
   # basic operations: 'prefix +' (identity)
-  prefix + T
+  prefix + numeric.this.type
     pre
-      safety: +!thiz
-  is thiz
+      safety: +!numeric.this
+  is numeric.this
 
   # basic operations: 'prefix -' (negation)
-  prefix - T
+  prefix - numeric.this.type
     pre
-      safety: -!thiz
-  is T.zero - thiz
+      safety: -!numeric.this
+  is numeric.this.type.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
-  infix +  (other T) T
+  infix +  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz +! other
+      safety: numeric.this +! other
   is abstract
 
   # basic operations: 'infix -' (subtraction)
-  infix -  (other T) T
+  infix -  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz -! other
+      safety: numeric.this -! other
   is abstract
 
   # basic operations: 'infix *' (multiplication)
-  infix *  (other T) T
+  infix *  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz *! other
+      safety: numeric.this *! other
   is abstract
 
   # basic operations: 'infix /' (division)
-  infix /  (other T) T
+  infix /  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz /! other,
-      safety: other != T.zero
+      safety: numeric.this /! other,
+      safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix %' (division remainder)
-  infix %  (other T) T
+  infix %  (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz %! other,
-      safety: other != T.zero
+      safety: numeric.this %! other,
+      safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix **' (exponentiation)
-  infix ** (other T) T
+  infix ** (other numeric.this.type) numeric.this.type
     pre
-      safety: thiz **! other,
-      safety: other ≥ T.zero
+      safety: numeric.this **! other,
+      safety: other ≥ numeric.this.type.zero
   is abstract
 
 
@@ -94,32 +90,32 @@ numeric(T type : numeric T) : has_hash, has_total_order is
   #
   prefix +! bool is true
   prefix -! bool is abstract
-  infix +! (other T) bool is abstract
-  infix -! (other T) bool is abstract
-  infix *! (other T) bool is abstract
-  infix /! (other T) bool is abstract
-  infix %! (other T) bool is abstract
-  infix **!(other T) bool is abstract
+  infix +! (other numeric.this.type) bool is abstract
+  infix -! (other numeric.this.type) bool is abstract
+  infix *! (other numeric.this.type) bool is abstract
+  infix /! (other numeric.this.type) bool is abstract
+  infix %! (other numeric.this.type) bool is abstract
+  infix **!(other numeric.this.type) bool is abstract
 
 
   # overflow checking operations
-  prefix -? num_option T is - thiz
-  infix +? (other T) num_option T is thiz + other
-  infix -? (other T) num_option T is thiz - other
-  infix *? (other T) num_option T is thiz * other
-  infix **?(other T) num_option T is abstract
+  prefix -? num_option numeric.this.type is - numeric.this
+  infix +? (other numeric.this.type) num_option numeric.this.type is numeric.this + other
+  infix -? (other numeric.this.type) num_option numeric.this.type is numeric.this - other
+  infix *? (other numeric.this.type) num_option numeric.this.type is numeric.this * other
+  infix **?(other numeric.this.type) num_option numeric.this.type is abstract
 
   # saturating  operations
-  prefix -^  T is - thiz
-  infix +^ (other T) T is thiz + other
-  infix -^ (other T) T is thiz - other
-  infix *^ (other T) T is thiz * other
-  infix **^(other T) T is abstract
+  prefix -^  numeric.this.type is - numeric.this
+  infix +^ (other numeric.this.type) numeric.this.type is numeric.this + other
+  infix -^ (other numeric.this.type) numeric.this.type is numeric.this - other
+  infix *^ (other numeric.this.type) numeric.this.type is numeric.this * other
+  infix **^(other numeric.this.type) numeric.this.type is abstract
 
 
   sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
 
-  abs => if sign ≥ 0 then thiz else -thiz
+  abs => if sign ≥ 0 then numeric.this else -numeric.this
 
 
   # the u32 value corresponding to this
@@ -129,7 +125,7 @@ numeric(T type : numeric T) : has_hash, has_total_order is
     pre
       debug: numeric.this ≥ numeric.this.type.zero
   is
-    if (numeric.this ≥ numeric.this.type.one) ((thiz - T.one).to_u32 + 1)
+    if (numeric.this ≥ numeric.this.type.one) ((numeric.this - numeric.this.type.one).to_u32 + 1)
     else 0
 
 
@@ -140,14 +136,14 @@ numeric(T type : numeric T) : has_hash, has_total_order is
   is abstract
 
 
-  # find the highest power of b that is less or equal than thiz.
+  # find the highest power of b that is less or equal than numeric.this.
   #
-  private highest(b T) T
+  private highest(b numeric.this.type) numeric.this.type
     pre
-      debug: thiz.sign ≥ 0
+      debug: numeric.this.sign ≥ 0
     post
-      debug: (numeric.this = numeric.this.type.zero: result = T.one),
-      debug: (numeric.this != numeric.this.type.zero: thiz / b < result ≤ thiz)
+      debug: (numeric.this = numeric.this.type.zero: result = numeric.this.type.one),
+      debug: (numeric.this != numeric.this.type.zero: numeric.this / b < result ≤ numeric.this)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this is
   # not of type T.
@@ -155,8 +151,8 @@ numeric(T type : numeric T) : has_hash, has_total_order is
   #     integer.this != zero: integer.this / b < result <= integer.this
   is
     for
-      bs := T.one, bs * b
-    while thiz / b ≥ bs
+      bs := numeric.this.type.one, bs * b
+    while numeric.this / b ≥ bs
 
 
   # is this part of given set
@@ -166,14 +162,14 @@ numeric(T type : numeric T) : has_hash, has_total_order is
   # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
   # and it would work for all set types.
   #
-  element_of(s container.Set T) => s.contains thiz
-  infix ∈ (s container.Set T) => numeric.this.element_of s
+  element_of(s container.Set numeric.this.type) => s.contains numeric.this
+  infix ∈ (s container.Set numeric.this.type) => numeric.this.element_of s
 
 
   # is this not part of given set
   #
-  not_element_of(s container.Set T) => !element_of s
-  infix ∉ (s container.Set T) => numeric.this.not_element_of s
+  not_element_of(s container.Set numeric.this.type) => !element_of s
+  infix ∉ (s container.Set numeric.this.type) => numeric.this.not_element_of s
 
 
   # -----------------------------------------------------------------------
@@ -196,8 +192,8 @@ numeric(T type : numeric T) : has_hash, has_total_order is
   #
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
-  type.from_u32(v u32) T is
-    if v = (u32 0) T.zero else (from_u32 v-1) +^ T.one
+  type.from_u32(v u32) numeric.this.type is
+    if v = (u32 0) zero else (from_u32 v-1) +^ one
 
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
@@ -212,43 +208,41 @@ numeric(T type : numeric T) : has_hash, has_total_order is
 
   # equality
   #
-  fixed type.equality(a, b numeric T) bool is
-    T.equality a b
+  type.equality(a, b numeric.this.type) bool is abstract
 
 
   # total order
   #
-  fixed type.lteq(a, b numeric T) bool is
-    T.lteq a b
+  type.lteq(a, b numeric.this.type) bool is abstract
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  type.sum : Monoid T is
-    redef infix ∙ (a, b T) => a + b
-    redef e => zero.thiz
+  type.sum : Monoid numeric.this.type is
+    redef infix ∙ (a, b numeric.this.type) => a + b
+    redef e => zero
 
 
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  type.product : Monoid T is
-    redef infix ∙ (a, b T) => a * b
-    redef e => one.thiz
+  type.product : Monoid numeric.this.type is
+    redef infix ∙ (a, b numeric.this.type) => a * b
+    redef e => one
 
 
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  type.sum_saturating : Monoid T is
-    redef infix ∙ (a, b T) => a +^ b
-    redef e => zero.thiz
+  type.sum_saturating : Monoid numeric.this.type is
+    redef infix ∙ (a, b numeric.this.type) => a +^ b
+    redef e => zero
 
 
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  type.product_saturating : Monoid T is
-    redef infix ∙ (a, b T) => a *^ b
-    redef e => one.thiz
+  type.product_saturating : Monoid numeric.this.type is
+    redef infix ∙ (a, b numeric.this.type) => a *^ b
+    redef e => one

@@ -38,7 +38,7 @@
 private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
 is
 
-  # get the last error that occured
+  # get the last error that occurred
   last_error => desc.bind unit (_ -> unit)
 
 

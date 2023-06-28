@@ -111,7 +111,7 @@ exit0 =>
 
 
 # exit with a code argument calls exit.exit code, i.e., it uses the
-# current exit efffect to exit with the given message.
+# current exit effect to exit with the given message.
 #
 exit(code i32) => exit0.exit code
 

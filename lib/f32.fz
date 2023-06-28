@@ -29,19 +29,17 @@
 # f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f32(val f32) : float f32 is
-
-  redef thiz        => f32.this.val
+f32(val f32) : float is
 
 
   # basic operations: 'prefix -' (negation)
-  redef prefix - f32 is intrinsic
-  infix + (other f32) f32 is intrinsic
-  infix - (other f32) f32 is intrinsic
-  infix * (other f32) f32 is intrinsic
-  infix / (other f32) f32 is intrinsic
-  infix % (other f32) f32 is intrinsic
-  infix ** (other f32) f32 is intrinsic
+  fixed redef prefix - f32 is intrinsic
+  fixed infix + (other f32) f32 is intrinsic
+  fixed infix - (other f32) f32 is intrinsic
+  fixed infix * (other f32) f32 is intrinsic
+  fixed infix / (other f32) f32 is intrinsic
+  fixed infix % (other f32) f32 is intrinsic
+  fixed infix ** (other f32) f32 is intrinsic
 
 
   # conversion
@@ -113,7 +111,7 @@ f32(val f32) : float f32 is
 
 
   # the fraction of the floating point number
-  redef fract f32 is
+  fixed redef fract f32 is
     if f32.type.is_NaN val
       f32.type.NaN
     else if val < (f32 0)

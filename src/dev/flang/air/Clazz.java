@@ -544,7 +544,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
-   * This set is initialially empty, it will be filled by `registerAsHeir()`
+   * This set is initially empty, it will be filled by `registerAsHeir()`
    * which is called for every new Clazz created via Clazzes.create().
    *
    * @return the heirs including this.
@@ -730,7 +730,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForTypeFeature(o);
           }
-        t = Types.intern(new Type(t, g, o));
+        t = Types.intern(new Type(t, g, o, true));
       }
     return t;
   }
@@ -2179,7 +2179,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_typeClazz == null)
       {
-        _typeClazz = feature().isUniverse() ? this
+        _typeClazz = _type.containsError()  ? Clazzes.error.get() :
+                     feature().isUniverse() ? this
                                             : Clazzes.create(_type.typeType(),
                                                              _outer.typeClazz());
       }

@@ -91,7 +91,7 @@ is
           (vs++[v]).as_array)
       V =>
         va := array size (i -> if ks[i] = k then v else vs[i])
-        (ordered_map ks va)
+        ordered_map ks va
 
 
   # create a string containing all mappings
@@ -109,5 +109,5 @@ is
   # create an empty instance of ordered_map
   #
   type.empty => (container.ordered_map
-                 ((Sequence OK).type.empty).as_array
-                 ((Sequence V).type.empty).as_array)
+                 (Sequence OK).type.empty.as_array
+                 (Sequence V).type.empty.as_array)

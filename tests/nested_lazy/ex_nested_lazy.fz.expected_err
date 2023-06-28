@@ -9,13 +9,13 @@ actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
                       '[33mref equatable[39m',
                       '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
+                      '[33mref has_interval[39m',
                       '[33mref has_partial_order[39m',
                       '[33mref has_total_order[39m',
                       '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
+                      '[33mref integer[39m',
+                      '[33mref numeric[39m',
+                      '[33mref wrapping_integer[39m'
 for value assigned  : '[36mbox(ex_nested_lazy.this.x1.call)[39m'
 To solve this, you could change the type of the target '[36mf[39m' to '[33mref i32[39m' or convert the type of the assigned value to '[33mFunction (Lazy i32)[39m'.
 
@@ -29,13 +29,13 @@ actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
                       '[33mref equatable[39m',
                       '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
+                      '[33mref has_interval[39m',
                       '[33mref has_partial_order[39m',
                       '[33mref has_total_order[39m',
                       '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
+                      '[33mref integer[39m',
+                      '[33mref numeric[39m',
+                      '[33mref wrapping_integer[39m'
 for value assigned  : 
 [36m{
   box(42)
@@ -53,13 +53,13 @@ actual type found   : '[33mref i32[39m'
 assignable to       : '[33mAny[39m',
                       '[33mref equatable[39m',
                       '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
+                      '[33mref has_interval[39m',
                       '[33mref has_partial_order[39m',
                       '[33mref has_total_order[39m',
                       '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
+                      '[33mref integer[39m',
+                      '[33mref numeric[39m',
+                      '[33mref wrapping_integer[39m'
 for value assigned  : 
 [36m{
   box(42)

@@ -463,10 +463,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   Pair<VALUE,RESULT> processContract(int cl, FUIR.ContractKind ck)
   {
     var l = new List<RESULT>();
-    if (ck == FUIR.ContractKind.Pre)
-      {
-        assignOuterAndArgFields(l, cl);
-      }
     for (var ci = 0;
          _fuir.clazzContract(cl, ck, ci) != -1;
          ci++)

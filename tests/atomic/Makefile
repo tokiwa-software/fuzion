@@ -17,14 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stdout
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# stdout -- shorthand for fuzion.sys.out
-#
-# NYI: remove?
-#
-stdout => fuzion.sys.out
+override NAME = test_atomic
+include ../simple.mk

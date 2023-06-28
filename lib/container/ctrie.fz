@@ -36,6 +36,9 @@
 # add, lookup, remove                     : O(log n)
 # snapshot, amortized size retrieval, clear  : O(1)
 #
+# While CTrie is lock-free and guaranteed to make progress as a whole
+# it is not wait-free and thus no such guarantee is given per thread.
+#
 # NYI (atomic) cas
 # NYI addif
 #
@@ -596,7 +599,7 @@ is
 
   # a snapshot of the C_Trie as sequence auf key-value tuples
   redef items Sequence (tuple CTK CTV) is
-    (snapshot true)
+    snapshot true
       .read_root
       .as_list
 

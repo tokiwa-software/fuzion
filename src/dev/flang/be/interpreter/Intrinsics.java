@@ -215,9 +215,106 @@ public class Intrinsics extends ANY
     return result;
   }
 
+
+  /**
+   * Atomic intrinsics are made atomic using this lock.
+   *
+   * NYI: OPTIMIZATION: For atomic instances of types ref, i32, etc., we might
+   * implement this using jdk.internal.misc.Unsafe or
+   * java.util.concurrent.atomic.* to make these operations lock-free.
+   */
+  static final Object LOCK_FOR_ATOMIC = new Object();
+
+
   static
   {
     put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
+
+    put("concur.atomic.compare_and_swap0",  (interpreter, innerClazz) -> args ->
+        {
+          var a = innerClazz._outer;
+          var f = Types.resolved.f_concur_atomic_v;
+          var thiz      = args.get(0);
+          var expected  = args.get(1);
+          var new_value = args.get(2);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
+              if (interpreter.compareField(f, -1, a, thiz, expected))
+                {
+                  res = expected;   // NYI: HACK: workaround since res was not cloned
+                  interpreter.setField(f, -1, a, thiz, new_value);
+                }
+              return res;
+            }
+        });
+    put("concur.atomic.compare_and_set0",  (interpreter, innerClazz) -> args ->
+        {
+          var a = innerClazz._outer;
+          var f = Types.resolved.f_concur_atomic_v;
+          var thiz      = args.get(0);
+          var expected  = args.get(1);
+          var new_value = args.get(2);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
+              if (interpreter.compareField(f, -1, a, thiz, expected))
+                {
+                  res = expected;   // NYI: HACK: workaround since res was not cloned
+                  interpreter.setField(f, -1, a, thiz, new_value);
+                  return new boolValue(true);
+                }
+              return new boolValue(false);
+            }
+        });
+    put("concur.atomic.racy_accesses_supported",  (interpreter, innerClazz) -> args ->
+        {
+          var t = innerClazz._outer._type.generics().get(0);
+          return new boolValue
+            (t.isRef()                                 ||
+             (t.compareTo(Types.resolved.t_i8  ) == 0) ||
+             (t.compareTo(Types.resolved.t_i16 ) == 0) ||
+             (t.compareTo(Types.resolved.t_i32 ) == 0) ||
+             (t.compareTo(Types.resolved.t_u8  ) == 0) ||
+             (t.compareTo(Types.resolved.t_u16 ) == 0) ||
+             (t.compareTo(Types.resolved.t_u32 ) == 0) ||
+             (t.compareTo(Types.resolved.t_f32 ) == 0) ||
+             (t.compareTo(Types.resolved.t_bool) == 0)    );
+        });
+    put("concur.atomic.read0",  (interpreter, innerClazz) -> args ->
+        {
+          var a = innerClazz._outer;
+          var f = Types.resolved.f_concur_atomic_v;
+          var thiz = args.get(0);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              return interpreter.getField(f, a, thiz, false);
+            }
+        });
+    put("concur.atomic.write0", (interpreter, innerClazz) -> args ->
+        {
+          var a = innerClazz._outer;
+          var f = Types.resolved.f_concur_atomic_v;
+          var thiz = args.get(0);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              interpreter.setField(f, -1, a, thiz, args.get(1));
+            }
+          return new Instance(Clazzes.c_unit.get());
+        });
+
+    put("concur.util.loadFence",   (interpreter, innerClazz) -> args ->
+        {
+          synchronized (LOCK_FOR_ATOMIC) { };
+          return new Instance(Clazzes.c_unit.get());
+        });
+
+    put("concur.util.storeFence",  (interpreter, innerClazz) -> args ->
+        {
+          synchronized (LOCK_FOR_ATOMIC) { };
+          return new Instance(Clazzes.c_unit.get());
+        });
+
     put("fuzion.sys.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
     put("fuzion.sys.args.get"  , (interpreter, innerClazz) -> args ->
         {
@@ -936,7 +1033,7 @@ public class Intrinsics extends ANY
     put("i32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
     put("i64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
     put("i64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
-    put("i64.prefix -°"         , (interpreter, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).u64Value())));
+    put("i64.prefix -°"         , (interpreter, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).i64Value())));
     put("i64.infix +°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() +   args.get(1).i64Value())));
     put("i64.infix -°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() -   args.get(1).i64Value())));
     put("i64.infix *°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() *   args.get(1).i64Value())));

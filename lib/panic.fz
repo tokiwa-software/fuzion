@@ -63,7 +63,7 @@ panic =>
 
 
 # panic with a msg argument calls panic.panic msg, i.e., it uses the
-# current panic efffect to panic with the given message.
+# current panic effect to panic with the given message.
 #
 panic(msg String) => panic.panic msg
 
