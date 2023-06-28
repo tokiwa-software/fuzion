@@ -1,24 +1,24 @@
 
-[32m--CURDIR--/issue170.fz:1:16:[39m [1;31merror 1[0m[1m: Names of arguments used in this feature must be distinct.[0m
-[34msay (a 3 4 5); a(b,b,b i32) => b+b+b
-[33m---------------^[0m
-The duplicate name is '[35mb[39m'
-Feature with equally named arguments: '[35ma[39m'
-Argument #0: '[35mb[39m' is duplicate 
-Argument #1: '[35mb[39m' is duplicate 
-Argument #2: '[35mb[39m' is duplicate 
+--CURDIR--/issue170.fz:1:16: error 1: Names of arguments used in this feature must be distinct.
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+---------------^
+The duplicate name is 'b'
+Feature with equally named arguments: 'a'
+Argument #0: 'b' is duplicate 
+Argument #1: 'b' is duplicate 
+Argument #2: 'b' is duplicate 
 To solve this, rename the arguments to have unique names.
 
 
-[32m--CURDIR--/issue170.fz:2:18:[39m [1;31merror 2[0m[1m: Names of arguments used in this feature must be distinct.[0m
-[34msay (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
-[33m-----------------^[0m
-The duplicate names are '[35md[39m', '[35me[39m'
-Feature with equally named arguments: '[35mc[39m'
-Argument #0: '[35md[39m' is duplicate 
-Argument #1: '[35md[39m' is duplicate 
-Argument #2: '[35me[39m' is duplicate 
-Argument #3: '[35me[39m' is duplicate 
+--CURDIR--/issue170.fz:2:18: error 2: Names of arguments used in this feature must be distinct.
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-----------------^
+The duplicate names are 'd', 'e'
+Feature with equally named arguments: 'c'
+Argument #0: 'd' is duplicate 
+Argument #1: 'd' is duplicate 
+Argument #2: 'e' is duplicate 
+Argument #3: 'e' is duplicate 
 To solve this, rename the arguments to have unique names.
 
 2 errors.

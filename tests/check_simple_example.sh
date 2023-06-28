@@ -39,6 +39,8 @@ set -euo pipefail
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
+export FUZION_DISABLE_ANSI_ESCAPES=true
+
 RC=0
 if [ -f "$2".skip ]; then
     echo "SKIP $2"
