@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-bool : choice FALSE TRUE, equatable is
+bool : choice FALSE TRUE, property.equatable is
 
   # not
   prefix ! bool is
@@ -71,7 +71,7 @@ bool : choice FALSE TRUE, equatable is
   # ('true <=> false <=> false' evaluates to 'true')
   infix <=> (other bool) => if bool.this other else !other
 
-  # equality check implementation for inherited equatable
+  # equality check implementation for inherited property.equatable
   #
   fixed type.equality(a, b bool) =>
     if a

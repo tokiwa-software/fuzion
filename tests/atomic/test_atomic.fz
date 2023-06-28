@@ -28,13 +28,13 @@
 #
 test_atomic is
 
-  chck(T type: equatable, x, y T) =>
+  chck(T type: property.equatable, x, y T) =>
     if x = y
       say "PASSED $x = $y"
     else
       say "FAILED $x /= $y"
 
-  test(T type : equatable, a, b, c, d T) =>
+  test(T type : property.equatable, a, b, c, d T) =>
     a1 := concur.atomic a
     chck a1.read a
     a1.write b
@@ -50,7 +50,7 @@ test_atomic is
       a1.racy_write d
       chck a1.racy_read d
 
-  p(x, y i64) : equatable is
+  p(x, y i64) : property.equatable is
     fixed type.equality(a, b test_atomic.p) => a.x = b.x && a.y = b.y
     redef as_string => "$x,$y"
 

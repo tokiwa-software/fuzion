@@ -121,7 +121,7 @@ private container_node(CTK type : property.hashable, CTV type, bmp u32, array ar
 
 
 # a container, tomb or linked list node
-private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : equatable is
+private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : property.equatable is
 
   # a previous node that gets set during a generational aware compare and set
   prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
@@ -162,7 +162,7 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
 # an indirection node
-private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new (Main_Node CTK CTV)) ref : equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new (Main_Node CTK CTV)) ref : property.equatable is
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is

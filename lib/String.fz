@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : equatable, property.hashable, property.orderable is
+String ref : property.equatable, property.hashable, property.orderable is
 
   # converting a string to a string is just returning string.this
   redef as_string String is String.this
