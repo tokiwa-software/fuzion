@@ -193,7 +193,7 @@ is
 #
 sorted_array_of
   (
-  T type : has_total_order,
+  T type : property.orderable,
   # orginal, unsorted Sequence
   from Sequence T
   ) sorted_array T

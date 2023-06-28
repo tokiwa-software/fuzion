@@ -331,7 +331,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sort_by(O type : has_total_order, f T->O) => sort (a, b -> f a ≤ f b)
+  sort_by(O type : property.orderable, f T->O) => sort (a, b -> f a ≤ f b)
 
 
   # create a new list from the result of applying 'f' to the

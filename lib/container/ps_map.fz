@@ -48,7 +48,7 @@
 ps_map
   (
    # key type
-   PK type : has_total_order,
+   PK type : property.orderable,
 
    # value type
    redef V type,
@@ -362,7 +362,7 @@ O(n log n).
 #
 # NYI: move to ps_map.type
 #
-ps_maps(PK type : has_total_order, V type) is
+ps_maps(PK type : property.orderable, V type) is
 
   # empty -- an empty partially sorted map
   #
@@ -376,7 +376,7 @@ ps_maps(PK type : has_total_order, V type) is
 # This feature creates a pre-initialized instance of ps_map.
 #
 ps_map(
-    PK type : has_total_order,
+    PK type : property.orderable,
     V type,
     # list of keys in the map
     ks Sequence PK,

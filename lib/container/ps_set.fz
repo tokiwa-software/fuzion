@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 ps_set
-  (K type : has_total_order,
+  (K type : property.orderable,
    psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
@@ -142,7 +142,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 #
 # NYI: move to ps_set.type
 #
-ps_sets(K type : has_total_order) is
+ps_sets(K type : property.orderable) is
 
   # ps_set -- a partially sorted set based on ps_map
   #
@@ -155,4 +155,4 @@ ps_sets(K type : has_total_order) is
 #
 # This feature creates a pre-initialized instance of ps_set.
 #
-ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs
+ps_set(K type : property.orderable, vs Sequence K) => (ps_sets K).empty.add_all vs
