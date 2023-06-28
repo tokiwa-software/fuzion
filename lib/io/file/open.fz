@@ -43,6 +43,49 @@ priv open(T type, priv fd i64, pub file_name String) : simple_effect is
     io.file.read.read_file fd
 
 
+  # mmap effect
+  private mmap(public data marray u8) : simple_effect is
+
+
+  # shorthand to get the memory mapped file as an array
+  mmap marray u8
+  pre effect.type.is_installed (io.file.open T).mmap
+  is
+    (io.file.open T).mmap.env.data
+
+
+  # install mmap effect an run code
+  #
+  # note: the offset must be a multiple of the pagesize which usually is 4096, windows 65536?
+  # note: offset+size must not exceed size of file
+  #
+  # example usage:
+  # _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #   io.file.open.mmap (i64 0) (i64 100) ()->
+  #     io.file.open.mmap[99] := 42
+  #
+  mmap(R type, offset i64, size i64, code ()->R) outcome R
+  pre offset % 4096 = 0 # NYI get real page size instead of 4096.
+  is
+
+    res := array i32 1 (i->0)
+
+    allocated_memory := fuzion.sys.fileio.mmap fd offset size res.internal_array.data
+
+    if res[0] = -1
+      error "mmap failed"
+    else
+      marr := marray u8 size.as_i32 (fuzion.sys.internal_array u8 allocated_memory size.as_i32) unit
+
+      r := mmap marr
+        .go code
+
+      if fuzion.sys.fileio.munmap marr.data.data size = 0
+        r
+      else
+        error "error closing the memory mapped file"
+
+
 
 # short hand to get the currently
 # installed open effect
