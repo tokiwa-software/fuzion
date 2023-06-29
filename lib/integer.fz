@@ -107,7 +107,7 @@ integer : numeric is
   #
   as_string(base u32) String : character_encodings
     pre
-      debug: u32 1 < base ≤ (u32 36)
+      debug: 1 < base ≤ 36
   is
     b := integer.this.type.from_u32 base
 
@@ -119,9 +119,9 @@ integer : numeric is
     else
       # this digit as an UTF-8 byte
       digit_as_utf8_byte(d u8) u8
-      pre d ≤ (u8 35) # 35 would be a Z
+      pre d ≤ 35 # 35 would be a Z
       is
-        if d < u8 10 then String.type.zero_char + d else String.type.a_char + d - 10
+        if d < 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
       as_list0 (power integer.this.type) =>
         if power.sign <= 0
@@ -139,7 +139,7 @@ integer : numeric is
   #
   as_string(len i32, base u32) String
     pre
-      debug: u32 1 < base ≤ (u32 36)
+      debug: 1 < base ≤ 36
     post
       debug: result.byte_length ≥ len
   is
