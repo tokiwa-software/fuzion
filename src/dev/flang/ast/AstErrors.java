@@ -1838,6 +1838,28 @@ public class AstErrors extends ANY
           "or change the result type of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
   }
 
+
+  public static void declarationsInLazy(Expr lazy, List<Feature> declarations)
+  {
+    StringBuilder declarationsMsg = new StringBuilder();
+    for (var f : declarations)
+      {
+        declarationsMsg.append("declared " + s(f) + " at " + f.pos().show() + "\n");
+      }
+
+    error(lazy.pos(),
+          "IMPLEMENTATION RESTRICTION: An expression used as a lazy value cannot contain feature declarations",
+          "Declared features:\n" +
+          declarationsMsg +
+          "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
+          "\n"+
+          "To solve this, you may create a helper feature that calculates the value as follows:\n" +
+          "\n" +
+          "  lazy_value => " + lazy + "\n" +
+          "\n" +
+          "and then use " + expr("lazy_value") + " as an actual argument instead\n");
+  }
+
 }
 
 /* end of file */
