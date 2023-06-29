@@ -55,6 +55,21 @@ float : numeric is
   redef infix ** (other float.this.type) float.this.type is abstract
 
 
+  # comparision
+  #
+  # This provides comparision operators using IEEE semantics.
+  #
+  # type.equality and type.lteq should be used for equivalence relations
+  # and total ordering in the mathematical sense.
+  #
+  infix = (other float.this.type) bool is abstract
+  infix != (other float.this.type) bool is !(infix = other)
+  infix <= (other float.this.type) bool is abstract
+  infix >= (other float.this.type) bool is other <= float.this
+  infix > (other float.this.type) bool is !(infix <= other)
+  infix < (other float.this.type) bool is !(other <= float.this)
+
+
   # convert a float value to i64 dropping any fraction.
   # the value must be in the range of i64
   #
@@ -239,3 +254,23 @@ float : numeric is
   type.atanh(val float.this.type) float.this.type is
     # 1/2*ln((1+x)/(1-x))
     log ((one + val)/(one - val)) / two
+
+
+  # equality
+  #
+  # This provides an equivalence relation in the mathematical
+  # sense and therefore breaks the IEEE semantics. infix = should
+  # be used for IEEE semantics.
+  #
+  type.equality(a, b float.this.type) bool is
+    a.infix = b || (is_NaN a && is_NaN b)
+
+
+  # total order
+  #
+  # This provides a total order in the mathematical sense and
+  # therefore breaks the IEEE semantics. infix <= should be
+  # used for IEEE semantics.
+  #
+  type.lteq(a, b float.this.type) bool is
+    a.infix <= b || is_NaN a
