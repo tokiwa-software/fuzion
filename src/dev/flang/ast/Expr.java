@@ -271,51 +271,51 @@ public abstract class Expr extends ANY implements Stmnt
   {
     var result = this;
 
-    var declarationsInLazy = new List<Feature>();
-    visit(new FeatureVisitor()
-      {
-        public Stmnt action (Feature f, AbstractFeature outer)
-        {
-          declarationsInLazy.add(f);
-          return f;
-        }
-      },
-      outer);
+    result = result.propagateExpectedType(res, outer, t);
+    result = t.isLazyType() ? result.originalLazyValue() : result;
 
-    if (!declarationsInLazy.isEmpty())
+    if (t.isLazyType() && !result.type().isLazyType())
       {
-        /*
-         * NYI: Instead of producing an error here, we could instead remove what
-         * was done during SourceModule.findDeclarations() performed in this
-         * expression, or, alternatively, create a new parse tree for this
-         * expression and use that instead.
-         *
-         * Examples that cause this problem are
-         *
-         *     l(t Lazy i32) is
-         *     _ := l ({
-         *               x is
-         *               y => 4711
-         *               c := 0815
-         *             })
-         *
-         * or using implicit declarations created for a loop:
-         *
-         *     l(t Lazy l) is
-         *       n => t
-         *
-         *     f l is l (do)
-         *     _ := f.n
-         */
-        AstErrors.declarationsInLazy(this, declarationsInLazy);
-        result = ERROR_VALUE;
-      }
-    else
-      {
-        result = result.propagateExpectedType(res, outer, t);
-        result = t.isLazyType() ? result.originalLazyValue() : result;
+        var declarationsInLazy = new List<Feature>();
+        visit(new FeatureVisitor()
+          {
+            public Stmnt action (Feature f, AbstractFeature outer)
+            {
+              declarationsInLazy.add(f);
+              return f;
+            }
+          },
+          outer);
 
-        if (t.isLazyType() && !result.type().isLazyType())
+        if (!declarationsInLazy.isEmpty())
+          {
+            /*
+             * NYI: Instead of producing an error here, we could instead remove what
+             * was done during SourceModule.findDeclarations() performed in this
+             * expression, or, alternatively, create a new parse tree for this
+             * expression and use that instead.
+             *
+             * Examples that cause this problem are
+             *
+             *     l(t Lazy i32) is
+             *     _ := l ({
+             *               x is
+             *               y => 4711
+             *               c := 0815
+             *             })
+             *
+             * or using implicit declarations created for a loop:
+             *
+             *     l(t Lazy l) is
+             *       n => t
+             *
+             *     f l is l (do)
+             *     _ := f.n
+             */
+            AstErrors.declarationsInLazy(this, declarationsInLazy);
+            result = ERROR_VALUE;
+          }
+        else
           {
             var fn = new Function(pos(),
                                   new List<String>(),
