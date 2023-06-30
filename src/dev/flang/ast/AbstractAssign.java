@@ -196,6 +196,27 @@ public abstract class AbstractAssign extends ANY implements Stmnt
 
 
   /**
+   * During type inference: Wrap value that is assigned to lazy type variable
+   * into Functions.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void wrapValueInLazy(Resolution res, AbstractFeature outer)
+  {
+    if (CHECKS) check
+      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+
+    if (resultTypeKnown())
+      {
+        _value = _value.wrapInLazy(res, outer, _assignedField.resultType());
+      }
+  }
+
+
+  /**
    * @return Is the result type of this field already known?
    */
   private boolean resultTypeKnown()
