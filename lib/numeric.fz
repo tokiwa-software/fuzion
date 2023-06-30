@@ -193,17 +193,17 @@ numeric : has_hash, has_total_order is
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
   type.from_u32(v u32) numeric.this.type is
-    if v = (u32 0) zero else (from_u32 v-1) +^ one
+    if v = 0 zero else (from_u32 v-1) +^ one
 
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
   #
-  type.two => from_u32(2)
+  type.two => from_u32 2
 
 
   # the constant '10' in whatever integer implementation we have, maximum in case of overflow
   #
-  type.ten => from_u32(10)
+  type.ten => from_u32 10
 
 
   # equality

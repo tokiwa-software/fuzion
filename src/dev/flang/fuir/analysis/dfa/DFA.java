@@ -1586,24 +1586,11 @@ public class DFA extends ANY
    */
   void replaceDefaultEffect(int ecl, Value e)
   {
-    var oe = _defaultEffects.get(ecl);
-    Value ne;
-    if (oe == null)
+    var old_e = _defaultEffects.get(ecl);
+    var new_e = old_e == null ? e : old_e.join(e);
+    if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
-        if (false)
-          {
-            // NYI: Check why this can happen.
-            throw new Error("replaceDefaultEffect called when there is no default effect!");
-          }
-        ne = oe;
-      }
-    else
-      {
-        ne = e.join(oe);
-      }
-    if (Value.compare(oe, ne) != 0)
-      {
-        _defaultEffects.put(ecl, ne);
+        _defaultEffects.put(ecl, new_e);
         if (!_changed)
           {
             _changedSetBy = "effect.replace called: " + _fuir.clazzAsString(ecl);
@@ -1611,7 +1598,6 @@ public class DFA extends ANY
         _changed = true;
       }
   }
-
 
 
   /**
