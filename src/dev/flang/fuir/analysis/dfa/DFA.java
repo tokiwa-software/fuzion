@@ -319,7 +319,9 @@ public class DFA extends ANY
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
-              tvalue.setField(DFA.this, cc, args.get(0));
+              var v = args.get(0);
+              tvalue.setField(DFA.this, cc, v);
+              tempEscapes(cl, c, i, v, cc);
             }
           r = Value.UNIT;
         }
@@ -369,16 +371,7 @@ public class DFA extends ANY
                   {
                     _call.escapes();
                   }
-                else if (original_tvalue instanceof EmbeddedValue ev &&
-                         !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)) &&
-                         !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)) &&
-                         _fuir.clazzOuterRef(cc) != -1 &&
-                         _fuir.clazzFieldIsAdrOfValue(_fuir.clazzOuterRef(cc)) &&
-                         ev._cl != -1)
-                  {
-                    tempEscapes(cl, c, i, ev._cl, ev._code, ev._index);
-                  }
-
+                tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
@@ -1122,13 +1115,34 @@ public class DFA extends ANY
   }
 
 
-  void tempEscapes(int cl0, int c0, int ix0, int cl, int code, int ix)
+  /**
+   * Record that a temporary value whose adress is taken may live longer than
+   * than the current call, so we cannot store it in the current stack frame.
+   *
+   * @param cl the outer clazz whose code we are analysing.
+   *
+   * @param c the code block containing we are analysing
+   *
+   * @param i the index of the call or assignment we are analysing
+   *
+   * @param v value we are taking an address of
+   *
+   * @param adrField field the address of `v` is assigned to.
+   *
+   */
+  void tempEscapes(int cl, int c, int i, Value v, int adrField)
   {
-    var cp = new CodePos(cl, code, ix);
-    _escapesCode.add(cp);
+    if (v instanceof EmbeddedValue ev &&
+        adrField != -1 &&
+        !_fuir.clazzIsRef(_fuir.clazzResultClazz(adrField)) &&
+        _fuir.clazzFieldIsAdrOfValue(adrField)
+        && ev._cl != -1
+        )
+      {
+        var cp = new CodePos(ev._cl, ev._code, ev._index);
+        _escapesCode.add(cp);
+      }
   }
-
-
 
 
   static
