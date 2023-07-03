@@ -17,37 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature has_partial_order
+#  Source code of Fuzion standard library feature orderable
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# has_partial_order -- feature for immutable values that have an infix <=
-# predicate that defines a partial order
+# orderable -- feature for immutable values that have an infix ≤ function
+# predicate that defines a total order
 #
-# features inheriting from has_partial_order define a partial order of their
-# values
+# features inheriting from orderable define a total order of their values
 #
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-has_partial_order : equatable
+orderable : property.partially_orderable
 
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.for_all  T     fun(a       T) => (a <= b),                # reflexivity
-    analysis: quantors.for_all3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
-    analysis: quantors.for_all3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
+    analysis: quantors.for_all2 T T fun(a, b T) => a <= b || b <= a,
 */
 
 is
-
-
-  # does a come before b or is equal to b?
-  #
-  type.lteq(a, b has_partial_order.this.type) bool is abstract
-
-  # equality check for immutable values
-  #
-  fixed type.equality(a, b has_partial_order.this.type) bool is
-    (a ≤ b) && (b ≤ a)

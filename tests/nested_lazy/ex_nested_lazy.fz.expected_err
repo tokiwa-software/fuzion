@@ -7,11 +7,11 @@ In call to          : 'ex_nested_lazy.lazy1'
 expected formal type: 'Function (Lazy i32)'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
-                      'ref equatable',
-                      'ref has_hash',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
                       'ref has_interval',
-                      'ref has_partial_order',
-                      'ref has_total_order',
                       'ref i32',
                       'ref integer',
                       'ref numeric',
@@ -27,11 +27,11 @@ assignment to field : 'ex_nested_lazy.#fun1.call.result'
 expected formal type: 'Function i32'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
-                      'ref equatable',
-                      'ref has_hash',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
                       'ref has_interval',
-                      'ref has_partial_order',
-                      'ref has_total_order',
                       'ref i32',
                       'ref integer',
                       'ref numeric',
@@ -51,11 +51,11 @@ assignment to field : 'ex_nested_lazy.#fun3.call.result'
 expected formal type: 'Lazy i32'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
-                      'ref equatable',
-                      'ref has_hash',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
                       'ref has_interval',
-                      'ref has_partial_order',
-                      'ref has_total_order',
                       'ref i32',
                       'ref integer',
                       'ref numeric',

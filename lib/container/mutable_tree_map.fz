@@ -24,7 +24,7 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-mutable_tree_map(LM type : mutate, KEY type : has_total_order, VAL type) : Map KEY VAL is
+mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Map KEY VAL is
 
 
   # the root entry of this map

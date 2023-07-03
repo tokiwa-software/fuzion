@@ -1,6 +1,6 @@
 
 --CURDIR--/issue698.fz:8:3: error 1: Choice type must not access fields of surrounding scope.
-  tree(A type : has_total_order) : choice nil (Node A (tree A) (tree A)) is
+  tree(A type : property.orderable) : choice nil (Node A (tree A) (tree A)) is
 --^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
 --CURDIR--/issue698.fz:15:7:

@@ -57,7 +57,7 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) is
+private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
@@ -65,14 +65,14 @@ private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) is
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) is
+private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
 # an indirection or a singleton node
-private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
+private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -86,7 +86,7 @@ private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : has_hash, CTV type, bmp u32, array array (branch CTK CTV)) is
+private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV)) is
 
   # update a child node and return a new container_node
   updated(pos u32, node branch CTK CTV) =>
@@ -121,7 +121,7 @@ private container_node(CTK type : has_hash, CTV type, bmp u32, array array (bran
 
 
 # a container, tomb or linked list node
-private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : equatable is
+private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), gen i32) ref : property.equatable is
 
   # a previous node that gets set during a generational aware compare and set
   prev := mut (choice (failed_node CTK CTV) (Main_Node CTK CTV) nil) nil
@@ -159,10 +159,10 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
 
 
 # a failed node where the previous indirection node contains a main node
-private failed_node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) is
+private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
 # an indirection node
-private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_Node CTK CTV)) ref : equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new (Main_Node CTK CTV)) ref : property.equatable is
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
@@ -235,7 +235,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data mutate.new (Main_No
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
+private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef as_list => from.as_list
@@ -258,11 +258,11 @@ private not_found is
   redef as_string => "not found"
 
 # descriptor for double-compare-single-swap operation
-private rdcss_descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
+private rdcss_descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) is
 
 
 # the ctrie
-C_Trie(CTK type : has_hash, CTV type, private root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), private read_only bool) ref : Map CTK CTV
+C_Trie(CTK type : property.hashable, CTV type, private root mutate.new (choice (Indirection_Node CTK CTV) (rdcss_descriptor CTK CTV)), private read_only bool) ref : Map CTK CTV
 is
 
   # compare and swap root of the ctrie
