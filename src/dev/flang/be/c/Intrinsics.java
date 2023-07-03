@@ -433,6 +433,7 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(0)),
                   CStmnt.seq(
+                    // open file for reading, binary mode
                     filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
@@ -442,7 +443,10 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(1)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
+                    // open file read-, write-, binary-mode. creates new file if not exists.
+                    // if file is not empty, any writes will overwrite the contents in the file.
+                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
+                    CExpr.call("fseek", new List<>(filePointer, CExpr.int32const(0), new CIdent("SEEK_SET"))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -451,7 +455,9 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(2)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
+                    // open file read-, write-, binary-mode. creates new file if not exists.
+                    // writes happen at end of file.
+                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -499,6 +505,18 @@ public class Intrinsics extends ANY
             );
         }
         );
+
+    put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
+      A0.castTo("FILE * "),   // file
+      A1.castTo("off_t"),     // offset
+      A2.castTo("size_t"),    // size
+      A3.castTo("int *")      // int[1] contains success=0 or error=-1
+    )).ret());
+    put("fuzion.sys.fileio.munmap", (c,cl,outer,in) -> CExpr.call("fzE_munmap", new List<CExpr>(
+      A0.castTo("void *"),    // address
+      A1.castTo("size_t")     // size
+    )).ret());
+
     put("fuzion.sys.out.flush"      ,
         "fuzion.sys.err.flush"      , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.sys.stdin.next_byte", (c,cl,outer,in) ->
@@ -670,10 +688,16 @@ public class Intrinsics extends ANY
         "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
     put("f32.infix **"         ,
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
-    put("f32.type.equality"    ,
-        "f64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.type.lteq"        ,
-        "f64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix ="          ,
+        "f64.infix ="          , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix <="         ,
+        "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >="         ,
+        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix <"          ,
+        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >"          ,
+        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->
@@ -859,7 +883,8 @@ public class Intrinsics extends ANY
                                                                                    arg))),
                                 CExpr.iff(res.ne(CExpr.int32const(0)),
                                           CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+                                pt.castTo("int64_t").ret());
               // NYI: free(pt)!
             }
           else
@@ -867,6 +892,12 @@ public class Intrinsics extends ANY
               return CStmnt.EMPTY;
             }
         });
+    put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
+    {
+      return CStmnt.seq(
+        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */))
+      );
+    });
     put("fuzion.std.nano_time", (c,cl,outer,in) ->
         {
           var result = new CIdent("result");

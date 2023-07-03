@@ -63,7 +63,7 @@ public class Profiler extends ANY
 
 
   /**
-   * Command to be exucuted to create flame graph
+   * Command to be excecuted to create flame graph
    */
   private static String FLAMEGRAPH_PL = "flamegraph.pl";
 
@@ -120,7 +120,7 @@ public class Profiler extends ANY
 
   /**
    * Desktop instance to display framegraph results.  Since the flame graph is
-   * created in the shutdown hook and desktop itself cannto be created during
+   * created in the shutdown hook and desktop itself can not be created during
    * shutdown, we create this early.
    */
   static Desktop _desktop;
@@ -135,11 +135,11 @@ public class Profiler extends ANY
    *
    *   main;abc;def 1345
    *
-   * to be preocessed by flame graph.pl, or classic profile output showing a
-   * single line for each source code that occured during a sample sorted by
+   * to be processed by flame graph.pl, or classic profile output showing a
+   * single line for each source code that occurred during a sample sorted by
    * frequency.
    *
-   * @return ture to collect frame graph data, false to collect classic data.
+   * @return true to collect frame graph data, false to collect classic data.
    */
   static boolean collectFrameGraphData()
   {

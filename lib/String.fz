@@ -170,7 +170,7 @@ String ref : equatable, has_hash, has_total_order is
   #
   parse_integer(
     # the integer type
-    T type : integer T,
+    T type : integer,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -192,7 +192,7 @@ String ref : equatable, has_hash, has_total_order is
   #
   private parse_integer(
     # the integer type
-    T type : integer T,
+    T type : integer,
 
     # base gives the base, between 2 and 36
     base T,
@@ -295,15 +295,15 @@ String ref : equatable, has_hash, has_total_order is
         # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
         if b1.as_u32 ∈ p.utf8_encoded_in_one_byte           # ASCII
           ret (codepoint b1.as_u32) c1.tail
-        else if u8 0xc0 ≤ b1 ≤ (u8 0xf4)
+        else if 0xc0 ≤ b1 ≤ 0xf4
           match c1.tail
             nil => e1 "end of String, expected continuation byte"
             c2 Cons =>
               b2 := c2.head
               e2(msg String) => ret (e "$b1, $b2: $msg") c2.tail
-              if (b2 & 0xc0) != (u8 0x80)
+              if (b2 & 0xc0) != 0x80
                 e2 "expected continuation byte in the range 0x80..0xbf."
-              else if u8 0xc0 ≤ b1 ≤ (u8 0xdf)   # 0x0080..0x7ff encoded in 2 bytes
+              else if 0xc0 ≤ b1 ≤ 0xdf   # 0x0080..0x7ff encoded in 2 bytes
                 res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
                 if res ∉ p.utf8_encoded_in_two_bytes
                   e2 "codepoint $res uses overlong 2-byte encoding, allowed for range {p.utf8_encoded_in_two_bytes}."
@@ -315,9 +315,9 @@ String ref : equatable, has_hash, has_total_order is
                   c3 Cons =>
                     b3 := c3.head
                     e3(msg String) => ret (e "$b1, $b2, $b3: $msg") c3.tail
-                    if (b3 & 0xc0) != (u8 0x80)
+                    if (b3 & 0xc0) != 0x80
                       e3 "expected two continuation bytes in the range 0x80..0xbf."
-                    else if b1 ≤ (u8 0xef)       # 0x0800..0xffff encoded in 3 bytes
+                    else if b1 ≤ 0xef       # 0x0800..0xffff encoded in 3 bytes
                       res := (((b1.as_u32 & 0x0f) << 12) |
                               ((b2.as_u32 & 0x3f) <<  6) |
                               ((b3.as_u32 & 0x3f)      )   )
@@ -335,7 +335,7 @@ String ref : equatable, has_hash, has_total_order is
                         c4 Cons =>
                           b4 := c4.head
                           e4(msg String) => ret (e "$b1, $b2, $b3, $b4: $msg") c4.tail
-                          if (b4 & 0xc0) != (u8 0x80)
+                          if (b4 & 0xc0) != 0x80
                             e4 "expected three continuation bytes in the range 0x80..0xbf."
                           else
                             res := (((b1.as_u32 & 0x07) << 18) |
@@ -349,9 +349,9 @@ String ref : equatable, has_hash, has_total_order is
                             else
                               ret (codepoint res) c4.tail
               else fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
-        else if u8 0x80 ≤ b1 ≤ (u8 0xbf) then e1 "stray continuation byte without preceding leading byte."
-        else if u8 0xf5 ≤ b1 ≤ (u8 0xfd) then e1 "codes 0xf5..0xfd are undefined."
-        else if u8 0xfe ≤ b1 ≤ (u8 0xff) then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
+        else if 0x80 ≤ b1 ≤ 0xbf then e1 "stray continuation byte without preceding leading byte."
+        else if 0xf5 ≤ b1 ≤ 0xfd then e1 "codes 0xf5..0xfd are undefined."
+        else if 0xfe ≤ b1 ≤ 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
         else
           fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
 

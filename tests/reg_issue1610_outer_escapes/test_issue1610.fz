@@ -1,0 +1,445 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_issue1610.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_issue1610 tests different cases of outer value instances that are
+# stored within value instances that have a shorter life-span
+#
+test_issue1610 =>
+
+  case1_tmp =>
+
+    # f contains a temporary variable that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    f =>
+      (a 1234567890).g
+
+    a(e u64) is
+      g is
+        v => e
+
+    say "case 1: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case1_tmp
+
+
+  case2_field =>
+
+    # f contains a field `x` that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    f =>
+      x := (a 1234567890)
+      x.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    say "case 2: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case2_field
+
+
+  case3_field_tmp =>
+
+    # f contains a temporary variable that contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    y(T, U, V type, t T, u U, v V).
+
+    f =>
+      (y "abc" (a 1234567890) 4711).u.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    say "case 3: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case3_field_tmp
+
+
+  case4_field_field =>
+
+    # f contains a field `x` that itself contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    y(T, U, V type, t T, u U, v V).
+
+    f =>
+      x := y "abc" (a 1234567890) 4711
+      x.u.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    say "case 4: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case4_field_field
+
+
+  case1ref_tmp =>
+
+    # same as case1 but `a.g` is returned as a ref
+    #
+    # f contains a temporary variable that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    r ref is
+      v u64 is abstract
+
+    f r is
+      (a 1234567890).g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    say "case 1ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case1ref_tmp
+
+
+  case2ref_field =>
+
+    # same as case2 but `a.g` is returned as a ref
+    #
+    # f contains a field `x` that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    r ref is
+      v u64 is abstract
+
+    f r is
+      x := (a 1234567890)
+      x.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    say "case 2ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case2ref_field
+
+
+  case3ref_field_tmp =>
+
+    # same as case3 but `a.g` is returned as a ref
+    #
+    # f contains a temporary variable that contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    y(T, U, V type, t T, u U, v V).
+
+    r ref is
+      v u64 is abstract
+
+    f r is
+      (y "abc" (a 1234567890) 4711).u.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    say "case 3ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case3ref_field_tmp
+
+
+  case4ref_field_field =>
+
+    # same as case4 but `a.g` is returned as a ref
+    #
+    # f contains a field `x` that itself contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    y(T, U, V type, t T, u U, v V).
+
+    r ref is
+      v u64 is abstract
+
+    f r is
+      x := y "abc" (a 1234567890) 4711
+      x.u.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    say "case 4ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case4ref_field_field
+
+
+  case1mut_tmp =>
+
+    # same as case1 but result is stored in a mutable field
+    #
+    # f contains a temporary variable that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    m := mut (option a.g) nil
+
+    f =>
+      m <- (a 1234567890).g
+
+    a(e u64) is
+      g is
+        v => e
+
+    f
+    say "case 1mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case1mut_tmp
+
+
+  case2mut_field =>
+
+    # same as case2 but result is stored in a mutable field
+    #
+    # f contains a field `x` that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    m := mut (option a.g) nil
+
+    f =>
+      x := (a 1234567890)
+      m <- x.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    f
+    say "case 2mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case2mut_field
+
+
+  case3mut_field_tmp =>
+
+    # same as case3 but result is stored in a mutable field
+    #
+    # f contains a temporary variable that contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    m := mut (option a.g) nil
+
+    y(T, U, V type, t T, u U, v V).
+
+    f =>
+      m <- (y "abc" (a 1234567890) 4711).u.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    f
+    say "case 3mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case3mut_field_tmp
+
+
+  case4mut_field_field =>
+
+    # same as case4 but result is stored in a mutable field
+    #
+    # f contains a field `x` that itself contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    m := mut (option a.g) nil
+
+    y(T, U, V type, t T, u U, v V).
+
+    f =>
+      x := y "abc" (a 1234567890) 4711
+      m <- x.u.g
+
+    a(e u64) is
+      g is
+        v => e
+
+    f
+    say "case 4mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case4mut_field_field
+
+
+  case1mut_ref_tmp =>
+
+    # same as case1 but result is stored as a ref in a mutable field
+    #
+    # f contains a temporary variable that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    m := mut (option r) nil
+
+    r ref is
+      v u64 is abstract
+
+    f =>
+      m <- (a 1234567890).g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    f
+    say "case 1mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case1mut_ref_tmp
+
+
+  case2mut_ref_field =>
+
+    # same as case2 but result is stored as a ref in a mutable field
+    #
+    # f contains a field `x` that holds an instance of `a` and this instance
+    # is kept alive longer than `f.this` by returing an instance of `a.g`
+
+    m := mut (option r) nil
+
+    r ref is
+      v u64 is abstract
+
+    f =>
+      x := (a 1234567890)
+      m <- x.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    f
+    say "case 2mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case2mut_ref_field
+
+
+  case3mut_ref_field_tmp =>
+
+    # same as case3 but result is stored as a ref in a mutable field
+    #
+    # f contains a temporary variable that contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    m := mut (option r) nil
+
+    y(T, U, V type, t T, u U, v V).
+
+    r ref is
+      v u64 is abstract
+
+    f =>
+      m <- (y "abc" (a 1234567890) 4711).u.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    f
+    say "case 3mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case3mut_ref_field_tmp
+
+
+  case4mut_ref_field_field =>
+
+    # same as case4 but result is stored as a ref in a mutable field
+    #
+    # f contains a field `x` that itself contains a field that holds an instance of `a`
+    # and this instance is kept alive longer than `f.this` by returing an instance
+    # of `a.g`
+
+    m := mut (option r) nil
+
+    y(T, U, V type, t T, u U, v V).
+
+    r ref is
+      v u64 is abstract
+
+    f =>
+      x := y "abc" (a 1234567890) 4711
+      m <- x.u.g
+
+    a(e u64) is
+      g : r is
+        v => e
+
+    f
+    say "case 4mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+
+  case4mut_ref_field_field
+
+
+  case_inh1 =>
+
+    # f defines a heir `h` of `a.g` such that the outer ref refers to `a`, and instance
+    # o f `h` is returned
+
+    f =>
+      h : a.g is
+      h
+
+    a is
+      e := 1234567890
+      g is
+        v => e
+
+    say "case inh1: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case_inh1
+
+/* NYI: #1642 this case commented out since target in inheritance call currently cannot be a field:
+
+  case_inh2_field =>
+
+    # f defines a heir `h` of `a.g` such that the outer ref refers to `a`, and instance
+    # o f `h` is returned.  The value of `a` is passed via a field.
+
+    f =>
+      x := a 1234567890
+      h : x.g is
+      h
+
+    a(e i32) is
+      g is
+        v => e
+
+    say "case inh2_field: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case_inh2_field
+
+*/

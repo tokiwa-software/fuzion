@@ -244,6 +244,8 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.close"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.seek"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
     put("fuzion.sys.out.flush"           , (cfg, cl) -> { } );
     put("fuzion.sys.err.flush"           , (cfg, cl) -> { } );
     put("fuzion.sys.stdin.next_byte"     , (cfg, cl) -> { } );
@@ -396,10 +398,16 @@ public class CFG extends ANY
     put("f64.infix %"                    , (cfg, cl) -> { } );
     put("f32.infix **"                   , (cfg, cl) -> { } );
     put("f64.infix **"                   , (cfg, cl) -> { } );
-    put("f32.type.equality"              , (cfg, cl) -> { } );
-    put("f64.type.equality"              , (cfg, cl) -> { } );
-    put("f32.type.lteq"                  , (cfg, cl) -> { } );
-    put("f64.type.lteq"                  , (cfg, cl) -> { } );
+    put("f32.infix ="                    , (cfg, cl) -> { } );
+    put("f64.infix ="                    , (cfg, cl) -> { } );
+    put("f32.infix <="                   , (cfg, cl) -> { } );
+    put("f64.infix <="                   , (cfg, cl) -> { } );
+    put("f32.infix >="                   , (cfg, cl) -> { } );
+    put("f64.infix >="                   , (cfg, cl) -> { } );
+    put("f32.infix <"                    , (cfg, cl) -> { } );
+    put("f64.infix <"                    , (cfg, cl) -> { } );
+    put("f32.infix >"                    , (cfg, cl) -> { } );
+    put("f64.infix >"                    , (cfg, cl) -> { } );
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
@@ -458,6 +466,7 @@ public class CFG extends ANY
     put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
     put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );

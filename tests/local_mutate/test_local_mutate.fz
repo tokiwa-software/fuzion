@@ -165,8 +165,8 @@ test_local_mutate is
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
-      say (quicksort 0..i)
-      say (quicksort (i..0 : -1))
+      say (quicksort i32 0..i)
+      say (quicksort i32 (i..0 : -1))
 
   test_quicksort
 

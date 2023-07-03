@@ -29,19 +29,28 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float f64 is
+f64(val f64) : float is
 
-  redef thiz        => f64.this.val
+  thiz => f64.this.val
 
 
   # basic operations: 'prefix -' (negation)
-  redef prefix - f64 is intrinsic
-  infix + (other f64) f64 is intrinsic
-  infix - (other f64) f64 is intrinsic
-  infix * (other f64) f64 is intrinsic
-  infix / (other f64) f64 is intrinsic
-  infix % (other f64) f64 is intrinsic
-  infix ** (other f64) f64 is intrinsic
+  fixed redef prefix - f64 is intrinsic
+  fixed infix + (other f64) f64 is intrinsic
+  fixed infix - (other f64) f64 is intrinsic
+  fixed infix * (other f64) f64 is intrinsic
+  fixed infix / (other f64) f64 is intrinsic
+  fixed infix % (other f64) f64 is intrinsic
+  fixed infix ** (other f64) f64 is intrinsic
+
+
+  # comparision
+  #
+  fixed infix = (other f64) bool is intrinsic
+  fixed infix <= (other f64) bool is intrinsic
+  fixed infix >= (other f64) bool is intrinsic
+  fixed infix < (other f64) bool is intrinsic
+  fixed infix > (other f64) bool is intrinsic
 
 
   # conversion
@@ -124,7 +133,7 @@ f64(val f64) : float f64 is
 
 
   # the fraction of this floating point number
-  redef fract f64 is
+  fixed redef fract f64 is
     if f64.type.is_NaN val
       f64.type.NaN
     else if val < (f64 0)
@@ -158,16 +167,6 @@ f64(val f64) : float f64 is
   # identity element for 'infix *'
   #
   fixed type.one  f64 is 1
-
-
-  # equality
-  #
-  fixed type.equality(a, b f64) bool is intrinsic
-
-
-  # total order
-  #
-  fixed type.lteq(a, b f64) bool is intrinsic
 
 
   fixed type.bytes => 8

@@ -444,9 +444,25 @@ public class FUIR extends IR
   public boolean clazzFieldIsAdrOfValue(int fcl)
   {
     var fc = clazz(fcl);
+    return clazzFieldIsAdrOfValue(fc);
+  }
+
+
+  /**
+   * Check if field does not store the value directly, but a pointer to the value.
+   *
+   * @param fc a clazz of the field
+   *
+   * @return true iff the field is an outer ref field that holds an address of
+   * an outer value, false for normal fields our outer ref fields that store the
+   * outer ref or value directly.
+   */
+  private boolean clazzFieldIsAdrOfValue(Clazz fc)
+  {
     var f = fc.feature();
     return f.isOuterRef() &&
       !fc.resultClazz().isRef() &&
+      !fc.resultClazz().isUnitType() &&
       !fc.resultClazz().feature().isBuiltInPrimitive();
   }
 
@@ -727,32 +743,6 @@ public class FUIR extends IR
 
 
   /**
-   * Is a clazz cl's clazzOuterRef() a value type that survives the call to
-   * cl?  If this is the case, we need to heap allocate the outer ref.
-   *
-   * @param cl a clazz id
-   *
-   * @return true if cl's may be kept alive longer than through its original
-   * constructor call since inner instances stay alive.
-   */
-  public boolean clazzOuterRefEscapes(int cl)
-  {
-    var cc = clazz(cl);
-    var or = cc.outerRef();
-    var cco = cc._outer;
-    if (or == null || cco.isUnitType())
-      {
-        return false;
-      }
-    else
-      {
-        var rc = or.resultClazz();
-        return !rc.isRef() && !rc.feature().isBuiltInPrimitive();
-      }
-  }
-
-
-  /**
    * Get the id of clazz Object.
    *
    * @return clazz id of clazz Object
@@ -921,8 +911,7 @@ hw25 is
         toStack(code, p.target());
         if (or != null && !or.resultClazz().isUnitType())
           {
-            if (!or.resultClazz().isRef() &&
-                !or.resultClazz().feature().isBuiltInPrimitive())
+            if (clazzFieldIsAdrOfValue(or))
               {
                 code.add(ExprKind.AdrOf);
               }
@@ -944,6 +933,12 @@ hw25 is
         addCode(cc, code, p.calledFeature());
       }
     toStack(code, ff.code());
+  }
+
+
+  public boolean doesResultEscape(int cl, int c, int i)
+  {
+    return true;
   }
 
 
@@ -1087,6 +1082,71 @@ hw25 is
       }
   }
 
+
+  /**
+   * Enum of possible life times of instances created when a clazz is called.
+   *
+   * Ordinal numbers are sorted by lifetime length, i.e., smallest ordinal is
+   * shortest lifetime.
+   */
+  public enum LifeTime
+  {
+    /* the instance is no longer accessible after the call returns, so it can
+     * safely be allocated on a runtime stack and freed when the call returns
+     */
+    Call,
+
+    /* The instance has an unkown lifetime, so it should be heap allocated and
+     * freed by GC
+     */
+    Unknown,
+
+    /* The called clazz does not have an instance value, so there is no lifetime
+     * associated to it
+     */
+    Undefined
+  }
+
+  static
+  {
+    check(LifeTime.Call.ordinal() < LifeTime.Unknown.ordinal());
+  }
+
+
+  /**
+   * Determine the lifetime of the instance of a call to clazz cl.
+   *
+   * @param cl a clazz id of any kind
+   *
+   * @param pre true to analyse the instance created for cl's precondition,
+   * false to analyse the instance created for a call to cl
+   *
+   * @return A conservative estimate of the lifespan of cl's instance.
+   * Undefined if a call to cl does not create an instance, Call if it is
+   * guaranteed that the instance is inaccessible after the call returned.
+   */
+  public LifeTime lifeTime(int cl, boolean pre)
+  {
+    var result =
+      pre ? (switch (clazzKind(cl))
+               {
+               case Abstract  -> LifeTime.Unknown;
+               case Choice    -> LifeTime.Undefined;
+               case Intrinsic -> LifeTime.Unknown;
+               case Field     -> LifeTime.Unknown;
+               case Routine   -> LifeTime.Unknown;
+               })
+          : (switch (clazzKind(cl))
+               {
+               case Abstract  -> LifeTime.Undefined;
+               case Choice    -> LifeTime.Undefined;
+               case Intrinsic -> LifeTime.Undefined;
+               case Field     -> LifeTime.Call;
+               case Routine   -> LifeTime.Unknown;
+               });
+
+      return result;
+  }
 
   /**
    * Is the given field clazz a reference to an outer feature?

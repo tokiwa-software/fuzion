@@ -82,7 +82,19 @@ public abstract class FeatureVisitor extends ANY
    * call can redefine this method to return false when visiting actuals is not
    * desired, but, e.g., done later manually.
    */
-  public boolean doVisitActuals() { return true; }
+  public boolean doVisitActuals() { return !visitActualsLate(); }
+
+  /**
+   * When visiting a Call, the actuals value arguments are visited before the
+   * target and before the call itself.
+   *
+   * If this is redefined to return true, the order will be changed to taget,
+   * call itself and actuals.  The reason is that nested lazy values must be
+   * processed from outside to the inside to ensure that the outer feature of
+   * the inner actual is set correctly (i.e., set to the Lazy instance created
+   * for the outer lazy value).
+   */
+  public boolean visitActualsLate() { return false; }
 
   /**
    * This can be redefined to suppress visiting Assigns that were created for
