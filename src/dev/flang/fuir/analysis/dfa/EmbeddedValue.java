@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
@@ -161,6 +162,15 @@ public class EmbeddedValue extends Value
 
 
   /**
+   * Get the address of a value.
+   */
+  public Value adrOf()
+  {
+    return rewrap(x -> x.adrOf());
+  }
+
+
+  /**
    * Get set of values of given field within this instance.
    */
   Value readFieldFromInstance(DFA dfa, int field)
@@ -168,8 +178,7 @@ public class EmbeddedValue extends Value
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
-    var res = _value.readFieldFromInstance(dfa, field);
-    return new EmbeddedValue(_instance, _cl, _code, _index, res);
+    return rewrap(v -> v.readFieldFromInstance(dfa, field));
   }
 
 
@@ -180,16 +189,28 @@ public class EmbeddedValue extends Value
    */
   public Value readField(DFA dfa, int field)
   {
-    var res = _value.readField(dfa, field);
+    return rewrap(v -> v.readField(dfa, field));
+  }
+
+
+  /**
+   * apply f to the unwrapped value and re-wrap
+   *
+   * @param f function to apply to unwrapped value.
+   */
+  public EmbeddedValue rewrap(Function<Value,Value> f)
+  {
+    var res = f.apply(unwrap());
     return new EmbeddedValue(_instance, _cl, _code, _index, res);
   }
 
 
-
   /**
-   * Create a call to a field
+   * re-wrap given value res with this embedded value unless it is null (void) or of unknown clazz or of a ref clazz.
    *
-   * @param cc the inner value of the field that is called.
+   * @param dfa the DFA instance
+   *
+   * @param res the value to be wrapped
    */
   Value rewrap(DFA dfa, Value res)
   {

@@ -14,3 +14,4 @@ case 1mut_ref: PASS
 case 2mut_ref: PASS
 case 3mut_ref: PASS
 case 4mut_ref: PASS
+case inh1: PASS
