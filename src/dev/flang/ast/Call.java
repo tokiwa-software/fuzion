@@ -1715,12 +1715,7 @@ public class Call extends AbstractCall
                         inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
                         checked[vai] = true;
                       }
-                    // NYI cleanup/merge the two cases below
-                    else if (actual instanceof Function af)
-                      {
-                        checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
-                      }
-                    else if (actual instanceof Block b && b.resultExpression() instanceof Function af)
+                    else if (resultExpression(actual) instanceof Function af)
                       {
                         checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
                       }
@@ -1733,6 +1728,23 @@ public class Call extends AbstractCall
             vai++;
           }
       }
+  }
+
+
+  /**
+   * For a given Expr, check if this is a block. If so, return the block's
+   * resultExpression, otherwise return actual.
+   *
+   * @param actual an Expr or null
+   *
+   * @return in case actual instanceof Block, the resultExpression of the
+   * block's resultExpression (which might be null if the block result in
+   * implicit unit type), otherwise actual
+   */
+  private Expr resultExpression(Expr actual)
+  {
+    return actual instanceof Block ab ? resultExpression(ab.resultExpression())
+                                      : actual;
   }
 
 
