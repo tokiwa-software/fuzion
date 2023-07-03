@@ -113,6 +113,9 @@ ctrie_threads is
           kt := (1000*t)+k
 
           ctrie.add kt kt
+          if ctrie[kt].is_nil
+            panic "added key $kt not present"
+
           if ctrie[kt].get != kt
             panic "added key/value does not match $kt != {ctrie[kt].get}"
 
