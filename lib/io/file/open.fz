@@ -25,7 +25,7 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-priv open(T type, priv fd i64, pub file_name String) : simple_effect is
+private open(T type, private fd i64, public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -44,7 +44,7 @@ priv open(T type, priv fd i64, pub file_name String) : simple_effect is
 
 
   # mmap effect
-  priv mmap(pub data marray u8) : simple_effect is
+  private mmap(public data marray u8) : simple_effect is
 
 
   # shorthand to get the memory mapped file as an array
@@ -100,7 +100,7 @@ open(T type) =>
 # unit type used internally by open- and use-
 # short hands which can be used when one does not need
 # to distinguish between several open files.
-priv open_unique_type is
+private open_unique_type is
 
 
 

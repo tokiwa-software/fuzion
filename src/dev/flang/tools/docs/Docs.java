@@ -231,7 +231,7 @@ public class Docs
     return af.resultType().equals(Types.t_ADDRESS)
       || af.featureName().isInternal()
       || af.featureName().isNameless()
-      || (!ignoreVisibility && af.visibility() == Visi.PRIVPRIV)
+      || (!ignoreVisibility && af.visibility() == Visi.PRIV)
       || af.isTypeFeature()
       || Util.isArgument(af)
       || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)

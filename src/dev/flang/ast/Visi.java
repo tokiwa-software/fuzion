@@ -39,37 +39,37 @@ public enum Visi
   /*
    * visible only in the current file
    */
-  PRIVPRIV("priv"),
+  PRIV("private"),
 
 
   /*
    * callable only in the current file, type visible in module
    */
-  PRIVMODULE("priv:module"),
+  PRIVMOD("private:module"),
 
 
   /*
    * callable only in the current file, type publicly visible
    */
-  PRIVPUB("priv:pub"),
+  PRIVPUB("private:public"),
 
 
   /*
    * callable only in the module, type visible in module
    */
-  MODULEMODULE("module"),
+  MOD("module"),
 
 
   /*
    * callable only within the module, type publicly visible
    */
-  MODULEPUB("module:pub"),
+  MODPUB("module:public"),
 
 
   /*
    * visible everywhere
    */
-  PUB("pub");
+  PUB("public");
 
 
 

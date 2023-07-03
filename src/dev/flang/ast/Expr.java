@@ -354,7 +354,7 @@ public abstract class Expr extends ANY implements Stmnt
         var pos = pos();
         Feature r = new Feature(res,
                                 pos,
-                                Visi.PRIVPRIV,
+                                Visi.PRIV,
                                 t,
                                 FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
                                 outer);

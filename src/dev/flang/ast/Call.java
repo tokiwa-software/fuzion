@@ -573,7 +573,7 @@ public class Call extends AbstractCall
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
             var tmp = new Feature(res,
                                   pos(),
-                                  Visi.PRIVPRIV,
+                                  Visi.PRIV,
                                   b.type(),
                                   tmpName,
                                   thiz);

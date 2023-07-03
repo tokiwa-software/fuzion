@@ -33,7 +33,7 @@
 # For performance, this implementation uses mutable state. It can consequently
 # only be used as a one-way monad.
 #
-priv handles2(
+private handles2(
   T, X type,
 
   # the inner value of this monad
@@ -165,7 +165,7 @@ handles2(T type) =>
 
 # handle value created by 'handles2.new'
 #
-priv handle2_0(
+private handle2_0(
   T type,
 
   # get value stored in this handle

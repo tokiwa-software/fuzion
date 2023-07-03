@@ -95,7 +95,7 @@ is
 
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
-  priv equalize(other uint)
+  private equalize(other uint)
   post result.values.0.count = result.values.1.count
     =>
     if other.data.count < data.count
@@ -107,7 +107,7 @@ is
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
   # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
-  priv divide_with_remainder (divisor uint) tuple uint uint
+  private divide_with_remainder (divisor uint) tuple uint uint
   pre divisor > uint.type.zero
   is
     if thiz = uint.type.zero
@@ -180,7 +180,7 @@ is
 
   # return an array of length n
   # initialized with u32 zeros.
-  priv zeros(n i32) =>
+  private zeros(n i32) =>
     array n (_ -> u32 0)
 
 
@@ -331,7 +331,7 @@ is
 
   # this uint as a string, may contain leading zeros
   #
-  priv as_string0 String is
+  private as_string0 String is
     mrd := uint 1_000_000_000
     (q, rem) := uint.this.divide_with_remainder mrd
 

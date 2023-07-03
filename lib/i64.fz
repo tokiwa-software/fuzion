@@ -62,9 +62,9 @@ i64(val i64) : wrapping_integer, has_interval is
       safety: other != i64 0
    => mod other
 
-  # priv division and remainder with crash in case of div-by-zero
-  priv div (other i64) i64 is intrinsic
-  priv mod (other i64) i64 is intrinsic
+  # private division and remainder with crash in case of div-by-zero
+  private div (other i64) i64 is intrinsic
+  private mod (other i64) i64 is intrinsic
 
   # bitwise and, or and xor operations
   fixed infix &  (other i64) i64 is intrinsic

@@ -26,11 +26,11 @@
 testLists is
   List(T type) is
     xb is say "B.xb"
-    pub Node (
-      pub el T,
-      pub n, p OptNode) ref : Any is
+    public Node (
+      public el T,
+      public n, p OptNode) ref : Any is
 
-    pub Nil is
+    public Nil is
     OptNode : choice Node Nil is
 
     h OptNode := Nil

@@ -25,4 +25,4 @@
 
 # file -- a unit type that contains effects related to file I/O
 #
-pub file is
+public file is

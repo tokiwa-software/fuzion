@@ -54,7 +54,7 @@ stream(redef T type) ref : Sequence T is
     as_list0.get
 
   # this must not be called more than once!
-  priv from_stream list T is
+  private from_stream list T is
     if has_next
       h := next
       ref : Cons T (list T)

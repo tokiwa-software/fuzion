@@ -40,7 +40,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   # mutable references to next. Initalizes to refer to nil to form
   # a list with a single element.
   #
-  priv n := LM.env.new (option (Mutable_Linked_List LM T)) nil
+  private n := LM.env.new (option (Mutable_Linked_List LM T)) nil
 
 
   # short-hand features to get the mutable references from `n`

@@ -39,7 +39,7 @@ Linked_List(redef T type) ref : Sequence T is
 
   # helper feature for tail-recursive implementation of as_string.
   #
-  priv as_string0(pfx String) String is
+  private as_string0(pfx String) String is
     match next
       ll Linked_List T => ll.as_string0 (pfx + "{ll.data} -> ")
       nil => pfx + "nil ]"

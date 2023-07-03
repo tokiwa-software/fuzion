@@ -25,28 +25,28 @@
 
 # fuzion.sys.env_vars -- low-level feature to access environment variables
 #
-priv env_vars is
+private env_vars is
 
 
   # intrinsic to check if env var with given name exists
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  priv has0(s Any) bool is intrinsic
+  private has0(s Any) bool is intrinsic
 
 
   # intrinsic to get env var with given name
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  priv get0(s Any) String
+  private get0(s Any) String
   is intrinsic
 
   # intrinsic to set env var
-  priv set0(s Any, t Any) bool is intrinsic
+  private set0(s Any, t Any) bool is intrinsic
 
   # intrinsic to unset env var
-  priv unset0(s Any) bool is intrinsic
+  private unset0(s Any) bool is intrinsic
 
 
   # check if env var with given name exists

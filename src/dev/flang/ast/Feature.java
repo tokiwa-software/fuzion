@@ -356,7 +356,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Visi.PRIVPRIV,
+                       Visi.PRIV,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
@@ -564,7 +564,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Impl     p)
   {
     this(pos,
-         Visi.PRIVPRIV,
+         Visi.PRIV,
          0,
          r,
          qname,
@@ -863,7 +863,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (_resultField == null);
         _resultField = new Feature(res,
                                    _pos,
-                                   Visi.PRIVPRIV,
+                                   Visi.PRIV,
                                    t,
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
@@ -1556,7 +1556,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     _choiceTag = new Feature(res,
                              _pos,
-                             Visi.PRIVPRIV,
+                             Visi.PRIV,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
                              this);
@@ -2342,7 +2342,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                   : this._outer.selfType();
         _outerRef = new Feature(res,
                                 _pos,
-                                Visi.PRIVPRIV,
+                                Visi.PRIV,
                                 outerRefType,
                                 outerRefName(),
                                 this);

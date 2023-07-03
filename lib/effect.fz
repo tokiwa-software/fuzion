@@ -50,7 +50,7 @@ is
       effect_mode.inst, effect_mode.repl, effect_mode.abort, effect_mode.default, effect_mode.new => effect_mode.repl
 
   # replace effect in the current context by this
-  priv replace unit is intrinsic
+  private replace unit is intrinsic
 
 
   # execute code provided in f.call while this effect is installed
@@ -59,17 +59,17 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  priv abortable(T type : Function unit, f T) unit is intrinsic
+  private abortable(T type : Function unit, f T) unit is intrinsic
 
   # replace effect in the current context by this and abort current execution
-  priv abort void is intrinsic
+  private abort void is intrinsic
 
   # set default effect in the current context to this if none is installed
-  priv default unit is intrinsic
+  private default unit is intrinsic
 
   # execute the code of 'f' in the context of this effect
   #
-  priv run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
+  private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
     res option R := nil
     cf := Effect_Call f
     abortable cf
@@ -89,7 +89,7 @@ is
   # NYI: Currently, there is no direct way to return a result value
   # from the code.
   #
-  priv use0(
+  private use0(
       # the code to be executed within this effect.  This is typically
       # redefined as an argument field of a sub-feature of effect.
       code ()->unit
@@ -110,7 +110,7 @@ is
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
-priv Effect_Call(redef R type, f () -> R) ref : Function unit is
+private Effect_Call(redef R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()

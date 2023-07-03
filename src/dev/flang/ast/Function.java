@@ -261,7 +261,7 @@ public class Function extends ExprWithPos
         for (var n : _names)
           {
             var arg = new Feature(pos() /* better n.pos() */,
-                                  Visi.PRIVPRIV,
+                                  Visi.PRIV,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
                                   n,
@@ -297,7 +297,7 @@ public class Function extends ExprWithPos
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
-                                   Visi.PRIVPRIV,
+                                   Visi.PRIV,
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
@@ -545,7 +545,7 @@ public class Function extends ExprWithPos
               {
                 String name = "a"+argnum;
                 actual_args.add(new Actual(new Call(pos(), null, name)));
-                formal_args.add(new Feature(pos(), Visi.PRIVPRIV, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
+                formal_args.add(new Feature(pos(), Visi.PRIV, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
@@ -571,7 +571,7 @@ public class Function extends ExprWithPos
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
-                                           Visi.PRIVPRIV,
+                                           Visi.PRIV,
                                            0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),

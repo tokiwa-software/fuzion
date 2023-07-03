@@ -54,7 +54,7 @@
 # given to other features, only values can. handles essentially provide an
 # abstraction of pointers, implemented natively in Fuzion.
 #
-priv handles(
+private handles(
   T, X type,
 
   # the inner value of this monad
@@ -65,7 +65,7 @@ priv handles(
   # NYI: As soon as one-way monads are enforced, this array can be implemented
   # using marray, reducing the overhead of an update from O(count) to O(1)!
   #
-  priv ar array T,
+  private ar array T,
 
   # action to be taken: plain monad, install or replace?
   redef r effect_mode.val
@@ -73,7 +73,7 @@ priv handles(
 is
 
   # number of handles created
-  priv count => ar.length
+  private count => ar.length
 
 
   # create a new instance with one additional handle
@@ -156,7 +156,7 @@ is
   # create a new instance with the value refered to by a given handle read and
   # updated.
   #
-  priv update0 (
+  private update0 (
     # a handle created by 'new'
     x i32,
 
@@ -195,10 +195,10 @@ handles(T type) =>
 # type of the reference to the cell that holds a value of type T which can be updated
 # using the handles interface
 #
-priv handle0(
+private handle0(
   T type,
   # the index in 'handles.ar'
-  priv x i32
+  private x i32
   )
 is
 

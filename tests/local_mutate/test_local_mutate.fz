@@ -270,8 +270,8 @@ test_local_mutate is
       # mutable references to next and previous. Initalizes to refer to
       # Mut_Ring.this to form a minimal ring
       #
-      priv n := LM.env.new (Mut_Ring LM T) Mut_Ring.this
-      priv p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
+      private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this
+      private p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
 
 
       # short-hand features to get the mutable references from `n` and `p`

@@ -223,7 +223,7 @@ public class Html
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
           + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
-            .replace("$0", (config.ignoreVisibility() && (af.visibility() == Visi.PRIVPRIV)) ? "class='fd-private' hidden" : "")
+            .replace("$0", (config.ignoreVisibility() && (af.visibility() == Visi.PRIV)) ? "class='fd-private' hidden" : "")
             .replace("$1",
               summary(af))
             .replace("$2", Util.commentOf(af))

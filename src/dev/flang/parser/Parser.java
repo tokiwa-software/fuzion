@@ -489,14 +489,14 @@ visiList    : visi ( COMMA visiList
   */
   Visi visibility()
   {
-    Visi v = Visi.PRIVPRIV;
+    Visi v = Visi.PRIV;
     if (isNonEmptyVisibilityPrefix())
       {
-        if      (skip(Token.t_priv   )) { v = Visi.PRIVPRIV; }
-        else if (skip(Token.t_privmod)) { v = Visi.PRIVMODULE; }
+        if      (skip(Token.t_priv   )) { v = Visi.PRIV; }
+        else if (skip(Token.t_privmod)) { v = Visi.PRIVMOD; }
         else if (skip(Token.t_privpub)) { v = Visi.PRIVPUB; }
-        else if (skip(Token.t_mod    )) { v = Visi.MODULEMODULE; }
-        else if (skip(Token.t_modpub )) { v = Visi.MODULEPUB; }
+        else if (skip(Token.t_mod    )) { v = Visi.MOD; }
+        else if (skip(Token.t_modpub )) { v = Visi.MODPUB; }
         else if (skip(Token.t_pub    )) { v = Visi.PUB; }
         else                            { throw new Error();     }
       }

@@ -25,12 +25,12 @@
 
 # read -- effect providing byte reading operations from files
 #
-priv read(ro Read_Operation) : simple_effect is
+private read(ro Read_Operation) : simple_effect is
 
 
   # how much of a file do we read at a time, in bytes
   #
-  priv bufsize u64 is 512
+  private bufsize u64 is 512
 
 
   # reads all bytes from the file in the path
@@ -50,7 +50,7 @@ priv read(ro Read_Operation) : simple_effect is
   # this just calls the read operation and returns the result in a more useful
   # format for the use case of read_file(fd, tmp).
   #
-  priv read_proxy(fd i64, n u64) outcome (array u8) is
+  private read_proxy(fd i64, n u64) outcome (array u8) is
     a := ro.read fd n
     replace
     a
@@ -58,7 +58,7 @@ priv read(ro Read_Operation) : simple_effect is
 
   # helper feature for read_file to allow recursion
   #
-  priv read_file(fd i64, tmp array u8) outcome (array u8) is
+  private read_file(fd i64, tmp array u8) outcome (array u8) is
     t := read_proxy fd bufsize
 
     t.bind (array u8) (a->

@@ -25,19 +25,19 @@
 
 # fuzion.sys.out -- unit type grouping routines to print to stdout
 #
-pub out : character_encodings is
+public out : character_encodings is
 
-  pub print(s ref Any) =>
+  public print(s ref Any) =>
     write s.as_string.utf8.as_array
 
-  pub println(s ref Any) =>
+  public println(s ref Any) =>
     write (s.as_string.utf8 ++ [ascii.lf]).as_array
 
-  pub println =>
+  public println =>
     write [ascii.lf]
 
-  priv write(arr array u8) =>
+  private write(arr array u8) =>
     write arr.internal_array.data arr.length
 
-  priv write(array_data Any, length i32) unit is intrinsic
-  priv flush unit is intrinsic
+  private write(array_data Any, length i32) unit is intrinsic
+  private flush unit is intrinsic

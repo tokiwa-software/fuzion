@@ -35,7 +35,7 @@
 # 2) writing to a channel installed by `server.accept` will result in an error.
 # 3) reading from a channel installed by `client ...` will block indefinitely.
 #
-priv channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
+private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
 is
 
   # get the last error that occurred
@@ -54,7 +54,7 @@ is
 
 
   # read bytes from channel
-  pub read(max_bytes i32) outcome (array u8) is
+  public read(max_bytes i32) outcome (array u8) is
     # close channel on certain read errors?
     replace (match desc
       d i64 => fuzion.sys.net.read d max_bytes
@@ -62,7 +62,7 @@ is
 
 
   # NYI when to stop reading?
-  pub read outcome String is
+  public read outcome String is
     # read buffer in bytes
     buffer_size i32 := 10
 
@@ -79,7 +79,7 @@ is
 
 
   # write data to channel
-  pub write(data Sequence u8) outcome unit is
+  public write(data Sequence u8) outcome unit is
     # close channel on certain write errors?
     match desc
       d i64 => replace (fuzion.sys.net.write d data.as_array)

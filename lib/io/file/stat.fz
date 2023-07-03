@@ -37,7 +37,7 @@ meta_data(
 
 # stat -- effect providing operations to retrieve file stats
 #
-priv stat(ps Provided_Stat) : simple_effect is
+private stat(ps Provided_Stat) : simple_effect is
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir

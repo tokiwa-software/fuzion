@@ -25,7 +25,7 @@
 
 # fuzion.sys.args -- low-level feature to obtain args array
 #
-priv args =>
+private args =>
 
   # intrinsic to get argument count
   count i32 is intrinsic

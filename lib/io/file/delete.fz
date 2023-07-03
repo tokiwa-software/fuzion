@@ -25,7 +25,7 @@
 
 # delete -- effect wrapping the file delete operation
 #
-priv delete(dop Delete_Operation, _ unit) : simple_effect is
+private delete(dop Delete_Operation, _ unit) : simple_effect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure

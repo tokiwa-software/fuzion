@@ -24,11 +24,11 @@
 
 # defines effect map_of_total_order
 # this allows creating a map from a keys and values array
-priv map_of_total_order (
+private map_of_total_order (
   K type : has_total_order, V type,
   # the provider this effect uses to create a Map
-  pub new (array K, array V) -> Map K V,
-  priv em effect_mode.val,
+  public new (array K, array V) -> Map K V,
+  private em effect_mode.val,
   _ unit
   ) : effect em
 is

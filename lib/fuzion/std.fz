@@ -46,4 +46,4 @@ fuzion.std is
 
 
   # fills arg with current UTC date time
-  priv date_time(array_of_i32 Any) is intrinsic
+  private date_time(array_of_i32 Any) is intrinsic

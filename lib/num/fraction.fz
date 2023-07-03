@@ -43,12 +43,12 @@ fraction(B type : integer,
     safety: denominator.sign > 0 # denominator must be positive
 is
 
-# priv:
+# private:
 
   # just for brevity
   a => fraction numerator denominator
 
-# pub:
+# public:
 
   # enable generic features in ancestors
   thiz => a

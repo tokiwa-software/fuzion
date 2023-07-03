@@ -86,7 +86,7 @@ is
 
   # tail recursive helper for the replace features
   #
-  priv replace (old, new,
+  private replace (old, new,
                    already_replaced,          # the head part with old already replaced by new
                    to_be_replaced Sequence A, # the tail that still needs to be searched for old
                    limit option u64) list A
