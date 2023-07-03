@@ -36,16 +36,16 @@
 #
 #     ex_handles is
 #       hdl := handle 42
-#
+#     
 #       say hdl.get
-#
+#     
 #       x(h handle0 i32) unit is
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
-#
+#     
 #       x hdl
-#
+#     
 #       say hdl.get
 #
 # the example also shows the difference between handles and the mutate effect:
