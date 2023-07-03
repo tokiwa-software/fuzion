@@ -46,9 +46,12 @@ concur_simple =>
       time.nano.sleep t
       yak s
 
-  concur.thread.spawn (()->count "/"  (d.ms 20) t1)
-  concur.thread.spawn (()->count "\\" (d.ms 40) t2)
-  concur.thread.spawn (()->count "."  (d.ms 60) t3)
+  thread_1 := concur.thread.spawn (()->count "/"  (d.ms 20) t1)
+  thread_2 := concur.thread.spawn (()->count "\\" (d.ms 40) t2)
+  thread_3 := concur.thread.spawn (()->count "."  (d.ms 60) t3)
 
-  time.nano.sleep (d.ms t3.millis*N.as_u64+500)
+  thread_1.join
+  thread_2.join
+  thread_3.join
+
   say
