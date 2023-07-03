@@ -33,7 +33,7 @@ jobs:
         shell: powershell
         run: choco install openjdk --version 17.0.0
 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v2.6.0
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v2.6.0
 
       - name: echo versions
         run: export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
