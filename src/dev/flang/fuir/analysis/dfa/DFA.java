@@ -1197,6 +1197,12 @@ public class DFA extends ANY
     put("f64.infix ="                    , cl -> cl._dfa._bool );
     put("f32.infix <="                   , cl -> cl._dfa._bool );
     put("f64.infix <="                   , cl -> cl._dfa._bool );
+    put("f32.infix >="                   , cl -> cl._dfa._bool );
+    put("f64.infix >="                   , cl -> cl._dfa._bool );
+    put("f32.infix <"                    , cl -> cl._dfa._bool );
+    put("f64.infix <"                    , cl -> cl._dfa._bool );
+    put("f32.infix >"                    , cl -> cl._dfa._bool );
+    put("f64.infix >"                    , cl -> cl._dfa._bool );
     put("f32.as_f64"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

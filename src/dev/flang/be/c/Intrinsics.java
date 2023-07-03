@@ -674,6 +674,12 @@ public class Intrinsics extends ANY
         "f64.infix ="          , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.infix <="         ,
         "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >="         ,
+        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix <"          ,
+        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >"          ,
+        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->

@@ -65,9 +65,9 @@ float : numeric is
   infix = (other float.this.type) bool is abstract
   infix != (other float.this.type) bool is !(infix = other)
   infix <= (other float.this.type) bool is abstract
-  infix >= (other float.this.type) bool is other <= float.this
-  infix > (other float.this.type) bool is !(infix <= other)
-  infix < (other float.this.type) bool is !(other <= float.this)
+  infix >= (other float.this.type) bool is abstract
+  infix > (other float.this.type) bool is abstract
+  infix < (other float.this.type) bool is abstract
 
 
   # convert a float value to i64 dropping any fraction.

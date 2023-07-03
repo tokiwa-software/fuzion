@@ -46,6 +46,9 @@ f32(val f32) : float is
   #
   fixed infix = (other f32) bool is intrinsic
   fixed infix <= (other f32) bool is intrinsic
+  fixed infix >= (other f32) bool is intrinsic
+  fixed infix < (other f32) bool is intrinsic
+  fixed infix > (other f32) bool is intrinsic
 
 
   # conversion
