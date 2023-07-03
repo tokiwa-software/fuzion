@@ -58,7 +58,7 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) : equatable is
+private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) : equatable is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
@@ -69,7 +69,7 @@ private tomb_node(CTK type : has_hash, CTV type, sn singleton_node CTK CTV) : eq
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) : equatable  is
+private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) : equatable  is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
@@ -81,7 +81,7 @@ private singleton_node(CTK type : has_hash, CTV type, k CTK, v CTV) : equatable 
 
 # an indirection or a singleton node
 # these are put into a container node
-private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), equatable is
+private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), equatable is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -106,7 +106,7 @@ private branch(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK CTV
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : has_hash, CTV type, bmp u32, array array (branch CTK CTV)) : equatable is
+private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV)) : equatable is
 
   # update a child node and return a new container_node
   update(pos u32, node branch CTK CTV) =>
@@ -224,7 +224,7 @@ private Main_Node(CTK type : has_hash, CTV type, data choice (container_node CTK
 
 # a failed node where the previous indirection node contains a main node
 # NYI ref, work around for issue #1604
-private Failed_Node(CTK type : has_hash, CTV type, prev Main_Node CTK CTV) ref : equatable is
+private Failed_Node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) ref : equatable is
 
   redef as_string =>
     "Failed_Node($prev)"
@@ -239,7 +239,7 @@ private indirection_node(CTK type : has_hash, CTV type, data Main_Node CTK CTV, 
 
 
 # an indirection node
-private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main_Node CTK CTV), gen i32) ref /* NYI removing this ref leads to segfaults */ : equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen i32) ref /* NYI removing this ref leads to segfaults */ : property.equatable is
 
   # NYI ref equality
   #
@@ -261,7 +261,7 @@ private Indirection_Node(CTK type : has_hash, CTV type, data concur.atomic (Main
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : has_hash, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), equatable
+private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), equatable
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef as_list => from.as_list
@@ -297,7 +297,7 @@ private not_found is
 
 # descriptor for double-compare-single-swap operation
 # NYI ref, work around for issue #1604
-private Rdcss_Descriptor(CTK type : has_hash, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref is
+private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref is
 
   # this field does not have to be atomic
   # but it probably does not hurt either.
@@ -319,7 +319,7 @@ private root_node(CTK type : has_hash, CTV type) : choice (Indirection_Node CTK 
 
 
 # the ctrie
-ctrie(CTK type : has_hash, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
+ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
 is
 
   # the data structure as human readable string

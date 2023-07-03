@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: has_total_order, data Sequence T) array T is
+    quicksort(T type: property.orderable, data Sequence T) array T is
       c := data.count
       if c = 0
         []

@@ -27,14 +27,14 @@
 #
 # This feature creates an instance of a Set.
 #
-set_of_ordered(K type : has_total_order, vs Sequence K) Set K is ps_set vs
+set_of_ordered(K type : property.orderable, vs Sequence K) Set K is ps_set vs
 
 
 # set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
 #
 # This feature creates an instance of a Set.
 #
-set_of_hashable(K type : has_hash, vs (container.ctrie K unit) | (Sequence K)) Set K is
+set_of_hashable(K type : property.hashable, vs (container.ctrie K unit) | (Sequence K)) Set K is
 
   private map container.ctrie K unit :=
     match vs

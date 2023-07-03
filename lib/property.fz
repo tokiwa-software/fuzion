@@ -17,26 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature has_total_order
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature property
 #
 # -----------------------------------------------------------------------
 
-# has_total_order -- feature for immutable values that have an infix ≤ function
-# predicate that defines a total order
+# property -- unit feature to group features that can be inherited by other
+# features if they fulfill certain properties such as defining a partial
+# order
 #
-# features inheriting from has_total_order define a total order of their values
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-has_total_order : has_partial_order
-
-/* NYI: quantor intrinsics not supported yet:
-
-  inv
-    analysis: quantors.for_all2 T T fun(a, b T) => a <= b || b <= a,
-*/
-
-is
+property is
