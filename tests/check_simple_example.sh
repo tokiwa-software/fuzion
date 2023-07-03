@@ -39,7 +39,6 @@ set -euo pipefail
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
-export FUZION_DISABLE_ANSI_ESCAPES=true
 
 RC=0
 if [ -f "$2".skip ]; then
@@ -58,7 +57,7 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    (FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 "$2" >tmp_out.txt 2>tmp_err.txt) || true
+    (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 "$2" >tmp_out.txt 2>tmp_err.txt) || true
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
     diff "$2".expected_out tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
     diff "$2".expected_err tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")

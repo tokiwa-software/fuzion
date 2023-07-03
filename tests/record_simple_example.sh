@@ -39,7 +39,6 @@ set -euo pipefail
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
-export FUZION_DISABLE_ANSI_ESCAPES=true
 
 if [ -f "$2".skip ]; then
     echo "SKIPPED $2"
@@ -56,7 +55,7 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    ($1 "$2" >"$2".expected_out 2>"$2".expected_err) || true
+    (FUZION_DISABLE_ANSI_ESCAPES=true $1 "$2" >"$2".expected_out 2>"$2".expected_err) || true
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err
     echo "RECORDED $2"
 fi
