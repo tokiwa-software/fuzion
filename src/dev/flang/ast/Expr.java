@@ -263,15 +263,21 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Before propagateExpectedType: if type inference up until now has figured
+   * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param  outer the feature that contains this expression
+   *
+   * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
 
-    result = result.propagateExpectedType(res, outer, t);
     result = t.isLazyType() ? result.originalLazyValue() : result;
 
     if (t.isLazyType() && !result.type().isLazyType())

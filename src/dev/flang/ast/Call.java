@@ -685,11 +685,12 @@ public class Call extends AbstractCall
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
        : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    var actualsResolved = false;
     if (_calledFeature == null)
       {
         if (CHECKS) check
           (Errors.count() > 0 || _name != Errors.ERROR_STRING);
+
+        var actualsResolved = false;
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
@@ -744,22 +745,22 @@ public class Call extends AbstractCall
                   }
               }
           }
-      }
-    if (_calledFeature == null)
-      {
-        _calledFeature = Types.f_ERROR;
-        if (_target == null)
+        if (_calledFeature == null)
           {
-            _target = Expr.ERROR_VALUE;
+            _calledFeature = Types.f_ERROR;
+            if (_target == null)
+              {
+                _target = Expr.ERROR_VALUE;
+              }
           }
-      }
-    if (_calledFeature == Types.f_ERROR)
-      {
-        _actuals = new List<>();
-      }
-    if (!actualsResolved)
-      {
-        resolveTypesOfActuals(res,thiz);
+        if (_calledFeature == Types.f_ERROR)
+          {
+            _actuals = new List<>();
+          }
+        if (!actualsResolved)
+          {
+            resolveTypesOfActuals(res,thiz);
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -1087,22 +1088,41 @@ public class Call extends AbstractCall
     _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
-        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
-        while (i.hasNext())
-          {
-            var a = i.next();
-            if (a != null)
-              {
-                i.set(a.visit(v, outer));
-              }
-          }
+        visitActuals(v, outer);
       }
     if (_target != null)
       {
         _target = _target.visit(v, outer);
       }
     v.action((AbstractCall) this);
-    return v.action(this, outer);
+    var result = v.action(this, outer);
+    if (v.visitActualsLate())
+      {
+        visitActuals(v, outer);
+      }
+    return result;
+  }
+
+
+  /**
+   * Helper for visit to visit all the actual value arguments of this call.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   */
+  private void visitActuals(FeatureVisitor v, AbstractFeature outer)
+  {
+    ListIterator<Expr> i = _actuals.listIterator();
+    while (i.hasNext())
+      {
+        var a = i.next();
+        if (a != null)
+          {
+            i.set(a.visit(v, outer));
+          }
+      }
   }
 
 
@@ -1555,7 +1575,7 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.wrapInLazyAndThenPropagateExpectedType(res, outer, t);
+                    actual = actual.propagateExpectedType(res, outer, t);
                   }
               }
           }
@@ -2143,6 +2163,41 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, outer, formalType));
+
+    if (_target != null)
+      {
+        // NYI: Need to check why this is needed, it does not make sense to
+        // propagate the target's type to target. But if removed,
+        // tests/reg_issue16_chainedBool/ fails with C backend:
+        _target = _target.propagateExpectedType(res, outer, _target.typeIfKnown());
+      }
+  }
+
+
+  /**
+   * During type inference: Wrap expressions that are assigned to lazy actuals
+   * in functions.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void wrapActualsInLazy(Resolution res, AbstractFeature outer)
+  {
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, formalType));
+  }
+
+
+  /**
+   * Helper for propagateExpectedType and wrapActualsInLazy to apply `f` to all
+   * actual value arguments and their formal types.
+   *
+   * @param f function to apply to all actuals
+   */
+  void applyToActualsAndFormalTypes(java.util.function.BiFunction<Expr, AbstractType, Expr> f)
+  {
     if (_type != Types.t_ERROR &&
         _resolvedFormalArgumentTypes != null &&
         _actuals.size() == _resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
@@ -2158,20 +2213,12 @@ public class Call extends AbstractCall
                frmlT != Types.t_ERROR || Errors.count() > 0);
             if (actl != null)
               {
-                var a = actl.wrapInLazyAndThenPropagateExpectedType(res, outer, frmlT);
+                var a = f.apply(actl, frmlT);
                 if (CHECKS) check
                   (a != null);
                 i.set(a);
               }
             count++;
-          }
-
-        if (_target != null)
-          {
-            // NYI: Need to check why this is needed, it does not make sense to
-            // propagate the target's type to target. But if removed,
-            // tests/reg_issue16_chainedBool/ fails with C backend:
-            _target = _target.wrapInLazyAndThenPropagateExpectedType(res, outer, _target.typeIfKnown());
           }
       }
   }
