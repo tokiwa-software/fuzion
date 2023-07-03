@@ -44,6 +44,15 @@ f64(val f64) : float is
   fixed infix ** (other f64) f64 is intrinsic
 
 
+  # comparision
+  #
+  fixed infix = (other f64) bool is intrinsic
+  fixed infix <= (other f64) bool is intrinsic
+  fixed infix >= (other f64) bool is intrinsic
+  fixed infix < (other f64) bool is intrinsic
+  fixed infix > (other f64) bool is intrinsic
+
+
   # conversion
 
   # NaN is converted to 0
@@ -158,16 +167,6 @@ f64(val f64) : float is
   # identity element for 'infix *'
   #
   fixed type.one  f64 is 1
-
-
-  # equality
-  #
-  fixed type.equality(a, b f64) bool is intrinsic
-
-
-  # total order
-  #
-  fixed type.lteq(a, b f64) bool is intrinsic
 
 
   fixed type.bytes => 8

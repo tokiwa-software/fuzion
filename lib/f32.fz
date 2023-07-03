@@ -42,6 +42,15 @@ f32(val f32) : float is
   fixed infix ** (other f32) f32 is intrinsic
 
 
+  # comparision
+  #
+  fixed infix = (other f32) bool is intrinsic
+  fixed infix <= (other f32) bool is intrinsic
+  fixed infix >= (other f32) bool is intrinsic
+  fixed infix < (other f32) bool is intrinsic
+  fixed infix > (other f32) bool is intrinsic
+
+
   # conversion
   redef as_i64 => as_f64.as_i64
 
@@ -145,16 +154,6 @@ f32(val f32) : float is
   # identity element for 'infix *'
   #
   fixed type.one  f32 is 1
-
-
-  # equality
-  #
-  fixed type.equality(a, b f32) bool is intrinsic
-
-
-  # total order
-  #
-  fixed type.lteq(a, b f32) bool is intrinsic
 
 
   fixed type.bytes => 4
