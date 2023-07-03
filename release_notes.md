@@ -1,5 +1,129 @@
-## 2023-**-**: V0.083
+## 2023-07-03: V0.083
 
+- Fuzion language
+
+  - Fix the handling of types, in particular in conjuction with covariance and
+    type constraints #1612, #1620, #1627, #1629, #1650. This allowed the removal
+    of the type parameter from numeric, see below.
+
+  - Some other bugs in the implementation have been fixed: #1616, #1619, #1648.
+
+  - The redefine keyword has been removed from Fuzion (#1411). In contrast to
+    the synonymous redef, this keyword was barely used in the standard library.
+
+  - Fix the handling of calls to boxed values (#1426). When a function is called
+    on a boxed value, the target of the call is no longer the ref instance, but
+    the value instance that was boxed.
+
+  - This change sounds subtle, but if fixes a number of problems when the
+    original value type is used as the type of inner features of the boxed value
+    type feature and these types must be value types even after boxing. All the
+    details can be found in the the pull request description.
+
+  - Calling type features from type parameters has been fixed (#1471).
+
+  - Fix an IndexOutOfBoundsException in chained booleans (#1511).
+
+  - Allow the redefinition of features with type parameters (#1515).
+
+  - Fix a NullPointerException when inheriting from a feature that does not
+    exist (#1509).
+
+  - Fix the propagation of types in covariant features (#1523).
+
+- base library
+
+  -  Add the array.type.new type feature as an alternative to the array
+     constructor, but also add a array-constructor-like feature marray as an
+     alternative to marray.type.new #1566.
+
+   - Remove the use of the stream feature in some features, and if possible,
+     return list instead of Sequence #1569.
+
+   - Remove the Sequences feature #1579.
+
+   - The new concur.atomic feature allows atomic accesses to a value #1580,
+     #1606.
+
+   - String.type.from_array has been renamed as String.type.from_marray #1581.
+
+   - The unicode feature has been moved into the character_encodings feature
+     #1584.
+
+   - The stdout feature has been removed, use say or yak instead #1585.
+
+   - The some feature has been removed, if you need a wrapper type for choice or
+     similar, define your own local wrapper type #1589.
+
+   - The ryu feature is now grouped in the num feature #1600.
+
+   - The type parameter has been removed from numeric and its heirs
+    #1622. this.type-covariance is now used instead.  fz tool
+
+   - The -XjavaProf option has been added, which can create a flame graph for
+     profiling purposes #1555, #1557.
+
+  - More features, including public-facing ones have been renamed to match the
+    Fuzion naming convention (#1412, #1367, #1439).
+
+  - Basic support for networking with TCP and UDP sockets landed (#1223). A
+    basic demo webserver written in Fuzion has been added (#1456).
+
+  - Ryu, a float to string algorithm has been implemented in Fuzion
+    (#986). Currently, this exists besides the f32.as_string and f64.as_string
+    features, which use the float to string operation of the underlying
+    backend. Since the output of this varies depending on whether the
+    interpreter or the C backend is used, the long-term goal is to replace the
+    implementation of as_string by Ryu.
+
+  - The effects io.file.use and io.file.open have been added (#1428), which
+    simplify working with files from Fuzion code.
+
+  - In an effort to reduce clutter in the base library, several features have
+    been grouped in common outer features, such as complex, fraction, matrix ,
+    which are now grouped in the num feature (#1440), or Map, Set, and friends,
+    which are in a feature container now (#1465).
+
+  - More features have been moved to type features (#1469, #1482, #1484, #1483,
+    #1487, #1488). In particular numeric and heirs use type features now
+    (#1506).
+
+  - String.is_ascii_white_space is now u8.is_ascii_white_space (#1494).
+
+  - Remove the Functions feature (#1510). Function composition is now
+    implemented for Unary features.
+
+  - Implement the String.upper_case and String.lower_case features (#355).
+
+  - Add memoize feature, which remembers the result of a call to a given feature
+    with a given value after the first computation (#1522).
+
+  - Return an error if io.stdin.read_line is called at the end of a file
+    (#1531).
+
+  - mutable_tree_map is a heir of Map now (#1534).
+
+  - time.date_time inherits from has_total_order now (#1539). This means that
+    date_times can be compared using the standard infix operators now.
+
+- C backend
+
+  - Fix a crash in the garbage collector when using threads (#1397).
+
+  - Change the name of the binary that is created when the main feature is
+    omitted from #universe to universe (#1407).
+
+  - Fix compilation of C code generated with non-glibc standard libraries, such
+    as musl (#1417).
+
+- fz tool
+
+  - An option -no-backend has been added (#1429), which does not run any backend
+    operations. This is useful for checking a Fuzion program for syntax and type
+    correctness.
+
+  - Optimized execution time of the HelloWorld example by adding caching to the
+    compiler (#1526).
 
 ## 2023-05-16: V0.082
 
@@ -70,12 +194,15 @@
 
 - fz tool
 
-   - Allow specifying -1 as the maximum warning or error count. In this case, an unlimited amount of warnings respectively errors is shown (#1332).
+   - Allow specifying -1 as the maximum warning or error count. In this case, an
+     unlimited amount of warnings respectively errors is shown (#1332).
 
    - Compatibility with different versions of the Clang compiler has been
      improved when compiling code from the C backend (#1384).  tests
 
-   - Tests for nested option have been added (#1316). This will ensure nested options continue to work as they do right now even though changes to their internals are planned.
+   - Tests for nested option have been added (#1316). This will ensure nested
+     options continue to work as they do right now even though changes to their
+     internals are planned.
 
 
 ## 2023-04-05: V0.081
