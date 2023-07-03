@@ -32,7 +32,7 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-ordered_map(OK type : has_total_order,
+ordered_map(OK type : property.orderable,
            redef V type,
            ks array OK,
            vs array V) : Map OK V
@@ -45,7 +45,7 @@ is
   # entry represents the pair of key and value at the given
   # index i of the ordered map.
   #
-  entry(i i32) : has_total_order is
+  entry(i i32) : property.orderable is
 
 
     key => ks[i]

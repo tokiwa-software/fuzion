@@ -23,10 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
-# searchable_sequence -- a Sequence whose elements inherit from equatable
+# searchable_sequence -- a Sequence whose elements inherit from property.equatable
 #
 #
-searchable_sequence(A type : equatable, from Sequence A) : Sequence A, equatable
+searchable_sequence(A type : property.equatable, from Sequence A) : Sequence A, property.equatable
 is
 
   # create a list from this searchable_sequence.
@@ -120,7 +120,7 @@ is
                   else                   (searchable_sequence c1.tail       ).count_matches l)
 
 
-  # equality check implementation for inherited equatable
+  # equality check implementation for inherited property.equatable
   #
   fixed type.equality(a, b container.searchable_sequence A) bool is
     aa := a.as_array

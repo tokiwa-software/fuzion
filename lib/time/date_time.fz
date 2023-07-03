@@ -26,7 +26,7 @@
 #
 # Represents a coordinated universal date and time (UTC) in the gregorian calendar.
 #
-date_time(year, day_in_year, hour, minute, second, nano_second i32) : has_total_order
+date_time(year, day_in_year, hour, minute, second, nano_second i32) : property.orderable
 pre
   day_in_year ≥ 1  & day_in_year  ≤ days_in_year year,  # leap years have 366 days
   hour        ≥ 0  & hour         ≤ 23,

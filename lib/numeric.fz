@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric : has_hash, has_total_order is
+numeric : property.hashable, property.orderable is
 
   is_zero => numeric.this = numeric.this.type.zero
   is_one  => numeric.this = numeric.this.type.one

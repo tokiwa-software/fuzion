@@ -331,7 +331,7 @@ Sequence(T type) ref is
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sort_by(O type : has_total_order, f T->O) => sort (a, b -> f a ≤ f b)
+  sort_by(O type : property.orderable, f T->O) => sort (a, b -> f a ≤ f b)
 
 
   # create a new list from the result of applying 'f' to the
@@ -417,7 +417,7 @@ Sequence(T type) ref is
   #
   # f determines the key of an element
   #
-  group_by(K type : has_hash, f T -> K) container.Map K (list T) is
+  group_by(K type : property.hashable, f T -> K) container.Map K (list T) is
     # NYI It should be possible to choose the map implementation that is used.
     res := (container.C_Trie K (list T)).type.empty
     for_each (x ->
