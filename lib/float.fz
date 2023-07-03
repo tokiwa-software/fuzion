@@ -262,6 +262,9 @@ float : numeric is
   # sense and therefore breaks the IEEE semantics. infix = should
   # be used for IEEE semantics.
   #
+  # The equivalence relation is provided by the usual comparision
+  # of floating-point numbers, with the definition of NaN = NaN.
+  #
   type.equality(a, b float.this.type) bool is
     a.infix = b || (is_NaN a && is_NaN b)
 
@@ -271,6 +274,10 @@ float : numeric is
   # This provides a total order in the mathematical sense and
   # therefore breaks the IEEE semantics. infix <= should be
   # used for IEEE semantics.
+  #
+  # The total order is provided by the usual comparision of
+  # floating-point numbers, with the definition that NaN <= x,
+  # for any x (including x = NaN).
   #
   type.lteq(a, b float.this.type) bool is
     a.infix <= b || is_NaN a
