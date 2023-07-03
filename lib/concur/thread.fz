@@ -31,12 +31,26 @@ thread (
   ) : simple_effect
 is
 
+  # type for a spawned thread
+  #
+  private spawned(private id i64) is
+
+    # wait for this thread to finish execution
+    #
+    # NYI it should be made impossible to call this more than once
+    #
+    join =>
+      fuzion.sys.thread.join0 id
+      _ := thread p
+
+
 
   # spawn a new thread
   #
   spawn(code ()->unit) =>
-    p.spawn code
+    st := p.spawn code
     _ := thread p
+    st
 
 
   type.install_default =>
@@ -49,7 +63,7 @@ is
 
     # spawn a new thread using given code
     #
-    spawn(code ()->unit) => fuzion.sys.thread.spawn code
+    spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
 
 
 # thread with no argument returns thread.env, i.e., the currently installed
@@ -66,4 +80,4 @@ Thread_Provider ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) unit is abstract
+  spawn(code ()->unit) concur.thread.spawned is abstract

@@ -1,0 +1,29 @@
+------ testing calls: ------
+case 0:
+f called, but not using x
+case 1:
+using x
+g called, but not using y
+case 2:
+using x
+using y
+h called, but not using z
+case 3:
+using x
+using y
+using z
+creating z
+h received 'zzz'
+------ testing assignments: ------
+created l1
+*** using lazy l1 ***
+used l1: 4711
+created l2
+*** using lazy l2 ***
+creating z
+used l2: zzz
+created l3
+assigned to l3a
+*** using lazy l3 ***
+used l3 and assigned result to l3b
+using l3b: 32168 Type of 'i32'

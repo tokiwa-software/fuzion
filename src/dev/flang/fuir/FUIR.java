@@ -462,6 +462,7 @@ public class FUIR extends IR
     var f = fc.feature();
     return f.isOuterRef() &&
       !fc.resultClazz().isRef() &&
+      !fc.resultClazz().isUnitType() &&
       !fc.resultClazz().feature().isBuiltInPrimitive();
   }
 

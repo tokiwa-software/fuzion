@@ -17,28 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.thread
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.thread -- low-level feature to manage threads
-#
-private thread is
-
-
-  # intrinsic to spawn a new thread
-  #
-  private spawn(code ()->unit) =>
-    Do_Call ref : Function unit is
-      call =>
-        code()
-
-    spawn0 Do_Call
-
-  private spawn0(T type : ()->unit, code T) i64 is intrinsic
-
-  # intrinsic to join with a terminated thread
-  #
-  private join0(thread_id i64) unit is intrinsic
+override NAME = mmap_test
+include ../simple.mk

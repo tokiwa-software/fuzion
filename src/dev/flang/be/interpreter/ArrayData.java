@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Types;        // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.util.Errors;
 
 import java.util.Arrays;
@@ -119,6 +121,57 @@ public class ArrayData extends Value
   ArrayData arrayData()
   {
     return this;
+  }
+
+
+  /**
+   * set array element at index x.
+   *
+   * @param x index
+   * @param v value
+   * @param elementType the values type
+   */
+  void set(
+    int x,
+    Value v,
+    AbstractType elementType)
+  {
+    checkIndex(x);
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { ((byte   [])_array)[x] = (byte   ) v.i8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { ((short  [])_array)[x] = (short  ) v.i16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { ((int    [])_array)[x] =           v.i32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { ((long   [])_array)[x] =           v.i64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { ((byte   [])_array)[x] = (byte   ) v.u8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { ((char   [])_array)[x] = (char   ) v.u16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { ((int    [])_array)[x] =           v.u32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { ((long   [])_array)[x] =           v.u64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])_array)[x] =           v.boolValue(); }
+    else                                                        { ((Value  [])_array)[x] =           v;             }
+  }
+
+
+  /**
+   * get array element at index x.
+   *
+   * @param x index
+   * @param elementType the values type
+   * @return
+   */
+  Value get(
+    int x,
+    AbstractType elementType)
+  {
+    checkIndex(x);
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new i8Value  (((byte   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new i16Value (((short  [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new i32Value (((int    [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new i64Value (((long   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new u8Value  (((byte   [])_array)[x] & 0xff); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new u16Value (((char   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new u32Value (((int    [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new u64Value (((long   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new boolValue(((boolean[])_array)[x]       ); }
+    else                                                        { return              ((Value   [])_array)[x]        ; }
   }
 
 

@@ -571,7 +571,7 @@ public class Interpreter extends ANY
         for (int x = 0; x < l; x++)
           {
             var v = execute(i._elements.get(x), staticClazz, cur);
-            Intrinsics.fuzionSysArraySetEl(arrayData, x, v, sac);
+            arrayData.set(x, v, Intrinsics.elementType(sac));
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internal_array, -1, ac, result, sa);

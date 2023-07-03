@@ -290,3 +290,23 @@ public fileio is
                         fd i64,
                         # Array data [new file position, error number]
                         position_results Any) unit is intrinsic
+
+
+  # memory map a file
+  #
+  # res[0]: 0 on success, -1 on error
+  #
+  # return: allocated memory (same as fuzion.sys.internal_array_init.alloc)
+  #
+  # note: offset+size must not exceed file size.
+  # note: returning allocated memory - instead of error code - simplifies handling in DFA.
+  #
+  mmap(fd i64, offset, size i64, res Any) Any is intrinsic
+
+
+  # close a memory mapped file
+  #
+  # return: 0 on success, -1 on error
+  #
+  munmap(address Any, size i64) i32 is intrinsic
+

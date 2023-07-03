@@ -319,7 +319,9 @@ public class DFA extends ANY
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
-              tvalue.setField(DFA.this, cc, args.get(0));
+              var v = args.get(0);
+              tvalue.setField(DFA.this, cc, v);
+              tempEscapes(cl, c, i, v, cc);
             }
           r = Value.UNIT;
         }
@@ -369,16 +371,7 @@ public class DFA extends ANY
                   {
                     _call.escapes();
                   }
-                else if (original_tvalue instanceof EmbeddedValue ev &&
-                         !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)) &&
-                         !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)) &&
-                         _fuir.clazzOuterRef(cc) != -1 &&
-                         _fuir.clazzFieldIsAdrOfValue(_fuir.clazzOuterRef(cc)) &&
-                         ev._cl != -1)
-                  {
-                    tempEscapes(cl, c, i, ev._cl, ev._code, ev._index);
-                  }
-
+                tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
@@ -1122,13 +1115,34 @@ public class DFA extends ANY
   }
 
 
-  void tempEscapes(int cl0, int c0, int ix0, int cl, int code, int ix)
+  /**
+   * Record that a temporary value whose adress is taken may live longer than
+   * than the current call, so we cannot store it in the current stack frame.
+   *
+   * @param cl the outer clazz whose code we are analysing.
+   *
+   * @param c the code block containing we are analysing
+   *
+   * @param i the index of the call or assignment we are analysing
+   *
+   * @param v value we are taking an address of
+   *
+   * @param adrField field the address of `v` is assigned to.
+   *
+   */
+  void tempEscapes(int cl, int c, int i, Value v, int adrField)
   {
-    var cp = new CodePos(cl, code, ix);
-    _escapesCode.add(cp);
+    if (v instanceof EmbeddedValue ev &&
+        adrField != -1 &&
+        !_fuir.clazzIsRef(_fuir.clazzResultClazz(adrField)) &&
+        _fuir.clazzFieldIsAdrOfValue(adrField)
+        && ev._cl != -1
+        )
+      {
+        var cp = new CodePos(ev._cl, ev._code, ev._index);
+        _escapesCode.add(cp);
+      }
   }
-
-
 
 
   static
@@ -1229,6 +1243,8 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.lstats"       , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.sys.fileio.seek"         , cl -> Value.UNIT ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.sys.fileio.file_position", cl -> Value.UNIT ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
+    put("fuzion.sys.fileio.mmap"         , cl -> new SysArray(cl._dfa, new byte[0])); // NYI: length wrong, get from arg
+    put("fuzion.sys.fileio.munmap"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.out.flush"           , cl -> Value.UNIT );
     put("fuzion.sys.err.flush"           , cl -> Value.UNIT );
     put("fuzion.sys.stdin.next_byte"     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1381,10 +1397,16 @@ public class DFA extends ANY
     put("f64.infix %"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.equality"              , cl -> cl._dfa._bool );
-    put("f64.type.equality"              , cl -> cl._dfa._bool );
-    put("f32.type.lteq"                  , cl -> cl._dfa._bool );
-    put("f64.type.lteq"                  , cl -> cl._dfa._bool );
+    put("f32.infix ="                    , cl -> cl._dfa._bool );
+    put("f64.infix ="                    , cl -> cl._dfa._bool );
+    put("f32.infix <="                   , cl -> cl._dfa._bool );
+    put("f64.infix <="                   , cl -> cl._dfa._bool );
+    put("f32.infix >="                   , cl -> cl._dfa._bool );
+    put("f64.infix >="                   , cl -> cl._dfa._bool );
+    put("f32.infix <"                    , cl -> cl._dfa._bool );
+    put("f64.infix <"                    , cl -> cl._dfa._bool );
+    put("f32.infix >"                    , cl -> cl._dfa._bool );
+    put("f64.infix >"                    , cl -> cl._dfa._bool );
     put("f32.as_f64"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1479,8 +1501,9 @@ public class DFA extends ANY
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new environment */, cl);
-          return Value.UNIT;
+          return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
+    put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
     // NYI these intrinsics manipulate an array passed as an arg.
     put("fuzion.sys.net.bind0"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1584,24 +1607,11 @@ public class DFA extends ANY
    */
   void replaceDefaultEffect(int ecl, Value e)
   {
-    var oe = _defaultEffects.get(ecl);
-    Value ne;
-    if (oe == null)
+    var old_e = _defaultEffects.get(ecl);
+    var new_e = old_e == null ? e : old_e.join(e);
+    if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
-        if (false)
-          {
-            // NYI: Check why this can happen.
-            throw new Error("replaceDefaultEffect called when there is no default effect!");
-          }
-        ne = oe;
-      }
-    else
-      {
-        ne = e.join(oe);
-      }
-    if (Value.compare(oe, ne) != 0)
-      {
-        _defaultEffects.put(ecl, ne);
+        _defaultEffects.put(ecl, new_e);
         if (!_changed)
           {
             _changedSetBy = "effect.replace called: " + _fuir.clazzAsString(ecl);
@@ -1609,7 +1619,6 @@ public class DFA extends ANY
         _changed = true;
       }
   }
-
 
 
   /**
