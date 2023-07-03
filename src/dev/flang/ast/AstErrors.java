@@ -1853,11 +1853,11 @@ public class AstErrors extends ANY
           declarationsMsg +
           "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
           "\n"+
-          "To solve this, you may create a helper feature that calculates the value as follows:\n" +
+          "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
           "\n" +
           "  lazy_value => " + lazy + "\n" +
           "\n" +
-          "and then use " + expr("lazy_value") + " as an actual argument instead\n");
+          "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
   }
 
 }

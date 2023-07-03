@@ -302,6 +302,7 @@ public abstract class Expr extends ANY implements Stmnt
              *               x is
              *               y => 4711
              *               c := 0815
+             *               c+y
              *             })
              *
              * or using implicit declarations created for a loop:
