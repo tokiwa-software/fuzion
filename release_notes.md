@@ -20,16 +20,16 @@
     type feature and these types must be value types even after boxing. All the
     details can be found in the the pull request description.
 
-  - Calling type features from type parameters has been fixed ((#1471).
+  - Calling type features from type parameters has been fixed (#1471).
 
-  - Fix an IndexOutOfBoundsException in chained booleans ((#1511).
+  - Fix an IndexOutOfBoundsException in chained booleans (#1511).
 
-  - Allow the redefinition of features with type parameters ((#1515).
+  - Allow the redefinition of features with type parameters (#1515).
 
   - Fix a NullPointerException when inheriting from a feature that does not
-    exist ((#1509).
+    exist (#1509).
 
-  - Fix the propagation of types in covariant features ((#1523).
+  - Fix the propagation of types in covariant features (#1523).
 
 - base library
 
@@ -64,19 +64,19 @@
      profiling purposes #1555, #1557.
 
   - More features, including public-facing ones have been renamed to match the
-    Fuzion naming convention ((#1412, (#1367, (#1439).
+    Fuzion naming convention (#1412, #1367, #1439).
 
-  - Basic support for networking with TCP and UDP sockets landed ((#1223). A
+  - Basic support for networking with TCP and UDP sockets landed (#1223). A
     basic demo webserver written in Fuzion has been added (#1456).
 
   - Ryu, a float to string algorithm has been implemented in Fuzion
-    ((#986). Currently, this exists besides the f32.as_string and f64.as_string
+    (#986). Currently, this exists besides the f32.as_string and f64.as_string
     features, which use the float to string operation of the underlying
     backend. Since the output of this varies depending on whether the
     interpreter or the C backend is used, the long-term goal is to replace the
     implementation of as_string by Ryu.
 
-  - The effects io.file.use and io.file.open have been added ((#1428), which
+  - The effects io.file.use and io.file.open have been added (#1428), which
     simplify working with files from Fuzion code.
 
   - In an effort to reduce clutter in the base library, several features have
