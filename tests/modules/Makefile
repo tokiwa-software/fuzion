@@ -2,7 +2,7 @@ OK   = "\033[32mOK\033[0m"
 FAIL = "\033[1;31m*** FAIL ***\033[0m"
 CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 
-FZ = ../../bin/fz
+FZ = FUZION_DISABLE_ANSI_ESCAPES=true ../../bin/fz
 
 .PHONY: all sources_only a ab b int c clean
 all: sources_only a ab b clean
