@@ -1052,6 +1052,7 @@ run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
+	ulimit -s 512; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests and report number of failures
@@ -1068,6 +1069,7 @@ run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/
 .PHONY .SILENT: run_tests_c_parallel
 run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
+	ulimit -s 512; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 .PHONY: clean
