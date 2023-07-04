@@ -56,8 +56,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <poll.h>       // poll
 #include <sys/mman.h>   // mmap
 #include <fcntl.h>      // fcntl
-#include <unistd.h>     // close
+#include <unistd.h>     // close, STDERR_FILENO
 #include <netdb.h>      // getaddrinfo
+#include <execinfo.h>   // backtrace, backtrace_symbols_fd
 
 #endif
 
@@ -412,5 +413,18 @@ int fzE_munmap(void * mapped_address, const int file_size){
 }
 
 
+// uses GNU extension backtrace/backtrace_symbols
+// to print a backtrace to stderr
+void fzE_stacktrace() {
+#if _WIN32
+  printf("Stacktrace, not supported on this plattform.\n");
+#else
+  size_t size;
+  enum Constexpr { MAX_SIZE = 1024 };
+  void *array[MAX_SIZE];
+  size = backtrace(array, MAX_SIZE);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+#endif
+}
 
 #endif /* fz.h  */

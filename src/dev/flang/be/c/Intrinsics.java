@@ -995,6 +995,8 @@ public class Intrinsics extends ANY
       A1.castTo("int")  // blocking
     )).ret());
 
+    put("fuzion.sys.print_stacktrace", (c,cl,outer,in) -> CExpr.call("fzE_stacktrace", new List<>()));
+
 
     put("effect.replace"       ,
         "effect.default"       ,

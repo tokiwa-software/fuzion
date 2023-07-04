@@ -88,6 +88,7 @@ class Fuzion extends Tool
   static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
+  static boolean _enableStacktraces = false;
 
 
   /**
@@ -111,7 +112,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] ";
+        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-enableStacktraces] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -141,11 +142,16 @@ class Fuzion extends Tool
             _cFlags_ = o.substring(8);
             result = true;
           }
+        else if (o.startsWith("-enableStacktraces"))
+          {
+            _enableStacktraces = true;
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _enableStacktraces), fuir).compile();
       }
     },
 

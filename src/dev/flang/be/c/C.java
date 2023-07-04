@@ -563,7 +563,14 @@ public class C extends ANY
             command.addAll("-Wno-unused-but-set-variable");
           }
 
-        command.addAll("-O3");
+        if (_options._enableStacktraces)
+          {
+            command.addAll("-rdynamic");
+          }
+        else
+          {
+            command.addAll("-O3");
+          }
       }
     if(_options._useBoehmGC)
       {

@@ -74,13 +74,22 @@ public class COptions extends FuzionOptions
   final String _cFlags;
 
 
+  /**
+   * enable printing of stacktraces via fuzion.sys.print_stacktrace.
+   * This needs disabling of -O3 and enabling -rdynamic.
+   *
+   * NYI can we detect the usage of the intrinsic automatically?
+   */
+  final boolean _enableStacktraces;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, boolean enableStacktraces)
   {
     super(fo);
 
@@ -89,6 +98,7 @@ public class COptions extends FuzionOptions
     _Xdfa = Xdfa;
     _cCompiler = cCompiler;
     _cFlags = cFlags;
+    this._enableStacktraces = enableStacktraces;
   }
 
 

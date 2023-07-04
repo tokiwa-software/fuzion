@@ -35,3 +35,10 @@ sys is
   #
   private c_string (s String) =>
     (s + codepoint 0).utf8.as_array.internal_array.data
+
+
+  # for debugging only
+  # this is plattform and backend dependent
+  # for the c backend use      : -enableStacktraces
+  # for the interpreter backend: -unsafeIntrinsics=on
+  private print_stacktrace is intrinsic

@@ -1005,6 +1005,11 @@ public class Intrinsics extends ANY
         }
     });
 
+    putUnsafe("fuzion.sys.print_stacktrace" , (interpreter, innerClazz) -> args -> {
+      System.err.println(interpreter.callStack());
+      return Value.EMPTY_VALUE;
+    });
+
     put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
     put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
     put("debug_level"           , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
