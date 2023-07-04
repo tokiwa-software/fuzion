@@ -367,7 +367,10 @@ public class DFA extends ANY
                   {
                     res = new EmbeddedValue(cl, c, i, res);
                   }
-                if (tvalue == _call._instance || original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance)
+                if (tvalue == _call._instance
+                     || original_tvalue instanceof EmbeddedValue ev
+                     && ev._instance == _call._instance
+                     && /* but not calling itself */ _call._cc != cl)
                   {
                     _call.escapes();
                   }
