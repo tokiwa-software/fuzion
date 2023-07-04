@@ -567,7 +567,7 @@ public class Call extends AbstractCall
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
       {
-        var b = cb._actuals.getLast();
+        var b = res.resolveType(cb._actuals.getLast(), thiz);
         if (b.typeIfKnown() != Types.t_ERROR)
           {
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
