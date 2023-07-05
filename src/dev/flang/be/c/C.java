@@ -908,6 +908,8 @@ public class C extends ANY
    */
   private void createCode(CFile cf, COptions _options) throws IOException
   {
+    cf.print("#define _GNU_SOURCE\n"); // needs to be first to have an effect
+
     if (_options._useBoehmGC)
       {
                  // we need to include winsock2.h before windows.h
@@ -930,7 +932,8 @@ public class C extends ANY
        "#include <errno.h>\n"+
        // defines _O_BINARY
        "#include <fcntl.h>\n"+
-       "#include <stdatomic.h>\n");
+       "#include <stdatomic.h>\n"+
+       "#include <dirent.h>\n");
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"\n");

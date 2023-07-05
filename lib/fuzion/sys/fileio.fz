@@ -349,3 +349,36 @@ module fileio is
   # return: 0 on success everything else is an error
   #
   module flush(fd i64) i32 => intrinsic
+
+
+  # open the directory given by path
+  #
+  # returns an integer that is intended to be used as an opaque reference
+  # to the opened directory.
+  #
+  module open_dir(path fuzion.sys.Pointer) i64 => intrinsic
+
+
+  # reads the next entry of the directory given by opaque integer reference
+  # to an open directory
+  #
+  # returns the name of the next entry, or an error string on failure.
+  #
+  module read_dir(ptr i64) String => intrinsic
+
+
+  # checks whether there is a next entry in the directory given by opaque
+  # integer reference to an open directory
+  #
+  # true if the next call to read_dir should find a new entry, if false then
+  # the next call to read_dir will return an error string.
+  #
+  module read_dir_has_next(ptr i64) bool => intrinsic
+
+
+  # closes the directory given by opaque integer reference to an open
+  # directory
+  #
+  # returns 0 on success, something else on failure.
+  #
+  module close_dir(ptr i64) i64 => intrinsic
