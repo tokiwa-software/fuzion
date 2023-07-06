@@ -168,7 +168,16 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
+                      c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                    {
+                      eq = CExpr.eq(tmp, expected);
+                    }
+                  else
+                    {
+                      eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                    }
+
                   code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
                                     locked(CNames.GLOBAL_LOCK,
                                            CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
@@ -216,17 +225,15 @@ public class Intrinsics extends ANY
               code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_f32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_f64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
@@ -258,17 +265,15 @@ public class Intrinsics extends ANY
               code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_f32 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_f64 ) ||
-                   c._fuir.clazzIs(rc,FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CExpr.call("__atomic_store", new List<>(f.adrOf(), new_value.adrOf(), new CIdent("__ATOMIC_SEQ_CST")));
