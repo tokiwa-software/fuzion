@@ -4,9 +4,10 @@ ryu_test =>
   max_subnormal := 2.2250738585072009E-308
   min_positive  := 2.2250738585072014E-308
   max_positive  := 1.7976931348623157E308
+  zero          := 0.0
 
-  numbers := [ 0.0,
-              -f64.type.zero,
+  numbers := [ zero,
+              -zero,
               f64.type.positive_infinity,
               f64.type.negative_infinity,
               f64.type.quiet_NaN,
