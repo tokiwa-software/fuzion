@@ -186,7 +186,6 @@ public class SysArray extends Value implements Comparable<SysArray>
    */
   public Value joinInstances(Value v)
   {
-    v = v.unwrap();
     if (v instanceof SysArray sv)
       {
         Value ne =
