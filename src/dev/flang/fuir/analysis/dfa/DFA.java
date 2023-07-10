@@ -286,20 +286,23 @@ public class DFA extends ANY
                 }
             });
         }
-      if (tvalue instanceof EmbeddedValue && !_fuir.clazzIsRef(tc) && _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
-        { // an embedded field in a value instance, so keep tvalue's
-          // embedding. For chained embedded fields in value instances like
-          // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
-          resf[0] = tvalue.rewrap(DFA.this, x -> resf[0].value());
-        }
+      var res = resf[0];
       if (!found[0])
-        {
-          // NYI: proper error reporting
+        { // NYI: proper error reporting
           Errors.error(_fuir.codeAtAsPos(c, i),
                        "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
                        null);
         }
-      return resf[0];
+      else if (res != null &&
+               tvalue instanceof EmbeddedValue &&
+               !_fuir.clazzIsRef(tc) &&
+               _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
+        { // an embedded field in a value instance, so keep tvalue's
+          // embedding. For chained embedded fields in value instances like
+          // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
+          res = tvalue.rewrap(DFA.this, x -> resf[0].value());
+        }
+      return res;
     }
 
 
