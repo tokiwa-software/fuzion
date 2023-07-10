@@ -996,8 +996,8 @@ public class AstErrors extends ANY
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
-                   "To solve this, if you did not intent to redefine an inherited feature, " +
-                   "chose a different name for " + sbn(f) + ".  Otherwise, if you do " +
+                   "To solve this, if you did not intend to redefine an inherited feature, " +
+                   "choose a different name for " + sbn(f) + ".  Otherwise, if you do " +
                    "want to redefine an inherited feature, add a " + skw("redef") + " modifier before the " +
                    "declaration of " + s(f) + ".");
   }
