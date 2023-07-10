@@ -169,6 +169,11 @@ public class Instance extends Value implements Comparable<Instance>
               }
           }
       }
+    else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
+      {
+        v = new EmbeddedValue(this, v);
+      }
+
     return v;
   }
 

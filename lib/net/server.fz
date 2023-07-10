@@ -42,7 +42,7 @@ private server(
 ) : effect m
 is
 
-  # get the last error that occured
+  # get the last error that occurred
   last_error => state.bind unit (_ -> unit)
 
   # is the server running?

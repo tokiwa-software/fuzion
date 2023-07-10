@@ -182,6 +182,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public Value joinInstances(Value v)
   {
+    v = v.unwrap();
     if (v instanceof NumericValue nv)
       {
         if (CHECKS) check

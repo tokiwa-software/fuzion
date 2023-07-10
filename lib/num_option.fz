@@ -29,7 +29,7 @@
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
 #
-num_option(T type : numeric T) :
+num_option(T type : numeric) :
   choice T nil,
   monad T (num_option T)
 is
@@ -76,7 +76,7 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind(B type : numeric T, f T -> num_option B) num_option B is
+  bind(B type : numeric, f T -> num_option B) num_option B is
     num_option.this ? v T => f v
                     | nil => nil
 
@@ -146,4 +146,4 @@ is
 #
 #   o num_option TypeOfX := x
 #
-num_option(T type : numeric T, o num_option T) => o
+num_option(T type : numeric, o num_option T) => o

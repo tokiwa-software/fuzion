@@ -1,7 +1,7 @@
 
-[32m--CURDIR--/issue270.fz:2:7:[39m [1;31merror 1[0m[1m: Precondition does not hold[0m
-[34m  pre false # 1. should flag an error: Precondition does not hold
-[33m------^[0m
+--CURDIR--/issue270.fz:2:7: error 1: Precondition does not hold
+  pre false # 1. should flag an error: Precondition does not hold
+------^
 For call to issue270
 Call stack:
 

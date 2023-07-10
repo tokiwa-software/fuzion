@@ -25,7 +25,7 @@
 
 # hash_map -- an immutable hash map from keys HK to values V
 #
-hash_map(HK type : has_hash,
+hash_map(HK type : property.hashable,
         redef V type,
         ks array HK,
         vs array V) : Map HK V

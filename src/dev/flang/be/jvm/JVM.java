@@ -30,7 +30,6 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
-import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.util.ANY;
@@ -123,7 +122,7 @@ Reference Features
 
 A reference feature corresponds to a Java class whose fields represent the
 corresponding value feature.  There should be one Java class generated for every
-Fuzion clazz, that class should intherit from an abstract class `FuzionInstance`
+Fuzion clazz, that class should inherit from an abstract class `FuzionInstance`
 that may define methods required by the JVM backend.
 
 There should be no need for additional type information since different
@@ -313,7 +312,7 @@ leverage the Java class to perform this call, either by
   type to return the corresponding clazz id. A lookupswitch could then be used
   to perform the call (in O(log n)!)
 
-* adding interface classes for fuzion features that containt interface methods
+* adding interface classes for fuzion features that contained interface methods
   for inner features that are implemented by all heir features implementing
   these.  Then, an `invokeinterface` could be used, which uses a cached search
   (also in O(log n)), but this is currently being improved
@@ -368,12 +367,6 @@ should be avoided as much as possible.
 
 
   /**
-   * The escape analysis.
-   */
-  final Escape _escape;
-
-
-  /**
    * Abstract interpreter framework used to walk through the code.
    */
   // final AbstractInterpreter<CExpr, CStmnt> _ai;
@@ -395,7 +388,6 @@ should be avoided as much as possible.
     _options = opt;
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
-    _escape = new Escape(fuir);
     // _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     Errors.showAndExit();

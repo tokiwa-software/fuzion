@@ -17,25 +17,42 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature has_hash
+#  Source code of Fuzion test mmap_test
 #
 # -----------------------------------------------------------------------
 
-# has_hash -- feature for immutable values that have a hash function
-#
-# NYI: the compiler should check that features inheriting from this are
-# actually immutable.
-#
-has_hash : equatable
 
-/* NYI: quantor intrinsics not supported yet:
+mmap_test is
 
-  inv
-    analysis: quantors.for_all2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
-    analysis: quantors.for_all2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
-*/
+  testfile := "testfile"
 
-is
+  f =>
+    io.file.open
 
-  # create hash code for this instance
-  hash u64 is abstract
+  # NYI get actual page size
+  page_size := 65536
+
+  say (io.file.use unit testfile io.file.mode.append ()->
+
+    f.write (array u8 page_size i->0)
+    f.write "hello!".utf8
+
+    offset := page_size.as_i64
+
+    # map 6 bytes of file starting from the end of the '+'s.
+    say (f.mmap offset (i64 6) ()->
+          # change the 'e' in hello to an 'a'.
+          f.mmap[1] := f.mmap[1] - 4)
+
+    # mmap should fail, since offset+size exceeds file size.
+    say (f.mmap offset (i64 7) ()->)
+  )
+
+
+  say (io.file.use String testfile io.file.mode.read ()->
+    f
+      .read
+      .bind String (x -> String.type.from_bytes (x.drop page_size))
+  )
+
+  _ := io.file.delete testfile

@@ -53,15 +53,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <fcntl.h>      // fcntl, O_NONBLOCK
 #include <netdb.h>      // getaddrinfo
+
+#include <sys/socket.h> // socket, bind, listen, accept, connect
+#include <sys/ioctl.h>  // ioctl, FIONREAD
 #include <netinet/in.h> // AF_INET
 #include <poll.h>       // poll
 #include <spawn.h>      // posix_spawn
-#include <sys/ioctl.h>  // ioctl, FIONREAD
-#include <sys/socket.h> // socket, bind, listen, accept, connect
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>
 #include <sys/wait.h>   // wait
 #include <unistd.h>     // close, pipe
+
+#include <sys/mman.h>   // mmap
 
 #endif
 
@@ -318,6 +321,106 @@ int fzE_write(int sockfd, const void * buf, size_t count){
 return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
   ? fzE_net_error()
   : 0;
+}
+
+#ifdef _WIN32
+// for 64-bit offset returns the 32 highest bits as a DWORD
+DWORD high_word(off_t value) {
+  return sizeof(off_t) == 4
+    ? 0
+    : (DWORD)(value >> 32);
+}
+// for 64-bit offset returns the 32 lowest bits as a DWORD
+DWORD low_word(off_t value) {
+  return (DWORD)(value & ((1ULL << 32) - 1));
+}
+#endif
+
+
+// returns -1 on error, size of file in bytes otherwise
+long fzE_get_file_size(FILE* file) {
+  // store current pos
+  long cur_pos = ftell(file);
+  if(cur_pos == -1 || fseek(file, 0, SEEK_END) == -1){
+    return -1;
+  }
+
+  long size = ftell(file);
+
+  // reset seek position
+  fseek(file, cur_pos, SEEK_SET);
+
+  return size;
+}
+
+/*
+ * create a memory map of a file at an offset.
+ * unix:    the offset must be a multiple of the page size, usually 4096 bytes.
+ * windows: the offset must be a multiple of the memory allocation granularity, usually 65536 bytes
+ *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
+ *
+ * returns:
+ *   - error   :  result[0]=-1 and NULL
+ *   - success :  result[0]=0  and an address where the file was mapped to
+ */
+void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
+
+  if (fzE_get_file_size(file) < (offset + size)){
+    result[0] = -1;
+    return NULL;
+  }
+
+#ifdef _WIN32
+  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno(file));
+
+  /* "If dwMaximumSizeLow and dwMaximumSizeHigh are 0 (zero), the maximum size of the file mapping
+      object is equal to the current size of the file that hFile identifies.
+      An attempt to map a file with a length of 0 (zero) fails with an error code
+      of ERROR_FILE_INVALID. Applications should test for files with a length of 0 (zero) and reject those files."
+  */
+  HANDLE file_mapping_handle = CreateFileMapping(file_handle, NULL, PAGE_READWRITE, 0, 0, NULL);
+  if (file_mapping_handle == NULL) {
+    result[0] = -1;
+    return NULL;
+  }
+
+  void * mapped_address = MapViewOfFile(file_mapping_handle, FILE_MAP_ALL_ACCESS, high_word(offset), low_word(offset), size);
+  if (mapped_address == NULL) {
+    CloseHandle(file_mapping_handle);
+    result[0] = -1;
+    return NULL;
+  }
+  result[0] = 0;
+  return mapped_address;
+#else
+  int file_descriptor = fileno(file);
+
+  if (file_descriptor == -1) {
+    result[0] = -1;
+    return NULL;
+  }
+
+  void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
+  if (mapped_address == MAP_FAILED) {
+    result[0] = -1;
+    return NULL;
+  }
+  result[0] = 0;
+  return mapped_address;
+#endif
+}
+
+
+// unmap an address that was previously mapped by fzE_mmap
+// -1 error, 0 success
+int fzE_munmap(void * mapped_address, const int file_size){
+#ifdef _WIN32
+  return UnmapViewOfFile(mapped_address)
+    ? 0
+    : -1;
+#else
+  return munmap(mapped_address, file_size);
+#endif
 }
 
 
@@ -605,7 +708,7 @@ void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
     }
     case 1:
     {
-      fp = fopen(file_name,"wb");
+      fp = fopen(file_name,"a+b");
       if (fp!=NULL)
       {
         open_results[0] = (int64_t)fp;
@@ -614,7 +717,7 @@ void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
     }
     case 2:
     {
-      fp = fopen(file_name,"ab");
+      fp = fopen(file_name,"a+b");
       if (fp!=NULL)
       {
         open_results[0] = (int64_t)fp;

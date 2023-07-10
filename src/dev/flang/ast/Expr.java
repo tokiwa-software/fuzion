@@ -263,37 +263,85 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Before propagateExpectedType: if type inference up until now has figured
+   * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param  outer the feature that contains this expression
+   *
+   * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
 
-    result = result.propagateExpectedType(res, outer, t);
     result = t.isLazyType() ? result.originalLazyValue() : result;
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        var fn = new Function(pos(),
-                              new List<String>(),
-                              new List<>(),
-                              Contract.EMPTY_CONTRACT,
-                              result);
-
-        result = fn.propagateExpectedType(res, outer, t);
-        fn.resolveTypes(res, outer);
+        var declarationsInLazy = new List<Feature>();
         visit(new FeatureVisitor()
           {
-            public Expr action(Call c, AbstractFeature outer)
+            public Stmnt action (Feature f, AbstractFeature outer)
             {
-              return c.updateTarget(res, outer);
+              declarationsInLazy.add(f);
+              return f;
             }
           },
-          fn._feature);
-      }
+          outer);
 
+        if (!declarationsInLazy.isEmpty())
+          {
+            /*
+             * NYI: Instead of producing an error here, we could instead remove what
+             * was done during SourceModule.findDeclarations() performed in this
+             * expression, or, alternatively, create a new parse tree for this
+             * expression and use that instead.
+             *
+             * Examples that cause this problem are
+             *
+             *     l(t Lazy i32) is
+             *     _ := l ({
+             *               x is
+             *               y => 4711
+             *               c := 0815
+             *               c+y
+             *             })
+             *
+             * or using implicit declarations created for a loop:
+             *
+             *     l(t Lazy l) is
+             *       n => t
+             *
+             *     f l is l (do)
+             *     _ := f.n
+             */
+            AstErrors.declarationsInLazy(this, declarationsInLazy);
+            result = ERROR_VALUE;
+          }
+        else
+          {
+            var fn = new Function(pos(),
+                                  new List<String>(),
+                                  new List<>(),
+                                  Contract.EMPTY_CONTRACT,
+                                  result);
+
+            result = fn.propagateExpectedType(res, outer, t);
+            fn.resolveTypes(res, outer);
+            visit(new FeatureVisitor()
+              {
+                public Expr action(Call c, AbstractFeature outer)
+                {
+                  return c.updateTarget(res, outer);
+                }
+              },
+              fn._feature);
+          }
+      }
     return result;
   }
 

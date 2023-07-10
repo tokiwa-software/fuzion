@@ -110,6 +110,12 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
+  /**
+   * True if this instance escapes this call.
+   */
+  boolean _escapes = false;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -324,6 +330,20 @@ public class Call extends ANY implements Comparable<Call>, Context
     else
       {
         _dfa.replaceDefaultEffect(ecl, e);
+      }
+  }
+
+
+  /**
+   * Record that the instance of this call escapes, i.e., it might be accessed
+   * after the call returned and cannot be allocated on the stack.
+   */
+  void escapes()
+  {
+    if (!_escapes)
+      {
+        _escapes = true;
+        _dfa.escapes(_cc, _pre);
       }
   }
 

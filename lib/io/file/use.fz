@@ -39,7 +39,7 @@ mode is
 #
 # usage example:
 # ```
-# use some_type String mode.read ()->
+# use some_type file_name mode.read ()->
 #   match (open some_type).read
 #     e error => e
 #     a array => String.type.from_bytes a
@@ -70,7 +70,7 @@ use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
 #
 # usage example:
 # ```
-# use String mode.read ()->
+# use file_name mode.read ()->
 #   match open.read
 #     e error => e
 #     a array => String.type.from_bytes a

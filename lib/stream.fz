@@ -179,7 +179,7 @@ stream(redef T type) ref : Sequence T is
   # create a string from the elements of this stream
   #
   redef as_string ref String is
-    (map String (x -> x.as_string))
+    map String (x -> x.as_string)
       .fold (String.type.concat ", ")
 
 

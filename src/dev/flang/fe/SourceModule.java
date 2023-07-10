@@ -1130,7 +1130,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param tr new argument type in `redefinition`.
    *
    * @param fixed true to perform the test as if `redefinition` is `fixed`. This
-   * is used in two ways: first, to check if `redefition` is fixed, and then,
+   * is used in two ways: first, to check if `redefinition` is fixed, and then,
    * when an error is reported, to suggest adding `fixed` if that would solve
    * the error.
    *

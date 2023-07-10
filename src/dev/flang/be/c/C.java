@@ -37,7 +37,6 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
-import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.util.ANY;
@@ -148,9 +147,9 @@ public class C extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      */
-    public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
+    public CStmnt assign(int cl, boolean pre, int c, int i, CExpr tvalue, CExpr avalue)
     {
-      return access(cl, c, i, tvalue, new List<>(avalue))._v1;
+      return access(cl, pre, c, i, tvalue, new List<>(avalue))._v1;
     }
 
 
@@ -162,20 +161,20 @@ public class C extends ANY
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
-    public Pair<CExpr, CStmnt> call(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
+    public Pair<CExpr, CStmnt> call(int cl, boolean pre, int c, int i, CExpr tvalue, List<CExpr> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz            (cl, c, i);
       var ol = new List<CStmnt>();
       if (ccP != -1)
         {
-          var callpair = C.this.call(cl, tvalue, args, c, i, ccP, true);
+          var callpair = C.this.call(cl, pre, tvalue, args, c, i, ccP, true);
           ol.add(callpair._v1);
         }
       var res = CExpr.UNIT;
       if (!_fuir.callPreconditionOnly(cl, c, i))
         {
-          var r = access(cl, c, i, tvalue, args);
+          var r = access(cl, pre, c, i, tvalue, args);
           ol.add(r._v1);
           res = r._v0;
         }
@@ -208,9 +207,9 @@ public class C extends ANY
     /**
      * Get the current instance
      */
-    public Pair<CExpr, CStmnt> current(int cl)
+    public Pair<CExpr, CStmnt> current(int cl, boolean pre)
     {
-      return new Pair<>(C.this.current(cl), CStmnt.EMPTY);
+      return new Pair<>(C.this.current(cl, pre), CStmnt.EMPTY);
     }
 
 
@@ -268,7 +267,7 @@ public class C extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr sub)
+    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, boolean pre, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
       var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
@@ -310,13 +309,13 @@ public class C extends ANY
           if (field != -1)
             {
               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var f      = field(cl, C.this.current(cl), field);
+              var f      = field(cl, C.this.current(cl, pre), field);
               var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
                            _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(ai.process(cl, _fuir.matchCaseCode(c, i, mc))._v1);
+          sl.add(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))._v1);
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -407,6 +406,12 @@ public class C extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * env var to enable debug output for tail call optimization:
+   */
+  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
+
+
   private static final int expectedClangVersion = 11;
 
 
@@ -444,12 +449,6 @@ public class C extends ANY
    * The tail call analysis.
    */
   final TailCall _tailCall;
-
-
-  /**
-   * The escape analysis.
-   */
-  final Escape _escape;
 
 
   /**
@@ -498,7 +497,6 @@ public class C extends ANY
     _options = opt;
     _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
-    _escape = new Escape(fuir);
     _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
 
     _names = new CNames(fuir);
@@ -745,7 +743,11 @@ public class C extends ANY
                "  pthread_mutexattr_t attr;\n" +
                "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
                "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
+               "  #if _WIN32\n" +
+               "  // NYI #1646 setprotocol returns EINVAL on windows. \n" +
+               "  #else\n" +
                "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
+               "  #endif\n" +
                "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
                "  assert(res);\n" +
                " }\n");
@@ -842,7 +844,7 @@ public class C extends ANY
    * @return pair of expression containing result value and statement to perform
    * the given access
    */
-  Pair<CExpr, CStmnt> access(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
+  Pair<CExpr, CStmnt> access(int cl, boolean pre, int c, int i, CExpr tvalue, List<CExpr> args)
   {
     CExpr res = CExpr.UNIT;
     var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
@@ -896,7 +898,7 @@ public class C extends ANY
               }
             if (isCall)
               {
-                var calpair = call(cl, tv, args, c, i, cc, false);
+                var calpair = call(cl, pre, tv, args, c, i, cc, false);
                 var rv  = calpair._v0;
                 acc = calpair._v1;
                 if (ccs.length == 2)
@@ -1096,13 +1098,13 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int cl, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean pre)
+  Pair<CExpr, CStmnt> call(int cl, boolean pre, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean preCalled)
   {
     var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
-    switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+    switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
@@ -1110,31 +1112,53 @@ public class C extends ANY
       case Routine  :
       case Intrinsic:
         {
-          var a = args(tc, tvalue, args, cc, _fuir.clazzArgCount(cc));
+          var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
-              if (!pre                               &&  // not calling pre-condition
-                  cc == cl                           &&  // calling myself
-                  _tailCall.callIsTailCall(cl, c, i) &&  // as a tail call
-                  !_escape.doesCurEscape(cl)             // and current instance did not escape
-                  )
+
+              if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  !preCalled                                             &&  // not calling pre-condition
+                  cc == cl                                               &&  // calling myself
+                  _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
+                  _fuir.lifeTime(cl, pre).ordinal() >
+                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                )
+                {
+                  System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
+                }
+
+              if (!preCalled                                             &&  // not calling pre-condition
+                  cc == cl                                               &&  // calling myself
+                  _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
+                  _fuir.lifeTime(cl, pre).ordinal() <=
+                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, c, i, tc, a);
                   resultValue = null;
                 }
               else
                 {
-                  var call = CExpr.call(_names.function(cc, pre), a);
+                  var call = CExpr.call(_names.function(cc, preCalled), a);
                   result = call;
-                  if (!pre)
+                  if (!preCalled)
                     {
                       CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
                       if (_fuir.hasData(rt))
                         {
                           var tmp = _names.newTemp();
                           res = tmp;
+                          var heapClone = CStmnt.EMPTY;
+                          if (_fuir.doesResultEscape(cl, c, i))
+                            {
+                              var tmp2 = _names.newTemp();
+                              heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
+                                                     tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
+                              res = tmp2.deref();
+                            }
                           result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
-                                              res.assign(call));
+                                              tmp.assign(call),
+                                              heapClone);
                         }
                       resultValue = res;
                     }
@@ -1202,9 +1226,6 @@ public class C extends ANY
    * Create C code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
-   * @param tc clazz id of the outer clazz of the called clazz, -1 to skip the
-   * target argument
-   *
    * @param cc clazz that is called
    *
    * @param stack the stack containing the C code of the args.
@@ -1213,36 +1234,35 @@ public class C extends ANY
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(int tc, CExpr tvalue, List<CExpr> args, int cc, int argCount)
+  List<CExpr> args(CExpr tvalue, List<CExpr> args, int cc, int argCount)
   {
+    List<CExpr> result;
     if (argCount > 0)
       {
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = args.get(argCount-1);
-        var result = args(tc, tvalue, args, cc, argCount-1);
+        result = args(tvalue, args, cc, argCount-1);
         if (_fuir.hasData(ac))
           {
             a = _fuir.clazzIsRef(ac) ? a.castTo(_types.clazz(ac)) : a;
             result.add(a);
           }
-        return result;
       }
-    else if (tc != -1)
-      { // ref to outer instance, passed by reference
-        var a = tc == _fuir.clazzUniverse() ? _names.UNIVERSE : tvalue;
-        var or = _fuir.clazzOuterRef(cc);   // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
-        if (or != -1)
+    else
+      {
+        var ac = _fuir.clazzOuterClazz(cc);
+        var or = _fuir.clazzOuterRef(cc);
+        result = new List<>();
+        if (or != -1 && _fuir.hasData(ac))
           {
-            var rc = _fuir.clazzResultClazz(or);
-            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
-            var esc = _fuir.clazzOuterRefEscapes(cc);
-            var a3 = esc && a.isLocalVar() ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
-                                           : a2;
-            var a4 = _fuir.clazzIsRef(tc) ? a3.castTo(_types.clazzField(or)) : a3;
-            return new List<>(a4);
+            result.add(_fuir.clazzIsRef(ac)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
+                       /* NYI: special handling in backend should be
+                        * replaced by AdrOf in FUIR code: */
+                       _fuir.clazzFieldIsAdrOfValue(or) ? tvalue.adrOf().castTo(_types.clazzField(_fuir.clazzOuterRef(cc)))
+                                                        : tvalue);
           }
       }
-    return new List<>();
+    return result;
   }
 
 
@@ -1368,15 +1388,17 @@ public class C extends ANY
     if (!pre && _fuir.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(cl).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(cl).ret()                              // a constructor, return current instance
+        l.add(rf != -1 ? current(cl, pre).field(_names.fieldName(rf)).ret()  // a routine, return result field
+                       : current(cl, pre).ret()                              // a constructor, return current instance
               );
       }
-    return CStmnt.seq(CStmnt.lineComment(pre                       ? "for precondition only, need to check if it may escape" :
-                                         _escape.doesCurEscape(cl) ? "instance may escape, so we need malloc here"
-                                                                   : "instance does not escape, put it on stack"),
-                      _escape.doesCurEscape(cl) ? declareAllocAndInitClazzId(cl, _names.CURRENT)
-                                                : CStmnt.decl(_names.struct(cl), _names.CURRENT),
+    var allocCurrent = switch (_fuir.lifeTime(cl, pre))
+      {
+      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), _names.CURRENT));
+      case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, _names.CURRENT));
+      case Undefined -> CExpr.dummy("undefined life time");
+      };
+    return CStmnt.seq(allocCurrent,
                       CStmnt.seq(l).label("start"));
   }
 
@@ -1385,12 +1407,16 @@ public class C extends ANY
    * Return the current instance of the currently compiled clazz cl. This is a C
    * pointer in case _fuir.clazzIsRef(cl), or the C struct corresponding to cl
    * otherwise.
+   *
+   * @param cl id of clazz we are generating code for
+   *
+   * @param pre true iff generating code for cl's precondition, false for cl itself.
    */
-  CExpr current(int cl)
+  CExpr current(int cl, boolean pre)
   {
     var res1 = _names.CURRENT;
-    var res2 = _fuir.clazzIsRef(cl)      ? res1 : res1.deref();
-    var res3 = _escape.doesCurEscape(cl) ? res2 : res2.adrOf();
+    var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
+    var res3 =  _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal() ? res2.adrOf() : res2;
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
   }
 

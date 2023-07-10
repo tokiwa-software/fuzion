@@ -1655,10 +1655,20 @@ public class Feature extends AbstractFeature implements Stmnt
          */
         visit(new FeatureVisitor() {
             public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
-            public Call  action(Call     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
-            public void  action(Cond     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
-            public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+          });
+
+        /* extra pass to automatically wrap values into 'Lazy' */
+        visit(new FeatureVisitor() {
+            // we must do this from the outside of calls towards the inside to
+            // get the corrected nesting of Lazy features created during this
+            // phase
+            public boolean visitActualsLate() { return true; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
+            public Call  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
           });
 
         if (isConstructor())
@@ -2164,10 +2174,10 @@ public class Feature extends AbstractFeature implements Stmnt
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
         result = from.typeIfKnown();
-        if (!(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get) &&
-            result != null &&
+        if (result != null &&
             !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature())
+            result.featureOfType().isTypeFeature() &&
+            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
           {
             result = Types.resolved.f_Type.selfType();
           }

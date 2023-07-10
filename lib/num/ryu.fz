@@ -989,6 +989,6 @@ ryū is
         else
           str
 
-    (if is_negative then "-" else "")
+    if is_negative then "-" else ""
       + (if scientific_notation then scientific else full)
 

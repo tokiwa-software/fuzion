@@ -28,29 +28,29 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex (C type : numeric C,
+complex (C type : numeric,
          real,    # real part
          imag C   # imaginary part
-         ) : numeric (complex C)
+         ) : numeric
 is
 
 
   # enable generic features in ancestors
-  redef thiz => complex real imag
+  thiz => complex real imag
 
   # basic operations
-  redef prefix + => thiz
-  redef infix + (b complex C) => complex real+b.real imag+b.imag
-  redef infix - (b complex C) => complex real-b.real imag-b.imag
-  redef infix * (b complex C) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
-  redef infix / (b complex C) complex C
+  fixed redef prefix + => thiz
+  fixed redef infix + (b complex.this.type) => complex real+b.real imag+b.imag
+  fixed redef infix - (b complex.this.type) => complex real-b.real imag-b.imag
+  fixed redef infix * (b complex.this.type) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  fixed redef infix / (b complex.this.type)
     pre
       # NYI: use type features
       # safety: b != zero
       safety: b.real != C.zero || b.imag != C.zero
-  is
-    n := b.real*b.real+b.imag*b.imag
-    complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n
+    =>
+      n := b.real*b.real+b.imag*b.imag
+      complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n
 
 
   # equality

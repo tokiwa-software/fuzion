@@ -453,6 +453,25 @@ public class List<T>
     return g;
   }
 
+
+  /**
+   * Create a String by applying f to all elements and concatenating the result
+   * in order.
+   *
+   * @param f function that maps an element to a string
+   *
+   * @return "" + f.apply(get(0)) +  f.apply(get(1)) + ... + f.apply(get(size()-1))
+   */
+  public String toString(Function<T,String> f)
+  {
+    var result = new StringBuilder();
+    for (var e : this)
+      {
+        result.append(f.apply(e));
+      }
+    return result.toString();
+  }
+
 }
 
 /* end of file */
