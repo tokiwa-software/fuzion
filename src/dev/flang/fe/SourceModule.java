@@ -780,7 +780,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          */
         if (Errors.count() == 0 || !f.isTypeFeature())
           {
-            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+            AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
       }
     else
