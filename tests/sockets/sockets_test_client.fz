@@ -56,14 +56,20 @@ sockets_test_client is
           * =>  panic "NI"
 
 
-  np(p net.protocol.val) u16 is
+  # a number for protocol p to be used for
+  # choosing a unique port for every protocol/family
+  #
+  protocol_num(p net.protocol.val) u16 is
     match p
       net.protocol.tcp => 0
       net.protocol.udp => 1
       nil => 2
 
-  nf(p net.family.val) u16 is
-    match p
+  # a number for family f to be used for
+  # choosing a unique port for every protocol/family
+  #
+  family_num(f net.family.val) u16 is
+    match f
       net.family.ipv4 => 0
       net.family.ipv6 => 3
 
@@ -77,7 +83,7 @@ sockets_test_client is
       say "### $p/$f-Tests ###"
 
       # For now use a different port for every test.
-      port := u16 40000 + (np p) + (nf f)
+      port := u16 40000 + (protocol_num p) + (family_num f)
 
       # write request to server and read response
       for i in 1..2 do
