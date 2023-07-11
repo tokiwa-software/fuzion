@@ -257,13 +257,8 @@ public class Type extends AbstractType
          t.name(),
          g,
          o,
-         t instanceof Type tt ? tt.feature   : t.featureOfType(),
-
-         // NYI: CLEANUP: This seems unnecessarily complex:
-         t instanceof Type tt ? tt._refOrVal : (t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-                                                t.isRef() ? RefOrVal.Boxed
-                                                : RefOrVal.Value),
-
+         t.featureOfType(),
+         refOrVal(t),
          fixOuterThisType);
 
     if (PRECONDITIONS) require
@@ -272,6 +267,24 @@ public class Type extends AbstractType
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     checkedForGeneric = t.checkedForGeneric();
+  }
+
+
+  /**
+   * Helper to extract `RefOrVal` from given type.
+   *
+   * @param t a type, must not be generic argument.
+   */
+  private static RefOrVal refOrVal(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (!t.isGenericArgument());
+
+    return
+      t instanceof Type tt                       ? tt._refOrVal                   :
+      t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+      t.isRef()                                  ? RefOrVal.Boxed
+                                                 : RefOrVal.Value;
   }
 
 
@@ -297,9 +310,7 @@ public class Type extends AbstractType
     else
       {
         result = new Type(t.pos2BeRemoved(), t.featureOfType().featureName().baseName(), t.generics(), o, t.featureOfType(),
-                          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-                          t.isRef()                                  ? RefOrVal.Boxed
-                                                                     : RefOrVal.Value,
+                          refOrVal(t),
                           false);
 
         if (t.checkedForGeneric())
