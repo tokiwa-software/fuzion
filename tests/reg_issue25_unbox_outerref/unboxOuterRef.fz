@@ -32,18 +32,21 @@
 #
 unboxOuterRef is
 
-  y (i i32) is
+  ry ref is
+    f unit is abstract
+
+  y (i i32) : ry is
     redef as_string => "y $i"
     g (v y) is
       vs := v.as_string
       say "in g: $vs $i"
-    f unit is
-#     g y.this   # y.this is not assignable to y, should be type 'like y.this', see #167
+    fixed f unit is
+      g y.this
       g (y i)
       unit
 
   v := y 42
   v.f
-  r ref y := v
+  r ry := v
   r.f
   unit

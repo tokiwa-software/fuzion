@@ -207,19 +207,25 @@ calls is
     #        * called on boxed
     #          - unbox(oa).f   -- target is uncopied value type.
 
-    on is
+    ron ref is
+      f String is abstract
+      cnt mutate.new i32 is abstract
+
+    on : ron is
       cnt := mut 0
       f String is
         cnt <- cnt.get + 1
         "f#$cnt in $where type {on.this.type.name}"
       where => "on"
 
-    oa : on is
+    roa ref : on is
+
+    oa : roa is
       redef where => "oa"
 
-    oa1 ref on is on
-    oa2 ref on is oa
-    oa3 ref oa is oa
+    oa1 ron is on
+    oa2 ron is oa
+    oa3 roa is oa
 
     t := oa1
     yak "case3a: "; chck t.f "f#1 in on type calls.case3.on"
@@ -416,19 +422,23 @@ calls is
     #        * called on boxed
     #          - *** error ***
 
-    on is
+    ron ref is
+
+    on : ron is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
         s := "f#$cnt in $where type {on.this.type.name}"
       where => "on"
 
-    oa : on is
+    roa ref : on is
+
+    oa : roa is
       redef where => "oa"
 
-    oa1 ref on is on
-    oa2 ref on is oa
-    oa3 ref oa is oa
+    oa1 ron is on
+    oa2 ron is oa
+    oa3 roa is oa
 
     t := oa1
     # yak "caseC3a: "; chck t.f.s "f#1 in oa type calls.caseC2.oa"     # ******  MOVE TO NEGATIVE TEST, causes ERROR!  ******
@@ -528,8 +538,8 @@ calls is
     oあ : on is
       redef where => "oあ"
 
-    oa1 ref on is oa
-    oa2 ref on is oあ
+    oa1 on is oa
+    oa2 on is oあ
 
     t := oa1
     yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"    # NYI f#1..

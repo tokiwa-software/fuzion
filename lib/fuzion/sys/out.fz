@@ -27,10 +27,10 @@
 #
 public out : character_encodings is
 
-  public print(s ref Any) =>
+  public print(s Any) =>
     write s.as_string.utf8.as_array
 
-  public println(s ref Any) =>
+  public println(s Any) =>
     write (s.as_string.utf8 ++ [ascii.lf]).as_array
 
   public println =>

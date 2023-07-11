@@ -104,7 +104,7 @@ private container_node(CTK type : property.hashable, CTV type, bmp u32, array ar
 
 
   # create copy of this container_node and children
-  renewed(new_gen i32, ct ref C_Trie CTK CTV) =>
+  renewed(new_gen i32, ct C_Trie CTK CTV) =>
     copy := array.map (branch CTK CTV) x->
                      match x
                        i Indirection_Node => i.copy_to_gen new_gen ct
@@ -174,7 +174,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new
     true
 
   # completes the generation sensitive compare and set
-  private gcas_commit(m Main_Node CTK CTV, ct ref C_Trie CTK CTV) Main_Node CTK CTV is
+  private gcas_commit(m Main_Node CTK CTV, ct C_Trie CTK CTV) Main_Node CTK CTV is
     # abortably read root and get the current gen
     gen := (ct.read_root true).data.get.gen
     match m.prev.get
@@ -195,14 +195,14 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new
           gcas_commit data.get ct
 
   # read `data`, if prev is set commit first
-  private gcas_read(ct ref C_Trie CTK CTV) Main_Node CTK CTV is
+  private gcas_read(ct C_Trie CTK CTV) Main_Node CTK CTV is
     m := data.get
     match m.prev.get
       nil => m
       * => (gcas_commit m ct)
 
   # generation aware compare and set
-  gcas(o Main_Node CTK CTV, n Main_Node CTK CTV, ct ref C_Trie CTK CTV) choice restart ctrie_ok is
+  gcas(o Main_Node CTK CTV, n Main_Node CTK CTV, ct C_Trie CTK CTV) choice restart ctrie_ok is
     n.cas_prev o nil
     if(cas o n)
       gcas_commit n ct
@@ -214,7 +214,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data mutate.new
 
 
   # copy this node to a new generation
-  private copy_to_gen(new_gen i32, ct ref C_Trie CTK CTV) Indirection_Node CTK CTV is
+  private copy_to_gen(new_gen i32, ct C_Trie CTK CTV) Indirection_Node CTK CTV is
     m := gcas_read ct
     # increase the generation of node by one
     Indirection_Node (mut (Main_Node m.data new_gen))

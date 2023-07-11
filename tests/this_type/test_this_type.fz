@@ -35,9 +35,9 @@ simple_test_for_this_type_ref =>
       print
       b1 := q.this
       b2 := b1
-      b3 ref q := q.this
-      b4 ref q := b1
-      b5 ref q := b2
+      b3 q := q.this
+      b4 q := b1
+      b5 q := b2
 
     print => yak "q"
 
@@ -66,14 +66,16 @@ simple_test_for_this_type_value =>
 
   # a simple test for 'this.type'
   #
-  q is
+  rq ref is
+    print unit is abstract
+  q : rq is
     x is
       print
       b1 := q.this
       b2 := b1
-      b3 ref q := q.this
-      b4 ref q := b1
-      b5 ref q := b2
+      b3 rq := q.this
+      b4 rq := b1
+      b5 rq := b2
 
     print => yak "q"
 

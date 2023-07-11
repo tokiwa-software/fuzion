@@ -43,7 +43,10 @@ inheritance_for_value_types is
       say "FAILED: $msg"
       exit_code <- 1
 
-  a is
+  ra ref is
+    x, y, z (msg String, expected i32) unit is abstract
+
+  a : ra is
     x (msg String, expected i32) unit is chck msg expected=1
     y (msg String, expected i32) unit is x msg expected
     z (msg String, expected i32) =>      x msg expected
@@ -60,13 +63,13 @@ inheritance_for_value_types is
     v.xx
     unit
 
-  rx (rv ref a, msg String, expected i32) unit is
+  rx (rv ra, msg String, expected i32) unit is
     rv.x msg expected
 
-  ry (rv ref a, msg String, expected i32) unit is
+  ry (rv ra, msg String, expected i32) unit is
     rv.y msg expected
 
-  rz (rv ref a, msg String, expected i32) unit is
+  rz (rv ra, msg String, expected i32) unit is
     rv.z msg expected
 
   a.y "a.y" 1
