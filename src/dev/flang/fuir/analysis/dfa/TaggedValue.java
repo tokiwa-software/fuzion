@@ -110,7 +110,6 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    */
   public Value joinInstances(Value v)
   {
-    v = v.unwrap();
     if (v instanceof TaggedValue tv)
       {
         if (_tag == tv._tag)
