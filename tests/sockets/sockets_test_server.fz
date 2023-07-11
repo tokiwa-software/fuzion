@@ -66,8 +66,26 @@ sockets_test_server =>
   f net.family.val   := if envir.args.drop(1).first = "ipv4" then net.family.ipv4   else net.family.ipv6
   p net.protocol.val := if envir.args.drop(2).first = "tcp"  then net.protocol.tcp  else net.protocol.udp
 
+
+  # a number for protocol p to be used for
+  # choosing a unique port for every protocol/family
+  #
+  protocol_num(p net.protocol.val) u16 is
+    match p
+      net.protocol.tcp => 0
+      net.protocol.udp => 1
+      nil => 2
+
+  # a number for family f to be used for
+  # choosing a unique port for every protocol/family
+  #
+  family_num(f net.family.val) u16 is
+    match f
+      net.family.ipv4 => 0
+      net.family.ipv6 => 3
+
   # For now use a different port for every test.
-  port := u16 40000 + p.as_num.as_u16*10 + f.as_num.as_u16
+  port := u16 40000 + (protocol_num p) + (family_num f)
 
   # NYI c tests fail
   # no_out : io.Can_Print is
