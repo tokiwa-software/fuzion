@@ -84,9 +84,9 @@ mutate : simple_effect is
     # check that this effect is installed and replace it.
     #
     private check_and_replace is
-      if my_id != mutate.this.type.env.id
+      if my_id != mutate.this.env.id
         panic "*** invalid mutate for {mutate.this.type}"
-      mutate.this.type.env.replace
+      mutate.this.env.replace
 
     # is this element open, i.e., can it be mutated?
     #
@@ -115,7 +115,7 @@ mutate : simple_effect is
     # If this is open, check that the mutate effect this was created with is still
     # installed in the current environment.
     #
-    get ! mutate.this.type =>
+    get ! mutate.this =>
       if open
         check_and_replace
       mutable_value
@@ -138,7 +138,7 @@ mutate : simple_effect is
     put (
       # the new value to be stored with 'h'
       to T)
-      ! mutate.this.type
+      ! mutate.this
     pre
       safety: open
      =>

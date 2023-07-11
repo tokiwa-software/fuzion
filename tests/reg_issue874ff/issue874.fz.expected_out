@@ -1,5 +1,5 @@
-num0.this.type 2 'as_string'
-num0.this.type 2 'as_string'
+num0.this 2 'as_string'
+num0.this 2 'as_string'
 unit
 unit
 

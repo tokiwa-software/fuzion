@@ -50,11 +50,11 @@ issue1183 is
   q a a
   q b b
 
-  # next level: using this.type as a type parameter to list:
+  # next level: using this as a type parameter to list:
   a1 is
 
     # using explicit result type
-    l1 list a1.this.type is [a1.this].as_list
+    l1 list a1.this is [a1.this].as_list
 
     # using inferred result type
     l2 => [a1.this].as_list
@@ -72,7 +72,7 @@ issue1183 is
   say (my_type_of a1.l2)    # should print `list issue1183.a1`
   say (my_type_of b1.l2)    # should print `list issue1183.b1`
 
-  # next level: using this.type as a type parameter to list:
+  # next level: using this as a type parameter to list:
 
   a2 is
     # using inferred result type

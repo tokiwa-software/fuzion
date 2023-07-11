@@ -3123,8 +3123,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
-                  | thistype
-                  | qualThis
+                  | qualThisType
                   | plainLambda
                   | call
                   | universeCall
@@ -3134,12 +3133,32 @@ callOrFeatOrThis  : anonymous
   {
     return
       isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
-      isThistype()                  ? thistypeAsExpr() : // starts with type followed by 'this.type'
-      isQualThisPrefix()            ? qualThisAsThis() : // starts with name
+      isQualThisPrefix()            ? qualThisType()   : // "a.b.this" or "a.b.this.type", starts with name
       isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
       isNamePrefix()                ? call(null)       : // starts with name
       current() == Token.t_universe ? universeCall()
                                     : null;
+  }
+
+
+  /**
+   * Parse qualThisType
+   *
+qualThisType: qualThis
+            | qualThis dotTypeSuffx
+            ;
+   */
+  Expr qualThisType()
+  {
+    var f = fork();
+    Expr result = qualThisAsThis();
+    var f2 = fork();
+    if (f2.skipDot() && f2.skip(Token.t_type))
+      {
+        var ignore = skipDot();
+        result = dotTypeSuffx(f.qualThisAsType());
+      }
+    return result;
   }
 
 
@@ -3270,7 +3289,7 @@ qualThis    : name ( dot name )* dot "this"
 
 
   /**
-   * Parse qualThis producing an instance of Type.  This is used withing the
+   * Parse qualThis producing an instance of Type.  This is used within the
    * rule thistype.
    */
   Type qualThisAsType()
@@ -3292,8 +3311,7 @@ qualThis    : name ( dot name )* dot "this"
 
 
   /**
-   * Check if the current position starts a qualThis.  Does not change the
-   * position of the parser.
+   * Check if the current position starts a qualThis.
    *
    * @return true iff the next token(s) start a qualThis.
    */
@@ -3303,6 +3321,23 @@ qualThis    : name ( dot name )* dot "this"
     while (!result && skipName() && skipDot())
       {
         result = skip(Token.t_this);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position starts a qualThis and skip it.
+   *
+   * @return true iff the next token(s) is a qualThis, otherwise no qualThis was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipQualThis()
+  {
+    var result = isQualThisPrefix();
+    if (result)
+      {
+        var ignore = qualThisAsThis();
       }
     return result;
   }
@@ -3327,16 +3362,29 @@ dotEnv      : simpletype dot "env"
   /**
    * Parse dotType
    *
-dotType     : simpletype dot "type"
-            | LPAREN type RPAREN dot "type"
+dotType     : simpletype dotTypeSuffx
+            | LPAREN type RPAREN dotTypeSuffx
             ;
    */
   Expr dotType()
   {
     var t = typeInParens();
-    skipDot();
-    match(Token.t_type, "type");
-    return new DotType(tokenSourcePos(), t);
+    return dotTypeSuffx(t);
+  }
+
+
+  /**
+   * Parse dotTypeSuffx
+   *
+dotTypeSuffx: dot "type"
+            ;
+   */
+  Expr dotTypeSuffx(AbstractType t)
+  {
+    var p = tokenSourcePos();
+    matchOperator(".", "dotTypeSuffx");
+    match(Token.t_type, "dotTypeSuffx");
+    return new DotType(p, t);
   }
 
 
@@ -3611,16 +3659,16 @@ implFldInit : ":=" exprInLine
   /**
    * Parse type
    *
-type        : thistype
+type        : qualThis
             | onetype ( PIPE onetype ) *
             ;
    */
   AbstractType type()
   {
     AbstractType result;
-    if (isThistype())
+    if (isQualThisPrefix())
       {
-        result = thistype();
+        result = qualThisAsType();
       }
     else
       {
@@ -3697,7 +3745,7 @@ type        : thistype
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    boolean result = skipThistype();
+    boolean result = skipQualThis();
     if (!result)
       {
         var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
@@ -3708,68 +3756,6 @@ type        : thistype
             hasForbiddenParentheses = false;
           }
         result = res && !hasForbiddenParentheses;
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse thistype
-   *
-thistype    : qualThis dot "type"
-            ;
-   */
-  AbstractType thistype()
-  {
-    Type result = qualThisAsType();
-    matchOperator(".", "thistype");
-    match(Token.t_type, "thistype");
-    return result;
-  }
-
-
-  /**
-   * Parse thistype as Expr
-   *
-   */
-  Expr thistypeAsExpr()
-  {
-    var result = thistype();
-    return new DotType(result.pos2BeRemoved(), result);
-  }
-
-
-  /**
-   * Check if the current position is a thistype.  Does not change the position
-   * of the parser.
-   *
-   * @return true iff the next token(s) form a thistype.
-   */
-  boolean isThistype()
-  {
-    var result = isQualThisPrefix();
-    if (result)
-      {
-        var f = fork();
-        var ignore = f.qualThisAsType();
-        result = f.skipDot() && f.skip(Token.t_type);
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if the current position starts a thistype and skip it.
-   *
-   * @return true iff the next token(s) is a thistype, otherwise no thistype was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipThistype()
-  {
-    var result = isThistype();
-    if (result)
-      {
-        var ignore = thistype();
       }
     return result;
   }

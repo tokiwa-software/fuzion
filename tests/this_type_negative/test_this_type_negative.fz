@@ -37,21 +37,21 @@ test_this_type_negative is
 
   b ref is
     x is
-      bx0             := b.this
-      bx1 b.this.type := b.this
-      bx2 ref b       := b.this
+      bx0        := b.this
+      bx1 b.this := b.this
+      bx2 ref b  := b.this
 
-    b0             := b.this
-    b1 b.this.type := b.this
-    b2 ref b       := b.this
+    b0        := b.this
+    b1 b.this := b.this
+    b2 ref b  := b.this
 
 
   xa is
-    op0(v xa.this.type) xa.this.type is abstract
+    op0(v xa.this) xa.this is abstract
 
 
   xb(val String) : xa is
-    op0(v xb.this.type) xb.this.type is xb.this
+    op0(v xb.this) xb.this is xb.this
 
   xc : xb "cx" is
 
@@ -66,7 +66,7 @@ test_this_type_negative is
   xb2 := xb "2"
 
   # xb1 and xb2 are both of type xb, so it is permitted to pass an instance of
-  # xb to an argument of type xb.this.type:
+  # xb to an argument of type xb.this:
   _ := xb1.op0 xb1
   _ := xb1.op0 xb2
   _ := xb2.op0 xb1
