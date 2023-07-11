@@ -406,6 +406,12 @@ public class C extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * env var to enable debug output for tail call optimization:
+   */
+  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
+
+
   private static final int expectedClangVersion = 11;
 
 
@@ -1109,6 +1115,18 @@ public class C extends ANY
           var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
+
+              if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  !preCalled                                             &&  // not calling pre-condition
+                  cc == cl                                               &&  // calling myself
+                  _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
+                  _fuir.lifeTime(cl, pre).ordinal() >
+                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                )
+                {
+                  System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
+                }
+
               if (!preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call

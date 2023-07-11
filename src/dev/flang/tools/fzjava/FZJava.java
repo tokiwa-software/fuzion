@@ -516,7 +516,7 @@ public class FZJava extends Tool
         // do not generate duplicate features
         if (!_existingFeatures.contains(pkg.replace("/", ".")))
           {
-            FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+            FeatureWriter.write(this, pkg, "_pkg", "public " + FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
           }
       }
   }

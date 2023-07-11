@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis.dfa;
 import java.util.Comparator;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import dev.flang.util.ANY;
 
@@ -38,7 +39,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Value extends ANY
+public class Value extends Val
 {
 
 
@@ -62,8 +63,6 @@ public class Value extends ANY
        */
       public int compare(Value a, Value b)
       {
-        a = a.unwrap();
-        b = b.unwrap();
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
@@ -112,7 +111,7 @@ public class Value extends ANY
        * Get set of values of given field within this value.  This works for unit
        * type results even if this is not an instance (but a unit type itself).
        */
-      public Value readField(DFA dfa, int field)
+      public Val readField(DFA dfa, int field)
       {
         if (dfa._fuir.clazzUniverse() == dfa._fuir.clazzOuterClazz(field))
           {
@@ -219,20 +218,11 @@ public class Value extends ANY
    * Get set of values of given field within this value.  This works for unit
    * type results even if this is not an instance (but a unit type itself).
    */
-  public Value readField(DFA dfa, int field)
+  public Val readField(DFA dfa, int field)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
-    return dfa._fuir.clazzIsUnitType(rt) ? Value.UNIT
+    var res = dfa._fuir.clazzIsUnitType(rt) ? Value.UNIT
                                          : readFieldFromInstance(dfa, field);
-  }
-
-
-  /**
-   * In case this is an embedded value, embed res the same way.
-   *
-   */
-  Value rewrap(DFA dfa, Value res)
-  {
     return res;
   }
 
@@ -242,9 +232,9 @@ public class Value extends ANY
    *
    * @param cc the inner value of the field that is called.
    */
-  Value callField(DFA dfa, int cc)
+  Val callField(DFA dfa, int cc)
   {
-    var resa = new Value[] { null };
+    var resa = new Val[] { null };
     forAll(t ->
            {
              var r = t.readField(dfa, cc);
@@ -254,7 +244,7 @@ public class Value extends ANY
                }
              else
                {
-                 resa[0] = resa[0].join(r);
+                 resa[0] = resa[0].joinVal(dfa, r);
                }
            });
     return resa[0];
@@ -264,7 +254,7 @@ public class Value extends ANY
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field)
   {
     throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
   }
@@ -369,9 +359,20 @@ public class Value extends ANY
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
    */
-  Value unwrap()
+  Value value()
   {
     return this;
+  }
+
+
+  /**
+   * apply f to the unwrapped value and re-wrap
+   *
+   * @param f function to apply to unwrapped value.
+   */
+  public Val rewrap(DFA dfa, Function<Value,Val> f)
+  {
+    return f.apply(this);
   }
 
 }

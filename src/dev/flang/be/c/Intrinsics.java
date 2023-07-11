@@ -120,23 +120,21 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
-                  eq = CExpr.eq(tmp, expected);
+                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
+                                    CExpr.call("__atomic_compare_exchange", new List<>(f.adrOf(), tmp.adrOf(), new_value.adrOf(), new CIdent("false"), new CIdent("__ATOMIC_SEQ_CST"), new CIdent("__ATOMIC_SEQ_CST"))),
+                                    tmp.ret());
                 }
               else
                 {
                   eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
+                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                      CStmnt.iff(eq,
+                                                                 f.assign(new_value)))),
+                                    tmp.ret());
                 }
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
-              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
-                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                  CStmnt.iff(eq,
-                                                             f.assign(new_value)))),
-                                tmp.ret());
             }
           return code;
         });
@@ -163,27 +161,33 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
-                  eq = CExpr.eq(tmp, expected);
+                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
+                                    CExpr.call("__atomic_compare_exchange", new List<>(f.adrOf(), tmp.adrOf(), new_value.adrOf(), new CIdent("false"), new CIdent("__ATOMIC_SEQ_CST"), new CIdent("__ATOMIC_SEQ_CST"))).castTo("fzT_bool").ret());
                 }
               else
                 {
-                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
+                      c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                    {
+                      eq = CExpr.eq(tmp, expected);
+                    }
+                  else
+                    {
+                      eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                    }
+
+                  code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
+                                    locked(CNames.GLOBAL_LOCK,
+                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                      CStmnt.iff(eq,
+                                                                 CStmnt.seq(
+                                                                  f.assign(new_value),
+                                                                  res.assign(new CIdent("true"))
+                                                                  )))),
+                                    CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
                 }
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
-              code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
-                                locked(CNames.GLOBAL_LOCK,
-                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                  CStmnt.iff(eq,
-                                                             CStmnt.seq(
-                                                              f.assign(new_value),
-                                                              res.assign(new CIdent("true"))
-                                                              )))),
-                                CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
             }
           return code;
         });
@@ -217,8 +221,25 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           CStmnt code;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
-            { // A unit-type read should be at least a load/store fence. For now, we enter the lock
-              code = locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+            {
+              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+            }
+          else if (c._fuir.clazzIsRef(rc) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(
+                CExpr.decl(c._types.clazz(rc), tmp),
+                CExpr.call("__atomic_load", new List<>(f.adrOf(), tmp.adrOf(), new CIdent("__ATOMIC_SEQ_CST"))),
+                tmp.ret());
             }
           else
             {
@@ -238,11 +259,24 @@ public class Intrinsics extends ANY
           var v = c._fuir.lookupAtomicValue(ac);
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
-          var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
-            { // A unit-type write should at least be a load/store fence. For new, we enter the lock:
-              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY));
+            {
+              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+            }
+          else if (c._fuir.clazzIsRef(rc) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CExpr.call("__atomic_store", new List<>(f.adrOf(), new_value.adrOf(), new CIdent("__ATOMIC_SEQ_CST")));
             }
           else
             {
@@ -255,13 +289,13 @@ public class Intrinsics extends ANY
         });
 
     put("concur.util.loadFence", (c,cl,outer,in) ->
-        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
-          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        {
+          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
         });
 
     put("concur.util.storeFence", (c,cl,outer,in) ->
-        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
-          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        {
+          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
         });
 
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());

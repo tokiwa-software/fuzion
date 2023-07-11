@@ -44,7 +44,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class EmbeddedValue extends Value
+public class EmbeddedValue extends Val
 {
 
 
@@ -143,8 +143,6 @@ public class EmbeddedValue extends Value
                         int index,
                         Value value)
   {
-    super(value._clazz);
-
     if (PRECONDITIONS) require
       ((instance != null) != (code != -1 && index != -1),
        value != null,
@@ -162,72 +160,22 @@ public class EmbeddedValue extends Value
 
 
   /**
-   * Get the address of a value.
-   */
-  public Value adrOf()
-  {
-    return rewrap(x -> x.adrOf());
-  }
-
-
-  /**
-   * Get set of values of given field within this instance.
-   */
-  Value readFieldFromInstance(DFA dfa, int field)
-  {
-    if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
-
-    return rewrap(v -> v.readFieldFromInstance(dfa, field));
-  }
-
-
-
-  /**
-   * Get set of values of given field within this value.  This works for unit
-   * type results even if this is not an instance (but a unit type itself).
-   */
-  public Value readField(DFA dfa, int field)
-  {
-    return rewrap(v -> v.readField(dfa, field));
-  }
-
-
-  /**
    * apply f to the unwrapped value and re-wrap
    *
    * @param f function to apply to unwrapped value.
    */
-  public EmbeddedValue rewrap(Function<Value,Value> f)
+  public Val rewrap(DFA dfa, Function<Value,Val> f)
   {
-    var res = f.apply(unwrap());
-    return new EmbeddedValue(_instance, _cl, _code, _index, res);
+    var res = f.apply(value());
+    var rv = res.value();
+    var cl = rv._clazz;
+    if (cl != -1 && dfa._fuir.clazzIsRef(cl))
+      {
+        return res;
+      }
+    return new EmbeddedValue(_instance, _cl, _code, _index, rv);
   }
 
-
-  /**
-   * re-wrap given value res with this embedded value unless it is null (void) or of unknown clazz or of a ref clazz.
-   *
-   * @param dfa the DFA instance
-   *
-   * @param res the value to be wrapped
-   */
-  Value rewrap(DFA dfa, Value res)
-  {
-    return res == null || res._clazz == -1 || dfa._fuir.clazzIsRef(res._clazz) ? res : new EmbeddedValue(_instance, _cl, _code, _index, res);
-  }
-
-
-  /**
-   * Create a call to a field
-   *
-   * @param cc the inner value of the field that is called.
-   */
-  Value callField(DFA dfa, int cc)
-  {
-    var res = _value.callField(dfa, cc);
-    return res == null || res._clazz == -1 || dfa._fuir.clazzIsRef(res._clazz) ? res : new EmbeddedValue(_instance, _cl, _code, _index, res);
-  }
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
@@ -240,25 +188,13 @@ public class EmbeddedValue extends Value
 
 
   /**
-   * Perform c.accept on this and, if this is a set, on all values contained in
-   * the set.
-   *
-   * @param c a consumer to apply to the values.
-   */
-  public void forAll(ValueConsumer c)
-  {
-    _value.forAll(c);
-  }
-
-
-  /**
    * In case this value is wrapped in an instance that contains additional
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
    */
-  Value unwrap()
+  Value value()
   {
-    return _value.unwrap();
+    return _value;
   }
 
 
@@ -268,9 +204,10 @@ public class EmbeddedValue extends Value
   public String toString()
   {
     return
-      (_instance != null ? _instance._dfa._fuir.clazzAsString(_clazz) + " embedded in " + _instance.toString()
-                         : "EMBEDDED in " + _code + "@" + _index)  ;
+      (_instance != null ? _instance + " embedded in " + _instance.toString()
+       : "EMBEDDED in " + _code + "@" + _index);
   }
+
 
 }
 

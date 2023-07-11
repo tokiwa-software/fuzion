@@ -83,14 +83,6 @@ public abstract class Module extends ANY
      */
     Set<AbstractFeature> _heirs = new TreeSet<>();
 
-
-    /**
-     * All features that have been found to directly redefine this feature. This
-     * does not include redefinitions of redefinitions.  This set is collected
-     * during RESOLVING_DECLARATIONS.
-     */
-    Set<AbstractFeature> _redefinitions = null;
-
     /**
      * Cached result of SourceModule.allInnerAndInheritedFeatures().
      */

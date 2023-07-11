@@ -326,7 +326,7 @@ is
   # this uint as an int
   as_int int
   is
-    int plus (uint b unit)
+    int num.plus (uint b unit)
 
 
   # this uint as a string, may contain leading zeros

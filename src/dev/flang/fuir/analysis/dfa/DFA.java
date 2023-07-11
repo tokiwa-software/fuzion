@@ -61,7 +61,7 @@ public class DFA extends ANY
    */
   interface IntrinsicDFA
   {
-    Value analyze(Call c);
+    Val analyze(Call c);
   }
 
 
@@ -79,7 +79,7 @@ public class DFA extends ANY
   /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
-  class Analyze extends AbstractInterpreter.ProcessStatement<Value,Unit>
+  class Analyze extends AbstractInterpreter.ProcessStatement<Val,Unit>
   {
 
 
@@ -115,7 +115,7 @@ public class DFA extends ANY
      * Produce the unit type value.  This is used as a placeholder
      * for the universe instance as well as for the instance 'unit'.
      */
-    public Value unitValue()
+    public Val unitValue()
     {
       return Value.UNIT;
     }
@@ -157,9 +157,9 @@ public class DFA extends ANY
      * Determine the address of a given value.  This is used on a call to an
      * inner feature to pass a reference to the outer value type instance.
      */
-    public Pair<Value, Unit> adrOf(Value v)
+    public Pair<Val, Unit> adrOf(Val v)
     {
-      return new Pair<>(v.adrOf(), _unit_);
+      return new Pair<>(v.rewrap(DFA.this, x -> x.adrOf()), _unit_);
     }
 
 
@@ -178,9 +178,9 @@ public class DFA extends ANY
      *
      * @return resulting code of this assignment.
      */
-    public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
+    public Unit assignStatic(int tc, int f, int rt, Val tvalue, Val val)
     {
-      tvalue.setField(DFA.this, f, val);
+      tvalue.value().setField(DFA.this, f, val.value());
       return _unit_;
     }
 
@@ -189,7 +189,7 @@ public class DFA extends ANY
      * Perform an assignment of avalue to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      */
-    public Unit assign(int cl, boolean pre, int c, int i, Value tvalue, Value avalue)
+    public Unit assign(int cl, boolean pre, int c, int i, Val tvalue, Val avalue)
     {
       var res = access(cl, c, i, tvalue, new List<>(avalue));
       return _unit_;
@@ -209,10 +209,10 @@ public class DFA extends ANY
      * @return tvalue in case tvalue does not need unboxing, or the unboxed
      * value if tt is boxed and the outer clazz of cc is a value type.
      */
-    private Value unboxTarget(Value tvalue, int tt, int cc)
+    private Val unboxTarget(Val tvalue, int tt, int cc)
     {
       var cco = _fuir.clazzOuterClazz(cc);
-      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.unbox(cco)
+      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.value().unbox(cco)
                                                             : tvalue;
     }
 
@@ -225,11 +225,11 @@ public class DFA extends ANY
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
-    public Pair<Value, Unit> call(int cl, boolean pre, int c, int i, Value tvalue, List<Value> args)
+    public Pair<Val, Unit> call(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz            (cl, c, i);
-      var res = Value.UNIT;
+      Val res = Value.UNIT;
       if (ccP != -1)
         {
           res = call0(cl, tvalue, args, c, i, ccP, true, tvalue);
@@ -258,19 +258,19 @@ public class DFA extends ANY
      *
      * @return result value of the access
      */
-    Value access(int cl, int c, int i, Value tvalue, List<Value> args)
+    Val access(int cl, int c, int i, Val tvalue, List<Val> args)
     {
       var tc = _fuir.accessTargetClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz  (cl, c, i);
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
-      var resf = new Value[] { null };
+      var resf = new Val[] { null };
       for (var ccii = 0; ccii < ccs.length; ccii += 2)
         {
           var cci = ccii;
           var tt = ccs[cci  ];
           var cc = ccs[cci+1];
-          tvalue.forAll(t -> {
+          tvalue.value().forAll(t -> {
               check
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
@@ -281,31 +281,40 @@ public class DFA extends ANY
                   var r = access0(cl, c, i, t, args, cc, tvalue);
                   if (r != null)
                     {
-                      resf[0] = resf[0] == null ? r : resf[0].join(r);
+                      resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
                     }
                 }
             });
         }
+      var res = resf[0];
       if (!found[0])
-        {
-          // NYI: proper error reporting
+        { // NYI: proper error reporting
           Errors.error(_fuir.codeAtAsPos(c, i),
                        "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
                        null);
         }
-      return resf[0];
+      else if (res != null &&
+               tvalue instanceof EmbeddedValue &&
+               !_fuir.clazzIsRef(tc) &&
+               _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
+        { // an embedded field in a value instance, so keep tvalue's
+          // embedding. For chained embedded fields in value instances like
+          // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
+          res = tvalue.rewrap(DFA.this, x -> resf[0].value());
+        }
+      return res;
     }
 
 
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Value access0(int cl, int c, int i, Value tvalue, List<Value> args, int cc, Value original_tvalue /* NYI: ugly */)
+    Val access0(int cl, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
       var cs = site(cl, c, i);
       cs._accesses.add(cc);
       var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
-      Value r;
+      Val r;
       if (isCall)
         {
           r = call0(cl, tvalue, args, c, i, cc, false, original_tvalue);
@@ -320,7 +329,7 @@ public class DFA extends ANY
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
-              tvalue.setField(DFA.this, cc, v);
+              tvalue.value().setField(DFA.this, cc, v.value());
               tempEscapes(cl, c, i, v, cc);
             }
           r = Value.UNIT;
@@ -346,11 +355,11 @@ public class DFA extends ANY
      *
      * @return result values of the call
      */
-    Value call0(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre, Value original_tvalue)
+    Val call0(int cl, Val tvalue, List<Val> args, int c, int i, int cc, boolean pre, Val original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
       tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
-      Value res = null;
+      Val res = null;
       switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
         case Abstract :
@@ -361,11 +370,11 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, pre, tvalue, args, _call._env, _call);
+                var ca = newCall(cc, pre, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
-                    res = new EmbeddedValue(cl, c, i, res);
+                    res = new EmbeddedValue(cl, c, i, res.value());
                   }
                 if (tvalue == _call._instance || original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance)
                   {
@@ -381,7 +390,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            res = original_tvalue.rewrap(DFA.this, tvalue.callField(DFA.this, cc));
+            res = tvalue.value().callField(DFA.this, cc);
             if (_reportResults && _options.verbose(9))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
@@ -398,9 +407,9 @@ public class DFA extends ANY
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
-    public Pair<Value, Unit> box(Value val, int vc, int rc)
+    public Pair<Val, Unit> box(Val val, int vc, int rc)
     {
-      var boxed = val.unwrap().box(DFA.this, vc, rc, _call);
+      var boxed = val.value().box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);
     }
 
@@ -408,9 +417,9 @@ public class DFA extends ANY
     /**
      * For a given reference value v create an unboxed value of type vc.
      */
-    public Pair<Value, Unit> unbox(Value val, int orc)
+    public Pair<Val, Unit> unbox(Val val, int orc)
     {
-      var unboxed = val.unbox(orc);
+      var unboxed = val.value().unbox(orc);
       return new Pair<>(unboxed, _unit_);
     }
 
@@ -418,7 +427,7 @@ public class DFA extends ANY
     /**
      * Get the current instance
      */
-    public Pair<Value, Unit> current(int cl, boolean pre)
+    public Pair<Val, Unit> current(int cl, boolean pre)
     {
       return new Pair<>(_call._instance, _unit_);
     }
@@ -427,7 +436,7 @@ public class DFA extends ANY
     /**
      * Get the outer instance
      */
-    public Pair<Value, Unit> outer(int cl)
+    public Pair<Val, Unit> outer(int cl)
     {
       return new Pair<>(_call._target, _unit_);
     }
@@ -435,7 +444,7 @@ public class DFA extends ANY
     /**
      * Get the argument #i
      */
-    public Value arg(int cl, int i)
+    public Val arg(int cl, int i)
     {
       return _call._args.get(i);
     }
@@ -444,7 +453,7 @@ public class DFA extends ANY
     /**
      * Get a constant value of type constCl with given byte data d.
      */
-    public Pair<Value, Unit> constData(int constCl, byte[] d)
+    public Pair<Val, Unit> constData(int constCl, byte[] d)
     {
       var o = _unit_;
       var r = switch (_fuir.getSpecialId(constCl))
@@ -475,9 +484,9 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<Value, Unit> match(AbstractInterpreter<Value,Unit> ai, int cl, boolean pre, int c, int i, Value subv)
+    public Pair<Val, Unit> match(AbstractInterpreter<Val,Unit> ai, int cl, boolean pre, int c, int i, Val subv)
     {
-      Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
+      Val r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
           // array to permit modification in lambda
@@ -485,8 +494,8 @@ public class DFA extends ANY
           var field = _fuir.matchCaseField(cl, c, i, mc);
           for (var t : _fuir.matchCaseTags(cl, c, i, mc))
             {
-              subv.forAll(s -> {
-                  if (s.unwrap() instanceof TaggedValue tv)
+              subv.value().forAll(s -> {
+                  if (s.value() instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
@@ -529,9 +538,9 @@ public class DFA extends ANY
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
      */
-    public Pair<Value, Unit> tag(int cl, int valuecl, Value value, int newcl, int tagNum)
+    public Pair<Val, Unit> tag(int cl, int valuecl, Val value, int newcl, int tagNum)
     {
-      Value res = value.tag(_call._dfa, newcl, tagNum);
+      Val res = value.value().tag(_call._dfa, newcl, tagNum);
       return new Pair<>(res, _unit_);
     }
 
@@ -539,7 +548,7 @@ public class DFA extends ANY
     /**
      * Access the effect of type ecl that is installed in the environment.
      */
-    public Pair<Value, Unit> env(int ecl)
+    public Pair<Val, Unit> env(int ecl)
     {
       return new Pair<>(_call.getEffect(ecl), _unit_);
     }
@@ -549,7 +558,7 @@ public class DFA extends ANY
      * Process a contract of kind ck of clazz cl that results in bool value cc
      * (i.e., the contract fails if !cc).
      */
-    public Unit contract(int cl, FUIR.ContractKind ck, Value cc)
+    public Unit contract(int cl, FUIR.ContractKind ck, Val cc)
     {
       return _unit_;
       /*
@@ -1023,7 +1032,7 @@ public class DFA extends ANY
           {
             var af = _fuir.clazzArg(c._cc, a);
             var aa = c._args.get(a);
-            i.setField(this, af, aa);
+            i.setField(this, af, aa.value());
           }
 
         // copy outer ref argument to outer ref field:
@@ -1033,7 +1042,7 @@ public class DFA extends ANY
             i.setField(this, or, c._target);
           }
 
-        var ai = new AbstractInterpreter<Value,Unit>(_fuir, new Analyze(c));
+        var ai = new AbstractInterpreter<Val,Unit>(_fuir, new Analyze(c));
         var r = ai.process(c._cc, c._pre);
         if (r._v0 != null)
           {
@@ -1130,7 +1139,7 @@ public class DFA extends ANY
    * @param adrField field the address of `v` is assigned to.
    *
    */
-  void tempEscapes(int cl, int c, int i, Value v, int adrField)
+  void tempEscapes(int cl, int c, int i, Val v, int adrField)
   {
     if (v instanceof EmbeddedValue ev &&
         adrField != -1 &&
@@ -1158,7 +1167,7 @@ public class DFA extends ANY
 
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
-          var new_value = cl._args.get(1);
+          var new_value = cl._args.get(1).value();
           var res = atomic.callField(cl._dfa, v);
 
           // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
@@ -1175,7 +1184,7 @@ public class DFA extends ANY
 
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
-          var new_value = cl._args.get(1);
+          var new_value = cl._args.get(1).value();
           var res = atomic.callField(cl._dfa, v);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
@@ -1208,7 +1217,7 @@ public class DFA extends ANY
             (cl._dfa._fuir.clazzNeedsCode(v));
 
           var atomic    = cl._target;
-          var new_value = cl._args.get(0);
+          var new_value = cl._args.get(0).value();
           atomic.setField(cl._dfa, v, new_value);
           return Value.UNIT;
         });
@@ -1459,10 +1468,10 @@ public class DFA extends ANY
     put("fuzion.sys.internal_array_init.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
-          var array = cl._args.get(0);
-          var index = cl._args.get(1);
-          var value = cl._args.get(2);
-          if (array.unwrap() instanceof SysArray sa)
+          var array = cl._args.get(0).value();
+          var index = cl._args.get(1).value();
+          var value = cl._args.get(2).value();
+          if (array instanceof SysArray sa)
             {
               sa.setel(index, value);
               return Value.UNIT;
@@ -1474,9 +1483,9 @@ public class DFA extends ANY
         });
     put("fuzion.sys.internal_array.get"  , cl ->
         {
-          var array = cl._args.get(0);
-          var index = cl._args.get(1);
-          if (array.unwrap() instanceof SysArray sa)
+          var array = cl._args.get(0).value();
+          var index = cl._args.get(1).value();
+          if (array instanceof SysArray sa)
             {
               return sa.get(index);
             }
@@ -1500,7 +1509,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new environment */, cl);
+          var ncl = cl._dfa.newCall(call, false, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
@@ -1559,7 +1568,7 @@ public class DFA extends ANY
 
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), newEnv, cl);
+          var ncl = cl._dfa.newCall(call, false, cl._args.get(0).value(), new List<>(), newEnv, cl);
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
@@ -1750,7 +1759,7 @@ public class DFA extends ANY
    * @return cl a new or existing call to cl (or its precondition) with the
    * given target, args and environment.
    */
-  Call newCall(int cl, boolean pre, Value tvalue, List<Value> args, Env env, Context context)
+  Call newCall(int cl, boolean pre, Value tvalue, List<Val> args, Env env, Context context)
   {
     var r = new Call(this, cl, pre, tvalue, args, env, context);
     var e = _calls.get(r);
