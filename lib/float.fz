@@ -38,12 +38,12 @@ float : numeric is
   #
   redef prefix +! bool is true
   redef prefix -! bool is true
-  redef infix +! (other float.this.type) bool is true
-  redef infix -! (other float.this.type) bool is true
-  redef infix *! (other float.this.type) bool is true
-  redef infix /! (other float.this.type) bool is true
-  redef infix %! (other float.this.type) bool is true
-  redef infix **!(other float.this.type) bool is true
+  redef infix +! (other float.this) bool is true
+  redef infix -! (other float.this) bool is true
+  redef infix *! (other float.this) bool is true
+  redef infix /! (other float.this) bool is true
+  redef infix %! (other float.this) bool is true
+  redef infix **!(other float.this) bool is true
 
 
   # comparision
@@ -53,12 +53,12 @@ float : numeric is
   # type.equality and type.lteq should be used for equivalence relations
   # and total ordering in the mathematical sense.
   #
-  infix = (other float.this.type) bool is abstract
-  infix != (other float.this.type) bool is !(infix = other)
-  infix <= (other float.this.type) bool is abstract
-  infix >= (other float.this.type) bool is abstract
-  infix > (other float.this.type) bool is abstract
-  infix < (other float.this.type) bool is abstract
+  infix = (other float.this) bool is abstract
+  infix != (other float.this) bool is !(infix = other)
+  infix <= (other float.this) bool is abstract
+  infix >= (other float.this) bool is abstract
+  infix > (other float.this) bool is abstract
+  infix < (other float.this) bool is abstract
 
 
   # convert a float value to i64 dropping any fraction.
@@ -73,7 +73,7 @@ float : numeric is
   as_i32 => as_i64.as_i32
 
 
-  fract float.this.type is abstract
+  fract float.this is abstract
 
 
   # round floating point number
@@ -81,7 +81,7 @@ float : numeric is
   #
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
-  round float.this.type is
+  round float.this is
     if float.this < float.this.type.zero
       -(-float.this).round
     else if fract = float.this.type.zero
@@ -91,7 +91,7 @@ float : numeric is
 
 
   # floor: the greatest integer lower or equal to this
-  floor float.this.type is
+  floor float.this is
     if fract < float.this.type.zero
       float.this - fract - float.this.type.one
     else
@@ -99,7 +99,7 @@ float : numeric is
 
 
   # ceiling: the smallest integer greater or equal to this
-  ceil float.this.type is
+  ceil float.this is
     if fract ≤ float.this.type.zero
       float.this - fract
     else
@@ -132,12 +132,12 @@ float : numeric is
 
   # eulers number 2.72..
   #
-  type.ℇ float.this.type is abstract
+  type.ℇ float.this is abstract
 
 
   # pi 3.14...
   #
-  type.π float.this.type is abstract
+  type.π float.this is abstract
 
 
   # conversion
@@ -148,7 +148,7 @@ float : numeric is
   # if the value cannot be represented exactly, the result is either
   # the nearest higher or nearest lower value
   #
-  type.from_i64(val i64) float.this.type is abstract
+  type.from_i64(val i64) float.this is abstract
 
 
   type.exponent_range => -min_exp..max_exp
@@ -166,7 +166,7 @@ float : numeric is
 
   # is not a number?
   #
-  type.is_NaN (val float.this.type) bool is abstract
+  type.is_NaN (val float.this) bool is abstract
 
 
   type.negative_infinity => -one / zero
@@ -182,35 +182,35 @@ float : numeric is
 
   type.min_exp i32 is abstract
   type.max_exp i32 is abstract
-  type.min_positive float.this.type is abstract
-  type.max float.this.type is abstract
-  type.epsilon float.this.type is abstract
+  type.min_positive float.this is abstract
+  type.max float.this is abstract
+  type.epsilon float.this is abstract
 
 
   # square root
   #
-  type.square_root (val float.this.type) float.this.type is abstract
+  type.square_root (val float.this) float.this is abstract
 
 
   # square root alias
   #
-  type.sqrt (val float.this.type) => square_root val
+  type.sqrt (val float.this) => square_root val
 
 
   # the `val`-th power of ℇ
   # i.e. ℇᵛᵃˡ
   #
-  type.exp (val float.this.type) float.this.type is abstract
+  type.exp (val float.this) float.this is abstract
 
 
   # logarithm with base ℇ
   #
-  type.log (val float.this.type) float.this.type is abstract
+  type.log (val float.this) float.this is abstract
 
 
   # logarithm with base `base`
   #
-  type.log (base, val float.this.type) float.this.type
+  type.log (base, val float.this) float.this
   pre base > zero
   is
     (log val) / (log base)
@@ -218,31 +218,31 @@ float : numeric is
 
   # trigonometric
 
-  type.sin  (val float.this.type) float.this.type is abstract
-  type.cos  (val float.this.type) float.this.type is abstract
-  type.tan  (val float.this.type) float.this.type is abstract
-  type.asin (val float.this.type) float.this.type is abstract
-  type.acos (val float.this.type) float.this.type is abstract
-  type.atan (val float.this.type) float.this.type is abstract
-  type.atan2 (y, x float.this.type) float.this.type is abstract
+  type.sin  (val float.this) float.this is abstract
+  type.cos  (val float.this) float.this is abstract
+  type.tan  (val float.this) float.this is abstract
+  type.asin (val float.this) float.this is abstract
+  type.acos (val float.this) float.this is abstract
+  type.atan (val float.this) float.this is abstract
+  type.atan2 (y, x float.this) float.this is abstract
 
 
   # hyperbolicus
 
-  type.sinh (val float.this.type) float.this.type is abstract
-  type.cosh (val float.this.type) float.this.type is abstract
-  type.tanh (val float.this.type) float.this.type is abstract
+  type.sinh (val float.this) float.this is abstract
+  type.cosh (val float.this) float.this is abstract
+  type.tanh (val float.this) float.this is abstract
 
 
   # area hyperbolicus
 
-  type.asinh(val float.this.type) float.this.type is
+  type.asinh(val float.this) float.this is
     # ln(x+sqrt(x^2+1))
     log (val + sqrt (val ** two + one))
-  type.acosh(val float.this.type) float.this.type is
+  type.acosh(val float.this) float.this is
     # ln(x+sqrt(x^2-1))
     log (val + sqrt (val ** two - one))
-  type.atanh(val float.this.type) float.this.type is
+  type.atanh(val float.this) float.this is
     # 1/2*ln((1+x)/(1-x))
     log ((one + val)/(one - val)) / two
 
@@ -256,7 +256,7 @@ float : numeric is
   # The equivalence relation is provided by the usual comparision
   # of floating-point numbers, with the definition of NaN = NaN.
   #
-  type.equality(a, b float.this.type) bool is
+  type.equality(a, b float.this) bool is
     a.infix = b || (is_NaN a && is_NaN b)
 
 
@@ -270,5 +270,5 @@ float : numeric is
   # floating-point numbers, with the definition that NaN <= x,
   # for any x (including x = NaN).
   #
-  type.lteq(a, b float.this.type) bool is
+  type.lteq(a, b float.this) bool is
     a.infix <= b || is_NaN a

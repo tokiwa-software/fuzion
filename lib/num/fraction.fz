@@ -64,10 +64,10 @@ is
   # basic operations
   fixed redef prefix + => a
   fixed redef prefix - => fraction -a.numerator a.denominator
-  fixed redef infix +  (b fraction.this.type) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
-  fixed redef infix -  (b fraction.this.type) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
-  fixed redef infix *  (b fraction.this.type) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
-  fixed redef infix /  (b fraction.this.type)
+  fixed redef infix +  (b fraction.this) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
+  fixed redef infix -  (b fraction.this) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
+  fixed redef infix *  (b fraction.this) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
+  fixed redef infix /  (b fraction.this)
     pre
       # NYI: use type features
       # safety: b != zero
