@@ -28,7 +28,7 @@
 # try provides an operation 'raise' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-try : effect effect_mode.plain
+try (T type) : effect effect_mode.plain
 is
 
   # mutuable field to receive the error in case raise is called
@@ -52,14 +52,14 @@ is
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it.
 #
-try(R type, f ()->R) =>
-  try.on f
+try(T, R type, f ()->R) =>
+  (try T).on f
 
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-try_or_panic(R type, f ()->R) outcome R is
-  match try.on f
+try_or_panic(T, R type, f ()->R) outcome R is
+  match (try T).on f
     e error => panic $e
     r R => r
