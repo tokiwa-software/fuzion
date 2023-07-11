@@ -668,19 +668,6 @@ public class Type extends AbstractType
 
 
   /**
-   * setRef is called by the parser when parsing a type of the form "ref
-   * <simpletype>".
-   */
-  public void setRef()
-  {
-    if (PRECONDITIONS) require
-      (this._refOrVal == RefOrVal.LikeUnderlyingFeature);
-
-    this._refOrVal = RefOrVal.Boxed;
-  }
-
-
-  /**
    * isRef
    */
   public boolean isRef()
