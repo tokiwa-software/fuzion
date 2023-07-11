@@ -50,9 +50,6 @@ is
 
 # public:
 
-  # enable generic features in ancestors
-  thiz => a
-
   # reduce numerator and denominator by their gcd:
   reduce =>
     gcd := numerator.abs.gcd denominator
