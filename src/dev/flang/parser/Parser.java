@@ -477,35 +477,59 @@ field       : returnType
 visibility  : visiFlag
             |
             ;
-visiFlag    : "export" visiList
+visiFlag    : "private" colon "module"
+            | "private" colon "public"
             | "private"
-            | "protected"
+            | "module" colon "public"
+            | "module"
             | "public"
-            ;
-visiList    : visi ( COMMA visiList
-                   |
-                   )
             ;
   */
   Visi visibility()
   {
-    Visi v = Visi.LOCAL;
+    Visi v = Visi.PRIV;
     if (isNonEmptyVisibilityPrefix())
       {
-        if (skip(Token.t_export))
-          {
-            var l = new List<List<String>>(visi());
-            while (skipComma())
-              {
-                l.add(visi());
-              }
-            // NYI: Do something with l
-            v = null;
-          }
-        else if (skip(Token.t_private  )) { v = Visi.PRIVATE  ; }
-        else if (skip(Token.t_protected)) { v = Visi.CHILDREN ; }
-        else if (skip(Token.t_public   )) { v = Visi.PUBLIC   ; }
-        else                              { throw new Error();               }
+        if (skip(Token.t_private)) {
+          if (skipColon())
+            {
+              if (skip(Token.t_module))
+                {
+                  v = Visi.PRIVMOD;
+                }
+              else if (skip(Token.t_public))
+                {
+                  v = Visi.PRIVPUB;
+                }
+              else
+                {
+                  syntaxError(tokenPos(), "'module' or 'public' after 'private :'", "visibility");
+                }
+            }
+          else
+            {
+              v = Visi.PRIV;
+            }
+        }
+        else if (skip(Token.t_module)) {
+          if (skipColon())
+            {
+              if (skip(Token.t_public))
+                {
+                  v = Visi.MODPUB;
+                }
+              else
+                {
+                  syntaxError(tokenPos(), "'public' after 'module :'", "visibility");
+                }
+            }
+          else
+            {
+              v = Visi.MOD;
+            }
+        }
+        else if (skip(Token.t_public    )) { v = Visi.PUB; }
+        else                            { throw new Error();     }
       }
     return v;
   }
@@ -520,10 +544,9 @@ visiList    : visi ( COMMA visiList
   {
     switch (current())
       {
-      case t_export   :
-      case t_private  :
-      case t_protected:
-      case t_public   : return true;
+      case t_private     :
+      case t_module      :
+      case t_public      : return true;
       default         : return false;
       }
   }
