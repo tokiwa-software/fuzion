@@ -177,3 +177,37 @@ net is
   set_blocking(sd i64, blocking bool) outcome unit is
     res := if blocking then set_blocking0 sd 0 else set_blocking0 sd 1
     if res = 0 then unit else error "error: $res"
+
+
+  # get a socket's peer's ip address
+  #
+  # takes a socket descriptor number and an array of 16 bytes in
+  # which the IP address will be stored
+  #
+  # returns the length of the IP address written to the array,
+  # in bytes (4 for IPv4, 16 for IPv6)
+  #
+  get_peer_address(sockfd i64, address Any) i32 is intrinsic
+
+
+  # get a socket's peer's ip address
+  #
+  # takes a socket descriptor number
+  # returns the IP address, as a list of bytes
+  #
+  # not useful for UDP sockets (information not necessarily available)
+  #
+  get_peer_address(sockfd i64) outcome (list u8) is
+    addr array u8 := [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    l := get_peer_address sockfd addr.internal_array.data
+    addr.take l
+
+
+  # get a socket's peer's port
+  #
+  # takes a socket descriptor number
+  # returns the port number
+  #
+  # not useful for UDP sockets (information not necessarily available)
+  #
+  get_peer_port(sockfd i64) u16 is intrinsic

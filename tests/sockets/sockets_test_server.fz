@@ -32,6 +32,8 @@ sockets_test_server =>
     while net.server.is_active
     do
       say "$protocol/$family-server, accepted connection: $ar"
+      say (net.channel net.server).get_peer_address
+      say (net.channel net.server).get_peer_port
 
       rr1 := (net.channel net.server)
         # read less than available bytes

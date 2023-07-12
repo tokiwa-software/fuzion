@@ -1006,7 +1006,15 @@ public class Intrinsics extends ANY
       A3.castTo("char *"),    // host
       A4.castTo("char *"),    // port
       A5.castTo("int64_t *")  // result (err or descriptor)
-  )).ret());
+    )).ret());
+
+    put("fuzion.sys.net.get_peer_address", (c,cl,outer,in) ->
+      CExpr.call("fzE_get_peer_address", new List<>(A0.castTo("int"), A1.castTo("void *"))).castTo("fzT_1i32").ret()
+    );
+
+    put("fuzion.sys.net.get_peer_port", (c,cl,outer,in) ->
+      CExpr.call("fzE_get_peer_port", new List<>(A0.castTo("int"))).castTo("fzT_1u16").ret()
+    );
 
     put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
       A0.castTo("int"),    // socket descriptor

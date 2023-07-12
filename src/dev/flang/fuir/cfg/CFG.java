@@ -472,6 +472,8 @@ public class CFG extends ANY
     put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
+    put("fuzion.sys.net.get_peer_address", (cfg, cl) -> { } );
+    put("fuzion.sys.net.get_peer_port"   , (cfg, cl) -> { } );
     put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
     put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
