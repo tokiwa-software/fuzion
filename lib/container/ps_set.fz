@@ -99,11 +99,11 @@ is
 
   # union of two ps_sets
   #
-  infix ∪ (other ps_set.this.type) => ps_set K (psm ∪ other.psm) unit
+  infix ∪ (other ps_set.this) => ps_set K (psm ∪ other.psm) unit
 
 
   # intersection of two ps_sets
-  infix ∩ (other ps_set.this.type) =>
+  infix ∩ (other ps_set.this) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
     (ps_sets K).empty.add_all s
 
