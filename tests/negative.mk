@@ -28,7 +28,7 @@
 #  NAME -- the name of the main feature to be tested
 #  FUZION -- the fz command
 
-FUZION = ../../bin/fz -XmaxErrors=1000000
+FUZION = ../../bin/fz -XmaxErrors=-1
 EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
 
 int:
