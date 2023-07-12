@@ -70,10 +70,10 @@ test_this3 is
 
   num0 is
 
-    type.zero num0.this.type is abstract
-    type.one  num0.this.type is abstract
-    lessThan(other num0.this.type) bool is abstract
-    minus(other num0.this.type) num0.this.type is abstract
+    type.zero num0.this is abstract
+    type.one  num0.this is abstract
+    lessThan(other num0.this) bool is abstract
+    minus(other num0.this) num0.this is abstract
 
     to_u32_loop =>
       for
@@ -81,7 +81,7 @@ test_this3 is
         u := u32 0, u+1
       while num0.this.type.zero.lessThan x
 
-    redef as_string => "num0.this.type {to_u32_loop} 'as_string'"
+    redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
   intM5(v u8) : num0 is
     fixed type.zero => test_this3.intM5 0
@@ -99,10 +99,10 @@ test_this4 is
 
   num0 is
 
-    type.zero num0.this.type is abstract
-    type.one  num0.this.type is abstract
-    lessThan(other num0.this.type) bool is abstract
-    minus(other num0.this.type) num0.this.type is abstract
+    type.zero num0.this is abstract
+    type.one  num0.this is abstract
+    lessThan(other num0.this) bool is abstract
+    minus(other num0.this) num0.this is abstract
 
     to_u32_loop =>
       for
@@ -112,7 +112,7 @@ test_this4 is
       else
         u
 
-    redef as_string => "num0.this.type {to_u32_loop} 'as_string'"
+    redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
 
   intM5(v u8) : num0 is
@@ -133,7 +133,7 @@ test_cov is
 
   n is
 
-    p (other n.this.type) n.this.type is abstract
+    p (other n.this) n.this is abstract
 
     f =>
       x := n.this
@@ -174,7 +174,7 @@ test_cov2 is
 
   n ref is
 
-    p (other n.this.type) n.this.type is abstract
+    p (other n.this) n.this is abstract
 
     f =>
       x := n.this
@@ -195,7 +195,7 @@ test_cov2a0 is
 
   n ref is
 
-    p (other n.this.type) n.this.type is abstract
+    p (other n.this) n.this is abstract
 
     f =>
       x := n.this
@@ -213,7 +213,7 @@ _ := (test_cov2a0.i false).f
 test_cov3 is
   a ref is
 
-    f (o a.this.type) unit is
+    f (o a.this) unit is
     g => f a.this
 
   b : a is
@@ -228,7 +228,7 @@ _ := test_cov3
 test_cov3a is
   a ref is
 
-    f (o a.this.type) unit is
+    f (o a.this) unit is
     g => f a.this
 
   b : a is
@@ -244,7 +244,7 @@ test_cov4 is
 
   #  x := ""
   #  say x
-    f (o a.this.type) unit is
+    f (o a.this) unit is
     f a.this
 
   b : a is
@@ -261,7 +261,7 @@ test_cov4a is
 
     x := ""
     say x
-    f (o a.this.type) unit is
+    f (o a.this) unit is
     f a.this
 
   b : a is
@@ -275,7 +275,7 @@ _ := test_cov4a
 #
 test_return_this is
   a is
-    x a.this.type is
+    x a.this is
       a.this
     redef as_string => "a"
 
@@ -291,7 +291,7 @@ test_return_this
 # second example from #923
 #
 aaa is
-  x aaa.this.type is
+  x aaa.this is
     aaa.this
   redef as_string => "a"
 
@@ -310,7 +310,7 @@ q is
 
 r is
   a is
-    x a.this.type is
+    x a.this is
       a.this
     redef as_string => "r.a"
 
@@ -326,7 +326,7 @@ say c.x
 #
 d is
   y => 3
-  x d.this.type is
+  x d.this is
     d.this
     redef as_string => "d"
 
@@ -341,7 +341,7 @@ _ := t.e.x.y
 # example that creates C code that uses a unit value, resulting in C compilation failure
 #
 ua is
-  x ua.this.type is
+  x ua.this is
     ua.this
   redef as_string => "a"
 
@@ -356,7 +356,7 @@ uq is
 
 ur is
   a is
-    x a.this.type is
+    x a.this is
       a.this
     redef as_string => "r.a"
 
@@ -375,7 +375,7 @@ say uc.x
 test_generic_this_type is
 
   g(T type) is
-    f(o g.this.type) =>
+    f(o g.this) =>
       say g.this
       say o
 
@@ -397,5 +397,5 @@ test_generic_this_type is
   ha.call_f
   hb.call_f
 
-  # a.f b      // NYI: b is currently incompatible to g.this.type
-  # ha.f hb    // NYI: hb is currently incompatible to h.this.type
+  # a.f b      // NYI: b is currently incompatible to g.this
+  # ha.f hb    // NYI: hb is currently incompatible to h.this

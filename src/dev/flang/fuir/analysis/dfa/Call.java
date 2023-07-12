@@ -82,7 +82,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Arguments passed to the call.
    */
-  List<Value> _args;
+  List<Val> _args;
 
 
   /**
@@ -135,7 +135,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Value> args, Env env, Context context)
+  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
@@ -163,7 +163,8 @@ public class Call extends ANY implements Comparable<Call>, Context
       !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
-        r = Value.compare(_args.get(i), other._args.get(i));
+        r = Value.compare(      _args.get(i).value(),
+                          other._args.get(i).value());
       }
     if (r == 0)
       {
@@ -194,9 +195,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Return the result value returned by this call.  null in case this call
    * never returns.
    */
-  public Value result()
+  public Val result()
   {
-    Value result = null;
+    Val result = null;
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
         var name = _dfa._fuir.clazzIntrinsicName(_cc);

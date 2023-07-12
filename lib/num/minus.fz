@@ -17,19 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue_1477
+#  Source code of Fuzion standard library feature num.minus
 #
 # -----------------------------------------------------------------------
 
-n is
-
-  type.z n.this is abstract
-
-  u unit is
-    y := n.this.type
-    q := y.z
-
-i : n is
-  fixed type.z => i
-
-i.u
+# negative sign of a number
+#
+# note that this value is of unit type minus, not of type sign
+#
+minus is
