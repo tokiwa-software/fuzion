@@ -310,7 +310,7 @@ public class InlineArray extends ExprWithPos
         var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
         var sysArrayT    = new Type(pos(), "internal_array", eT, sysT);
         var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
-        var sysArrayVar  = new Feature(pos(), Visi.LOCAL, sysArrayT, sysArrayName, null, outer);
+        var sysArrayVar  = new Feature(pos(), Visi.PRIV, sysArrayT, sysArrayName, null, outer);
         res._module.findDeclarations(sysArrayVar, outer);
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();

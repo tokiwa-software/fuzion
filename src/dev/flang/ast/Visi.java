@@ -29,43 +29,47 @@ package dev.flang.ast;
 import dev.flang.util.ANY;
 
 /**
- * Visi store the visibility of a Feature
+ * Visi store the visibility of a Feature and the type it is defining
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public enum Visi
 {
 
-  /**
-   * visibility for anonymous features
+  /*
+   * visible only in the current file
    */
-  INVISIBLE("invisible"),
+  PRIV("private"),
 
 
-  /**
-   * default visibility: visible to all inner classes of outer class
-   * of declaring class
+  /*
+   * callable only in the current file, type visible in module
    */
-  LOCAL("local"),
+  PRIVMOD("private:module"),
 
 
-  /**
-   * private visibility: visible to declaring class and all its inner
-   * classes
+  /*
+   * callable only in the current file, type publicly visible
    */
-  PRIVATE("private"),
+  PRIVPUB("private:public"),
 
 
-  /**
-   * protected visibility: visible to all heirs of declaring class
+  /*
+   * callable only in the module, type visible in module
    */
-  CHILDREN("children"),
+  MOD("module"),
 
 
-  /**
-   * public visibility: visible to all classes
+  /*
+   * callable only within the module, type publicly visible
    */
-  PUBLIC("public");
+  MODPUB("module:public"),
+
+
+  /*
+   * visible everywhere
+   */
+  PUB("public");
 
 
 
