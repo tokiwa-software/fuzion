@@ -477,6 +477,12 @@ public class CFG extends ANY
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
 
+    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
+    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
+
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );

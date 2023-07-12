@@ -80,7 +80,10 @@ public abstract class OpenResources<T>
    */
   public boolean remove(Long id)
   {
-    return close(data.remove(id));
+    var r = data.remove(id);
+    return r == null
+      ? false
+      : close(r);
   }
 
 }
