@@ -80,13 +80,9 @@ else
         if diff "$experr" tmp_err.txt >/dev/null; then
             echo -ne "\033[32;1mPASSED\033[0m."
         else
-            if [ -s "$experr" ] && [ -s tmp_err.txt ]; then
-                echo -ne "\033[33;1mDIFF IN STDERR\033[0m."
-            else
-                diff "$experr" tmp_err.txt
-                echo -e "\033[31;1m*** FAILED\033[0m err on $2"
-                RC=1
-            fi
+            diff "$experr" tmp_err.txt
+            echo -e "\033[31;1m*** FAILED\033[0m err on $2"
+            RC=1
         fi
     else
         diff "$experr" tmp_err.txt

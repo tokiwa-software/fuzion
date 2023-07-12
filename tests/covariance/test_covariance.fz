@@ -35,15 +35,15 @@ test_covariance is
 
     # special values
     #
-    type.zero num0.this.type is abstract
-    type.one  num0.this.type is abstract
+    type.zero num0.this is abstract
+    type.one  num0.this is abstract
 
     # if num0.this less than other?
     #
-    lessThan(other num0.this.type) bool is abstract
+    lessThan(other num0.this) bool is abstract
 
-    plus (other num0.this.type) num0.this.type is abstract
-    minus(other num0.this.type) num0.this.type is abstract
+    plus (other num0.this) num0.this is abstract
+    minus(other num0.this) num0.this is abstract
 
     to_u32_loop =>
       for
@@ -65,7 +65,7 @@ test_covariance is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    redef as_string => "num0.this.type {to_u32} {to_u32_loop} '$valueString'"
+    redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -227,25 +227,25 @@ test_this_type_in_type_feature =>
     def(s String) is
       ghi is
         jkl(val i32, msg String) is
-          type.choose1(a, b             jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
-          type.choose2(a, b         ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose3(a, b     def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose4(a, b abc.def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose5(a, b     def.ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose6(a, b         ghi.jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose7(a, b             jkl.this.type) abc.def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose8(a, b abc.def.ghi.jkl.this.type)     def.ghi.jkl.this.type is if a.val < b.val then a else b
-          type.choose9(a, b abc.def.ghi.jkl.this.type)         ghi.jkl.this.type is if a.val < b.val then a else b
-          type.chooseA(a, b abc.def.ghi.jkl.this.type)             jkl.this.type is if a.val < b.val then a else b
+          type.choose1(a, b             jkl.this)             jkl.this is if a.val < b.val then a else b
+          type.choose2(a, b         ghi.jkl.this)         ghi.jkl.this is if a.val < b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this)     def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose6(a, b         ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose7(a, b             jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this)     def.ghi.jkl.this is if a.val < b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this)         ghi.jkl.this is if a.val < b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this)             jkl.this is if a.val < b.val then a else b
 
-          type.choose1L(a, b     def.this.type)     def.this.type is a
-          type.choose1R(a, b     def.this.type)     def.this.type is b
-          type.choose2L(a, b abc.def.this.type) abc.def.this.type is a
-          type.choose2R(a, b abc.def.this.type) abc.def.this.type is b
-          type.choose3L(a, b abc.def.this.type)     def.this.type is a
-          type.choose3R(a, b abc.def.this.type)     def.this.type is b
-          type.choose4L(a, b     def.this.type) abc.def.this.type is a
-          type.choose4R(a, b     def.this.type) abc.def.this.type is b
+          type.choose1L(a, b     def.this)     def.this is a
+          type.choose1R(a, b     def.this)     def.this is b
+          type.choose2L(a, b abc.def.this) abc.def.this is a
+          type.choose2R(a, b abc.def.this) abc.def.this is b
+          type.choose3L(a, b abc.def.this)     def.this is a
+          type.choose3R(a, b abc.def.this)     def.this is b
+          type.choose4L(a, b     def.this) abc.def.this is a
+          type.choose4R(a, b     def.this) abc.def.this is b
 
           redef as_string => "abc.def.ghi.jkl $val $msg"
 

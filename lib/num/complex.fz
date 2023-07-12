@@ -40,10 +40,10 @@ is
 
   # basic operations
   fixed redef prefix + => thiz
-  fixed redef infix + (b complex.this.type) => complex real+b.real imag+b.imag
-  fixed redef infix - (b complex.this.type) => complex real-b.real imag-b.imag
-  fixed redef infix * (b complex.this.type) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
-  fixed redef infix / (b complex.this.type)
+  fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
+  fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
+  fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  fixed redef infix / (b complex.this)
     pre
       # NYI: use type features
       # safety: b != zero

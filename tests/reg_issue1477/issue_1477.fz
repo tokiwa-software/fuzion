@@ -23,7 +23,7 @@
 
 n is
 
-  type.z n.this.type is abstract
+  type.z n.this is abstract
 
   u unit is
     y := n.this.type

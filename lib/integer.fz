@@ -32,40 +32,40 @@
 integer : numeric is
 
   # division remainder
-  redef infix % (other integer.this.type) integer.this.type
+  redef infix % (other integer.this) integer.this
     pre
       safety: other != integer.this.type.zero
   is abstract
 
   # test divisibility by other
-  infix %% (other integer.this.type) bool
+  infix %% (other integer.this) bool
     pre
       safety: other != integer.this.type.zero
   is
     integer.this % other = integer.this.type.zero
 
   # bitwise operations
-  infix &  (other integer.this.type) integer.this.type is abstract
-  infix |  (other integer.this.type) integer.this.type is abstract
-  infix ^  (other integer.this.type) integer.this.type is abstract
+  infix &  (other integer.this) integer.this is abstract
+  infix |  (other integer.this) integer.this is abstract
+  infix ^  (other integer.this) integer.this is abstract
 
   # bitwise NOT
-  prefix ~ integer.this.type
+  prefix ~ integer.this
     pre
       is_bounded
   is abstract
 
   # bitwise NOT (Unicode alias)
-  prefix ¬ integer.this.type is
+  prefix ¬ integer.this is
     ~integer.this
 
   # shift operations
-  infix >> (other integer.this.type) integer.this.type
+  infix >> (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
   is abstract
 
-  infix << (other integer.this.type) integer.this.type
+  infix << (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
   is abstract
@@ -78,7 +78,7 @@ integer : numeric is
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
-  gcd(b integer.this.type) integer.this.type
+  gcd(b integer.this) integer.this
     pre
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
@@ -90,10 +90,10 @@ integer : numeric is
 
 
   # create a fraction
-  infix /-/ (other integer.this.type) => (num.fraction integer.this other).reduce
+  infix /-/ (other integer.this) => (num.fraction integer.this other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  infix ⁄ (other integer.this.type) => integer.this /-/ other
+  infix ⁄ (other integer.this) => integer.this /-/ other
 
 
   # convert this to a decimal number in a string.  If negative, add "-" as
@@ -114,7 +114,7 @@ integer : numeric is
     if integer.this.sign < 0
       # there could be an overflow on negation
       match -? integer.this
-        v integer.this.type => "-" + v.as_string base
+        v integer.this => "-" + v.as_string base
         nil => ("-" + (-(integer.this / b)).as_string base) + (-(integer.this % b)).as_string base
     else
       # this digit as an UTF-8 byte
@@ -123,7 +123,7 @@ integer : numeric is
       is
         if d < 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
-      as_list0 (power integer.this.type) =>
+      as_list0 (power integer.this) =>
         if power.sign <= 0
           nil
         else
@@ -198,4 +198,3 @@ integer : numeric is
 
   # the least significant byte of this integer
   low8bits u8 is abstract
-
