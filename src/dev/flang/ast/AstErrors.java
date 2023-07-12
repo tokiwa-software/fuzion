@@ -162,6 +162,10 @@ public class AstErrors extends ANY
   {
     return ss(names.toString());
   }
+  static String sn2(List<String> names) // names as list "`a`, `b`, `c`"
+  {
+    return names.map(s -> ss(s)).toString();
+  }
   static String sqn(List<String> names) // names as qualified name "a.b.c"
   {
     return ss(names.toString("", ".", ""));
@@ -1192,13 +1196,30 @@ public class AstErrors extends ANY
       }
   }
 
-  static void outerFeatureNotFoundInThis(This t, AbstractFeature feat, String qname, List<String> available)
+  static void outerFeatureNotFoundInThis(ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
   {
-    error(t.pos(),
-          "Could not find outer feature in " + skw(".this") + "-expression",
+    if (thisOrType instanceof This t)
+      {
+        outerFeatureNotFoundInThisOrThisType(t.pos(), ".this", feat, qname, available, isAmbiguous);
+      }
+    else if (thisOrType instanceof Type t)
+      {
+        outerFeatureNotFoundInThisOrThisType(t.pos2BeRemoved(), ".this.type", feat, qname, available, isAmbiguous);
+      }
+    else
+      {
+        throw new java.lang.Error("internal error: thisOrType parameter must be of type This or Type, it is of type " + (thisOrType == null ? null : thisOrType.getClass()));
+      }
+  }
+
+  private static void outerFeatureNotFoundInThisOrThisType(SourcePosition pos, String thisOrThisType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
+  {
+    error(pos,
+          (isAmbiguous ? "Ambiguous outer feature reference in "
+                       : "Could not find outer feature in "     ) + skw(thisOrThisType) + "-expression",
           "Within feature: " + s(feat) + "\n" +
-          "Outer feature that was not found: " + sqn(qname) + "\n" +
-          "Outer features available: " + (available.size() == 0 ? "-- none! --" : available));
+          "Outer feature that was " + (isAmbiguous ? "ambiguous" : "not found") + ": " + sqn(qname) + "\n" +
+          "Outer features available: " + (available.size() == 0 ? "-- none! --" : sn2(available)));
   }
 
   static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
