@@ -280,10 +280,9 @@ public class CTypes extends ANY
           }
         else if (_fuir.clazzIsChoice(cl))
           {
-            var ct = _fuir.clazzChoiceTag(cl);
-            if (ct != -1)
+            if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
+                els.add(CStmnt.decl("int32_t", _names.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
