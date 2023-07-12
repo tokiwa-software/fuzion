@@ -25,24 +25,119 @@
 
 ctrie_threads is
 
-  ctrie := (C_Trie i32 String).type.empty
+  num_threads := 4
+  keys := array i32 999 i->i+1
 
-  one := ps_set 0..1000
-  two := ps_set 500..1500
+  test1 is
+    say "test: in {$num_threads} threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
 
-  run_in_thread(s Set i32, n i32) is
-    concur.thread.spawn (() ->
-      for k in s do
-        ctrie.add k "thread$n"
-      say "thread $n finished"
-      unit
-      )
+    ctrie := (container.ctrie i32 i32).type.empty
 
-  run_in_thread one 1
-  run_in_thread two 2
+    empty := ctrie.snapshot true
 
-  # NYI can not wait for threads to finish currently
-  fuzion.std.nano_sleep 5E9
+    (array num_threads t->
+      concur.thread.spawn ()->
+        for k in keys
+            snap := ctrie.snapshot true, if k=500 then ctrie.snapshot true else snap
+            snap_size := snap.size, (if k!=500 && snap_size != snap.size then panic "snapshot changed, was $snap_size is {snap.size}" else snap.size)
+        do
+          ctrie.add k t
+          if k % 3 = 0
+            ctrie.remove k
+      ).for_each t->t.join
 
-  if ctrie.size != 2001
-    panic "compare and set in ctrie not implemented yet"
+    say "empty snapshot size: {empty.size}" # should still be zero
+    say "ctrie size: {ctrie.size}" # the number of the beast = 666
+
+    # all keys which are multiples of 3 should have been removed
+    say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.values.0 % 3 != 0))}"
+
+    if ((envir.args.nth 1).get "")="-debug"
+      say "==="
+      say (ctrie.items.map_sequence x->"{x.values.0} was inserted by thread {x.values.1}")
+      say "==="
+      say ((ctrie.items.map_sequence x->x.values.1).group_by x->x)
+
+
+  test2(take_snapshots bool) is
+    say "test: in {$num_threads} threads, {if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys."}"
+
+    ctrie := (container.ctrie i32 i32).type.empty
+
+    (array num_threads t->
+      concur.thread.spawn ()->
+        for k in keys do
+
+          ctrie.add k t
+
+          if take_snapshots && k%100 = 0
+            snap := ctrie.snapshot true
+            s1 := snap.size
+            s2 := snap.size
+            if s1 != s2
+              panic "snap size changed: $s1 $s2"
+            if !(k <= s1 <= 999)
+              panic "illegal snap size: $k $s1"
+    ).for_each t->t.join
+
+
+    (array num_threads t->
+      concur.thread.spawn ()->
+        for k in keys.take 900 do
+
+          ctrie.remove k
+
+          if take_snapshots && k%100 = 0
+            snap := ctrie.snapshot true
+            s1 := snap.size
+            s2 := snap.size
+            if s1 != s2
+              panic "snap size changed: $s1 $s2"
+            if !(0 <= s1 <= 999-k)
+              panic "illegal snap size: $k $s1"
+    ).for_each t->t.join
+
+    say ctrie.size # 999-900 = 99
+    if ctrie.size != 99
+      say ctrie.as_string_internal
+
+
+  test3 is
+    say "test: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
+
+    ctrie := (container.ctrie i32 i32).type.empty
+
+    (array num_threads t->
+      concur.thread.spawn ()->
+        for k in keys do
+          kt := (1000*t)+k
+
+          ctrie.add kt kt
+          if ctrie[kt].is_nil
+            panic "added key $kt not present"
+
+          if ctrie[kt].get != kt
+            panic "added key/value does not match $kt != {ctrie[kt].get}"
+
+          if k%100 = 0
+            ctrie.snapshot true
+
+          ctrie.remove kt
+          if ctrie[kt].exists
+            panic "removed key $kt still present"
+
+          if k%100 = 0
+            ctrie.snapshot true
+
+          ctrie.add kt kt
+    ).for_each t->t.join
+
+
+
+  test1
+  test2 false
+  test2 true
+  test3
+
+
+  unit
