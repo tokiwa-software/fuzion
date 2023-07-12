@@ -149,7 +149,6 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "u64",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
     markUsed(universe.get(m, "Const_String")                    , SourcePosition.builtIn);
     markUsed(universe.get(m, "Const_String").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(universe.get(m, "Const_String").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
@@ -278,17 +277,12 @@ public class MiddleEnd extends ANY
         markUsed(p.calledFeature(), p);
       }
     findUsedFeatures(f.resultType(), f);
-    if (f.choiceTag() != null)
-      {
-        markUsed(f.choiceTag(), f);
-      }
 
     var fv = new FeatureVisitor() {
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
         //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-        public void action(AbstractMatch m              ) { findUsedFeatures(m);           }
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
       };
     f.visitCode(fv);
@@ -341,25 +335,6 @@ public class MiddleEnd extends ANY
           }
       }
   }
-
-
-  /**
-   * Find used features, i.e., mark all features that are found to be the target of a call as used.
-   */
-  void findUsedFeatures(AbstractMatch m)
-  {
-    AbstractFeature sf = m.subject().type().featureOfType();
-    AbstractFeature ct = sf.choiceTag();
-
-    if (CHECKS) check
-      (Errors.count() > 0 || ct != null);
-
-    if (ct != null)
-      {
-        markUsed(ct, m);
-      }
-  }
-
 
 }
 

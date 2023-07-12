@@ -164,7 +164,16 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
-                                    CExpr.call("__atomic_compare_exchange", new List<>(f.adrOf(), tmp.adrOf(), new_value.adrOf(), new CIdent("false"), new CIdent("__ATOMIC_SEQ_CST"), new CIdent("__ATOMIC_SEQ_CST"))).castTo("fzT_bool").ret());
+                                    CStmnt.iff(CExpr.call("__atomic_compare_exchange",
+                                                          new List<>(
+                                                            f.adrOf(),
+                                                            tmp.adrOf(),
+                                                            new_value.adrOf(),
+                                                            new CIdent("false"),
+                                                            new CIdent("__ATOMIC_SEQ_CST"),
+                                                            new CIdent("__ATOMIC_SEQ_CST"))),
+                                      c._names.FZ_TRUE.ret()),
+                                    c._names.FZ_FALSE.ret());
                 }
               else
                 {

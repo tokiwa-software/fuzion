@@ -109,7 +109,7 @@ is
 
   # defines equality for date time
   # this is normally used via infix operator =
-  type.equality(a, b date_time.this.type) bool is
+  type.equality(a, b date_time.this) bool is
     a.nano_second = b.nano_second &
      a.year = b.year &
      a.day_in_year = b.day_in_year &
@@ -121,7 +121,7 @@ is
 
   # defines partial order for date time
   # this is normally used via infix operators <, >, <= etc.
-  type.lteq(a, b date_time.this.type) bool is
+  type.lteq(a, b date_time.this) bool is
     [(a.year, b.year),
      (a.day_in_year, b.day_in_year),
      (a.hour, b.hour),

@@ -31,51 +31,51 @@ numeric : property.hashable, property.orderable is
   is_one  => numeric.this = numeric.this.type.one
 
   # basic operations: 'prefix +' (identity)
-  prefix + numeric.this.type
+  prefix + numeric.this
     pre
       safety: +!numeric.this
   is numeric.this
 
   # basic operations: 'prefix -' (negation)
-  prefix - numeric.this.type
+  prefix - numeric.this
     pre
       safety: -!numeric.this
   is numeric.this.type.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
-  infix +  (other numeric.this.type) numeric.this.type
+  infix +  (other numeric.this) numeric.this
     pre
       safety: numeric.this +! other
   is abstract
 
   # basic operations: 'infix -' (subtraction)
-  infix -  (other numeric.this.type) numeric.this.type
+  infix -  (other numeric.this) numeric.this
     pre
       safety: numeric.this -! other
   is abstract
 
   # basic operations: 'infix *' (multiplication)
-  infix *  (other numeric.this.type) numeric.this.type
+  infix *  (other numeric.this) numeric.this
     pre
       safety: numeric.this *! other
   is abstract
 
   # basic operations: 'infix /' (division)
-  infix /  (other numeric.this.type) numeric.this.type
+  infix /  (other numeric.this) numeric.this
     pre
       safety: numeric.this /! other,
       safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix %' (division remainder)
-  infix %  (other numeric.this.type) numeric.this.type
+  infix %  (other numeric.this) numeric.this
     pre
       safety: numeric.this %! other,
       safety: other != numeric.this.type.zero
   is abstract
 
   # basic operations: 'infix **' (exponentiation)
-  infix ** (other numeric.this.type) numeric.this.type
+  infix ** (other numeric.this) numeric.this
     pre
       safety: numeric.this **! other,
       safety: other ≥ numeric.this.type.zero
@@ -90,27 +90,27 @@ numeric : property.hashable, property.orderable is
   #
   prefix +! bool is true
   prefix -! bool is abstract
-  infix +! (other numeric.this.type) bool is abstract
-  infix -! (other numeric.this.type) bool is abstract
-  infix *! (other numeric.this.type) bool is abstract
-  infix /! (other numeric.this.type) bool is abstract
-  infix %! (other numeric.this.type) bool is abstract
-  infix **!(other numeric.this.type) bool is abstract
+  infix +! (other numeric.this) bool is abstract
+  infix -! (other numeric.this) bool is abstract
+  infix *! (other numeric.this) bool is abstract
+  infix /! (other numeric.this) bool is abstract
+  infix %! (other numeric.this) bool is abstract
+  infix **!(other numeric.this) bool is abstract
 
 
   # overflow checking operations
-  prefix -? num_option numeric.this.type is - numeric.this
-  infix +? (other numeric.this.type) num_option numeric.this.type is numeric.this + other
-  infix -? (other numeric.this.type) num_option numeric.this.type is numeric.this - other
-  infix *? (other numeric.this.type) num_option numeric.this.type is numeric.this * other
-  infix **?(other numeric.this.type) num_option numeric.this.type is abstract
+  prefix -? num_option numeric.this is - numeric.this
+  infix +? (other numeric.this) num_option numeric.this is numeric.this + other
+  infix -? (other numeric.this) num_option numeric.this is numeric.this - other
+  infix *? (other numeric.this) num_option numeric.this is numeric.this * other
+  infix **?(other numeric.this) num_option numeric.this is abstract
 
   # saturating  operations
-  prefix -^  numeric.this.type is - numeric.this
-  infix +^ (other numeric.this.type) numeric.this.type is numeric.this + other
-  infix -^ (other numeric.this.type) numeric.this.type is numeric.this - other
-  infix *^ (other numeric.this.type) numeric.this.type is numeric.this * other
-  infix **^(other numeric.this.type) numeric.this.type is abstract
+  prefix -^  numeric.this is - numeric.this
+  infix +^ (other numeric.this) numeric.this is numeric.this + other
+  infix -^ (other numeric.this) numeric.this is numeric.this - other
+  infix *^ (other numeric.this) numeric.this is numeric.this * other
+  infix **^(other numeric.this) numeric.this is abstract
 
 
   sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
@@ -138,7 +138,7 @@ numeric : property.hashable, property.orderable is
 
   # find the highest power of b that is less or equal than numeric.this.
   #
-  private highest(b numeric.this.type) numeric.this.type
+  private highest(b numeric.this) numeric.this
     pre
       debug: numeric.this.sign ≥ 0
     post
@@ -162,14 +162,14 @@ numeric : property.hashable, property.orderable is
   # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
   # and it would work for all set types.
   #
-  element_of(s container.Set numeric.this.type) => s.contains numeric.this
-  infix ∈ (s container.Set numeric.this.type) => numeric.this.element_of s
+  element_of(s container.Set numeric.this) => s.contains numeric.this
+  infix ∈ (s container.Set numeric.this) => numeric.this.element_of s
 
 
   # is this not part of given set
   #
-  not_element_of(s container.Set numeric.this.type) => !element_of s
-  infix ∉ (s container.Set numeric.this.type) => numeric.this.not_element_of s
+  not_element_of(s container.Set numeric.this) => !element_of s
+  infix ∉ (s container.Set numeric.this) => numeric.this.not_element_of s
 
 
   # -----------------------------------------------------------------------
@@ -179,12 +179,12 @@ numeric : property.hashable, property.orderable is
 
   # identity element for 'infix +'
   #
-  type.zero numeric.this.type is abstract
+  type.zero numeric.this is abstract
 
 
   # identity element for 'infix *'
   #
-  type.one  numeric.this.type is abstract
+  type.one  numeric.this is abstract
 
 
   # the value corresponding to v in whatever integer implementation we have,
@@ -192,7 +192,7 @@ numeric : property.hashable, property.orderable is
   #
   # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
   #
-  type.from_u32(v u32) numeric.this.type is
+  type.from_u32(v u32) numeric.this is
     if v = 0 zero else (from_u32 v-1) +^ one
 
 
@@ -208,41 +208,41 @@ numeric : property.hashable, property.orderable is
 
   # equality
   #
-  type.equality(a, b numeric.this.type) bool is abstract
+  type.equality(a, b numeric.this) bool is abstract
 
 
   # total order
   #
-  type.lteq(a, b numeric.this.type) bool is abstract
+  type.lteq(a, b numeric.this) bool is abstract
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  type.sum : Monoid numeric.this.type is
-    redef infix ∙ (a, b numeric.this.type) => a + b
+  type.sum : Monoid numeric.this is
+    redef infix ∙ (a, b numeric.this) => a + b
     redef e => zero
 
 
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  type.product : Monoid numeric.this.type is
-    redef infix ∙ (a, b numeric.this.type) => a * b
+  type.product : Monoid numeric.this is
+    redef infix ∙ (a, b numeric.this) => a * b
     redef e => one
 
 
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  type.sum_saturating : Monoid numeric.this.type is
-    redef infix ∙ (a, b numeric.this.type) => a +^ b
+  type.sum_saturating : Monoid numeric.this is
+    redef infix ∙ (a, b numeric.this) => a +^ b
     redef e => zero
 
 
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  type.product_saturating : Monoid numeric.this.type is
-    redef infix ∙ (a, b numeric.this.type) => a *^ b
+  type.product_saturating : Monoid numeric.this is
+    redef infix ∙ (a, b numeric.this) => a *^ b
     redef e => one

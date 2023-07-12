@@ -273,17 +273,17 @@ scenario8 is
 
     # special values
     #
-    type.zero num0.this.type is abstract
-    type.one  num0.this.type is abstract
+    type.zero num0.this is abstract
+    type.one  num0.this is abstract
 
     # if num0.this less than other?
     #
-    lessThan(other num0.this.type) bool is abstract
+    lessThan(other num0.this) bool is abstract
 
-    plus (other num0.this.type) num0.this.type is plus_intrinsic other
-    plus_intrinsic (other num0.this.type) num0.this.type is abstract
-    minus(other num0.this.type) num0.this.type is minus_intrinsic other
-    minus_intrinsic (other num0.this.type) num0.this.type is abstract
+    plus (other num0.this) num0.this is plus_intrinsic other
+    plus_intrinsic (other num0.this) num0.this is abstract
+    minus(other num0.this) num0.this is minus_intrinsic other
+    minus_intrinsic (other num0.this) num0.this is abstract
 
     to_u32_loop =>
       for
@@ -305,15 +305,15 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    redef as_string => "num0.this.type {to_u32} {to_u32_loop} '$valueString'"
+    redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
     #
     valueString String is abstract
 
-    type.sum : Monoid num0.this.type is
-      redef infix ∙ (a, b num0.this.type) => a.plus b
+    type.sum : Monoid num0.this is
+      redef infix ∙ (a, b num0.this) => a.plus b
       redef e => zero
 
 
