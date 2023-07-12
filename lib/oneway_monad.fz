@@ -29,14 +29,14 @@
 # a monadic feature that can be accessed only through the environment and
 # that will be replaced in the environment whenever a new instance is created.
 #
-oneway_monad(
+public oneway_monad(
 
-  redef A type,
+  A type,
 
   OMA type : oneway_monad A OMA,
 
   # action to be performed, may include code to run while this effect is installed.
   #
-  redef r effect_mode.val
+  r effect_mode.val
   ) : monad A OMA, effect r
 is

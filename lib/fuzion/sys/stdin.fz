@@ -34,4 +34,4 @@ public stdin is
   # -1 at end of file
   # -2 for any other error
   #
-  private next_byte i32 is intrinsic
+  module next_byte i32 is intrinsic

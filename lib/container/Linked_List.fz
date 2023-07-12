@@ -23,7 +23,7 @@
 
 # abstract type for 'Linked_List'
 #
-Linked_List(redef T type) ref : Sequence T is
+public Linked_List(T type) ref : Sequence T is
 
 
   # next is the following element of the linked list, or nil if there are
@@ -47,7 +47,7 @@ Linked_List(redef T type) ref : Sequence T is
 
   # a representation of this linked list as a string.
   #
-  redef as_string =>
+  public redef as_string =>
     Linked_List.this.as_string0 "[ {data} -> "
 
 

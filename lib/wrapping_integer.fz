@@ -28,101 +28,101 @@
 # wrapping_integer is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrapping_integer : integer is
+module:public wrapping_integer : integer is
 
   # overflow checking
 
   # would negation -wrapping_integer.this cause an overflow?
-  wrapped_on_neg bool is abstract
+  module wrapped_on_neg bool is abstract
 
   # would addition wrapping_integer.this + other cause an overflow or underflow?
-  overflow_on_add(other wrapping_integer.this.type) bool is abstract
-  underflow_on_add(other wrapping_integer.this.type) bool is abstract
+  module overflow_on_add(other wrapping_integer.this.type) bool is abstract
+  module underflow_on_add(other wrapping_integer.this.type) bool is abstract
   wrapped_on_add(other wrapping_integer.this.type) => overflow_on_add(other) || underflow_on_add(other)
 
   # would subtraction wrapping_integer.this - other cause an overflow or underflow?
-  overflow_on_sub(other wrapping_integer.this.type) bool is abstract
-  underflow_on_sub(other wrapping_integer.this.type) bool is abstract
+  module overflow_on_sub(other wrapping_integer.this.type) bool is abstract
+  module underflow_on_sub(other wrapping_integer.this.type) bool is abstract
   wrapped_on_sub(other wrapping_integer.this.type) => overflow_on_sub(other) || underflow_on_sub(other)
 
   # would multiplication wrapping_integer.this * other cause an overflow or underflow?
-  overflow_on_mul(other wrapping_integer.this.type) bool is abstract
-  underflow_on_mul(other wrapping_integer.this.type) bool is abstract
+  module overflow_on_mul(other wrapping_integer.this.type) bool is abstract
+  module underflow_on_mul(other wrapping_integer.this.type) bool is abstract
   wrapped_on_mul(other wrapping_integer.this.type) => overflow_on_mul(other) || underflow_on_mul(other)
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
-  prefix -! => !wrapped_on_neg
-  infix +! (other wrapping_integer.this.type) => !(overflow_on_add other) && !(underflow_on_add other)
-  infix -! (other wrapping_integer.this.type) => !(overflow_on_sub other) && !(underflow_on_sub other)
-  infix *! (other wrapping_integer.this.type) => !(overflow_on_mul other) && !(underflow_on_mul other)
-  infix /! (other wrapping_integer.this.type) => true  # other != zero is checked in separate condition
-  infix %! (other wrapping_integer.this.type) => true  # other != zero is checked in separate condition
-  infix **!(other wrapping_integer.this.type) => !(overflow_on_exp other)
+  public prefix -! => !wrapped_on_neg
+  public infix +! (other wrapping_integer.this.type) => !(overflow_on_add other) && !(underflow_on_add other)
+  public infix -! (other wrapping_integer.this.type) => !(overflow_on_sub other) && !(underflow_on_sub other)
+  public infix *! (other wrapping_integer.this.type) => !(overflow_on_mul other) && !(underflow_on_mul other)
+  public infix /! (other wrapping_integer.this.type) => true  # other != zero is checked in separate condition
+  public infix %! (other wrapping_integer.this.type) => true  # other != zero is checked in separate condition
+  public infix **!(other wrapping_integer.this.type) => !(overflow_on_exp other)
 
   # neg, add, sub, mul with wrap-around semantics
-  prefix -° wrapping_integer.this.type is abstract
-  infix +° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
-  infix -° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
-  infix *° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
+  public prefix -° wrapping_integer.this.type is abstract
+  public infix +° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
+  public infix -° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
+  public infix *° (other wrapping_integer.this.type) wrapping_integer.this.type is abstract
 
-  is_min => wrapping_integer.this = wrapping_integer.this.type.min
-  is_max => wrapping_integer.this = wrapping_integer.this.type.max
+  public is_min => wrapping_integer.this = wrapping_integer.this.type.min
+  public is_max => wrapping_integer.this = wrapping_integer.this.type.max
 
   # check if this type of wrapping_integer is bounded
   #
   # wrapping_integers are assumed to be a bound set by default, so
   # this returns true unless redefined by an implementation
-  redef is_bounded => true
+  is_bounded => true
 
   # basic operations with runtime error on overflow
 
   # negation, with check for overflow
-  redef prefix - wrapping_integer.this.type
+  public redef prefix - wrapping_integer.this.type
     pre
       debug: !wrapped_on_neg
   is -° wrapping_integer.this
 
   # addition, with check for overflow
-  redef infix +  (other wrapping_integer.this.type) wrapping_integer.this.type
+  public redef infix +  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_add(other),
       debug: !underflow_on_add(other)
   is wrapping_integer.this +° other
 
   # subtraction, with check for overflow
-  redef infix -  (other wrapping_integer.this.type) wrapping_integer.this.type
+  public redef infix -  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_sub(other),
       debug: !underflow_on_sub(other)
   is wrapping_integer.this -° other
 
   # multiplication, with check for overflow
-  redef infix *  (other wrapping_integer.this.type) wrapping_integer.this.type
+  public redef infix *  (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       debug: !overflow_on_mul(other),
       debug: !underflow_on_mul(other)
   is wrapping_integer.this *° other
 
   # overflow checking operations
-  redef prefix -?          num_option wrapping_integer.this.type is if wrapped_on_neg        then nil else -wrapping_integer.this
-  redef infix +? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_add(other) then nil else wrapping_integer.this + other
-  redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else wrapping_integer.this - other
-  redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else wrapping_integer.this * other
+  public redef prefix -?          num_option wrapping_integer.this.type is if wrapped_on_neg        then nil else -wrapping_integer.this
+  public redef infix +? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_add(other) then nil else wrapping_integer.this + other
+  public redef infix -? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_sub(other) then nil else wrapping_integer.this - other
+  public redef infix *? (other wrapping_integer.this.type) num_option wrapping_integer.this.type is if wrapped_on_mul(other) then nil else wrapping_integer.this * other
 
 
   # saturating  operations
-  redef prefix -^          => if wrapped_on_neg if wrapping_integer.this > wrapping_integer.this.type.zero then wrapping_integer.this.type.min else wrapping_integer.this.type.max else - wrapping_integer.this
-  redef infix +^ (other wrapping_integer.this.type) => if overflow_on_add(other) then wrapping_integer.this.type.max else if underflow_on_add(other) then wrapping_integer.this.type.min else wrapping_integer.this + other
-  redef infix -^ (other wrapping_integer.this.type) => if overflow_on_sub(other) then wrapping_integer.this.type.max else if underflow_on_sub(other) then wrapping_integer.this.type.min else wrapping_integer.this - other
-  redef infix *^ (other wrapping_integer.this.type) => if overflow_on_mul(other) then wrapping_integer.this.type.max else if underflow_on_mul(other) then wrapping_integer.this.type.min else wrapping_integer.this * other
+  public redef prefix -^          => if wrapped_on_neg if wrapping_integer.this > wrapping_integer.this.type.zero then wrapping_integer.this.type.min else wrapping_integer.this.type.max else - wrapping_integer.this
+  public redef infix +^ (other wrapping_integer.this.type) => if overflow_on_add(other) then wrapping_integer.this.type.max else if underflow_on_add(other) then wrapping_integer.this.type.min else wrapping_integer.this + other
+  public redef infix -^ (other wrapping_integer.this.type) => if overflow_on_sub(other) then wrapping_integer.this.type.max else if underflow_on_sub(other) then wrapping_integer.this.type.min else wrapping_integer.this - other
+  public redef infix *^ (other wrapping_integer.this.type) => if overflow_on_mul(other) then wrapping_integer.this.type.max else if underflow_on_mul(other) then wrapping_integer.this.type.min else wrapping_integer.this * other
 
 
   # exponentiation for positive exponent
   #
   # 'zero ** zero' is permitted and results in 'one'.
   #
-  infix ** (other wrapping_integer.this.type) wrapping_integer.this.type
+  public infix ** (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       safety: other ≥ wrapping_integer.this.type.zero,
       debug: !overflow_on_exp(other)
@@ -134,7 +134,7 @@ wrapping_integer : integer is
   #
   # 'zero **° zero' is permitted and results in 'one'.
   #
-  infix **° (other wrapping_integer.this.type) wrapping_integer.this.type
+  public infix **° (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       safety: other ≥ wrapping_integer.this.type.zero
   is
@@ -152,7 +152,7 @@ wrapping_integer : integer is
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  infix **? (other wrapping_integer.this.type) num_option wrapping_integer.this.type
+  public infix **? (other wrapping_integer.this.type) num_option wrapping_integer.this.type
     pre
       safety: other ≥ wrapping_integer.this.type.zero
   is
@@ -175,7 +175,7 @@ wrapping_integer : integer is
   #
   # 'zero **^ zero' is permitted and results in 'one'.
   #
-  infix **^ (other wrapping_integer.this.type) wrapping_integer.this.type
+  public infix **^ (other wrapping_integer.this.type) wrapping_integer.this.type
     pre
       safety: other ≥ wrapping_integer.this.type.zero
   is
@@ -188,7 +188,7 @@ wrapping_integer : integer is
       wrapping_integer.this ** other
 
   # bitwise NOT
-  redef prefix ~ wrapping_integer.this.type
+  public redef prefix ~ wrapping_integer.this.type
     pre
       is_bounded
   is
@@ -198,7 +198,7 @@ wrapping_integer : integer is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  ones_count i32 is abstract
+  public ones_count i32 is abstract
 
 
   # this integer as an array of bytes (little endian)
@@ -211,7 +211,7 @@ wrapping_integer : integer is
 
 
   # returns the number in whose bit representation all bits are ones
-  type.all_bits_set wrapping_integer.this.type is abstract
+  module type.all_bits_set wrapping_integer.this.type is abstract
 
 
   # how many bytes does this integer use?
@@ -222,9 +222,9 @@ wrapping_integer : integer is
 
   # minimum
   #
-  type.min wrapping_integer.this.type is abstract
+  module type.min wrapping_integer.this.type is abstract
 
 
   # maximum
   #
-  type.max wrapping_integer.this.type is abstract
+  module type.max wrapping_integer.this.type is abstract

@@ -25,7 +25,7 @@
 
 # i128 -- 128-bit signed integer values
 #
-i128(hi i64, lo u64) : wrapping_integer, has_interval is
+public i128(hi i64, lo u64) : wrapping_integer, has_interval is
   fixed redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
   fixed redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
   fixed redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
@@ -41,9 +41,9 @@ i128(hi i64, lo u64) : wrapping_integer, has_interval is
 
   # minimum
   #
-  fixed type.min => i128 -0x_8000_0000_0000_0000 0
+  public fixed type.min => i128 -0x_8000_0000_0000_0000 0
 
 
   # maximum
   #
-  fixed type.max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed type.max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff

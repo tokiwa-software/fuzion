@@ -52,7 +52,7 @@ quantors is
   for_all10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand for_all using '∀' symbol
-  prefix ∀ (A type, f A -> bool) => for_all f
+  public prefix ∀ (A type, f A -> bool) => for_all f
 
   # exists quantors for use in analysis parts of contracts
   #
@@ -75,7 +75,7 @@ quantors is
   exists10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand exists using '∃' symbol
-  prefix ∃ (A type, f A -> bool) => exists f
+  public prefix ∃ (A type, f A -> bool) => exists f
 
   /*
     NYI: eventually, the following declaration should become possible:

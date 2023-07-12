@@ -30,7 +30,7 @@ random (
   # the provider this effect uses to create random numbers
   p Random_Provider,
 
-  redef r effect_mode.val
+  r effect_mode.val
   ) : effect r
 is
 
@@ -44,32 +44,32 @@ is
 
   # return next random number of type i32 in the range 0..max-1
   #
-  next_i32(max i32)
+  public next_i32(max i32)
   pre max ≥ 0
    => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
-  next_i64(max i64)
+  public next_i64(max i64)
   pre max ≥ i64 0
    => (next.get max.as_u64).as_i64
 
 
   # return next random number of type u32 in the range 0..max-1
   #
-  next_u32(max u32) => (next.get max.as_u64).as_u32
+  public next_u32(max u32) => (next.get max.as_u64).as_u32
 
 
   # return next random number of type u64 in the range 0..max-1
   #
-  next_u64(max u64) =>  next.get max
+  public next_u64(max u64) =>  next.get max
 
 
   # return next random number of type f32 in the range [0..1),
   # result will never be equal to f32 1
   #
-  next_f32 =>
+  public next_f32 =>
     max := u64 1 << f32.type.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
@@ -77,20 +77,20 @@ is
   # return next random number of type f64 in the range [0..1),
   # result will never be equal to f64 1
   #
-  next_f64 =>
+  public next_f64 =>
     max := u64 1 << f64.type.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 
   # return next random number as a bool
   #
-  next_bool =>
+  public next_bool =>
     (next.get 2) %% 2
 
 
   # get the current random number in the range 0..max-1
   #
-  get (max u64)
+  public get (max u64)
    =>
      p.get % max  # NYI: This implementation is bad if max is big
 
@@ -105,14 +105,14 @@ is
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
-random =>
+public random =>
   random.type.install_default
   random.env
 
-simple_random(seed u64, rr ()->unit) =>
+public simple_random(seed u64, rr ()->unit) =>
   _ := random (simple_random_provider seed seed) (effect_mode.inst rr)
 
-time_seeded_random(rr ()->unit) =>
+public time_seeded_random(rr ()->unit) =>
   _ := random simple_random_provider.type.time_seeded (effect_mode.inst rr)
 
 

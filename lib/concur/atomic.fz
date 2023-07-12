@@ -28,7 +28,7 @@
 # Atomic values can be used for communication between threads in a safe
 # way.
 #
-atomic (
+public atomic (
   T type,
   /* NYI: private */ v T
   )
@@ -41,7 +41,7 @@ is
   # such as `i32`, `f64`, etc. while this is typically not the case for
   # more complex types such as `point(x,y i64)`.
   #
-  racy_accesses_supported bool is intrinsic
+  public racy_accesses_supported bool is intrinsic
 
 
   # read the value stored in this atomic and do not care about synchronization.
@@ -53,7 +53,7 @@ is
   # In general, this is useful only for debugging or monitoring purposes where
   # occasionally wrong random results are acceptable.
   #
-  racy_read ! racy_access
+  public racy_read ! racy_access
   pre
     racy_accesses_supported
    =>
@@ -66,7 +66,7 @@ is
   # Note that in conjunction with `racy_read`, this might create arbitrary
   # out-of-thin-air values.
   #
-  racy_write(new_value T) ! racy_access
+  public racy_write(new_value T) ! racy_access
   pre
     racy_accesses_supported
    =>
@@ -77,7 +77,7 @@ is
   # read this value in a way that is atomic with respect to write operations
   # performed by concurrent threads
   #
-  read T ! atomic_access is
+  public read T ! atomic_access is
     atomic_access_env.replace
     read0
 
@@ -85,7 +85,7 @@ is
   # write this value in a way that is atomic with respect to read and write
   # operations performed by concurrent threads
   #
-  write(new_value T) unit ! atomic_access is
+  public write(new_value T) unit ! atomic_access is
     atomic_access_env.replace
     write0 new_value
 
@@ -96,7 +96,7 @@ is
   # returns the old value, independent of whether the old value is bit-wise
   # equal to `expected` or not.
   #
-  compare_and_swap(expected, new_value T) T  ! atomic_access is
+  public compare_and_swap(expected, new_value T) T  ! atomic_access is
     atomic_access_env.replace
     compare_and_swap0 expected new_value
 
@@ -106,7 +106,7 @@ is
   #
   # returns true, if successful
   #
-  compare_and_set(expected, new_value T) bool ! atomic_access is
+  public compare_and_set(expected, new_value T) bool ! atomic_access is
     atomic_access_env.replace
     compare_and_set0 expected new_value
 

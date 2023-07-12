@@ -30,7 +30,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-has_partial_order : equatable
+public has_partial_order : equatable
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -45,7 +45,7 @@ is
 
   # does a come before b or is equal to b?
   #
-  type.lteq(a, b has_partial_order.this.type) bool is abstract
+  public type.lteq(a, b has_partial_order.this.type) bool is abstract
 
   # equality check for immutable values
   #

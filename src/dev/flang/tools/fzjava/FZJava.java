@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.fzjava;
 
 import dev.flang.ast.AbstractFeature;
-
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
@@ -516,7 +515,7 @@ public class FZJava extends Tool
         // do not generate duplicate features
         if (!_existingFeatures.contains(pkg.replace("/", ".")))
           {
-            FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+            FeatureWriter.write(this, pkg, "_pkg", "public " + FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
           }
       }
   }

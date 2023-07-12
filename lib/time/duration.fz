@@ -32,53 +32,53 @@
 # calendars that may require time spans exceeding several centuries or millenia,
 # nor astrological time spans.
 #
-duration (
+public duration (
 
   # the duration in nano seconds
   #
-  nanos u64
+  public nanos u64
   )
 
 is
 
   # this duration in micro seconds, omitting fractional part
   #
-  micros => nanos / units.nanos_per_micro
+  public micros => nanos / units.nanos_per_micro
 
   # this duration in milli seconds, omitting fractional part
   #
-  millis => nanos / units.nanos_per_milli
+  public millis => nanos / units.nanos_per_milli
 
   # this duration in whole seconds, omitting fractional part
   #
-  seconds => nanos / units.nanos_per_second
+  public seconds => nanos / units.nanos_per_second
 
   # this duration in whole minutes, omitting fractional part
   #
-  minutes => nanos / units.nanos_per_minute
+  public minutes => nanos / units.nanos_per_minute
 
   # this duration in whole hours, omitting fractional part
   #
-  hours => nanos / units.nanos_per_hour
+  public hours => nanos / units.nanos_per_hour
 
   # this duration in whole days, omitting fractional part
   #
-  days => nanos / units.nanos_per_day
+  public days => nanos / units.nanos_per_day
 
   # this duration in whole weeks, omitting fractional part
   #
-  weeks => nanos / units.nanos_per_week
+  public weeks => nanos / units.nanos_per_week
 
   # this duration in whole Julian years, omitting fractional part
   #
-  years => nanos / units.nanos_per_year
+  public years => nanos / units.nanos_per_year
 
 
   # create a string representation of this duration. The string
   # representation is not accurate, it consists of at least two
   # and at most 4 decimal digits followed by a time unit string.
   #
-  redef as_string String is
+  public redef as_string String is
     (f,u) := for
       x := units.unit_names.first, n
       n in units.unit_names.drop 1
@@ -99,41 +99,41 @@ is
 # time.durations -- unit type defining features related to duration but not requiring
 # an instance
 #
-durations : units is
+public durations : units is
 
   # max value for a duration given in nanos
-  max_duration_nanos   => u64.type.max
+  public max_duration_nanos   => u64.type.max
 
   # max value for a duration given in micros
-  max_duration_micros  => u64.type.max / nanos_per_micro
+  public max_duration_micros  => u64.type.max / nanos_per_micro
 
   # max value for a duration given in millis
-  max_duration_millis  => u64.type.max / nanos_per_milli
+  public max_duration_millis  => u64.type.max / nanos_per_milli
 
   # max value for a duration given in seconds
-  max_duration_seconds => u64.type.max / nanos_per_second
+  public max_duration_seconds => u64.type.max / nanos_per_second
 
   # max value for a duration given in minutes
-  max_duration_minutes => u64.type.max / nanos_per_minute
+  public max_duration_minutes => u64.type.max / nanos_per_minute
 
   # max value for a duration given in hours
-  max_duration_hours   => u64.type.max / nanos_per_hour
+  public max_duration_hours   => u64.type.max / nanos_per_hour
 
   # max value for a duration given in days
-  max_duration_days    => u64.type.max / nanos_per_day
+  public max_duration_days    => u64.type.max / nanos_per_day
 
   # max value for a duration given in weeks
-  max_duration_weeks   => u64.type.max / nanos_per_week
+  public max_duration_weeks   => u64.type.max / nanos_per_week
 
   # max value for a duration given in years
-  max_duration_years   => u64.type.max / nanos_per_year
+  public max_duration_years   => u64.type.max / nanos_per_year
 
 
   # create duration of n ns
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  ns (n u64)
+  public ns (n u64)
   pre
     debug: n ≤ max_duration_nanos
    => duration n
@@ -143,7 +143,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  µs (n u64)
+  public µs (n u64)
   pre
     debug: n ≤ max_duration_micros
    => duration n*nanos_per_micro
@@ -153,7 +153,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  ms (n u64)
+  public ms (n u64)
   pre
     debug: n ≤ max_duration_millis
    => duration n*nanos_per_milli
@@ -163,7 +163,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  s (n u64)
+  public s (n u64)
   pre
     debug: n ≤ max_duration_seconds
    => duration n*nanos_per_second
@@ -173,7 +173,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  seconds (n u64)
+  public seconds (n u64)
   pre
     debug: n ≤ max_duration_seconds
    => s n
@@ -183,7 +183,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  min (n u64)
+  public min (n u64)
   pre
     debug: n ≤ max_duration_minutes
    => duration n*nanos_per_minute
@@ -193,7 +193,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  minutes (n u64)
+  public minutes (n u64)
   pre
     debug: n ≤ max_duration_minutes
    => min n
@@ -203,7 +203,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  h (n u64)
+  public h (n u64)
   pre
     debug: n ≤ max_duration_hours
    => duration n*nanos_per_hour
@@ -213,7 +213,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  hours (n u64)
+  public hours (n u64)
   pre
     debug: n ≤ max_duration_hours
    => h n
@@ -223,7 +223,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  days  (n u64)
+  public days  (n u64)
   pre
     debug: n ≤ max_duration_days
    => duration n*nanos_per_day
@@ -233,7 +233,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  weeks (n u64)
+  public weeks (n u64)
   pre
     debug: n ≤ max_duration_weeks
    => duration n*nanos_per_week
@@ -243,7 +243,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  a (n u64)
+  public a (n u64)
   pre
     debug: n ≤ max_duration_years
    => duration n*nanos_per_year
@@ -253,7 +253,7 @@ durations : units is
   #
   # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
   #
-  years (n u64)
+  public years (n u64)
   pre
     debug: n ≤ max_duration_years
    => a n
@@ -261,34 +261,34 @@ durations : units is
 
 # time.duration.units -- unit time defining units used in duration
 #
-units is
+public units is
 
   # factor converting nanos to nanos, just for completeness
-  nanos_per_nano   => u64 1
+  public nanos_per_nano   => u64 1
 
   # factor converting micros to nanos
-  nanos_per_micro  => u64 1_000
+  public nanos_per_micro  => u64 1_000
 
   # factor converting millis to nanos
-  nanos_per_milli  => nanos_per_micro * 1_000
+  public nanos_per_milli  => nanos_per_micro * 1_000
 
   # factor converting seconds to nanos
-  nanos_per_second => nanos_per_milli * 1_000
+  public nanos_per_second => nanos_per_milli * 1_000
 
   # factor converting minutes to nanos
-  nanos_per_minute => nanos_per_second * 60
+  public nanos_per_minute => nanos_per_second * 60
 
   # factor converting hours to nanos
-  nanos_per_hour   => nanos_per_minute * 60
+  public nanos_per_hour   => nanos_per_minute * 60
 
   # factor converting days to nanos
-  nanos_per_day    => nanos_per_hour * 24
+  public nanos_per_day    => nanos_per_hour * 24
 
   # factor converting weeks to nanos
-  nanos_per_week   => nanos_per_day * 7
+  public nanos_per_week   => nanos_per_day * 7
 
   # factor converting years to nanos
-  nanos_per_year   => nanos_per_second * 31_557_600
+  public nanos_per_year   => nanos_per_second * 31_557_600
 
 
   # array of tuples consisting of the nanos_per_* conversion

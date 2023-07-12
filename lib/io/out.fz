@@ -25,7 +25,7 @@
 
 # out -- effect providing an output stream
 #
-private out (redef p Can_Print) : print_effect p is
+public out (p Can_Print) : print_effect p is
 
 
   type.install_default =>
@@ -38,6 +38,6 @@ private out (redef p Can_Print) : print_effect p is
 
 # short-hand for accessing out effect in current environment
 #
-out =>
+public out =>
   out.type.install_default
   io.out.env

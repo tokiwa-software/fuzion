@@ -59,7 +59,7 @@ mutable_tree_map(LM type : mutate, KEY type : has_total_order, VAL type) : Map K
 
   # returns a string representation of the map
   #
-  redef as_string String is
+  public redef as_string String is
     "\{" +
       (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"

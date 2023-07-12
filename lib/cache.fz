@@ -37,25 +37,25 @@
 #       cache_kex(val i32) is
 #       # similarly, here, i32 is the actual type we want to cache and cache_kex
 #       # is the wrapping cache key
-#     
+#
 #       # suppose now, that we have two functions fn and fm, which take no arguments but
 #       # which need a very long time for their calculations.
-#     
+#
 #       fn Function cache_key := (() ->
 #         time.nano.sleep (time.durations.seconds 2)
 #         cache_key (sorted_array_of [6,4,1,9]))
-#     
+#
 #       fm Function cache_kex := (() ->
 #         time.nano.sleep (time.durations.seconds 3)
 #         cache_kex 42)
-#     
+#
 #       # we define two more wrappers, which will actually call the functions if
 #       # their value is not in the cache, or return the stored value if already
 #       # computed
 #       from_cache => (cache cache_key fn).val
 #       #                              ^--- will only be computed the first time we run from_cache
 #       from_cachf => (cache cache_kex fm).val
-#     
+#
 #       say from_cache # will take two seconds
 #       say from_cache # will take virtually no time
 #       say from_cachf # will take three seconds
@@ -65,7 +65,7 @@
 #
 # The cache implemented works on a global level.
 #
-cache(T type, f () -> T) T is
+public cache(T type, f () -> T) T is
 
   # use wrapper type because we do not want to prevent
   # the use of `state` for type T

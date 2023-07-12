@@ -25,14 +25,14 @@
 
 # Any -- parent feature of all features that do not have an explicit parent
 #
-Any ref is
+public Any ref is
 
-  hash_code i32 is intrinsic
+  public hash_code i32 is intrinsic
 
   # create a String from this instance.  Unless redefined, `a.as_string` will
   # create `"instance[T]"` where `T` is the dynamic type of `a`
   #
-  as_string String is intrinsic
+  public as_string String is intrinsic
 
 
   # convenience prefix operator to create a string from a value.
@@ -41,7 +41,7 @@ Any ref is
   # inside and outside of constant strings: $x and "$x" will produce the
   # same string.
   #
-  prefix $ => Any.this.as_string
+  public prefix $ => Any.this.as_string
 
 
   # Get the dynamic type of this instance.  For value instances `x`, this is
@@ -53,4 +53,4 @@ Any ref is
   # endless hierachy of types.  So for Type values, dynamic_type is redefined
   # to just return Type.type.
   #
-  dynamic_type => Any.this.type
+  public dynamic_type => Any.this.type

@@ -28,4 +28,4 @@
 # analysis is a condition qualifier that is used for conditions that are
 # not intended to be checked at run time but only by static analysis tools.
 #
-analysis => false
+public analysis => false

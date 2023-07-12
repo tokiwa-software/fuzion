@@ -1158,7 +1158,7 @@ IDENT     : ( 'a'..'z'
           */
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
             {
-              while (partOfIdentifier(curCodePoint()))
+              while (partOfIdentifier(curCodePoint()) || partOfVisibility(curCodePoint()))
                 {
                   nextCodePoint();
                 }
@@ -1227,6 +1227,20 @@ IDENT     : ( 'a'..'z'
       case K_LETTER, K_DIGIT, K_NUMERIC -> true;
       default -> false;
       };
+  }
+
+
+  /**
+   * Check if we started parsing a visibility token, e.g. 'private:public'.
+   *
+   * @return  true iff the string of current token matches private, module or public.
+   */
+  private boolean partOfVisibility(int cp)
+  {
+    return cp == ':' &&
+          (  compareToString(tokenPos(), tokenEndPos(), "private") == 0
+          || compareToString(tokenPos(), tokenEndPos(), "module")  == 0
+          || compareToString(tokenPos(), tokenEndPos(), "public")  == 0);
   }
 
 

@@ -34,7 +34,7 @@
 # power of 2, this will trigger the worst-case addition time resutling in
 # O(m*n log² n) for adding an element m times.
 #
-ps_set
+private:public ps_set
   (K type : has_total_order,
    psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
@@ -45,12 +45,12 @@ is
 
   # number of elements in this set
   #
-  size => psm.size
+  public size => psm.size
 
 
   # list representation of values in this set
   #
-  redef as_list => psm.keys.as_list
+  public redef as_list => psm.keys.as_list
 
 
   # print contents of this set
@@ -60,7 +60,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+  public add (k K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
     if has k
       ps_set.this
     else
@@ -74,33 +74,33 @@ is
 
   # check if an element equal to given element k is part of this set
   #
-  has (k K) => psm.has k
+  public has (k K) => psm.has k
 
 
   # get the lowest element in this set
   #
-  min => psm.min
+  public min => psm.min
 
 
   # get the highest element in this set
   #
-  max => psm.max
+  public max => psm.max
 
 
   # union of two ps_sets
   #
-  infix ∪ (other ref ps_set K) => ps_set K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
+  public infix ∪ (other ref ps_set K) => ps_set K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
 
 
   # intersection of two ps_sets
-  infix ∩ (other ref ps_set K) =>
+  public infix ∩ (other ref ps_set K) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
     (ps_sets K).empty.add_all s
 
 
   # add all elements of the given Sequence to this set
   #
-  add_all (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+  public add_all (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
     this_ref ref ps_set K := ps_set.this
     s.reduce this_ref ((r,k) -> r.add k)
 
@@ -108,12 +108,12 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  redef size_option option i32 is size
+  public redef size_option option i32 is size
 
 
   # does this set contain the given value?
   #
-  contains (e K) bool is has e
+  public contains (e K) bool is has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
@@ -126,14 +126,14 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # monoid of ps_set with infix ∪ operation.
   #
-  union : Monoid (ps_set K) is
+  public union : Monoid (ps_set K) is
     redef infix ∙ (a, b ps_set K) => a ∪ b
     redef e => empty
 
 
   # equality
   #
-  fixed type.equality(a, b container.ps_set K) bool is
+  public fixed type.equality(a, b container.ps_set K) bool is
     # NYI: a bit expensive
     (a ∪ b).size = a.size
 
@@ -142,17 +142,17 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 #
 # NYI: move to ps_set.type
 #
-ps_sets(K type : has_total_order) is
+public ps_sets(K type : has_total_order) is
 
   # ps_set -- a partially sorted set based on ps_map
   #
   # This feature creates an empty instance of ps_set.
   #
-  empty => ps_set K (ps_maps K unit).empty unit
+  public empty => ps_set K (ps_maps K unit).empty unit
 
 
 # ps_set -- routine to initialize a partially sorted set from one Sequence
 #
 # This feature creates a pre-initialized instance of ps_set.
 #
-ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs
+public ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs

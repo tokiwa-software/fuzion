@@ -33,7 +33,7 @@
 # 3) Use the now installed channel for reading/writing.
 # `(channel server).read ...` / `(channel server).write ...`
 #
-private server(
+module:public server(
   state outcome i64,
   p protocol.val,
   m effect_mode.val,
@@ -43,15 +43,15 @@ private server(
 is
 
   # get the last error that occurred
-  last_error => state.bind unit (_ -> unit)
+  public last_error => state.bind unit (_ -> unit)
 
   # is the server running?
-  is_active =>
+  public is_active =>
     state.ok
 
 
   # close server, stop listening on port
-  close is
+  public close is
     (channel server).close
     match state
       d i64 =>
@@ -68,7 +68,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  accept outcome unit is
+  public accept outcome unit is
     match state
       d i64 =>
         match p
@@ -87,7 +87,7 @@ is
   # runs code immediately for UDP etc.
   # NYI should need effect thread pool / work queue?, to run on a background thread.
   # NYI on error ...
-  accept_in_thread(code () -> unit) is
+  public accept_in_thread(code () -> unit) is
     match state
       d i64 =>
         concur.thread.spawn ()->
@@ -106,7 +106,7 @@ is
 # open new server bound to the any address listening on port
 # closes currently installed server
 # NYI blocking / none blocking
-server(f family.val, p protocol.val, port u16) outcome unit is
+public server(f family.val, p protocol.val, port u16) outcome unit is
 
   any_addr := (
     match f
@@ -120,7 +120,7 @@ server(f family.val, p protocol.val, port u16) outcome unit is
 # open new server bound to addr listening on port
 # closes currently installed server
 # NYI blocking / none blocking
-server(f family.val, p protocol.val, addr String, port u16) outcome unit is
+public server(f family.val, p protocol.val, addr String, port u16) outcome unit is
   server.close
 
   match init_ip_server f p addr port
@@ -132,7 +132,7 @@ server(f family.val, p protocol.val, addr String, port u16) outcome unit is
 
 
 # get currently installed server from env
-server =>
+public server =>
   if !effect.type.is_installed server
     server (error "not initialized") nil effect_mode.default unit unit
   server.env

@@ -33,16 +33,16 @@
 # For performance, this implementation uses mutable state. It can consequently
 # only be used as a one-way monad.
 #
-private handles2(
+private:public handles2(
   T, X type,
 
   # the inner value of this monad
-  v X,
+  public v X,
 
   last_opt option (handle2_0 T),
 
   # action to be taken: plain monad, install or replace?
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad X (handles2 T X) r
 is
 
@@ -50,7 +50,7 @@ is
   #
   # the new handle can be accessed by 'result.last'
   #
-  new (
+  public new (
     # initial value refered to by the new handle
     w T
     ) handles2 T X
@@ -62,12 +62,12 @@ is
 
   # has one element been created using 'new'?
   #
-  has_last => last_opt??
+  public has_last => last_opt??
 
 
   # return the last handle that was created by 'new'
   #
-  last
+  public last
     pre
       has_last
    =>
@@ -78,7 +78,7 @@ is
   # in the current environment
   #
   /* env */
-  create (
+  public create (
     # initial value refered to by the new handle
     w T
     )
@@ -88,7 +88,7 @@ is
 
   # get the value refered to by a given handle
   #
-  get (
+  public get (
     # a handle created by 'new'
     h handle2_0 T
     )
@@ -98,7 +98,7 @@ is
 
   # create a new instance with new value refered to by a given handle
   #
-  put (
+  public put (
     # a handle created by 'new'
     h handle2_0 T,
 
@@ -119,7 +119,7 @@ is
   # create a new instance with the value refered to by a given handle read and
   # updated.
   #
-  update (
+  public update (
     # a handle created by 'new'
     h handle2_0 T,
 
@@ -138,12 +138,12 @@ is
     handles2 T X v last_opt mode
 
 
-  infix >>= (f X -> handles2 T X) => bind X f
+  public infix >>= (f X -> handles2 T X) => bind X f
 
-  bind(B type, f X -> handles2 T B) handles2 T B is
+  public bind(B type, f X -> handles2 T B) handles2 T B is
     handles2 T B (f v).v last_opt effect_mode.plain
 
-  return(B type, w B) => handles2 T B w last_opt effect_mode.plain
+  public return(B type, w B) => handles2 T B w last_opt effect_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
@@ -176,13 +176,13 @@ is
 
   # set value stored in this handle to new_val
   #
-  put(new_val T) is
+  public put(new_val T) is
     set get := new_val
     (handles2 T unit).env.replace
 
   # update value stored in this handle using f.
   #
-  update(f T->T) =>
+  public update(f T->T) =>
     set get := f get
     (handles2 T unit).env.replace
     get
@@ -200,4 +200,4 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-handle2(T type, v T) => (handles2 T).create v
+public handle2(T type, v T) => (handles2 T).create v

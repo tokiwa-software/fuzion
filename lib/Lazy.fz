@@ -23,4 +23,4 @@
 
 # Lazy
 #
-Lazy(T type) ref : Function T is
+public Lazy(T type) ref : Function T is

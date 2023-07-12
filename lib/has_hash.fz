@@ -26,7 +26,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-has_hash : equatable
+public has_hash : equatable
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -38,4 +38,4 @@ has_hash : equatable
 is
 
   # create hash code for this instance
-  hash u64 is abstract
+  public hash u64 is abstract

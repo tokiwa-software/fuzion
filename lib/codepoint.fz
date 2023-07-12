@@ -25,7 +25,7 @@
 
 # codepoint -- represents a unicode codepoint
 #
-codepoint(val u32) : String
+public codepoint(public val u32) : String
   pre
     debug: codepoint.type.range.contains val,
     debug: !codepoint.type.utf16_surrogate.contains val
@@ -34,7 +34,7 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  redef utf8 Sequence u8 is
+  module redef utf8 Sequence u8 is
     if      codepoint.type.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
     else if codepoint.type.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
@@ -51,66 +51,66 @@ is
 
   # is this an ASCII code encoded in one byte
   #
-  is_ascii => codepoint.type.ascii.contains val
+  public is_ascii => codepoint.type.ascii.contains val
 
 
   # range of permitted value for a codepoint
   #
-  type.range => u32 0 .. 0x10ffff
+  module type.range => u32 0 .. 0x10ffff
 
 
   # range of values encoded in one byte
   #
-  type.ascii => u32 0 .. 0x7f
+  module type.ascii => u32 0 .. 0x7f
 
   # 0 to 9
-  type.ascii_digit => u32 0x30 .. 0x39
+  module type.ascii_digit => u32 0x30 .. 0x39
 
   # A to Z (uppercase only)
-  type.A_to_Z => u32 0x41 .. 0x5A
+  module type.A_to_Z => u32 0x41 .. 0x5A
 
   # a to z (lowercase only)
-  type.a_to_z => u32 0x61 .. 0x7A
+  module type.a_to_z => u32 0x61 .. 0x7A
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
+  module type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #
-  type.utf8_encoded_in_one_byte => ascii
+  module type.utf8_encoded_in_one_byte => ascii
 
 
   # range of values encoded in two bytes
   #
-  type.utf8_encoded_in_two_bytes => u32 0x80 .. 0x7ff
+  module type.utf8_encoded_in_two_bytes => u32 0x80 .. 0x7ff
 
 
   # range of values encoded in three bytes
   #
-  type.utf8_encoded_in_three_bytes => u32 0x800 .. 0xffff
+  module type.utf8_encoded_in_three_bytes => u32 0x800 .. 0xffff
 
 
   # range of values encoded in four bytes
   #
-  type.utf8_encoded_in_four_bytes => u32 0x10000 .. 0x10ffff
+  module type.utf8_encoded_in_four_bytes => u32 0x10000 .. 0x10ffff
 
 
   # range reserved for utf16 surrogate pairs
   #
-  type.utf16_surrogate => u32 0xd800 .. 0xdfff
+  module type.utf16_surrogate => u32 0xd800 .. 0xdfff
 
 
   # values guaranteed never to be a legal unicode character
   #
-  type.not_a_character => u32 0xfffe .. 0xffff
+  module type.not_a_character => u32 0xfffe .. 0xffff
 
 
   # return the number of bytes of this utf-8 character
   # by examining the first byte
   #
   # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leading_zeroes+1.
-  type.num_utf8_bytes (first_byte u8) outcome i32 is
+  module type.num_utf8_bytes (first_byte u8) outcome i32 is
     if ((u8 0)..0x7F).contains first_byte
       1
     else if ((u8 0xC2)..0xDF).contains first_byte

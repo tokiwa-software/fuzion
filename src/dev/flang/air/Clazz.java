@@ -1024,7 +1024,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _module.lookupFeature(feature(), fn, f);
+    var result =_module.lookupFeature(feature(), fn, f);
+
+    // NYI result may be null because f might be invisible from
+    // perspective of clazz. But there might still be redefinitions..
+    return result == null
+      ? f
+      : result;
   }
 
 

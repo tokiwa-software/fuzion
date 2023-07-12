@@ -29,7 +29,7 @@
 # in a way orthogonal to the actual computation.
 #
 #
-state(
+module:public state(
 
   # types of contained and the state value
   T, S type,
@@ -40,7 +40,7 @@ state(
   # the current state
   get S,
 
-  redef r effect_mode.val
+  r effect_mode.val
   ) ref : oneway_monad T (state T S) r
 is
 
@@ -83,20 +83,20 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef as_string String is
+  public redef as_string String is
     "$val ($get)"
 
 
 # state with 1 argument is short hand for a state containing unit and
 # initial_value
 #
-state(S type, initial_value S) => state unit initial_value effect_mode.plain
+public state(S type, initial_value S) => state unit initial_value effect_mode.plain
 
 # install new state monad for type S and run r within that state monad
 #
 # return result of r.
 #
-state(S, R type, initial_value S, r ()->R) =>
+public state(S, R type, initial_value S, r ()->R) =>
   res option R := nil
   state unit S unit initial_value (effect_mode.inst (()->set res := r.call))
   res.get
@@ -104,19 +104,19 @@ state(S, R type, initial_value S, r ()->R) =>
 
 # short-hand for accessing state monad for given type in current environment
 #
-state_of(S type) => (state unit S).env
+public state_of(S type) => (state unit S).env
 
 
 # short-hand for getting state monad for given type in current environment
 #
-state_get(S type) => (state_of S).get
+public state_get(S type) => (state_of S).get
 
 
 # short-hand for modifying state monad for given type in current environment
 #
-state_modify(S type, f S->S) => (state_of S).modify f
+public state_modify(S type, f S->S) => (state_of S).modify f
 
 
 # short-hand for setting state monad for given type in current environment
 #
-state_put(S type, new S) => (state_of S).put new
+public state_put(S type, new S) => (state_of S).put new

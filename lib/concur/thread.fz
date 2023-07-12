@@ -25,7 +25,7 @@
 
 # thread -- effect that provides concurrent thread
 #
-thread (
+private:public thread (
   # the provider this effect uses to spawn threads
   p Thread_Provider
   ) : simple_effect
@@ -34,7 +34,7 @@ is
 
   # spawn a new thread
   #
-  spawn(code ()->unit) =>
+  public spawn(code ()->unit) =>
     p.spawn code
     _ := thread p
 
@@ -49,13 +49,13 @@ is
 
     # spawn a new thread using given code
     #
-    spawn(code ()->unit) => fuzion.sys.thread.spawn code
+    public spawn(code ()->unit) => fuzion.sys.thread.spawn code
 
 
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-thread =>
+public thread =>
   thread.type.install_default
   thread.env
 
@@ -66,4 +66,4 @@ Thread_Provider ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) unit is abstract
+  public spawn(code ()->unit) unit is abstract

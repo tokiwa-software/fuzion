@@ -28,12 +28,12 @@
 # NYI: Future versions of error might be equipped with a stack trace if
 # debugging is enabled
 #
-error (
+public error (
 
   # the message describing the error. Should usually be a single line not
   # followed by a linefeed.
   #
-  msg String
+  public msg String
 
   )
 
@@ -43,5 +43,5 @@ is
   #
   # returns "error: $msg"
   #
-  redef as_string String is
+  public redef as_string String is
     "error: $msg"
