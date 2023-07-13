@@ -541,8 +541,8 @@ public class Loop extends ANY
                               Visi.PRIV,
                               type,
                               f.featureName().baseName(),
-                              type == null ? ia : null,
-                              null /* NYI outer */);
+                              type != null ? Impl.FIELD
+                                           : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
         initialActuals .add(new Actual(ia));

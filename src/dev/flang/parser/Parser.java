@@ -922,6 +922,7 @@ argument    : visibility
 argType     : type
             | typeType
             | typeType COLON type
+            |
             ;
    */
   List<Feature> formArgs()
@@ -943,15 +944,22 @@ argType     : type
                                         t = skipColon() ? type()
                                                         : new Type(FuzionConstants.ANY_NAME);
                                       }
-                                    else
+                                    else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
                                         t = type();
                                       }
+                                    else
+                                      {
+                                        i = null; // alloc one instance of Impl for each arg since they contain state
+                                        t = null;
+                                      }
                                     Contract c = contract();
                                     for (String s : n)
                                       {
-                                        result.add(new Feature(pos, v, m, t, s, c, i));
+                                        result.add(new Feature(pos, v, m, t, s, c,
+                                                               i == null ? new Impl(Impl.Kind.FieldActual)
+                                                                         : i));
                                       }
                                   }
                                 while (skipComma());

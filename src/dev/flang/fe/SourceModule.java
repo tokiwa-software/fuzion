@@ -1211,6 +1211,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public void checkTypes(Feature f)
   {
+    f.impl().checkTypes(f);
     var args = f.arguments();
     int ean = args.size();
     var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
