@@ -951,25 +951,15 @@ argType     : type
                                       }
                                     else
                                       {
-                                        i = new Impl(Impl.Kind.FieldActual);
+                                        i = null; // alloc one instance of Impl for each arg since they contain state
                                         t = null;
                                       }
                                     Contract c = contract();
                                     for (String s : n)
                                       {
-                                        if (i._kind == Impl.Kind.FieldActual)
-                                          {
-                                            var arg = new Feature(pos,
-                                                                  Visi.PRIV,
-                                                                  m,
-                                                                  null,
-                                                                  s,
-                                                                  c,
-                                                                  new Impl(Impl.Kind.FieldActual));
-                                            result.add(arg);
-                                          }
-                                        else
-                                          result.add(new Feature(pos, v, m, t, s, c, i));
+                                        result.add(new Feature(pos, v, m, t, s, c,
+                                                               i == null ? new Impl(Impl.Kind.FieldActual)
+                                                                         : i));
                                       }
                                   }
                                 while (skipComma());
