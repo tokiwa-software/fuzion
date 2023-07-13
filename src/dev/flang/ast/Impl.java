@@ -105,7 +105,7 @@ public class Impl extends ANY
   {
     FieldInit,    // a field with initialization syntactic sugar
     FieldDef,     // a field with implicit type
-    FieldActual, // an argument field with type defined by actual argument
+    FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
     TypeParameter,// a type parameter Field
@@ -121,7 +121,7 @@ public class Impl extends ANY
         {
           case FieldInit         : yield "field initialization";
           case FieldDef          : yield "field definition";
-          case FieldActual      : yield "actual argument";
+          case FieldActual       : yield "actual argument";
           case FieldIter         : yield "iterator";
           case Field             : yield "field";
           case TypeParameter     : yield "type parameter";

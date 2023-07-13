@@ -598,7 +598,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType =  r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos2BeRemoved();
+    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos2BeRemoved();
     String n = qname.getLast();
     if (n.equals("_"))
       {
