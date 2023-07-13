@@ -25,7 +25,7 @@
 
 # u16 -- 16-bit unsigned integer values
 #
-u16(val u16) : wrapping_integer, has_interval is
+u16(val u16) : num.wrap_around, has_interval is
 
   thiz => u16.this.val
 

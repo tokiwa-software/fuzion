@@ -1,0 +1,230 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature wrap_around
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# wrap_around -- abstract ancestor of wrap-around integer numbers
+#
+# wrap_around is the abstract ancestor of integer numbers that have min and
+# max values and operations with wrap-around semantics.
+#
+wrap_around : integer is
+
+  # overflow checking
+
+  # would negation -wrap_around.this cause an overflow?
+  wrapped_on_neg bool is abstract
+
+  # would addition wrap_around.this + other cause an overflow or underflow?
+  overflow_on_add(other wrap_around.this) bool is abstract
+  underflow_on_add(other wrap_around.this) bool is abstract
+  wrapped_on_add(other wrap_around.this) => overflow_on_add other || underflow_on_add other
+
+  # would subtraction wrap_around.this - other cause an overflow or underflow?
+  overflow_on_sub(other wrap_around.this) bool is abstract
+  underflow_on_sub(other wrap_around.this) bool is abstract
+  wrapped_on_sub(other wrap_around.this) => overflow_on_sub other || underflow_on_sub other
+
+  # would multiplication wrap_around.this * other cause an overflow or underflow?
+  overflow_on_mul(other wrap_around.this) bool is abstract
+  underflow_on_mul(other wrap_around.this) bool is abstract
+  wrapped_on_mul(other wrap_around.this) => overflow_on_mul other || underflow_on_mul other
+
+  # preconditions used in 'numeric' for basic operations: true if the
+  # operation is permitted for the given values
+  prefix -! => !wrapped_on_neg
+  infix +! (other wrap_around.this) => !(overflow_on_add other) && !(underflow_on_add other)
+  infix -! (other wrap_around.this) => !(overflow_on_sub other) && !(underflow_on_sub other)
+  infix *! (other wrap_around.this) => !(overflow_on_mul other) && !(underflow_on_mul other)
+  infix /! (other wrap_around.this) => true  # other != zero is checked in separate condition
+  infix %! (other wrap_around.this) => true  # other != zero is checked in separate condition
+  infix **!(other wrap_around.this) => !(overflow_on_exp other)
+
+  # neg, add, sub, mul with wrap-around semantics
+  prefix -° wrap_around.this is abstract
+  infix +° (other wrap_around.this) wrap_around.this is abstract
+  infix -° (other wrap_around.this) wrap_around.this is abstract
+  infix *° (other wrap_around.this) wrap_around.this is abstract
+
+  is_min => wrap_around.this = wrap_around.this.type.min
+  is_max => wrap_around.this = wrap_around.this.type.max
+
+  # check if this type of wrap_around is bounded
+  #
+  # wrap_arounds are assumed to be a bound set by default, so
+  # this returns true unless redefined by an implementation
+  redef is_bounded => true
+
+  # basic operations with runtime error on overflow
+
+  # negation, with check for overflow
+  redef prefix - wrap_around.this
+    pre
+      debug: !wrapped_on_neg
+  is -° wrap_around.this
+
+  # addition, with check for overflow
+  redef infix +  (other wrap_around.this) wrap_around.this
+    pre
+      debug: !overflow_on_add(other),
+      debug: !underflow_on_add(other)
+  is wrap_around.this +° other
+
+  # subtraction, with check for overflow
+  redef infix -  (other wrap_around.this) wrap_around.this
+    pre
+      debug: !overflow_on_sub(other),
+      debug: !underflow_on_sub(other)
+  is wrap_around.this -° other
+
+  # multiplication, with check for overflow
+  redef infix *  (other wrap_around.this) wrap_around.this
+    pre
+      debug: !overflow_on_mul(other),
+      debug: !underflow_on_mul(other)
+  is wrap_around.this *° other
+
+  # overflow checking operations
+  redef prefix -? num_option wrap_around.this is if wrapped_on_neg then nil else -wrap_around.this
+  redef infix +? (other wrap_around.this) num_option wrap_around.this is if wrapped_on_add other then nil else wrap_around.this + other
+  redef infix -? (other wrap_around.this) num_option wrap_around.this is if wrapped_on_sub other then nil else wrap_around.this - other
+  redef infix *? (other wrap_around.this) num_option wrap_around.this is if wrapped_on_mul other then nil else wrap_around.this * other
+
+
+  # saturating  operations
+  redef prefix -^ => if wrapped_on_neg if wrap_around.this > wrap_around.this.type.zero then wrap_around.this.type.min else wrap_around.this.type.max else - wrap_around.this
+  redef infix +^ (other wrap_around.this) => if overflow_on_add other then wrap_around.this.type.max else if underflow_on_add other then wrap_around.this.type.min else wrap_around.this + other
+  redef infix -^ (other wrap_around.this) => if overflow_on_sub other then wrap_around.this.type.max else if underflow_on_sub other then wrap_around.this.type.min else wrap_around.this - other
+  redef infix *^ (other wrap_around.this) => if overflow_on_mul other then wrap_around.this.type.max else if underflow_on_mul other then wrap_around.this.type.min else wrap_around.this * other
+
+
+  # exponentiation for positive exponent
+  #
+  # 'zero ** zero' is permitted and results in 'one'.
+  #
+  infix ** (other wrap_around.this) wrap_around.this
+    pre
+      safety: other ≥ wrap_around.this.type.zero,
+      debug: !overflow_on_exp other
+  is
+    wrap_around.this **° other
+
+
+  # exponentiation with wrap-around semantics
+  #
+  # 'zero **° zero' is permitted and results in 'one'.
+  #
+  infix **° (other wrap_around.this) wrap_around.this
+    pre
+      safety: other ≥ wrap_around.this.type.zero
+  is
+    if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
+    else if (other = wrap_around.this.type.one ) wrap_around.this
+    else
+      tmp := (wrap_around.this *° wrap_around.this) **° (other / wrap_around.this.type.two)
+      if other %% wrap_around.this.type.two
+        tmp
+      else
+        tmp *° wrap_around.this
+
+
+  # exponentiation with overflow checking semantics
+  #
+  # 'zero **? zero' is permitted and results in 'one'.
+  #
+  infix **? (other wrap_around.this) num_option wrap_around.this
+    pre
+      safety: other ≥ wrap_around.this.type.zero
+  is
+    if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
+    else if (other = wrap_around.this.type.one ) wrap_around.this
+    else
+      tmp := (wrap_around.this *? wrap_around.this) **? (other / wrap_around.this.type.two)
+      if other %% wrap_around.this.type.two
+        tmp
+      else
+        tmp *? wrap_around.this
+
+
+  # would exponentiation 'this ** other' cause an overflow?
+  #
+  overflow_on_exp(other wrap_around.this) => (wrap_around.this **? other)!!
+
+
+  # exponentiation with saturating semantics
+  #
+  # 'zero **^ zero' is permitted and results in 'one'.
+  #
+  infix **^ (other wrap_around.this) wrap_around.this
+    pre
+      safety: other ≥ wrap_around.this.type.zero
+  is
+    if overflow_on_exp other
+      if (wrap_around.this ≥ wrap_around.this.type.zero) || (other %% wrap_around.this.type.two)
+        wrap_around.this.type.max
+      else
+        wrap_around.this.type.min
+    else
+      wrap_around.this ** other
+
+  # bitwise NOT
+  redef prefix ~ wrap_around.this
+    pre
+      is_bounded
+  is
+    wrap_around.this ^ wrap_around.this.type.all_bits_set
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  ones_count i32 is abstract
+
+
+  # this integer as an array of bytes (little endian)
+  as_bytes array u8 is
+    bs := wrap_around.this.type.byte_size
+    array u8 bs (idx ->
+      shift wrap_around.this := wrap_around.this.type.from_u32 (bs.as_u32-idx.as_u32-1)*8
+      (wrap_around.this>>shift).low8bits)
+
+
+
+  # returns the number in whose bit representation all bits are ones
+  type.all_bits_set wrap_around.this is abstract
+
+
+  # how many bytes does this integer use?
+  type.byte_size i32 is
+    # NYI #1179
+    all_bits_set.ones_count / 8
+
+
+  # minimum
+  #
+  type.min wrap_around.this is abstract
+
+
+  # maximum
+  #
+  type.max wrap_around.this is abstract

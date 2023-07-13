@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-i64(val i64) : wrapping_integer, has_interval is
+i64(val i64) : num.wrap_around, has_interval is
 
   thiz => i64.this.val
 

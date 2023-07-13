@@ -25,7 +25,7 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-u8(val u8) : wrapping_integer, has_interval is
+u8(val u8) : num.wrap_around, has_interval is
 
   thiz => u8.this.val
 
