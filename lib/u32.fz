@@ -25,7 +25,7 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-u32(val u32) : wrapping_integer, has_interval is
+u32(val u32) : num.wrap_around, has_interval is
 
   thiz => u32.this.val
 

@@ -25,7 +25,7 @@
 
 # i8 -- 8-bit signed integer values
 #
-i8(val i8) : wrapping_integer, has_interval is
+i8(val i8) : num.wrap_around, has_interval is
 
   thiz => i8.this.val
 

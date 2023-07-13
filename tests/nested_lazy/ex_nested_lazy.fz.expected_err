@@ -7,6 +7,7 @@ In call to          : 'ex_nested_lazy.lazy1'
 expected formal type: 'Function (Lazy i32)'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
+                      'num.ref wrap_around',
                       'property.ref equatable',
                       'property.ref hashable',
                       'property.ref orderable',
@@ -14,8 +15,7 @@ assignable to       : 'Any',
                       'ref has_interval',
                       'ref i32',
                       'ref integer',
-                      'ref numeric',
-                      'ref wrapping_integer'
+                      'ref numeric'
 for value assigned  : 'box(ex_nested_lazy.this.x1.call)'
 To solve this, you could change the type of the target 'f' to 'ref i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
 
@@ -27,6 +27,7 @@ assignment to field : 'ex_nested_lazy.#fun1.call.result'
 expected formal type: 'Function i32'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
+                      'num.ref wrap_around',
                       'property.ref equatable',
                       'property.ref hashable',
                       'property.ref orderable',
@@ -34,8 +35,7 @@ assignable to       : 'Any',
                       'ref has_interval',
                       'ref i32',
                       'ref integer',
-                      'ref numeric',
-                      'ref wrapping_integer'
+                      'ref numeric'
 for value assigned  : 
 {
   box(42)
@@ -51,6 +51,7 @@ assignment to field : 'ex_nested_lazy.#fun3.call.result'
 expected formal type: 'Lazy i32'
 actual type found   : 'ref i32'
 assignable to       : 'Any',
+                      'num.ref wrap_around',
                       'property.ref equatable',
                       'property.ref hashable',
                       'property.ref orderable',
@@ -58,8 +59,7 @@ assignable to       : 'Any',
                       'ref has_interval',
                       'ref i32',
                       'ref integer',
-                      'ref numeric',
-                      'ref wrapping_integer'
+                      'ref numeric'
 for value assigned  : 
 {
   box(42)

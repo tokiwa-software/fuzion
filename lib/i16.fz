@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-i16(val i16) : wrapping_integer, has_interval is
+i16(val i16) : num.wrap_around, has_interval is
 
   thiz => i16.this.val
 

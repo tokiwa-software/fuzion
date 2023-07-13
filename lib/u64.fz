@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrapping_integer, has_interval is
+u64(val u64) : num.wrap_around, has_interval is
 
   thiz => u64.this.val
 
