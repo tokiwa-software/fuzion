@@ -1881,6 +1881,15 @@ public class AstErrors extends ANY
           "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
   }
 
+
+  public static void illegalUseOfSetKeyword(SourcePosition pos)
+  {
+    error(pos,
+          "Illegal use of the " + code("set") + " keyword.",
+          "This keyword may only be used by the standard library." + "\n" +
+          "To solve this, use the " + code("mutate") + " effect instead.");
+  }
+
 }
 
 /* end of file */

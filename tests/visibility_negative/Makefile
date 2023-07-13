@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = visibility_negative
+FUZION_OPTIONS = -XenableSetKeyword
 include ../negative.mk
