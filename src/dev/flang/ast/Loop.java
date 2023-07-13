@@ -336,7 +336,7 @@ public class Loop extends ANY
       }
     var p = block.pos();
     Feature loop = new Feature(p,
-                               Visi.INVISIBLE,
+                               Visi.PRIV,
                                0,
                                NoType.INSTANCE,
                                new List<String>(loopName),
@@ -475,7 +475,7 @@ public class Loop extends ANY
       {
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
-                                    Visi.INVISIBLE,
+                                    Visi.PRIV,
                                     0,
                                     NoType.INSTANCE,
                                     new List<String>(name),
@@ -538,7 +538,7 @@ public class Loop extends ANY
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
-                              Visi.INVISIBLE,
+                              Visi.PRIV,
                               type,
                               f.featureName().baseName(),
                               type == null ? ia : null,
@@ -578,7 +578,7 @@ public class Loop extends ANY
             var p = f.pos();
             Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
-                                         Visi.INVISIBLE,
+                                         Visi.PRIV,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
                                          /* name */        new List<>(streamName),

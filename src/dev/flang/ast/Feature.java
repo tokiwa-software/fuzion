@@ -241,18 +241,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For choice feature (i.e., isChoice() holds): The tag field that holds in
-   * i32 that identifies the index of the actual generic argument to choice that
-   * is represented.
-   *
-   * This might not become part of the runtime clazz if isChoiceOfOnlyRefs()
-   * holds for that class.
-   */
-  public Feature _choiceTag = null;
-  public AbstractFeature choiceTag() { return _choiceTag; }
-
-
-  /**
    * Is this a loop's index variable that is automatically updated by the loops
    * for-clause.  If so, assignments outside the loop prolog or nextIteration
    * parts are not allowed.
@@ -310,7 +298,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature()
   {
     this(SourcePosition.builtIn,
-         Visi.PUBLIC,
+         Visi.PUB,
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
@@ -356,7 +344,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Visi.INVISIBLE,
+                       Visi.PRIV,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
@@ -564,7 +552,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Impl     p)
   {
     this(pos,
-         Visi.INVISIBLE,
+         Visi.PRIV,
          0,
          r,
          qname,
@@ -863,7 +851,7 @@ public class Feature extends AbstractFeature implements Stmnt
           (_resultField == null);
         _resultField = new Feature(res,
                                    _pos,
-                                   Visi.PRIVATE,
+                                   Visi.PRIV,
                                    t,
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
@@ -1480,7 +1468,7 @@ public class Feature extends AbstractFeature implements Stmnt
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef() && (p != p.outer().choiceTag()))
+        if (p.isField() && !p.isOuterRef())
           {
             AstErrors.choiceMustNotContainFields(_pos,p);
           }
@@ -1553,14 +1541,6 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
-
-    _choiceTag = new Feature(res,
-                             _pos,
-                             Visi.PRIVATE,
-                             Types.resolved.t_i32,
-                             FuzionConstants.CHOICE_TAG_NAME,
-                             this);
-    _choiceTag.scheduleForResolution(res);
   }
 
 
@@ -2352,7 +2332,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                   : this._outer.selfType();
         _outerRef = new Feature(res,
                                 _pos,
-                                Visi.PRIVATE,
+                                Visi.PRIV,
                                 outerRefType,
                                 outerRefName(),
                                 this);

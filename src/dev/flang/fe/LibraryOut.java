@@ -331,16 +331,6 @@ class LibraryOut extends ANY
             innerFeatures.add(or);
             added.add(or);
           }
-        if (f.isChoice())
-          {
-            if (CHECKS) check
-              (Errors.count() > 0 ||
-               added.size() == f.typeArguments().size() // a choice has no arguments, no result, no outer ref, but type args
-               );
-            var ct = f.choiceTag();
-            innerFeatures.add(ct);
-            added.add(ct);
-          }
         for (var i : m.values())
           {
             if (!added.contains(i))
