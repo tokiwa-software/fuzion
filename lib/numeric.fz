@@ -190,8 +190,6 @@ numeric : property.hashable, property.orderable is
   # the value corresponding to v in whatever integer implementation we have,
   # maximum in case of overflow
   #
-  # NOTE: this is marked 'dyn' to get an implementation for all heirs for numeric
-  #
   type.from_u32(v u32) numeric.this is
     if v = 0 zero else (from_u32 v-1) +^ one
 
