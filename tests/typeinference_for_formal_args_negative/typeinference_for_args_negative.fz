@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test typeinference_for_args_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+typeinference_for_args_negative is
+
+  a1(a, b) => a+b    # ok, only i32
+  a2(a, b) => a+b    # ok, only String
+  a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
+  a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
+  a5(a, b) => a+b    # *** error ***, never called
+
+  say (a1 32 64)
+
+  say (a2 "hello"     " world!")
+  say (a2 "1.0"       " world!")
+  say (a2 "10.as_f64" " world!")
+  say (a2 "1.1"       " world!")
+
+  say (a3 "hello"     " world!")
+  say (a3 1.0         " world!")
+  say (a3 10.as_f64   " world!")
+  say (a3 1.1         " world!")
+
+  say (a4 "hello"     " world!")
+  say (a4 "1.0"       " world!".byte_length)
+  say (a4 "10.as_f64" 3.14)
+  say (a4 "1.1"       " world!"=" monde!")

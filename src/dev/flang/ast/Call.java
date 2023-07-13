@@ -680,6 +680,7 @@ public class Call extends AbstractCall
    */
   void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
+    AbstractFeature targetFeature = null;
     if (PRECONDITIONS) require
       (thiz.state() == Feature.State.RESOLVING_INHERITANCE
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
@@ -693,7 +694,7 @@ public class Call extends AbstractCall
         var actualsResolved = false;
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
-            var targetFeature = targetFeature(res, thiz);
+            targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
               (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
             if (targetFeature != null && targetFeature != Types.f_ERROR)
@@ -736,7 +737,8 @@ public class Call extends AbstractCall
                   { // give a more specific error when trying to call a choice feature
                     AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
                   }
-                else if (_calledFeature == null) // nothing found, so flag error
+                else if (_calledFeature == null &&                 // nothing found, so flag error
+                         targetFeature != Types.resolved.f_void)   // but allow to call anything on void
                   {
                     AstErrors.calledFeatureNotFound(this, calledName, targetFeature,
                                                     FeatureAndOuter.findExactOrCandidate(fos,
@@ -764,7 +766,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != Types.f_ERROR,
+                          (Errors.count() > 0 || calledFeature() != Types.f_ERROR || targetFeature == Types.resolved.f_void,
        Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
        calledFeature() != null,
        _target         != null);
@@ -1752,6 +1754,30 @@ public class Call extends AbstractCall
 
 
   /**
+   * For a call to a feature whose formal arguments do not have an explicit
+   * type, but one that is inferred from the actual argument, make sure that
+   * this call's actual arg is taken into account.
+   *
+   * @param outer the root feature that contains this call.
+   */
+  void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
+  {
+    ListIterator<Expr> aargs = _actuals.listIterator();
+    for (var frml : _calledFeature.valueArguments())
+      {
+        if (aargs.hasNext())
+          {
+            var actl = aargs.next();
+            if (frml instanceof Feature f)
+              {
+                f.impl().addInitialValue(actl, outer);
+              }
+          }
+      }
+  }
+
+
+  /**
    * For a given Expr, check if this is a block. If so, return the block's
    * resultExpression, otherwise return actual.
    *
@@ -2111,6 +2137,7 @@ public class Call extends AbstractCall
                 r.run();
               }
           }
+        inferFormalArgTypesFromActualArgs(outer);
         if (_calledFeature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                                     pos(),
                                                                     "call",
@@ -2208,10 +2235,7 @@ public class Call extends AbstractCall
           {
             Expr actl = i.next();
             var frmlT = _resolvedFormalArgumentTypes[count];
-            if (CHECKS) check
-              (frmlT != null,
-               frmlT != Types.t_ERROR || Errors.count() > 0);
-            if (actl != null)
+            if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
                 if (CHECKS) check
@@ -2243,10 +2267,7 @@ public class Call extends AbstractCall
               {
                 Expr actl = i.next();
                 var rft = _resolvedFormalArgumentTypes[count];
-                if (CHECKS) check
-                  (rft != null,
-                   rft != Types.t_ERROR || Errors.count() > 0);
-                if (actl != null)
+                if (actl != null && rft != Types.t_ERROR)
                   {
                     var a = actl.box(rft);
                     if (CHECKS) check
@@ -2292,7 +2313,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != null /* NYI: make sure this is never null */)
+                if (frmlT != Types.t_ERROR)
                   {
                     if (actl == Expr.NO_VALUE)
                       {

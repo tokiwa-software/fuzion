@@ -1,7 +1,7 @@
 
---CURDIR--/issue952.fz:27:13: error 1: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found right parenthesis ')'
+--CURDIR--/issue952.fz:27:12: error 1: Type inference from actual arguments failed since no actual call was found
   a(b u64, f) is
-------------^
-While parsing: name, parse stack: name (2 times), simpletype, onetype, type, formArgs, formArgsOpt, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+-----------^
+For the formal argument 'issue952.a.f' the type can only be derifed if there is a call to 'issue952.a'.
 
 one error.

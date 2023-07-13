@@ -438,8 +438,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Visi v,
           AbstractType t,
           String qname,
-          Expr initialValue,
-          AbstractFeature outerOfInitialValue)
+          Impl impl)
   {
     this(pos,
          v,
@@ -449,11 +448,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<Feature>(),
          new List<>(),
          null,
-         initialValue == null ? Impl.FIELD
-                              : new Impl(pos, initialValue, outerOfInitialValue));
-
-    if (PRECONDITIONS) require
-                         ((t == null) == (initialValue != null));
+         impl);
   }
 
 
@@ -485,7 +480,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this(pos,
          v,
          m,
-         new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         t == null ? NoType.INSTANCE: new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
          new List<Feature>(),
          new List<>(),
@@ -603,7 +598,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos2BeRemoved();
+    this._posOfReturnType =  r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos2BeRemoved();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1286,12 +1281,9 @@ public class Feature extends AbstractFeature implements Stmnt
             _selfType = tt.resolve(res, this);
           }
 
-        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeIfKnown() == null))
+        if (_impl._kind == Impl.Kind.FieldActual)
           {
-            _impl._initialValue.visit(new ResolveTypes(res),
-                                     true /* NYI: impl_outerOfInitialValue not set yet */
-                                     ? (Feature) outer().outer()  /* NYI: Cast! */:
-                                     _impl._outerOfInitialValue);
+            _impl.visitInitialValues(new ResolveTypes(res));
           }
 
         _state = State.RESOLVED_TYPES;
@@ -1428,20 +1420,19 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean containsOnlyDeclarations()
   {
-    boolean result = true;
-    switch (_impl._kind)
+    return switch (_impl._kind)
       {
-      case FieldInit:    // a field with initialization syntactic sugar
-      case FieldDef:     // a field with implicit type
-        result = false;
-      case Field:        // a field
-      case FieldActual:  // a field with implicit type taken from actual argument to call
-      case RoutineDef:   // normal feature with code and implicit result type
-      case Routine:      // normal feature with code
-        result = true;
-      }
-    return result;
-  };
+      case FieldInit,    // a field with initialization syntactic sugar
+           FieldDef      // a field with implicit type
+        -> false;
+      case Field,        // a field
+           FieldActual,  // a field with implicit type taken from actual argument to call
+           RoutineDef,   // normal feature with code and implicit result type
+           Routine       // normal feature with code
+        -> true;
+      default -> throw new Error("missing case "+_impl._kind);
+      };
+  }
 
 
   /**
@@ -1872,7 +1863,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (CHECKS) check
       (this.outer() == outer,
         Errors.count() > 0 ||
-        (_impl._kind != Impl.Kind.FieldDef &&
+        (_impl._kind != Impl.Kind.FieldDef    &&
          _impl._kind != Impl.Kind.FieldActual &&
          _impl._kind != Impl.Kind.RoutineDef)
         || _returnType == NoType.INSTANCE);
@@ -2151,9 +2142,10 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
+        result = _impl.inferredType(this);
+
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
-        result = from.typeIfKnown();
         if (result != null &&
             !result.isGenericArgument() &&
             result.featureOfType().isTypeFeature() &&

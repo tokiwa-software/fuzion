@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.TreeMap;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -86,14 +88,24 @@ public class Impl extends ANY
   }
 
 
-  AbstractFeature _outerOfInitialValue = null;
+  /**
+   * For FieldActual: All the actual values that were found for this argument
+   * field.
+   */
+  final List<Expr> _initialValues;
+
+  /**
+   * For FieldActual: The outer features for all the actual values that were
+   * found for this argument field.
+   */
+  final List<AbstractFeature> _outerOfInitialValues;
 
 
   public enum Kind
   {
     FieldInit,    // a field with initialization syntactic sugar
     FieldDef,     // a field with implicit type
-    FieldActual,  // an argument field with type defined by actual argument
+    FieldActual, // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
     TypeParameter,// a type parameter Field
@@ -109,7 +121,7 @@ public class Impl extends ANY
         {
           case FieldInit         : yield "field initialization";
           case FieldDef          : yield "field definition";
-          case FieldActual       : yield "actual argument";
+          case FieldActual      : yield "actual argument";
           case FieldIter         : yield "iterator";
           case Field             : yield "field";
           case TypeParameter     : yield "type parameter";
@@ -139,70 +151,25 @@ public class Impl extends ANY
    *
    * @param e the code or initial value
    *
-   * @param isDefinition true if this implementation is a definition
-   * using ":=", i.e., no type is needed.
-   *
    * @param kind the kind, must not be FieldActual.
    */
   public Impl(SourcePosition pos, Expr e, Kind kind)
   {
-    this(pos, e, null, kind);
-  }
-
-
-  /**
-   * Implementation of a argument field feature whose type if inferred from the
-   * actual argument.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param e the actual argument to a call to a.outer()
-   *
-   * @param outerOfInitialValue the outer feature that contains e.
-   */
-  public Impl(SourcePosition pos, Expr e, AbstractFeature outerOfInitialValue)
-  {
-    this(pos, e, outerOfInitialValue, Kind.FieldActual);
-  }
-
-
-  /**
-   * Implementation of a feature
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param e the code or initial value
-   *
-   * @param outerOfInitialValue for kind == FieldActual: the outer feature that contains e, null otherwise.
-   *
-   * @param kind the kind
-   */
-  private Impl(SourcePosition pos, Expr e, AbstractFeature outerOfInitialValue, Kind kind)
-  {
-    if (PRECONDITIONS) require
-                         (true || (kind == Kind.FieldActual) == (outerOfInitialValue != null)); // NYI
-
-    if (kind == Kind.FieldInit   ||
-        kind == Kind.FieldDef    ||
-        kind == Kind.FieldActual ||
-        kind == Kind.FieldIter   )
+    this._code = switch (kind)
       {
-        this._code = null;
-        this._initialValue = e;
-        this._outerOfInitialValue = outerOfInitialValue;
-      }
-    else
+      case Routine, RoutineDef, Of -> e;
+      default -> null;
+      };
+    this._initialValue = switch (kind)
       {
-        if (CHECKS) check
-          (kind == Kind.Routine    ||
-           kind == Kind.RoutineDef ||
-           kind == Kind.Of            );
-        this._code = e;
-        this._initialValue = null;
-      }
+      case FieldInit, FieldDef, FieldIter -> e;
+      default -> null;
+      };
 
     this.pos = pos;
     this._kind = kind;
+    this._initialValues        = kind == Kind.FieldActual ? new List<>() : null;
+    this._outerOfInitialValues = kind == Kind.FieldActual ? new List<>() : null;
   }
 
 
@@ -211,10 +178,7 @@ public class Impl extends ANY
    */
   public Impl(Kind kind)
   {
-    this._code = null;
-    this._initialValue = null;
-    this.pos = null;
-    this._kind = kind;
+    this(null, null, kind);
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -429,6 +393,144 @@ public class Impl extends ANY
 
 
   /**
+   * For an actual value passed to an argument field with this Impl, record the
+   * actual and its outer feature for type inference
+   *
+   * @param actl an actual argument expression
+   *
+   * @param outer the feature containing the actl expression
+   */
+  void addInitialValue(Expr actl, AbstractFeature outer)
+  {
+    if (_kind == Impl.Kind.FieldActual)
+      {
+        _initialValues.add(actl);
+        _outerOfInitialValues.add(outer);
+      }
+  }
+
+
+  /**
+   * visit all the initialvalues recorded for an FieldActual using
+   * addInitialValue.
+   *
+   * This is used to resolve types of the actual arguments when they are needed
+   * for type inference.
+   *
+   * @param v the visitor to use
+   */
+  void visitInitialValues(FeatureVisitor v)
+  {
+    for (var i = 0; i < _initialValues.size(); i++)
+      {
+        var iv = _initialValues.get(i);
+        var io = _outerOfInitialValues.get(i);
+        iv.visit(v, io);
+      }
+  }
+
+
+  /**
+   * Determine the type of a FieldActual by forming the union of the types of
+   * all actual values added by addInitialValue.
+   *
+   * @param formalArg the features whose Impl this is.
+   *
+   * @param reportError true to produce an error message, false to suppress
+   * this. Error messages are first suppressed until all intial values were
+   * found such that we can report all occurences of actuals and all actual
+   * types that were found.
+   */
+  AbstractType typeFromInitialValues(AbstractFeature formalArg, boolean reportError)
+  {
+    AbstractType result = Types.resolved.t_void;
+    for (var i = 0; i < _initialValues.size(); i++)
+      {
+        var iv = _initialValues.get(i);
+        var io = _outerOfInitialValues.get(i);
+        var t = iv.typeIfKnown();
+        if (t != null)
+          {
+            result = result.union(t);
+          }
+      }
+    if (reportError)
+      {
+        if (_initialValues.size() == 0)
+          {
+            AstErrors.noActualCallFound(formalArg);
+          }
+        else if (result == Types.t_UNDEFINED)
+          {
+            var types = new List<AbstractType>();
+            var positions = new TreeMap<AbstractType, List<SourcePosition>>();
+            for (var i = 0; i < _initialValues.size(); i++)
+              {
+                var iv = _initialValues.get(i);
+                var io = _outerOfInitialValues.get(i);
+                var t = iv.typeIfKnown();
+                if (t != null)
+                  {
+                    var l = positions.get(t);
+                    if (l == null)
+                      {
+                        l = new List<>();
+                        positions.put(t, l);
+                        types.add(t);
+                      }
+                    l.add(iv.pos());
+                  }
+              }
+            AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+          }
+      }
+
+    if (result == Types.t_UNDEFINED)
+      {
+        result = Types.t_ERROR;
+      }
+    return result;
+  }
+
+  /**
+   * For an Impl that uses type inference for the feature result type, this
+   * determines the actual result type from the initial value, the code or the
+   * actual arguments passed to a formal argument.
+   *
+   * @param f the feature this is the Impl of.
+   */
+  AbstractType inferredType(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (_kind == Kind.FieldDef    ||
+       _kind == Kind.FieldActual ||
+       _kind == Kind.RoutineDef     );
+
+    return switch (_kind)
+      {
+      case FieldDef    -> _initialValue.typeIfKnown();
+      case RoutineDef  -> _code.typeIfKnown();
+      case FieldActual -> typeFromInitialValues(f, false);
+      default -> throw new Error("missing case "+_kind);
+      };
+  }
+
+
+  /**
+   * Perform type checking and produce errors. In particular, this reports
+   * errors when type inference for FieldActual fails due to incompatible types
+   * or no actuals found.
+   */
+  public void checkTypes(AbstractFeature f)
+  {
+    if (_kind == Kind.FieldActual)
+      {
+        var ignore = typeFromInitialValues(f, true);
+      }
+  }
+
+
+  /**
    * toString
    *
    * @return
@@ -443,7 +545,7 @@ public class Impl extends ANY
         {
         case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
-        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";                break;
+        case FieldActual: result = " type_inferred_from_actual";                            break;
         case Field      : result = "";                                                      break;
         case TypeParameter:     result = "type";                                            break;
         case TypeParameterOpen: result = "type...";                                         break;

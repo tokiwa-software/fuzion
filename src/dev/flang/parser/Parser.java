@@ -922,6 +922,7 @@ argument    : visibility
 argType     : type
             | typeType
             | typeType COLON type
+            |
             ;
    */
   List<Feature> formArgs()
@@ -943,15 +944,32 @@ argType     : type
                                         t = skipColon() ? type()
                                                         : new Type(FuzionConstants.ANY_NAME);
                                       }
-                                    else
+                                    else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
                                         t = type();
                                       }
+                                    else
+                                      {
+                                        i = new Impl(Impl.Kind.FieldActual);
+                                        t = null;
+                                      }
                                     Contract c = contract();
                                     for (String s : n)
                                       {
-                                        result.add(new Feature(pos, v, m, t, s, c, i));
+                                        if (i._kind == Impl.Kind.FieldActual)
+                                          {
+                                            var arg = new Feature(pos,
+                                                                  Visi.PRIV,
+                                                                  m,
+                                                                  null,
+                                                                  s,
+                                                                  c,
+                                                                  new Impl(Impl.Kind.FieldActual));
+                                            result.add(arg);
+                                          }
+                                        else
+                                          result.add(new Feature(pos, v, m, t, s, c, i));
                                       }
                                   }
                                 while (skipComma());

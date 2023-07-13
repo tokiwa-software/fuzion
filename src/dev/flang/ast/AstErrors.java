@@ -1648,13 +1648,28 @@ public class AstErrors extends ANY
           "To solve this, please specify a result type explicitly.");
   }
 
-  static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
+  /**
+   * Helper to create a details message about types coming from different positions
+   *
+   * @param src where does a type come from, e.g., "block returns" or "actual is".
+   *
+   * @param srcs where does a type come from if it comes from several places, e.g., "blocks return" or "actuals are".
+   *
+   * @param types list of types, in the order they were found in the sources
+   *
+   * @param positions for each type in types, one or several positions that
+   * result in this type
+   *
+   * @return a detailed string explaining where all the types are derived from.
+   */
+  private static String typesMsg(String src, String srcs, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
   {
     StringBuilder typesMsg = new StringBuilder();
     for (var t : types)
       {
         var l = positions.get(t);
-        typesMsg.append(( l.size() == 1 ? "block returns" : "blocks return") + " value of type " + s(t) + " at ");
+        typesMsg.append(( l.size() == 1 ? src  + " value of type"
+                                        : srcs + " values of type") + " of type " + s(t) + " at ");
         boolean first = true;
         for (SourcePosition p : l)
           {
@@ -1662,11 +1677,36 @@ public class AstErrors extends ANY
             first = false;
           }
       }
+    return typesMsg.toString();
+  }
+
+  static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
+  {
     error(pos,
           msg,
           "Incompatible result types in different branches:\n" +
-          typesMsg);
+          typesMsg("block resturns", "blocks return", types, positions));
   }
+
+  static void incompatibleTypesOfActualArguments(AbstractFeature formalArg,
+                                                 List<AbstractType> types,
+                                                 Map<AbstractType, List<SourcePosition>> positions)
+  {
+    error(formalArg.pos(),
+          "Type inference from actual arguments failed due to incompatible types of actual arguments",
+          "For the formal argument " + s(formalArg) + " " +
+          "the following incompatible actual arguments where found for type inference:\n" +
+          typesMsg("actual is", "actuals are", types, positions));
+  }
+
+  static void noActualCallFound(AbstractFeature formalArg)
+  {
+    error(formalArg.pos(),
+          "Type inference from actual arguments failed since no actual call was found",
+          "For the formal argument " + s(formalArg) + " " +
+          "the type can only be derifed if there is a call to " + s(formalArg.outer()) + ".");
+  }
+
 
   static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType _type)
   {
