@@ -3173,13 +3173,19 @@ qualThisType: qualThis
    */
   Expr qualThisType()
   {
+    Expr result;
+    var p = tokenSourcePos();
+    var q = qualThis();
     var f = fork();
-    Expr result = qualThisAsThis();
-    var f2 = fork();
-    if (f2.skipDot() && f2.skip(Token.t_type))
+    if (f.skipDot() && f.skip(Token.t_type))
       {
-        var ignore = skipDot();
-        result = dotTypeSuffx(f.qualThisAsType());
+        skipDot();
+        skip(Token.t_type);
+        result = new DotType(p, new QualThisType(p, q));
+      }
+    else
+      {
+        result = new This(p, q);
       }
     return result;
   }
@@ -3254,20 +3260,17 @@ anonymous   : "ref"
    *
    * @param asType select to parse this as a list of names or as a Type.
    *
-   * @return List<String> or Type depending on asType being false or true
+   * @return non-empty list of names in the qualifier, excluding "this".
    *
 qualThis    : name ( dot name )* dot "this"
             ;
    */
-  Object qualThis(boolean asType /* should result be Type or This? */)
+  List<String> qualThis()
   {
-    SourcePosition pos;
-    List<String> q = asType ? null : new List<>();
-    Type result = null;
-    var done = false;
+    var q = new List<String>();
     do
       {
-        var n = name();
+        q.add(name());
         if (!skipDot())
           {
             if (isFullStop())
@@ -3279,45 +3282,9 @@ qualThis    : name ( dot name )* dot "this"
                 syntaxError("'.'", "qualThis");
               }
           }
-        pos = tokenSourcePos();
-        done = skip(Token.t_this);
-        if (asType)
-          {
-            result = new Type(pos,
-                              n,
-                              Call.NO_GENERICS,
-                              result,
-                              null,
-                              done ? Type.RefOrVal.ThisType
-                                   : Type.RefOrVal.LikeUnderlyingFeature);
-          }
-        else
-          {
-            q.add(n);
-          }
       }
-    while (!done);
-    return asType ? result : new This(pos, q);
-  }
-
-
-  /**
-   * Parse qualThis producing an instance of 'This'.  This is used withing the
-   * rule callOrFeatOrThis.
-   */
-  This qualThisAsThis()
-  {
-    return (This) qualThis(false);
-  }
-
-
-  /**
-   * Parse qualThis producing an instance of Type.  This is used within the
-   * rule thistype.
-   */
-  Type qualThisAsType()
-  {
-    return (Type) qualThis(true);
+    while (!skip(Token.t_this));
+    return q;
   }
 
 
@@ -3360,7 +3327,7 @@ qualThis    : name ( dot name )* dot "this"
     var result = isQualThisPrefix();
     if (result)
       {
-        var ignore = qualThisAsThis();
+        var ignore = qualThis();
       }
     return result;
   }
@@ -3691,7 +3658,7 @@ type        : qualThis
     AbstractType result;
     if (isQualThisPrefix())
       {
-        result = qualThisAsType();
+        result = new QualThisType(tokenSourcePos(), qualThis());
       }
     else
       {

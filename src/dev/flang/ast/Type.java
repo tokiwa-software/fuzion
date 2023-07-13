@@ -1064,7 +1064,7 @@ public class Type extends AbstractType
     if (!isGenericArgument())
       {
         var of = originalOuterFeature(outerfeat);
-        if (_outer != null)
+        if (_outer != null && !isThisType())
           {
             _outer = _outer.resolve(res, of);
             var ot = _outer.isGenericArgument() ?_outer.genericArgument().constraint() : _outer;
@@ -1072,11 +1072,23 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            var fo = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
-            feature = fo._feature;
-            if (_outer == null && !fo._outer.isUniverse())
+            if (this instanceof QualThisType q)
               {
-                _outer = fo._outer.thisType(fo.isNextInnerFixed());
+                // resolve the feature for a type `a.this.type`, so `a` has to be one of the outer features.
+                feature = This.getThisFeature(this, q._qual, of.isTypeFeature() ? of.typeFeatureOrigin() : of);
+                var f0o = feature.outer();
+                _outer = f0o == null || f0o.isUniverse() ? null : f0o.thisType(false);
+              }
+            else
+              {
+                if (CHECKS) check
+                  (!isThisType());
+                var fo = res._module.lookupType(pos2BeRemoved(), of, name, _outer == null);
+                feature = fo._feature;
+                if (_outer == null && !fo._outer.isUniverse())
+                  {
+                    _outer = fo._outer.thisType(fo.isNextInnerFixed());
+                  }
               }
           }
       }
