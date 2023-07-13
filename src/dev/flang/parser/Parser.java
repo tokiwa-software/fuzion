@@ -3687,7 +3687,6 @@ type        : qualThis
   {
     switch (current())
       {
-      case t_ref:
       case t_lparen: return true;
       default: return isNamePrefix();
       }
@@ -3754,8 +3753,7 @@ type        : qualThis
   /**
    * Parse onetype
    *
-onetype     : "ref" simpletype
-            | simpletype "->" simpletype
+onetype     : simpletype "->" simpletype
             | pTypeList "->" simpletype
             | pTypeList
             | LPAREN type RPAREN typeTail
@@ -3774,13 +3772,7 @@ typeOpt     : type
   {
     AbstractType result;
     SourcePosition pos = tokenSourcePos();
-    if (skip(Token.t_ref))
-      {
-        var r = simpletype(null);
-        r.setRef();
-        result = r;
-      }
-    else if (current() == Token.t_lparen)
+    if (current() == Token.t_lparen)
       {
         var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
         if (skip("->"))
@@ -3837,39 +3829,32 @@ typeOpt     : type
                       boolean allowTypeThatIsNotExpression)
   {
     boolean result;
-    if (skip(Token.t_ref))
+    var f = fork();
+    var f2 = fork();
+    if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
       {
-        result = allowTypeThatIsNotExpression && skipSimpletype();
-      }
-    else
-      {
-        var f = fork();
-        var f2 = fork();
-        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
+        result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
+        var p = tokenPos();
+        if (skip("->"))
           {
-            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
-            var p = tokenPos();
-            if (skip("->"))
-              {
-                result =
-                  // an lambda-expression would allow only arg names
-                  // '(x,y)->..', while a lambda-type can have arbitrary types
-                  // '(list bool, io.file.buffer) -> bool'.
-                  (allowTypeThatIsNotExpression ||
-                   f2.skipBracketTermWithNLs(PARENS,
-                                             () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
-                  skipType();
-              }
-            else
-              {
-                result = result && skipTypeTail();
-              }
-            result = result && (allowTypeInParentheses || p < tokenPos());
+            result =
+              // an lambda-expression would allow only arg names
+              // '(x,y)->..', while a lambda-type can have arbitrary types
+              // '(list bool, io.file.buffer) -> bool'.
+              (allowTypeThatIsNotExpression ||
+               f2.skipBracketTermWithNLs(PARENS,
+                                         () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
+              skipType();
           }
         else
           {
-            result = skipSimpletype() && (!skip("->") || skipSimpletype());
+            result = result && skipTypeTail();
           }
+        result = result && (allowTypeInParentheses || p < tokenPos());
+      }
+    else
+      {
+        result = skipSimpletype() && (!skip("->") || skipSimpletype());
       }
     return result;
   }

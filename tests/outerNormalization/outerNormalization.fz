@@ -32,17 +32,6 @@
 outerNormalization is
 
 
-  # call numeric.as_u8 via a ref.  This only works if the actual clazz is
-  # i32.as_u8, it would fail for (numeric i32).as_u8 or (integer i32).as_u8 since
-  # zero is abstract in those clazzes
-  #
-  test_as_u8 is
-    x ref i32 := 3
-    z := x.as_u8
-
-  say "test_as_u8.z is {test_as_u8.z}"
-
-
   # string.as_codepoints is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
@@ -104,11 +93,12 @@ outerNormalization is
       a T is abstract
       b T is a
 
-    j : n j is
+    rj ref : n j is
+    j : rj is
       a => j
       redef as_string => "a 'j'"
 
-    t(r ref j) is
+    t(r rj) is
       say "testNormalize: {r.b}"
 
     t j
@@ -125,11 +115,12 @@ outerNormalization is
       a i32 is abstract
       b i32 is a
 
-    j : n is
+    rj ref : n is
+    j : rj is
       a => 3
       redef as_string => "a 'j'"
 
-    t(r ref j) is
+    t(r rj) is
       say "testNormalize2: {r.b}"
 
     t j

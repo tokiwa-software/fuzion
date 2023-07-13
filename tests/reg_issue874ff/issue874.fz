@@ -151,7 +151,10 @@ say (test_cov.i false)
 #
 test_cov_DFA_pop is
 
-  n is
+  rn ref is
+    r String is abstract
+
+  n : rn is
     r =>
       x := n.this
       x.as_string
@@ -159,7 +162,7 @@ test_cov_DFA_pop is
   i : n is
 
   _ := i.r
-  o ref n := i
+  o rn := i
   _ := o.r
 
 test_cov_DFA_pop

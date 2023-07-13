@@ -122,7 +122,6 @@ private container_node(CTK type : property.hashable, CTV type, bmp u32, array ar
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     container_node (bmp ^ flag) tmp.as_array
 
-
   redef as_string => "container_node({array.as_string ", "})"
 
   as_list => array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list)
