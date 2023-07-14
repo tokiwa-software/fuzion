@@ -25,43 +25,43 @@
 
 # Set -- an abstract set of values
 #
-Set(E type : property.equatable) ref : Sequence E is
+public Set(E type : property.equatable) ref : Sequence E is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => size_option??
+  public redef finite => size_option??
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  size_option option i32 is nil
+  public size_option option i32 is nil
 
 
   # does this set contain the given value?
   #
-  contains (e E) bool is abstract
+  public contains (e E) bool is abstract
 
 
   # list representation of values in this set
   #
-  redef as_list list E is abstract
+  public redef as_list list E is abstract
 
 
   # add new element k to this set.
   #
-  add (k E) Set E is abstract
+  public add (k E) Set E is abstract
 
 
   # remove an element k from the set if it exists.
   # return the same set if it does not exist.
   #
-  remove (k E) Set E is abstract
+  public remove (k E) Set E is abstract
 
 
-  redef as_string =>
+  public redef as_string =>
     if is_empty
       "∅"
     else

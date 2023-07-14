@@ -1,1 +1,1 @@
-y => "a.y defined in module A"
+public y => "a.y defined in module A"

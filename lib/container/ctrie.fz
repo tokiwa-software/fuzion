@@ -290,8 +290,8 @@ private restart is
 private ctrie_ok is
 
 # unit type to indicate when value to lookup/remove is not found
-private not_found is
-  redef as_string => "not found"
+private:public not_found is
+  public redef as_string => "not found"
 
 
 # descriptor for double-compare-single-swap operation
@@ -318,7 +318,7 @@ private root_node(CTK type : property.hashable, CTV type) : choice (Indirection_
 
 
 # the ctrie
-ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
+private:public ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -560,7 +560,7 @@ is
 
 
   # lookup key k
-  lookup(k CTK) option CTV is
+  public lookup(k CTK) option CTV is
     r := read_root
     res := lookup r k 0 nil r.gen
     match res
@@ -603,7 +603,7 @@ is
 
   # add key value
   # if key is already present value is updated
-  add(k CTK, v CTV) unit is
+  public add(k CTK, v CTV) unit is
     r := read_root
     match add r k v 0 nil r.gen
       r restart =>
@@ -646,7 +646,7 @@ is
 
 
   # remove key from ctrie
-  remove(k CTK) choice not_found CTV is
+  public remove(k CTK) choice not_found CTV is
     r := read_root
     match remove r k 0 nil r.gen
       r restart => remove k
@@ -698,17 +698,17 @@ is
 
 
   # the size of the ctrie
-  redef size i32 is
+  public redef size i32 is
     items.count
 
 
   # lookup an element in this ctrie via bracket syntax
-  redef index [] (k CTK) option CTV is
+  public redef index [] (k CTK) option CTV is
     lookup k
 
 
   # take a snapshot of the ctrie
-  snapshot(read_only bool) ctrie CTK CTV is
+  public snapshot(read_only bool) ctrie CTK CTV is
     root := read_root
     expmain := gcas_read root
     descriptor := Rdcss_Descriptor root expmain (copy_to_gen root (root.gen +° 1))
@@ -720,14 +720,14 @@ is
 
 
   # a snapshot of the ctrie as sequence auf key-value tuples
-  redef items Sequence (tuple CTK CTV) is
+  public redef items Sequence (tuple CTK CTV) is
     snapshot true
       .read_root
       .as_list
 
 
   # initialize a new ctrie
-  type.empty =>
+  public type.empty =>
 
     initial_gen := 0
 
@@ -743,7 +743,7 @@ is
   #
   # example: ctrie.type.from_entries [(key1, value1), (key2, value2)]
   #
-  type.from_entries(kvs Sequence (tuple CTK CTV)) container.ctrie CTK CTV is
+  public type.from_entries(kvs Sequence (tuple CTK CTV)) container.ctrie CTK CTV is
 
     m := (container.ctrie CTK CTV).type.empty
     kvs.for_each (kv ->

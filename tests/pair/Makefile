@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = pair
+override NAME = test_pair
 include ../positive.mk

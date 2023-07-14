@@ -25,12 +25,12 @@
 
 # numeric_sequence -- a Sequence whose elements inherit from numeric
 #
-numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence N from, property.equatable is
+public numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence N from, property.equatable is
 
 
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
-  average option N is
+  public average option N is
     if is_empty
       nil
     else
@@ -41,7 +41,7 @@ numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence 
 
   # the variance of the sequence
   # https://en.wikipedia.org/wiki/Variance
-  variance option N is
+  public variance option N is
     match average
       nil => nil
       avg N =>
@@ -51,7 +51,7 @@ numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence 
 
 
   # minimum value in the sequence
-  min option N is
+  public min option N is
     if is_empty
       nil
     else
@@ -59,7 +59,7 @@ numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence 
 
 
   # maximum value in the sequence
-  max option N is
+  public max option N is
     if is_empty
       nil
     else
@@ -68,7 +68,7 @@ numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence 
 
   # the median of the sequence
   # https://en.wikipedia.org/wiki/Median
-  median option N is
+  public median option N is
     if is_empty
       nil
     else
@@ -81,7 +81,7 @@ numeric_sequence(N type : numeric, redef from Sequence N) : searchable_sequence 
 
   # equality check implementation for inherited property.equatable
   #
-  fixed type.equality(a, b container.numeric_sequence N) bool is
+  public fixed type.equality(a, b container.numeric_sequence N) bool is
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

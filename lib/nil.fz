@@ -29,9 +29,9 @@
 # not present, e.g, in an option.
 #
 #
-nil is
+public nil is
 
 
   # convert this to a string.
   #
-  redef as_string String is "--nil--"
+  public redef as_string String is "--nil--"

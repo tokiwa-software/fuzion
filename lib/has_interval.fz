@@ -25,17 +25,17 @@
 
 # has_interval -- feature for integers that can define an interval
 #
-has_interval : integer is
-  max  has_interval.this is abstract
+public has_interval : integer is
+  module max  has_interval.this is abstract
 /*
   zero T is abstract
   one  T is abstract
-  infix +  (other T) T is abstract
-  infix -  (other T) T is abstract
-  infix <= (other T) bool is abstract
-  infix >= (other T) bool is abstract
-  infix <  (other T) bool is abstract
-  infix >  (other T) bool is abstract
+  public infix +  (other T) T is abstract
+  public infix -  (other T) T is abstract
+  public infix <= (other T) bool is abstract
+  public infix >= (other T) bool is abstract
+  public infix <  (other T) bool is abstract
+  public infix >  (other T) bool is abstract
 */
 
   # defining an integer interval from this to other, both inclusive
@@ -45,31 +45,31 @@ has_interval : integer is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper has_interval.this) : container.Set has_interval.this is
+  public infix .. (upper has_interval.this) : container.Set has_interval.this is
 
-    lower has_interval.this is has_interval.this
+    public lower has_interval.this is has_interval.this
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
 
-    size has_interval.this is if lower ≤ upper then upper - lower + has_interval.this.type.one else has_interval.this.type.zero
+    public size has_interval.this is if lower ≤ upper then upper - lower + has_interval.this.type.one else has_interval.this.type.zero
 
     # apply function f to all elements in this interval
-    redef for_each(f Unary unit has_interval.this) unit is
+    public redef for_each(f Unary unit has_interval.this) unit is
       for
         x := lower, x + has_interval.this.type.one
       while x ≤ upper
         f x
 
     # create a stream of all the elements of this interval, in order.
-    redef as_stream =>
+    public redef as_stream =>
       ref : stream has_interval.this
         x := num_option lower
-        redef has_next bool is x.exists && (x.val ≤ upper)
-        redef next has_interval.this is res := x.val; set x := x +? has_interval.this.type.one; res
+        public redef has_next bool is x.exists && (x.val ≤ upper)
+        public redef next has_interval.this is res := x.val; set x := x +? has_interval.this.type.one; res
 
 
     # does this range contain the given value?
     #
-    contains (e has_interval.this) => lower ≤ e ≤ upper
+    public contains (e has_interval.this) => lower ≤ e ≤ upper
 
 
     # Create a Sequence that is stepping through this interval skipping values. For a
@@ -81,7 +81,7 @@ has_interval : integer is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step has_interval.this) : container.Set has_interval.this is
+    public infix : (step has_interval.this) : container.Set has_interval.this is
 
       # list representation of values in this interval
       #
@@ -100,17 +100,17 @@ has_interval : integer is
 
       # does this range contain the given value?
       #
-      contains (e has_interval.this) => (lower ≤ e ≤ upper) && ((e - lower) %% step)
+      public contains (e has_interval.this) => (lower ≤ e ≤ upper) && ((e - lower) %% step)
 
 
       # use map implementation from Sequence:
       #
-      map(B type, f Unary B has_interval.this)  => infix : .this.map_sequence f
+      public map(B type, f Unary B has_interval.this)  => infix : .this.map_sequence f
 
 
     # create a list from this interval
     #
-    redef as_list list has_interval.this is
+    public redef as_list list has_interval.this is
       cons (head has_interval.this) : Cons has_interval.this (list has_interval.this) is
         tail list has_interval.this is
           if (head ≥ upper) nil else cons head+has_interval.this.type.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is has_interval i32, it should be i32.
@@ -119,16 +119,16 @@ has_interval : integer is
 
     # use map implementation from Sequence:
     #
-    map(B type, f Unary B has_interval.this)  => map_sequence f
+    public map(B type, f Unary B has_interval.this)  => map_sequence f
 
 
     # string representation of this interval, e.g., "1..10"
     #
-    redef as_string => "$lower..$upper"
+    public redef as_string => "$lower..$upper"
 
 
   # the open interval from this to the maximum H value
-  postfix .. () infix .. is
+  public postfix .. () infix .. is
     has_interval.this..max
 
   # postfix .. : infix .. (max) is  # NYI: check: this should have the same effect using a sub-class

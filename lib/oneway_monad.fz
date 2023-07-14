@@ -29,7 +29,7 @@
 # a monadic feature that can be accessed only through the environment and
 # that will be replaced in the environment whenever a new instance is created.
 #
-oneway_monad(
+public oneway_monad(
 
   redef A type,
 

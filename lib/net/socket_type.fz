@@ -25,27 +25,27 @@
 # specify the communication semantics to
 # used in a socket.
 #
-socket_type is
+public socket_type is
 
   # connection-based byte-stream
   # this must be used for TCP
-  stream is
+  public stream is
 
 
   # connection-less messages with fixed maximum length
   # this must be used for UDP
-  datagram is
+  public datagram is
 
 
-  val : choice socket_type.stream datagram is
-    as_num i32 is
+  private:module val : choice socket_type.stream datagram is
+    module as_num i32 is
       match val.this
         socket_type.stream => 1
         datagram => 2
 
 
   # convenience feature to get the socket type by used protocol
-  by_protocol(p protocol.val) net.socket_type.val is
+  module by_protocol(p protocol.val) net.socket_type.val is
     match p
       protocol.tcp => net.socket_type.stream
       protocol.udp => net.socket_type.datagram

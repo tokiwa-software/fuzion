@@ -25,7 +25,7 @@
 
 # hash_map -- an immutable hash map from keys HK to values V
 #
-hash_map(HK type : property.hashable,
+public hash_map(HK type : property.hashable,
         redef V type,
         ks array HK,
         vs array V) : Map HK V
@@ -97,7 +97,7 @@ is
 
   # get the value k is mapped to
   #
-  index [] (k HK) option V is
+  public index [] (k HK) option V is
 
     retrieve (at i32) option V is
       match contents[at]
@@ -114,7 +114,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  items Sequence (tuple HK V) is
+  public items Sequence (tuple HK V) is
     contents
       .filter      (o -> o??)
       .map_sequence (o -> match o
@@ -125,7 +125,7 @@ is
   # this hash map as a human readable string
   # example: [(0,a),(1,b),(2,c),(3,d)]
   #
-  redef as_string =>
+  public redef as_string =>
     items
       .map_sequence (t -> "({t.values.0},{t.values.1})")
       .as_string
@@ -133,5 +133,5 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  type.empty => container.hash_map HK V [] []
+  public type.empty => container.hash_map HK V [] []
 

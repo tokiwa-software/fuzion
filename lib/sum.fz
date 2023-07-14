@@ -31,4 +31,4 @@
 #   say (sum l)     # '6'
 #
 #
-sum(T type : numeric, l Sequence T) => l.fold T.sum
+public sum(T type : numeric, l Sequence T) => l.fold T.sum

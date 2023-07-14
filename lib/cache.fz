@@ -65,7 +65,7 @@
 #
 # The cache implemented works on a global level.
 #
-cache(T type, f () -> T) T is
+public cache(T type, f () -> T) T is
 
   # use wrapper type because we do not want to prevent
   # the use of `state` for type T
