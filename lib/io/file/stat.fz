@@ -37,7 +37,7 @@ meta_data(
 
 # stat -- effect providing operations to retrieve file stats
 #
-private stat(ps Provided_Stat) : simple_effect is
+private stat(ps Stat_Provider) : simple_effect is
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -74,7 +74,7 @@ private stat(ps Provided_Stat) : simple_effect is
 
   # the default file stat provided
   #
-  type.default_provided_stat : io.file.Provided_Stat is
+  type.default_stat_provider : io.file.Stat_Provider is
     stats(path Any, meta_data_arr Any) =>
       fuzion.sys.fileio.stats path meta_data_arr
 
@@ -84,7 +84,7 @@ private stat(ps Provided_Stat) : simple_effect is
 
   # install default effect io.file.stat
   type.install_default =>
-    (io.file.stat default_provided_stat).default
+    (io.file.stat default_stat_provider).default
 
 
 # short-hand for accessing the stat effect in current environment
@@ -114,6 +114,6 @@ stat(
 
 # reference to the stats that could be provided
 #
-Provided_Stat ref is
+Stat_Provider ref is
   stats(path Any, meta_data_arr Any) bool is abstract
   lstats(path Any, meta_data_arr Any) bool is abstract

@@ -25,9 +25,9 @@
 
 
 # stdin -- effect providing several features
-# for consuming the given Byte_Input_Handler
+# for consuming the given Byte_Input_Provider
 #
-private stdin(ip io.Byte_Input_Handler) : simple_effect is
+private stdin(ip io.Byte_Input_Provider) : simple_effect is
 
 
   # read a single byte from stdin
@@ -163,22 +163,22 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # install default instance of stdin
   #
   type.install_default =>
-    (io.stdin (default_input_handler (error "not initialized"))).default
+    (io.stdin (default_input_provider (error "not initialized"))).default
 
 
-  # the default input handler reading bytes via fuzion.sys.stdin.next_byte
+  # the default input provider reading bytes via fuzion.sys.stdin.next_byte
   #
-  type.default_input_handler(r choice u8 io.end_of_file error) : io.Byte_Input_Handler is
+  type.default_input_provider(r choice u8 io.end_of_file error) : io.Byte_Input_Provider is
 
 
-    next io.Byte_Input_Handler is
+    next io.Byte_Input_Provider is
       v := fuzion.sys.stdin.next_byte
       if v = -1
-        default_input_handler io.end_of_file
+        default_input_provider io.end_of_file
       else if v < -1
-        default_input_handler (error "an error occurred while reading stdin")
+        default_input_provider (error "an error occurred while reading stdin")
       else
-        default_input_handler v.as_u8
+        default_input_provider v.as_u8
 
 
     get => r
@@ -193,13 +193,13 @@ stdin =>
 
 
 
-# Byte_Input_Handler -- abstract source of bytes
-Byte_Input_Handler ref is
+# Byte_Input_Provider -- abstract source of bytes
+Byte_Input_Provider ref is
 
-  # get the next instance of Byte_Input_Handler
+  # get the next instance of Byte_Input_Provider
   # which will contain the next byte or an error.
   #
-  next io.Byte_Input_Handler is abstract
+  next io.Byte_Input_Provider is abstract
 
 
   # get the byte or error stored in this instance

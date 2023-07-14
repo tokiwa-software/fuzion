@@ -25,14 +25,14 @@
 
 # err -- effect providing an output stream
 #
-private err (redef p Can_Print) : print_effect p is
+private err (redef p Print_Provider) : print_effect p is
 
 
   type.install_default =>
-    (io.err default_print_to_err).default
+    (io.err default_print_provider).default
 
 
-  type.default_print_to_err : io.Can_Print is
+  type.default_print_provider : io.Print_Provider is
     print(s Any) => fuzion.sys.err.print s
 
 
