@@ -60,8 +60,6 @@ public class Function extends ExprWithPos
 
 
   /**
-   * For function declaration of the kind "fun a.b.f", this is the call to f
-   *
    * For a function that declares a new anonymous feature, this will be the
    * resulting call that creates an instance of a subclass for Function/Routine
    * whose call() function implements the function.
@@ -149,36 +147,6 @@ public class Function extends ExprWithPos
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Load all features that are called by this expression.
-   *
-   * @param res the resolution instance.
-   *
-   * @param thiz the class that contains this expression.
-   */
-  void loadCalledFeature(Resolution res, AbstractFeature thiz)
-  {
-    if (this._call != null)
-      {
-        this._call.loadCalledFeature(res, thiz);
-        if (this._feature == null)
-          {
-            var f = this._call.calledFeature();
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null);
-
-            if (f != null)
-              {
-                if (f.isConstructor())
-                  {
-                    Errors.fatal("NYI: fun for constructor type not allowed");
-                  }
-              }
-          }
-      }
-  }
 
 
   /**
