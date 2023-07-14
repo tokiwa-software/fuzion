@@ -35,10 +35,10 @@
 # partially sorted arrays are thrown away.  This might be improved to use an
 # in-place heap sort to bring allocated memory down to O(n).
 #
-sorted_array
+public sorted_array
   (
   # array element type
-  redef T type,
+  T type,
 
   # orginal, unsorted Sequence
   #
@@ -128,7 +128,7 @@ is
   # this sorted_array, the index of one of the matching keys will be
   # returned, but is not specified which one.
   #
-  find_key (key T) option i32
+  public find_key (key T) option i32
     post
       match result
         i i32 => # sorted_array.this[i] = key, but we do not have 'infix =' available, so
@@ -156,7 +156,7 @@ is
   # the index of one matching key will be returned, but is not
   # specified which one.
   #
-  find (
+  public find (
 
     # cmp must be < 0 (> 0) if key is less (larger) than desired key.
     #
@@ -191,7 +191,7 @@ is
 #
 # See sorted_array from less_or_equal for details
 #
-sorted_array_of
+public sorted_array_of
   (
   T type : property.orderable,
   # orginal, unsorted Sequence

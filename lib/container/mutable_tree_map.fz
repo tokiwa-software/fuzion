@@ -39,19 +39,19 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  size i32 is
+  public size i32 is
     fold i32 0 ((i, _) -> i + 1)
 
 
   # get the value k is mapped to, or nil if none.
   #
-  index [] (k KEY) option VAL is
+  public index [] (k KEY) option VAL is
     get k
 
 
   # get a sequence of all key/value pairs in this map
   #
-  items Sequence (tuple KEY VAL) is
+  public items Sequence (tuple KEY VAL) is
     match root.get
       e Entry => e.items
       nil => (Sequence (tuple KEY VAL)).type.empty
@@ -59,7 +59,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
 
   # returns a string representation of the map
   #
-  redef as_string String is
+  public redef as_string String is
     "\{" +
       (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"
@@ -67,7 +67,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
 
   # freeze the map, such that it is no longer mutable afterwards
   #
-  freeze =>
+  public freeze =>
     if root.open
       root.close
 
@@ -84,7 +84,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # get the value stored in this map at key k, nil if k is not
   # contained in this map
   #
-  get(k KEY) option VAL is
+  public get(k KEY) option VAL is
     root.get ? nil => nil
              | e Entry => e.get k
 
@@ -94,7 +94,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  put(k KEY, v VAL) option VAL is
+  public put(k KEY, v VAL) option VAL is
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -148,7 +148,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # returns the value that k previously mapped to, or nil if
   # no mapping was actually removed
   #
-  remove(k KEY) option VAL is
+  public remove(k KEY) option VAL is
     # helper feature to remove a mapping from this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns the reference to the node that was worked on.
@@ -320,7 +320,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  fold(B type, init B, f (B, Entry LM KEY VAL) -> B) B is
+  public fold(B type, init B, f (B, Entry LM KEY VAL) -> B) B is
     private fold0(init B, node option (Entry LM KEY VAL)) B is
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
@@ -330,13 +330,13 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
 
   # returns an empty tree of elements of type A.
   #
-  type.empty container.mutable_tree_map LM KEY VAL is
+  public type.empty container.mutable_tree_map LM KEY VAL is
     container.mutable_tree_map LM KEY VAL
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL is
+  public type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL is
     new_map := empty
     new_map.put k v
 
@@ -345,7 +345,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
 
   # initialize a map from an array of key value tuples
   #
-  type.from_array(kvs array (tuple KEY VAL)) =>
+  public type.from_array(kvs array (tuple KEY VAL)) =>
     from_array kvs false
 
 
@@ -354,7 +354,7 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the array.
   #
-  type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL is
+  public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL is
     new_map := empty
     kvs.for_each (x ->
       new_map.put x.values.0 x.values.1

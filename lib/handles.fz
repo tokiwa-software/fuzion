@@ -36,16 +36,16 @@
 #
 #     ex_handles is
 #       hdl := handle 42
-#     
+#
 #       say hdl.get
-#     
+#
 #       x(h handle0 i32) unit is
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
-#     
+#
 #       x hdl
-#     
+#
 #       say hdl.get
 #
 # the example also shows the difference between handles and the mutate effect:
@@ -54,11 +54,11 @@
 # given to other features, only values can. handles essentially provide an
 # abstraction of pointers, implemented natively in Fuzion.
 #
-private handles(
+private:public handles(
   T, X type,
 
   # the inner value of this monad
-  v X,
+  public v X,
 
   # array containing values stored for the handles
   #
@@ -80,7 +80,7 @@ is
   #
   # the new handle can be accessed by 'result.last'
   #
-  new (
+  public new (
     # initial value refered to by the new handle
     w T
     ) handles T X
@@ -93,12 +93,12 @@ is
 
   # has one element been created using 'new'?
   #
-  has_last => count > 0
+  public has_last => count > 0
 
 
   # return the last handle that was created by 'new'
   #
-  last
+  public last
     pre
       has_last
    =>
@@ -109,7 +109,7 @@ is
   # in the current environment
   #
   /* env */
-  create (
+  public create (
     # initial value refered to by the new handle
     w T
     )
@@ -119,7 +119,7 @@ is
 
   # get the value refered to by a given handle
   #
-  get (
+  public get (
     # a handle created by 'new'
     h handle0 T
     )
@@ -129,7 +129,7 @@ is
 
   # create a new instance with new value refered to by a given handle
   #
-  put (
+  public put (
     # a handle created by 'new'
     h handle0 T,
 
@@ -142,7 +142,7 @@ is
   # create a new instance with the value refered to by a given handle read and
   # updated.
   #
-  update (
+  public update (
     # a handle created by 'new'
     h handle0 T,
 
@@ -167,27 +167,27 @@ is
     handles T X v (ar.put x (f ar[x])) mode
 
 
-  infix >>= (f X -> handles T X) => bind X f
+  public infix >>= (f X -> handles T X) => bind X f
 
-  bind(B type, f X -> handles T B) handles T B is
+  public bind(B type, f X -> handles T B) handles T B is
     handles T B (f v).v ar effect_mode.plain
 
-  return( B type, w B) => handles T B w ar effect_mode.plain
+  public return( B type, w B) => handles T B w ar effect_mode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
-handles(T type, rr ()->unit) =>
+public handles(T type, rr ()->unit) =>
   handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles_(T type) => handles T unit unit (array T 0 x->do) effect_mode.plain
+public handles_(T type) => handles T unit unit (array T 0 x->do) effect_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
-handles(T type) =>
+public handles(T type) =>
   (handles_type T).install_default
   (handles T unit).env
 
@@ -204,18 +204,18 @@ is
 
   # set value stored in this handle to new_x
   #
-  put(new_x T) is
+  public put(new_x T) is
     _ := update old_x->new_x
 
   # update value stored in this handle using f.
   #
-  update(f T->T) =>
+  public update(f T->T) =>
     (handles T).update0 x f
     get
 
   # get value stored in this handle
   #
-  get =>
+  public get =>
     (handles T).ar[x]
 
 
@@ -234,4 +234,4 @@ handles_type(T type) is
 #
 # this uses the handles instance from the current environment
 #
-handle(T type, v T) => (handles T).create v
+public handle(T type, v T) => (handles T).create v

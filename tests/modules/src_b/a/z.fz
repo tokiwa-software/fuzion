@@ -1,1 +1,1 @@
-z => "a.z defined in module B"
+public z => "a.z defined in module B"

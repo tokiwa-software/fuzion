@@ -1,0 +1,15 @@
+m =>
+  say "calling b.hello"
+  b.hello
+
+  say "calling b.hello3"
+  b.hello3
+
+  say "calling b.ret_a.hello_a"
+  b.ret_a.hello_a
+
+  say "calling b.ret_b.hello_a"
+  b.ret_b.hello_a
+
+  # NYI this should fail since aa is private
+  b.get_aa.aaa

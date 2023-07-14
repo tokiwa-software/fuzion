@@ -30,7 +30,7 @@
 #
 # returns: iterations per second
 #
-bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
+public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
   start := fuzion.std.nano_time
 
   is_warmup => fuzion.std.nano_time - start < warm_up_nano_seconds
@@ -50,5 +50,5 @@ bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
 #
 # returns: iterations per second
 #
-bench(f ()->unit, milli_seconds i32) f64 is
+public bench(f ()->unit, milli_seconds i32) f64 is
   bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)

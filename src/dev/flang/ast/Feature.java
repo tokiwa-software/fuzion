@@ -344,7 +344,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Visi.PRIV,
+                       Visi.PRIVPUB, // e.g. loopXstreamY
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),

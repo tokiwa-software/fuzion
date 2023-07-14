@@ -25,13 +25,13 @@
 
 # write -- effect providing writing operations for files
 #
-private write(fwh File_Write_Handler) : simple_effect is
+public write(fwh File_Write_Handler) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
   # this might overwrite parts or all of an existing file.
   #
-  write(fd i64, content array u8) =>
+  public write(fd i64, content array u8) =>
     tmp := fwh.write fd content unit
     replace
     tmp
@@ -40,7 +40,7 @@ private write(fwh File_Write_Handler) : simple_effect is
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
   # in case of successful creation a unit type will be the outcome
   #
-  create_dir(
+  public create_dir(
              # the (relative or absolute) dir name, using platform specific path separators
              path String) =>
     tmp := fwh.mkdir path
@@ -67,7 +67,7 @@ private write(fwh File_Write_Handler) : simple_effect is
 
 # short-hand for accessing write effect in current environment
 #
-write =>
+public write =>
   write.type.install_default
   write.env
 

@@ -57,7 +57,7 @@ is
 # panic with no argument returns panic.env, the currently installed
 # panic provider.
 #
-panic =>
+public panic =>
   panic.type.install_default
   panic.env
 
@@ -65,12 +65,12 @@ panic =>
 # panic with a msg argument calls panic.panic msg, i.e., it uses the
 # current panic effect to panic with the given message.
 #
-panic(msg String) => panic.panic msg
+public panic(msg String) => panic.panic msg
 
 
 # Panic_Provider -- abstract panic
 #
-Panic_Provider ref is
+public Panic_Provider ref is
 
   # panic with the given message
   #
@@ -86,6 +86,6 @@ Panic_Provider ref is
   # `code` on it. In case of an abort, return `def()` (NYI: def should be
   # removed and the result of do_panic should be returned instead).
   #
-  use(R type, code, def ()->R) =>
+  public use(R type, code, def ()->R) =>
     p := panic Panic_Provider.this unit
     p.run code unit->def()

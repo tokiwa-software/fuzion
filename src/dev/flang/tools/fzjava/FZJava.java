@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.fzjava;
 
 import dev.flang.ast.AbstractFeature;
-
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 

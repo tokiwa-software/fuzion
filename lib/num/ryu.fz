@@ -31,25 +31,25 @@
 #
 # NYI lacks documentation
 #
-ryū is
+public ryū is
 
 
   # constructor for rounding mode
   # see below for predefined rounding modes
   #
-  rounding_mode(accept_upper_bound, accept_lower_bound bool -> bool) is
+  public rounding_mode(accept_upper_bound, accept_lower_bound bool -> bool) is
 
 
   # rounding mode 'conservative', never accepts lower/upper bound
   #
-  rounding_conservative := (rounding_mode (is_even)->false (is_even)->false)
+  public rounding_conservative := (rounding_mode (is_even)->false (is_even)->false)
 
 
   # rounding mode 'even', chooses the closest even number.
   # examples: 0.5 => 0
   #           1.5 => 2
   #
-  rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
+  public rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
 
 
   # convert f64 to string

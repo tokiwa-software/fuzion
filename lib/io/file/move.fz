@@ -25,7 +25,7 @@
 
 # move -- effect wrapping the file move operation
 #
-private move(mop Move_Operation) : simple_effect is
+public move(mop Move_Operation) : simple_effect is
 
   # moves file/dir from an old path to a the new path
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
@@ -60,7 +60,7 @@ private move(mop Move_Operation) : simple_effect is
 # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
 # returns a unit type as outcome in case of success and error in case of failure
 #
-move(
+public move(
      # the old (relative or absolute) file name, using platform specific path separators
      old_path String,
      # the new (relative or absolute) file name, using platform specific path separators

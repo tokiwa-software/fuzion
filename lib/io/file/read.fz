@@ -25,7 +25,7 @@
 
 # read -- effect providing byte reading operations from files
 #
-private read(ro Read_Operation) : simple_effect is
+public read(ro Read_Operation) : simple_effect is
 
 
   # how much of a file do we read at a time, in bytes
@@ -37,7 +37,7 @@ private read(ro Read_Operation) : simple_effect is
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  read_file(fd i64) outcome (array u8) is
+  public read_file(fd i64) outcome (array u8) is
     empty array u8 := []
     content := read_file fd empty
 
@@ -82,7 +82,7 @@ private read(ro Read_Operation) : simple_effect is
 
 # short-hand for accessing read effect in current environment
 #
-read =>
+public read =>
   read.type.install_default
   read.env
 

@@ -32,18 +32,21 @@ import dev.flang.ast.Consts;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourceFile;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 
 /**
@@ -259,13 +262,62 @@ public abstract class Module extends ANY
           { // existing redefines f, so use existing
             f = existing;
           }
-        else if (existing == f && !existing.generics().equals(f.generics()) ||
+        else if ((existing == f && !existing.generics().equals(f.generics()) ||
                  existing != f && declaredFeatures(outer).get(fn) == null)
+                 && VisibleAt(existing, outer)
+                 && VisibleAt(f, outer)
+                 )
           { // NYI: Should be ok if existing or f is abstract.
             AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
           }
       }
-    set.put(fn, f);
+    // NYI this currently breaks e.g. markUsed/isUsed, findRedfinition()
+    // if (typeVisible(pos.pos()._sourceFile, f))
+    //   {
+        set.put(fn, f);
+    // }
+  }
+
+
+  /**
+   * Is type defined by feature `af` visible in file `usedIn`?
+   * If `af` does not define a type, result is false.
+   *
+   * @param usedIn
+   * @param af
+   * @return
+   */
+  protected boolean typeVisible(SourceFile usedIn, AbstractFeature af)
+  {
+    var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
+    var definedIn = af.pos()._sourceFile;
+    var v = af.visibility();
+
+    // NYI check if all generics visible?
+    return af.definesType() && (usedIn.sameAs(definedIn)
+      || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
+      || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
+  }
+
+
+  /**
+   * Is `a` visible at feature `b`?
+   *
+   * @param a
+   * @param b
+   * @return
+   */
+  protected boolean VisibleAt(AbstractFeature a, AbstractFeature b)
+  {
+    return
+      // same file
+      a.pos()._sourceFile.sameAs(b.pos()._sourceFile)
+      // same module
+      || a.visibility() != Visi.PRIV && a instanceof Feature && b instanceof Feature
+      // existing is public
+      || a.visibility() == Visi.PRIVPUB
+      || a.visibility() == Visi.MODPUB
+      || a.visibility() == Visi.PUB;
   }
 
 
@@ -313,7 +365,7 @@ public abstract class Module extends ANY
                     // * same as previous, but there is some syntax for 'D' to
                     //   chose 'a.[B].f' or 'a.[C].f'.
                     //
-                    if (existing != null)
+                    if (existing != null && f != existing)
                       {
                         AstErrors.duplicateFeatureDeclaration(f.pos(), outer, s.get(fn));
                       }

@@ -166,7 +166,6 @@ floating_point_numbers is
   generic_tests f64
 
 
-
   # cast_to_f32, 0, -∞, ∞
   chck ((u32 0x_8000_0000).cast_to_f32 = (-f32.type.zero))             "cast_to_f32 works, bit representation for 0 is correct"
   chck ((u32 0x_FF80_0000).cast_to_f32 = (f32.type.negative_infinity)) "cast_to_f32 works, bit representation for -∞ is correct"

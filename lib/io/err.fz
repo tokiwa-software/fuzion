@@ -25,7 +25,7 @@
 
 # err -- effect providing an output stream
 #
-private err (redef p Can_Print) : print_effect p is
+public err (p Can_Print) : print_effect p is
 
 
   type.install_default =>
@@ -38,6 +38,6 @@ private err (redef p Can_Print) : print_effect p is
 
 # short-hand for accessing err effect in current environment
 #
-err =>
+public err =>
   err.type.install_default
   io.err.env

@@ -25,7 +25,7 @@
 
 # seek -- effect providing stream seeking operations
 #
-private seek(ps Provided_Seek) : simple_effect is
+public seek(ps Provided_Seek) : simple_effect is
 
   # seek offset in the stream represented by fd
   # returns an outcome i64 that represents the new offset

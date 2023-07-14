@@ -40,4 +40,4 @@
 # If the program is compiled, not interpreted, then the value of this option
 # at compile time will be used.
 #
-safety bool is intrinsic
+public safety bool is intrinsic

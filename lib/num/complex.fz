@@ -28,9 +28,9 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex (C type : numeric,
-         real,    # real part
-         imag C   # imaginary part
+public complex (C type : numeric,
+         public real,    # real part
+                imag C   # imaginary part
          ) : numeric
 is
 
@@ -39,11 +39,11 @@ is
   thiz => complex real imag
 
   # basic operations
-  fixed redef prefix + => thiz
-  fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
-  fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
-  fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
-  fixed redef infix / (b complex.this)
+  public fixed redef prefix + => thiz
+  public fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
+  public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
+  public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  public fixed redef infix / (b complex.this)
     pre
       # NYI: use type features
       # safety: b != zero
@@ -55,7 +55,7 @@ is
 
   # equality
   #
-  fixed type.equality(a, b num.complex C) bool is
+  public fixed type.equality(a, b num.complex C) bool is
     a.real = b.real && a.imag = b.imag
 
 
@@ -63,14 +63,14 @@ is
   #
   # NYI: Does this make sense mathematically?
   #
-  fixed type.lteq(a, b num.complex C) bool is
+  public fixed type.lteq(a, b num.complex C) bool is
     a.real ≤ b.real
 
 
-  abs² => real*real+imag*imag
+  public abs² => real*real+imag*imag
 
 
-  redef as_string =>
+  public redef as_string =>
     si :=
       for c in ($imag).as_codepoints
       until !("0123456789.+-".contains c)
@@ -83,17 +83,17 @@ is
 
   # identity element for 'infix +'
   #
-  fixed type.zero num.complex C is
+  public fixed type.zero num.complex C is
     num.complex C.zero C.zero
 
 
   # identity element for 'infix *'
   #
-  fixed type.one num.complex C is
+  public fixed type.one num.complex C is
     num.complex C.one C.zero
 
 
   # the imaginary unit
   #
-  fixed type.i num.complex C is
+  public fixed type.i num.complex C is
     num.complex C.zero C.one

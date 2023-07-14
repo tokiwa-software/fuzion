@@ -1,0 +1,9 @@
+calling b.hello
+hello from b
+calling b.hello3
+hello2 from a
+calling b.ret_a.hello_a
+hello_a from a
+calling b.ret_b.hello_a
+hello_a from b
+aaa

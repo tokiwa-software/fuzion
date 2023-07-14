@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-uint (b Sequence u32, _ unit) : has_interval
+private:public uint (b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.
@@ -36,17 +36,17 @@ is
   # bitwise operations
 
   # bitwise and
-  fixed infix & (other uint) uint is
+  public fixed infix & (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x&y) unit
 
   # bitwise or
-  fixed infix | (other uint) uint is
+  public fixed infix | (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x|y) unit
 
   # bitwise xor
-  fixed infix ^ (other uint) uint is
+  public fixed infix ^ (other uint) uint is
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x^y) unit
 
@@ -54,7 +54,7 @@ is
   # shift operations
 
   # shift right
-  fixed infix >> (other uint) uint
+  public fixed infix >> (other uint) uint
   pre other ≤ uint i32.type.max.as_u64
   is
     if other = uint.type.zero
@@ -74,7 +74,7 @@ is
 
 
   # shift left
-  fixed infix << (other uint) uint
+  public fixed infix << (other uint) uint
   pre other ≤ uint i32.type.max.as_u64
   is
     if other = uint.type.zero
@@ -142,7 +142,7 @@ is
 
 
   # add two unsigned ints
-  fixed infix +  (other uint) uint is
+  public fixed infix +  (other uint) uint is
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
       .reverse
@@ -159,7 +159,7 @@ is
 
 
   # subtract other from this unsigned int
-  fixed infix - (other uint) uint
+  public fixed infix - (other uint) uint
   pre thiz ≥ other
   is
     two_pow_32 := ((u64 1)<<32)
@@ -186,7 +186,7 @@ is
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
-  fixed infix *  (other uint) uint is
+  public fixed infix *  (other uint) uint is
     data
       .reverse
       .indexed
@@ -207,7 +207,7 @@ is
 
 
   # divide these unsigned ints
-  fixed infix /  (other uint) uint
+  public fixed infix /  (other uint) uint
   pre other != uint.type.zero
   is
     (quotient,_) := (divide_with_remainder other)
@@ -216,14 +216,14 @@ is
 
   # modulo
   # returns the remainder of the division
-  fixed infix %  (other uint) uint is
+  public fixed infix %  (other uint) uint is
     (_,remainder) := (divide_with_remainder other)
     remainder
 
 
   # exponentation operator:
   # this uint to the power of other
-  fixed infix ** (other uint) uint
+  public fixed infix ** (other uint) uint
   is
     if other = uint.type.zero
       uint.type.one
@@ -263,50 +263,50 @@ is
 
   # checks if operations are allowed
 
-  fixed prefix -! bool is thiz = uint.type.zero
-  fixed infix +! (other uint) bool is true
-  fixed infix -! (other uint) bool is thiz ≥ other
-  fixed infix *! (other uint) bool is true
-  fixed infix /! (other uint) bool is other != uint.type.zero
-  fixed infix %! (other uint) bool is true
-  fixed infix **!(other uint) bool is true
+  public fixed prefix -! bool is thiz = uint.type.zero
+  public fixed infix +! (other uint) bool is true
+  public fixed infix -! (other uint) bool is thiz ≥ other
+  public fixed infix *! (other uint) bool is true
+  public fixed infix /! (other uint) bool is other != uint.type.zero
+  public fixed infix %! (other uint) bool is true
+  public fixed infix **!(other uint) bool is true
 
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  fixed infix **?(other uint) num_option uint is thiz ** other
-  fixed infix **^(other uint) uint is thiz ** other
+  public fixed infix **?(other uint) num_option uint is thiz ** other
+  public fixed infix **^(other uint) uint is thiz ** other
 
-  fixed type.zero uint is
+  module fixed type.zero uint is
     uint [u32 0] unit
 
-  fixed type.one uint is
+  module fixed type.one uint is
     uint [u32 1] unit
 
   thiz => uint b unit
 
 
   # this uint as an i32
-  as_i32 i32
+  public as_i32 i32
   pre as_u32 ≤ i32.type.max.as_u32
   is
     as_u32.as_i32
 
 
   # this uint as an i64
-  as_i64 i64
+  public as_i64 i64
   is
     as_u64.as_i64
 
 
   # this uint as an u8
-  as_u8 u8
+  public as_u8 u8
   is
     as_u32.as_u8
 
 
   # this uint as an u32
-  as_u32 u32
+  public as_u32 u32
   pre
     data.count ≤ 1
   is
@@ -314,7 +314,7 @@ is
 
 
   # this uint as an u64
-  as_u64 u64
+  public as_u64 u64
   pre data.count ≤ 2
   is
     if data.count = 2
@@ -324,7 +324,7 @@ is
 
 
   # this uint as an int
-  as_int int
+  public as_int int
   is
     int num.plus (uint b unit)
 
@@ -341,7 +341,7 @@ is
       q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
 
 
-  redef as_string String is
+  public redef as_string String is
     if thiz = uint.type.zero
       "0"
     else
@@ -355,5 +355,5 @@ is
 
 
 # shorthand to create an uint via an u64
-uint (val u64) uint is
+public uint (val u64) uint is
   uint.type.from_u64 val

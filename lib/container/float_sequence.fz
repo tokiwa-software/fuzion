@@ -31,21 +31,21 @@
 
 # float_sequence -- a Sequence whose elements inherit from float
 #
-float_sequence(F type : float, redef from Sequence F) : numeric_sequence F from is
+public float_sequence(F type : float, from Sequence F) : numeric_sequence F from is
 
   # create a list from this Sequence.
   #
-  redef as_list => from.as_list
+  public redef as_list => from.as_list
 
 
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
-  std_dev =>
+  public std_dev =>
     variance.map (x -> F.sqrt x)
 
 
   # the euclidean norm of this sequence
   # i.e. the square of the sum of squares of this sequence
   #
-  euclidean_norm F is
+  public euclidean_norm F is
     F.sqrt ((map_sequence (x)->x**F.two).fold F.sum)

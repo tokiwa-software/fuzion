@@ -1,0 +1,17 @@
+public b : a is
+
+  # reuse hello without, which is private in a
+  public hello is
+    say "hello from b"
+
+  public hello3 is
+    _ := hello2 # calling hello2 visibile only in module
+
+  public ret_a a is
+    a
+
+  public ret_b b.this is
+    b.this
+
+  public redef hello_a unit is
+    say "hello_a from b"

@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-int (s num.sign, n uint) : has_interval
+module:public int (s num.sign, n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
@@ -54,7 +54,7 @@ is
 
 
   # add this int to other
-  fixed infix +  (other int) int is
+  public fixed infix +  (other int) int is
     if ns = other.ns
       int ns n+other.n
     else
@@ -64,7 +64,7 @@ is
 
 
   # subtract other from this int
-  fixed infix - (other int) int is
+  public fixed infix - (other int) int is
     match other.ns
       num.plus =>
         match ns
@@ -85,12 +85,12 @@ is
 
 
   # multiply this int by other
-  fixed infix *  (other int) int is
+  public fixed infix *  (other int) int is
     int (result_sign_mul_div other) n*other.n
 
 
   # divide this int by other
-  fixed infix /  (other int) int
+  public fixed infix /  (other int) int
   pre other != int.type.zero
   is
     s num.sign := result_sign_mul_div other
@@ -99,13 +99,13 @@ is
 
   # modulo, returns the remainder of the
   # division of this int by other
-  fixed infix %  (other int) int is
+  public fixed infix %  (other int) int is
     int ns n%other.n
 
 
   # exponentation operator:
   # this int to the power of other
-  fixed infix ** (other int) int
+  public fixed infix ** (other int) int
   pre other ≥ int.type.zero
   is
     match s
@@ -119,23 +119,23 @@ is
   # except for division where we need to
   # check for division by zero
 
-  fixed prefix -! bool is true
-  fixed infix +! (other int) bool is true
-  fixed infix -! (other int) bool is true
-  fixed infix *! (other int) bool is true
-  fixed infix /! (other int) bool is
+  public fixed prefix -! bool is true
+  public fixed infix +! (other int) bool is true
+  public fixed infix -! (other int) bool is true
+  public fixed infix *! (other int) bool is true
+  public fixed infix /! (other int) bool is
     other != int.type.zero
-  fixed infix %! (other int) bool is true
+  public fixed infix %! (other int) bool is true
 
-  fixed infix **!(other int) bool is
+  public fixed infix **!(other int) bool is
     other ≥ int.type.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  fixed infix **?(other int) num_option int is
+  public fixed infix **?(other int) num_option int is
     match other.ns
       num.plus => thiz ** other
       num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  fixed infix **^(other int) int is
+  public fixed infix **^(other int) int is
     match other.ns
       num.plus => thiz ** other
       num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
@@ -158,43 +158,43 @@ is
           num.plus => true
           num.minus => b.n ≤ a.n
 
-  redef as_string String is
+  public redef as_string String is
     s.as_string + n.as_string
 
 
   # this int as an i32
-  as_i32 i32 is
+  public as_i32 i32 is
     n.as_i32
 
 
   # this int as an i64
-  as_i64 i64 is
+  public as_i64 i64 is
     n.as_i64
 
 
   # this int as an u8
-  as_u8 u8
+  public as_u8 u8
   pre s.is_plus
   is
       n.as_u8
 
 
   # this int as an u32
-  as_u32 u32
+  public as_u32 u32
   pre s.is_plus
   is
       n.as_u32
 
 
   # this int as an u64
-  as_u64 u64
+  public as_u64 u64
   pre s.is_plus
   is
     n.as_u64
 
 
   # this int as an uint
-  as_uint uint
+  public as_uint uint
   pre s.is_plus
   is
     n
@@ -212,16 +212,16 @@ is
 
 
   # helper feature to init int via a u64
-  type.from_u64(val u64) int is
+  public type.from_u64(val u64) int is
     int num.plus (uint val)
 
 
   # helper feature to init int via an i32
-  type.from_i32(val i32) int is
+  public type.from_i32(val i32) int is
     from_i64 val.as_i64
 
 
 
 # shorthand to create an int via an i64
-int (val i64) int is
+public int (val i64) int is
   int.type.from_i64 val

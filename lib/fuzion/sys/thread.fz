@@ -25,12 +25,12 @@
 
 # fuzion.sys.thread -- low-level feature to manage threads
 #
-private thread is
+module thread is
 
 
   # intrinsic to spawn a new thread
   #
-  private spawn(code ()->unit) =>
+  module spawn(code ()->unit) =>
     Do_Call ref : Function unit is
       call =>
         code()
@@ -41,4 +41,4 @@ private thread is
 
   # intrinsic to join with a terminated thread
   #
-  private join0(thread_id i64) unit is intrinsic
+  module join0(thread_id i64) unit is intrinsic

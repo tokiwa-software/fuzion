@@ -69,7 +69,7 @@ public fuzion.java is
 
   # A Java array
   #
-  public Array(redef T type, private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
+  public Array(T type, private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
   is
     length                  => array_length T Array.this
     redef finite            => true
@@ -100,7 +100,7 @@ public fuzion.java is
   #
   public Java_String(private redef Java_Ref Any) ref : String, Java_Object Java_Ref
   is
-    utf8 => (java_string_to_string Java_String.this).utf8
+    public utf8 => (java_string_to_string Java_String.this).utf8
 
 
   # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').

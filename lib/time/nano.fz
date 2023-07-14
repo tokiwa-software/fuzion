@@ -34,16 +34,16 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-private nano (p Nano_Time_Provider) : simple_effect is
+public nano (p Nano_Time_Provider) : simple_effect is
 
   # no guarantee can be given for precision nor resolution
-  read =>
+  public read =>
     res := p.read
     replace
     res
 
   # no guarantee can be given for precision nor resolution
-  sleep(d time.duration) =>
+  public sleep(d time.duration) =>
     res := p.sleep d
     replace
     res
@@ -65,7 +65,7 @@ private nano (p Nano_Time_Provider) : simple_effect is
 
 # short-hand for accessing time.nano effect in current environment
 #
-nano =>
+public nano =>
   nano.type.install_default
   nano.env
 

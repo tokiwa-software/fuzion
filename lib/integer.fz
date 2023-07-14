@@ -29,43 +29,43 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer : numeric is
+module:public integer : numeric is
 
   # division remainder
-  redef infix % (other integer.this) integer.this
+  public redef infix % (other integer.this) integer.this
     pre
       safety: other != integer.this.type.zero
   is abstract
 
   # test divisibility by other
-  infix %% (other integer.this) bool
+  public infix %% (other integer.this) bool
     pre
       safety: other != integer.this.type.zero
   is
     integer.this % other = integer.this.type.zero
 
   # bitwise operations
-  infix &  (other integer.this) integer.this is abstract
-  infix |  (other integer.this) integer.this is abstract
-  infix ^  (other integer.this) integer.this is abstract
+  public infix &  (other integer.this) integer.this is abstract
+  public infix |  (other integer.this) integer.this is abstract
+  public infix ^  (other integer.this) integer.this is abstract
 
   # bitwise NOT
-  prefix ~ integer.this
+  public prefix ~ integer.this
     pre
       is_bounded
   is abstract
 
   # bitwise NOT (Unicode alias)
-  prefix ¬ integer.this is
+  public prefix ¬ integer.this is
     ~integer.this
 
   # shift operations
-  infix >> (other integer.this) integer.this
+  public infix >> (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
   is abstract
 
-  infix << (other integer.this) integer.this
+  public infix << (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
   is abstract
@@ -78,7 +78,7 @@ integer : numeric is
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
-  gcd(b integer.this) integer.this
+  public gcd(b integer.this) integer.this
     pre
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
@@ -90,22 +90,22 @@ integer : numeric is
 
 
   # create a fraction
-  infix /-/ (other integer.this) => (num.fraction integer.this other).reduce
+  public infix /-/ (other integer.this) => (num.fraction integer.this other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  infix ⁄ (other integer.this) => integer.this /-/ other
+  public infix ⁄ (other integer.this) => integer.this /-/ other
 
 
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
   #
-  redef as_string String is integer.this.as_string 10
+  public redef as_string String is integer.this.as_string 10
 
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  as_string(base u32) String : character_encodings
+  public as_string(base u32) String : character_encodings
     pre
       debug: 1 < base ≤ 36
   is
@@ -137,7 +137,7 @@ integer : numeric is
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  as_string(len i32, base u32) String
+  module as_string(len i32, base u32) String
     pre
       debug: 1 < base ≤ 36
     post
@@ -158,43 +158,43 @@ integer : numeric is
 
   # create binary representation
   #
-  bin => integer.this.as_string 2
+  public bin => integer.this.as_string 2
 
 
   # create binary representation with given number of digits.
   #
-  bin(len i32) => integer.this.as_string len 2
+  public bin(len i32) => integer.this.as_string len 2
 
 
   # create octal representation
   #
-  oct => integer.this.as_string 8
+  public oct => integer.this.as_string 8
 
 
   # create octal representation with given number of digits.
   #
-  oct(len i32) => integer.this.as_string len 8
+  public oct(len i32) => integer.this.as_string len 8
 
 
   # create decimal representation
   #
-  dec => integer.this.as_string 10
+  public dec => integer.this.as_string 10
 
 
   # create decimal representation with given number of digits.
   #
-  dec(len i32) => integer.this.as_string len 10
+  public dec(len i32) => integer.this.as_string len 10
 
 
   # create hexadecimal representation
   #
-  hex => integer.this.as_string 16
+  public hex => integer.this.as_string 16
 
 
   # create hexadecimal representation with given number of digits.
   #
-  hex(len i32) => integer.this.as_string len 16
+  public hex(len i32) => integer.this.as_string len 16
 
 
   # the least significant byte of this integer
-  low8bits u8 is abstract
+  module low8bits u8 is abstract

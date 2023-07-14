@@ -27,11 +27,11 @@
 # of only one single element. To create larger rings, you can either call
 # `append` to add single cells, or `concat` to concatenate two lists.
 #
-Mutable_Linked_List(# mutate effect to be used to create mutable variables
+private:public Mutable_Linked_List(# mutate effect to be used to create mutable variables
                     LM type : mutate,
 
                     # type of data stored in this list
-                    redef T type,
+                    T type,
 
                     # the data stored in this element.
                     data T) ref : Linked_List T is
@@ -45,7 +45,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
 
   # short-hand features to get the mutable references from `n`
   #
-  next option (Linked_List T) is
+  public next option (Linked_List T) is
     match n.get
       ll Mutable_Linked_List => ll
       nil => nil
@@ -53,7 +53,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
 
   # append an element to the linked list
   #
-  append(data T) =>
+  public append(data T) =>
     match n.get
       nil => n <- Mutable_Linked_List LM T data
       ll Mutable_Linked_List => ll.append data
@@ -61,7 +61,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
 
   # append an entire list to this linked list
   #
-  concat(other Mutable_Linked_List LM T) =>
+  public concat(other Mutable_Linked_List LM T) =>
     match n.get
       nil => n <- other
       ll Mutable_Linked_List => ll.concat other
@@ -69,7 +69,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
 
   # freeze this list, i.e., turn all references into immutable values
   #
-  freeze =>
+  public freeze =>
     if n.open
       n.close
 
@@ -84,7 +84,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   # can still be modified. however, the list needs to be frozen manually
   # before leaving the mutate environment.
   #
-  type.from_sequence(from Sequence T) container.Mutable_Linked_List LM T
+  public type.from_sequence(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   is
@@ -97,7 +97,7 @@ Mutable_Linked_List(# mutate effect to be used to create mutable variables
   # true, the list is frozen after creation, i.e. it can no longer be changed,
   # but the mutate environment can be left.
   #
-  type.from_sequence(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
+  public type.from_sequence(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   is

@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float : numeric is
+public float : numeric is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -64,16 +64,16 @@ float : numeric is
   # convert a float value to i64 dropping any fraction.
   # the value must be in the range of i64
   #
-  as_i64 i64 is abstract
+  public as_i64 i64 is abstract
 
 
   # convert a float value to i32 dropping any fraction.
   # the value must be in the range of i32
   #
-  as_i32 => as_i64.as_i32
+  public as_i32 => as_i64.as_i32
 
 
-  fract float.this is abstract
+  public fract float.this is abstract
 
 
   # round floating point number
@@ -81,7 +81,7 @@ float : numeric is
   #
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
-  round float.this is
+  public round float.this is
     if float.this < float.this.type.zero
       -(-float.this).round
     else if fract = float.this.type.zero
@@ -91,7 +91,7 @@ float : numeric is
 
 
   # floor: the greatest integer lower or equal to this
-  floor float.this is
+  public floor float.this is
     if fract < float.this.type.zero
       float.this - fract - float.this.type.one
     else
@@ -99,7 +99,7 @@ float : numeric is
 
 
   # ceiling: the smallest integer greater or equal to this
-  ceil float.this is
+  public ceil float.this is
     if fract ≤ float.this.type.zero
       float.this - fract
     else
@@ -109,35 +109,35 @@ float : numeric is
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  type.significand_bits i32 is abstract
+  public type.significand_bits i32 is abstract
 
   # number of bits used for exponent
   #
-  type.exponent_bits i32 is abstract
+  public type.exponent_bits i32 is abstract
 
 
   # the amount of bits that are used to encode the mantissa
-  type.mantissa_bits => significand_bits - 1
+  public type.mantissa_bits => significand_bits - 1
 
 
   # number of bytes required to store this value
   #
-  type.bytes i32 is abstract
+  public type.bytes i32 is abstract
 
 
   # number of bits required to store this value
   #
-  type.size => 8*bytes
+  public type.size => 8*bytes
 
 
   # eulers number 2.72..
   #
-  type.ℇ float.this is abstract
+  public type.ℇ float.this is abstract
 
 
   # pi 3.14...
   #
-  type.π float.this is abstract
+  public type.π float.this is abstract
 
 
   # conversion
@@ -148,69 +148,69 @@ float : numeric is
   # if the value cannot be represented exactly, the result is either
   # the nearest higher or nearest lower value
   #
-  type.from_i64(val i64) float.this is abstract
+  public type.from_i64(val i64) float.this is abstract
 
 
-  type.exponent_range => -min_exp..max_exp
+  public type.exponent_range => -min_exp..max_exp
 
 
   # non signaling not a number
   #
-  type.quiet_NaN => zero / zero
+  public type.quiet_NaN => zero / zero
 
 
   # not a number
   #
-  type.NaN => quiet_NaN
+  public type.NaN => quiet_NaN
 
 
   # is not a number?
   #
-  type.is_NaN (val float.this) bool is abstract
+  public type.is_NaN (val float.this) bool is abstract
 
 
-  type.negative_infinity => -one / zero
+  public type.negative_infinity => -one / zero
 
 
-  type.positive_infinity => one / zero
+  public type.positive_infinity => one / zero
 
 
   # infinity
   #
-  type.infinity => positive_infinity
+  public type.infinity => positive_infinity
 
 
-  type.min_exp i32 is abstract
-  type.max_exp i32 is abstract
-  type.min_positive float.this is abstract
-  type.max float.this is abstract
-  type.epsilon float.this is abstract
+  public type.min_exp i32 is abstract
+  public type.max_exp i32 is abstract
+  public type.min_positive float.this is abstract
+  public type.max float.this is abstract
+  public type.epsilon float.this is abstract
 
 
   # square root
   #
-  type.square_root (val float.this) float.this is abstract
+  public type.square_root (val float.this) float.this is abstract
 
 
   # square root alias
   #
-  type.sqrt (val float.this) => square_root val
+  public type.sqrt (val float.this) => square_root val
 
 
   # the `val`-th power of ℇ
   # i.e. ℇᵛᵃˡ
   #
-  type.exp (val float.this) float.this is abstract
+  public type.exp (val float.this) float.this is abstract
 
 
   # logarithm with base ℇ
   #
-  type.log (val float.this) float.this is abstract
+  public type.log (val float.this) float.this is abstract
 
 
   # logarithm with base `base`
   #
-  type.log (base, val float.this) float.this
+  public type.log (base, val float.this) float.this
   pre base > zero
   is
     (log val) / (log base)
@@ -218,31 +218,31 @@ float : numeric is
 
   # trigonometric
 
-  type.sin  (val float.this) float.this is abstract
-  type.cos  (val float.this) float.this is abstract
-  type.tan  (val float.this) float.this is abstract
-  type.asin (val float.this) float.this is abstract
-  type.acos (val float.this) float.this is abstract
-  type.atan (val float.this) float.this is abstract
-  type.atan2 (y, x float.this) float.this is abstract
+  public type.sin  (val float.this) float.this is abstract
+  public type.cos  (val float.this) float.this is abstract
+  public type.tan  (val float.this) float.this is abstract
+  public type.asin (val float.this) float.this is abstract
+  public type.acos (val float.this) float.this is abstract
+  public type.atan (val float.this) float.this is abstract
+  public type.atan2 (y, x float.this) float.this is abstract
 
 
   # hyperbolicus
 
-  type.sinh (val float.this) float.this is abstract
-  type.cosh (val float.this) float.this is abstract
-  type.tanh (val float.this) float.this is abstract
+  public type.sinh (val float.this) float.this is abstract
+  public type.cosh (val float.this) float.this is abstract
+  public type.tanh (val float.this) float.this is abstract
 
 
   # area hyperbolicus
 
-  type.asinh(val float.this) float.this is
+  public type.asinh(val float.this) float.this is
     # ln(x+sqrt(x^2+1))
     log (val + sqrt (val ** two + one))
-  type.acosh(val float.this) float.this is
+  public type.acosh(val float.this) float.this is
     # ln(x+sqrt(x^2-1))
     log (val + sqrt (val ** two - one))
-  type.atanh(val float.this) float.this is
+  public type.atanh(val float.this) float.this is
     # 1/2*ln((1+x)/(1-x))
     log ((one + val)/(one - val)) / two
 
@@ -256,7 +256,7 @@ float : numeric is
   # The equivalence relation is provided by the usual comparision
   # of floating-point numbers, with the definition of NaN = NaN.
   #
-  type.equality(a, b float.this) bool is
+  public type.equality(a, b float.this) bool is
     a.infix = b || (is_NaN a && is_NaN b)
 
 
@@ -270,5 +270,5 @@ float : numeric is
   # floating-point numbers, with the definition that NaN <= x,
   # for any x (including x = NaN).
   #
-  type.lteq(a, b float.this) bool is
+  public type.lteq(a, b float.this) bool is
     a.infix <= b || is_NaN a

@@ -50,7 +50,6 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -58,6 +57,7 @@ import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.ast.AbstractFeature.State;
+import dev.flang.ast.Visi;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -640,6 +640,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
   {
+    if (PRECONDITIONS)
+      require(outer.isConstructor(), inner.isTypeFeature());
+
     var d = data(outer);
     var fn = inner.featureName();
     if (!inherited && d._declaredFeatures != null)
@@ -773,12 +776,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
     else if (existing == f)
       {
       }
+    else if (existing.visibility().ordinal() < Visi.MOD.ordinal() && !outer.pos()._sourceFile.sameAs(f.pos()._sourceFile))
+      {
+        if (CHECKS) check
+          (false);
+      }
     else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       { /* previous duplicate feature declaration could result in this error for
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if (Errors.count() == 0 || !f.isTypeFeature())
+        if ((Errors.count() == 0 || !f.isTypeFeature()) && VisibleAt(existing, f))
           {
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
@@ -969,13 +977,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param sf the source file where type is used
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter, SourceFile sf)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING),
+       (use == null) != (sf == null));
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
@@ -1024,7 +1035,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        for (var e : fs.entrySet())
+        for (var e : fs.entrySet()
+                       .stream()
+                       .filter(fn ->    sf != null && typeVisible(sf, fn.getValue())
+                                    || use != null && featureVisible(use.pos()._sourceFile, fn.getValue()))
+                       .collect(List.collector()))
           {
             var v = e.getValue();
             if (!v.isField() || !foundFieldInScope)
@@ -1039,6 +1054,27 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     while (traverseOuter && curOuter != null);
     return result;
+  }
+
+
+  /**
+   * Is feature `af` visible in file `usedIn`?
+   * @param usedIn
+   * @param af
+   * @return
+   */
+  private boolean featureVisible(SourceFile usedIn, AbstractFeature af)
+  {
+    var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
+    var definedIn = af.pos()._sourceFile;
+    var v = af.visibility();
+
+          // in same file
+    return ((usedIn.sameAs(definedIn)
+          // at least module visible and in same module
+          || v.ordinal() >= Visi.MOD.ordinal() && this == m
+          // publicly visible
+          || v == Visi.PUB));
   }
 
 
@@ -1074,7 +1110,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter);
+        var fs = lookup(outer, name, null, traverseOuter, pos._sourceFile);
         for (var fo : fs)
           {
             var f = fo._feature;

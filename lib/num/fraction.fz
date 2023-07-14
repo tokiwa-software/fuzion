@@ -35,7 +35,7 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-fraction(B type : integer,
+public fraction(B type : integer,
          numerator,
          denominator B
         ) : numeric
@@ -51,7 +51,7 @@ is
 # public:
 
   # reduce numerator and denominator by their gcd:
-  reduce =>
+  public reduce =>
     gcd := numerator.abs.gcd denominator
     if gcd = B.one
       a
@@ -59,19 +59,19 @@ is
       fraction (numerator / gcd) (denominator / gcd)
 
   # basic operations
-  fixed redef prefix + => a
-  fixed redef prefix - => fraction -a.numerator a.denominator
-  fixed redef infix +  (b fraction.this) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
-  fixed redef infix -  (b fraction.this) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
-  fixed redef infix *  (b fraction.this) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
-  fixed redef infix /  (b fraction.this)
+  public fixed redef prefix + => a
+  public fixed redef prefix - => fraction -a.numerator a.denominator
+  public fixed redef infix +  (b fraction.this) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
+  public fixed redef infix -  (b fraction.this) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
+  public fixed redef infix *  (b fraction.this) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
+  public fixed redef infix /  (b fraction.this)
     pre
       # NYI: use type features
       # safety: b != zero
       safety: !b.numerator.is_zero
     => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
-  redef as_string => "" + numerator + "⁄" + denominator
+  public redef as_string => "" + numerator + "⁄" + denominator
 
 
   # -----------------------------------------------------------------------
@@ -81,21 +81,21 @@ is
 
   # identity element for 'infix +'
   #
-  fixed type.zero => B.zero ⁄ B.one
+  module fixed type.zero => B.zero ⁄ B.one
 
 
   # identity element for 'infix *'
   #
-  fixed type.one => B.one ⁄ B.one
+  module fixed type.one => B.one ⁄ B.one
 
 
   # equality
   #
-  fixed type.equality(a, b num.fraction B) =>
+  public fixed type.equality(a, b num.fraction B) =>
     (a - b).numerator.is_zero
 
 
   # total order
   #
-  fixed type.lteq(a, b num.fraction B) =>
+  public fixed type.lteq(a, b num.fraction B) =>
     (a - b).numerator.sign ≤ 0

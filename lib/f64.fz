@@ -29,19 +29,19 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float is
+public f64(val f64) : float is
 
   thiz => f64.this.val
 
 
   # basic operations: 'prefix -' (negation)
-  fixed redef prefix - f64 is intrinsic
-  fixed infix + (other f64) f64 is intrinsic
-  fixed infix - (other f64) f64 is intrinsic
-  fixed infix * (other f64) f64 is intrinsic
-  fixed infix / (other f64) f64 is intrinsic
-  fixed infix % (other f64) f64 is intrinsic
-  fixed infix ** (other f64) f64 is intrinsic
+  public fixed redef prefix - f64 is intrinsic
+  public fixed infix + (other f64) f64 is intrinsic
+  public fixed infix - (other f64) f64 is intrinsic
+  public fixed infix * (other f64) f64 is intrinsic
+  public fixed infix / (other f64) f64 is intrinsic
+  public fixed infix % (other f64) f64 is intrinsic
+  public fixed infix ** (other f64) f64 is intrinsic
 
 
   # comparision
@@ -58,65 +58,65 @@ f64(val f64) : float is
   # NaN is converted to 0
   # anything greater than i64.max as well as  ∞ is i64.max
   # anything lower   than i64.min as well as -∞ is i64.min
-  as_i64_lax i64 is intrinsic
+  public as_i64_lax i64 is intrinsic
 
 
-  fits_in_i64 =>
+  public fits_in_i64 =>
     (thiz ≥ i64.type.min.as_f64) && (thiz ≤ i64.type.max.as_f64)
 
 
-  redef as_i64
+  public redef as_i64
     pre
       safety: fits_in_i64
     => as_i64_lax
 
 
-  as_f32 f32 is intrinsic
+  public as_f32 f32 is intrinsic
 
 
   # casting bit representation to u64
-  cast_to_u64 u64 is intrinsic
+  public cast_to_u64 u64 is intrinsic
 
 
   # create hash code from this number
-  hash u64 is
+  public hash u64 is
     cast_to_u64.hash
 
 
   # is the sign bit set?
-  is_sign_bit_set bool is
+  module is_sign_bit_set bool is
     cast_to_u64 >= 1P63
 
 
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  type.significand_bits => 53
+  public type.significand_bits => 53
 
   # number of bits used for exponent
   #
-  type.exponent_bits => 11
+  public type.exponent_bits => 11
 
 
   # mask for the the bits that encode the mantissa
-  type.mantissa_mask => u64 1P52 - 1
+  public type.mantissa_mask => u64 1P52 - 1
 
 
   # mask for the the bits that encode the exponent
   # (the mask is not shifted to the correct position)
-  type.exponent_mask => u64 1P11 - 1
+  public type.exponent_mask => u64 1P11 - 1
 
 
   # the exponent bias (the zero offset of the exponent)
-  type.exponent_bias => 1023
+  public type.exponent_bias => 1023
 
 
   # the biased exponent
-  exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
+  public exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
 
 
   # the normalized exponent
-  exponent =>
+  public exponent =>
     if exponent_biased = 0
       1 - f64.type.exponent_bias
     else
@@ -124,7 +124,7 @@ f64(val f64) : float is
 
 
   # the normalized mantissa
-  mantissa =>
+  public mantissa =>
     m := cast_to_u64 & f64.type.mantissa_mask
     if exponent_biased = 0
       m
@@ -133,7 +133,7 @@ f64(val f64) : float is
 
 
   # the fraction of this floating point number
-  fixed redef fract f64 is
+  public fixed redef fract f64 is
     if f64.type.is_NaN val
       f64.type.NaN
     else if val < (f64 0)
@@ -151,7 +151,7 @@ f64(val f64) : float is
 
   # convert this to a string.
   #
-  redef as_string String is intrinsic
+  public redef as_string String is intrinsic
 
 
   # -----------------------------------------------------------------------
@@ -161,52 +161,52 @@ f64(val f64) : float is
 
   # identity element for 'infix +'
   #
-  fixed type.zero f64 is 0
+  public fixed type.zero f64 is 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  f64 is 1
+  public fixed type.one  f64 is 1
 
 
-  fixed type.bytes => 8
+  public fixed type.bytes => 8
 
 
-  fixed type.ℇ => 2.7182818284590452354
+  public fixed type.ℇ => 2.7182818284590452354
 
 
-  fixed type.π => 3.14159265358979323846
+  public fixed type.π => 3.14159265358979323846
 
 
-  fixed type.from_i64(val i64) f64 is
+  public fixed type.from_i64(val i64) f64 is
     val.as_f64
 
 
-  fixed type.is_NaN(val f64) bool is intrinsic
+  public fixed type.is_NaN(val f64) bool is intrinsic
 
 
-  fixed type.min_exp i32 is intrinsic
-  fixed type.max_exp i32 is intrinsic
-  fixed type.min_positive f64 is intrinsic
-  fixed type.max f64 is intrinsic
-  fixed type.epsilon f64 is intrinsic
+  public fixed type.min_exp i32 is intrinsic
+  public fixed type.max_exp i32 is intrinsic
+  public fixed type.min_positive f64 is intrinsic
+  public fixed type.max f64 is intrinsic
+  public fixed type.epsilon f64 is intrinsic
 
 
-  fixed type.square_root(val f64) f64 is intrinsic
+  public fixed type.square_root(val f64) f64 is intrinsic
 
-  fixed type.exp(val f64) f64 is intrinsic
-  fixed type.log(val f64) f64 is intrinsic
-
-
-  fixed type.sin(val f64) f64 is intrinsic
-  fixed type.cos(val f64) f64 is intrinsic
-  fixed type.tan(val f64) f64 is intrinsic
-  fixed type.asin(val f64) f64 is intrinsic
-  fixed type.acos(val f64) f64 is intrinsic
-  fixed type.atan(val f64) f64 is intrinsic
-  fixed type.atan2(y, x f64) f64 is intrinsic
+  public fixed type.exp(val f64) f64 is intrinsic
+  public fixed type.log(val f64) f64 is intrinsic
 
 
-  fixed type.sinh(val f64) f64 is intrinsic
-  fixed type.cosh(val f64) f64 is intrinsic
-  fixed type.tanh(val f64) f64 is intrinsic
+  public fixed type.sin(val f64) f64 is intrinsic
+  public fixed type.cos(val f64) f64 is intrinsic
+  public fixed type.tan(val f64) f64 is intrinsic
+  public fixed type.asin(val f64) f64 is intrinsic
+  public fixed type.acos(val f64) f64 is intrinsic
+  public fixed type.atan(val f64) f64 is intrinsic
+  public fixed type.atan2(y, x f64) f64 is intrinsic
+
+
+  public fixed type.sinh(val f64) f64 is intrinsic
+  public fixed type.cosh(val f64) f64 is intrinsic
+  public fixed type.tanh(val f64) f64 is intrinsic

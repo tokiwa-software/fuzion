@@ -25,13 +25,13 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-private open(T type, private fd i64, public file_name String) : simple_effect is
+module:public open(T type, private fd i64, public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
   # this might overwrite parts or all of an existing file.
   #
-  write(content Sequence u8) ! io.file.write =>
+  public write(content Sequence u8) ! io.file.write =>
     io.file.write.write fd content.as_array
 
 
@@ -39,7 +39,7 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  read outcome (array u8) ! io.file.read is
+  public read outcome (array u8) ! io.file.read is
     io.file.read.read_file fd
 
 
@@ -48,7 +48,7 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
 
 
   # shorthand to get the memory mapped file as an array
-  mmap marray u8
+  public mmap marray u8
   pre effect.type.is_installed (io.file.open T).mmap
   is
     (io.file.open T).mmap.env.data
@@ -64,7 +64,7 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
   #   io.file.open.mmap (i64 0) (i64 100) ()->
   #     io.file.open.mmap[99] := 42
   #
-  mmap(R type, offset i64, size i64, code ()->R) outcome R
+  public mmap(R type, offset i64, size i64, code ()->R) outcome R
   pre offset % 4096 = 0 # NYI get real page size instead of 4096.
   is
 
@@ -92,7 +92,7 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
 # for type T from the environment.
 # see `use` on how to use this.
 #
-open(T type) =>
+public open(T type) =>
   (open T).env
 
 
@@ -100,7 +100,7 @@ open(T type) =>
 # unit type used internally by open- and use-
 # short hands which can be used when one does not need
 # to distinguish between several open files.
-private open_unique_type is
+private:module open_unique_type is
 
 
 
@@ -109,6 +109,6 @@ private open_unique_type is
 # from the environment.
 # see `use` on how to use this.
 #
-open =>
+public open =>
   (open open_unique_type).env
 

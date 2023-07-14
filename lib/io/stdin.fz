@@ -27,7 +27,7 @@
 # stdin -- effect providing several features
 # for consuming the given Byte_Input_Handler
 #
-private stdin(ip io.Byte_Input_Handler) : simple_effect is
+public stdin(ip io.Byte_Input_Handler) : simple_effect is
 
 
   # read a single byte from stdin
@@ -51,7 +51,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # returns end_of_file if stdin is depleted or
   # error in case of an error while reading the codepoint
   #
-  codepoint choice codepoint io.end_of_file error is
+  public codepoint choice codepoint io.end_of_file error is
     match byte
       b u8 =>
         match codepoint.type.num_utf8_bytes b
@@ -97,7 +97,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # via this list.
   # NYI: How can we lessen these imperfections?
   #
-  codepoints list (choice codepoint io.end_of_file error) is
+  public codepoints list (choice codepoint io.end_of_file error) is
     list codepoint ()->codepoints
 
 
@@ -110,7 +110,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
   # less if an end_of_file is encountered
   # while reading
   #
-  read(n i32) outcome String
+  public read(n i32) outcome String
   pre n ≥ 0
   is
     (1..n)
@@ -133,7 +133,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
 
   # read from stdin until end of line or end of file
   #
-  read_line outcome String is
+  public read_line outcome String is
     ascii := character_encodings.ascii
     codepoints
       .reduce_or_error "" (r, t ->
@@ -187,7 +187,7 @@ private stdin(ip io.Byte_Input_Handler) : simple_effect is
 
 # short-hand for accessing stdin effect in current environment
 #
-stdin =>
+public stdin =>
   stdin.type.install_default
   stdin.env
 

@@ -30,7 +30,7 @@
 # (string/concat/""), etc.
 #
 #
-Monoid(T type /* : property.equatable */) ref
+public Monoid(T type /* : property.equatable */) ref
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -50,11 +50,11 @@ is
 
   # associative operation
   #
-  infix ∙ (a, b T) T is abstract
+  public infix ∙ (a, b T) T is abstract
 
   # identity element
   #
-  e T is abstract
+  public e T is abstract
 
   # alternative names for infix operators
-  op(a, b T) => infix ∙  a b
+  public op(a, b T) => infix ∙  a b

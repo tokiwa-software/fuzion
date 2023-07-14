@@ -25,4 +25,4 @@
 
 # character_encodings -- unit feature to group character encodings
 #
-character_encodings is
+public character_encodings is

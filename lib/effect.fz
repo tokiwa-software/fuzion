@@ -29,7 +29,7 @@
 # of effect are installed in the current environment while their code is
 # executed.  The code may access the effect via <type>.env.
 #
-effect (
+module:public effect (
   # action to be performed, may include code to run while this effect is installed.
   #
   r effect_mode.val
@@ -44,13 +44,13 @@ is
     _ effect_mode.default => default
     _ effect_mode.new     =>
 
-  mode effect_mode.val is
+  module mode effect_mode.val is
     match r
       effect_mode.plain => effect_mode.plain
       effect_mode.inst, effect_mode.repl, effect_mode.abort, effect_mode.default, effect_mode.new => effect_mode.repl
 
   # replace effect in the current context by this
-  private replace unit is intrinsic
+  module replace unit is intrinsic
 
 
   # execute code provided in f.call while this effect is installed
@@ -62,14 +62,14 @@ is
   private abortable(T type : Function unit, f T) unit is intrinsic
 
   # replace effect in the current context by this and abort current execution
-  private abort void is intrinsic
+  public abort void is intrinsic
 
   # set default effect in the current context to this if none is installed
-  private default unit is intrinsic
+  module default unit is intrinsic
 
   # execute the code of 'f' in the context of this effect
   #
-  private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
+  module run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
     cf := Effect_Call f
     abortable cf
     match cf.res
@@ -80,7 +80,7 @@ is
   # abort the current execution and return from the surrounding call to
   # abortable with result == false.
   #
-  return void is abort
+  public return void is abort
 
 
   # install this effect and run code.
@@ -103,13 +103,13 @@ is
 
 
   # has an effect of the given type been installed?
-  type.is_installed(E type) bool is intrinsic
+  public type.is_installed(E type) bool is intrinsic
 
 
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
-private Effect_Call(redef R type, f () -> R) ref : Function unit is
+private Effect_Call(R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()
@@ -117,18 +117,19 @@ private Effect_Call(redef R type, f () -> R) ref : Function unit is
 
 # effect mode is an enum that determines how an instance of effect is used
 #
-effect_mode is
+module effect_mode is
 
-  val : choice of
-    plain,             # a plain effect, not installed as 'env'
-    repl,              # effect instance replaces previous one in 'env'
-    abort,             # effect instance aborts, jump back to where 'env' was installed
-    default,           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
-    new.               # a new effect to be installed
-    inst(f ()->unit).  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
+  module plain is             # a plain effect, not installed as 'env'
+  module repl is              # effect instance replaces previous one in 'env'
+  module abort is             # effect instance aborts, jump back to where 'env' was installed
+  module default is           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
+  module new is               # a new effect to be installed
+  module inst(f ()->unit) is  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
+
+  private:module val : choice plain repl effect_mode.abort default new inst of
 
 
-code_effect : effect (effect_mode.inst code)
+public code_effect : effect (effect_mode.inst code)
 is
 
   # the code to be executed within this effect.  This is typically
@@ -137,7 +138,7 @@ is
   # NYI: Currently, there is no direct way to return a result value
   # from the code.
   #
-  code ()->unit is abstract
+  public code ()->unit is abstract
 
 
 # simple_effect provides a simple means to define and use an effect
@@ -148,7 +149,7 @@ is
 # To install this effect to execute a function, simple_effect.use
 # can be called.
 #
-simple_effect : effect effect_mode.plain
+public simple_effect : effect effect_mode.plain
 is
 
   # install this simple_effect and run code
@@ -156,13 +157,13 @@ is
   # In case of an `abort`, `use` returns silently (NYI: maybe this should better
   # return an oucome with the abort wrapped in an error?).
   #
-  use(code ()->unit) unit is
+  public use(code ()->unit) unit is
     abortable (Effect_Call code)
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
   #
-  go(T type, f ()->T) T is
+  public go(T type, f ()->T) T is
     fo () -> option T is ()->f()
     r := run fo _->nil
     match r

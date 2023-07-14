@@ -59,7 +59,7 @@
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
 private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) : property.equatable is
-  redef as_string => "tomb_node($sn)"
+  module redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
@@ -70,7 +70,7 @@ private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK 
 # a singleton node
 # the node type containing actual data
 private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) : property.equatable  is
-  redef as_string => "singleton_node($k, $v)"
+  module redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
@@ -82,7 +82,7 @@ private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) : p
 # an indirection or a singleton node
 # these are put into a container node
 private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), property.equatable is
-  redef as_string =>
+  module redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
       singleton_node singleton_node => "$singleton_node"
@@ -122,7 +122,7 @@ private container_node(CTK type : property.hashable, CTV type, bmp u32, array ar
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     container_node (bmp ^ flag) tmp.as_array
 
-  redef as_string => "container_node({array.as_string ", "})"
+  module redef as_string => "container_node({array.as_string ", "})"
 
   as_list => array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list)
                  .as_list
@@ -144,7 +144,7 @@ Nil ref is
 #
 private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil, property.equatable is
 
-  redef as_string =>
+  module redef as_string =>
     match prev_node.this
       f container.Failed_Node => f.as_string
       m container.Main_Node => m.as_string
@@ -249,7 +249,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
   private cas(old_n, new_n Main_Node CTK CTV) bool is
     data.compare_and_set old_n new_n
 
-  redef as_string => "Indirection_Node[gen=$gen]({data.read})"
+  module redef as_string => "Indirection_Node[gen=$gen]({data.read})"
 
   as_list list (tuple CTK CTV)
   pre match data.read.prev.read
@@ -291,7 +291,7 @@ private ctrie_ok is
 
 # unit type to indicate when value to lookup/remove is not found
 private not_found is
-  redef as_string => "not found"
+  public redef as_string => "not found"
 
 
 # descriptor for double-compare-single-swap operation
@@ -318,7 +318,7 @@ private root_node(CTK type : property.hashable, CTV type) : choice (Indirection_
 
 
 # the ctrie
-ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
+private:public ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -560,7 +560,7 @@ is
 
 
   # lookup key k
-  lookup(k CTK) option CTV is
+  public lookup(k CTK) option CTV is
     r := read_root
     res := lookup r k 0 nil r.gen
     match res
@@ -603,7 +603,7 @@ is
 
   # add key value
   # if key is already present value is updated
-  add(k CTK, v CTV) unit is
+  public add(k CTK, v CTV) unit is
     r := read_root
     match add r k v 0 nil r.gen
       r restart =>
@@ -646,7 +646,7 @@ is
 
 
   # remove key from ctrie
-  remove(k CTK) choice not_found CTV is
+  public remove(k CTK) choice not_found CTV is
     r := read_root
     match remove r k 0 nil r.gen
       r restart => remove k
@@ -698,17 +698,17 @@ is
 
 
   # the size of the ctrie
-  redef size i32 is
+  public redef size i32 is
     items.count
 
 
   # lookup an element in this ctrie via bracket syntax
-  redef index [] (k CTK) option CTV is
+  public redef index [] (k CTK) option CTV is
     lookup k
 
 
   # take a snapshot of the ctrie
-  snapshot(read_only bool) ctrie CTK CTV is
+  public snapshot(read_only bool) ctrie CTK CTV is
     root := read_root
     expmain := gcas_read root
     descriptor := Rdcss_Descriptor root expmain (copy_to_gen root (root.gen +° 1))
@@ -720,14 +720,14 @@ is
 
 
   # a snapshot of the ctrie as sequence auf key-value tuples
-  redef items Sequence (tuple CTK CTV) is
+  public redef items Sequence (tuple CTK CTV) is
     snapshot true
       .read_root
       .as_list
 
 
   # initialize a new ctrie
-  type.empty =>
+  public type.empty =>
 
     initial_gen := 0
 
@@ -743,7 +743,7 @@ is
   #
   # example: ctrie.type.from_entries [(key1, value1), (key2, value2)]
   #
-  type.from_entries(kvs Sequence (tuple CTK CTV)) container.ctrie CTK CTV is
+  public type.from_entries(kvs Sequence (tuple CTK CTV)) container.ctrie CTK CTV is
 
     m := (container.ctrie CTK CTV).type.empty
     kvs.for_each (kv ->

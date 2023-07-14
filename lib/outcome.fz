@@ -49,20 +49,20 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-outcome(T type) :
+public outcome(T type) :
   choice T error, /* ...  NYI: this should be open generic! */
   monad T (outcome T)
 is
 
   # Does this outcome contain a value of type T?
   #
-  ok => (outcome.this ? T     => true
-                      | error => false)
+  public ok => (outcome.this ? T     => true
+                             | error => false)
 
 
   # short-hand postfix operator for 'ok'
   #
-  postfix ?? => ok
+  public postfix ?? => ok
 
 
   # Does this outcome contain an error
@@ -72,7 +72,7 @@ is
 
   # short-hand postfix operator for 'is_error'
   #
-  postfix !! => is_error
+  public postfix !! => is_error
 
 
   # value of an outcome that is known to contain a value
@@ -80,7 +80,7 @@ is
   # This can only be called in cases where it is known for sure that this
   # outcomee is not an error.  A runtime error will be created otherwise.
   #
-  val T
+  public val T
     pre
       safety: outcome.this??
   is
@@ -90,7 +90,7 @@ is
 
   # value of an outcome or default if outcome contains err
   #
-  val(default T) T
+  public val(default T) T
   is
     outcome.this ? v T   => v
                  | error => default
@@ -111,7 +111,7 @@ is
 
   # convert this outcome to an option
   # if the outcome is an error, the option is empty
-  as_option option T is
+  public as_option option T is
     match outcome.this
       t T => t
       error => nil
@@ -122,18 +122,18 @@ is
   # returns the result of T.as_string for a successful outcome, or
   # "--$e--" for e error.
   #
-  redef as_string =>
+  public redef as_string =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
 
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
-  and (O type, o outcome O) outcome O is
+  public and (O type, o outcome O) outcome O is
     outcome.this ? _ T     => o
                  | e error => e
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
-  or (o outcome T) outcome T is
+  public or (o outcome T) outcome T is
     if !ok
       o
     else
@@ -170,14 +170,14 @@ is
   #
   #     (open "example.txt").bind (array u8) (fd->read fd 42)
   #
-  bind(B type, f T -> outcome B) outcome B is
+  public bind(B type, f T -> outcome B) outcome B is
     outcome.this ? v T => f v
                  | e error => e
 
 
   # return function
   #
-  fixed type.return (a T) => outcome a
+  public fixed type.return (a T) => outcome a
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a
@@ -191,4 +191,4 @@ is
 #
 #   o outcome TypeOfX := x
 #
-outcome(T type, o outcome T) => o
+public outcome(T type, o outcome T) => o

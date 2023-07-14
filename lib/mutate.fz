@@ -53,7 +53,7 @@
 #
 # is not supported yet.
 #
-mutate : simple_effect is
+public mutate : simple_effect is
 
   # short-hand to access effect type
   #
@@ -90,18 +90,18 @@ mutate : simple_effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    open => id != u64 0
+    public open => id != u64 0
 
     # stop any further mutations of this element
     #
-    close is
+    public close is
       set id := 0
 
 
   # create a new mutable value with the given initial value and update the
   # 'mutate' effect in the current environment
   #
-  new (
+  public new (
     T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
@@ -115,7 +115,7 @@ mutate : simple_effect is
     # If this is open, check that the mutate effect this was created with is still
     # installed in the current environment.
     #
-    get ! mutate.this =>
+    public get ! mutate.this =>
       if open
         check_and_replace
       mutable_value
@@ -123,7 +123,7 @@ mutate : simple_effect is
 
     # read the mutable value that is now immutable after it was closed for mutation.
     #
-    val
+    public val
       pre
         safety: !open
      =>
@@ -135,7 +135,7 @@ mutate : simple_effect is
     # Check that the mutate effect this was created with is still
     # installed in the current environment.
     #
-    put (
+    public put (
       # the new value to be stored with 'h'
       to T)
       ! mutate.this
@@ -148,12 +148,12 @@ mutate : simple_effect is
 
     # infix operator for put, OCaml/F#-style syntax
     #
-    infix <- (to T) => put to
+    public infix <- (to T) => put to
 
 
     # update mutable field using a function of the old value
     #
-    update (
+    public update (
       # function calculcating the new value from the old value
       f T->T
       )
@@ -163,19 +163,19 @@ mutate : simple_effect is
 
     # creates a copy of the mutable field
     #
-    copy new T is
+    public copy new T is
       new T get
 
 
     # returns `as_string` of the current value
     #
-    redef as_string => get.as_string
+    public redef as_string => get.as_string
 
 
   # create a mutable array.
   #
-  array (# element type
-         redef T type,
+  public array (# element type
+         T type,
 
          # length of the array to create
          length i32,
@@ -192,17 +192,17 @@ mutate : simple_effect is
     #   for i in arr.indices do
     #     say arr[i]
     #
-    indices => ma.indices
+    public indices => ma.indices
 
     # is this sequence known to be finite?  For infinite sequences, features like
     # count diverge.
     #
-    redef finite => true
+    public redef finite => true
 
 
     # get element at given index i
     #
-    redef index [ ] (i i32) T
+    public redef index [ ] (i i32) T
       pre
         safety: 0 ≤ i < length
     is
@@ -211,7 +211,7 @@ mutate : simple_effect is
 
     # set element at given index i to given value o
     #
-    set [ ] (i i32, o T) unit
+    public set [ ] (i i32, o T) unit
       pre
         safety: 0 ≤ i < length
     is
@@ -221,39 +221,39 @@ mutate : simple_effect is
 
     # create immutable array from this
     #
-    redef as_array => ma.as_array
+    public redef as_array => ma.as_array
 
 
     # create a list from this marray
     #
-    redef as_list => ma.as_list
+    public redef as_list => ma.as_list
 
 
     # map the array to a new array applying function f to all elements
     #
-    map(B type, f T -> B) => ma.map B f
+    public map(B type, f T -> B) => ma.map B f
 
 
     # fold the elements of this array using the given monoid.
     #
     # e.g., to sum the elements of an array of i32, use a.fold i32.sum
     #
-    redef fold (m Monoid T) => ma.fold 0 m.e m
+    public redef fold (m Monoid T) => ma.fold 0 m.e m
 
 
   # install default instance of mutate
   #
-  type.install_default =>
+  module type.install_default =>
     mutate.default
 
 
 # short-hand for accessing mut effect in current environment
 #
-mut =>
+public mut =>
   mutate.type.install_default
   mutate.env
 
 
 # create a new mutable value of type T with initial value v
 #
-mut(T type, v T) => mut.new T v
+public mut(T type, v T) => mut.new T v

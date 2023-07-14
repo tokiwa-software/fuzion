@@ -27,16 +27,16 @@
 #
 # NYI: marray should be rewritten using effects.
 #
-private marray
+module:public marray
   (
    # type of elements stored in this array
-   redef T type,
+   T type,
 
    # length of the marray
-   length i32,
+   public length i32,
 
    # contents of the marray
-   private data fuzion.sys.internal_array T,
+   module data fuzion.sys.internal_array T,
 
    _ unit
    ) : Sequence T
@@ -53,18 +53,18 @@ is
   #   for i in arr.indices do
   #     say arr[i]
   #
-  indices => 0..length-1
+  public indices => 0..length-1
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => true
+  public redef finite => true
 
 
   # get element at given index i
   #
-  redef index [ ] (i i32) T
+  public redef index [ ] (i i32) T
     pre
       safety: 0 ≤ i < length
   is
@@ -72,7 +72,7 @@ is
 
   # set element at given index i to given value o
   #
-  set [ ] (i i32, o T) unit
+  public set [ ] (i i32, o T) unit
     pre
       safety: 0 ≤ i < length
   # post   NYI: no '==' for Any yet
@@ -83,7 +83,7 @@ is
 
   # create a new marray by adding a new element o at the end of this marray
   #
-  add (o T) marray T
+  public add (o T) marray T
     post
       debug: result.length = length + 1
       # debug: result[length] = o  -- there is no 'infix =' defined for T
@@ -100,18 +100,18 @@ is
 
   # infix operator synonym for add
   #
-  infix + (o T) => add o
+  public infix + (o T) => add o
 
 
   # create immutable array from this
   #
-  redef as_array =>
+  public redef as_array =>
     array T length (i -> marray.this[i])
 
 
   # create a list from this marray
   #
-  redef as_list =>
+  public redef as_list =>
     # since marray is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -120,7 +120,7 @@ is
 
   # map the array to a new array applying function f to all elements
   #
-  map(B type, f T -> B) array B is
+  public map(B type, f T -> B) array B is
     array B marray.this.length (i -> f marray.this[i])
 
 
@@ -128,14 +128,14 @@ is
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  redef fold (m Monoid T) => fold 0 m.e m
+  public redef fold (m Monoid T) => fold 0 m.e m
 
 
   # fold the elements of this array using the given monoid and initial value
   #
   # Used to fold an array tail-recursively
   #
-  fold (i i32, s T, m Monoid T) T
+  public fold (i i32, s T, m Monoid T) T
     pre
       debug: 0 ≤ i ≤ length
   is
@@ -147,7 +147,7 @@ is
 
   # marray -- initialize one-dimensional mutable array
   #
-  type.new
+  public type.new
    (# length of the marray to create
     length i32,
 
@@ -167,12 +167,12 @@ is
 
   # initialize an empty mutable array of type T
   #
-  type.new marray T is
+  public type.new marray T is
     marray T 0 (fuzion.sys.internal_array_init T 0) unit
 
 
 
 # marray -- initialize one-dimensional mutable array
 #
-marray(T type, length i32, init T) marray T is
+public marray(T type, length i32, init T) marray T is
   (marray T).type.new length init

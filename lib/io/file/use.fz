@@ -24,11 +24,13 @@
 
 # the mode to use when opening a file
 #
-mode is
-  val : choice of
-    read,
-    write,
-    append.
+public mode is
+
+  public read is
+  public write is
+  public append is
+
+  module:public val : choice mode.read mode.write append is
 
 
 
@@ -44,7 +46,7 @@ mode is
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
 
   mode_num := match m
                 mode.read => i8 0
@@ -75,5 +77,5 @@ use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
   use open_unique_type R file_name m code

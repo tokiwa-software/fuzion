@@ -25,26 +25,26 @@
 
 # meta_data will be a feature storing the metadata of file/dir
 #
-meta_data(
+private:public meta_data(
           # the size of the file/dir
-          size i64,
+          public size i64,
           # the time of last modification of the file/dir
-          time i64,
+          public time i64,
           # boolean to check if the pathname is a regular file
-          is_regular bool,
+          public is_regular bool,
           # boolean to check if the pathname is a directory
-          is_dir bool) is
+          public is_dir bool) is
 
 # stat -- effect providing operations to retrieve file stats
 #
-private stat(ps Provided_Stat) : simple_effect is
+public stat(ps Provided_Stat) : simple_effect is
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
   # in case of failure an error will be returned
   # this feature resolves symbolic links
   #
-  stats(
+  public stats(
         # the (relative or absolute) file name, using platform specific path separators
         path String) outcome meta_data is
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
@@ -60,7 +60,7 @@ private stat(ps Provided_Stat) : simple_effect is
   # in case of failure an error will be returned
   # this feature does not resolve symbolic links and returns stats of the link itself
   #
-  lstats(
+  public lstats(
          # the (relative or absolute) file name, using platform specific path separators
          path String) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
     data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
@@ -89,7 +89,7 @@ private stat(ps Provided_Stat) : simple_effect is
 
 # short-hand for accessing the stat effect in current environment
 #
-stat =>
+public stat =>
   stat.type.install_default
   stat.env
 
@@ -100,7 +100,7 @@ stat =>
 # resolve flag is used to indicate whether to resolve sym links or not
 # NYI: lstats behaves the same as stats in the interpreter
 #
-stat(
+public stat(
      # the (relative or absolute) file name, using platform specific path separators
      path String,
      # a boolean resolve flag to resolve symbolic links or not

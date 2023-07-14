@@ -24,28 +24,28 @@
 
 # Entry -- an entry of a mutable tree map
 #
-private Entry(LM type : mutate, K type : property.orderable, V type, key K, val V) ref is
+module Entry(LM type : mutate, K type : property.orderable, V type, module key K, module val V) ref is
 
 
   # reference to the left subtree at this entry, or, if it is empty, nil
   #
-  private left := LM.env.new (option (Entry LM K V)) nil
+  module left := LM.env.new (option (Entry LM K V)) nil
 
 
   # reference to the right subtree at this entry, or if it is empty, nil
   #
-  private right := LM.env.new (option (Entry LM K V)) nil
+  module right := LM.env.new (option (Entry LM K V)) nil
 
 
   # height of the subtree whose root is this entry
   #
-  private height := LM.env.new i32 0
+  module height := LM.env.new i32 0
 
 
   # get the value stored in this submap at key k, nil if k is not a key
   # in this submap
   #
-  private get(k K) option V is
+  module get(k K) option V is
     if k < key
       left.get.bind V (e -> e.get k)
     else if key < k
@@ -56,7 +56,7 @@ private Entry(LM type : mutate, K type : property.orderable, V type, key K, val 
 
   # get a sequence of all key/value pairs in this Entry
   #
-  private items Sequence (tuple K V) is
+  module items Sequence (tuple K V) is
 
     head := (key, val)
 

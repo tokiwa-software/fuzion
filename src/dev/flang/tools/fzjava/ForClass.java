@@ -325,10 +325,9 @@ class ForClass extends ANY
     var fcn = FeatureWriter.mangle(n);
     var sc = _superClass == null ? null : _superClass._class;
     var inh = sc != null ? typeName(sc) + "(forbidden), " : "";
-    var rf  = sc != null ? "redef " : "";
     var base = _class == String.class ? "fuzion.java.Java_String" : "fuzion.java.Java_Object";
     StringBuilder data_dynamic = new StringBuilder(header(fzj, "Fuzion interface to instance members of Java instance class '" + cn + "'") +
-                                                   "public " + jtn + "(" + rf + "forbidden void) ref : " + inh + base + "(forbidden) is\n");
+                                                   "public " + jtn + "(forbidden void) ref : " + inh + base + "(forbidden) is\n");
     StringBuilder data_static  = new StringBuilder(header(fzj, "Fuzion interface to static members of Java class '" + cn + "'") +
                                                    "public " + jtn + STATIC_SUFFIX + " is\n");
     StringBuilder data_unit    = new StringBuilder(header(fzj, "Fuzion unit feature to call static members of Java class '" + cn + "'") +

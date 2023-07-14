@@ -26,7 +26,7 @@
 # atomic_access -- an effect that permits reading and writing values in instances
 # of atomic
 #
-atomic_access : simple_effect is
+private:module atomic_access : simple_effect is
 
   # install default instance of mutate
   #
@@ -36,6 +36,6 @@ atomic_access : simple_effect is
 
 # short-hand for accessing mut effect in current environment
 #
-atomic_access_env =>
+public atomic_access_env =>
   atomic_access.type.install_default
   atomic_access.env

@@ -25,11 +25,11 @@
 
 # envir.vars -- effect providing access to environment variables
 #
-vars (p Vars_Provider) : simple_effect is
+public vars (p Vars_Provider) : simple_effect is
 
   # If set, get the environment variable corresponding to v.
   #
-  get(v String) =>
+  public get(v String) =>
     vars.this.env.replace
     p.get v
 
@@ -37,7 +37,7 @@ vars (p Vars_Provider) : simple_effect is
   # If set, get the environment variable corresponding to v.
   # Otherwise, return default
   #
-  get(v String, default String) =>
+  public get(v String, default String) =>
     (get v).get get.this.default
 
   # Set the environment variable corresponding to n to have the
@@ -45,7 +45,7 @@ vars (p Vars_Provider) : simple_effect is
   #
   # This will overwrite the value of the environment variable, if
   # it is set already.
-  set1(n String, v String) =>
+  public set1(n String, v String) =>
     vars.this.env.replace
     p.set1 n v
 
@@ -53,7 +53,7 @@ vars (p Vars_Provider) : simple_effect is
   #
   # This will also return success (unit) if the variable was not
   # set anyway.
-  unset(n String) =>
+  public unset(n String) =>
     vars.this.env.replace
     p.unset n
 
@@ -74,7 +74,7 @@ vars (p Vars_Provider) : simple_effect is
 
 # short-hand for accessing envir.args effect in current environment
 #
-vars =>
+public vars =>
   vars.type.install_default
   envir.vars.env
 

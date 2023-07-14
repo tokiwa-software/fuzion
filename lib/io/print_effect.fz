@@ -27,29 +27,29 @@
 #
 # This is used as heir feature for effects such as io.out and io.err.
 #
-private print_effect (p Can_Print) : simple_effect
+module print_effect (p Can_Print) : simple_effect
 is
 
   # print the given string followed be new line
   #
-  println (s Any) =>
+  public println (s Any) =>
     p.println s
     replace
 
   # print the given string
   #
-  print (s Any) =>
+  public print (s Any) =>
     p.print s
     replace
 
   # print new line
   #
-  println =>
+  public println =>
     p.println
     replace
 
 
-Can_Print ref is
+public Can_Print ref is
 
   println(s Any) =>
     print s
@@ -58,4 +58,4 @@ Can_Print ref is
   println =>
     print (codepoint 10)
 
-  print(s Any) unit is abstract
+  public print(s Any) unit is abstract

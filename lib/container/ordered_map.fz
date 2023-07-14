@@ -32,7 +32,7 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-ordered_map(OK type : property.orderable,
+public ordered_map(OK type : property.orderable,
            redef V type,
            ks array OK,
            vs array V) : Map OK V
@@ -45,7 +45,7 @@ is
   # entry represents the pair of key and value at the given
   # index i of the ordered map.
   #
-  entry(i i32) : property.orderable is
+  public entry(i i32) : property.orderable is
 
 
     key => ks[i]
@@ -59,31 +59,31 @@ is
 
   # a sorted array of entries of this map
   #
-  sorted_entries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
+  public sorted_entries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
 
 
   # number of entries in this map
   #
-  size => sorted_entries.length
+  public size => sorted_entries.length
 
 
   # get the value k is mapped to, or nil if none.
   #
   # performance is O(log size).
   #
-  index [] (k OK) option V is
+  public index [] (k OK) option V is
     sorted_entries.find (e -> ks[e.i] ⋄ k)
                  .map (i -> sorted_entries[i].val)
 
 
   # get an array of all key/value pairs in this map
   #
-  items Sequence (tuple OK V) is sorted_entries.map (e -> (e.key, e.val))
+  public items Sequence (tuple OK V) is sorted_entries.map (e -> (e.key, e.val))
 
 
   # add mapping from k to v
   #
-  add(k OK, v V) ordered_map OK V is
+  public add(k OK, v V) ordered_map OK V is
     match index[](k)
       nil =>
         (ordered_map
@@ -96,7 +96,7 @@ is
 
   # create a string containing all mappings
   #
-  redef as_string =>
+  public redef as_string =>
     for
       r := "", r + c + n
       i in ks.indices
@@ -108,6 +108,6 @@ is
 
   # create an empty instance of ordered_map
   #
-  type.empty => (container.ordered_map
-                 (Sequence OK).type.empty.as_array
-                 (Sequence V).type.empty.as_array)
+  public type.empty => (container.ordered_map
+                        (Sequence OK).type.empty.as_array
+                        (Sequence V).type.empty.as_array)

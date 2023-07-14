@@ -700,7 +700,7 @@ public class Call extends AbstractCall
             if (targetFeature != null && targetFeature != Types.f_ERROR)
               {
                 res.resolveDeclarations(targetFeature);
-                var fos = res._module.lookup(targetFeature, _name, this, _target == null);
+                var fos = res._module.lookup(targetFeature, _name, this, _target == null, null);
                 FeatureName calledName = FeatureName.get(_name, _actuals.size());
                 var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
                 if (fo == null)
@@ -833,7 +833,7 @@ public class Call extends AbstractCall
         _name.startsWith("postfix ")    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(thiz, _name, this, true);
+        var fo = res._module.lookup(thiz, _name, this, true, null);
         var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {

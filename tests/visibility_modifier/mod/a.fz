@@ -1,0 +1,17 @@
+module:public a is
+  hello is
+    say "hello from a"
+
+  module hello2 is
+    say "hello2 from a"
+
+  private aa is
+    public aaa is
+      say "aaa"
+
+  public hello_a unit is
+    say "hello_a from a"
+
+  public get_aa aa is
+    a.this.aa
+

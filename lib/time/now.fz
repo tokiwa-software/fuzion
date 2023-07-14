@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # effect for getting the current date_time
-private now (p () -> time.date_time) : simple_effect is
+public now (p () -> time.date_time) : simple_effect is
 
   get =>
     res := p()

@@ -25,7 +25,7 @@
 
 # delete -- effect wrapping the file delete operation
 #
-private delete(dop Delete_Operation, _ unit) : simple_effect is
+public delete(dop Delete_Operation, _ unit) : simple_effect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
@@ -56,7 +56,7 @@ private delete(dop Delete_Operation, _ unit) : simple_effect is
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-delete(path String) =>
+public delete(path String) =>
   delete.type.install_default
   delete.env.delete path
 

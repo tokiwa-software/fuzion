@@ -25,7 +25,7 @@
 
 # equatable -- feature for immutable values that define an equality relation
 #
-equatable is
+public equatable is
 
 
   # equality implements the default equality relation for values of this type.
@@ -39,4 +39,4 @@ equatable is
   # result is true iff 'a' is considered to represent the same abstract value
   # as 'b'.
   #
-  type.equality(a, b equatable.this) bool is abstract
+  public type.equality(a, b equatable.this) bool is abstract

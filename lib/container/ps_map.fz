@@ -45,19 +45,19 @@
 # This constructor is for internal use only, to create instance of ps_map, use
 # ps_map PK V without arguments.
 #
-ps_map
+private:module ps_map
   (
    # key type
    PK type : property.orderable,
 
    # value type
-   redef V type,
+   V type,
 
    # the array containg the sorted arrays, see below for details
    data fuzion.sys.internal_array (tuple PK V),
 
    # the number of key and value pairs in this map.
-   size i32,
+   public size i32,
 
    # the first index in data that is unused
    fill i32)
@@ -131,7 +131,7 @@ O(n log n).
 
   # add mapping from k to v
   #
-  fixed add (k PK, v V) ps_map PK V is
+  public fixed add (k PK, v V) ps_map PK V is
     if has k
       panic "NYI: ps_map currently does not handle updates for existing key"
     else
@@ -143,7 +143,7 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  add (kv (tuple PK V)) ps_map PK V is
+  public add (kv (tuple PK V)) ps_map PK V is
     nsize := size + 1
     ndata := data
     nfill := fill
@@ -174,7 +174,7 @@ O(n log n).
 
   # find the value k is mapped to or nil if k is not part of this map
   #
-  index [] (k PK) option V is
+  public index [] (k PK) option V is
 
     binary_search(l, r i32) option V is
       m := (l + r) / 2
@@ -209,7 +209,7 @@ O(n log n).
     get 0 sub_sz (data.length - sub_sz)
 
 
-  show unit is
+  public show unit is
     for e in as_key_array
         sep := "", " "
     do
@@ -219,7 +219,7 @@ O(n log n).
 
   # create sorted array of all keys in this map
   #
-  as_key_array array PK is
+  public as_key_array array PK is
     r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
@@ -247,13 +247,13 @@ O(n log n).
 
   # get an array of all key/value pairs in this map
   #
-  redef items Sequence (tuple PK V) is
+  public redef items Sequence (tuple PK V) is
     as_key_array.map (tuple PK V) (k -> (k, ps_map.this[k].get))
 
 
   # get the lowest key in this map
   #
-  min option PK is
+  public min option PK is
     if size = 0
       nil
     else
@@ -282,7 +282,7 @@ O(n log n).
 
   # get the highest key in this map
   #
-  max option PK is
+  public max option PK is
     if size = 0
       nil
     else
@@ -316,7 +316,7 @@ O(n log n).
   # both ps_map.this and other, it will be mapped to ps_map.this[k] or to other[k],
   # but it is undefined to which of these two.
   #
-  fixed union (other ps_map PK V) ps_map PK V is
+  public fixed union (other ps_map PK V) ps_map PK V is
     if other.size < size
       other ∪ ps_map.this
     else
@@ -355,27 +355,27 @@ O(n log n).
 
   # infix operator synonym for union of two ps_maps
   #
-  infix ∪ (other ps_map PK V) => union other
+  public infix ∪ (other ps_map PK V) => union other
 
 
 # ps_maps -- unit type feature declaring features related to ps_map
 #
 # NYI: move to ps_map.type
 #
-ps_maps(PK type : property.orderable, V type) is
+public ps_maps(PK type : property.orderable, V type) is
 
   # empty -- an empty partially sorted map
   #
   # This feature creates an empty instance of ps_map.
   #
-  empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
+  public empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
 # ps_map -- routine to initialize a partially sorted map from two Sequences
 #
 # This feature creates a pre-initialized instance of ps_map.
 #
-ps_map(
+public ps_map(
     PK type : property.orderable,
     V type,
     # list of keys in the map
