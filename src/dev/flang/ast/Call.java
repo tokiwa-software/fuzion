@@ -1040,29 +1040,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * setTarget
-   *
-   * @param t
-   */
-  public void setTarget(Expr t)
-  {
-    Expr ot = this._target;
-    if (ot instanceof Call)
-      {
-        ((Call)ot).setTarget(t);
-      }
-    else  if (ot != null)
-      {
-        throw new Error("target already set: old: "+ot+" new: "+t);
-      }
-    else
-      {
-        this._target = t;
-      }
-  }
-
-
-  /**
    * typeIfKnown returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
