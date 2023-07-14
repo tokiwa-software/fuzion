@@ -28,23 +28,12 @@ package dev.flang.parser;
 
 import java.util.LinkedList;
 
-import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
-import dev.flang.ast.AstErrors;
-import dev.flang.ast.Block;
-import dev.flang.ast.Call;
-import dev.flang.ast.Contract;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Impl;
-import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.Type;
-import dev.flang.ast.Visi;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -116,32 +105,6 @@ public class FList extends ANY implements Stmnt
   public boolean containsOnlyDeclarations()
   {
     throw new Error("FList must be used only during parsing");
-  }
-
-
-  /**
-   * feature
-   *
-   * @param u
-   *
-   * @return
-   */
-  public Feature feature()
-  {
-    Feature result;
-    if (_list.size() != 1)
-      {
-        result = null;
-        Errors.error(_list.get(1).pos(),
-                     "Source file must define exactly one feature, not " + _list.size()+".",
-                     "Additional features must be declared as inner features or in separate files.");
-      }
-    else
-      {
-        result = _list.removeFirst();
-        result.setDefinedInOwnFile();
-      }
-    return result;
   }
 
 
