@@ -364,7 +364,7 @@ public class AstErrors extends ANY
         if (actlT.isThisType())
           {
             assignableToSB
-              .append("assignable to       : ref ")
+              .append("assignable to       : ")
               .append(st(actlT.asRef().toString()));
             if (frmlT.isAssignableFromOrContainsError(actlT))
               {
