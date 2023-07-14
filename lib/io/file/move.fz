@@ -70,5 +70,5 @@ public move(
 
 # reference to the move operations that could take place
 #
-Move_Operation ref is
+private:public Move_Operation ref is
     move(old_path String, new_path String) outcome unit is abstract

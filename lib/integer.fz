@@ -73,7 +73,7 @@ module:public integer : numeric is
   # check if this type of integer is bounded
   #
   # returns false unless redefined by a specific implementation of integer
-  is_bounded => false
+  public is_bounded => false
 
   # greatest common divisor of this and b
   #

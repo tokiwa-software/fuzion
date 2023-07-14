@@ -165,7 +165,7 @@ handles2(T type) =>
 
 # handle value created by 'handles2.new'
 #
-private handle2_0(
+private:public handle2_0(
   T type,
 
   # get value stored in this handle

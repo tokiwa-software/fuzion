@@ -74,7 +74,7 @@ public write =>
 
 # reference to the writing operations that could take place
 #
-File_Write_Handler ref is
+private:public File_Write_Handler ref is
   write(fd i64, content array u8, _ unit) outcome unit is abstract
 
   mkdir(path String) outcome unit is abstract

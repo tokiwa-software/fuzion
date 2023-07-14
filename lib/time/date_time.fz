@@ -136,7 +136,7 @@ is
 
 
 # how many days does the given year have?
-private days_in_year(year i32) =>
+public days_in_year(year i32) =>
   if is_leap_year year then 366 else 365
 
 

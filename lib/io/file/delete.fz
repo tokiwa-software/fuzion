@@ -62,5 +62,5 @@ public delete(path String) =>
 
 # reference to the delete operations that could take place
 #
-Delete_Operation ref is
+private:public Delete_Operation ref is
     delete(path String) outcome unit is abstract

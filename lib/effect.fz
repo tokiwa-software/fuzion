@@ -44,7 +44,7 @@ is
     _ effect_mode.default => default
     _ effect_mode.new     =>
 
-  module mode effect_mode.val is
+  public mode effect_mode.val is
     match r
       effect_mode.plain => effect_mode.plain
       effect_mode.inst, effect_mode.repl, effect_mode.abort, effect_mode.default, effect_mode.new => effect_mode.repl
@@ -117,16 +117,16 @@ private Effect_Call(R type, f () -> R) ref : Function unit is
 
 # effect mode is an enum that determines how an instance of effect is used
 #
-module effect_mode is
+public effect_mode is
 
-  module plain is             # a plain effect, not installed as 'env'
-  module repl is              # effect instance replaces previous one in 'env'
-  module abort is             # effect instance aborts, jump back to where 'env' was installed
-  module default is           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
-  module new is               # a new effect to be installed
-  module inst(f ()->unit) is  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
+  public plain is             # a plain effect, not installed as 'env'
+  public repl is              # effect instance replaces previous one in 'env'
+  public abort is             # effect instance aborts, jump back to where 'env' was installed
+  public default is           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
+  public new is               # a new effect to be installed
+  public inst(f ()->unit) is  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
-  private:module val : choice plain repl effect_mode.abort default new inst of
+  public val : choice plain repl effect_mode.abort default new inst of
 
 
 public code_effect : effect (effect_mode.inst code)

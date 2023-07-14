@@ -91,6 +91,6 @@ seek =>
 
 # reference to the seek operations that could be provided
 #
-Provided_Seek ref is
+private:public Provided_Seek ref is
   seek(fd i64, offset i64) outcome i64 is abstract
   file_position(fd i64) outcome i64 is abstract

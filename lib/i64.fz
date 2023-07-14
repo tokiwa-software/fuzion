@@ -27,7 +27,7 @@
 #
 public i64(val i64) : num.wrap_around, has_interval is
 
-  thiz => i64.this.val
+  public thiz => i64.this.val
 
   # overflow checking
 
@@ -162,7 +162,7 @@ public i64(val i64) : num.wrap_around, has_interval is
 
   # this i64 as an uint
   public as_uint uint
-  pre val ≥ i64 0
+  pre thiz ≥ 0
   is
     uint val.as_u64
 

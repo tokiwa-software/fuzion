@@ -27,7 +27,7 @@
 #
 public u64(val u64) : num.wrap_around, has_interval is
 
-  thiz => u64.this.val
+  public thiz => u64.this.val
 
   # overflow checking
 

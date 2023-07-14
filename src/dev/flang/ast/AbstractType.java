@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
 
 import dev.flang.util.ANY;
@@ -1560,6 +1561,63 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * collect all the directly and indirectly - via generics -
+   * used types in this type.
+   * example: Cons i32 (list i32) => { Cons, i32, list }
+   *
+   * @return
+   */
+  private Set<AbstractType> usedTypes()
+  {
+    var result = new TreeSet<AbstractType>();
+    usedTypes(result);
+    return result;
+  }
+
+
+  /**
+   * recursion helper for usedTypes (no args)
+   * @param result
+   */
+  private void usedTypes(TreeSet<AbstractType> result)
+  {
+    if (result.add(this))
+      {
+        for (AbstractType at : this.generics())
+          {
+            at.usedTypes(result);
+          }
+        if (isChoice())
+          {
+            for (AbstractType at : this.choiceGenerics())
+              {
+                at.usedTypes(result);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Is this type or any of its generic types less visible than `v`?
+   *
+   * @param v
+   * @return
+   */
+  public boolean lessVisibleThan(Visi v)
+  {
+    if (PRECONDITIONS) require
+      (!v.definesTypeVisibility());
+
+    return
+      !isGenericArgument() &&
+        usedTypes().stream().anyMatch(at -> !at.isGenericArgument() && at.featureOfType().visibility().typeVisibility().ordinal() < v.ordinal())
+      || isGenericArgument() &&
+        genericArgument().constraint().lessVisibleThan(v);
   }
 
 }

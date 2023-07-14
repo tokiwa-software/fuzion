@@ -35,7 +35,7 @@ public internal_array_init(T type, private length i32) =>
 
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
-module:public internal_array(T type, module data Any, module length i32) is
+module:public internal_array(T type, module data Any, public length i32) is
 
   private get  (X type, d Any, i i32) X is intrinsic
   private setel(X type, d Any, i i32, o X) unit is intrinsic

@@ -72,7 +72,7 @@ public nano =>
 
 # abstract provider that can deliver a nano time
 #
-Nano_Time_Provider ref is
+private:public Nano_Time_Provider ref is
 
   # no guarantee can be given for precision nor resolution
   read u64 is abstract

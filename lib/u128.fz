@@ -28,7 +28,7 @@
 public u128(hi, lo u64) : num.wrap_around, has_interval is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
-  thiz => u128 hi lo
+  public thiz => u128 hi lo
 
   # overflow checking
 
@@ -258,9 +258,9 @@ public u128(hi, lo u64) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero => u128 0 0
+  public fixed type.zero => u128 0 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one => u128 0 1
+  public fixed type.one => u128 0 1

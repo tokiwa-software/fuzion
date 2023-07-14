@@ -25,7 +25,7 @@
 
 # panic -- effect that terminates a computation in panic
 #
-panic (
+public panic (
   # the provider this effect uses to panic
   p Panic_Provider,
   _ unit

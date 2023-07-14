@@ -84,7 +84,7 @@ public vars =>
 # Different heirs of this feature may provided different sources for environment
 # variables
 #
-Vars_Provider ref is
+private:public Vars_Provider ref is
 
   # If set, get the environment variable corresponding to v
   #

@@ -59,7 +59,7 @@ public fuzion.java is
   #
   public Java_Object(private Java_Ref Any) ref
   is
-    is_null bool is intrinsic
+    public is_null bool is intrinsic
 
     # dummy feature to make sure Java_Object.type exists. This is required since
     # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.

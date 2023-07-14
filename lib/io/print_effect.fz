@@ -27,7 +27,7 @@
 #
 # This is used as heir feature for effects such as io.out and io.err.
 #
-module print_effect (p Can_Print) : simple_effect
+public print_effect (p Can_Print) : simple_effect
 is
 
   # print the given string followed be new line

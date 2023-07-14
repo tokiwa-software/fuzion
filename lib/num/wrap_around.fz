@@ -73,7 +73,7 @@ module:public wrap_around : integer is
   #
   # wrap_arounds are assumed to be a bound set by default, so
   # this returns true unless redefined by an implementation
-  module redef is_bounded => true
+  public redef is_bounded => true
 
   # basic operations with runtime error on overflow
 

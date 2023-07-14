@@ -31,7 +31,7 @@
 #
 public f64(val f64) : float is
 
-  thiz => f64.this.val
+  public thiz => f64.this.val
 
 
   # basic operations: 'prefix -' (negation)

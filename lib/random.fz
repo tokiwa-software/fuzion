@@ -25,7 +25,7 @@
 
 # random -- effect that provides random numbers
 #
-random (
+public random (
 
   # the provider this effect uses to create random numbers
   p Random_Provider,
@@ -127,7 +127,7 @@ public time_seeded_random(rr ()->unit) =>
 # must be used to create a new instance of 'Random_Provider' before 'get' can be
 # used to obtain the new random number.
 #
-Random_Provider ref is
+private:public Random_Provider ref is
 
   # create a new instance of Random_Provider containing a new state. Depending
   # on the qualifity of this random number generator, this might be a simple

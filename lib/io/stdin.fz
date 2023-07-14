@@ -194,7 +194,7 @@ public stdin =>
 
 
 # Byte_Input_Handler -- abstract source of bytes
-Byte_Input_Handler ref is
+private:public Byte_Input_Handler ref is
 
   # get the next instance of Byte_Input_Handler
   # which will contain the next byte or an error.

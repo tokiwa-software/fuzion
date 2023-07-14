@@ -277,13 +277,13 @@ is
   public fixed infix **?(other uint) num_option uint is thiz ** other
   public fixed infix **^(other uint) uint is thiz ** other
 
-  module fixed type.zero uint is
+  public fixed type.zero uint is
     uint [u32 0] unit
 
-  module fixed type.one uint is
+  public fixed type.one uint is
     uint [u32 1] unit
 
-  thiz => uint b unit
+  public thiz => uint b unit
 
 
   # this uint as an i32
@@ -305,17 +305,27 @@ is
     as_u32.as_u8
 
 
+  # does this uint fit in 32 bits?
+  public fits_in_u32 =>
+    data.count ≤ 1
+
+
   # this uint as an u32
   public as_u32 u32
-  pre
-    data.count ≤ 1
+  pre fits_in_u32
   is
     data.first (u32 0)
 
 
+  # does this uint fit in 64 bits?
+  #
+  public fits_in_u64 =>
+    data.count ≤ 2
+
+
   # this uint as an u64
   public as_u64 u64
-  pre data.count ≤ 2
+  pre fits_in_u64
   is
     if data.count = 2
       data[1].as_u64<<32 | data[0].as_u64

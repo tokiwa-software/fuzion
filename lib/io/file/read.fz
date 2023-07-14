@@ -89,5 +89,5 @@ public read =>
 
 # reference to the reading operations that could take place
 #
-Read_Operation ref is
+private:public Read_Operation ref is
   read(fd i64, n u64) outcome (array u8) is abstract

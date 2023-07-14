@@ -35,15 +35,15 @@ is
     panic "invalid, there is no max int."
 
 
-  thiz => int ns n
+  public thiz => int ns n
 
   name String is
     "int"
 
-  fixed type.zero int is
+  public fixed type.zero int is
     int num.plus uint.type.zero
 
-  fixed type.one int is
+  public fixed type.one int is
     int num.plus uint.type.one
 
 
@@ -174,28 +174,28 @@ is
 
   # this int as an u8
   public as_u8 u8
-  pre s.is_plus
+  # NYI pre int.this >= 0
   is
       n.as_u8
 
 
   # this int as an u32
   public as_u32 u32
-  pre s.is_plus
+  # NYI pre int.this >= 0
   is
       n.as_u32
 
 
   # this int as an u64
   public as_u64 u64
-  pre s.is_plus
+  # NYI pre int.this >= 0
   is
     n.as_u64
 
 
   # this int as an uint
   public as_uint uint
-  pre s.is_plus
+  # NYI pre int.this >= 0
   is
     n
 

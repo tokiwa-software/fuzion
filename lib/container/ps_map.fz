@@ -45,7 +45,7 @@
 # This constructor is for internal use only, to create instance of ps_map, use
 # ps_map PK V without arguments.
 #
-private:module ps_map
+private:public ps_map
   (
    # key type
    PK type : property.orderable,

@@ -72,7 +72,7 @@ module fileio is
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(fd i64, content array u8) outcome unit is
+  module write(fd i64, content array u8) outcome unit is
     res := write fd content.internal_array.data content.length
 
     if res = i8 0
@@ -97,7 +97,7 @@ module fileio is
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
   #
-  public delete(
+  module delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -120,7 +120,7 @@ module fileio is
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
   # returns a unit type as outcome in case of success and error in case of failure
   #
-  public move(
+  module move(
               # the old (relative or absolute) file name, using platform specific path separators
               old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
@@ -146,7 +146,7 @@ module fileio is
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
   #
-  public create_dir(
+  module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
                     path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -191,7 +191,7 @@ module fileio is
   # returns outcome i64 representing the file descriptor in success
   # returns an error in failure
   #
-  public open(
+  module open(
               # a Fuzion Object represention the path for the source to be opened
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
@@ -218,7 +218,7 @@ module fileio is
   # Closes an IO source using an i64 representing the source handler (file descriptor)
   # returns outcome unit in case of success and an error in case of failure
   #
-  public close(
+  module close(
                # file descriptor
                fd i64) outcome unit is
     closing_result := close fd unit
@@ -242,7 +242,7 @@ module fileio is
   # returns an outcome i64 that represents the new offset
   # returns an error in case of failure
   #
-  public seek(
+  module seek(
               # file descriptor
               fd i64,
               # the offset to seek from the beginning of this file
@@ -272,7 +272,7 @@ module fileio is
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  public file_position(
+  module file_position(
                        # file descriptor
                        fd i64) outcome i64 is
     arr := array 2 (i -> i64 0)

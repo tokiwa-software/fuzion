@@ -76,7 +76,7 @@ public thread =>
 
 # Thread_Provider -- abstract source of concurrency
 #
-Thread_Provider ref is
+private:public Thread_Provider ref is
 
   # spawn a new thread using given code
   #

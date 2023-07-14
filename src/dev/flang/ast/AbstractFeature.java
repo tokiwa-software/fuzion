@@ -732,7 +732,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var p = pos();
             var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
-                                      visibility(),
+                                      visibility().typeVisibility(),
                                       inh.isEmpty() ? 0 : Consts.MODIFIER_REDEFINE,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
@@ -833,7 +833,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (result == null)
       {
         var p = pos();
-        var typeFeature = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
+        var typeFeature = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
                                       inh,
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
@@ -1703,6 +1703,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
        +  "is " + kind();
 
+  }
+
+
+  public boolean lessVisibleThan(Feature f)
+  {
+    return this.visibility().ordinal() < f.visibility().ordinal();
   }
 
 

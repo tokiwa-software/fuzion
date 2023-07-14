@@ -29,7 +29,7 @@
 # for analysis.
 #
 #
-quantors is
+public quantors is
 
   # for_all quantors for use in analysis parts of contracts
   #

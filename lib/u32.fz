@@ -27,7 +27,7 @@
 #
 public u32(val u32) : num.wrap_around, has_interval is
 
-  thiz => u32.this.val
+  public thiz => u32.this.val
 
   # overflow checking
 

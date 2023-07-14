@@ -76,7 +76,7 @@ public mutate : simple_effect is
     panic "*** mutate.id should never be 0"
 
   # common type for mutable data
-  mutable_element is
+  private:public mutable_element is
     # id used to verify that mutation made with the same effect
     # the mutable value was created with
     my_id := id
@@ -178,7 +178,7 @@ public mutate : simple_effect is
          T type,
 
          # length of the array to create
-         length i32,
+         public length i32,
 
          # initial value for elements
          init T

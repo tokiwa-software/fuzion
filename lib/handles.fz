@@ -195,7 +195,7 @@ public handles(T type) =>
 # type of the reference to the cell that holds a value of type T which can be updated
 # using the handles interface
 #
-private handle0(
+private:public handle0(
   T type,
   # the index in 'handles.ar'
   private x i32

@@ -24,7 +24,7 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Map KEY VAL is
+private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Map KEY VAL is
 
 
   # the root entry of this map
@@ -320,8 +320,8 @@ mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Ma
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  public fold(B type, init B, f (B, Entry LM KEY VAL) -> B) B is
-    private fold0(init B, node option (Entry LM KEY VAL)) B is
+  private fold(B type, init B, f (B, Entry LM KEY VAL) -> B) B is
+    fold0(init B, node option (Entry LM KEY VAL)) B is
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
 

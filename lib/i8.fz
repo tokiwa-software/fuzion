@@ -27,7 +27,7 @@
 #
 public i8(val i8) : num.wrap_around, has_interval is
 
-  thiz => i8.this.val
+  public thiz => i8.this.val
 
   # overflow checking
 
@@ -35,12 +35,12 @@ public i8(val i8) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i8) => thiz > i8.type.zero && i8.type.max -° thiz < other
-  public fixed underflow_on_add(other i8) => thiz < i8.type.zero && i8.type.min -° thiz > other
+  public fixed overflow_on_add (other i8) => thiz > 0 && i8.type.max -° thiz < other
+  public fixed underflow_on_add(other i8) => thiz < 0 && i8.type.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i8) => thiz > i8.type.zero && thiz -° i8.type.max > other
-  public fixed underflow_on_sub(other i8) => thiz < i8.type.zero && thiz -° i8.type.min < other
+  public fixed overflow_on_sub (other i8) => thiz > 0 && thiz -° i8.type.max > other
+  public fixed underflow_on_sub(other i8) => thiz < 0 && thiz -° i8.type.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   public fixed overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.type.max.as_i32
@@ -55,11 +55,11 @@ public i8(val i8) : num.wrap_around, has_interval is
   # division and remainder with check for div-by-zero
   public fixed infix / (other i8)
     pre
-      safety: other != i8.type.zero
+      safety: other != 0
    => div(other)
   fixed redef infix % (other i8)
     pre
-      safety: other != i8.type.zero
+      safety: other != 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
@@ -83,27 +83,27 @@ public i8(val i8) : num.wrap_around, has_interval is
 
   public as_u8 u8
     pre
-      debug: thiz ≥ i8.type.zero
+      debug: thiz ≥ 0
     is
       cast_to_u8
   public as_u16 u16
     pre
-      debug: thiz ≥ i8.type.zero
+      debug: thiz ≥ 0
     is
       cast_to_u16
   public as_u32 u32
     pre
-      debug: thiz ≥ i8.type.zero
+      debug: thiz ≥ 0
     is
       cast_to_u32
   public as_u64 u64
     pre
-      debug: thiz ≥ i8.type.zero
+      debug: thiz ≥ 0
     is
       cast_to_u64
   public as_u128 u128
     pre
-      debug: thiz ≥ i8.type.zero
+      debug: thiz ≥ 0
     is
       cast_to_u128
   public as_int int is

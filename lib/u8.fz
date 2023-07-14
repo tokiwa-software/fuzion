@@ -27,7 +27,7 @@
 #
 public u8(val u8) : num.wrap_around, has_interval is
 
-  thiz => u8.this.val
+  public thiz => u8.this.val
 
   # overflow checking
 
@@ -55,11 +55,11 @@ public u8(val u8) : num.wrap_around, has_interval is
   # division and remainder with check for div-by-zero
   public fixed infix / (other u8)
     pre
-      safety: other != u8.type.zero
+      safety: other != 0
    => div(other)
   public fixed infix % (other u8)
     pre
-      safety: other != u8.type.zero
+      safety: other != 0
    => mod(other)
 
   # private division and remainder with crash in case of div-by-zero

@@ -36,8 +36,8 @@
 # or the denominator.
 #
 public fraction(B type : integer,
-         numerator,
-         denominator B
+         public numerator,
+                denominator B
         ) : numeric
   pre
     safety: denominator.sign > 0 # denominator must be positive

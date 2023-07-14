@@ -36,14 +36,14 @@ public float : numeric is
   # representable for the given values.  For IEEE_754, all operations are
   # defined for all values.
   #
-  redef prefix +! bool is true
-  redef prefix -! bool is true
-  redef infix +! (other float.this) bool is true
-  redef infix -! (other float.this) bool is true
-  redef infix *! (other float.this) bool is true
-  redef infix /! (other float.this) bool is true
-  redef infix %! (other float.this) bool is true
-  redef infix **!(other float.this) bool is true
+  public redef prefix +! bool is true
+  public redef prefix -! bool is true
+  public redef infix +! (other float.this) bool is true
+  public redef infix -! (other float.this) bool is true
+  public redef infix *! (other float.this) bool is true
+  public redef infix /! (other float.this) bool is true
+  public redef infix %! (other float.this) bool is true
+  public redef infix **!(other float.this) bool is true
 
 
   # comparision
@@ -53,12 +53,12 @@ public float : numeric is
   # type.equality and type.lteq should be used for equivalence relations
   # and total ordering in the mathematical sense.
   #
-  infix = (other float.this) bool is abstract
-  infix != (other float.this) bool is !(infix = other)
-  infix <= (other float.this) bool is abstract
-  infix >= (other float.this) bool is abstract
-  infix > (other float.this) bool is abstract
-  infix < (other float.this) bool is abstract
+  public infix = (other float.this) bool is abstract
+  public infix != (other float.this) bool is !(infix = other)
+  public infix <= (other float.this) bool is abstract
+  public infix >= (other float.this) bool is abstract
+  public infix > (other float.this) bool is abstract
+  public infix < (other float.this) bool is abstract
 
 
   # convert a float value to i64 dropping any fraction.

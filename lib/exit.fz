@@ -25,7 +25,7 @@
 
 # exit -- effect that terminates a computation in exit
 #
-exit (
+private:public exit (
 
   # the handler this effect uses to exit
   p Exit_Handler,
@@ -137,7 +137,7 @@ public exit(handler Exit_Handler, code ()->unit) =>
 
 # Exit_Handler -- abstract exit
 #
-Exit_Handler ref is
+private:public Exit_Handler ref is
 
   # exit with the given code
   #
