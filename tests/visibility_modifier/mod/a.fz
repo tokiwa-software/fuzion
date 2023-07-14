@@ -5,7 +5,7 @@ module:public a is
   module hello2 is
     say "hello2 from a"
 
-  private aa is
+  private:public aa is
     public aaa is
       say "aaa"
 

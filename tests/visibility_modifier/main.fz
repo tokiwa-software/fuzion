@@ -11,5 +11,5 @@ m =>
   say "calling b.ret_b.hello_a"
   b.ret_b.hello_a
 
-  # NYI this should fail since aa is private
+  say "calling b.get_aa.aaa"
   b.get_aa.aaa

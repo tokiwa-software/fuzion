@@ -6,4 +6,5 @@ calling b.ret_a.hello_a
 hello_a from a
 calling b.ret_b.hello_a
 hello_a from b
+calling b.get_aa.aaa
 aaa
