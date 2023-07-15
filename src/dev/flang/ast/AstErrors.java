@@ -166,6 +166,10 @@ public class AstErrors extends ANY
   {
     return names.map(s -> ss(s)).toString();
   }
+  static String spn(List<ParsedName> names) // names as list "`a`, `b`, `c`"
+  {
+    return sn2((names.map2(n->n._name)));
+  }
   static String sqn(List<String> names) // names as qualified name "a.b.c"
   {
     return ss(names.toString("", ".", ""));
@@ -1338,11 +1342,11 @@ public class AstErrors extends ANY
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
-  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, AbstractType funType)
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<ParsedName> names, AbstractType funType)
   {
     int req = funType.generics().size() - 1;
     int delta = names.size() - req;
-    var ns = sn(names);
+    var ns = spn(names);
     error(pos,
           "Wrong number of arguments in lambda expression",
           "Lambda expression has " + singularOrPlural(names.size(), "argument") + " while the target type expects " +
@@ -1583,12 +1587,12 @@ public class AstErrors extends ANY
       }
   }
 
-  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
+  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<ParsedName> names)
   {
     error(pos,
           "Destructuring not possible for value whose type is a type parameter.",
           "Type of expression is " + s(t) + "\n" +
-          "Cannot destructure value of type parameter type into (" + sn(names) + ")");
+          "Cannot destructure value of type parameter type into (" + spn(names) + ")");
   }
 
   static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
@@ -1599,7 +1603,7 @@ public class AstErrors extends ANY
   }
 
 
-  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<String> names)
+  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<ParsedName> names)
   {
     int fn = fieldNames.size();
     int nn = names.size();
@@ -1609,8 +1613,8 @@ public class AstErrors extends ANY
                       (fn == 1) ? "one visible argument field" :
                       "" + fn + " visible argument fields"     ) + " " + sn(fieldNames) + "\n" +
           (nn == 0 ? "while there are no destructuring variables" :
-           nn == 1 ? "while there is one destructuring variable: " + sn(names)
-           : "while there are " + nn + " destructuring variables: " + sn(names)) + ".\n"
+           nn == 1 ? "while there is one destructuring variable: " + spn(names)
+                   : "while there are " + nn + " destructuring variables: " + spn(names)) + ".\n"
           );
   }
 

@@ -845,6 +845,24 @@ public class SourceFile extends ANY
 
 
   /**
+   * Obtain the given range pos..endPos as a SourceRange object.
+   *
+   * @param pos a byte position within this file.
+   *
+   * @param endPos a byte position after pos within this file.
+   */
+  public SourceRange sourceRange(int pos, int endPos)
+  {
+    if (PRECONDITIONS) require
+      (0 <= pos,
+       pos < endPos,
+       endPos <= byteLength());
+
+    return new SourceRange(this, pos, endPos);
+  }
+
+
+  /**
    * Get the contents of the line with the given number.
    *
    * @param l a line number

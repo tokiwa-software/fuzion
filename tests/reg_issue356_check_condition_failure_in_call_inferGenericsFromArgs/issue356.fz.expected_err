@@ -1,7 +1,7 @@
 
 --CURDIR--/issue356.fz:27:7: error 1: Failed to infer actual type parameters
   a : choice is
-------^
+------^^^^^^
 In call to 'choice', no actual type parameters are given and inference of the type parameters failed.
 Expected type parameters: 'CHOICE_ELEMENT_TYPE...'
 Type inference failed for one type parameter 'CHOICE_ELEMENT_TYPE'

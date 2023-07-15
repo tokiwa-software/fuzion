@@ -325,7 +325,7 @@ public abstract class Expr extends ANY implements Stmnt
         else
           {
             var fn = new Function(pos(),
-                                  new List<String>(),
+                                  new List<>(),
                                   new List<>(),
                                   Contract.EMPTY_CONTRACT,
                                   result);

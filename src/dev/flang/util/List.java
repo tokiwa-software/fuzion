@@ -455,6 +455,22 @@ public class List<T>
 
 
   /**
+   * Create a mapping of this list by applying f to all elements
+   *
+   * @return A new list of the same length, containing the result of f applied to each element.
+   */
+  public <V> List<V> map2(Function<T,V> f)
+  {
+    var result = new List<V>();
+    for (var i = 0; i < size(); i++)
+      {
+        result.add(f.apply(get(i)));
+      }
+    return result;
+  }
+
+
+  /**
    * Create a String by applying f to all elements and concatenating the result
    * in order.
    *

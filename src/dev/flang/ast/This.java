@@ -51,7 +51,7 @@ public class This extends ExprWithPos
   /**
    * the qualified name of the this that is to be accessed.
    */
-  public final List<String> _qual;
+  public final List<ParsedName> _qual;
 
 
   /**
@@ -79,9 +79,9 @@ public class This extends ExprWithPos
    *
    * @param a
    */
-  public This(SourcePosition pos, List<String> qual)
+  public This(List<ParsedName> qual)
   {
-    super(pos);
+    super(SourcePosition.range(qual));
 
     if (PRECONDITIONS) require
       (!qual.isEmpty());
@@ -306,7 +306,7 @@ public class This extends ExprWithPos
    *
    * @return the feature that was found or Types.f_ERROR in case of an error.
    */
-  static AbstractFeature getThisFeature(ANY thisOrType, List<String> qual, AbstractFeature outer)
+  static AbstractFeature getThisFeature(ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
   {
     // The comments on the right hand side will give an example to illustrate how this works: Note
     // that indices in outer start from the right, innermost name:
@@ -329,7 +329,7 @@ public class This extends ExprWithPos
         d++;
         o = o.outer();
       }
-    var s = qual.getFirst();                      // s           is 'a'
+    var s = qual.getFirst()._name;                // s           is 'a'
     AbstractFeature result = Types.f_ERROR;
     var isAmbiguous = ambig.contains(s);
     var p = isAmbiguous ? -1 : all.getOrDefault(s, -1);
@@ -349,7 +349,7 @@ public class This extends ExprWithPos
                   {
                     result = o2;
                   }
-                if (p >= d2 && d2 >= q && !b.equals(qual.get(qual.size()-(d2-q)-1)))
+                if (p >= d2 && d2 >= q && !b.equals(qual.get(qual.size()-(d2-q)-1)._name))
                   {
                     p = -1;
                     result =  Types.f_ERROR;
@@ -377,7 +377,7 @@ public class This extends ExprWithPos
           }
         AstErrors.outerFeatureNotFoundInThis(thisOrType,
                                              outer,
-                                             qual.toString("", ".", ""),
+                                             qual.map2(x -> x._name).toString("", ".", ""),
                                              list,
                                              isAmbiguous);
       }
@@ -395,7 +395,7 @@ public class This extends ExprWithPos
   {
     if (_qual != null)
       {
-        return _qual+".this";
+        return _qual.map2(n -> n._name)+".this";
       }
     else if (_feature != null)
       {

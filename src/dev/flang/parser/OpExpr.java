@@ -33,6 +33,7 @@ import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.ParsedCall;
+import dev.flang.ast.ParsedName;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
@@ -196,7 +197,7 @@ public class OpExpr extends ANY
           {             // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedCall(op.pos, e1, "infix "+op.text, new List<>(new Actual(e2)));
+            Expr e = new ParsedCall(e1, new ParsedName(op.pos, "infix "+op.text), new List<>(new Actual(e2)));
             els.remove(max+1);
             els.remove(max);
             els.set(max-1, e);
@@ -206,14 +207,14 @@ public class OpExpr extends ANY
             Expr e2 = expr(max+1);
             Expr e =
               (op.text.equals("+") && (e2 instanceof NumLiteral i2)) ? i2             :
-              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new ParsedCall(op.pos, e2, "prefix "+op.text);
+              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new ParsedCall(e2, new ParsedName(op.pos, "prefix "+op.text));
             els.remove(max+1);
             els.set(max, e);
           }
         else
           {                                          // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new ParsedCall(op.pos, e1, "postfix "+op.text);
+            Expr e = new ParsedCall( e1, new ParsedName(op.pos, "postfix "+op.text));
             els.remove(max);
             els.set(max-1, e);
           }

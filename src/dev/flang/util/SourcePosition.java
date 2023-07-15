@@ -49,7 +49,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   /**
    * The byte position in the source file that this refers to.
    */
-  private final int _bytePos;
+  protected final int _bytePos;
 
 
   /**
@@ -69,7 +69,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for built-in types and features that do not have a
    * source code position.
    */
-  public static final SourcePosition builtIn = new SourcePosition(new SourceFile(Path.of("--builtin--"), new byte[0]), 0)
+  public static final SourceRange builtIn = new SourceRange(new SourceFile(Path.of("--builtin--"), new byte[0]), 0, 0)
     {
       public boolean isBuiltIn()
       {
@@ -267,6 +267,16 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * End position within _sourceFile.  This is equal to bytePos() for a plain
+   * SourcePosition and may be larger than bytePos for a SourceRange.
+   */
+  public int byteEndPos()
+  {
+    return _bytePos;
+  }
+
+
+  /**
    * Convert this position to a string of the form
    * "<filename>:<line>:<column>:".
    */
@@ -284,6 +294,54 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         result = _bytePos - o._bytePos;
       }
     return result;
+  }
+
+
+  /**
+   * Create a SourcePosition or SourceRange that extends form this position's
+   * start to end's end.
+   *
+   * @param end a second position that must refert to the same source file and
+   * not be before this.
+   */
+  public SourcePosition rangeTo(SourcePosition end)
+  {
+    if (PRECONDITIONS) require
+      (_sourceFile == end._sourceFile,
+       bytePos() <= end.byteEndPos());
+
+    if (this == end)
+      {
+        return this;
+      }
+    else
+      {
+        var p = bytePos();
+        var e = byteEndPos();
+        if (p == e)
+          {
+            return this;
+          }
+        else
+          {
+            return new SourceRange(_sourceFile, p, e);
+          }
+      }
+  }
+
+
+  /**
+   * Create a SourcePosition or SourceRange that extends form the first element's
+   * start to the last element's end.
+   *
+   * @param list list of elements.
+   */
+  public static <T extends HasSourcePosition> SourcePosition range(List<T> list)
+  {
+    if (PRECONDITIONS) require
+      (list.size() > 0);
+
+    return list.getFirst().pos().rangeTo(list.getLast().pos());
   }
 
 }
