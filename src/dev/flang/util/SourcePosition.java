@@ -174,27 +174,41 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
-   * Convert this into a two line string that shows the referenced source code
+   * Convert this into a two or more line string that shows the referenced source code
    * line followed by a line with caret (^) at the relevant position.  The
-   * second line is not terminated by LF.
+   * last line is not terminated by LF.
    */
   public String showInSource()
   {
     StringBuilder sb = new StringBuilder();
-    sb.append(Terminal.BLUE);
-    sb.append(_sourceFile.line(line()));
-
-    // add LF in case this is the last line of a file that does not end in a line break
-    if (sb.length() > 0 && sb.charAt(sb.length()-1) != '\n')
+    for(int p = _bytePos, l = line()-1;
+        p == _bytePos || p < byteEndPos();
+        p++)
       {
-        sb.append("\n");
+        while (_sourceFile.lineStartPos(l+1) <= p)
+          {
+            l = l + 1;
+            sb.append(Terminal.BLUE)
+              .append(_sourceFile.line(l));
+            if (sb.charAt(sb.length()-1) != '\n')
+              { // add LF in case this is the last line of a file that does not end in a line break
+                sb.append("\n");
+              }
+            sb.append(Terminal.YELLOW);
+            for (int j=0; l == line() && j < column()-1; j++)
+              {
+                sb.append('-');
+              }
+          }
+        if (p < _sourceFile.lineEndPos(l) || p == byteEndPos()) // suppress '^' at LFs except for LF at end position
+          {
+            sb.append('^');
+            if (p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
+              {
+                sb.append("\n");
+              }
+          }
       }
-    sb.append(Terminal.YELLOW);
-    for (int j=0; j < column()-1; j++)
-      {
-        sb.append('-');
-      }
-    sb.append('^');
     sb.append(Terminal.RESET);
     return sb.toString();
   }

@@ -84,50 +84,6 @@ public class SourceRange extends SourcePosition
     return _byteEndPos;
   }
 
-
-  /**
-   * Convert this into a two or more line string that shows the referenced source code
-   * line followed by a line with caret (^) at the relevant position.  The
-   * last line is not terminated by LF.
-   */
-  public String showInSource()
-  {
-    StringBuilder sb = new StringBuilder();
-    sb.append(Terminal.BLUE);
-    var l = line();
-    sb.append(_sourceFile.line(l));
-
-    // add LF in case this is the last line of a file that does not end in a line break
-    if (sb.length() > 0 && sb.charAt(sb.length()-1) != '\n')
-      {
-        sb.append("\n");
-      }
-    sb.append(Terminal.YELLOW);
-    for (int j=0; j < column()-1; j++)
-      {
-        sb.append('-');
-      }
-    for(var p = _bytePos; p < _byteEndPos; p++)
-      {
-        sb.append('^');
-        while (_sourceFile.lineStartPos(l+1) < p)
-          {
-            l = l + 1;
-            sb.append(Terminal.RESET);
-            sb.append("\n");
-            sb.append(_sourceFile.line(l));
-            // add LF in case this is the last line of a file that does not end in a line break
-            if (sb.charAt(sb.length()-1) != '\n')
-              {
-                sb.append("\n");
-              }
-            sb.append(Terminal.YELLOW);
-          }
-      }
-    sb.append(Terminal.RESET);
-    return sb.toString();
-  }
-
 }
 
 /* end of file */
