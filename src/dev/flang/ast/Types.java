@@ -128,16 +128,6 @@ public class Types extends ANY
     public final AbstractType t_u64 ;
     public final AbstractType t_f32 ;
     public final AbstractType t_f64 ;
-    public final AbstractType t_ref_i8  ;
-    public final AbstractType t_ref_i16 ;
-    public final AbstractType t_ref_i32 ;
-    public final AbstractType t_ref_i64 ;
-    public final AbstractType t_ref_u8  ;
-    public final AbstractType t_ref_u16 ;
-    public final AbstractType t_ref_u32 ;
-    public final AbstractType t_ref_u64 ;
-    public final AbstractType t_ref_f32 ;
-    public final AbstractType t_ref_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_any;
     private final AbstractType t_fuzion;
@@ -184,38 +174,28 @@ public class Types extends ANY
     public final AbstractFeature f_Unary;
     public static interface CreateType
     {
-      AbstractType type(String name, boolean isRef);
+      AbstractType type(String name);
     }
     public Resolved(SrcModule mod, CreateType ct, AbstractFeature universe)
     {
       this.universe = universe;
-      t_i8            = ct.type("i8"          , false);
-      t_i16           = ct.type("i16"         , false);
-      t_i32           = ct.type("i32"         , false);
-      t_i64           = ct.type("i64"         , false);
-      t_u8            = ct.type("u8"          , false);
-      t_u16           = ct.type("u16"         , false);
-      t_u32           = ct.type("u32"         , false);
-      t_u64           = ct.type("u64"         , false);
-      t_f32           = ct.type("f32"         , false);
-      t_f64           = ct.type("f64"         , false);
-      t_ref_i8        = ct.type("i8"          , true );
-      t_ref_i16       = ct.type("i16"         , true );
-      t_ref_i32       = ct.type("i32"         , true );
-      t_ref_i64       = ct.type("i64"         , true );
-      t_ref_u8        = ct.type("u8"          , true );
-      t_ref_u16       = ct.type("u16"         , true );
-      t_ref_u32       = ct.type("u32"         , true );
-      t_ref_u64       = ct.type("u64"         , true );
-      t_ref_f32       = ct.type("f32"         , true );
-      t_ref_f64       = ct.type("f64"         , true );
-      t_bool          = ct.type("bool"        , false);
-      t_fuzion        = ct.type("fuzion"      , false);
-      t_string        = ct.type(FuzionConstants.STRING_NAME, false);
-      t_Const_String  = ct.type("Const_String" , false);
-      t_any           = ct.type(FuzionConstants.ANY_NAME, false);
-      t_unit          = ct.type(FuzionConstants.UNIT_NAME, false);
-      t_void          = ct.type("void"        , false);
+      t_i8            = ct.type("i8");
+      t_i16           = ct.type("i16");
+      t_i32           = ct.type("i32");
+      t_i64           = ct.type("i64");
+      t_u8            = ct.type("u8");
+      t_u16           = ct.type("u16");
+      t_u32           = ct.type("u32");
+      t_u64           = ct.type("u64");
+      t_f32           = ct.type("f32");
+      t_f64           = ct.type("f64");
+      t_bool          = ct.type("bool");
+      t_fuzion        = ct.type("fuzion");
+      t_string        = ct.type(FuzionConstants.STRING_NAME);
+      t_Const_String  = ct.type("Const_String");
+      t_any           = ct.type(FuzionConstants.ANY_NAME);
+      t_unit          = ct.type(FuzionConstants.UNIT_NAME);
+      t_void          = ct.type("void");
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
       f_TRUE          = universe.get(mod, "TRUE");
@@ -252,7 +232,7 @@ public class Types extends ANY
     }
     Resolved(Resolution res, AbstractFeature universe)
     {
-      this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
+      this(res._module, (name) -> Type.type(res, false, name, universe), universe);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,
