@@ -199,11 +199,6 @@ public abstract class Expr extends ANY implements Stmnt
    */
   void loadCalledFeature(Resolution res, AbstractFeature outer)
   {
-    if (Errors.count() == 0)
-      {
-        // NYI: is this an error?
-        // throw new UnsupportedOperationException(""+getClass()+".loadCalledFeature() at " + pos);
-      }
   }
 
 

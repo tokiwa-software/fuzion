@@ -521,29 +521,36 @@ public class Call extends AbstractCall
    */
   private AbstractFeature targetFeature(Resolution res, AbstractFeature thiz)
   {
+    AbstractFeature result;
+
     // are we searching for features called via thiz' inheritance calls?
     if (thiz.state() == Feature.State.RESOLVING_INHERITANCE)
       {
         if (_target instanceof Call tc)
           {
             _target.loadCalledFeature(res, thiz);
-            return tc.calledFeature();
+            result = tc.calledFeature();
           }
         else
           {
-            return thiz.outer();   // For an inheritance call, we do not permit call to thiz' features,
-                                   // but only to the outer clazz' features:
+            result = thiz.outer();   // For an inheritance call, we do not permit call to thiz' features,
+                                     // but only to the outer clazz' features:
           }
       }
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz);
-        return targetTypeOrConstraint(res).featureOfType();
+        result = targetTypeOrConstraint(res).featureOfType();
       }
     else
       { // search for feature in thiz
-        return thiz;
+        result = thiz;
       }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
@@ -680,7 +687,30 @@ public class Call extends AbstractCall
    */
   void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
-    AbstractFeature targetFeature = null;
+    var ignore = loadCalledFeatureUnlessTargetVoid(res, thiz);
+  }
+
+  /**
+   * Load all features that are called by this expression.  This is called
+   * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
+   * during state RESOLVING_TYPES for all other calls.
+   *
+   * @param res the resolution instance.
+   * instance.
+   *
+   * @param thiz the surrounding feature. For a call c in an inherits clause ("f
+   * : c { }"), thiz is the outer feature of f.  For a expression in the
+   * contracts or implementation of a feature f, thiz is f itself.
+   *
+   * NYI: Check if it might make more sense for thiz to be the declared feature
+   * instead of the outer feature when processing an inherits clause.
+   *
+   * @return true if everything is fine, false in case the target results in
+   * void and we hence can replace the call by _target.
+   */
+  boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
+  {
+    var targetVoid = false;
     if (PRECONDITIONS) require
       (thiz.state() == Feature.State.RESOLVING_INHERITANCE
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
@@ -694,10 +724,11 @@ public class Call extends AbstractCall
         var actualsResolved = false;
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
-            targetFeature = targetFeature(res, thiz);
+            var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
               (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
-            if (targetFeature != null && targetFeature != Types.f_ERROR)
+            targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != thiz;
+            if (!targetVoid && targetFeature != Types.f_ERROR)
               {
                 res.resolveDeclarations(targetFeature);
                 var fos = res._module.lookup(targetFeature, _name, this, _target == null);
@@ -766,10 +797,12 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != Types.f_ERROR || targetFeature == Types.resolved.f_void,
+      (Errors.count() > 0 || calledFeature() != Types.f_ERROR || targetVoid,
        Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
        calledFeature() != null,
        _target         != null);
+
+    return !targetVoid;
   }
 
 
@@ -2079,7 +2112,20 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = outer;
-    loadCalledFeature(res, outer);
+    if (!loadCalledFeatureUnlessTargetVoid(res, outer))
+      { // target of this call results in `void`, so we replace this call by the
+        // target. However, we have to return a `Call` and `_target` is
+        // `Expr`. Solution: we wrap `_target` into a call `universe.void
+        // _target`.
+        result = new Call(pos(),
+                          new Universe(),
+                          new List<>(new Actual(_target)),
+                          NO_GENERICS,
+                          new List<>(_target),
+                          Types.resolved.f_void,
+                          Types.resolved.t_void);
+        result.resolveTypes(res, outer);
+      }
 
     if (CHECKS) check
       (_calledFeature != null);
