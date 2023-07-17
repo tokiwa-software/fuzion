@@ -188,7 +188,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     /**
      * Perform a match on value subv.
      *
-     * @param ai current abstact interpreter instance
+     * @param ai current abstract interpreter instance
      *
      * @param cl id of clazz we are interpreting
      *

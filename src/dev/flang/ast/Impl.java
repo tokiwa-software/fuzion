@@ -411,7 +411,7 @@ public class Impl extends ANY
 
 
   /**
-   * visit all the initialvalues recorded for an FieldActual using
+   * visit all the initial values recorded for an FieldActual using
    * addInitialValue.
    *
    * This is used to resolve types of the actual arguments when they are needed
@@ -437,8 +437,8 @@ public class Impl extends ANY
    * @param formalArg the features whose Impl this is.
    *
    * @param reportError true to produce an error message, false to suppress
-   * this. Error messages are first suppressed until all intial values were
-   * found such that we can report all occurences of actuals and all actual
+   * this. Error messages are first suppressed until all initial values were
+   * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
   AbstractType typeFromInitialValues(AbstractFeature formalArg, boolean reportError)

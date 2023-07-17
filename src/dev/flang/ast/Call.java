@@ -449,8 +449,8 @@ public class Call extends AbstractCall
    * used during type resolution and type inference
    *
    * @return the actual type applying actual type parameters known from the
-   * target of this call and actual type parameters given in this call.  Result
-   * is interned.xs
+   * target of this call and actual type parameters given in this call. Result
+   * is interned.
    */
   private AbstractType actualArgType(Resolution res, AbstractType frmlT)
   {

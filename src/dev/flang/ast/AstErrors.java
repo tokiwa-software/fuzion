@@ -1710,7 +1710,7 @@ public class AstErrors extends ANY
     error(pos,
           msg,
           "Incompatible result types in different branches:\n" +
-          typesMsg("block resturns", "blocks return", types, positions));
+          typesMsg("block returns", "blocks return", types, positions));
   }
 
   static void incompatibleTypesOfActualArguments(AbstractFeature formalArg,
@@ -1729,7 +1729,7 @@ public class AstErrors extends ANY
     error(formalArg.pos(),
           "Type inference from actual arguments failed since no actual call was found",
           "For the formal argument " + s(formalArg) + " " +
-          "the type can only be derifed if there is a call to " + s(formalArg.outer()) + ".");
+          "the type can only be derived if there is a call to " + s(formalArg.outer()) + ".");
   }
 
 

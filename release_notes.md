@@ -17,7 +17,7 @@
     on a boxed value, the target of the call is no longer the ref instance, but
     the value instance that was boxed.
 
-  - This change sounds subtle, but if fixes a number of problems when the
+  - This change sounds subtle, but it fixes a number of problems when the
     original value type is used as the type of inner features of the boxed value
     type feature and these types must be value types even after boxing. All the
     details can be found in the the pull request description.

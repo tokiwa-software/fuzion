@@ -125,7 +125,7 @@ public class EmbeddedValue extends Val
 
 
   /**
-   * Create EmbeddedValue for given insatnce or code/index and value.
+   * Create EmbeddedValue for given instance or code/index and value.
    *
    * @param cl the call that contains the code
    *
