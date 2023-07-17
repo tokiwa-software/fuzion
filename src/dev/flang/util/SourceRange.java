@@ -20,64 +20,55 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Operator
+ * Source of class SourceRange
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.parser;
-
-import dev.flang.util.ANY;
-import dev.flang.util.SourceRange;
+package dev.flang.util;
 
 
 /**
- * Operator represents an infix, prefix or postfix operator encountered while
- * parsing.
+ * SourceRange represents a position in a source code file with a given, non-empty length.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Operator extends ANY
+public class SourceRange extends SourcePosition
 {
+
 
   /*----------------------------  variables  ----------------------------*/
 
 
-  public final SourceRange pos;
-
-  public final String text;
-
-  public final boolean _whiteSpaceBefore, _whiteSpaceAfter;
+  /**
+   * The byte position in the source file of the first byte after _bytePos that
+   * is not part of this range.
+   */
+  private final int _byteEndPos;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor for operator
+   * Create source range for given source file and byte start and end position.
    *
-   * @param pos where was this operator found
+   * @param sourceFile the source file
    *
-   * @param text the operator itself, e.g., ">>="
+   * @param bytePos the byte position within sourceFile
    *
-   * @param whiteSpaceBefore is there any white space, comments, etc. between
-   * this operator and the previous symbol?
-   *
-   * @param whiteSpaceAfter is there any white space, comments, etc. between
-   * this operator and the next symbol?
+   * @param byteEndPos the byte position just after this range.
    */
-  public Operator(SourceRange pos,
-                  String text,
-                  boolean whiteSpaceBefore,
-                  boolean whiteSpaceAfter)
+  public SourceRange(SourceFile sourceFile, int bytePos, int byteEndPos)
   {
-    if (PRECONDITIONS) require
-      (pos != null,
-       text != null);
+    super(sourceFile, bytePos);
 
-    this.pos = pos;
-    this.text = text;
-    this._whiteSpaceBefore = whiteSpaceBefore;
-    this._whiteSpaceAfter = whiteSpaceAfter;
+    if (PRECONDITIONS) require
+      (sourceFile != null,
+       0 <= bytePos,
+       bytePos <= byteEndPos,
+       byteEndPos <= sourceFile._bytes.length);
+
+    this._byteEndPos = byteEndPos;
   }
 
 
@@ -85,11 +76,12 @@ public class Operator extends ANY
 
 
   /**
-   * Convert this to String for debugging.
+   * End position within _sourceFile.  This is equal to bytePos() for a plain
+   * SourcePosition and may be larger than bytePos for a SourceRange.
    */
-  public String toString()
+  public int byteEndPos()
   {
-    return "OP:"+text;
+    return _byteEndPos;
   }
 
 }

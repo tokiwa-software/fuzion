@@ -39,15 +39,13 @@ public class ParsedCall extends Call
   /**
    * Constructor to read a field in target t
    *
-   * @param pos the sourcecode position, used for error messages.
-   *
    * @param target the target of the call, null if none.
    *
    * @param name the name of the called feature
    */
-  public ParsedCall(SourcePosition pos, Expr target, String name)
+  public ParsedCall(Expr target, ParsedName name)
   {
-    super(pos, target, name);
+    super(name._pos, target, name._name);
   }
 
 
@@ -55,25 +53,21 @@ public class ParsedCall extends Call
    * Constructor to call feature with name 'n' on target 't' with actual
    * arguments 'la'.
    *
-   * @param pos the sourcecode position, used for error messages.
-   *
    * @param target the target of the call, null if none.
    *
    * @param name the name of the called feature
    *
    * @param arguments list of actual arguments
    */
-  public ParsedCall(SourcePosition pos, Expr target, String name, List<Actual> arguments)
+  public ParsedCall(Expr target, ParsedName name, List<Actual> arguments)
   {
-    super(pos, target, name, arguments);
+    super(name._pos, target, name._name, arguments);
   }
 
 
   /**
    * Constructor to call field 'n' on target 't' and select an open generic
    * variant.
-   *
-   * @param pos the sourcecode position, used for error messages.
    *
    * @param target the target of the call, null if none.
    *
@@ -82,9 +76,9 @@ public class ParsedCall extends Call
    * @param select for selecting a open type parameter field, this gives the
    * index '.0', '.1', etc. -1 for none.
    */
-  public ParsedCall(SourcePosition pos, Expr target, String name, int select)
+  public ParsedCall(Expr target, ParsedName name, int select)
   {
-    super(pos, target, name, select, NO_PARENTHESES);
+    super(name._pos, target, name._name, select, NO_PARENTHESES);
   }
 
 

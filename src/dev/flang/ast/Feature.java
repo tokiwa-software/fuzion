@@ -559,6 +559,42 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * Constructor used by parser
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param r the result type
+   *
+   * @param qname the name of this feature
+   *
+   * @param a the arguments
+   *
+   * @param i the inherits calls
+   *
+   * @param c the contract
+   *
+   * @param p the implementation (feature body etc).
+   */
+  public Feature(Visi v,
+                 int m,
+                 ReturnType r,
+                 List<ParsedName> qpname,
+                 List<Feature> a,
+                 List<AbstractCall> i,
+                 Contract c,
+                 Impl p)
+  {
+    this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+
+    if (PRECONDITIONS) require
+      (qpname.size() >= 1,
+       p != null);
+  }
+
+
+  /**
    * Constructor
    *
    * @param pos the sourcecode position, used for error messages.

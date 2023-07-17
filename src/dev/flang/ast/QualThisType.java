@@ -45,7 +45,7 @@ public class QualThisType extends Type
   /*----------------------------  variables  ----------------------------*/
 
 
-  final List<String> _qual;
+  final List<ParsedName> _qual;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -58,9 +58,11 @@ public class QualThisType extends Type
    *
    * @param qual the qualifier
    */
-  public QualThisType(HasSourcePosition pos, List<String> qual)
+  public QualThisType(List<ParsedName> qual)
   {
-    super(pos, qual.getLast(), Call.NO_GENERICS, null, null, Type.RefOrVal.ThisType);
+    super(SourcePosition.range(qual),
+          qual.getLast()._name,
+          Call.NO_GENERICS, null, null, Type.RefOrVal.ThisType);
 
     this._qual = qual;
   }

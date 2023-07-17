@@ -36,6 +36,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.UnicodeData;
 
 
@@ -944,9 +945,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * The start and end position of the current token as a SourceRange instance
+   */
+  SourceRange tokenSourceRange()
+  {
+    return sourceRange(tokenPos(), tokenEndPos());
+  }
+
+
+  /**
    * Position of the first byte in source file after the current token.
    */
-  private int tokenEndPos()
+  int tokenEndPos()
   {
     return bytePos();
   }

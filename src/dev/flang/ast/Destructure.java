@@ -74,7 +74,7 @@ public class Destructure extends ANY implements Stmnt
    * The field names of the fields we are destructuring into. May not be empty.
    * null if _fields != null.
    */
-  final List<String> _names;
+  final List<ParsedName> _names;
 
 
   /**
@@ -106,7 +106,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param v
    */
-  private Destructure(SourcePosition pos, List<String> n, List<Feature> fs, boolean def, Expr v)
+  private Destructure(SourcePosition pos, List<ParsedName> n, List<Feature> fs, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -165,7 +165,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return a statement that implements the destructuring.
    */
-  public static Stmnt create(SourcePosition pos, List<Feature> fields, List<String> names, boolean def, Expr v)
+  public static Stmnt create(SourcePosition pos, List<Feature> fields, List<ParsedName> names, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       ((fields == null) != (names == null),
@@ -176,13 +176,13 @@ public class Destructure extends ANY implements Stmnt
         if (def)
           {
             fields = new List<Feature>();
-            for (String name : names)
+            for (var name : names)
               {
-                fields.add(new Feature(pos,
+                fields.add(new Feature(name._pos,
                                        Visi.PRIV,
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
-                                       new List<String>(name),
+                                       new List<String>(name._name),
                                        new List<Feature>(),
                                        new List<>(),
                                        Contract.EMPTY_CONTRACT,
@@ -194,10 +194,10 @@ public class Destructure extends ANY implements Stmnt
       {
         if (CHECKS) check
           (!def);
-        names = new List<String>();
+        names = new List<>();
         for (Feature f : fields)
           {
-            names.add(f.featureName().baseName());
+            names.add(new ParsedName(f.pos(), f.featureName().baseName()));
           }
       }
     return new Destructure(pos, names, fields, def, v).expand();
@@ -231,7 +231,7 @@ public class Destructure extends ANY implements Stmnt
                          List<Stmnt> stmnts,
                          Feature tmp,
                          AbstractFeature f,
-                         Iterator<String> names,
+                         Iterator<ParsedName> names,
                          int select,
                          Iterator<Feature> fields,
                          AbstractType t)
@@ -251,10 +251,11 @@ public class Destructure extends ANY implements Stmnt
       }
     else if (fields == null && names.hasNext())
       {
-        String name = names.next();
+        var pn = names.next();
+        var name = pn._name;
         if (!name.equals("_"))
           {
-            assign = new Assign(_pos, name, call_f);
+            assign = new Assign(pn._pos, name, call_f);
           }
       }
     if (assign != null)
@@ -286,6 +287,7 @@ public class Destructure extends ANY implements Stmnt
       {
         _names
           .stream()
+          .map(n -> n._name)
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
           .forEach(n -> AstErrors.destructuringRepeatedEntry(_pos, n, Collections.frequency(_names, n)));
@@ -300,7 +302,7 @@ public class Destructure extends ANY implements Stmnt
         Assign atmp = new Assign(res, _pos, tmp, _value, outer);
         atmp.resolveTypes(res, outer);
         stmnts.add(atmp);
-        Iterator<String> names = _names.iterator();
+        var names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
         for (var f : t.featureOfType().valueArguments())

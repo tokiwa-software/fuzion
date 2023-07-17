@@ -11,22 +11,22 @@ actuals are values of type of type 'f64' at --CURDIR--/typeinference_for_args_ne
 ----------^
 and at --CURDIR--/typeinference_for_args_negative.fz:43:14:
   say (a3 10.as_f64   " world!")
--------------^
+-------------^^^^^^
 and at --CURDIR--/typeinference_for_args_negative.fz:44:11:
   say (a3 1.1         " world!")
 ----------^
 
 
---CURDIR--/typeinference_for_args_negative.fz:31:6: error 2: Type inference from actual arguments failed due to incompatible types of actual arguments
+--CURDIR--/typeinference_for_args_negative.fz:31:9: error 2: Type inference from actual arguments failed due to incompatible types of actual arguments
   a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
------^
+--------^
 For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
 actual is value of type of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:46:23:
   say (a4 "hello"     " world!")
 ----------------------^
 actual is value of type of type 'i32' at --CURDIR--/typeinference_for_args_negative.fz:47:33:
   say (a4 "1.0"       " world!".byte_length)
---------------------------------^
+--------------------------------^^^^^^^^^^^
 actual is value of type of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23:
   say (a4 "10.as_f64" 3.14)
 ----------------------^
@@ -40,4 +40,10 @@ actual is value of type of type 'bool' at --CURDIR--/typeinference_for_args_nega
 -----^
 For the formal argument 'typeinference_for_args_negative.a5.a' the type can only be derifed if there is a call to 'typeinference_for_args_negative.a5'.
 
-3 errors.
+
+--CURDIR--/typeinference_for_args_negative.fz:32:9: error 4: Type inference from actual arguments failed since no actual call was found
+  a5(a, b) => a+b    # *** error ***, never called
+--------^
+For the formal argument 'typeinference_for_args_negative.a5.b' the type can only be derifed if there is a call to 'typeinference_for_args_negative.a5'.
+
+4 errors.

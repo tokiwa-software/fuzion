@@ -276,7 +276,7 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<String>> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
   {
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
@@ -292,7 +292,7 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh);
-    l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
+    l.add(new Feature(v,m,r,name,a,inh,c,p));
     return p2 == null
       ? new FList(l)
       : p2.routOrField(pos, l, v, m, n, i+1);
@@ -559,14 +559,13 @@ visi        : COLON qual
             | qual
             ;
    */
-  List<String> visi()
+  List<ParsedName> visi()
   {
     if (skipColon())
       {
         // NYI: record ':', i.e., export to all heirs
       }
-    List<String> result = qual(false);
-    return result;
+    return qual(false);
   }
 
 
@@ -578,18 +577,18 @@ qual        : name
             | type dot qual
             ;
    */
-  List<String> qual(boolean mayBeAtMinIndent)
+  List<ParsedName> qual(boolean mayBeAtMinIndent)
   {
-    List<String> result = new List<>();
+    List<ParsedName> result = new List<>();
     do
       {
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
-            result.add(FuzionConstants.TYPE_NAME);
+            result.add(new ParsedName(SourcePosition.builtIn, FuzionConstants.TYPE_NAME));
             if (!isDot())
               {
                 matchOperator(".", "qual");
-                result.add(Errors.ERROR_STRING);
+                result.add(ParsedName.ERROR_NAME);
               }
           }
         else
@@ -637,20 +636,20 @@ name        : IDENT                            // all parts of name must be in s
    *
    * @return the parsed name, Errors.ERROR_STRING if current location could not be identified as a name.
    */
-  String name()
+  ParsedName name()
   {
     return name(false, false);
   }
-  String name(boolean mayBeAtMinIndent, boolean ignoreError)
+  ParsedName name(boolean mayBeAtMinIndent, boolean ignoreError)
   {
-    String result = Errors.ERROR_STRING;
+    var result = ParsedName.ERROR_NAME;
     int pos = tokenPos();
     if (isNamePrefix(mayBeAtMinIndent))
       {
         var oldLine = sameLine(line());
         switch (current(mayBeAtMinIndent))
           {
-          case t_ident  : result = identifier(mayBeAtMinIndent); next(); break;
+          case t_ident  : result = new ParsedName(tokenSourceRange(), identifier(mayBeAtMinIndent)); next(); break;
           case t_infix  :
           case t_prefix :
           case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
@@ -659,9 +658,10 @@ name        : IDENT                            // all parts of name must be in s
               next();
               if (skip(Token.t_question))
                 {
+                  var end = tokenEndPos();
                   if (skipColon())
                     {
-                      result = "ternary ? :";
+                      result = new ParsedName(sourceRange(pos, end), "ternary ? :");
                     }
                   else if (!ignoreError)
                     {
@@ -683,9 +683,11 @@ name        : IDENT                            // all parts of name must be in s
                   var dotdot = skip("..");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
+                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: index");
-                      result = dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
-                                      : FuzionConstants.FEATURE_NAME_INDEX;
+                      result = new ParsedName(sourceRange(pos, end),
+                                              dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
+                                                     : FuzionConstants.FEATURE_NAME_INDEX);
                     }
                 }
               break;
@@ -698,13 +700,15 @@ name        : IDENT                            // all parts of name must be in s
                   match(Token.t_lcrochet, "name: set");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
+                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: set");
-                      result = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
+                      result = new ParsedName(sourceRange(pos, end), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
                     }
                 }
               else if (current() == Token.t_ident)
                 {
-                  result = identifier() + " =";
+                  var end = tokenEndPos();
+                  result = new ParsedName(sourceRange(pos, end), identifier() + " =");
                   match(Token.t_ident, "name: set");
                 }
               else if (!ignoreError)
@@ -761,7 +765,7 @@ name        : IDENT                            // all parts of name must be in s
     boolean result = isNamePrefix();
     if (result)
       {
-        return name(false, true) != Errors.ERROR_STRING;
+        return name(false, true) != ParsedName.ERROR_NAME;
       }
     return result;
   }
@@ -781,17 +785,19 @@ opName      : "infix"   op
    * @param mayBeAtMinIndent
    *
    */
-  String opName(boolean mayBeAtMinIndent, boolean ignoreError)
+  ParsedName opName(boolean mayBeAtMinIndent, boolean ignoreError)
   {
+    int pos = tokenPos();
     String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
+    var end = tokenEndPos();
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
         match(Token.t_op, "infix/prefix/postfix name");
         res = inPrePost + " " + res;
       }
-    return res;
+    return new ParsedName(sourceRange(pos, end), res);
   }
 
 
@@ -861,9 +867,9 @@ featNames   : qual (COMMA featNames
                    )
             ;
    */
-  List<List<String>> featNames()
+  List<List<ParsedName>> featNames()
   {
-    var result = new List<List<String>>(qual(true));
+    var result = new List<List<ParsedName>>(qual(true));
     while (skipComma())
       {
         result.add(qual(true));
@@ -935,7 +941,7 @@ argType     : type
                                     SourcePosition pos = tokenSourcePos();
                                     Visi v = visibility();
                                     int m = modifiers();
-                                    List<String> n = argNames();
+                                    var n = argNames();
                                     AbstractType t;
                                     Impl i;
                                     if (current() == Token.t_type)
@@ -955,9 +961,9 @@ argType     : type
                                         t = null;
                                       }
                                     Contract c = contract();
-                                    for (String s : n)
+                                    for (var s : n)
                                       {
-                                        result.add(new Feature(pos, v, m, t, s, c,
+                                        result.add(new Feature(s._pos, v, m, t, s._name, c,
                                                                i == null ? new Impl(Impl.Kind.FieldActual)
                                                                          : i));
                                       }
@@ -1112,9 +1118,9 @@ argNames    : name ( COMMA argNames
                    )
             ;
    */
-  List<String> argNames()
+  List<ParsedName> argNames()
   {
-    List<String> result = new List<>(name());
+    List<ParsedName> result = new List<>(name());
     while (skipComma())
       {
         result.add(name());
@@ -1367,7 +1373,7 @@ actuals     : actualArgs
   Call call(Expr target)
   {
     SourcePosition pos = tokenSourcePos();
-    String n = name();
+    var n = name();
     Call result;
     var skippedDot = false;
     if (skipDot())
@@ -1386,18 +1392,18 @@ actuals     : actualArgs
               {
                 AstErrors.illegalSelect(pos, select, e);
               }
-            result = new ParsedCall(pos, target, n, s);
+            result = new ParsedCall(target, n, s);
           }
         else
           {
-            result = new ParsedCall(pos, target, n);
+            result = new ParsedCall(target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new ParsedCall(pos, target, n, l);
+        result = new ParsedCall(target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1967,7 +1973,7 @@ argNamesOpt : argNames
             |
             ;
    */
-  List<String> argNamesOpt()
+  List<ParsedName> argNamesOpt()
   {
     return (current() == Token.t_ident)
       ? argNames()
@@ -1997,7 +2003,7 @@ argNamesOpt : argNames
 lambda      : contract "->" block
             ;
    */
-  Expr lambda(List<String> n)
+  Expr lambda(List<ParsedName> n)
   {
     SourcePosition pos = tokenSourcePos();
     var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
@@ -2280,7 +2286,7 @@ op          : OPERATOR
     if (PRECONDITIONS) require
       (current() == Token.t_op);
 
-    Operator result = new Operator(tokenSourcePos(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
+    Operator result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
     return result;
   }
@@ -2846,7 +2852,6 @@ nextValue   : COMMA exprInLine
    */
   void indexVar(List<Feature> indexVars, List<Feature> nextValues)
   {
-    SourcePosition pos = tokenSourcePos();
     Parser forked = fork();  // tricky: in case there is no nextValue, we
                              // re-parse the initial value expr and use it
                              // as nextValue
@@ -2854,8 +2859,8 @@ nextValue   : COMMA exprInLine
     Visi       v2  = forked.visibility();
     int        m1  =        modifiers();
     int        m2  = forked.modifiers();
-    String     n1  =        name();
-    String     n2  = forked.name();
+    var        n1  =        name();
+    var        n2  = forked.name();
     boolean hasType = isType();
     ReturnType r1 = hasType ? new FunctionReturnType(       type()) : NoType.INSTANCE;
     ReturnType r2 = hasType ? new FunctionReturnType(forked.type()) : NoType.INSTANCE;
@@ -2878,17 +2883,11 @@ nextValue   : COMMA exprInLine
         // iterations:
         if (skipComma())
           {
-            p2 = new Impl(pos, exprInLine(), p2._kind);
+            p2 = new Impl(tokenSourcePos(), exprInLine(), p2._kind);
           }
       }
-    Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
-                             new List<Feature>(),
-                             new List<>(),
-                             c1,p1);
-    Feature f2 = new Feature(pos,v2,m2,r2,new List<>(n2),
-                             new List<Feature>(),
-                             new List<>(),
-                             c2,p2);
+    Feature f1 = new Feature(v1,m1,r1,new List<>(n1),new List<>(),new List<>(),c1,p1);
+    Feature f2 = new Feature(v2,m2,r2,new List<>(n2),new List<>(),new List<>(),c2,p2);
     indexVars.add(f1);
     nextValues.add(f2);
   }
@@ -3032,7 +3031,7 @@ assign      : "set" name ":=" exprInLine
   Stmnt assign()
   {
     match(Token.t_set, "assign");
-    String n = name();
+    var n = name();
     SourcePosition pos = tokenSourcePos();
     matchOperator(":=", "assign");
     return new Assign(pos, n, exprInLine());
@@ -3182,18 +3181,17 @@ qualThisType: qualThis
   Expr qualThisType()
   {
     Expr result;
-    var p = tokenSourcePos();
     var q = qualThis();
     var f = fork();
     if (f.skipDot() && f.skip(Token.t_type))
       {
         skipDot();
         skip(Token.t_type);
-        result = new DotType(p, new QualThisType(p, q));
+        result = new DotType(SourcePosition.range(q), new QualThisType(q));
       }
     else
       {
-        result = new This(p, q);
+        result = new This(q);
       }
     return result;
   }
@@ -3273,9 +3271,9 @@ anonymous   : "ref"
 qualThis    : name ( dot name )* dot "this"
             ;
    */
-  List<String> qualThis()
+  List<ParsedName> qualThis()
   {
-    var q = new List<String>();
+    var q = new List<ParsedName>();
     do
       {
         q.add(name());
@@ -3666,7 +3664,7 @@ type        : qualThis
     AbstractType result;
     if (isQualThisPrefix())
       {
-        result = new QualThisType(tokenSourcePos(), qualThis());
+        result = new QualThisType(qualThis());
       }
     else
       {
@@ -3879,10 +3877,9 @@ simpletype  : name typePars typeTail
    */
   Type simpletype(Type lhs)
   {
-    var p = tokenSourcePos();
     var n = name();
     var a = typePars();
-    lhs = new Type(p, n, a, lhs);
+    lhs = new Type(n._pos, n._name, a, lhs);
     return typeTail(lhs);
   }
 

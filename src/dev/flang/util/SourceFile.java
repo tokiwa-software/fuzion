@@ -774,11 +774,28 @@ public class SourceFile extends ANY
 
 
   /**
-   * Determine the start byte position of the given line
+   * Determine the start byte position of the given line.
+   *
+   * @param line the line number starting at 1 for the first line. May be 0
+   *
+   + @return byte position of the beginning of the line, -1 for line==0.
    */
   public int lineStartPos(int line)
   {
+    if (PRECONDITIONS) require
+      (line >= 0,
+       line <= numLines());
+
     return lines()[line];
+  }
+
+
+  /**
+   * Number of lines in the file.
+   */
+  public int numLines()
+  {
+    return lines().length-1;
   }
 
 
@@ -841,6 +858,24 @@ public class SourceFile extends ANY
   public SourcePosition sourcePos()
   {
     return sourcePos(_pos);
+  }
+
+
+  /**
+   * Obtain the given range pos..endPos as a SourceRange object.
+   *
+   * @param pos a byte position within this file.
+   *
+   * @param endPos a byte position after pos within this file.
+   */
+  public SourceRange sourceRange(int pos, int endPos)
+  {
+    if (PRECONDITIONS) require
+      (0 <= pos,
+       pos < endPos,
+       endPos <= byteLength());
+
+    return new SourceRange(this, pos, endPos);
   }
 
 

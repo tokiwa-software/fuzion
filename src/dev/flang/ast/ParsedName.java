@@ -20,64 +20,70 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Operator
+ * Source of class ParsedName
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.parser;
+package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.SourceRange;
+import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 
 /**
- * Operator represents an infix, prefix or postfix operator encountered while
- * parsing.
+ * ParsedName represents a name created by the parser for the rule for `name`.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Operator extends ANY
+public class ParsedName extends ANY implements HasSourcePosition
 {
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Name to be used in case we need a name, but there was an error parsing the
+   * name.
+   */
+  public final static ParsedName ERROR_NAME = new ParsedName(SourcePosition.builtIn,
+                                                             Errors.ERROR_STRING);
+
 
   /*----------------------------  variables  ----------------------------*/
 
 
-  public final SourceRange pos;
+  /**
+   * The actual name.
+   */
+  public final String _name;
 
-  public final String text;
 
-  public final boolean _whiteSpaceBefore, _whiteSpaceAfter;
+  /**
+   * The sourcecode position of this name.
+   */
+  public final SourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor for operator
+   * Constructor for name at given pos.
    *
-   * @param pos where was this operator found
+   * @param pos the position where name was found
    *
-   * @param text the operator itself, e.g., ">>="
-   *
-   * @param whiteSpaceBefore is there any white space, comments, etc. between
-   * this operator and the previous symbol?
-   *
-   * @param whiteSpaceAfter is there any white space, comments, etc. between
-   * this operator and the next symbol?
+   * @param name the name.
    */
-  public Operator(SourceRange pos,
-                  String text,
-                  boolean whiteSpaceBefore,
-                  boolean whiteSpaceAfter)
+  public ParsedName(SourcePosition pos, String name)
   {
     if (PRECONDITIONS) require
       (pos != null,
-       text != null);
+       name != null);
 
-    this.pos = pos;
-    this.text = text;
-    this._whiteSpaceBefore = whiteSpaceBefore;
-    this._whiteSpaceAfter = whiteSpaceAfter;
+    this._pos = pos;
+    this._name = name;
   }
 
 
@@ -85,11 +91,22 @@ public class Operator extends ANY
 
 
   /**
-   * Convert this to String for debugging.
+   * The sourcecode position of this name.
+   */
+  public SourcePosition pos()
+  {
+    return _pos;
+  }
+
+
+  /**
+   * toString creates a string representation for debug output.
+   *
+   * @retur just the name.
    */
   public String toString()
   {
-    return "OP:"+text;
+    return _name;
   }
 
 }

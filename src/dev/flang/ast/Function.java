@@ -108,7 +108,7 @@ public class Function extends ExprWithPos
    *
    * In this case, _wrapper and _call will be created during propagateExpectedType().
    */
-  List<String> _names;  // names of the arguments: "x", "y"
+  List<ParsedName> _names;  // names of the arguments: "x", "y"
   List<AbstractCall> _inherits; // inherits calls, currently always empty
   Contract _contract;   // contract of the lambda
   Expr _expr;           // the right hand side of the '->'
@@ -133,7 +133,7 @@ public class Function extends ExprWithPos
    * @param e the code on the right hand side of '->'.
    */
   public Function(SourcePosition pos,
-                  List<String> names,
+                  List<ParsedName> names,
                   List<AbstractCall> i,
                   Contract c,
                   Expr e)
@@ -260,11 +260,11 @@ public class Function extends ExprWithPos
         int i = 1;
         for (var n : _names)
           {
-            var arg = new Feature(pos() /* better n.pos() */,
+            var arg = new Feature(n._pos,
                                   Visi.PRIV,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                  n,
+                                  n._name,
                                   Contract.EMPTY_CONTRACT);
             a.add(arg);
             i++;
