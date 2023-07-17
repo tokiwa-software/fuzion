@@ -105,6 +105,21 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * This is used for feature defined using `choice of`
+   * to set same visibilty for choice elements as for choice in Parser.
+   *
+   * @param v
+   */
+  public void setVisbility(Visi v)
+  {
+    if (PRECONDITIONS) require
+      (state() == State.LOADING);
+
+    _visibility = v;
+  }
+
+
+  /**
    * the modifiers of this feature
    */
   public final int _modifiers;

@@ -291,7 +291,7 @@ field       : returnType
       eff == Type.NONE &&
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout();
-    p = handleImplKindOf(pos, p, i == 0, l, inh);
+    p = handleImplKindOf(pos, p, i == 0, l, inh, v);
     l.add(new Feature(v,m,r,name,a,inh,c,p));
     return p2 == null
       ? new FList(l)
@@ -328,8 +328,11 @@ field       : returnType
    * added to l if first is true.
    *
    * @param inh the inheritance call list.
+   *
+   * @param v the visiblity to be used for the features defined in of <block>
+   *
    */
-  Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh)
+  Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh, Visi v)
   {
     if (p._kind == Impl.Kind.Of)
       {
@@ -342,7 +345,7 @@ field       : returnType
             var c = (Call) inh.getLast();
             var ng = new List<AbstractType>();
             ng.addAll(c.actualTypeParameters());
-            addFeaturesFromBlock(first, l, p._code, ng, p);
+            addFeaturesFromBlock(first, l, p._code, ng, p, v);
             c._generics = ng;
           }
         p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
@@ -371,12 +374,15 @@ field       : returnType
    * arguments to 'choice' in this example
    *
    * @param p Impl that contains the position of 'of' for error messages.
+   *
+   * @param v the visiblity to be used for the features defined in of <block>
+   *
    */
-  private void addFeaturesFromBlock(boolean first, List<Feature> list, Stmnt s, List<AbstractType> g, Impl p)
+  private void addFeaturesFromBlock(boolean first, List<Feature> list, Stmnt s, List<AbstractType> g, Impl p, Visi v)
   {
     if (s instanceof Block b)
       {
-        b._statements.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
+        b._statements.forEach(x -> addFeaturesFromBlock(first, list, x, g, p, v));
       }
     else if (s instanceof Feature f)
       {
@@ -400,6 +406,11 @@ field       : returnType
           {
             if (first)
               {
+                if (CHECKS) check
+                  (f.visibility().equals(Visi.UNSPECIFIED));
+
+                f.setVisbility(v);
+
                 list.add(f);
               }
             g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
