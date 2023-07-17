@@ -27,7 +27,6 @@
 #
 public u128(hi, lo u64) : num.wrap_around, has_interval is
 
-  #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   public thiz => u128 hi lo
 
   # overflow checking
