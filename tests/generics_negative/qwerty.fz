@@ -23,16 +23,16 @@
 #
 # -----------------------------------------------------------------------
 
-qwerty(T type) is
+module qwerty(T type) is
 
   say "QWERTY"
 
-  uiop is
+  module uiop is
     say "UIOP"
 
-    asdfg is
+    module asdfg is
       say "ASDFG"
 
-      hjkl(x T) is
+      module hjkl(x T) is
         yak x
         say "HJKL"

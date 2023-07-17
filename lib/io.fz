@@ -25,4 +25,4 @@
 
 # io -- unit feature to group io related features
 #
-io is
+public io is

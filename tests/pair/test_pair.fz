@@ -23,12 +23,12 @@
 #
 # -----------------------------------------------------------------------
 
-pair is
-  Pair(A,B type, public a A, public b B) is
+test_pair is
+  pair(A,B type, a A, b B) is
 
   pi i32 := 3;
   pl i64 := 5;
-  p1 Pair i32 i64 := Pair i32 i64 pi pl
+  p1 pair i32 i64 := pair i32 i64 pi pl
 
   say "p1.a = {p1.a}"
   say "p1.b = {p1.b}"

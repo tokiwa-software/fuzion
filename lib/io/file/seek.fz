@@ -25,7 +25,7 @@
 
 # seek -- effect providing stream seeking operations
 #
-private seek(ps Provided_Seek) : simple_effect is
+public seek(ps Provided_Seek) : simple_effect is
 
   # seek offset in the stream represented by fd
   # returns an outcome i64 that represents the new offset
@@ -91,6 +91,6 @@ seek =>
 
 # reference to the seek operations that could be provided
 #
-Provided_Seek ref is
+private:public Provided_Seek ref is
   seek(fd i64, offset i64) outcome i64 is abstract
   file_position(fd i64) outcome i64 is abstract

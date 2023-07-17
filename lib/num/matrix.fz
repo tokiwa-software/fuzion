@@ -27,31 +27,31 @@
 #
 # matrix provides matrix operations based on an arbitray numeric type
 #
-matrix(M type : numeric, e array2 M) : property.equatable
+public matrix(M type : numeric, e array2 M) : property.equatable
 is
 
 
   # basic operations: 'prefix +' (identity)
   #
-  prefix + =>
+  public prefix + =>
     matrix.this
 
 
   # basic operations: 'infix +' (addition)
   #
-  infix + (b matrix M) =>
+  public infix + (b matrix M) =>
     matrix (array2 M e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
 
 
   # basic operations: 'infix -' (subtraction)
   #
-  infix - (b matrix M) =>
+  public infix - (b matrix M) =>
     matrix (array2 M e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
 
 
   # basic operations: 'infix *' (multiplication)
   #
-  infix *  (b matrix M) =>
+  public infix *  (b matrix M) =>
     matrix (array2 M e.length0 b.e.length1
                    (i,j ->
                      for
@@ -65,7 +65,7 @@ is
 
   # equality
   #
-  fixed type.equality(a, b num.matrix M) =>
+  public fixed type.equality(a, b num.matrix M) =>
     for
       x in a.e
       y in b.e
@@ -77,18 +77,18 @@ is
 
   # transpose
   #
-  transpose matrix M is
+  public transpose matrix M is
     matrix (array2 M e.length1 e.length0 i,j->e[j,i])
 
 
   # prints this matrix as a string
   #
-  redef as_string => e.as_string
+  public redef as_string => e.as_string
 
 
   # identity element for 'infix +'
   #
-  fixed type.zero (a, b i32) =>
+  public fixed type.zero (a, b i32) =>
     num.matrix (array2 M a b ((i, j) -> M.zero))
 
 
@@ -96,5 +96,5 @@ is
   #
   # note that this is only an identity element for square matrices
   #
-  fixed type.one (a, b i32) =>
+  public fixed type.one (a, b i32) =>
     num.matrix (array2 M a b ((i, j) -> i = j ? M.one : M.zero))

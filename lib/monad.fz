@@ -34,14 +34,14 @@
 # applied to generic types.
 #
 #
-monad (A type, MA type : monad A MA) is
+public monad (A type, MA type : monad A MA) is
 
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  infix >>= (f A -> MA) MA is abstract
+  public infix >>= (f A -> MA) MA is abstract
 
 
   # monadic operator to another monad
@@ -52,7 +52,7 @@ monad (A type, MA type : monad A MA) is
   # allowed for features with generic arguments. Is there a way
   # we could allow this anyway?
   #
-  infix >>=~ (B, MB type, f A -> MB) MB is abstract
+  public infix >>=~ (B, MB type, f A -> MB) MB is abstract
 
 
   # join operator

@@ -35,7 +35,7 @@
 # 2) writing to a channel installed by `server.accept` will result in an error.
 # 3) reading from a channel installed by `client ...` will block indefinitely.
 #
-private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
+module:public channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
 is
 
   # get the last error that occurred
@@ -87,7 +87,7 @@ is
 
 
   # close the channel
-  close is
+  public close is
     if auto_close
       match desc
         d i64 =>
@@ -103,14 +103,14 @@ is
 
 
 # short hand to install a new channel of type T
-channel(T type, desc outcome i64, auto_close bool) =>
+module channel(T type, desc outcome i64, auto_close bool) =>
   (channel T).close
   channel T desc auto_close effect_mode.repl
 
 
 
 # short hand to get the currently installed channel of type T
-channel(T type) =>
+public channel(T type) =>
   if !effect.type.is_installed (channel T)
     channel T (error "not initialized") false effect_mode.default
   (channel T).env

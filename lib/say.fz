@@ -28,9 +28,9 @@
 # A handy shortcut for io.out.println, output string representation of
 # an object followed by a line break.
 #
-say(s Any) => io.out.println s
+public say(s Any) => io.out.println s
 
 
 # A handy shortcut for stdout.println, output a line break.
 #
-say => io.out.println
+public say => io.out.println

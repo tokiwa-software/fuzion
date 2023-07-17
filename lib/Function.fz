@@ -27,11 +27,11 @@
 #
 # R is the result type of the function, A are the argument types of the function
 #
-Function(R type, A type...) ref is
+public Function(R type, A type...) ref is
 
   # call this function on given arguments A...
   #
-  call(a A) R is abstract
+  public call(a A) R is abstract
 
 
 # NYI: would be nice to have schönfinkeling defined here, could work like this:

@@ -31,31 +31,31 @@
 # All type features inherit directly (Any.type) or indirectly (all
 # others type features) from this feature.
 #
-Type ref is
+public Type ref is
 
 
   # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
-  name String is intrinsic
+  public name String is intrinsic
 
 
   # string representation of this type to be used for debugging.
   #
   # result has the form "Type of '<name>'", but this might change in the future
   #
-  redef as_string => "Type of '$name'"
+  public redef as_string => "Type of '$name'"
 
 
   # There is no dynamic type of a type instance since this would result in an
   # endless hierachy of types, so dynamic_type is redefined to just return
   # Type.type here.
   #
-  redef dynamic_type => Type.type
+  public redef dynamic_type => Type.type
 
 
 # Types -- features related to Type but not requiring an instance of Type
 #
-Types is
+public Types is
 
   # Get the Type instance corresponding to a given type
   #
@@ -64,7 +64,7 @@ Types is
   # Internally, Fuzion's front end implements 'x.type' using
   # 'Types.get x'.
   #
-  get(T type) => T
+  public get(T type) => T
 
 
 # universe feature to determine the compile-time type of an expression.
@@ -82,7 +82,7 @@ Types is
 #   `type_of "bla"` is `String`
 #   `type_of (panic "***")` will terminate
 #
-type_of(T type, _ T) => T
+public type_of(T type, _ T) => T
 
 
 # universe feature to determine the compile-time type of an expression.
@@ -104,4 +104,4 @@ type_of(T type, _ T) => T
 # we do not need the `()->` prefix to create a lambda.  Then, `type_of` could
 # have a lazy argument and `type_of_lazy` could be removed.
 #
-type_of_lazy(T type, _ ()->T) => T
+public type_of_lazy(T type, _ ()->T) => T

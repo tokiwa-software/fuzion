@@ -31,4 +31,4 @@
 # The term 'yak' was taken from the expression 'Yakety Yak' as in the
 # song by The Coasters.
 #
-yak(s Any) => io.out.print s
+public yak(s Any) => io.out.print s

@@ -25,34 +25,34 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-String ref : property.equatable, property.hashable, property.orderable is
+public String ref : property.equatable, property.hashable, property.orderable is
 
   # converting a string to a string is just returning string.this
-  redef as_string String is String.this
+  public redef as_string String is String.this
 
   # any concrete string must implement utf8
-  utf8 Sequence u8 is abstract
+  public utf8 Sequence u8 is abstract
 
   # is this string empty?
-  is_empty => utf8.is_empty
+  public is_empty => utf8.is_empty
 
   # returns true if string is empty or contains whitespace only
-  is_blank => utf8 ∀ u -> u.is_ascii_white_space
+  public is_blank => utf8 ∀ u -> u.is_ascii_white_space
 
   # length of this string in bytes
-  byte_length => utf8.count
+  public byte_length => utf8.count
 
   # length of this string in codepoints
-  codepoint_length => as_codepoints.count
+  public codepoint_length => as_codepoints.count
 
   # concatenate string with string representation of another object
-  infix + (other Any) String is
+  public infix + (other Any) String is
     String.type.concat String.this other.as_string
 
 
 
   # repeat string given number of times
-  infix * (n i32) ref : String
+  public infix * (n i32) ref : String
   pre
     n ≥ 0
   is
@@ -66,7 +66,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
   #
-  fixed type.equality(a, b String) =>
+  public fixed type.equality(a, b String) =>
     ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
       & a.utf8.count = b.utf8.count
 
@@ -90,7 +90,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create hash code from a string
   #
-  hash u64 is
+  public hash u64 is
     sh_l := u64 13
     sh_r := u64 51
     for
@@ -108,11 +108,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as a signed 32-bit integer value
   #
-  parse_i32        => parse_i32 10
-  parse_i32_binary => parse_i32 2
-  parse_i32_octal  => parse_i32 8
-  parse_i32_hex    => parse_i32 16
-  parse_i32 (base i32) outcome i32
+  public parse_i32        => parse_i32 10
+  public parse_i32_binary => parse_i32 2
+  public parse_i32_octal  => parse_i32 8
+  public parse_i32_hex    => parse_i32 16
+  public parse_i32 (base i32) outcome i32
     pre 1 < base ≤ 36
   is
     parse_integer i32 base
@@ -120,11 +120,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as an unsigned 32-bit integer value
   #
-  parse_u32        => parse_u32 10
-  parse_u32_binary => parse_u32 2
-  parse_u32_octal  => parse_u32 8
-  parse_u32_hex    => parse_u32 16
-  parse_u32 (base u32) outcome u32
+  public parse_u32        => parse_u32 10
+  public parse_u32_binary => parse_u32 2
+  public parse_u32_octal  => parse_u32 8
+  public parse_u32_hex    => parse_u32 16
+  public parse_u32 (base u32) outcome u32
     pre u32 1 < base ≤ (u32 36)
   is
     parse_integer u32 base
@@ -132,11 +132,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as a signed 64-bit integer value
   #
-  parse_i64        => parse_i64 10
-  parse_i64_binary => parse_i64 2
-  parse_i64_octal  => parse_i64 8
-  parse_i64_hex    => parse_i64 16
-  parse_i64 (base i64) outcome i64
+  public parse_i64        => parse_i64 10
+  public parse_i64_binary => parse_i64 2
+  public parse_i64_octal  => parse_i64 8
+  public parse_i64_hex    => parse_i64 16
+  public parse_i64 (base i64) outcome i64
     pre i64 1 < base ≤ (i64 36)
   is
     parse_integer i64 base
@@ -144,11 +144,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as an unsigned 64-bit integer value
   #
-  parse_u64        => parse_u64 10
-  parse_u64_binary => parse_u64 2
-  parse_u64_octal  => parse_u64 8
-  parse_u64_hex    => parse_u64 16
-  parse_u64 (base u64) outcome u64
+  public parse_u64        => parse_u64 10
+  public parse_u64_binary => parse_u64 2
+  public parse_u64_octal  => parse_u64 8
+  public parse_u64_hex    => parse_u64 16
+  public parse_u64 (base u64) outcome u64
     pre u64 1 < base ≤ (u64 36)
   is
     parse_integer u64 base
@@ -156,11 +156,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as an int value of arbitrary size
   #
-  parse_int        => parse_int int(10)
-  parse_int_binary => parse_int int(2)
-  parse_int_octal  => parse_int int(8)
-  parse_int_hex    => parse_int int(16)
-  parse_int (base int) outcome int
+  public parse_int        => parse_int int(10)
+  public parse_int_binary => parse_int int(2)
+  public parse_int_octal  => parse_int int(8)
+  public parse_int_hex    => parse_int int(16)
+  public parse_int (base int) outcome int
     pre (int 1) < base ≤ int 36
   is
     parse_integer int base
@@ -168,7 +168,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as a integer value given as type parameter
   #
-  parse_integer(
+  public parse_integer(
     # the integer type
     T type : integer,
 
@@ -243,7 +243,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  as_codepoints Sequence codepoint is
+  public as_codepoints Sequence codepoint is
     codepoints_and_errors
       .map (x ->
         match x
@@ -271,7 +271,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # convert this string into a list of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codepoints_and_errors list (outcome codepoint) is
+  public codepoints_and_errors list (outcome codepoint) is
     codepoints_and_errors utf8.as_list
 
 
@@ -358,7 +358,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
   #
-  substring(from, to i32) String
+  public substring(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
     # NYI check if from/to are valid start/end bytes?
@@ -368,7 +368,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
   #
-  substring(from i32) String
+  public substring(from i32) String
     pre
       debug: 0 ≤ from ≤ byte_length
   is
@@ -377,7 +377,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
-  private substring_codepoint(from, to i32) String
+  public substring_codepoint(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.codepoint_length
   is
@@ -389,7 +389,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
   #
-  private substring_codepoint(from i32) String
+  public substring_codepoint(from i32) String
     pre
       debug: 0 ≤ from ≤ codepoint_length
   is
@@ -398,13 +398,13 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # check if this string starts with given prefix
   #
-  starts_with(prefx String) =>
+  public starts_with(prefx String) =>
     (container.searchable_sequence utf8).starts_with prefx.utf8
 
 
   # check if this string ends with given suffix
   #
-  ends_with(suffix String) =>
+  public ends_with(suffix String) =>
     l  := byte_length
     sl := suffix.byte_length
     end := utf8.drop l-sl
@@ -413,13 +413,13 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
-  find(substring String) =>
+  public find(substring String) =>
     (container.searchable_sequence utf8).find substring.utf8
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
-  find_last(substring String) option i32 is
+  public find_last(substring String) option i32 is
     find_last substring nil
 
 
@@ -437,21 +437,21 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # replace all occurrences of old by new
   #
-  replace (old, new String) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8)
+  public replace (old, new String) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  replace(old, new String, n u64) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  public replace(old, new String, n u64) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
   #
-  contains (substring String) => find(substring).exists
+  public contains (substring String) => find(substring).exists
 
 
   # count number of occurrences of given 'substring' in this string
   #
-  count (substring String) =>
+  public count (substring String) =>
     (container.searchable_sequence utf8).count_matches substring.utf8
 
 
@@ -462,7 +462,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  split list String is
+  public split list String is
     l := utf8.as_list.drop_while (c -> c.is_ascii_white_space)
     if l.is_empty
       nil
@@ -474,7 +474,7 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # split string at s
   #
-  split(s String) list String
+  public split(s String) list String
     pre
       !s.is_empty
     is
@@ -484,7 +484,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # split string after s, that is do the same thing as split but
   # include the separator s in the resulting strings
   #
-  split_after(s String) list String
+  public split_after(s String) list String
     pre
       !s.is_empty
     is
@@ -496,7 +496,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  split_n(s String, n u32) list String
+  public split_n(s String, n u32) list String
     pre
       !s.is_empty,
       n > (u32 0)
@@ -509,7 +509,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  split_after_n(s String, n u32) list String
+  public split_after_n(s String, n u32) list String
     pre
       !s.is_empty,
       n > (u32 0)
@@ -575,19 +575,19 @@ String ref : property.equatable, property.hashable, property.orderable is
   # is this part of given set
   #
   element_of(s container.Set String) => s.contains String.this
-  infix ∈ (s container.Set String) => String.this.element_of s
+  public infix ∈ (s container.Set String) => String.this.element_of s
 
 
   # is this not part of given set
   #
   not_element_of(s container.Set String) => !element_of s
-  infix ∉ (s container.Set String) => String.this.not_element_of s
+  public infix ∉ (s container.Set String) => String.this.not_element_of s
 
 
   # return string of at least length l by
   # padding codepoint s to start of string
   #
-  pad_codepoint_start(l i32, s String) String
+  public pad_codepoint_start(l i32, s String) String
   pre s.codepoint_length = 1
   is
     missing := l - codepoint_length
@@ -602,7 +602,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # evaluated to be true by p, this does not cause empty strings to be added to
   # the result list, rather this case is being treated as being one big separator.
   #
-  fields_func(p codepoint -> bool) list String is
+  public fields_func(p codepoint -> bool) list String is
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
     i := state_wrapper (list String).type.empty false 0 0
@@ -630,7 +630,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
   #
-  cut(sep String) tuple String String bool is
+  public cut(sep String) tuple String String bool is
     match find sep
       nil => (String.this.as_string, "", false)
       i i32 =>
@@ -643,19 +643,19 @@ String ref : property.equatable, property.hashable, property.orderable is
 
 
   # convert this string to upper case
-  upper_case String is
+  public upper_case String is
     String.type.from_codepoints (as_codepoints.map_sequence (c -> character_encodings.unicode.mappings.upper_case[c.val].get c))
 
 
   # convert this string to lower case
-  lower_case String is
+  public lower_case String is
     String.type.from_codepoints (as_codepoints.map_sequence (c -> character_encodings.unicode.mappings.lower_case[c.val].get c))
 
 
 
   # monoid of strings with infix + operation.
   #
-  type.concat : Monoid String is
+  public type.concat : Monoid String is
     redef infix ∙ (a, b String) => a + b
     redef e => ""
 
@@ -663,7 +663,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
   # given separator
   #
-  type.concat(sep String) : Monoid String is
+  public type.concat(sep String) : Monoid String is
     redef infix ∙ (a, b String) String is if (a.is_empty || b.is_empty) a + b else a + sep + b
     redef e => ""
 
@@ -671,7 +671,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # concat strings a and b by
   # concatenating their byte sequences.
   #
-  type.concat(a, b String) String is
+  public type.concat(a, b String) String is
     ref : String
       utf8 Sequence u8 is a.utf8 ++ b.utf8
 
@@ -679,7 +679,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # Takes a sequence of strings and concatenates its elements, while adding the separator
   # sep in between its elements. In case an empty sequence is given, returns the empty string.
   #
-  type.join(elems Sequence String, sep String) String is
+  public type.join(elems Sequence String, sep String) String is
     (elems.as_list.intersperse sep).fold concat
 
 
@@ -697,7 +697,7 @@ String ref : property.equatable, property.hashable, property.orderable is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  type.from_marray(a marray Any) ref : String is
+  public type.from_marray(a marray Any) ref : String is
     redef infix + (other Any) String is
       from_marray (a.add other)
 
@@ -707,14 +707,14 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # create string from the given utf8 bytes
   #
-  type.from_bytes(utf8_bytes Sequence u8) String is
+  public type.from_bytes(utf8_bytes Sequence u8) String is
     ref : String
       redef utf8 => utf8_bytes
 
 
   # create string from the given codepoints
   #
-  type.from_codepoints(codepoints Sequence codepoint) String is
+  public type.from_codepoints(codepoints Sequence codepoint) String is
     ref : String
       utf8 Sequence u8 is
         codepoints
@@ -723,11 +723,11 @@ String ref : property.equatable, property.hashable, property.orderable is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  type.minus_char  => "-".utf8.first
-  type.plus_char   => "+".utf8.first
-  type.zero_char   => "0".utf8.first
-  type.nine_char   => "9".utf8.first
-  type.a_char      => "a".utf8.first
-  type.z_char      => "z".utf8.first
-  type.cap_a_char  => "A".utf8.first
-  type.cap_z_char  => "Z".utf8.first
+  public type.minus_char  => "-".utf8.first
+  public type.plus_char   => "+".utf8.first
+  public type.zero_char   => "0".utf8.first
+  public type.nine_char   => "9".utf8.first
+  public type.a_char      => "a".utf8.first
+  public type.z_char      => "z".utf8.first
+  public type.cap_a_char  => "A".utf8.first
+  public type.cap_z_char  => "Z".utf8.first

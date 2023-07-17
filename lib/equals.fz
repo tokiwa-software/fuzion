@@ -26,50 +26,50 @@
 # equals -- feature that compares two values using the equality relation
 # defined in their type
 #
-equals(T type : property.equatable, a, b T) => T.equality a b
+public equals(T type : property.equatable, a, b T) => T.equality a b
 
 
 # infix ≟ -- infix operation as short-hand for 'equals'
 #
-infix ≟(T type : property.equatable, a, b T) => equals T a b
+public infix ≟(T type : property.equatable, a, b T) => equals T a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-infix =(T type : property.equatable, a, b T) => equals T a b
+public infix =(T type : property.equatable, a, b T) => equals T a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-infix !=(T type : property.equatable, a, b T) => !equals T a b
+public infix !=(T type : property.equatable, a, b T) => !equals T a b
 
 
 # lteq -- feature that compares two values using the lteq relation
 # defined in their type
 #
-lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
+public lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
 
 
 # infix ≤ -- infix operation as short-hand for 'lteq'
 #
-infix ≤(T type : property.partially_orderable, a, b T) => lteq T a b
+public infix ≤(T type : property.partially_orderable, a, b T) => lteq T a b
 
 
 # does this come after other?
 #
-infix ≥(T type : property.orderable, a, b T) bool is
+public infix ≥(T type : property.orderable, a, b T) bool is
   lteq T b a
 
 
 # does this come strictly after other?
 #
-infix ⩼(T type : property.orderable, a, b T) bool is
+public infix ⩼(T type : property.orderable, a, b T) bool is
   !(lteq T a b)
 
 
 # does this come strictly before other?
 #
-infix ⩻(T type : property.orderable, a, b T) bool is
+public infix ⩻(T type : property.orderable, a, b T) bool is
   !(lteq T b a)
 
 
@@ -79,7 +79,7 @@ infix ⩻(T type : property.orderable, a, b T) bool is
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-infix ⋄(T type : property.orderable, a, b T) i32 is
+public infix ⋄(T type : property.orderable, a, b T) i32 is
   if      a < b then -1
   else if a > b then +1
   else                0
@@ -87,24 +87,24 @@ infix ⋄(T type : property.orderable, a, b T) i32 is
 
 # infix <= -- infix operation as short-hand for 'lteq'
 #
-infix <=(T type : property.partially_orderable, a, b T) => lteq T a b
+public infix <=(T type : property.partially_orderable, a, b T) => lteq T a b
 
 
 # does this come after other?
 #
-infix >=(T type : property.orderable, a, b T) bool is
+public infix >=(T type : property.orderable, a, b T) bool is
   lteq T b a
 
 
 # does this come strictly after other?
 #
-infix >(T type : property.orderable, a, b T) bool is
+public infix >(T type : property.orderable, a, b T) bool is
   !(lteq T a b)
 
 
 # does this come strictly before other?
 #
-infix <(T type : property.orderable, a, b T) bool is
+public infix <(T type : property.orderable, a, b T) bool is
   !(lteq T b a)
 
 
@@ -114,7 +114,7 @@ infix <(T type : property.orderable, a, b T) bool is
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-infix <>(T type : property.orderable, a, b T) i32 is
+public infix <>(T type : property.orderable, a, b T) i32 is
   if      a < b then -1
   else if a > b then +1
   else                0
@@ -122,11 +122,11 @@ infix <>(T type : property.orderable, a, b T) i32 is
 
 # maximum of two values
 #
-max(T type : property.orderable, a, b T) =>
+public max(T type : property.orderable, a, b T) =>
   if a > b then a else b
 
 
 # minimum of two values
 #
-min(T type : property.orderable, a, b T) =>
+public min(T type : property.orderable, a, b T) =>
   if a < b then a else b

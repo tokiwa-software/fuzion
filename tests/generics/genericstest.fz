@@ -35,11 +35,11 @@ genericstest is
     say (s + msg)
 
   List(T type) is
-    public Node(
-      public el T,
-      public n, p OptNode) ref : Any is
+    Node(
+      el T,
+      n, p OptNode) ref : Any is
 
-    public Nil is
+    Nil is
     OptNode : choice Node Nil is
 
     h OptNode := Nil

@@ -24,11 +24,11 @@
 # -----------------------------------------------------------------------
 
 # groups features returning mappings for unicode codepoints
-mappings is
+module mappings is
 
   # cached map of:
   # codepoint value => lower case codepoint
-  lower_case container.Map u32 codepoint is
+  module lower_case container.Map u32 codepoint is
     # cache key
     lower_case(val container.Map u32 codepoint) is
 
@@ -37,7 +37,7 @@ mappings is
 
   # cached map of:
   # codepoint value => upper case codepoint
-  upper_case container.Map u32 codepoint is
+  module upper_case container.Map u32 codepoint is
     # cache key
     upper_case(val container.Map u32 codepoint) is
 
@@ -46,7 +46,7 @@ mappings is
 
   # cached map of:
   # codepoint value => title case codepoint
-  title_case container.Map u32 codepoint is
+  module title_case container.Map u32 codepoint is
     # cache key
     title_case(val container.Map u32 codepoint) is
 

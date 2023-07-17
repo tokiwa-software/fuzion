@@ -27,30 +27,30 @@
 #
 # option represents an optional value of type T
 #
-option(T type) :
+public option(T type) :
   choice T nil,
   monad T (option T)
 is
 
   # Does this option contain a value of type T?
   #
-  exists => (option.this ? T   => true
-                         | nil => false)
+  public exists => (option.this ? T   => true
+                                | nil => false)
 
 
   # short-hand postfix operator for 'exists'
   #
-  postfix ?? => exists
+  public postfix ?? => exists
 
 
   # Does this option contain no value of type T?
   #
-  is_nil => !exists
+  public is_nil => !exists
 
 
   # short-hand postfix operator for 'is_nil'
   #
-  postfix !! => is_nil
+  public postfix !! => is_nil
 
 
   # monadic operator
@@ -63,25 +63,25 @@ is
   #
   # NYI: Should maybe have generic parameter B and result in option B
   #
-  redef infix >>= (f T -> option T) => option.this.bind f
+  public redef infix >>= (f T -> option T) => option.this.bind f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind(B type, f T -> option B) option B is
+  public bind(B type, f T -> option B) option B is
     option.this ? v T => f v
                 | nil => nil
 
 
   # synonym for infix >>=
-  and_then (f T -> option T) => option.this >>= f
+  public and_then (f T -> option T) => option.this >>= f
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  map(B type, f T -> B) option B is
+  public map(B type, f T -> B) option B is
     option.this ? v T => f v
                 | nil => nil
 
@@ -91,7 +91,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  redef as_string String is
+  public redef as_string String is
     option.this ? v T => $v
                 | nil => $nil
 
@@ -101,7 +101,7 @@ is
   # this can only be called in cases where it is known for sure that this option
   # is not nil.  A runtime error will be created otherwise.
   #
-  get
+  public get
     pre
       safety: option.this??
     =>
@@ -111,7 +111,7 @@ is
 
   # unwraps an option if it exists, returns default value otherwise.
   #
-  get(default Lazy T)
+  public get(default Lazy T)
     =>
       option.this ? v T => v
                   | nil => default
@@ -119,7 +119,7 @@ is
 
   # return function
   #
-  fixed type.return (a T) => option a
+  public fixed type.return (a T) => option a
 
 
 # option with 1 argument provides an short-hand to wrap a value into an option
@@ -132,4 +132,4 @@ is
 #
 #   o option TypeOfX := x
 #
-option(T type, o option T) => o
+public option(T type, o option T) => o

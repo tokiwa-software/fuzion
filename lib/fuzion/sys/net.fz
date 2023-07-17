@@ -39,7 +39,7 @@
 #
 # NYI: use error codes coming from backend
 #
-net is
+module net is
 
 
   # bind a name to a newly created socket
@@ -52,7 +52,7 @@ net is
 
   # bind a name to a newly created socket, wrapper for bind0 intrinsic
   #
-  bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 is
+  module bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 is
     arr array i64 := [0]
     if (bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internal_array.data) = 0
       arr[0]
@@ -67,7 +67,7 @@ net is
   #
   # returns zero on success, anything else is an error.
   #
-  listen (sd i64, backlog i32) i32 is intrinsic
+  module listen (sd i64, backlog i32) i32 is intrinsic
 
 
   # accept a new connection for given socket descriptor.
@@ -83,7 +83,7 @@ net is
 
   # accept a new connection for given socket descriptor, wrapper for accept intrinsic.
   # returns an error or a new descriptor.
-  accept(sd i64) outcome i64 is
+  module accept(sd i64) outcome i64 is
     arr array i64 := [0]
     if accept sd arr.internal_array.data then arr[0] else error "accept failed, error number: {arr[0]}"
 
@@ -98,7 +98,7 @@ net is
 
   # open and connect a client socket
   #
-  connect(family, socket_type, protocol i32, host String, port u16) outcome i64 is
+  module connect(family, socket_type, protocol i32, host String, port u16) outcome i64 is
     arr array i64 := [0]
     if (connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.internal_array.data) = 0
       arr[0]
@@ -118,7 +118,7 @@ net is
   # read a maximum of max_bytes from descriptor, wrapper for read intrinsic
   # may block if descriptor is set to blocking.
   #
-  read(descriptor i64, max_bytes i32) outcome (array u8) is
+  module read(descriptor i64, max_bytes i32) outcome (array u8) is
     buff := fuzion.sys.internal_array_init u8 max_bytes
     arr array i64 := [0]
     if read descriptor buff.data max_bytes arr.internal_array.data
@@ -141,7 +141,7 @@ net is
   # write data to descriptor, wrapper for write intrinsic
   # may block if descriptor is set to blocking.
   #
-  write(descriptor i64, data array u8) outcome unit is
+  module write(descriptor i64, data array u8) outcome unit is
     res := write descriptor data.internal_array.data data.length
     if res = -1 then error "error: $res" else unit
 
@@ -154,7 +154,7 @@ net is
 
 
   # close socket descriptor
-  close(sd i64) outcome unit is
+  module close(sd i64) outcome unit is
     res := close0 sd
     if res = -1 then error "error: $res" else unit
 
@@ -174,6 +174,6 @@ net is
 
 
   # set descriptor to blocking / none blocking mode.
-  set_blocking(sd i64, blocking bool) outcome unit is
+  module set_blocking(sd i64, blocking bool) outcome unit is
     res := if blocking then set_blocking0 sd 0 else set_blocking0 sd 1
     if res = 0 then unit else error "error: $res"

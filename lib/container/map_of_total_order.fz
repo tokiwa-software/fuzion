@@ -24,7 +24,7 @@
 
 # defines effect map_of_total_order
 # this allows creating a map from a keys and values array
-private map_of_total_order (
+private:public map_of_total_order (
   K type : property.orderable, V type,
   # the provider this effect uses to create a Map
   public new (array K, array V) -> Map K V,

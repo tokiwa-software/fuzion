@@ -25,4 +25,4 @@
 # features if they fulfill certain properties such as defining a partial
 # order
 #
-property is
+public property is

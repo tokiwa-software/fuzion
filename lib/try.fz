@@ -28,7 +28,7 @@
 # try provides an operation 'raise' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-try (T type) : effect effect_mode.plain
+private:public try (T type) : effect effect_mode.plain
 is
 
   # mutuable field to receive the error in case raise is called
@@ -40,26 +40,26 @@ is
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  on(R type, f ()->R) outcome R is
+  public on(R type, f ()->R) outcome R is
     run (outcome R) (()->outcome f()) (_)->err.get
 
   # terminate immediately with the given error wrapped in 'option'.
   #
-  raise(e error) =>
+  public raise(e error) =>
     set err := e
     abort
 
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it.
 #
-try(T, R type, f ()->R) =>
+public try(T, R type, f ()->R) =>
   (try T).on f
 
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-try_or_panic(T, R type, f ()->R) outcome R is
+public try_or_panic(T, R type, f ()->R) outcome R is
   match (try T).on f
     e error => panic $e
     r R => r

@@ -26,14 +26,14 @@
 # fuzion.sys.fileio -- fileio presents basic features to handle File I/O operations
 #
 
-public fileio is
+module fileio is
 
   # reads n bytes of a file opened as fd
   #
   # in case the outcome is an array, it may be shorter than n. this means the end of file
   # has been reached.
   #
-  read(fd i64, n u64) outcome (array u8) is
+  module read(fd i64, n u64) outcome (array u8) is
     buf := array n.as_i32 i->(u8 0)
     res := read fd buf.internal_array.data buf.length
 
@@ -72,7 +72,7 @@ public fileio is
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(fd i64, content array u8) outcome unit is
+  module write(fd i64, content array u8) outcome unit is
     res := write fd content.internal_array.data content.length
 
     if res = i8 0
@@ -97,7 +97,7 @@ public fileio is
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
   #
-  public delete(
+  module delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -120,7 +120,7 @@ public fileio is
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
   # returns a unit type as outcome in case of success and error in case of failure
   #
-  public move(
+  module move(
               # the old (relative or absolute) file name, using platform specific path separators
               old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
@@ -146,7 +146,7 @@ public fileio is
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
   #
-  public create_dir(
+  module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
                     path String) outcome unit is
     arr := fuzion.sys.c_string path
@@ -171,7 +171,7 @@ public fileio is
   # in case an error is returned (the result of this feature is false), then the size field of
   # the meta_data array will contain the errno for the stat call.
   #
-  stats(
+  module stats(
         # the internal array data representing the file/dir path in bytes
         path Any,
         # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
@@ -184,14 +184,14 @@ public fileio is
   # in case an error is returned (the result of this feature is false), then the size field of
   # the meta_data array will contain the errno for the lstat call.
   #
-  lstats(path Any, meta_data Any) bool is intrinsic # NYI behaves the same as stats in the interpreter
+  module lstats(path Any, meta_data Any) bool is intrinsic # NYI behaves the same as stats in the interpreter
 
 
   # Opens an IO source using a Fuzion Any as path and an i8 flag to represent the opening method (Read: 0, Write: 1, Append: 2)
   # returns outcome i64 representing the file descriptor in success
   # returns an error in failure
   #
-  public open(
+  module open(
               # a Fuzion Object represention the path for the source to be opened
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
@@ -218,7 +218,7 @@ public fileio is
   # Closes an IO source using an i64 representing the source handler (file descriptor)
   # returns outcome unit in case of success and an error in case of failure
   #
-  public close(
+  module close(
                # file descriptor
                fd i64) outcome unit is
     closing_result := close fd unit
@@ -242,7 +242,7 @@ public fileio is
   # returns an outcome i64 that represents the new offset
   # returns an error in case of failure
   #
-  public seek(
+  module seek(
               # file descriptor
               fd i64,
               # the offset to seek from the beginning of this file
@@ -272,7 +272,7 @@ public fileio is
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  public file_position(
+  module file_position(
                        # file descriptor
                        fd i64) outcome i64 is
     arr := array 2 (i -> i64 0)
@@ -301,12 +301,12 @@ public fileio is
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
   #
-  mmap(fd i64, offset, size i64, res Any) Any is intrinsic
+  module mmap(fd i64, offset, size i64, res Any) Any is intrinsic
 
 
   # close a memory mapped file
   #
   # return: 0 on success, -1 on error
   #
-  munmap(address Any, size i64) i32 is intrinsic
+  module munmap(address Any, size i64) i32 is intrinsic
 

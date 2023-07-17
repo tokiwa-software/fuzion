@@ -25,4 +25,4 @@
 #
 # note that this value is of unit type minus, not of type sign
 #
-minus is
+module minus is

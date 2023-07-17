@@ -72,7 +72,7 @@
 # a feature call that returns void.
 #
 #
-void(absurd void) is absurd
+public void(absurd void) is absurd
 
 # NYI: possible alternative definitions base on choice types
 #

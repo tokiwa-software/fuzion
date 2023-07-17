@@ -29,17 +29,17 @@
 # f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f32(val f32) : float is
+public f32(val f32) : float is
 
 
   # basic operations: 'prefix -' (negation)
-  fixed redef prefix - f32 is intrinsic
-  fixed infix + (other f32) f32 is intrinsic
-  fixed infix - (other f32) f32 is intrinsic
-  fixed infix * (other f32) f32 is intrinsic
-  fixed infix / (other f32) f32 is intrinsic
-  fixed infix % (other f32) f32 is intrinsic
-  fixed infix ** (other f32) f32 is intrinsic
+  public fixed redef prefix - f32 is intrinsic
+  public fixed infix + (other f32) f32 is intrinsic
+  public fixed infix - (other f32) f32 is intrinsic
+  public fixed infix * (other f32) f32 is intrinsic
+  public fixed infix / (other f32) f32 is intrinsic
+  public fixed infix % (other f32) f32 is intrinsic
+  public fixed infix ** (other f32) f32 is intrinsic
 
 
   # comparision
@@ -55,15 +55,15 @@ f32(val f32) : float is
   redef as_i64 => as_f64.as_i64
 
 
-  as_f64 f64 is intrinsic
+  public as_f64 f64 is intrinsic
 
 
   # casting bit representation to u32
-  cast_to_u32 u32 is intrinsic
+  public cast_to_u32 u32 is intrinsic
 
 
   # create hash code from this number
-  hash u64 is
+  public hash u64 is
     cast_to_u32.hash
 
 
@@ -76,33 +76,33 @@ f32(val f32) : float is
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  type.significand_bits => 24
+  public type.significand_bits => 24
 
 
   # number of bits used for exponent
   #
-  type.exponent_bits => 8
+  public type.exponent_bits => 8
 
 
   # mask for the the bits that encode the mantissa
-  type.mantissa_mask => u32 1P23 - 1
+  public type.mantissa_mask => u32 1P23 - 1
 
 
   # mask for the the bits that encode the exponent
   # (the mask is not shifted to the correct position)
-  type.exponent_mask => u32 1P8 - 1
+  public type.exponent_mask => u32 1P8 - 1
 
 
   # the exponent bias (the zero offset of the exponent)
-  type.exponent_bias => 127
+  public type.exponent_bias => 127
 
 
   # the biased exponent
-  exponent_biased => ((cast_to_u32 >> f32.type.mantissa_bits.as_u32) & f32.type.exponent_mask).as_i32
+  public exponent_biased => ((cast_to_u32 >> f32.type.mantissa_bits.as_u32) & f32.type.exponent_mask).as_i32
 
 
   # the normalized exponent
-  exponent =>
+  public exponent =>
     if exponent_biased = 0
       1 - f32.type.exponent_bias
     else
@@ -110,7 +110,7 @@ f32(val f32) : float is
 
 
   # the normalized mantissa
-  mantissa =>
+  public mantissa =>
     m := cast_to_u32 & f32.type.mantissa_mask
     if exponent_biased = 0
       m
@@ -120,7 +120,7 @@ f32(val f32) : float is
 
 
   # the fraction of the floating point number
-  fixed redef fract f32 is
+  public fixed redef fract f32 is
     if f32.type.is_NaN val
       f32.type.NaN
     else if val < (f32 0)
@@ -138,7 +138,7 @@ f32(val f32) : float is
 
   # convert this to a string.
   #
-  redef as_string String is intrinsic
+  public redef as_string String is intrinsic
 
 
   # -----------------------------------------------------------------------
@@ -148,52 +148,52 @@ f32(val f32) : float is
 
   # identity element for 'infix +'
   #
-  fixed type.zero f32 is 0
+  public fixed type.zero f32 is 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  f32 is 1
+  public fixed type.one  f32 is 1
 
 
-  fixed type.bytes => 4
+  public fixed type.bytes => 4
 
 
-  fixed type.ℇ => f32 2.7182818284590452354
+  public fixed type.ℇ => f32 2.7182818284590452354
 
 
-  fixed type.π => f32 3.14159265358979323846
+  public fixed type.π => f32 3.14159265358979323846
 
 
-  fixed type.from_i64(val i64) f32 is
+  public fixed type.from_i64(val i64) f32 is
     val.as_f32
 
 
-  fixed type.is_NaN(val f32) bool is intrinsic
+  public fixed type.is_NaN(val f32) bool is intrinsic
 
 
-  fixed type.min_exp i32 is intrinsic
-  fixed type.max_exp i32 is intrinsic
-  fixed type.min_positive f32 is intrinsic
-  fixed type.max f32 is intrinsic
-  fixed type.epsilon f32 is intrinsic
+  public fixed type.min_exp i32 is intrinsic
+  public fixed type.max_exp i32 is intrinsic
+  public fixed type.min_positive f32 is intrinsic
+  public fixed type.max f32 is intrinsic
+  public fixed type.epsilon f32 is intrinsic
 
 
-  fixed type.square_root(val f32) f32 is intrinsic
+  public fixed type.square_root(val f32) f32 is intrinsic
 
-  fixed type.exp(val f32) f32 is intrinsic
-  fixed type.log(val f32) f32 is intrinsic
-
-
-  fixed type.sin(val f32) f32 is intrinsic
-  fixed type.cos(val f32) f32 is intrinsic
-  fixed type.tan(val f32) f32 is intrinsic
-  fixed type.asin(val f32) f32 is intrinsic
-  fixed type.acos(val f32) f32 is intrinsic
-  fixed type.atan(val f32) f32 is intrinsic
-  fixed type.atan2(y, x f32) f32 is intrinsic
+  public fixed type.exp(val f32) f32 is intrinsic
+  public fixed type.log(val f32) f32 is intrinsic
 
 
-  fixed type.sinh (val f32) f32 is intrinsic
-  fixed type.cosh (val f32) f32 is intrinsic
-  fixed type.tanh (val f32) f32 is intrinsic
+  public fixed type.sin(val f32) f32 is intrinsic
+  public fixed type.cos(val f32) f32 is intrinsic
+  public fixed type.tan(val f32) f32 is intrinsic
+  public fixed type.asin(val f32) f32 is intrinsic
+  public fixed type.acos(val f32) f32 is intrinsic
+  public fixed type.atan(val f32) f32 is intrinsic
+  public fixed type.atan2(y, x f32) f32 is intrinsic
+
+
+  public fixed type.sinh (val f32) f32 is intrinsic
+  public fixed type.cosh (val f32) f32 is intrinsic
+  public fixed type.tanh (val f32) f32 is intrinsic

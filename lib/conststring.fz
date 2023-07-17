@@ -28,7 +28,7 @@
 # Const_String cannot be called directly, instances are created implicitly by the
 # backend.
 #
-Const_String (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
+public Const_String (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
 
   redef utf8 Sequence u8 is Const_String.this
 
@@ -37,5 +37,5 @@ Const_String (cannot_be_called void) ref : String, array u8 (fuzion.sys.internal
   # NYI: Once we have a select-mechanism, we could select string.as_string over
   # array.as_string
   #
-  redef as_string String is Const_String.this
+  public redef as_string String is Const_String.this
   redef is_empty => length = 0

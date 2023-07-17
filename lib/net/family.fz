@@ -25,33 +25,33 @@
 # defines constants for protocol families which
 # can be used for network communication.
 #
-family is
+public family is
 
   # Internet Protocol Version 4
-  ipv4 is
-    redef as_string String is
+  public ipv4 is
+    public redef as_string String is
       "IPv4"
 
   # Internet Protocol Version 6
-  ipv6 is
-    redef as_string String is
+  public ipv6 is
+    public redef as_string String is
       "IPv6"
 
 
-  val : choice ipv4 ipv6 is
-    as_num i32 is
+  private:public val : choice ipv4 ipv6 is
+    module as_num i32 is
       match val.this
         ipv4  => 2
         ipv6  => 10
 
-    redef as_string String is
+    public redef as_string String is
       match val.this
         i4 ipv4  => i4.as_string
         i6 ipv6  => i6.as_string
 
 
   # convenience feature to get the localhost address of a family
-  localhost(f net.family.val) String is
+  public localhost(f net.family.val) String is
     match f
       net.family.ipv4 => "127.0.0.1"
       net.family.ipv6 => "::1"

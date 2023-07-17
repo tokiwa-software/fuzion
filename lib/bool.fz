@@ -36,15 +36,15 @@
 # value of type 'bool'.
 #
 #
-bool : choice FALSE TRUE, property.equatable is
+public bool : choice FALSE TRUE, property.equatable is
 
   # not
-  prefix ! bool is
+  public prefix ! bool is
     if bool.this then FALSE else TRUE
 
   # or with lazy evaluation
   #
-  infix || (other Lazy bool) bool is
+  public infix || (other Lazy bool) bool is
     if bool.this
       true
     else
@@ -52,49 +52,49 @@ bool : choice FALSE TRUE, property.equatable is
 
   # and with lazy evaluation
   #
-  infix && (other Lazy bool) bool is
+  public infix && (other Lazy bool) bool is
     if bool.this
       other
     else
       false
 
   # or
-  infix |   (other bool) => bool.this || other
+  public infix |   (other bool) => bool.this || other
 
   # and
-  infix &   (other bool) => bool.this && other
+  public infix &   (other bool) => bool.this && other
 
   # equivalence
   #
   # note that we do not use '==' for this to avoid confusion since
   # a == b == c for booleans might not behave as expected
   # ('true <=> false <=> false' evaluates to 'true')
-  infix <=> (other bool) => if bool.this other else !other
+  public infix <=> (other bool) => if bool.this other else !other
 
   # equality check implementation for inherited property.equatable
   #
-  fixed type.equality(a, b bool) =>
+  public fixed type.equality(a, b bool) =>
     if a
       b
     else
       !b
 
   # xor
-  infix ^   (other bool) => if bool.this (!other) else  other
+  public infix ^   (other bool) => if bool.this (!other) else  other
 
   # implies
   #
-  infix : (other Lazy bool) bool is
+  public infix : (other Lazy bool) bool is
     if bool.this
       other
     else
       true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  ternary ? : (T type, a, b T) => if bool.this a else b
+  public ternary ? : (T type, a, b T) => if bool.this a else b
 
   # human readable string
-  redef as_string => if bool.this "true" else "false"
+  public redef as_string => if bool.this "true" else "false"
 
 
 # boolean value "false"
@@ -108,7 +108,7 @@ bool : choice FALSE TRUE, property.equatable is
 # >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-FALSE is
+public FALSE is
 
 
 # boolean value "true"
@@ -122,16 +122,16 @@ FALSE is
 # >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-TRUE is
+public TRUE is
 
 
 # boolean value "false" as a constant of type >>bool<<.
 #
 #
-false bool is FALSE
+public false bool is FALSE
 
 
 # boolean value "true" as a constant of type >>bool<<.
 #
 #
-true bool is TRUE
+public true bool is TRUE

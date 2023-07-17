@@ -25,9 +25,9 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-u32(val u32) : num.wrap_around, has_interval is
+public u32(val u32) : num.wrap_around, has_interval is
 
-  thiz => u32.this.val
+  public thiz => u32.this.val
 
   # overflow checking
 
@@ -35,29 +35,29 @@ u32(val u32) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  fixed overflow_on_add (other u32) => u32.type.max -° thiz < other
-  fixed underflow_on_add(other u32) => false
+  public fixed overflow_on_add (other u32) => u32.type.max -° thiz < other
+  public fixed underflow_on_add(other u32) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  fixed overflow_on_sub (other u32) => false
-  fixed underflow_on_sub(other u32) => thiz < other
+  public fixed overflow_on_sub (other u32) => false
+  public fixed underflow_on_sub(other u32) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.type.max.as_i64
-  fixed underflow_on_mul(other u32) => false
+  public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.type.max.as_i64
+  public fixed underflow_on_mul(other u32) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  fixed prefix -° u32 is intrinsic
-  fixed infix +° (other u32) u32 is intrinsic
-  fixed infix -° (other u32) u32 is intrinsic
-  fixed infix *° (other u32) u32 is intrinsic
+  public fixed prefix -° u32 is intrinsic
+  public fixed infix +° (other u32) u32 is intrinsic
+  public fixed infix -° (other u32) u32 is intrinsic
+  public fixed infix *° (other u32) u32 is intrinsic
 
   # division and remainder with check for div-by-zero
-  fixed infix / (other u32)
+  public fixed infix / (other u32)
     pre
       safety: other != u32 0
    => div(other)
-  fixed infix % (other u32)
+  public fixed infix % (other u32)
     pre
       safety: other != u32 0
    => mod(other)
@@ -67,16 +67,16 @@ u32(val u32) : num.wrap_around, has_interval is
   private mod (other u32) u32 is intrinsic
 
   # bitwise and, or and xor operations
-  fixed infix &  (other u32) u32 is intrinsic
-  fixed infix |  (other u32) u32 is intrinsic
-  fixed infix ^  (other u32) u32 is intrinsic
+  public fixed infix &  (other u32) u32 is intrinsic
+  public fixed infix |  (other u32) u32 is intrinsic
+  public fixed infix ^  (other u32) u32 is intrinsic
 
   # shift operations (unsigned)
-  fixed infix >> (other u32) u32 is intrinsic
-  fixed infix << (other u32) u32 is intrinsic
+  public fixed infix >> (other u32) u32 is intrinsic
+  public fixed infix << (other u32) u32 is intrinsic
 
   # this u32 as an i8
-  as_i8 i8
+  public as_i8 i8
     pre
       debug: thiz ≤ i8.type.max.as_u32
     is
@@ -84,7 +84,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an i16
-  as_i16 i16
+  public as_i16 i16
     pre
       debug: thiz ≤ i16.type.max.as_u32
     is
@@ -92,7 +92,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an i32
-  as_i32 i32
+  public as_i32 i32
     pre
       debug: thiz ≤ i32.type.max.as_u32
     is
@@ -100,7 +100,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an i64
-  as_i64 i64 is intrinsic
+  public as_i64 i64 is intrinsic
 
 
   # NYI
@@ -110,7 +110,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u8
-  as_u8 u8
+  public as_u8 u8
     pre
       debug: thiz ≤ u8.type.max.as_u32
     is
@@ -118,7 +118,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u16
-  as_u16 u16
+  public as_u16 u16
     pre
       debug: thiz ≤ u16.type.max.as_u32
     is
@@ -126,48 +126,48 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u64
-  as_u64 u64
+  public as_u64 u64
     is
       thiz.as_i64.as_u64
 
 
   # this u32 as an u128
-  as_u128 u128
+  public as_u128 u128
     is
       u128 0 as_u64
 
 
   # this u32 as an int
-  as_int  => int as_i64
+  public as_int  => int as_i64
 
 
   # this u32 as an uint
-  as_uint  => uint as_u64
+  public as_uint  => uint as_u64
 
 
-  low8bits  u8  is intrinsic
-  low16bits u16 is intrinsic
-  cast_to_i32 i32 is intrinsic
-  cast_to_f32 f32 is intrinsic
+  public low8bits  u8  is intrinsic
+  public low16bits u16 is intrinsic
+  public cast_to_i32 i32 is intrinsic
+  public cast_to_f32 f32 is intrinsic
 
   # conversion to float
-  as_f64 f64 is intrinsic
-  as_f32 => as_f64.as_f32
+  public as_f64 f64 is intrinsic
+  public as_f32 => as_f64.as_f32
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
-  fixed redef max => u32 0x_ffff_ffff
+  public fixed redef max => u32 0x_ffff_ffff
 
 
   # create hash code from this number
-  hash u64 is
+  public hash u64 is
     as_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highest_one_bit u32 is
+  public highest_one_bit u32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, u32 0)
     (v1, s1) := if ((v0 ≥ u32 0) && (v0 < u32 0x10000)) (v0, s0) else (v0 >> 16, s0 + 16)
@@ -180,7 +180,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
   # the highest 1 bit in this integer
   #
-  highest_bit u32 is
+  public highest_bit u32 is
     if val = u32.type.zero
       0
     else
@@ -196,7 +196,7 @@ u32(val u32) : num.wrap_around, has_interval is
 
   # count the number of trailing zeros in this integer.
   #
-  trailing_zeros i32 is
+  public trailing_zeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
     (v1, s1) := if ((v0 &     0xffff) != u32 0) (v0, s0) else (v0 >> 16, s0 + 16)
@@ -211,7 +211,7 @@ u32(val u32) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  ones_count i32 is
+  public ones_count i32 is
     v := val;
     m := v & 0xaaaaaaaa; v := v - m + (m >> 1)
     m := v & 0xcccccccc; v := v - m + (m >> 2)
@@ -245,14 +245,14 @@ u32(val u32) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u32 0x_ffff_ffff
+  public fixed redef type.all_bits_set => u32 0x_ffff_ffff
 
 
   # minimum
   #
-  fixed type.min => u32 0
+  public fixed type.min => u32 0
 
 
   # maximum
   #
-  fixed type.max => u32 0x_ffff_ffff
+  public fixed type.max => u32 0x_ffff_ffff

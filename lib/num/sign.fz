@@ -25,16 +25,16 @@
 #
 # this can be plus or minus
 #
-sign : choice num.plus num.minus, property.equatable is
+module sign : choice num.plus num.minus, property.equatable is
 
-  is_plus =>
+  module is_plus =>
     match sign.this
       num.plus => true
       num.minus => false
 
   # equality: are these signs equal?
   #
-  fixed type.equality(a, b num.sign) bool is
+  module fixed type.equality(a, b num.sign) bool is
     match a
       num.plus =>
         match b
@@ -45,7 +45,7 @@ sign : choice num.plus num.minus, property.equatable is
           num.plus => false
           num.minus => true
 
-  redef as_string String is
+  module redef as_string String is
     match sign.this
       num.plus => ""
       num.minus => "-"
