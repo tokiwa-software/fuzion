@@ -25,7 +25,7 @@
 
 # delete -- effect wrapping the file delete operation
 #
-private delete(dop Delete_Provider, _ unit) : simple_effect is
+private delete(dop Delete_Handler, _ unit) : simple_effect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
@@ -41,7 +41,7 @@ private delete(dop Delete_Provider, _ unit) : simple_effect is
 
   # the default file/dir delete operation via fuzion.sys.fileio.delete
   #
-  type.default_delete_provider : io.file.Delete_Provider is
+  type.default_delete_handler : io.file.Delete_Handler is
     delete(path String) =>
       fuzion.sys.fileio.delete path
 
@@ -49,7 +49,7 @@ private delete(dop Delete_Provider, _ unit) : simple_effect is
   # install default effect io.file.delete
   #
   type.install_default =>
-    (io.file.delete default_delete_provider unit).default
+    (io.file.delete default_delete_handler unit).default
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 # deletes the file/dir found in the path
@@ -62,5 +62,5 @@ delete(path String) =>
 
 # reference to the delete operations that could take place
 #
-Delete_Provider ref is
+Delete_Handler ref is
     delete(path String) outcome unit is abstract

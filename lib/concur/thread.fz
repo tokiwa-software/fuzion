@@ -26,8 +26,8 @@
 # thread -- effect that provides concurrent thread
 #
 thread (
-  # the provider this effect uses to spawn threads
-  p Thread_Provider
+  # the handler this effect uses to spawn threads
+  p Thread_Handler
   ) : simple_effect
 is
 
@@ -57,9 +57,9 @@ is
     (concur.thread default_thread).default
 
 
-  # default concurrency provider
+  # default thread handler
   #
-  type.default_thread : concur.Thread_Provider is
+  type.default_thread : concur.Thread_Handler is
 
     # spawn a new thread using given code
     #
@@ -74,9 +74,9 @@ thread =>
   thread.env
 
 
-# Thread_Provider -- abstract source of concurrency
+# Thread_Handler -- abstract source of concurrency
 #
-Thread_Provider ref is
+Thread_Handler ref is
 
   # spawn a new thread using given code
   #

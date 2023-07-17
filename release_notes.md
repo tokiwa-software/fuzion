@@ -899,7 +899,7 @@
 
   - added `string.trimStart` and `string.trimEnd`
 
-  - default random provider can now be seeded with an u64 given in env var
+  - default random handler can now be seeded with an u64 given in env var
     `FUZION_RANDOM_SEED`.
 
   - added effects

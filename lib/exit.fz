@@ -27,8 +27,8 @@
 #
 exit (
 
-  # the provider this effect uses to exit
-  p Exit_Provider,
+  # the handler this effect uses to exit
+  p Exit_Handler,
 
   redef r effect_mode.val,
 
@@ -58,12 +58,12 @@ is
   #
   type.install_default is
     if !effect.type.is_installed exit
-      _ := exit default_exit_provider effect_mode.default unit
+      _ := exit default_exit_handler effect_mode.default unit
 
 
-  # default exit provider
+  # default exit handler
   #
-  type.default_exit_provider : Exit_Provider is
+  type.default_exit_handler : Exit_Handler is
 
 
     # mutable value of the current exit code set
@@ -103,7 +103,7 @@ is
 
 
 # exit with no argument returns exit.env, the currently installed
-# exit provider.
+# exit handler.
 #
 exit0 =>
   exit.type.install_default
@@ -129,15 +129,15 @@ set_exit_code(code i32)
   => exit0.set_exit_code code
 
 
-# install given exit provider and run code with it.
+# install given exit handler and run code with it.
 #
-exit(provider Exit_Provider, code ()->unit) =>
-  exit provider (effect_mode.inst code) unit
+exit(handler Exit_Handler, code ()->unit) =>
+  exit handler (effect_mode.inst code) unit
 
 
-# Exit_Provider -- abstract exit
+# Exit_Handler -- abstract exit
 #
-Exit_Provider ref is
+Exit_Handler ref is
 
   # exit with the given code
   #

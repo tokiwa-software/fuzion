@@ -27,7 +27,7 @@
 #
 # This is used as heir feature for effects such as io.out and io.err.
 #
-private print_effect (p Print_Provider) : simple_effect
+private print_effect (p Print_Handler) : simple_effect
 is
 
   # print the given string followed be new line
@@ -49,7 +49,7 @@ is
     replace
 
 
-Print_Provider ref is
+Print_Handler ref is
 
   println(s Any) =>
     print s
