@@ -1080,7 +1080,7 @@ hw25 is
      */
     Call,
 
-    /* The instance has an unkown lifetime, so it should be heap allocated and
+    /* The instance has an unknown lifetime, so it should be heap allocated and
      * freed by GC
      */
     Unknown,

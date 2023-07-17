@@ -1125,7 +1125,7 @@ public class DFA extends ANY
 
 
   /**
-   * Record that a temporary value whose adress is taken may live longer than
+   * Record that a temporary value whose address is taken may live longer than
    * than the current call, so we cannot store it in the current stack frame.
    *
    * @param cl the outer clazz whose code we are analysing.

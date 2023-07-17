@@ -88,7 +88,7 @@ public abstract class FeatureVisitor extends ANY
    * When visiting a Call, the actuals value arguments are visited before the
    * target and before the call itself.
    *
-   * If this is redefined to return true, the order will be changed to taget,
+   * If this is redefined to return true, the order will be changed to target,
    * call itself and actuals.  The reason is that nested lazy values must be
    * processed from outside to the inside to ensure that the outer feature of
    * the inner actual is set correctly (i.e., set to the Lazy instance created

@@ -2,6 +2,6 @@
 --CURDIR--/issue952.fz:27:12: error 1: Type inference from actual arguments failed since no actual call was found
   a(b u64, f) is
 -----------^
-For the formal argument 'issue952.a.f' the type can only be derifed if there is a call to 'issue952.a'.
+For the formal argument 'issue952.a.f' the type can only be derived if there is a call to 'issue952.a'.
 
 one error.

@@ -38,12 +38,12 @@ actual is value of type of type 'bool' at --CURDIR--/typeinference_for_args_nega
 --CURDIR--/typeinference_for_args_negative.fz:32:6: error 3: Type inference from actual arguments failed since no actual call was found
   a5(a, b) => a+b    # *** error ***, never called
 -----^
-For the formal argument 'typeinference_for_args_negative.a5.a' the type can only be derifed if there is a call to 'typeinference_for_args_negative.a5'.
+For the formal argument 'typeinference_for_args_negative.a5.a' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
 
 
 --CURDIR--/typeinference_for_args_negative.fz:32:9: error 4: Type inference from actual arguments failed since no actual call was found
   a5(a, b) => a+b    # *** error ***, never called
 --------^
-For the formal argument 'typeinference_for_args_negative.a5.b' the type can only be derifed if there is a call to 'typeinference_for_args_negative.a5'.
+For the formal argument 'typeinference_for_args_negative.a5.b' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
 
 4 errors.
