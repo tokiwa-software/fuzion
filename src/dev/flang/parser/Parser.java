@@ -487,7 +487,7 @@ visiFlag    : "private" colon "module"
   */
   Visi visibility()
   {
-    Visi v = Visi.PRIV;
+    Visi v = Visi.UNSPECIFIED;
     if (isNonEmptyVisibilityPrefix())
       {
         if (skip(Token.t_private)) {

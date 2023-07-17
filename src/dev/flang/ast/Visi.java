@@ -37,6 +37,12 @@ public enum Visi
 {
 
   /*
+   * visibility not explicitly stated
+   */
+  UNSPECIFIED("unspecified"),
+
+
+  /*
    * visible only in the current file
    */
   PRIV("private"),
