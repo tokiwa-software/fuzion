@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = testLists
+FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk

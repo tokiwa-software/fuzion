@@ -46,6 +46,8 @@ import dev.flang.me.MiddleEnd;
 
 import dev.flang.opt.Optimizer;
 
+import dev.flang.parser.Parser;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FatalError;
@@ -278,6 +280,10 @@ public abstract class Tool extends ANY
     else if (a.matches("-verbose(=\\d+|)"))
       {
         _verbose = parsePositiveIntArg(a, 1);
+      }
+    else if (a.equals("-XenableSetKeyword"))
+      {
+        Parser.ENABLE_SET_KEYWORD = true;
       }
     else
       {

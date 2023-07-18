@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = genericstest
+FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk

@@ -28,7 +28,8 @@
 #  NAME -- the name of the main feature to be tested
 #  FUZION -- the fz command
 
-FUZION = ../../bin/fz
+FUZION_OPTIONS ?=
+FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 int:
 	$(FUZION) $(NAME) 2>err.txt

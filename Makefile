@@ -539,7 +539,7 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 
 $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fz -sourceDirs=$(BUILD_DIR)/lib -XloadBaseLib=off -saveLib=$@
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(BUILD_DIR)/lib -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
 	$(BUILD_DIR)/bin/fz -XXcheckIntrinsics
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:

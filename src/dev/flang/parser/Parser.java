@@ -84,6 +84,16 @@ public class Parser extends Lexer
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * Whether to allow the usage of the `set` keyword.
+   *
+   * Controlled by the `-XenableSetKeyword` option to `fz`, if false, the
+   * parser will throw an `illegalUseOfSetKeyword` error when encountering
+   * the `set` keyword.
+   */
+  public static boolean ENABLE_SET_KEYWORD = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -3041,6 +3051,10 @@ assign      : "set" name ":=" exprInLine
    */
   Stmnt assign()
   {
+    if (!ENABLE_SET_KEYWORD)
+      {
+        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+      }
     match(Token.t_set, "assign");
     var n = name();
     SourcePosition pos = tokenSourcePos();
@@ -3099,6 +3113,10 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
     else
       {
         var hasSet = skip(Token.t_set);
+        if (hasSet && !ENABLE_SET_KEYWORD)
+          {
+            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+          }
         match(Token.t_lparen, "destructure");
         var names = argNames();
         match(Token.t_rparen, "destructure");
