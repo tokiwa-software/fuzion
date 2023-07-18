@@ -190,7 +190,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
             l = l + 1;
             sb.append(Terminal.BLUE)
               .append(_sourceFile.line(l));
-            if (sb.charAt(sb.length()-1) != '\n')
+            if (sb.length() != 0 && sb.charAt(sb.length()-1) != '\n')
               { // add LF in case this is the last line of a file that does not end in a line break
                 sb.append("\n");
               }
