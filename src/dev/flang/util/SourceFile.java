@@ -804,7 +804,7 @@ public class SourceFile extends ANY
    */
   public int lineEndPos(int line)
   {
-    return line == lines().length ? _bytes.length - 1 : lineStartPos(line + 1) - 1;
+    return line == numLines() ? _bytes.length - 1 : lineStartPos(line + 1) - 1;
   }
 
 
