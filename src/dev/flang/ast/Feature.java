@@ -1479,7 +1479,9 @@ public class Feature extends AbstractFeature implements Stmnt
       case Field,        // a field
            FieldActual,  // a field with implicit type taken from actual argument to call
            RoutineDef,   // normal feature with code and implicit result type
-           Routine       // normal feature with code
+           Routine,      // normal feature with code
+           Intrinsic,    // intrinsic feature
+           Abstract      // abstract feature
         -> true;
       default -> throw new Error("missing case "+_impl._kind);
       };
