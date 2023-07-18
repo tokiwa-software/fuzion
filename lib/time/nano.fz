@@ -34,7 +34,7 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Provider) : simple_effect is
+public nano (p Nano_Time_Handler) : simple_effect is
 
   # no guarantee can be given for precision nor resolution
   public read =>
@@ -49,7 +49,7 @@ public nano (p Nano_Time_Provider) : simple_effect is
     res
 
 
-  type.default_nano_time : time.Nano_Time_Provider is
+  type.default_nano_time : time.Nano_Time_Handler is
 
     # no guarantee can be given for precision nor resolution
     read => fuzion.std.nano_time
@@ -70,9 +70,9 @@ public nano =>
   nano.env
 
 
-# abstract provider that can deliver a nano time
+# abstract handler that can deliver a nano time
 #
-private:public Nano_Time_Provider ref is
+private:public Nano_Time_Handler ref is
 
   # no guarantee can be given for precision nor resolution
   read u64 is abstract

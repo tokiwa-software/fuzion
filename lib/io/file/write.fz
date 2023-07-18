@@ -25,7 +25,7 @@
 
 # write -- effect providing writing operations for files
 #
-public write(fwh File_Write_Handler) : simple_effect is
+public write(fwh Write_Handler) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -50,7 +50,7 @@ public write(fwh File_Write_Handler) : simple_effect is
 
   # the default file writing handler writing bytes into files via fuzion.sys.fileio.write
   #
-  type.default_file_write_handler : io.file.File_Write_Handler is
+  type.default_write_handler : io.file.Write_Handler is
     # dummy parameter for overloading
     write(fd i64, content array u8, _ unit) =>
       fuzion.sys.fileio.write fd content
@@ -62,7 +62,7 @@ public write(fwh File_Write_Handler) : simple_effect is
   # install default effect io.file.write
   #
   type.install_default =>
-    (io.file.write default_file_write_handler).default
+    (io.file.write default_write_handler).default
 
 
 # short-hand for accessing write effect in current environment
@@ -74,7 +74,7 @@ public write =>
 
 # reference to the writing operations that could take place
 #
-private:public File_Write_Handler ref is
+private:public Write_Handler ref is
   write(fd i64, content array u8, _ unit) outcome unit is abstract
 
   mkdir(path String) outcome unit is abstract

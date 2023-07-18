@@ -26,7 +26,7 @@
 # this allows creating a map from a keys and values array
 private:public map_of_total_order (
   K type : property.orderable, V type,
-  # the provider this effect uses to create a Map
+  # the handler this effect uses to create a Map
   public new (array K, array V) -> Map K V,
   private em effect_mode.val,
   _ unit

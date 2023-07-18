@@ -25,7 +25,7 @@
 
 # envir.vars -- effect providing access to environment variables
 #
-public vars (p Vars_Provider) : simple_effect is
+public vars (p Vars_Handler) : simple_effect is
 
   # If set, get the environment variable corresponding to v.
   #
@@ -61,12 +61,12 @@ public vars (p Vars_Provider) : simple_effect is
   # install default instance of vars
   #
   type.install_default =>
-    (envir.vars default_vars_provider).default
+    (envir.vars default_vars_handler).default
 
 
-  # default provider using fuzion.sys.env_vars
+  # default handler using fuzion.sys.env_vars
   #
-  type.default_vars_provider : envir.Vars_Provider is
+  type.default_vars_handler : envir.Vars_Handler is
     get(v String) => fuzion.sys.env_vars.get v
     set1(n String, v String) => fuzion.sys.env_vars.set1 n v
     unset(n String) => fuzion.sys.env_vars.unset n
@@ -79,12 +79,12 @@ public vars =>
   envir.vars.env
 
 
-# Vars_Provider -- abstract source of environment vars
+# Vars_Handler -- abstract source of environment vars
 #
 # Different heirs of this feature may provided different sources for environment
 # variables
 #
-private:public Vars_Provider ref is
+private:public Vars_Handler ref is
 
   # If set, get the environment variable corresponding to v
   #

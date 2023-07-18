@@ -25,7 +25,7 @@
 
 # seek -- effect providing stream seeking operations
 #
-public seek(ps Provided_Seek) : simple_effect is
+public seek(ps Seek_Handler) : simple_effect is
 
   # seek offset in the stream represented by fd
   # returns an outcome i64 that represents the new offset
@@ -54,7 +54,7 @@ public seek(ps Provided_Seek) : simple_effect is
 
   # the default stream seeking
   #
-  type.default_provided_seek : io.file.Provided_Seek is
+  type.default_seek_handler : io.file.Seek_Handler is
     seek(fd i64, offset i64) =>
       fuzion.sys.fileio.seek fd offset
 
@@ -64,7 +64,7 @@ public seek(ps Provided_Seek) : simple_effect is
 
   # install default effect io.file.seek
   type.install_default unit is
-    (io.file.seek default_provided_seek).default
+    (io.file.seek default_seek_handler).default
 
 
 # short-hand for accessing seek effect in current environment and performing the default seek operation using
@@ -91,6 +91,6 @@ seek =>
 
 # reference to the seek operations that could be provided
 #
-private:public Provided_Seek ref is
+private:public Seek_Handler ref is
   seek(fd i64, offset i64) outcome i64 is abstract
   file_position(fd i64) outcome i64 is abstract

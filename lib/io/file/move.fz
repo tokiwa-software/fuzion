@@ -25,7 +25,7 @@
 
 # move -- effect wrapping the file move operation
 #
-public move(mop Move_Operation) : simple_effect is
+public move(mop Move_Handler) : simple_effect is
 
   # moves file/dir from an old path to a the new path
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
@@ -43,7 +43,7 @@ public move(mop Move_Operation) : simple_effect is
 
   # the default file/dir move operation via fuzion.sys.fileio.move
   #
-  type.default_move_operation : io.file.Move_Operation is
+  type.default_move_handler : io.file.Move_Handler is
     move(old_path String, new_path String) =>
       fuzion.sys.fileio.move old_path new_path
 
@@ -51,7 +51,7 @@ public move(mop Move_Operation) : simple_effect is
   # install default effect io.file.move
   #
   type.install_default =>
-    (io.file.move default_move_operation).default
+    (io.file.move default_move_handler).default
 
 
 # short-hand for accessing move effect in current environment and performing the default move operation using
@@ -70,5 +70,5 @@ public move(
 
 # reference to the move operations that could take place
 #
-private:public Move_Operation ref is
+private:public Move_Handler ref is
     move(old_path String, new_path String) outcome unit is abstract

@@ -88,7 +88,7 @@ test_local_mutate is
 
       # handler for negative tests that cause panic:
       #
-      my_panic : Panic_Provider is
+      my_panic : Panic_Handler is
         do_panic(msg String) =>
           say "*** got '$msg' ***"
 

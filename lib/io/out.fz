@@ -25,14 +25,14 @@
 
 # out -- effect providing an output stream
 #
-public out (redef p Can_Print) : print_effect p is
+public out (redef p Print_Handler) : print_effect p is
 
 
   type.install_default =>
-    (io.out default_print_to_out).default
+    (io.out default_print_handler).default
 
 
-  type.default_print_to_out : io.Can_Print is
+  type.default_print_handler : io.Print_Handler is
     print(s Any) => fuzion.sys.out.print s
 
 
