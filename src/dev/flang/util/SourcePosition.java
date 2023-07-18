@@ -185,7 +185,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         p == _bytePos || p < byteEndPos();
         p++)
       {
-        while (_sourceFile.lineStartPos(l+1) <= p)
+        while (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
           {
             l = l + 1;
             sb.append(Terminal.BLUE)
