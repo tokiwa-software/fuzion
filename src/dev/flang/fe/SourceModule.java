@@ -1418,17 +1418,18 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void checkArgTypesVisibility(Feature f)
   {
-    var s = f.arguments()
-      .stream()
-      .filter(x -> x.resultType().lessVisibleThan(f.visibility().featureVisibility()))
-      .collect(Collectors.toSet());
-
-    if (!s.isEmpty())
+    for (AbstractFeature arg : f.arguments())
       {
-        Errors.error(f.pos(), "Argument types or any of its generic arguments is less visible than feature.",
-          "The feature        : " + f.featureName() + "\n" +
-          "The argument types : " + s.stream().map(x -> x.resultType().toString()).collect(Collectors.joining(", "))
-        );
+        var s = arg.resultType().lessVisibleThan(f.visibility().featureVisibility());
+
+        if (!s.isEmpty())
+          {
+            Errors.error(f.pos(), "Argument types or any of its generics is less visible than feature.",
+              "The feature            : " + f.featureName() + "\n" +
+              "The argument           : " + arg.featureName() + "\n" +
+              "The less visible types : " + s.stream().map(x -> x.toString()).collect(Collectors.joining(", "))
+            );
+          }
       }
   }
 
@@ -1439,11 +1440,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void checkResultTypeVisibility(Feature f)
   {
-    if (f.resultType().lessVisibleThan(f.visibility().featureVisibility()))
+    var s = f.resultType().lessVisibleThan(f.visibility().featureVisibility());
+    if (!s.isEmpty())
       {
-        Errors.error(f.pos(), "Result type or any of its generic arguments is less visible than feature.",
-          "The feature     : " + f.featureName() + "\n" +
-          "Its result type : " + f.resultType()
+        Errors.error(f.pos(), "Result type or any of its generics is less visible than feature.",
+          "The feature            : " + f.featureName() + "\n" +
+          "The less visible types : " + s.stream().map(x -> x.toString()).collect(Collectors.joining(", "))
         );
       }
   }

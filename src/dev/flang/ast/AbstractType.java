@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -1698,7 +1699,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * recursion helper for usedTypes (no args)
+   * recursion helper for `usedTypes (no args)`
    * @param result
    */
   private void usedTypes(TreeSet<AbstractType> result)
@@ -1721,21 +1722,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Is this type or any of its generic types less visible than `v`?
+   * This type and any of its generic types that are less visible than `v`.
    *
    * @param v
    * @return
    */
-  public boolean lessVisibleThan(Visi v)
+  public Set<AbstractType> lessVisibleThan(Visi v)
   {
     if (PRECONDITIONS) require
       (!v.definesTypeVisibility());
 
-    return
-      !isGenericArgument() &&
-        usedTypes().stream().anyMatch(at -> !at.isGenericArgument() && at.featureOfType().visibility().typeVisibility().ordinal() < v.ordinal())
-      || isGenericArgument() &&
-        genericArgument().constraint().lessVisibleThan(v);
+    return isGenericArgument()
+      ? genericArgument().constraint().lessVisibleThan(v)
+      : usedTypes()
+          .stream()
+          .filter(at -> !at.isGenericArgument() && at.featureOfType().visibility().typeVisibility().ordinal() < v.ordinal())
+          .collect(Collectors.toSet());
   }
 
 }
