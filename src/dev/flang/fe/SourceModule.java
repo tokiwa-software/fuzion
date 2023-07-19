@@ -1381,7 +1381,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
               && !(c.target() instanceof Current)
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()
-              && isLessVisible(c.calledFeature(), f))
+              // the called feature must be at least as visible as the feature.
+              && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
             {
               Errors.error(c.pos(), "Called feature in precondition less visible than feature.",
                 "The called feature : " + c.calledFeature().featureName() + "\n" +
@@ -1390,15 +1391,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
             }
         }
       }, f));
-  }
-
-
-  /*
-   * Is feature `a` less visible than feature `b`?
-   */
-  private boolean isLessVisible(AbstractFeature a, Feature b)
-  {
-    return a.visibility().ordinal() < b.visibility().ordinal();
   }
 
 
