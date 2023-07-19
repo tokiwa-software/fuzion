@@ -8,3 +8,4 @@ calling b.ret_b.hello_a
 hello_a from b
 calling b.get_aa.aaa
 aaa
+priv

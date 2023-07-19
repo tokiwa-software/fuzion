@@ -1,0 +1,5 @@
+module:public a is
+  module mod is
+    say "a.mod"
+
+

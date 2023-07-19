@@ -1,6 +1,6 @@
 public b : a is
 
-  # reuse hello without, which is private in a
+  # reuse hello without redef, hello is private in a
   public hello is
     say "hello from b"
 
@@ -15,3 +15,9 @@ public b : a is
 
   public redef hello_a unit is
     say "hello_a from b"
+
+  priv is
+    redef as_string => "priv"
+
+  public get_any Any is
+    priv

@@ -13,3 +13,5 @@ m =>
 
   say "calling b.get_aa.aaa"
   b.get_aa.aaa
+
+  say b.get_any.as_string // indirectly calling private feature
