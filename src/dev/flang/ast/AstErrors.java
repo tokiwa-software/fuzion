@@ -61,10 +61,6 @@ public class AstErrors extends ANY
     return f == Types.f_ERROR ? err()
                               : sqn(f.qualifiedName());
   }
-  public static String s(Feature f)
-  {
-    return s((AbstractFeature) f);
-  }
   static String skw(String s) // keyword
   {
     return code(s);
@@ -132,9 +128,9 @@ public class AstErrors extends ANY
   {
     return expr(e.toString());
   }
-  static String s(Stmnt s)
+  static String s(AbstractAssign a)
   {
-    return ss(s.toString());
+    return ss(a.toString());
   }
   static String ss(String s) // statement or expression
   {
