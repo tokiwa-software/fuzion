@@ -39,7 +39,6 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
@@ -1350,12 +1349,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().ordinal())
       {
-        Errors.error(f.pos(), "Outer feature is less visible than inner feature.",
-         "The outer feature : " + f.outer().featureName() + "\n" +
-         "  visibility      : " + f.outer().visibility() + "\n" +
-         "The inner feature : " + f.featureName() + "\n" +
-         "  visibility      : " + f.visibility()
-        );
+        AstErrors.outerLessVisibleThanInnerFeature(f);
       }
   }
 
@@ -1384,10 +1378,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               // the called feature must be at least as visible as the feature.
               && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
             {
-              Errors.error(c.pos(), "Called feature in precondition less visible than feature.",
-                "The called feature : " + c.calledFeature().featureName() + "\n" +
-                "The feature        : " + f.featureName()
-              );
+              AstErrors.calledFeatureInPreconditionLessVisibleThanFeature(f, c);
             }
         }
       }, f));
@@ -1403,10 +1394,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (!f.definesType() && f.visibility().definesTypeVisibility())
       {
-        Errors.error(f.pos(), "Feature specifing type visibility does not define a type.",
-         "The feature              : " + f.featureName() + "\n" +
-         "The specified visibility : " + f.visibility()
-        );
+        AstErrors.illegalVisibilityModifier(f);
       }
   }
 
@@ -1424,14 +1412,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
         if (!s.isEmpty())
           {
-            Errors.error(f.pos(), "Argument types or any of its generics is less visible than feature.",
-              "The feature            : " + f.featureName() + "\n" +
-              "The argument           : " + arg.featureName() + "\n" +
-              "The less visible types : " + s.stream().map(x -> x.toString()).collect(Collectors.joining(", "))
-            );
+            AstErrors.argTypeLessVisible(f, arg, s);
           }
       }
   }
+
 
   /**
    * Check that result type is at least as visible as feature `f`.
@@ -1443,10 +1428,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var s = f.resultType().lessVisibleThan(f.visibility().featureVisibility());
     if (!s.isEmpty())
       {
-        Errors.error(f.pos(), "Result type or any of its generics is less visible than feature.",
-          "The feature            : " + f.featureName() + "\n" +
-          "The less visible types : " + s.stream().map(x -> x.toString()).collect(Collectors.joining(", "))
-        );
+        AstErrors.resultTypeLessVisible(f, s);
       }
   }
 

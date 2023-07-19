@@ -132,6 +132,13 @@ public class AstErrors extends ANY
   {
     return ss(a.toString());
   }
+  static String s(Visi v)
+  {
+    if (PRECONDITIONS) require
+      (v != Visi.UNSPECIFIED);
+
+    return code(v.toString());
+  }
   static String ss(String s) // statement or expression
   {
     return expr(s);
@@ -1953,6 +1960,49 @@ public class AstErrors extends ANY
           "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
           "The existing type was declared at " + f.pos().show() + "\n" +
           "To solve this, you may use a different name for free type " + s(t) + ".");
+  }
+
+  public static void outerLessVisibleThanInnerFeature(Feature f)
+  {
+    error(f.pos(), "Outer feature is less visible than inner feature.",
+     "The outer feature : " + s(f.outer()) + "\n" +
+     "its visibility    : " + s(f.outer().visibility()) + "\n" +
+     "The inner feature : " + s(f) + "\n" +
+     "its visibility    : " + s(f.visibility())
+    );
+  }
+
+  public static void calledFeatureInPreconditionLessVisibleThanFeature(Feature f, AbstractCall c)
+  {
+    error(c.pos(), "Called feature in precondition less visible than feature.",
+      "The called feature : " + s(c.calledFeature()) + "\n" +
+      "The feature        : " + s(f)
+    );
+  }
+
+  public static void illegalVisibilityModifier(Feature f)
+  {
+    error(f.pos(), "Feature specifing type visibility does not define a type.",
+     "The feature              : " + s(f) + "\n" +
+     "The specified visibility : " + s(f.visibility())
+    );
+  }
+
+  public static void argTypeLessVisible(Feature f, AbstractFeature arg, Set<AbstractType> s)
+  {
+    error(f.pos(), "Argument types or any of its generics is less visible than feature.",
+      "The feature            : " + s(f) + "\n" +
+      "The argument           : " + s(arg) + "\n" +
+      "The less visible types : " + s(s.stream().collect(List.collector()))
+    );
+  }
+
+  public static void resultTypeLessVisible(Feature f, Set<AbstractType> s)
+  {
+    error(f.pos(), "Result type or any of its generics is less visible than feature.",
+      "The feature            : " + s(f) + "\n" +
+      "The less visible types : " + s(s.stream().collect(List.collector()))
+    );
   }
 
 }
