@@ -30,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.fuir.analysis.dfa.DFA.IntrinsicDFA;
+
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -219,8 +221,31 @@ public class Call extends ANY implements Comparable<Call>, Context
               }
             else
               {
-                var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
-                Errors.warning(msg);
+                var rc = _dfa._fuir.clazzResultClazz(_cc);
+                if (_dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8)  ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8)  ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
+                    _dfa._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                  {
+                    IntrinsicDFA nv = cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
+                    result = nv.analyze(this);
+                  }
+                else if (_dfa._fuir.clazzBaseName(rc).equals("String"))
+                  {
+                    IntrinsicDFA cs = cl -> cl._dfa.newConstString(null, cl);
+                    result = cs.analyze(this);
+                  }
+                else
+                  {
+                    var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
+                    Errors.warning(msg);
+                  }
               }
           }
       }

@@ -412,5 +412,14 @@ int fzE_munmap(void * mapped_address, const int file_size){
 }
 
 
+// used to return a string as is; in Fuzion with
+//   fzE_return_string (input Any) String is intrinsic
+// this can be used to cast a c_string from type Any
+// to a String.
+char * fzE_return_string(void * in) {
+  return in;
+}
+
+
 
 #endif /* fz.h  */

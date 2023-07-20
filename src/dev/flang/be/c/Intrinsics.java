@@ -1213,13 +1213,55 @@ public class Intrinsics extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
-            Errors.warning(msg);
-            return CStmnt.seq(CExpr.call("fprintf",
-                                         new List<>(new CIdent("stderr"),
-                                                    CExpr.string("*** error: NYI: %s\n"),
-                                                    CExpr.string(msg))),
-                              CExpr.call("exit", new List<>(CExpr.int32const(1))));
+            var args = new List<CExpr>();
+
+            for (var i = 0; i < c._fuir.clazzArgCount(cl); i++)
+              {
+                var ac = c._fuir.clazzArgClazz(cl, i);
+
+                if (c._fuir.clazzBaseName(ac).equals("Any"))
+                  {
+                    args.add((new CIdent("arg" + i)).castTo("void*"));
+                  }
+                else if (c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i8)  ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i16) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i32) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i64) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u8) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u16) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u32) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u64) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f32) ||
+                         c._fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f64))
+                  {
+                    args.add(new CIdent("arg" + i));
+                  }
+                else
+                  {
+                    {
+                      var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+                      Errors.warning(msg);
+                      return CStmnt.seq(CExpr.call("fprintf",
+                                                   new List<>(new CIdent("stderr"),
+                                                              CExpr.string("*** error: NYI: %s\n"),
+                                                              CExpr.string(msg))),
+                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
+                    }
+                  }
+              }
+
+            var rc = c._fuir.clazzResultClazz(cl);
+
+            if (c._fuir.clazzBaseName(rc).equals("String"))
+              {
+                var str = new CIdent("str");
+                var res = new CIdent("res");
+                return CStmnt.seq(CExpr.decl("char*", str, CExpr.call(c._fuir.clazzBaseName(cl), args)),
+                                  c.constString(str, CExpr.call("strlen", new List<>(str)), res),
+                                  res.castTo(c._types.clazz(rc)).ret());
+              }
+
+            return CStmnt.seq(CExpr.call(c._fuir.clazzBaseName(cl), args).ret());
           }
       }
   }
