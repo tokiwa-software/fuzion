@@ -36,7 +36,7 @@
 #
 private:public ps_set
   (K type : property.orderable,
-   psm ps_map K unit,
+   psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
   : Set K
@@ -157,7 +157,7 @@ public ps_sets(K type : property.orderable) is
   #
   # This feature creates an empty instance of ps_set.
   #
-  public empty => ps_set K (ps_maps K unit).empty unit
+  public empty => ps_set K (ps_map K unit).type.empty unit
 
 
 # ps_set -- routine to initialize a partially sorted set from one Sequence

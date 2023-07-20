@@ -358,34 +358,29 @@ O(n log n).
   public infix ∪ (other ps_map PK V) => union other
 
 
-# ps_maps -- unit type feature declaring features related to ps_map
-#
-# NYI: move to ps_map.type
-#
-public ps_maps(PK type : property.orderable, V type) is
 
   # empty -- an empty partially sorted map
   #
   # This feature creates an empty instance of ps_map.
   #
-  public empty => ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
+  public type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
-# ps_map -- routine to initialize a partially sorted map from two Sequences
-#
-# This feature creates a pre-initialized instance of ps_map.
-#
-public ps_map(
-    PK type : property.orderable,
-    V type,
-    # list of keys in the map
-    ks Sequence PK,
-    # list of values corresponding to keys in the map
-    vs Sequence V)
- =>
-  for
-    r := (ps_maps PK V).empty, r.add k v
-    k in ks
-    v in vs
-  else
-    r
+  # ps_map -- routine to initialize a partially sorted map from two Sequences
+  #
+  # This feature creates a pre-initialized instance of ps_map.
+  #
+  public type.from_sequence(
+      PK type : property.orderable,
+      V type,
+      # list of keys in the map
+      ks Sequence PK,
+      # list of values corresponding to keys in the map
+      vs Sequence V)
+    =>
+      for
+        r := (container.ps_map PK V).type.empty, r.add k v
+        k in ks
+        v in vs
+      else
+        r
