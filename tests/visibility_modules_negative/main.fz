@@ -28,6 +28,8 @@ public m =>
   module mod5(arg array priv_ce) is // should flag an error priv_ce less visible than mod5
   module mod9 := (list priv_ce).type.empty // should flag an error priv_ce less visible than mod9
 
+  priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
+
 
   # checkPreconditionVisibility
 
