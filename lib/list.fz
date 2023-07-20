@@ -284,7 +284,7 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # List concatenation, O(count)
   #
-  public concat_eagerly (t list A) list A is
+  public concat (t list A) list A is
     list.this ? nil    => t
               | c Cons => cons A (list A) c.head (c.tail.concat t)
 
@@ -296,14 +296,14 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
   # source and the next buffer chunk, the tail should only
   # be created when actually necessary.
   #
-  public concat (t Lazy (list A)) list A is
+  public concat_lazy (t Lazy (list A)) list A is
     match list.this
       _ nil => t()
       c Cons =>
         # tricky, Lazy wrapping a Lazy.
         # The expression following the colon
         # is a Lazy and t is also a Lazy.
-        c.head : c.tail.concat t
+        c.head : c.tail.concat_lazy t
 
 
   # infix operand synonym for concat
