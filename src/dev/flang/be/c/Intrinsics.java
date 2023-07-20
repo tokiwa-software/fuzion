@@ -254,8 +254,6 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
                                 locked(CNames.GLOBAL_LOCK, tmp.assign(f)),
                                 tmp.ret());
             }
@@ -290,8 +288,6 @@ public class Intrinsics extends ANY
           else
             {
               var f = c.accessField(outer, ac, v);
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
               code = locked(CNames.GLOBAL_LOCK, f.assign(new_value));
             }
           return code;
