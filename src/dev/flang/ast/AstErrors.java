@@ -1689,8 +1689,8 @@ public class AstErrors extends ANY
     for (var t : types)
       {
         var l = positions.get(t);
-        typesMsg.append(( l.size() == 1 ? src  + " value of type"
-                                        : srcs + " values of type") + " of type " + s(t) + " at ");
+        typesMsg.append(( l.size() == 1 ? src  + " value"
+                                        : srcs + " values") + " of type " + s(t) + " at ");
         boolean first = true;
         for (SourcePosition p : l)
           {
