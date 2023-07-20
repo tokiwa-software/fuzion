@@ -1345,6 +1345,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Check that type of outer feature of `f` isn't less visible than `f` itself.
+   * @param f
+   */
   private void checkOuterVisibility(Feature f)
   {
     if (f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().ordinal())
