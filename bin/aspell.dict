@@ -1530,7 +1530,6 @@ inlining
 getter
 g's
 FuzionInstance
-framegraph
 flamegraph
 fixOuterThisType
 Filepath
@@ -1541,7 +1540,6 @@ defineClass
 createTempFile
 compareFieldSlot
 compareField
-collectFrameGraphData
 CodeGen
 classfile
 cdb
