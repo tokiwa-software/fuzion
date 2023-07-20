@@ -15,3 +15,9 @@ module:public a is
   public get_aa aa is
     a.this.aa
 
+  field := 0
+
+  public get_field =>
+    field
+
+

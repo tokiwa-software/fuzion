@@ -317,7 +317,7 @@ public abstract class Module extends ANY
    * @param b
    * @return
    */
-  protected boolean VisibleFor(AbstractFeature a, AbstractFeature b)
+  protected boolean visibleFor(AbstractFeature a, AbstractFeature b)
   {
     var usedIn = b.pos()._sourceFile;
     return featureVisible(usedIn, a) || typeVisible(usedIn, a);

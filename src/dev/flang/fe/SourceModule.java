@@ -781,7 +781,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if ((Errors.count() == 0 || !f.isTypeFeature()) && VisibleFor(existing, f))
+        if ((Errors.count() == 0 || !f.isTypeFeature()) && visibleFor(existing, f))
           {
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
@@ -1414,7 +1414,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         var s = arg.resultType().lessVisibleThan(f.visibility().featureVisibility());
 
-        if (!s.isEmpty())
+        if (!(arg.isTypeFeaturesThisType() || s.isEmpty()))
           {
             AstErrors.argTypeLessVisible(f, arg, s);
           }

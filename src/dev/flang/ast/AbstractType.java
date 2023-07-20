@@ -1722,7 +1722,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * This type and any of its generic types that are less visible than `v`.
+   * This type and any of its generics that are less visible than `v`.
    *
    * @param v
    * @return

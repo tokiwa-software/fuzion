@@ -21,3 +21,5 @@ public b : a is
 
   public get_any Any is
     priv
+
+  field := 1

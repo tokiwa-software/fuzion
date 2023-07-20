@@ -177,6 +177,10 @@ public class AstErrors extends ANY
   {
     return ss(names.toString("", ".", ""));
   }
+  static String sv(AbstractFeature f)
+  {
+    return s(f.visibility()) + " " + s(f);
+  }
   static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
   static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
   static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
@@ -1965,43 +1969,39 @@ public class AstErrors extends ANY
   public static void outerLessVisibleThanInnerFeature(Feature f)
   {
     error(f.pos(), "Outer feature is less visible than inner feature.",
-     "The outer feature : " + s(f.outer()) + "\n" +
-     "its visibility    : " + s(f.outer().visibility()) + "\n" +
-     "The inner feature : " + s(f) + "\n" +
-     "its visibility    : " + s(f.visibility())
+     "To solve this, decrease the visibility of " + s(f) +
+     " or increase the visibility of " + s(f.outer()) + "."
     );
   }
 
   public static void calledFeatureInPreconditionLessVisibleThanFeature(Feature f, AbstractCall c)
   {
-    error(c.pos(), "Called feature in precondition less visible than feature.",
-      "The called feature : " + s(c.calledFeature()) + "\n" +
-      "The feature        : " + s(f)
+    error(c.pos(), "Called feature in precondition is less visible than feature.",
+      "To solve this, increase the visibility of " + s(c.calledFeature()) + " or do not" +
+      " use this feature in the precondition."
     );
   }
 
   public static void illegalVisibilityModifier(Feature f)
   {
     error(f.pos(), "Feature specifing type visibility does not define a type.",
-     "The feature              : " + s(f) + "\n" +
-     "The specified visibility : " + s(f.visibility())
+     "To solve this, remove the type visibilty: " + s(f.visibility().typeVisibility()) + "."
     );
   }
 
   public static void argTypeLessVisible(Feature f, AbstractFeature arg, Set<AbstractType> s)
   {
     error(f.pos(), "Argument types or any of its generics is less visible than feature.",
-      "The feature            : " + s(f) + "\n" +
-      "The argument           : " + s(arg) + "\n" +
-      "The less visible types : " + s(s.stream().collect(List.collector()))
+      "To solve this, increase the visibility of " + s(s.stream().collect(List.collector())) +
+      " or specify a different type for the argument " + sbn(arg) + "."
     );
   }
 
   public static void resultTypeLessVisible(Feature f, Set<AbstractType> s)
   {
     error(f.pos(), "Result type or any of its generics is less visible than feature.",
-      "The feature            : " + s(f) + "\n" +
-      "The less visible types : " + s(s.stream().collect(List.collector()))
+      "To solve this, increase the visibility of " + s(s.stream().collect(List.collector())) +
+      " or specify a different return type."
     );
   }
 

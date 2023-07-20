@@ -12,6 +12,7 @@ public m =>
   private priv is
   module mod priv is  // should flag an error result type less visible than a
     priv
+  module mod8 := priv_ce  // should flag an error priv_ce less visible than mod8
 
 
   # checkArgTypesVisibility
@@ -23,8 +24,9 @@ public m =>
 
   private priv_ce is
   module mod3 : choice priv_ce unit is // should flag an error priv_ce less visible than mod3
-  module mod4(T type : priv_ce) is // should flag an error priv_ce less visible than mod3
-  module mod5(arg array priv_ce) is // should flag an error priv_ce less visible than mod3
+  module mod4(T type : priv_ce) is // should flag an error priv_ce less visible than mod4
+  module mod5(arg array priv_ce) is // should flag an error priv_ce less visible than mod5
+  module mod9 := (list priv_ce).type.empty // should flag an error priv_ce less visible than mod9
 
 
   # checkPreconditionVisibility
@@ -44,7 +46,7 @@ public m =>
 
   # features from different modules
   b.mod_pub // should flag an error should not be callable
-  feat1(arg1 b.mod_pub) is // even tough type is usable
+  feat1(arg1 b.mod_pub) is // even though type is usable
   b.get_mod_pub.child // and we can call feature on the type
 
   unit
