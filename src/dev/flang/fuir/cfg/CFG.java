@@ -413,8 +413,6 @@ public class CFG extends ANY
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
     put("f32.cast_to_u32"                , (cfg, cl) -> { } );
     put("f64.cast_to_u64"                , (cfg, cl) -> { } );
-    put("f32.as_string"                  , (cfg, cl) -> { } );
-    put("f64.as_string"                  , (cfg, cl) -> { } );
 
     put("f32.type.min_exp"               , (cfg, cl) -> { } );
     put("f32.type.max_exp"               , (cfg, cl) -> { } );

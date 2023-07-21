@@ -752,14 +752,6 @@ public class Intrinsics extends ANY
         });
     put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
     put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
-    put("f32.as_string"        ,
-        "f64.as_string"        , (c,cl,outer,in) ->
-        {
-          var res = new CIdent("res");
-          var rc = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(c.floatToConstString(outer, res),
-                            res.castTo(c._types.clazz(rc)).ret());
-        });
 
     /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
      * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
