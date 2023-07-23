@@ -456,11 +456,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     AbstractType t;
                     if (a instanceof Feature af)
                       {
+                        af.visit(Feature.findGenerics);
                         t = af.returnType().functionReturnType();
-                        if (!t.checkedForGeneric())
-                          {
-                            af.visit(Feature.findGenerics);
-                          }
                       }
                     else
                       {
@@ -560,7 +557,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var of = outer();
         if (!isUniverse() && of != null && !of.isUniverse())
           {
-            result = Type.newType(result, of.thisType());
+            result = ResolvedNormalType.newType(result, of.thisType());
           }
         result = Types.intern(result);
         if (innerFixed)
@@ -654,7 +651,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         if (!first)
           {
-            tl.add(new Type(pos(), new Generic(ta)));
+            tl.add(new Generic(ta).type());
           }
         first = false;
       }
@@ -674,17 +671,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
-    if (t.checkedForGeneric())
+    var tl = new List<AbstractType>();
+    for (var ta0 : typeArguments())
       {
-        var tl = new List<AbstractType>();
-        for (var ta0 : typeArguments())
-          {
-            var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
-            tl.add(ta);
-          }
-        t = t.applyTypePars(this, tl);
+        var ta = new ParsedType(pos(), ta0.featureName().baseName(), UnresolvedType.NONE, null);
+        tl.add(ta);
       }
-    t = t instanceof Type tt ? tt.clone(this) : t;
+    t = t.applyTypePars(this, tl);
+    t = t.clone(this);
     return t;
   }
 
@@ -776,10 +770,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         if (pc.calledFeature() != Types.f_ERROR)
           {
             var iif = inh.size();
-            var selfType = new Type(pos(),
-                                    FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                    new List<>(),
-                                    null);
+            var selfType = new ParsedType(pos(),
+                                          FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                          new List<>(),
+                                          null);
             var tp = new List<AbstractType>(selfType);
             if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
               {
@@ -923,7 +917,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
-    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
+    var g = generics().asActuals();
+    var result = new ResolvedNormalType(g, g, o, this, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -998,7 +993,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         res.resolveTypes(this);
       }
     var result = resultTypeRaw(generics);
-    if (result != null && result instanceof Type rt)
+    if (result instanceof UnresolvedType rt)
       {
         result = rt.visit(Feature.findGenerics,outer());
       }

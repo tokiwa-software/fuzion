@@ -123,12 +123,11 @@ public class InlineArray extends ExprWithPos
           {
             _type =
               t == null ? null :
-              Types.intern(new Type(pos(),
-                                  "array",
-                                  new List<>(t),
-                                  null,
-                                  Types.resolved.f_array,
-                                  Type.RefOrVal.LikeUnderlyingFeature));
+              Types.intern(new ResolvedNormalType(new List<>(t),
+                                                  new List<>(t),
+                                                  null,
+                                                  Types.resolved.f_array,
+                                                  UnresolvedType.RefOrVal.LikeUnderlyingFeature));
           }
       }
     return _type;
@@ -306,9 +305,9 @@ public class InlineArray extends ExprWithPos
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
         var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "internal_array_init", args).resolveTypes(res, outer);
-        var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
-        var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
-        var sysArrayT    = new Type(pos(), "internal_array", eT, sysT);
+        var fuzionT      = new ParsedType(pos(), "fuzion", UnresolvedType.NONE, null);
+        var sysT         = new ParsedType(pos(), "sys"   , UnresolvedType.NONE, fuzionT);
+        var sysArrayT    = new ParsedType(pos(), "internal_array", eT, sysT);
         var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
         var sysArrayVar  = new Feature(pos(), Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
         res._module.findDeclarations(sysArrayVar, outer);

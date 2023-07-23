@@ -33,11 +33,11 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
-import dev.flang.ast.Type;
 
 import dev.flang.util.List;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -95,13 +95,12 @@ public class NormalType extends LibraryType
    */
   NormalType(LibraryModule mod,
              int at,
-             HasSourcePosition pos,
              AbstractFeature feature,
              int valRefOrThis,
              List<AbstractType> generics,
              AbstractType outer)
   {
-    super(mod, at, pos);
+    super(mod, at);
 
     this._feature = feature;
     this._valRefOrThis = valRefOrThis;
@@ -112,6 +111,13 @@ public class NormalType extends LibraryType
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  public SourcePosition declarationPos() { return featureOfType().pos(); }
 
 
   /**
@@ -143,10 +149,17 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, _valRefOrThis, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _valRefOrThis, g2, o2);
   }
 
 
+  /**
+   * For a resulved normal type, return the underyling feature.
+   *
+   * @return the underlying feature.
+   *
+   * @throws Error if this is not resolved or isGenericArgument().
+   */
   public AbstractFeature featureOfType()
   {
     return _feature;
@@ -157,6 +170,9 @@ public class NormalType extends LibraryType
     return false;
   }
 
+  /**
+   * For a normal type, this is the list of actual type parameters given to the type.
+   */
   public List<AbstractType> generics()
   {
     return _generics;
@@ -208,7 +224,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -219,7 +235,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        result = !isRef() && !isThisType() ? this :  new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
+        result = !isRef() && !isThisType() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
         _asValue = result;
       }
     return result;
@@ -236,7 +252,7 @@ public class NormalType extends LibraryType
           }
         else
           {
-            result = new NormalType(_libModule, _at, _pos, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
+            result = new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
           }
         _asThis = result;
       }

@@ -464,7 +464,8 @@ public class AstErrors extends ANY
    *
    * @param value the value to be assigned.
    */
-  static void unexpectedTypeParameterInCall(AbstractFeature calledFeature,
+  static void unexpectedTypeParameterInCall(SourcePosition pos,
+                                            AbstractFeature calledFeature,
                                             int count,
                                             AbstractType frmlT,
                                             AbstractType typePar)
@@ -477,7 +478,7 @@ public class AstErrors extends ANY
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(typePar.pos2BeRemoved(),
+    incompatibleType(pos,
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -1196,15 +1197,16 @@ public class AstErrors extends ANY
       }
   }
 
-  static void outerFeatureNotFoundInThis(ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
+  static void outerFeatureNotFoundInThis(SourcePosition pos,
+                                         ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
   {
     if (thisOrType instanceof This t)
       {
-        outerFeatureNotFoundInThisOrThisType(t.pos(), ".this", feat, qname, available, isAmbiguous);
+        outerFeatureNotFoundInThisOrThisType(pos, ".this", feat, qname, available, isAmbiguous);
       }
-    else if (thisOrType instanceof Type t)
+    else if (thisOrType instanceof AbstractType t)
       {
-        outerFeatureNotFoundInThisOrThisType(t.pos2BeRemoved(), ".this.type", feat, qname, available, isAmbiguous);
+        outerFeatureNotFoundInThisOrThisType(pos, ".this.type", feat, qname, available, isAmbiguous);
       }
     else
       {
@@ -1255,7 +1257,7 @@ public class AstErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
-  static void formalGenericAsOuterType(SourcePosition pos, Type t)
+  static void formalGenericAsOuterType(SourcePosition pos, UnresolvedType t)
   {
     error(pos,
           "Formal type parameter cannot be used as outer type",
@@ -1265,7 +1267,7 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
   }
 
-  static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
+  static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, Generic generic)
   {
     error(pos,
           "Formal type parameter cannot have type parameters",
@@ -1474,7 +1476,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to its own value type as one of the choice alternatives",
           "Embedding a choice type in itself would result in an infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
+          "Faulty type parameter: " + s(t));
   }
 
   static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
@@ -1482,7 +1484,7 @@ public class AstErrors extends ANY
     error(pos,
           "Choice cannot refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-          "Faulty type parameter: " + s(t) + " at " + t.pos2BeRemoved().show());
+          "Faulty type parameter: " + s(t));
   }
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
@@ -1834,21 +1836,6 @@ public class AstErrors extends ANY
           "To solve this, you could convert this feature into a constructor, i.e., instead of " +
           code(old_code) + "write " + code(new_code) + "since constructor implicitly returns its own instance.  Alternatively, you can use " +
           code(new_code_ref) + "to return a reference.");
-  }
-
-
-  public static void outerTypeMayNotBeRefType(Type t)
-  {
-    var o = t.outer();
-    error(t.pos2BeRemoved(),
-          "A type may not use a boxed (explicit " + code("ref") + ") type as its outer type.",
-          "The problem is that for a value type " + type("v") + " any inner constructor " + code("v.c") +
-          "will always create a value of type " + type("v.c") + " even if called on an outer ref type, i.e., in " + code("rv ref v := v; rc := rv.c") +
-          "the type of " + expr("rc") + " will be " + type("v.c") + ".\n" +
-          "Type with boxed outer type: " + s(t) + "\n" +
-          "Boxed outer type          : " + s(o) + "\n" +
-          "To solve this, remove the " + code("ref") + " modifier from the outer type or add " + code("ref") + " to the declaration " +
-          "of the outer feature.");
   }
 
 

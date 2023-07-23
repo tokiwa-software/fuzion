@@ -308,7 +308,7 @@ public class Destructure extends ANY implements Stmnt
         for (var f : t.featureOfType().valueArguments())
           {
             // NYI: check if f is visible
-            var tf = f.resultTypeIfPresent(res, Type.NONE);
+            var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE);
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();

@@ -20,67 +20,72 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class LibraryType
+ * Source of class ResolvedParametricType
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fe;
-
-import java.util.Set;
-
-import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.Generic;
-import dev.flang.ast.ResolvedType;
-
-import dev.flang.util.List;
+package dev.flang.ast;
 
 import dev.flang.util.HasSourcePosition;
-import dev.flang.util.SourcePosition;
 
 
 /**
- * A LibraryType represents a Fuzion type loaded from a precompiled Fuzion
- * module file .fum.
+ * A ResolvedType is a type after type resolution, i.e., it is know if this is a
+ * parametric type or a type derived from a feature.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class LibraryType extends ResolvedType
+public abstract class ResolvedType extends AbstractType
 {
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The library this come from.
-   */
-  public final LibraryModule _libModule;
-
-
-  /**
-   * Position in _libModule that declares this type. Maybe -1 for
-   * _feature.selfType().
-   */
-  public final int _at;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor to set common fields.
+   * Constructor for a resolved type
    */
-  LibraryType(LibraryModule mod, int at)
+  public ResolvedType()
   {
-    this._libModule = mod;
-    this._at = at;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * isGenericArgument
+   *
+   * @return
+   */
+  public boolean isGenericArgument()
+  {
+    return false;
+  }
+
+
+  /**
+   * isThisType
+   */
+  public boolean isThisType()
+  {
+    return false;
+  }
+
+
+  /**
+   * genericArgument gives the Generic instance of a type defined by a generic
+   * argument.
+   *
+   * @return the Generic instance, never null.
+   */
+  public Generic genericArgument()
+  {
+    if (PRECONDITIONS) require
+      (false);
+
+    throw new Error();
+  }
 
 }
 

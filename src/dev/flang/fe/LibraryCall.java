@@ -137,11 +137,6 @@ public abstract class LibraryCall extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    var i = actualTypeParameters().listIterator();
-    while (i.hasNext())
-      {
-        i.set(i.next().visit(v, outer));
-      }
     var j = actuals().listIterator();
     while (j.hasNext())
       {

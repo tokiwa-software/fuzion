@@ -382,8 +382,8 @@ public class Function extends ExprWithPos
     if (f != null)
       {
         generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                     ? ff.resultTypeForTypeInference(pos(), res, Type.NONE)
-                     : new Type(FuzionConstants.UNIT_NAME));
+                     ? ff.resultTypeForTypeInference(pos(), res, UnresolvedType.NONE)
+                     : new BuiltInType(FuzionConstants.UNIT_NAME));
         for (var a : f.arguments())
           {
             res.resolveTypes(a);
@@ -411,8 +411,9 @@ public class Function extends ExprWithPos
     else if (this._feature == null)
       {
         var fr = functionOrRoutine();
-        var generics = FormalGenerics.resolve(res, generics(res), outer);
-        _type = fr != null ? new Type(pos(), fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
+        var ug = generics(res);
+        var generics = FormalGenerics.resolve(res, ug, outer);
+        _type = fr != null ? new ResolvedNormalType(generics, ug, null, fr, UnresolvedType.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else

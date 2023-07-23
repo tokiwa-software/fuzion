@@ -20,20 +20,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class GenericType
+ * Source of class ResolvedParametricType
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fe;
+package dev.flang.ast;
 
 import java.util.Set;
-
-import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
-import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
@@ -42,15 +35,16 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * A GenericType is a LibraryType for a type parameter.
+ * A ResolvedParametricType is a type for a type parameter found in source code.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class GenericType extends LibraryType
+public class ResolvedParametricType extends ResolvedType
 {
 
 
   /*----------------------------  variables  ----------------------------*/
+
 
   /**
    * The underlying generic:
@@ -67,15 +61,23 @@ public class GenericType extends LibraryType
   UnresolvedType.RefOrVal _refOrVal;
 
 
+  /**
+   * Cached result of asRef(), null if not used yet.
+   */
+  private ResolvedParametricType _asRef;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor for a generic type that might be boxed.
    */
-  GenericType(LibraryModule mod, int at, Generic generic, UnresolvedType.RefOrVal rov)
+  ResolvedParametricType(Generic generic, UnresolvedType.RefOrVal rov)
   {
-    super(mod, at);
+    if (PRECONDITIONS) require
+      (switch (rov) { case Boxed, LikeUnderlyingFeature -> true;
+                      case Value, ThisType -> false; });
 
     this._generic = generic;
     this._refOrVal = rov;
@@ -85,10 +87,11 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a plain generic type.
    */
-  GenericType(LibraryModule mod, int at, Generic generic)
+  ResolvedParametricType(Generic generic)
   {
-    this(mod, at, generic, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+    this(generic, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
   }
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -101,14 +104,16 @@ public class GenericType extends LibraryType
 
 
   /**
-   * Dummy visit() for types.
+   * visit all the features, expressions, statements within this feature.
    *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outerfeat the feature surrounding this expression.
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return this;
+    return v.action(this, outerfeat);
   }
 
 
@@ -167,21 +172,11 @@ public class GenericType extends LibraryType
       case Boxed -> true;
       case Value -> false;
       case LikeUnderlyingFeature -> false;
-      case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpected ThisType for GenericType '"+this+"'");
+      case ThisType -> throw new Error("dev.flang.fe.ResolvedParametricType.isRef: unexpected ThisType for ResolvedParametricType '"+this+"'");
       };
   }
 
-  /**
-   * isThisType
-   */
-  public boolean isThisType()
-  {
-    if (this._refOrVal == UnresolvedType.RefOrVal.ThisType)
-      {
-        throw new Error("Unexpected ThisType in GenericType");
-      }
-    return false;
-  }
+
 
   public AbstractType outer()
   {
@@ -190,22 +185,54 @@ public class GenericType extends LibraryType
     return null;
   }
 
+
   public AbstractType asRef()
   {
-    return switch (_refOrVal)
+    if (_asRef == null)
       {
-      case Boxed -> this;
-      default    -> new GenericType(_libModule, _at, _generic, UnresolvedType.RefOrVal.Boxed);
-      };
+        _asRef = switch (_refOrVal)
+          {
+          case Boxed -> this;
+          default    -> new ResolvedParametricType(_generic, UnresolvedType.RefOrVal.Boxed);
+          };
+      }
+    return _asRef;
   }
+
   public AbstractType asValue()
   {
-    throw new Error("GenericType.asValue() not defined");
+    throw new Error("ResolvedParametricType.asValue() not defined");
   }
+
   public AbstractType asThis()
   {
-    throw new Error("GenericType.asThis() not defined");
+    throw new Error("ResolvedParametricType.asThis() not defined");
   }
+
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString()
+  {
+    String result;
+
+    String n;
+    if (_generic.isThisTypeInTypeFeature())
+      {
+        var qn = _generic.feature().qualifiedName();
+        qn = qn.substring(0, qn.lastIndexOf(".type"));
+        n = qn + ".this.type (in type feature)";
+      }
+    else
+      {
+        n = _generic.typeParameter().qualifiedName();
+      }
+    return n + (this.isRef() ? " (boxed)" : "");
+  }
+
 
 }
 

@@ -102,6 +102,7 @@ public class Call extends AbstractCall
    * actual generic arguments, set by parser
    */
   public /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
+  public final List<AbstractType> _unresolvedGenerics;
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
@@ -380,6 +381,7 @@ public class Call extends AbstractCall
     this._name = name;
     this._select = select;
     this._generics = generics;
+    this._unresolvedGenerics = generics;
     this._actualsNew = actualsNew;
     this._actuals = actuals;
     this._target = target;
@@ -428,8 +430,7 @@ public class Call extends AbstractCall
     var result = _target.typeForCallTarget();
     if (result.isGenericArgument())
       {
-        var g = result.genericArgument();
-        result = g.constraint().resolve(res, g.feature());
+        result = result.genericArgument().constraint(res);
       }
 
     if (POSTCONDITIONS) ensure
@@ -501,7 +502,7 @@ public class Call extends AbstractCall
       //
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
-      targetIsTypeParameter()          ? new Type(pos(), new Generic(tc.calledFeature())) :
+      targetIsTypeParameter()          ? new Generic(tc.calledFeature()).type() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
                                        : targetTypeOrConstraint(res);
   }
@@ -921,7 +922,7 @@ public class Call extends AbstractCall
             AbstractType t = _actualsNew.get(i)._type;
             if (t != null)
               {
-                t.visit(Feature.findGenerics, outer);
+                t = t.visit(Feature.findGenerics, outer);
                 g.add(t);
               }
             ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
@@ -963,11 +964,11 @@ public class Call extends AbstractCall
             g.add(a.asType(outer, tp));
           }
       }
-    AbstractType result = new Type(pos(), _name, g,
-                                   _target == null             ||
-                                   _target instanceof Universe ||
-                                   _target instanceof Current     ? null
-                                                                  : _target.asType(outer, tp));
+    AbstractType result = new ParsedType(pos(), _name, g,
+                                         _target == null             ||
+                                         _target instanceof Universe ||
+                                         _target instanceof Current     ? null
+                                                                        : _target.asType(outer, tp));
     return result.visit(Feature.findGenerics, outer);
   }
 
@@ -1326,7 +1327,7 @@ public class Call extends AbstractCall
   private void resolveFormalArgumentTypes(Resolution res)
   {
     var fargs = _calledFeature.valueArguments();
-    _resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
+    _resolvedFormalArgumentTypes = fargs.size() == 0 ? UnresolvedType.NO_TYPES
                                                      : new AbstractType[fargs.size()];
     Arrays.fill(_resolvedFormalArgumentTypes, Types.t_UNDEFINED);
     int count = 0;
@@ -1486,8 +1487,8 @@ public class Call extends AbstractCall
       }
     if (!calledFeature().isOuterRef())
       {
-        var inner = Type.newType(calledFeature().selfType(),
-                                 _target.typeForCallTarget());
+        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
+                                          _target.typeForCallTarget());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
@@ -1536,12 +1537,12 @@ public class Call extends AbstractCall
     else if (_calledFeature.isOuterRef())
       {
         var o = t.featureOfType().outer();
-        t = o.isUniverse() ? t : Type.newType(t, o.thisType());
+        t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType());
         t = Types.intern(t).asThis();
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
-        t = Type.newType(t, tt);
+        t = ResolvedNormalType.newType(t, tt);
       }
     else
       {
@@ -2340,10 +2341,13 @@ public class Call extends AbstractCall
                   {
                     if (actl == Expr.NO_VALUE)
                       {
-                        AstErrors.unexpectedTypeParameterInCall(_calledFeature,
+                        var pos = _actualsNew.get(_generics.size() + count).pos();
+                        var typ = _actualsNew.get(_generics.size() + count)._type;
+                        AstErrors.unexpectedTypeParameterInCall(pos,
+                                                                _calledFeature,
                                                                 count,
                                                                 frmlT,
-                                                                _actualsNew.get(_generics.size() + count)._type);
+                                                                typ);
                       }
                     else if (actl != null && !frmlT.isAssignableFrom(actl.type()))
                       {
@@ -2370,7 +2374,7 @@ public class Call extends AbstractCall
           }
 
         // Check that generics match formal generic constraints
-        AbstractType.checkActualTypePars(pos(), _calledFeature, _generics);
+        AbstractType.checkActualTypePars(_calledFeature, _generics, _unresolvedGenerics, pos());
       }
   }
 

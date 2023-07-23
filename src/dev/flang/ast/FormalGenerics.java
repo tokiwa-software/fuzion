@@ -221,7 +221,7 @@ public class FormalGenerics extends ANY
       // placeholder for the actual generics.
       for (Generic g : list)
         {
-          add(new Type((HasSourcePosition) g.typeParameter(), g));
+          add(g.type());
         }
       freeze();
     }
@@ -269,7 +269,7 @@ public class FormalGenerics extends ANY
       {
         if (this == FormalGenerics.NONE)
           {
-            result = Type.NONE;
+            result = UnresolvedType.NONE;
           }
         else
           {

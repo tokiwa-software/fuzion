@@ -55,7 +55,7 @@ import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.Type;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
@@ -244,10 +244,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                var f = lookupType(SourcePosition.builtIn, _universe, name, false)._feature;
                                return new NormalType(stdlib,
                                                      -1,
-                                                     SourcePosition.builtIn,
                                                      f,
                                                      f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
-                                                     Type.NONE,
+                                                     UnresolvedType.NONE,
                                                      _universe.selfType());
                              },
                            _universe);

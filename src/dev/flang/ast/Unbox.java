@@ -83,7 +83,7 @@ public abstract class Unbox extends Expr
   {
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isThisType() || adr.type().isRef(),
+       adr.type().isThisType() || adr.type().isRef() || adr.type() == Types.t_ADDRESS,
        !type.featureOfType().isThisRef()
        );
 
@@ -106,7 +106,7 @@ public abstract class Unbox extends Expr
 
     if (PRECONDITIONS) require
       (adr != null,
-       adr.type().isThisType() || adr.type().isRef(),
+       adr.type().isThisType() || adr.type().isRef() || adr.type() == Types.t_ADDRESS,
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
