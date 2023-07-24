@@ -139,7 +139,7 @@ public class Profiler extends ANY
    * single line for each source code that occurred during a sample sorted by
    * frequency.
    *
-   * @return true to collect frame graph data, false to collect classic data.
+   * @return true to collect flame graph data, false to collect classic data.
    */
   static boolean collectFlameGraphData()
   {
