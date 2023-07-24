@@ -1199,9 +1199,10 @@ public class Intrinsics extends ANY
 
     var in = c._fuir.clazzIntrinsicName(cl);
     var cg = _intrinsics_.get(in);
+    var result = CStmnt.EMPTY;
     if (cg != null)
       {
-        return cg.get(c, cl, outer, in);
+        result = cg.get(c, cl, outer, in);
       }
     else
       {
@@ -1209,11 +1210,11 @@ public class Intrinsics extends ANY
         if (at >= 0)
           {
             // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            return CStmnt.EMPTY;
           }
         else
           {
             var args = new List<CExpr>();
+            var missing = false;
 
             for (var i = 0; i < c._fuir.clazzArgCount(cl); i++)
               {
@@ -1238,32 +1239,38 @@ public class Intrinsics extends ANY
                   }
                 else
                   {
-                    {
-                      var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
-                      Errors.warning(msg);
-                      return CStmnt.seq(CExpr.call("fprintf",
-                                                   new List<>(new CIdent("stderr"),
-                                                              CExpr.string("*** error: NYI: %s\n"),
-                                                              CExpr.string(msg))),
-                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
-                    }
+                    missing = true;
                   }
               }
 
             var rc = c._fuir.clazzResultClazz(cl);
 
-            if (c._fuir.clazzBaseName(rc).equals("String"))
+            if (missing)
+              {
+                var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+                Errors.warning(msg);
+                result = CStmnt.seq(CExpr.call("fprintf",
+                                               new List<>(new CIdent("stderr"),
+                                                          CExpr.string("*** error: NYI: %s\n"),
+                                                          CExpr.string(msg))),
+                                    CExpr.call("exit", new List<>(CExpr.int32const(1))));
+              }
+            else if (c._fuir.clazzBaseName(rc).equals("String"))
               {
                 var str = new CIdent("str");
                 var res = new CIdent("res");
-                return CStmnt.seq(CExpr.decl("char*", str, CExpr.call(c._fuir.clazzBaseName(cl), args)),
-                                  c.constString(str, CExpr.call("strlen", new List<>(str)), res),
-                                  res.castTo(c._types.clazz(rc)).ret());
+                result = CStmnt.seq(CExpr.decl("char*", str, CExpr.call(c._fuir.clazzBaseName(cl), args)),
+                                    c.constString(str, CExpr.call("strlen", new List<>(str)), res),
+                                    res.castTo(c._types.clazz(rc)).ret());
               }
-
-            return CStmnt.seq(CExpr.call(c._fuir.clazzBaseName(cl), args).ret());
+            else
+              {
+                result = CStmnt.seq(CExpr.call(c._fuir.clazzBaseName(cl), args).ret());
+              }
           }
       }
+
+    return result;
   }
 
 
