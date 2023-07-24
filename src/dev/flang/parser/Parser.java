@@ -1225,7 +1225,7 @@ EXCLAMATION : "!"
     var result = Type.NONE;
     if (skip('!'))
       {
-        var effects = typeList();
+        result = typeList();
       }
     return result;
   }
