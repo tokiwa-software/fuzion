@@ -50,11 +50,11 @@ import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
+import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -354,7 +354,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
     this._type = (actualType != Types.t_ERROR && this._outer != null)
-      ? Types.intern(Type.newType(actualType, this._outer._type))
+      ? Types.intern(ResolvedNormalType.newType(actualType, this._outer._type))
       : actualType;
     this._dynamicBinding = null;
 
@@ -720,7 +720,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForTypeFeature(o);
           }
-        t = Types.intern(new Type(t, g, o, true));
+        t = Types.intern(new ResolvedNormalType(t, g, g, o, true));
       }
     return t;
   }
@@ -839,7 +839,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos2BeRemoved();
+        var tp = _type.declarationPos();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))

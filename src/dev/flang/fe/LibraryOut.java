@@ -565,8 +565,8 @@ class LibraryOut extends ANY
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.featureOfType());
             _data.writeByte(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
-                        t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                       : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
+                            t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                           : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
               {
                 type(gt);

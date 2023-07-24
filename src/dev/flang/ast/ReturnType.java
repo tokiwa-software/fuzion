@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -69,6 +70,20 @@ public abstract class ReturnType extends ANY
    * @return the function result type.
    */
   public AbstractType functionReturnType()
+  {
+    if (PRECONDITIONS) require
+      (!isConstructorType());
+
+    throw new Error(); // this is redefined for FunctionReturnType
+  }
+
+
+  /**
+   * For a function, the source code position of the return type.
+   *
+   * @return the function return type source position.
+   */
+  public SourcePosition functionReturnTypePos()
   {
     if (PRECONDITIONS) require
       (!isConstructorType());

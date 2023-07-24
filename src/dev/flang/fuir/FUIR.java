@@ -1958,7 +1958,7 @@ hw25 is
 
     var e = _codeIds.get(c).get(ix);
     return (e instanceof Stmnt s) ? s.pos() :
-           (e instanceof Clazz z) ? z._type.pos2BeRemoved()  /* implicit assignment to argument field, maybe z.feature().pos()? */
+           (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
   }
 

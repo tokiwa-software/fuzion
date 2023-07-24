@@ -90,7 +90,7 @@ public abstract class AbstractCurrent extends Expr
    */
   public AbstractCurrent visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _type = _type instanceof Type tt ? tt.visit(v, outer) : _type;
+    _type = _type.visit(v, outer);
     return this;
   }
 

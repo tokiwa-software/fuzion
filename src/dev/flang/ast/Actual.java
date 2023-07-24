@@ -86,7 +86,10 @@ public class Actual extends Expr
    */
   public Actual(AbstractType t)
   {
-    this(t.pos2BeRemoved(), t, Expr.NO_VALUE);
+    this(t instanceof UnresolvedType ut ? ut.pos()
+                                        : SourcePosition.builtIn,
+         t,
+         Expr.NO_VALUE);
 
     if (PRECONDITIONS) require
       (t != null);

@@ -51,7 +51,7 @@ public class Types extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static Map<Type, Type> types;
+  private static Map<ResolvedNormalType, ResolvedNormalType> types;
 
   /**
    * Name of abstract features for function types:
@@ -103,14 +103,14 @@ public class Types extends ANY
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static Type t_ADDRESS;
+  public static AbstractType t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
-  public static Type t_UNDEFINED;
+  public static AbstractType t_UNDEFINED;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static Type t_ERROR;
+  public static AbstractType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
   public static Feature f_ERROR = new Feature(true);
@@ -226,13 +226,13 @@ public class Types extends ANY
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
-      t_UNDEFINED.resolveArtificialType(universe);
-      t_ERROR    .resolveArtificialType(f_ERROR);
+      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
+      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
+      ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }
     Resolved(Resolution res, AbstractFeature universe)
     {
-      this(res._module, (name) -> Type.type(res, false, name, universe), universe);
+      this(res._module, (name) -> UnresolvedType.type(res, false, name, universe), universe);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,
@@ -273,9 +273,9 @@ public class Types extends ANY
   {
     types = new TreeMap<>();
     resolved = null;
-    t_ADDRESS   = new Type(ADDRESS_NAME  );
-    t_UNDEFINED = new Type(UNDEFINED_NAME);
-    t_ERROR     = new Type(ERROR_NAME    );
+    t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
+    t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
+    t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
   }
 
@@ -286,11 +286,11 @@ public class Types extends ANY
   public static AbstractType intern(AbstractType at)
   {
     if (PRECONDITIONS) require
-      ((!(at instanceof Type t)) || t.isGenericArgument() || t.feature != null || Errors.count() > 0);
+      (!(at instanceof UnresolvedType t) || Errors.count() > 0);
 
-    if (at instanceof Type t)
+    if (at instanceof ResolvedNormalType t)
       {
-        Type existing = t._interned;
+        var existing = t._interned;
         if (existing == null)
           {
             if (!t.isGenericArgument())
@@ -301,7 +301,7 @@ public class Types extends ANY
                 var g1 = g0.map(tt -> intern(tt));
                 if (o1 != o0 || g1 != g0)
                   {
-                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal, false);
+                    t = new ResolvedNormalType(g1, t.unresolvedGenerics(), o1, t._feature, t._refOrVal, false);
                   }
               }
             existing = types.get(t);

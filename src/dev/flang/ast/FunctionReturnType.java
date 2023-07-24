@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 /**
  * FunctionReturnType represents the type of the value returned by a function.
@@ -42,8 +44,14 @@ public class FunctionReturnType extends ReturnType
   /**
    * The parsed type.
    */
-  AbstractType type;
+  private AbstractType type;
 
+
+  /**
+   * When available, the source code position of the unresolved return
+   * type. SourcePosition.builtIn if not available.
+   */
+  private SourcePosition _pos;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -56,6 +64,7 @@ public class FunctionReturnType extends ReturnType
   public FunctionReturnType(AbstractType t)
   {
     type = t;
+    _pos = t instanceof UnresolvedType ut ? ut.pos() : SourcePosition.builtIn;
   }
 
 
@@ -82,6 +91,20 @@ public class FunctionReturnType extends ReturnType
   public AbstractType functionReturnType()
   {
     return type;
+  }
+
+
+  /**
+   * For a function, the source code position of the return type.
+   *
+   * @return the function return type source position.
+   */
+  public SourcePosition functionReturnTypePos()
+  {
+    if (PRECONDITIONS) require
+      (!isConstructorType());
+
+    return _pos;
   }
 
 

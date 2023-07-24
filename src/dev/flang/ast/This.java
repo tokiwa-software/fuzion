@@ -213,7 +213,7 @@ public class This extends ExprWithPos
   {
     if (_qual != null)
       {
-        this._feature = getThisFeature(this, _qual, outer);
+        this._feature = getThisFeature(pos(), this, _qual, outer);
       }
     else
       {
@@ -306,7 +306,7 @@ public class This extends ExprWithPos
    *
    * @return the feature that was found or Types.f_ERROR in case of an error.
    */
-  static AbstractFeature getThisFeature(ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
+  static AbstractFeature getThisFeature(SourcePosition pos, ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
   {
     // The comments on the right hand side will give an example to illustrate how this works: Note
     // that indices in outer start from the right, innermost name:
@@ -375,7 +375,8 @@ public class This extends ExprWithPos
               }
             o2 = o2.outer();
           }
-        AstErrors.outerFeatureNotFoundInThis(thisOrType,
+        AstErrors.outerFeatureNotFoundInThis(pos,
+                                             thisOrType,
                                              outer,
                                              qual.map2(x -> x._name).toString("", ".", ""),
                                              list,

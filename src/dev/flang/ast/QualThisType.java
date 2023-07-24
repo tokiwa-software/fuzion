@@ -38,7 +38,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class QualThisType extends Type
+public class QualThisType extends UnresolvedType
 {
 
 
@@ -62,7 +62,7 @@ public class QualThisType extends Type
   {
     super(SourcePosition.range(qual),
           qual.getLast()._name,
-          Call.NO_GENERICS, null, null, Type.RefOrVal.ThisType);
+          Call.NO_GENERICS, null, UnresolvedType.RefOrVal.ThisType);
 
     this._qual = qual;
   }

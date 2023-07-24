@@ -58,7 +58,6 @@ import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
-import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Visi;
@@ -423,7 +422,7 @@ public class LibraryFeature extends AbstractFeature
 
     var o = outer();
     var ot = o == null ? null : o.selfType();
-    AbstractType result = new NormalType(_libModule, -1, this, this,
+    AbstractType result = new NormalType(_libModule, -1, this,
                                          isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                                      : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                          generics().asActuals(), ot);

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -46,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractCase extends ANY
+public abstract class AbstractCase extends ANY implements HasSourcePosition
 {
 
 
@@ -56,7 +57,7 @@ public abstract class AbstractCase extends ANY
   /**
    * The sourcecode position of this case, used for error messages.
    */
-  final SourcePosition _pos;
+  protected final SourcePosition _pos;
 
 
   /**

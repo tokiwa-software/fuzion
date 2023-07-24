@@ -298,7 +298,7 @@ field       : returnType
     Contract c = contract(true);
     Impl p =
       a  .isEmpty()    &&
-      eff == Type.NONE &&
+      eff == UnresolvedType.NONE &&
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout();
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
@@ -423,7 +423,7 @@ field       : returnType
 
                 list.add(f);
               }
-            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
+            g.add(new ParsedType(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
           }
       }
     else
@@ -969,7 +969,7 @@ argType     : type
                                       {
                                         i = typeType();
                                         t = skipColon() ? type()
-                                                        : new Type(FuzionConstants.ANY_NAME);
+                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
                                       }
                                     else if (isTypePrefix())
                                       {
@@ -1222,7 +1222,7 @@ EXCLAMATION : "!"
    */
   List<AbstractType> effects()
   {
-    var result = Type.NONE;
+    var result = UnresolvedType.NONE;
     if (skip('!'))
       {
         result = typeList();
@@ -3688,9 +3688,9 @@ type        : qualThis
             | onetype ( PIPE onetype ) *
             ;
    */
-  AbstractType type()
+  UnresolvedType type()
   {
-    AbstractType result;
+    UnresolvedType result;
     if (isQualThisPrefix())
       {
         result = new QualThisType(qualThis());
@@ -3705,7 +3705,7 @@ type        : qualThis
               {
                 l.add(onetype());
               }
-            result = new Type(result.pos2BeRemoved(), "choice", l, null);
+            result = new ParsedType(result.pos(), "choice", l, null);
           }
       }
     return result;
@@ -3803,24 +3803,24 @@ typeOpt     : type
             |
             ;
    */
-  AbstractType onetype()
+  UnresolvedType onetype()
   {
-    AbstractType result;
+    UnresolvedType result;
     SourcePosition pos = tokenSourcePos();
     if (current() == Token.t_lparen)
       {
-        var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
+        var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : UnresolvedType.NONE);
         if (skip("->"))
           {
-            result = Type.funType(pos, type(), a);
+            result = UnresolvedType.funType(pos, type(), a);
           }
         else if (a.size() == 1)
           {
-            result = typeTail((Type) a.getFirst());
+            result = typeTail((ParsedType) a.getFirst());
           }
         else
           {
-            result = new Type(pos, "tuple", a, null);
+            result = new ParsedType(pos, "tuple", a, null);
           }
       }
     else
@@ -3828,7 +3828,7 @@ typeOpt     : type
         result = simpletype(null);
         if (skip("->"))
           {
-            result = Type.funType(pos, type(), new List<>(result));
+            result = UnresolvedType.funType(pos, type(), new List<>(result));
           }
       }
     return result;
@@ -3904,11 +3904,11 @@ typeOpt     : type
 simpletype  : name typePars typeTail
             ;
    */
-  Type simpletype(Type lhs)
+  ParsedType simpletype(ParsedType lhs)
   {
     var n = name();
     var a = typePars();
-    lhs = new Type(n._pos, n._name, a, lhs);
+    lhs = new ParsedType(n._pos, n._name, a, lhs);
     return typeTail(lhs);
   }
 
@@ -3956,7 +3956,7 @@ typeTail    : dot simpletype
             |
             ;
    */
-  Type typeTail(Type lhs)
+  ParsedType typeTail(ParsedType lhs)
   {
     var result = lhs;
     if (!isDotEnvOrType() && skipDot())
@@ -4031,14 +4031,14 @@ typeInParens: "(" typeInParens ")"
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
-            result = Type.funType(sourcePos(pos), type(), l);
+            result = UnresolvedType.funType(sourcePos(pos), type(), l);
           }
         else if (l.size() == 1)
           {
             result = l.get(0);
             if (!ignoredTokenBefore())
               {
-                result = typeTail((Type) result);
+                result = typeTail((ParsedType) result);
               }
           }
         else

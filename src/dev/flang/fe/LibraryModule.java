@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
-import dev.flang.ast.Type;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.ir.IR;
@@ -441,14 +441,14 @@ public class LibraryModule extends Module
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
+            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
           }
         else
           {
             if (CHECKS) check
               (k >= 0);
             var feature = libraryFeature(typeFeature(at));
-            var generics = Type.NONE;
+            var generics = UnresolvedType.NONE;
             if (k > 0)
               {
                 var i = typeActualGenericsPos(at);
@@ -462,7 +462,7 @@ public class LibraryModule extends Module
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, DUMMY_POS, feature,
+            result = new NormalType(this, at, feature,
                                     typeValRefOrThis(at),
                                     generics, outer);
           }

@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
@@ -37,7 +38,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class OuterType extends Type
+public class OuterType extends UnresolvedType
 {
 
   /*--------------------------  constructors  ---------------------------*/
@@ -61,15 +62,14 @@ public class OuterType extends Type
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param feat the outer feature that this type is declared in, used
+   * @param feat the outer feature this type is declared in, used
    * for resolution of generic parameters etc.
    */
   AbstractType resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
-       checkedForGeneric);
+       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     return outerfeat.outer().thisType(false);
   }

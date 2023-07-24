@@ -32,6 +32,7 @@ import java.util.function.BiConsumer;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -74,7 +75,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param t
    */
-  void setOuter(Type t)
+  void setOuter(UnresolvedType t)
   {
     throw new Error("AbstractType.setOuter() should only be called on dev.flang.ast.Type");
   }
@@ -88,17 +89,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * this is a NOP.
    *
    * @param feat the root feature that contains this type.
+   *
+   * @return new type this was replaced with in case generics were found.
    */
-  void findGenerics(AbstractFeature outerfeat)
+  AbstractType findGenerics(AbstractFeature outerfeat)
   {
+    return this;
   }
 
 
   /**
-   * resolve 'abc.this.type' within a type feature.  This is only needed for
+   * resolve 'abc.this' within a type feature of `abc`.  This is only needed for
    * ast.Type, for fe.LibraryType this is a NOP.
    *
-   * @param feat the outer feature that this type is declared in.
+   * @param feat the outer feature this type is declared in.
+   *
+   * @return new type in case this refers to 'abc.this', replaced by type
+   * parameter THIS#TYPE if in type feature.
    */
   AbstractType resolveThisType(AbstractFeature outerfeat)
   {
@@ -113,10 +120,26 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param feat the outer feature that this type is declared in, used
-   * for resolution of generic parameters etc.
+   * @param outerfeat the outer feature this type is declared in, used for
+   * resolution of generic parameters etc.
    */
   AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+  {
+    return this;
+  }
+
+
+  /**
+   * For a normal type, resolve the actual type parameters.
+   *
+   * @param pos souce code position of the unresolved types whose generics we
+   * are resolving.
+   *
+   * @param res the resolution instance
+   *
+   * @param outerfeat the outer feature this type is declared in.
+   */
+  AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
   {
     return this;
   }
@@ -130,11 +153,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * This is only needed for ast.Type, for fe.LibraryType this is a NOP.
    *
-   * @param feat the outer feature that this type is declared in, used
-   * for resolution of generic parameters etc.
+   * @param feat the outer feature this type is declared in, used for resolution
+   * of generic parameters etc.
+   *
+   * @return new type this was replaced with in case generics were found.
    */
-  void resolveFeature(Resolution res, AbstractFeature outerfeat)
+  AbstractType resolveFeature(Resolution res, AbstractFeature outerfeat)
   {
+    return this;
   }
 
 
@@ -174,7 +200,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff !isOpenGeneric()
    */
-  public boolean ensureNotOpen()
+  public boolean ensureNotOpen(HasSourcePosition pos)
   {
     boolean result = true;
 
@@ -183,7 +209,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (isOpenGeneric())
       {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos2BeRemoved(), genericArgument());
+        AstErrors.illegalUseOfOpenFormalGeneric(pos.pos(), genericArgument());
         result = false;
       }
     return result;
@@ -206,7 +232,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (isGenericArgument() || !(this instanceof Type tt) || tt.feature != null);  // type must be resolved
+      (!(this instanceof UnresolvedType tt));
 
     if (!isGenericArgument())
       {
@@ -226,7 +252,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean containsError()
   {
-    return false;
+    boolean result = false;
+    if (this == Types.t_ERROR)
+      {
+        result = true;
+      }
+    else if (!isGenericArgument())
+      {
+        for (var t: generics())
+          {
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || t == null || t.containsError();
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (!result || Errors.count() > 0);
+
+    return result;
   }
 
 
@@ -239,7 +283,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean containsUndefined(boolean exceptFirst)
   {
-    return false;
+    boolean result = false;
+    if (this == Types.t_UNDEFINED)
+      {
+        result = true;
+      }
+    else if (!isGenericArgument())
+      {
+        for (var t: generics())
+          {
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || !exceptFirst && t != null && t.containsUndefined(false);
+            exceptFirst = false;
+          }
+      }
+
+    return result;
   }
 
 
@@ -517,7 +577,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         else
           {
             result = YesNo.no;
-            if (generics() != Type.NONE)
+            if (generics() != UnresolvedType.NONE)
               {
                 for (var t: generics())
                   {
@@ -704,8 +764,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
-            result = result.ensureNotOpen() ? g.replace(actualGenerics)
-                                            : Types.t_ERROR;
+            result = g.replace(actualGenerics);
           }
       }
     else
@@ -1191,12 +1250,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             var g = new List<AbstractType>(this);
             g.addAll(generics());
-            result = Types.intern(new Type(f.pos(),
-                                           f.featureName().baseName(),
-                                           g,
-                                           outer().typeType(res),
-                                           f,
-                                           Type.RefOrVal.Value));
+            result = Types.intern(new ResolvedNormalType(g,
+                                                         g,
+                                                         outer().typeType(res),
+                                                         f,
+                                                         UnresolvedType.RefOrVal.Value));
           }
       }
     return result;
@@ -1240,7 +1298,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = new Type(tc.pos(), new Generic(tc.calledFeature()));
+            result = new Generic(tc.calledFeature()).type();
           }
       }
     else
@@ -1338,7 +1396,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (genericArgument().feature() == outerTypeFeature.typeFeatureOrigin())
           {
-            result = new Type(this.pos2BeRemoved(), outerTypeFeature.generics().list.get(genericArgument().index() + 1));
+            result = outerTypeFeature.generics().list.get(genericArgument().index() + 1).type();
           }
         else
           {
@@ -1374,7 +1432,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = new Type(this, ng, no);
+            result = new ResolvedNormalType(this, ng, unresolvedGenerics(), no);
           }
       }
     return result;
@@ -1409,14 +1467,44 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * For a resolved normal type, return the underlying feature.
+   *
+   * @return the underlying feature.
+   *
+   * @throws Error if this is not resolved or isGenericArgument().
+   */
   public abstract AbstractFeature featureOfType();
+
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
   public abstract AbstractType asThis();
   public abstract boolean isThisType();
-  public abstract SourcePosition pos2BeRemoved();
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  public abstract SourcePosition declarationPos();
+
+
+  /**
+   * For a normal type, this is the list of actual type parameters given to the type.
+   */
   public abstract List<AbstractType> generics();
+
+
+  /**
+   * For a normal type, this is the list of the unresolved version of actual
+   * type parameters given to the type, as far as they are available. They are
+   * not available, e.g., when the type was inferred or was loaded from a module
+   * file.  The list might be shorter than generics().
+   */
+  public List<AbstractType> unresolvedGenerics() { return generics(); }
+
+
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract Generic genericArgument();
@@ -1506,12 +1594,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return itself on success or t_ERROR if constraints are not met.
    */
-  public AbstractType checkConstraints(SourcePosition pos)
+  public AbstractType checkConstraints()
   {
     var result = this;
     if (!isGenericArgument())
       {
-        if (!checkActualTypePars(pos, featureOfType(), generics()))
+        if (!checkActualTypePars(featureOfType(), generics(), unresolvedGenerics(), null))
           {
             result = Types.t_ERROR;
           }
@@ -1531,18 +1619,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actuals the actual type parameters
    *
+   * @param unresolvedActuals when available, the list of unresolved actuals
+   * such that souce code positions can be shown.
+   *
+   * @param callPos in case this is a call un unresolvedActuals is empty since
+   * the actual type parameters are inferred, this gives the position of the
+   * call, null if not a call.
+   *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(SourcePosition pos, AbstractFeature called, List<AbstractType> actuals)
+  static boolean checkActualTypePars(AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
   {
     var result = true;
     var fi = called.generics().list.iterator();
     var ai = actuals.iterator();
+    var ui = unresolvedActuals.iterator();
     while (fi.hasNext() &&
            ai.hasNext()    ) // NYI: handling of open generic arguments
       {
         var f = fi.next();
         var a = ai.next();
+        var u = ui.hasNext() ? ui.next() : null;
         var c = Types.intern(f.constraint());
         if (CHECKS) check
           (Errors.count() > 0 || f != null && a != null);
@@ -1554,12 +1651,33 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                AstErrors.incompatibleActualGeneric(pos, f, a);
+                AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
+                                                    callPos != null                ? callPos
+                                                                                   : called.pos(),
+                                                    f,
+                                                    a);
                 result = false;
               }
           }
       }
     return result;
+  }
+
+
+  /**
+   * Create a clone of this Type that uses originalOuterFeature as context to
+   * look up features the type is built from.  Generics will be looked up in the
+   * current context.
+   *
+   * This is used for type features that use types from the original feature,
+   * but needs to replace generics by the type feature's generics.
+   *
+   * @param originalOuterFeature the original feature, which is not a type
+   * feature.
+   */
+  AbstractType clone(AbstractFeature originalOuterFeature)
+  {
+    return this;
   }
 
 }

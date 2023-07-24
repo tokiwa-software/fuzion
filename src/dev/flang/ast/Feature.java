@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -649,7 +650,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos2BeRemoved();
+    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnTypePos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1082,7 +1083,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return true iff this is the last argument of a feature and t is its return
    * type.
    */
-  boolean isLastArgType(Type t)
+  boolean isLastArgType(AbstractType t)
   {
     return
       outer() != null &&
@@ -1203,9 +1204,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
     {
-      public Function     action(Function     f, AbstractFeature outer) { f.findGenerics(this, outer); return f; }
-      public This         action(This         t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
-      public AbstractType action(AbstractType t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
+      public Function     action(Function     f, AbstractFeature outer) {        f.findGenerics(this, outer); return f; }
+      public This         action(This         t, AbstractFeature outer) {        t.findGenerics(      outer); return t; }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(      outer);           }
     };
 
   /*
@@ -1294,7 +1295,6 @@ public class Feature extends AbstractFeature implements Stmnt
     public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
     public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
     public Expr         action      (This           t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    public Type         actionBefore(Type           t, AbstractFeature outer) { return t.resolveThisType(       outer); }
     public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t.resolve        (res,   outer); }
 
     public boolean doVisitActuals() { return false; }
@@ -1651,10 +1651,7 @@ public class Feature extends AbstractFeature implements Stmnt
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
           }
-        if (_resultType instanceof Type t)
-          {
-            t.checkChoice(_posOfReturnType);
-          }
+        _resultType.checkChoice(_posOfReturnType);
         if (_resultType.isThisType() && _resultType.featureOfType() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
@@ -1774,11 +1771,11 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);                   }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c;       }
-            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                      }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i;       }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return ((Type)t).checkConstraints(pos()); }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
+            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
           });
         checkTypes(res);
 
@@ -2219,6 +2216,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = _returnType.functionReturnType();
       }
+    //    result = result instanceof ResolvedType ? Types.intern(result) : result; // NYI: why?
     if (isOuterRef())
       {
         result = result.asThis();
