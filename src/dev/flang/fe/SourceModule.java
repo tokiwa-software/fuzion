@@ -39,18 +39,20 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractBlock;
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
+import dev.flang.ast.Current;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -639,6 +641,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
   {
+    if (PRECONDITIONS)
+      require(outer.isConstructor(), inner.isTypeFeature());
+
     var d = data(outer);
     var fn = inner.featureName();
     if (!inherited && d._declaredFeatures != null)
@@ -777,7 +782,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if (Errors.count() == 0 || !f.isTypeFeature())
+        if ((Errors.count() == 0 || !f.isTypeFeature()) && VisibleFor(existing, f))
           {
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
@@ -968,13 +973,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param sf the source file where type is used
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter, SourceFile sf)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING),
+       (use == null) != (sf == null));
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
@@ -1023,7 +1031,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        for (var e : fs.entrySet())
+        for (var e : fs.entrySet()
+                       .stream()
+                       .filter(fn ->    sf != null && typeVisible(sf, fn.getValue())
+                                    || use != null && featureVisible(use.pos()._sourceFile, fn.getValue()))
+                       .collect(List.collector()))
           {
             var v = e.getValue();
             if (!v.isField() || !foundFieldInScope)
@@ -1110,7 +1122,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter);
+        var fs = lookup(outer, name, null, traverseOuter, pos._sourceFile);
         for (var fo : fs)
           {
             var f = fo._feature;
@@ -1325,6 +1337,122 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
+      }
+    checkLegalTypeVisibility(f);
+    checkResultTypeVisibility(f);
+    checkArgTypesVisibility(f);
+    checkPreconditionVisibility(f);
+    checkOuterVisibility(f);
+  }
+
+
+  private void checkOuterVisibility(Feature f)
+  {
+    if (f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().ordinal())
+      {
+        Errors.error(f.pos(), "Outer feature is less visible than inner feature.",
+         "The outer feature : " + f.outer().featureName() + "\n" +
+         "  visibility      : " + f.outer().visibility() + "\n" +
+         "The inner feature : " + f.featureName() + "\n" +
+         "  visibility      : " + f.visibility()
+        );
+      }
+  }
+
+
+  /**
+   * Are all used features in precondition at least as visible as feature?
+   * @param f
+   */
+  private void checkPreconditionVisibility(Feature f)
+  {
+    f
+      .contract()
+      .req
+      .forEach(r -> r.visit(new FeatureVisitor() {
+        @Override
+        public void action(AbstractCall c)
+        {
+          super.action(c);
+          if (// arg is allowed to be less visible
+              // since it is always known by caller
+              !f.arguments().contains(c.calledFeature())
+              // do not check stmntResult generated by label
+              && !(c.target() instanceof Current)
+              // type param is known by caller
+              && !c.calledFeature().isTypeParameter()
+              && isLessVisible(c.calledFeature(), f))
+            {
+              Errors.error(c.pos(), "Called feature in precondition less visible than feature.",
+                "The called feature : " + c.calledFeature().featureName() + "\n" +
+                "The feature        : " + f.featureName()
+              );
+            }
+        }
+      }, f));
+  }
+
+
+  /*
+   * Is feature `a` less visible than feature `b`?
+   */
+  private boolean isLessVisible(AbstractFeature a, Feature b)
+  {
+    return a.visibility().ordinal() < b.visibility().ordinal();
+  }
+
+
+  /**
+   * Check that `f` defines type if type visibility is explicitly specified.
+   *
+   * @param f
+   */
+  private void checkLegalTypeVisibility(Feature f)
+  {
+    if (!f.definesType() && f.visibility().definesTypeVisibility())
+      {
+        Errors.error(f.pos(), "Feature specifing type visibility does not define a type.",
+         "The feature              : " + f.featureName() + "\n" +
+         "The specified visibility : " + f.visibility()
+        );
+      }
+  }
+
+
+  /**
+   * Check that the types of the arguments are at least as visible as `f`.
+   *
+   * @param f
+   */
+  private void checkArgTypesVisibility(Feature f)
+  {
+    var s = f.arguments()
+      .stream()
+      .filter(x -> x.resultType().lessVisibleThan(f.visibility().featureVisibility()))
+      .collect(Collectors.toSet());
+
+    if (!s.isEmpty())
+      {
+        Errors.error(f.pos(), "Argument types or any of its generic arguments is less visible than feature.",
+          "The feature        : " + f.featureName() + "\n" +
+          "The argument types : " + s.stream().map(x -> x.resultType().toString()).collect(Collectors.joining(", "))
+        );
+      }
+  }
+
+  /**
+   * Check that result type is at least as visible as feature `f`.
+   *
+   * @param f
+   */
+  private void checkResultTypeVisibility(Feature f)
+  {
+    if (f.resultType().lessVisibleThan(f.visibility().featureVisibility()))
+      {
+        Errors.error(f.pos(), "Result type or any of its generic arguments is less visible than feature.",
+          "The feature     : " + f.featureName() + "\n" +
+          "Its result type : " + f.resultType()
+        );
       }
   }
 

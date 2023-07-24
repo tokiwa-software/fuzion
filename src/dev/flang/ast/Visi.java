@@ -99,12 +99,63 @@ public enum Visi
   {
     if (ANY.PRECONDITIONS) ANY.require
       (0 <= ordinal,
-        ordinal < values().length);
+        ordinal < values().length,
+        ordinal != UNSPECIFIED.ordinal());
 
     if (ANY.CHECKS) ANY.check
       (values()[ordinal].ordinal() == ordinal);
 
     return values()[ordinal];
+  }
+
+  /**
+   * @return The visibilty for features/calls encoded in this.
+   */
+  public Visi featureVisibility()
+  {
+    if (this.ordinal() <= PRIVPUB.ordinal())
+      {
+        return PRIV;
+      }
+    else if (this.ordinal() <= MODPUB.ordinal())
+      {
+        return MOD;
+      }
+    return PUB;
+  }
+
+
+  /**
+   * @return The visibilty for types encoded in this.
+   * PRIV => PRIV, PRIVMOD => MOD, PRIVPUB => PUB, etc.
+   */
+  public Visi typeVisibility()
+  {
+    switch (this)
+      {
+        case UNSPECIFIED:
+        case PRIV:
+          return Visi.PRIV;
+        case MOD:
+        case PRIVMOD:
+          return Visi.MOD;
+        case PRIVPUB:
+        case MODPUB:
+        case PUB:
+          return Visi.PUB;
+        default:
+          throw new RuntimeException("undhandled case in Visi.typeVisibility");
+      }
+  }
+
+
+  /**
+   * Does this visibility explicitly specify a different visibility for the type?
+   * @return
+   */
+  public boolean definesTypeVisibility()
+  {
+    return this == Visi.PRIVMOD || this == Visi.PRIVPUB || this == Visi.MODPUB;
   }
 
 }

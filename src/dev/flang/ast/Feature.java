@@ -101,7 +101,16 @@ public class Feature extends AbstractFeature implements Stmnt
    * The visibility of this feature
    */
   private Visi _visibility;
-  public Visi visibility() { return _visibility; }
+  public Visi visibility()
+  {
+    return
+      // NYI anonymous feature should have correct visibility set.
+      isAnonymousInnerFeature()
+      ? outer().visibility()
+      : _visibility == Visi.UNSPECIFIED
+      ? Visi.PRIV
+      : _visibility;
+  }
 
 
   /**
@@ -354,7 +363,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                   Block b)
   {
     return new Feature(pos,
-                       Visi.PRIV,
+                       Visi.UNSPECIFIED,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
