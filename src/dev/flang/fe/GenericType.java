@@ -113,7 +113,7 @@ public class GenericType extends LibraryType
 
 
   /**
-   * For a resulved normal type, return the underyling feature.
+   * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
    *

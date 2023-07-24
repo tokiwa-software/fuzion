@@ -1013,7 +1013,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param generics the actual generic arguments to be applied to the type
    *
-   * @return the result type, Types.resulved.t_unit if none and
+   * @return the result type, Types.resolved.t_unit if none and
    * Types.t_ERROR in case the type could not be inferenced and error
    * was reported.
    */

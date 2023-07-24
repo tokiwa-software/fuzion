@@ -771,7 +771,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * For a resulved normal type, return the underyling feature.
+   * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
    *

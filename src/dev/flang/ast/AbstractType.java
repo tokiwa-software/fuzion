@@ -1468,7 +1468,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * For a resulved normal type, return the underyling feature.
+   * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
    *
@@ -1499,7 +1499,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of the unresolved version of actual
    * type parameters given to the type, as far as they are available. They are
-   * not avaible, e.g., when the type was inferred or was loaded from a module
+   * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
   public List<AbstractType> unresolvedGenerics() { return generics(); }
@@ -1677,7 +1677,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    //throw new Error("clone(originalOuterFeature) not supported for "+getClass());
     return this;
   }
 
