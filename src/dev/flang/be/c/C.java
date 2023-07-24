@@ -1008,24 +1008,6 @@ public class C extends ANY
   }
 
 
-  // NYI this conversion should be done in Fuzion
-  CStmnt floatToConstString(CExpr expr, CIdent tmp)
-  {
-    // NYI how much do we need?
-    var bufferSize = 50;
-    var res = new CIdent("float_as_string_result");
-    var usedChars = new CIdent("used_chars");
-    var malloc = CExpr.call(malloc(),
-      new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
-    var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
-
-    return CStmnt.seq(CStmnt.decl("char*", res, malloc),
-                      CStmnt.decl("int", usedChars, sprintf),
-                      res.assign(CExpr.call(realloc(), new List<>(res, usedChars))),
-                      constString(res, usedChars, tmp));
-  }
-
-
   /**
    * Create code to assign value to a field
    *

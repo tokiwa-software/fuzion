@@ -1152,7 +1152,6 @@ public class Intrinsics extends ANY
     put("f32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())));
     put("f32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
     put("f32.cast_to_u32"       , (interpreter, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
-    put("f32.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())));
     put("f64.prefix -"          , (interpreter, innerClazz) -> args -> new f64Value (                (                       -  args.get(0).f64Value())));
     put("f64.infix +"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())));
     put("f64.infix -"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())));
@@ -1168,7 +1167,6 @@ public class Intrinsics extends ANY
     put("f64.as_i64_lax"        , (interpreter, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (interpreter, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f64.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value(Double.toString       (                args.get(0).f64Value())));
     put("f32.type.is_NaN"       , (interpreter, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
     put("f64.type.is_NaN"       , (interpreter, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
     put("f32.type.acos"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));

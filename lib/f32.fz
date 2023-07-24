@@ -138,7 +138,8 @@ public f32(val f32) : float is
 
   # convert this to a string.
   #
-  public redef as_string String is intrinsic
+  public redef as_string =>
+    as_f64.as_string
 
 
   # -----------------------------------------------------------------------

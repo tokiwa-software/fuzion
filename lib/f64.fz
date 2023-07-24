@@ -151,7 +151,10 @@ public f64(val f64) : float is
 
   # convert this to a string.
   #
-  public redef as_string String is intrinsic
+  public redef as_string =>
+    r := num.ryū
+    use_scientific_notation := val<1E-3 || val>=1E7
+    r.as_string val use_scientific_notation r.rounding_conservative
 
 
   # -----------------------------------------------------------------------
