@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -146,7 +147,7 @@ public class Intrinsics extends ANY
   /**
    * the last unique identifier returned by `fuzion.sys.misc.unique_id`.
    */
-  private static long _last_unique_id_ = 0;
+  private static AtomicLong _last_unique_id_ = new AtomicLong();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -797,7 +798,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.set0"  , (interpreter, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java
     put("fuzion.sys.env_vars.unset0", (interpreter, innerClazz) -> args -> new boolValue(false));
-    put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(++_last_unique_id_));
+    put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
     put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
         {
           var call = Types.resolved.f_function_call;
