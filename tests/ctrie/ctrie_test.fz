@@ -49,9 +49,9 @@ ctrie_test is
   no  := removed.filter (x -> !(readded.contains x))
   yes := (container.ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
 
-  say (no  ∀ (k -> (ctrie.lookup k).is_nil))
+  say (no  ∀ (k -> ctrie[k].is_nil))
 
-  say (yes ∀ (k -> (ctrie.lookup k).get = "v$k"))
+  say (yes ∀ (k -> ctrie[k].get = "v$k"))
 
   say (ctrie.size = yes.size)
 
