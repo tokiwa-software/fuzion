@@ -2,6 +2,10 @@
 
 [![OpenSSF
 Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion/badge)](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion)
+[![syntax check fz files](https://github.com/tokiwa-software/fuzion/actions/workflows/syntax_check_fuzion.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/syntax_check_fuzion.yml)
+[![run tests on macOS](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml)
+[![run tests on windows](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml)
+
 
 ## A language with a focus on simplicity, safety and correctness.
 

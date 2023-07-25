@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#  GitHub Actions workflow to syntax check fz files.
 #
 # -----------------------------------------------------------------------
 
@@ -29,8 +29,7 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    # weekly
-    - cron: '0 0 * * 0'
+    - cron: '0 0 * * 0' # every sunday
 
 env:
   PRECONDITIONS: true
