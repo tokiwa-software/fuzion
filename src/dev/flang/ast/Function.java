@@ -313,30 +313,6 @@ public class Function extends ExprWithPos
   }
 
 
-  /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void findGenerics(FeatureVisitor v, AbstractFeature outer)
-  {
-    if (this._feature != null)
-      { /* NYI: Needed? The following comment seems wrong: */
-        // directly process generics in _feature's arguments and return type,
-        // while visit() skips the _feature.
-        var f = this._feature;
-        for (var a : f.arguments())
-          {
-            var rt = ((Feature)a).returnType(); // NYI: Cast!
-            rt.visit(v, outer);
-          }
-        var rt = ((Feature)f).returnType(); // NYI: Cast!
-        rt.visit(v, outer);
-      }
-  }
-
-
   private AbstractFeature functionOrRoutine()
   {
     var f = this._feature == null ? this._call.calledFeature()
