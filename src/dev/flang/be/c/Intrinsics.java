@@ -873,15 +873,14 @@ public class Intrinsics extends ANY
                             c._names.FZ_FALSE.ret());
         });
      put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
-         {
-           var last_id= new CIdent("last_id");
-           return CStmnt.seq(CStmnt.decl("static",
-                                         c._types.scalar(FUIR.SpecialClazzes.c_u64),
-                                         last_id,
-                                         CExpr.uint64const(0)),
-                             last_id.assign(last_id.add(CExpr.uint64const(1))),
-                             last_id.ret());
-         });
+        {
+          var last_id = new CIdent("last_id");
+          return CStmnt.seq(CStmnt.decl("static",
+                                        c._types.scalar(FUIR.SpecialClazzes.c_u64),
+                                        last_id,
+                                        CExpr.uint64const(0)),
+                            CExpr.call("__atomic_add_fetch", new List<>(last_id.adrOf(), CExpr.uint64const(1), new CIdent("__ATOMIC_SEQ_CST"))).ret());
+        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
