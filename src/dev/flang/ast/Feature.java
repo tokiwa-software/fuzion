@@ -1204,9 +1204,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
     {
-      public Function     action(Function     f, AbstractFeature outer) {        f.findGenerics(this, outer); return f; }
-      public This         action(This         t, AbstractFeature outer) {        t.findGenerics(      outer); return t; }
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(      outer);           }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(outer); }
     };
 
   /*
