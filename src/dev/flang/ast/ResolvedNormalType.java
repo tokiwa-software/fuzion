@@ -116,7 +116,9 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param t the original type
    *
-   * @param g the actual generic arguments that replace t.generics
+   * @param g the actual generic arguments that replace t.generics (resolved)
+   *
+   * @param ug the actual generic arguments that replace t.generics (unresolved)
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
@@ -137,7 +139,9 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param t the original type
    *
-   * @param g the actual generic arguments that replace t.generics
+   * @param g the actual generic arguments that replace t.generics (resolved)
+   *
+   * @param ug the actual generic arguments that replace t.generics (unresolved)
    *
    * @param o the actual outer type, or null, that replaces t.outer
    *
@@ -162,9 +166,9 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Constructor
    *
-   * @param n
+   * @param g the actual generic arguments (resolved)
    *
-   * @param g the actual generic arguments
+   * @param ug the actual generic arguments (unresolved)
    *
    * @param o
    *
@@ -183,9 +187,9 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Constructor
    *
-   * @param n
+   * @param g the actual generic arguments (resolved)
    *
-   * @param g the actual generic arguments
+   * @param ug the actual generic arguments (unresolved)
    *
    * @param o
    *

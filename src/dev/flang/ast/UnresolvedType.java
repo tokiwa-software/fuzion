@@ -710,7 +710,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outerfeat != null,
        outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    AbstractType result;
     if (_resolved == null) {
       var of = originalOuterFeature(outerfeat);
       var o = _outer;
@@ -732,7 +731,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         {
           if (CHECKS) check
             (!isThisType());
-          var ec = Errors.count();
           var fo = res._module.lookupType(pos(), of, _name, o == null);
           f = fo._feature;
           if (o == null && !fo._outer.isUniverse())

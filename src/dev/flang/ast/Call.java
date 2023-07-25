@@ -770,7 +770,8 @@ public class Call extends AbstractCall
                     AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
                   }
                 else if (_calledFeature == null &&                 // nothing found, so flag error
-                         targetFeature != Types.resolved.f_void)   // but allow to call anything on void
+                         (Types.resolved == null ||                // may happen when building bad base.fum
+                          targetFeature != Types.resolved.f_void)) // but allow to call anything on void
                   {
                     AstErrors.calledFeatureNotFound(this, calledName, targetFeature,
                                                     FeatureAndOuter.findExactOrCandidate(fos,

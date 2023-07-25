@@ -1412,7 +1412,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Apply given function recursively to generics and outer types in this type
+   * Apply given function to generics and outer types in this type
    * to create a new type.
    *
    * @param f function to apply to generics and outer types
