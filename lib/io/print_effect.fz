@@ -52,8 +52,7 @@ is
 public Print_Handler ref is
 
   println(s Any) =>
-    print s
-    println
+    print (s.as_string + (codepoint 10))
 
   println =>
     print (codepoint 10)
