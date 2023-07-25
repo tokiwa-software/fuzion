@@ -3601,8 +3601,8 @@ implRout    : block
                                           skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
                                           skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                           new Impl(pos, block()      , Impl.Kind.Routine   ); }
-    else if (skip("=>")      ) { result = new Impl(pos, block()      , Impl.Kind.RoutineDef); }
-    else if (skip(Token.t_of)) { result = new Impl(pos, block()      , Impl.Kind.Of        ); }
+    else if (skip(true, "=>")      ) { result = new Impl(pos, block()      , Impl.Kind.RoutineDef); }
+    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()      , Impl.Kind.Of        ); }
     else if (skipFullStop()  ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
     else
       {
@@ -3626,12 +3626,12 @@ implFldOrRout   : implRout
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         currentAtMinIndent() == Token.t_of     ||
-        isOperator("=>")                       ||
+        isOperator(true, "=>")                 ||
         isFullStop()                              )
       {
         return implRout();
       }
-    else if (isOperator(":="))
+    else if (isOperator(true, ":="))
       {
         return implFldInit(hasType);
       }
@@ -3675,8 +3675,8 @@ implFldInit : ":=" exprInLine
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
       currentAtMinIndent() == Token.t_of ||
-      isOperator(":=") ||
-      isOperator("=>") ||
+      isOperator(true, ":=") ||
+      isOperator(true, "=>") ||
       isFullStop();
   }
 
@@ -4247,7 +4247,7 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean isFullStop()
   {
-    return isOperator('.') && !ignoredTokenBefore() && ignoredTokenAfter();
+    return isOperator(true, '.') && !ignoredTokenBefore() && ignoredTokenAfter();
   }
 
 
