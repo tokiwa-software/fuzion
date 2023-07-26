@@ -367,6 +367,7 @@ public class DFA extends ANY
                        "Found call to  " + _fuir.clazzAsString(cc));
         case Routine  :
         case Intrinsic:
+        case Native   :
           {
             if (_fuir.clazzNeedsCode(cc))
               {
@@ -824,7 +825,8 @@ public class DFA extends ANY
           return super.clazzNeedsCode(cl) &&
             switch (_fuir.clazzKind(cl))
             {
-            case Routine, Intrinsic -> called.contains(cl);
+            case Routine, Intrinsic,
+                 Native             -> called.contains(cl);
             case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) || _readFields.contains(cl);
             case Abstract           -> true;
             case Choice             -> true;
@@ -853,7 +855,8 @@ public class DFA extends ANY
                      case Abstract  ,
                           Intrinsic ,
                           Field     ,
-                          Routine   -> currentEscapes(cl, pre) ? LifeTime.Unknown :
+                          Routine   ,
+                          Native    -> currentEscapes(cl, pre) ? LifeTime.Unknown :
                                                                  LifeTime.Call;
                      })
                 : (switch (clazzKind(cl))
@@ -864,6 +867,7 @@ public class DFA extends ANY
                      case Field     -> LifeTime.Call;
                      case Routine   -> currentEscapes(cl, pre) ? LifeTime.Unknown :
                                                                  LifeTime.Call;
+                     case Native    -> LifeTime.Undefined;
                      });
 
           return result;

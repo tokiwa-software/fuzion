@@ -513,6 +513,7 @@ public class FUIR extends IR
       case Abstract   -> FeatureKind.Abstract;
       case Choice     -> FeatureKind.Choice;
       case TypeParameter -> FeatureKind.Intrinsic;
+      case Native     -> FeatureKind.Native;
       default         -> throw new Error ("Unexpected feature kind: "+ff.kind());
       };
   }
@@ -539,7 +540,8 @@ public class FUIR extends IR
   public String clazzIntrinsicName(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Intrinsic);
+      (clazzKind(cl) == FeatureKind.Intrinsic ||
+       clazzKind(cl) == FeatureKind.Native);
 
     var cc = clazz(cl);
     return cc.feature().qualifiedName();
@@ -976,7 +978,8 @@ hw25 is
       (clazzKind(cl) == FeatureKind.Routine   ||
        clazzKind(cl) == FeatureKind.Field     ||
        clazzKind(cl) == FeatureKind.Intrinsic ||
-       clazzKind(cl) == FeatureKind.Abstract     ,
+       clazzKind(cl) == FeatureKind.Abstract  ||
+       clazzKind(cl) == FeatureKind.Native       ,
        ix >= 0);
 
     var cc = clazz(cl);
@@ -1052,7 +1055,7 @@ hw25 is
         var result = switch (clazzKind(cc))
           {
           case Abstract, Choice -> false;
-          case Intrinsic, Routine, Field ->
+          case Intrinsic, Routine, Field, Native ->
             (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
@@ -1119,6 +1122,7 @@ hw25 is
                case Intrinsic -> LifeTime.Unknown;
                case Field     -> LifeTime.Unknown;
                case Routine   -> LifeTime.Unknown;
+               case Native    -> LifeTime.Unknown;
                })
           : (switch (clazzKind(cl))
                {
@@ -1127,6 +1131,7 @@ hw25 is
                case Intrinsic -> LifeTime.Undefined;
                case Field     -> LifeTime.Call;
                case Routine   -> LifeTime.Unknown;
+               case Native    -> LifeTime.Unknown;
                });
 
       return result;

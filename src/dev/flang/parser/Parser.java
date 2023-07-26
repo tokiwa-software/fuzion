@@ -3586,6 +3586,7 @@ implRout    : block
             | "is" "abstract"
             | "is" "intrinsic"
             | "is" "intrinsic_constructor"
+            | "is" "native"
             | "is" block
             | ARROW block
             | "of" block
@@ -3600,6 +3601,7 @@ implRout    : block
     if      (startRoutine    ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                           skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
                                           skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
+                                          skip(Token.t_native               ) ? Impl.NATIVE                :
                                           new Impl(pos, block()      , Impl.Kind.Routine   ); }
     else if (skip("=>")      ) { result = new Impl(pos, block()      , Impl.Kind.RoutineDef); }
     else if (skip(Token.t_of)) { result = new Impl(pos, block()      , Impl.Kind.Of        ); }
