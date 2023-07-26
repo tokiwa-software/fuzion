@@ -87,9 +87,9 @@ private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Nod
       indirection_node Indirection_Node => "$indirection_node"
       singleton_node singleton_node => "$singleton_node"
 
-  as_list =>
+  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     match branch.this
-      indirection_node Indirection_Node => indirection_node.as_list
+      indirection_node Indirection_Node => indirection_node.as_list f
       singleton_node singleton_node => singleton_node.as_list
 
   fixed type.equality(a, b container.branch CTK CTV) bool is
@@ -106,29 +106,49 @@ private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Nod
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV)) : property.equatable is
+private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64) : property.equatable
+pre array ∀ (b ->
+      match b
+        i Indirection_Node => i.gen <= gen
+        singleton_node => true
+    )
+is
 
   # update a child node and return a new container_node
-  update(pos u32, node branch CTK CTV) =>
-    container_node bmp (array.put pos.as_i32 node)
+  update(pos u32, node branch CTK CTV, g u64)
+  pre debug: gen <= g,
+             match node
+               i Indirection_Node => i.gen <= gen
+               s singleton_node => true
+   =>
+    container_node bmp (array.put pos.as_i32 node) g
 
   # add a child node and return a new container_node
-  add(sn singleton_node CTK CTV, pos, flag u32) =>
-    container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array
+  add(sn singleton_node CTK CTV, pos, flag u32, g u64) =>
+    container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array g
 
   # remove a child node and return a new container_node
-  remove(pos, flag u32) =>
+  remove(pos, flag u32, g u64)
+  pre debug: pos < array.length.as_u32
+  post array.length > result.array.length
+   =>
     # NYI delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
-    container_node (bmp ^ flag) tmp.as_array
+    container_node (bmp ^ flag) tmp.as_array g
 
-  redef as_string => "container_node({array.as_string ", "})"
+  # get item at pos in this container node
+  index [] (pos i32) branch CTK CTV is
+    array[pos]
 
-  as_list => array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list)
-                 .as_list
+  redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
+
+  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
+    array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list f)
+         .as_list
 
   fixed type.equality(a, b container.container_node CTK CTV) bool is
     a.bmp = b.bmp
+      && a.gen = b.gen
       && (container.searchable_sequence a.array) = (container.searchable_sequence b.array)
 
 
@@ -142,7 +162,7 @@ Nil ref is
 # when a Main_Node is replaced it is put into
 # the successors `prev`-field.
 #
-private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil, property.equatable is
+private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil is
 
   redef as_string =>
     match prev_node.this
@@ -150,36 +170,23 @@ private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node 
       m container.Main_Node => m.as_string
       Nil => nil.as_string
 
-  fixed type.equality(a, b container.prev_node CTK CTV) bool is
-    match a
-      fa container.Failed_Node =>
-        match b
-          fb container.Failed_Node => fa = fb
-          m container.Main_Node => false
-          container.Nil => false
-      ma container.Main_Node =>
-        match b
-          f container.Failed_Node => false
-          mb container.Main_Node => ma = mb
-          container.Nil => false
-      container.Nil =>
-        match b
-          f container.Failed_Node => false
-          m container.Main_Node => false
-          container.Nil => true
+  is_nil =>
+    match prev_node.this
+      Nil => true
+      * => false
 
 
 # a container, tomb or linked list node, with a previous field
 # to support the generational compare and swap
 #
-private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) ref /* needs ref, cyclic layout container->indirection->main*/ : property.equatable is
+private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref /* needs ref, cyclic layout container->indirection->main*/ : property.equatable is
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
     prev.compare_and_set o n
 
   # a previous node that gets set during a generational aware compare and set
-  prev := concur.atomic (prev_node CTK CTV) Nil
+  prev := concur.atomic (prev_node CTK CTV) p
 
   redef as_string =>
     s := match data
@@ -190,33 +197,32 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 
   # equality
   #
-  fixed type.equality(a, b container.Main_Node CTK CTV) bool is
-    a.prev.read = b.prev.read &&
-      (match a.data
-         ca container.container_node =>
-          match b.data
-            cb container.container_node => ca = cb
-            tb container.tomb_node => false
-            lb container.list_node => false
-         ta container.tomb_node =>
-          match b.data
-            cb container.container_node => false
-            tb container.tomb_node => ta = tb
-            lb container.list_node => false
-         la container.list_node =>
-          match b.data
-            cb container.container_node => false
-            tb container.tomb_node => false
-            lb container.list_node => la = lb
-      )
+  fixed type.equality(a, b container.Main_Node CTK CTV) bool
+  is
+    match a.data
+      ca container.container_node =>
+        match b.data
+          cb container.container_node => ca = cb
+          tb container.tomb_node => false
+          lb container.list_node => false
+      ta container.tomb_node =>
+        match b.data
+          cb container.container_node => false
+          tb container.tomb_node => ta = tb
+          lb container.list_node => false
+      la container.list_node =>
+        match b.data
+          cb container.container_node => false
+          tb container.tomb_node => false
+          lb container.list_node => la = lb
 
-  as_list
+  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
   pre match prev.read
     Nil => true
     * => false
    =>
     match data
-      container_node container_node => container_node.as_list
+      container_node container_node => container_node.as_list f
       tomb_node tomb_node => tomb_node.as_list
       list_node list_node => list_node.map_sequence (sn -> (sn.k, sn.v))
 
@@ -233,12 +239,12 @@ private Failed_Node(CTK type : property.hashable, CTV type, prev Main_Node CTK C
 
 
 # shorthand for creating a new indirection node from Main_Node and gen
-private indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen i32) =>
+private indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen u64) =>
   Indirection_Node (concur.atomic data) gen
 
 
 # an indirection node
-private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen i32) ref /* NYI removing this ref leads to segfaults */ : property.equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref /* NYI removing this ref leads to segfaults */ : property.equatable is
 
   # NYI ref equality
   #
@@ -251,11 +257,9 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
 
   redef as_string => "Indirection_Node[gen=$gen]({data.read})"
 
-  as_list list (tuple CTK CTV)
-  pre match data.read.prev.read
-    Nil => true
-    * => false
-  is data.read.as_list
+  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) list (tuple CTK CTV)
+  is
+    (f Indirection_Node.this).as_list f
 
 
 # a linked list node
@@ -296,7 +300,9 @@ private:public not_found is
 
 # descriptor for double-compare-single-swap operation
 # NYI ref, work around for issue #1604
-private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref is
+private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref
+pre exp.prev.v.is_nil
+is
 
   # this field does not have to be atomic
   # but it probably does not hurt either.
@@ -336,20 +342,28 @@ is
   # 1) taking a snapshot and the root node needs to be copied to a new generation
   # 2) copying a container node to a new generation
   #
-  copy_to_gen(i Indirection_Node CTK CTV, new_gen i32) Indirection_Node CTK CTV is
+  copy_to_gen(i Indirection_Node CTK CTV, new_gen u64) Indirection_Node CTK CTV
+  pre debug: i.gen <= new_gen
+  post match result.data.v.prev.v
+          Nil => true
+          * => false
+  is
     indirection_node (gcas_read i) new_gen
 
 
   # copy this container_node to new generation
-  renew(cn container_node CTK CTV, new_gen i32) container_node CTK CTV is
+  renew(cn container_node CTK CTV, new_gen u64) container_node CTK CTV
+  pre debug: cn.gen <= new_gen
+  is
     copy := cn
       .array
       .map (branch CTK CTV) x->
         match x
-          i Indirection_Node => copy_to_gen i new_gen
+          i Indirection_Node =>
+            copy_to_gen i new_gen
           sn singleton_node => sn
       .as_array
-    container_node cn.bmp copy
+    container_node cn.bmp copy new_gen
 
 
   # complete the double compare and swap
@@ -400,12 +414,11 @@ is
   # 1. try compare and swap root
   # 2. if successful complete committing the descriptor
   private rdcss_root(desc Rdcss_Descriptor CTK CTV) =>
-    try_commit =>
+    if cas_root desc.ov desc
       rdcss_complete false
       desc.committed.read
-
-    cas_root desc.ov desc &&
-      try_commit
+    else
+      false
 
   # completes the generation sensitive compare and set
   private gcas_commit(i Indirection_Node CTK CTV, m Main_Node CTK CTV) Main_Node CTK CTV is
@@ -421,12 +434,12 @@ is
           gcas_commit i i.data.read
       n Main_Node =>
         if root_gen = i.gen && !read_only
-          if m.cas_prev n Nil
+          if m.cas_prev prev Nil
             m
           else
             gcas_commit i m
         else
-          m.cas_prev n (Failed_Node n)
+          m.cas_prev prev (Failed_Node n)
           gcas_commit i i.data.read
 
   # read `data`, if prev is set commit first
@@ -440,17 +453,21 @@ is
   # semantics on the indirection node i
   # o is compared and swapped with n
   # but this compare and swap only succeeds if the root
-  # generation does not increase while this compare and
-  # swap is taking place.
-  private gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n Main_Node CTK CTV) choice restart ctrie_ok
-  pre (match n.prev.read
-        Nil => true
-        * => false),
-      n.cas_prev n.prev.read o
+  # generation does not change while this compare and
+  # set is taking place.
+  private gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) choice restart ctrie_ok
+  pre
+    (match n
+      c container_node => i.gen >= c.gen
+      * => true),
+    match o.prev.read
+      Nil => true
+      *   => false
   is
-    if i.cas o n
-      gcas_commit i n
-      match n.prev.read
+    nn := Main_Node n o
+    if i.cas o nn
+      gcas_commit i nn
+      match nn.prev.read
         Nil => ctrie_ok
         * => restart
     else
@@ -463,7 +480,7 @@ is
 
   # convert u64 hash to u32 hash
   private hash(h u64) u32 is
-    h.low32bits
+    (h >> 32).low32bits ^ h.low32bits
 
 
   # returns flag and the position in the container_node for given params
@@ -476,58 +493,61 @@ is
 
 
   # compress a container node
-  private compress(cn container_node CTK CTV, lev u32) =>
+  private compress(cn container_node CTK CTV, lev u32, g u64) =>
     narr := cn.array.map (branch CTK CTV) n->
       match n
-        m Indirection_Node =>
-          match (gcas_read m).data
+        i Indirection_Node =>
+          match (gcas_read i).data
             // resurrect
             tn tomb_node => tn.sn
-            * => m
+            * => i
         sn singleton_node => sn
-    contract (container_node cn.bmp narr) lev
+    contract (container_node cn.bmp narr g) lev
 
 
   # contract a container node
-  private contract(cn container_node CTK CTV, lev u32) Main_Node CTK CTV is
-    if (lev > (u32 0)) & (cn.array.length = 1)
-      match cn.array[0]
-        sn singleton_node => Main_Node (tomb_node sn)
-        i Indirection_Node => Main_Node cn
+  private contract(cn container_node CTK CTV, lev u32) choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) is
+    if (lev > 0) && (cn.array.length = 1)
+      match cn[0]
+        sn singleton_node => tomb_node sn
+        i Indirection_Node => cn
     else
-      Main_Node cn
+      cn
 
 
   # clean an indirection node:
   # compress contained container node
   private clean(nd option (Indirection_Node CTK CTV), lev u32) =>
-    nd.bind unit (inode ->
-      m := gcas_read inode
+    nd.bind unit (i ->
+      m := gcas_read i
       match m.data
-        c container_node => gcas inode m (compress c lev)
+        c container_node => gcas i m (compress c lev i.gen)
         * =>
       unit
     )
+    restart
 
 
   # turns this: container_node -> Indirection_Node -> tomb_node -> singleton_node
   # into  this: container_node -> singleton_node
-  private clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32) =>
+  private clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32, gen u64) =>
     parent >>= p->
       m := gcas_read p
       match m.data
         cn container_node =>
           (flag, pos) := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != u32 0
-            sub := cn.array[pos.as_i32]
+            sub := cn[pos.as_i32]
             match sub
               inode Indirection_Node =>
                 if inode = i
                   match (gcas_read i).data
                     tn tomb_node =>
-                      ncn := cn.update pos tn.sn
-                      match gcas p m (contract ncn lev)
-                        restart => clean_parent p i hash lev
+                      ncn := cn.update pos tn.sn i.gen
+                      match gcas p m (contract ncn lev-width)
+                        restart =>
+                          if read_root.gen = gen
+                            clean_parent p i hash lev gen
                         ctrie_ok =>
                     * =>
               * =>
@@ -541,31 +561,34 @@ is
   # Main_Node -> list_node -> singleton_nodes
   # or recurse
   # Main_Node -> container_node -> Indirection_Node -> dual x y
-  private dual(x, y singleton_node CTK CTV, lev u32, gen i32) Main_Node CTK CTV is
-    # NYI why 35??
-    if lev < (u32 35)
-      xidx := ((hash x.k.hash) >> lev) & 0x1f
-      yidx := ((hash y.k.hash) >> lev) & 0x1f
-      bmp := (u32 1 << xidx) | (u32 1 << yidx)
-      if xidx = yidx
-        sub_node := indirection_node (dual x y (lev + width) gen) gen
-        Main_Node (container_node CTK CTV bmp [sub_node])
-      else
-        if (xidx < yidx)
-          Main_Node (container_node CTK CTV bmp [x, y])
+  private dual(x, y singleton_node CTK CTV, lev u32, gen u64) Main_Node CTK CTV is
+    d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) :=
+      # NYI why 35??
+      if lev < 35
+        xidx := ((hash x.k.hash) >> lev) & 0x1f
+        yidx := ((hash y.k.hash) >> lev) & 0x1f
+        bmp := (u32 1 << xidx) | (u32 1 << yidx)
+        if xidx = yidx
+          sub_node := indirection_node (dual x y (lev + width) gen) gen
+          container_node CTK CTV bmp [sub_node] gen
         else
-          Main_Node (container_node CTK CTV bmp [y, x])
-    else
-      Main_Node (list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)])
+          if (xidx < yidx)
+            container_node CTK CTV bmp [x, y] gen
+          else
+            container_node CTK CTV bmp [y, x] gen
+      else
+        list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)]
+
+    Main_Node d Nil
 
 
   # lookup key k
-  public lookup(k CTK) option CTV is
+  public redef index [] (k CTK) option CTV is
     r := read_root
     res := lookup r k 0 nil r.gen
     match res
       r restart =>
-        lookup k
+        ctrie.this[k]
       not_found =>
         nil
       v CTV =>
@@ -574,30 +597,26 @@ is
 
   # try lookup key in ctrie
   # may fail and result in a restart
-  private lookup(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen i32) choice restart not_found CTV is
+  private lookup(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
+  pre debug: i.gen <= gen
+  is
     m := gcas_read i
     match m.data
       cn container_node =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) = (u32 0)
+        if (cn.bmp & flag) = 0
           not_found
         else
-          match cn.array[pos.as_i32]
+          match cn[pos.as_i32]
             sin Indirection_Node =>
               if read_only || gen = sin.gen
                 lookup sin k (lev + width) i gen
               else
-                match gcas i m (Main_Node (renew cn gen))
+                match gcas i m (renew cn gen)
                   ctrie_ok => lookup i k lev parent gen
                   restart => restart
-            sn singleton_node =>
-              if sn.k = k
-                sn.v
-              else
-                not_found
-      tn tomb_node =>
-        clean parent (lev - width)
-        restart
+            sn singleton_node => if sn.k = k then sn.v else not_found
+      tn tomb_node => if read_only then (if k = tn.sn.k then tn.sn.v else not_found) else clean parent (lev - width)
       ln list_node => ln.find k
 
 
@@ -614,35 +633,36 @@ is
 
   # try adding an element to the ctrie
   # may fail and result in a restart
-  private add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen i32) choice restart ctrie_ok is
+  private add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart ctrie_ok
+  pre debug: i.gen <= gen
+  is
     m := gcas_read i
     match m.data
       cn container_node =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) = (u32 0)
-          ncn := (if i.gen = gen then cn else renew cn gen).add (singleton_node k v) pos flag
-          gcas i m (Main_Node ncn)
+        if (cn.bmp & flag) = 0
+          ncn := (if cn.gen = i.gen then cn else renew cn i.gen).add (singleton_node k v) pos flag i.gen
+          gcas i m ncn
         else
-          match cn.array[pos.as_i32]
+          match cn[pos.as_i32]
             ci Indirection_Node =>
               if ci.gen = gen
                 add ci k v (lev+width) i gen
               else
-                match gcas i m (Main_Node (renew cn gen))
+                match gcas i m (renew cn gen)
                   ctrie_ok => add i k v lev parent gen
                   restart => restart
             sn singleton_node =>
               if sn.k != k
                 nin := indirection_node (dual sn (singleton_node k v) (lev + width) i.gen) i.gen
-                ncn := (if i.gen = gen then cn else renew cn gen).update pos nin
-                gcas i m (Main_Node ncn)
+                ncn := (if cn.gen = i.gen then cn else renew cn i.gen).update pos nin i.gen
+                gcas i m ncn
               else
-                gcas i m (Main_Node (cn.update pos (singleton_node k v)))
+                gcas i m (cn.update pos (singleton_node k v) i.gen)
       tn tomb_node =>
         clean parent (lev - width)
-        restart
       ln list_node =>
-        gcas i m (Main_Node (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k)))))
+        gcas i m (list_node ([singleton_node k v] ++ (ln.filter (sn -> sn.k != k))))
 
 
   # remove key from ctrie
@@ -656,43 +676,43 @@ is
 
   # try remove an element from the ctrie
   # may fail and result in a restart
-  private remove(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen i32) choice restart not_found CTV is
+  private remove(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
+  pre debug: i.gen <= gen
+  is
     m := gcas_read i
     match m.data
       cn container_node =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
-        if (cn.bmp & flag) = (u32 0)
+        if (cn.bmp & flag) = 0
           not_found
         else
-          res choice restart not_found CTV := match cn.array[pos.as_i32]
+          res choice restart not_found CTV := match cn[pos.as_i32]
             sin Indirection_Node =>
               if sin.gen = gen
                 remove sin k (lev + width) i gen
               else
-                match gcas i m (Main_Node (renew cn gen))
+                match gcas i m (renew cn gen)
                   ctrie_ok => remove i k lev parent gen
                   restart => restart
             sn singleton_node =>
               if sn.k != k
                 not_found
               else
-                match gcas i m (contract (cn.remove pos flag) lev)
+                match gcas i m (contract (cn.remove pos flag i.gen) lev)
                   ctrie_ok => sn.v
                   restart => restart
           match res
             v CTV =>
               match (gcas_read i).data
-                t tomb_node => clean_parent parent i hash(k.hash) (lev - width)
+                t tomb_node => clean_parent parent i (hash k.hash) lev gen
                 * =>
             * =>
           res
       tn tomb_node =>
         clean parent (lev - width)
-        restart
       ln list_node =>
         fln := list_node ln.filter(sn -> sn.k != k)
-        nln Main_Node CTK CTV := if fln.count = 1 then Main_Node (tomb_node fln.first) else Main_Node fln
-        match gcas i m nln
+        match gcas i m (if fln.count = 1 then tomb_node fln.first else fln)
           ctrie_ok => ln.find k
           restart => restart
 
@@ -701,10 +721,6 @@ is
   public redef size i32 is
     items.count
 
-
-  # lookup an element in this ctrie via bracket syntax
-  public redef index [] (k CTK) option CTV is
-    lookup k
 
 
   # take a snapshot of the ctrie
@@ -723,16 +739,16 @@ is
   public redef items Sequence (tuple CTK CTV) is
     snapshot true
       .read_root
-      .as_list
+      .as_list (i -> gcas_read i)
 
 
   # initialize a new ctrie
   public type.empty =>
 
-    initial_gen := 0
+    initial_gen := u64 0
 
     initial_root_node container.root_node CTK CTV :=
-      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [])) initial_gen
+      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) container.Nil) initial_gen
 
     container.ctrie CTK CTV (concur.atomic initial_root_node) false
 
