@@ -419,7 +419,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @return a UnresolvedType instance that represents this function
    */
-  public static UnresolvedType funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
+  public static ParsedType funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
@@ -710,46 +710,68 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outerfeat != null,
        outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    if (_resolved == null) {
-      var of = originalOuterFeature(outerfeat);
-      var o = _outer;
-      if (o != null && !isThisType() && !o.isThisType())
-        {
-          o = o.resolve(res, of);
-          var ot = o.isGenericArgument() ? o.genericArgument().constraint() : o;  // NYI: check: do we really want the constraint here?
-          of = ot.featureOfType();
-        }
-      AbstractFeature f;
-      if (this instanceof QualThisType q)
-        {
-          // resolve the feature for a type `a.this.type`, so `a` has to be one of the outer features.
-          f = This.getThisFeature(pos(), this, q._qual, of.isTypeFeature() ? of.typeFeatureOrigin() : of);
-          var f0o = f.outer();
-          o = f0o == null || f0o.isUniverse() ? null : f0o.thisType(false);
-        }
-      else
-        {
-          if (CHECKS) check
-            (!isThisType());
-          var fo = res._module.lookupType(pos(), of, _name, o == null);
-          f = fo._feature;
-          if (o == null && !fo._outer.isUniverse())
-            {
-              o = fo._outer.thisType(fo.isNextInnerFixed());
-            }
-        }
-      _outer = o;
+    var result = findGenerics(outerfeat);
+    if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
+      {
+        result.ensureNotOpen(pos());
+      }
+    if (result == this)
+      {
+        AbstractType freeResult = null;
+        var of = originalOuterFeature(outerfeat);
+        var o = _outer;
+        if (o != null && !isThisType() && !o.isThisType())
+          {
+            o = o.resolve(res, of);
+            var ot = o.isGenericArgument() ? o.genericArgument().constraint() : o;  // NYI: check: do we really want the constraint here?
+            of = ot.featureOfType();
+          }
+        AbstractFeature f = Types.f_ERROR;
+        if (this instanceof QualThisType q)
+          {
+            // resolve the feature for a type `a.this.type`, so `a` has to be one of the outer features.
+            f = This.getThisFeature(pos(), this, q._qual, of.isTypeFeature() ? of.typeFeatureOrigin() : of);
+            var f0o = f.outer();
+            o = f0o == null || f0o.isUniverse() ? null : f0o.thisType(false);
+          }
+        else
+          {
+            if (CHECKS) check
+              (!isThisType());
+            var ec = Errors.count();
+            var mayBeFreeType = mayBeFreeType() && outerfeat.isValueArgument();
+            var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType);
+            if (fo == null)
+              {
+                freeResult = addAsFreeType(res, outerfeat);
+              }
+            else if (isFreeType())
+              {
+                AstErrors.freeTypeMustNotMaskExistingType(this, fo._feature);
+              }
+            else
+              {
+                f = fo._feature;
+                if (o == null && !fo._outer.isUniverse())
+                  {
+                    o = fo._outer.thisType(fo.isNextInnerFixed());
+                  }
+              }
+          }
+        _outer = o;
 
-      _resolved = (f == Types.f_ERROR)
-        ? Types.t_ERROR
-        : new ResolvedNormalType(generics(),
-                                 unresolvedGenerics(),
-                                 o,
-                                 f,
-                                 _refOrVal,
-                                 false);
-    }
-    return _resolved;
+        _resolved =
+          freeResult != null ? freeResult :
+          f == Types.f_ERROR ? Types.t_ERROR
+                             : new ResolvedNormalType(generics(),
+                                                      unresolvedGenerics(),
+                                                      o,
+                                                      f,
+                                                      _refOrVal,
+                                                      false);
+        result = _resolved;
+      }
+    return result;
   }
 
 
@@ -819,6 +841,75 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     return _outer;
   }
+
+
+  /**
+   * May this unresolved type be a free type. This is the case for explicit free
+   * types such as `X : Any`, and for all normal types like `XYZ` that are not
+   * qualified by an outer type `outer.XYZ` and that do not have actual type
+   * parameters `XYZ T1 T2` and that are not boxed.
+   */
+  public boolean mayBeFreeType()
+  {
+    return false;
+  }
+
+
+  /**
+   * Is this type a free type?  Result is false for unresolved types where this
+   * is not known yet.
+   */
+  public boolean isFreeType()
+  {
+    return false;
+  }
+
+
+  /**
+   * For a type `XYZ` with mayBeFreeType() returning true, this gives the name
+   * of the free type, which would be `"XYZ"` in this example.
+   *
+   * @return the name of the free type, which becomes the name of the type
+   * parameter created for it.
+   */
+  public String freeTypeName()
+  {
+    throw new Error("freeTypeName cannot be called on " + getClass());
+  }
+
+
+  /**
+   * For an unresolved type with mayBeFreeType() == true, this gives the
+   * constraint to be used with that free type.
+   */
+  UnresolvedType freeTypeConstraint()
+  {
+    return new BuiltInType(FuzionConstants.ANY_NAME);
+  }
+
+
+  AbstractType addAsFreeType(Resolution res, AbstractFeature outerfeat)
+  {
+    if (PRECONDITIONS) require
+      (outerfeat.isValueArgument());
+
+    var tp = new Feature(pos(),
+                         outerfeat.visibility(),
+                         0,
+                         freeTypeConstraint(),
+                         _name,
+                         Contract.EMPTY_CONTRACT,
+                         Impl.TYPE_PARAMETER)
+      {
+        /**
+         * Is this type a free type?
+         */
+        public boolean isFreeType() { return true; }
+      };
+    var g = outerfeat.outer().addTypeParameter(res, tp);
+    return g.type();
+  }
+
 
 }
 

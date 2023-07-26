@@ -733,7 +733,14 @@ public class Call extends AbstractCall
               {
                 res.resolveDeclarations(targetFeature);
                 var fos = res._module.lookup(targetFeature, _name, this, _target == null);
-                FeatureName calledName = FeatureName.get(_name, _actuals.size());
+                for (var fo : fos)
+                  {
+                    if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+                      {
+                        ff.resolveArgumentTypes(res);
+                      }
+                  }
+                var calledName = FeatureName.get(_name, _actuals.size());
                 var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
                 if (fo == null)
                   { // handle `fun a.b.c` and implicit calls `f()` that expand to `f.call()`:
@@ -773,7 +780,7 @@ public class Call extends AbstractCall
                          (Types.resolved == null ||                // may happen when building bad base.fum
                           targetFeature != Types.resolved.f_void)) // but allow to call anything on void
                   {
-                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature,
+                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature, _target,
                                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                                          (FeatureName fn) -> false,
                                                                                          (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)));
@@ -2150,7 +2157,7 @@ public class Call extends AbstractCall
                 actl = aa.expr(this);
               }
             if (CHECKS) check
-                          (actl != null);
+              (actl != null);
             i.set(actl);
           }
 

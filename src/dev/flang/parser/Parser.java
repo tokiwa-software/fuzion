@@ -1184,7 +1184,7 @@ argNames    : name ( COMMA argNames
   /**
    * Parse returnType
    *
-returnType  : type
+returnType  : boundType
             | "value"
             | "ref"
             |
@@ -1195,7 +1195,7 @@ returnType  : type
     ReturnType result;
     if (isType())
       {
-        result = new FunctionReturnType(type());
+        result = new FunctionReturnType(boundType());
       }
     else
       {
@@ -3684,11 +3684,34 @@ implFldInit : ":=" exprInLine
   /**
    * Parse type
    *
-type        : qualThis
-            | onetype ( PIPE onetype ) *
+type        : boundType
+            | freeType
+            ;
+freeType    : name ":" type
             ;
    */
   UnresolvedType type()
+  {
+    boolean isName = isNamePrefix();
+    UnresolvedType result = boundType();
+    if (isName &&
+        result.mayBeFreeType() &&
+        skipColon())
+      {
+        result = new FreeType(result.pos(), result.freeTypeName(), type());
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse boundType
+   *
+boundType   : qualThis
+            | onetype ( PIPE onetype ) *
+            ;
+   */
+  UnresolvedType boundType()
   {
     UnresolvedType result;
     if (isQualThisPrefix())
@@ -3779,7 +3802,7 @@ type        : qualThis
             res = skipOneType(true, allowTypeThatIsNotExpression);
             hasForbiddenParentheses = false;
           }
-        result = res && !hasForbiddenParentheses;
+        result = res && !hasForbiddenParentheses && (!skipColon() || skipType());
       }
     return result;
   }
@@ -3816,7 +3839,7 @@ typeOpt     : type
           }
         else if (a.size() == 1)
           {
-            result = typeTail((ParsedType) a.getFirst());
+            result = typeTail((UnresolvedType) a.getFirst());
           }
         else
           {
@@ -3904,7 +3927,7 @@ typeOpt     : type
 simpletype  : name typePars typeTail
             ;
    */
-  ParsedType simpletype(ParsedType lhs)
+  UnresolvedType simpletype(UnresolvedType lhs)
   {
     var n = name();
     var a = typePars();
@@ -3956,7 +3979,7 @@ typeTail    : dot simpletype
             |
             ;
    */
-  ParsedType typeTail(ParsedType lhs)
+  UnresolvedType typeTail(UnresolvedType lhs)
   {
     var result = lhs;
     if (!isDotEnvOrType() && skipDot())
@@ -4038,7 +4061,7 @@ typeInParens: "(" typeInParens ")"
             result = l.get(0);
             if (!ignoredTokenBefore())
               {
-                result = typeTail((ParsedType) result);
+                result = typeTail((UnresolvedType) result);
               }
           }
         else

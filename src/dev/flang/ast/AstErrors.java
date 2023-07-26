@@ -1081,6 +1081,31 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  /**
+   * Detect code patterns as follows
+   *
+   *   f(x some_type_with_a_typo) => x.g
+   *
+   * where `x.g` is not found since the type of `x` has a typo and is hence
+   * turned into a free type with constraint `Any`, which does not declare `x`
+   */
+  static String solutionAccidentalFreeType(Expr target)
+  {
+    var solution = "";
+
+    if (target            instanceof Call    c                                  &&
+        c.calledFeature() instanceof Feature cf                                 &&
+        cf.resultType().isGenericArgument()                                     &&
+        cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
+        tp.isFreeType()                                                         &&
+        tp.resultType().compareTo(Types.resolved.t_any) == 0)
+      {
+        solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
+                   "Is the type name spelled correctly?  The free type is declared at " + tp.pos().show();
+      }
+    return solution;
+  }
+
   static boolean errorInOuterFeatures(AbstractFeature f)
   {
     while (f != null && f != Types.f_ERROR)
@@ -1093,19 +1118,23 @@ public class AstErrors extends ANY
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
                                     AbstractFeature targetFeature,
+                                    Expr target,
                                     List<FeatureAndOuter> candidates)
   {
     if (count() == 0 || !errorInOuterFeatures(targetFeature))
       {
-        var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
-                                                         calledName.argCount());
+        var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+                                                          calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidates);
+        var solution3 = solutionAccidentalFreeType(target);
         error(call.pos(),
               "Could not find called feature",
               "Feature not found: " + sbn(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
-              (solution == "" ? solution2 : solution));
+              (solution1 != "" ? solution1 :
+               solution2 != "" ? solution2 :
+               solution3 != "" ? solution3 : ""));
       }
   }
 
@@ -1915,6 +1944,15 @@ public class AstErrors extends ANY
           "Illegal use of the " + code("set") + " keyword.",
           "This keyword may only be used by the standard library." + "\n" +
           "To solve this, use the " + code("mutate") + " effect instead.");
+  }
+
+  public static void freeTypeMustNotMaskExistingType(UnresolvedType t, AbstractFeature f)
+  {
+    error(t.pos(),
+          "Free type must not mask existing type.",
+          "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
+          "The existing type was declared at " + f.pos().show() + "\n" +
+          "To solve this, you may use a different name for free type " + s(t) + ".");
   }
 
 }

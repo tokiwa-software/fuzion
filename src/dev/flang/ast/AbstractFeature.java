@@ -185,13 +185,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * cached result of typeArguments();
    */
-  private List<AbstractFeature> _typeArguments = null;
+  List<AbstractFeature> _typeArguments = null;
 
 
   /**
    * The formal generic arguments of this feature, cached result of generics()
    */
-  private FormalGenerics _generics;
+  FormalGenerics _generics;
 
 
   /**
@@ -941,7 +941,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw()
+  AbstractType resultTypeRaw(Resolution res)
   {
     return resultType();
   }
@@ -958,12 +958,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * case the type is currently unknown (in particular, in case of a type
    * inference to a field declared later).
    */
-  AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
+  AbstractType resultTypeRaw(Resolution res, List<AbstractType> actualGenerics)
   {
     if (CHECKS) check
       (state().atLeast(Feature.State.RESOLVING_TYPES));
 
-    var result = resultTypeRaw();
+    var result = resultTypeRaw(res);
     if (result != null)
       {
         result = result.applyTypePars(this, actualGenerics);
@@ -992,7 +992,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         res.resolveTypes(this);
       }
-    var result = resultTypeRaw(generics);
+    var result = resultTypeRaw(res, generics);
     if (result instanceof UnresolvedType rt)
       {
         result = rt.visit(Feature.findGenerics,outer());
@@ -1604,6 +1604,23 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this feature an argument of its outer feature, but not a type argument?
+   */
+  boolean isValueArgument()
+  {
+    var result = false;
+    var o = outer();
+    if (o != null)
+      {
+        for (var va : o.valueArguments())
+          {
+            result = result || va == this;
+          }
+      }
+    return result;
+  }
+
+  /**
    * List of arguments that are types, i.e., not type parameters or effects.
    */
   public List<AbstractFeature> typeArguments()
@@ -1630,6 +1647,25 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * During type resolution, add a type parameter created for a free type like
+   * `T` in `f(x T) is ...`.
+   *
+   * @param res the resolution instance.
+   *
+   * @param ta the newly created type parameter feature.
+   *
+   * @return the generic instance for ta
+   */
+  Generic addTypeParameter(Resolution res, Feature ta)
+  {
+    if (PRECONDITIONS) require
+      (ta.isFreeType());
+
+    throw new Error("addTypeArgument only possible for Feature, not for "+getClass());
+  }
+
+
+  /**
    * The formal generic arguments of this feature
    */
   public FormalGenerics generics()
@@ -1645,11 +1681,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         else
           {
             var l = new List<Generic>();
-            var open = false;
             for (var a0 : typeArguments())
               {
                 l.add(new Generic(a0));
-                open = open || a0.isOpenTypeParameter();
               }
             _generics = new FormalGenerics(l);
           }
@@ -1680,7 +1714,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
   }
-
 
 
   /**

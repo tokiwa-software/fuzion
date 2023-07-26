@@ -1060,16 +1060,54 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param traverseOuter true to collect all the features found in outer and
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
+   *
+   * @return FeatureAndOuter tuple of the found type's declaring feature,
+   * FeatureAndOuter.ERROR in case of an error.
    */
   public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
+  {
+    return lookupType(pos, outer, name, traverseOuter, false);
+  }
+
+
+  /**
+   * Lookup the feature that is referenced in a non-generic type.  There might
+   * be several features with the given name and different argument counts.
+   * Then, only the feature that is a constructor defines the type.
+   *
+   * If there are several such constructors, the type is ambiguous and an error
+   * will be produced.
+   *
+   * Also, if there is no such type, an error will be produced.
+   *
+   * @param pos the position of the type.
+   *
+   * @param outer the outer feature of the type
+   *
+   * @param name the name of the type
+   *
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
+   *
+   * @return FeatureAndOuter tuple of the found type's declaring feature,
+   * FeatureAndOuter.ERROR in case of an error, null in case no type was found
+   * and ignoreNotFound is true.
+   */
+  public FeatureAndOuter lookupType(SourcePosition pos,
+                                    AbstractFeature outer,
+                                    String name,
+                                    boolean traverseOuter,
+                                    boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || outer != Types.f_ERROR);
 
-    FeatureAndOuter result = null;
+    FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
         _res.resolveDeclarations(outer);
+        var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter);
@@ -1078,7 +1116,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var f = fo._feature;
             (f.definesType() ? type_fs
                              : nontype_fs).add(f);
-            if (f.definesType() && type_fs.size() == 1)
+            if (f.definesType())
               {
                 result = fo;
               }
@@ -1089,13 +1127,20 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         else if (type_fs.size() < 1)
           {
-            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+            if (ignoreNotFound)
+              {
+                result = null;
+              }
+            else
+              {
+                AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+              }
           }
       }
-    if (result == null)
-      {
-        result = FeatureAndOuter.ERROR;
-      }
+
+    if (POSTCONDITIONS) ensure
+      (ignoreNotFound || result != null);
+
     return result;
   }
 

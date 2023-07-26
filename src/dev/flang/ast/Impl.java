@@ -434,6 +434,9 @@ public class Impl extends ANY
    * Determine the type of a FieldActual by forming the union of the types of
    * all actual values added by addInitialValue.
    *
+   * @param res The resolution instance.  NOTE: res may be null, e.g., when this
+   * is called during a later phase.
+   *
    * @param formalArg the features whose Impl this is.
    *
    * @param reportError true to produce an error message, false to suppress
@@ -441,13 +444,17 @@ public class Impl extends ANY
    * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
-  AbstractType typeFromInitialValues(AbstractFeature formalArg, boolean reportError)
+  AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
   {
     AbstractType result = Types.resolved.t_void;
     for (var i = 0; i < _initialValues.size(); i++)
       {
         var iv = _initialValues.get(i);
         var io = _outerOfInitialValues.get(i);
+        if (res != null)
+          {
+            iv.visit(new Feature.ResolveTypes(res),io);
+          }
         var t = iv.typeIfKnown();
         if (t != null)
           {
@@ -497,9 +504,11 @@ public class Impl extends ANY
    * determines the actual result type from the initial value, the code or the
    * actual arguments passed to a formal argument.
    *
+   * @param res the resolution instance.
+   *
    * @param f the feature this is the Impl of.
    */
-  AbstractType inferredType(AbstractFeature f)
+  AbstractType inferredType(Resolution res, AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (_kind == Kind.FieldDef    ||
@@ -510,7 +519,7 @@ public class Impl extends ANY
       {
       case FieldDef    -> _initialValue.typeIfKnown();
       case RoutineDef  -> _code.typeIfKnown();
-      case FieldActual -> typeFromInitialValues(f, false);
+      case FieldActual -> typeFromInitialValues(res, f, false);
       default -> throw new Error("missing case "+_kind);
       };
   }
@@ -525,7 +534,7 @@ public class Impl extends ANY
   {
     if (_kind == Kind.FieldActual)
       {
-        var ignore = typeFromInitialValues(f, true);
+        var ignore = typeFromInitialValues(null, f, true);
       }
   }
 

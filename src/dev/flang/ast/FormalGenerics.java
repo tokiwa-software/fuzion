@@ -286,6 +286,30 @@ public class FormalGenerics extends ANY
 
 
   /**
+   * Add type parameter g to this list of formal generics.
+   *
+   * @param g the new type parameter
+   */
+  FormalGenerics addTypeParameter(Generic g)
+  {
+    var result = this;
+    if (this == FormalGenerics.NONE)
+      {
+        result = new FormalGenerics(new List<>(g));
+      }
+    else
+      {
+        list.add(g);
+        if (_asActuals != null)
+          {
+            _asActuals.add(g.type());
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Number of generic arguments expected as a text to be used in error messages
    * about wrong number of actual generic arguments.
    *

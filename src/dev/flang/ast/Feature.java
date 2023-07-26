@@ -1300,6 +1300,18 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * Resolve argument types such that type parameters for free types will be
+   * added.
+   *
+   * @param res the resolution instance.
+   */
+  void resolveArgumentTypes(Resolution res)
+  {
+    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(res, af); } );
+  }
+
+
+  /**
    * Type resolution for a feature f: For all expressions and statements in f's
    * inheritance clause, contract, and implementation, determine the static type
    * of the expression. Were needed, perform type inference. Schedule f for
@@ -1322,6 +1334,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_TYPES;
 
+        resolveArgumentTypes(res);
         visit(new ResolveTypes(res));
 
         if (hasThisType())
@@ -1643,7 +1656,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultTypeRaw();
+        _resultType = resultTypeRaw(res);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -2138,6 +2151,40 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * During type resolution, add a type parameter created for a free type like
+   * `T` in `f(x T) is ...`.
+   *
+   * @param res the resolution instance.
+   *
+   * @param ta the newly created type parameter feature.
+   *
+   * @return the generic instance for ta
+   */
+  Generic addTypeParameter(Resolution res, Feature ta)
+  {
+    if (PRECONDITIONS) require
+      (ta.isFreeType());
+
+    _arguments.add(_typeArguments.size(), ta);
+    _typeArguments.add(ta);
+    res._module.findDeclarations(ta, this);
+    var g = new Generic(ta);
+    _generics = _generics.addTypeParameter(g);
+    res.resolveTypes(ta);
+
+    return g;
+  }
+
+
+  /**
+   * Is this a type parameter created for a free type?
+   */
+  boolean isFreeType()
+  {
+    return false;
+  }
+
+  /**
    * Is this feature declared in the main block of its outer feature?  Features
    * declared in inner blocks are not visible to the outside.
    */
@@ -2169,7 +2216,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw()
+  AbstractType resultTypeRaw(Resolution res)
   {
     AbstractType result;
 
@@ -2182,7 +2229,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
+        result = (outer() instanceof Feature of) ? of.resultTypeRaw(res) : outer().resultType();
       }
     else if (_impl._kind == Impl.Kind.FieldDef    ||
              _impl._kind == Impl.Kind.FieldActual ||
@@ -2190,7 +2237,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(this);
+        result = _impl.inferredType(res, this);
 
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
@@ -2235,7 +2282,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw(null) : null;
     if (result == null)
       {
         if (CHECKS) check

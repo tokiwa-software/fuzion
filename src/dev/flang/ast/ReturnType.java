@@ -103,6 +103,28 @@ public abstract class ReturnType extends ANY
   public abstract void visit(FeatureVisitor v, AbstractFeature outer);
 
 
+  /**
+   * Resolve the type this function returns. This is needed to resolve free
+   * types used in an argument type, which change the number of type parameters
+   * in a call.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the outer feature, which is the argument this is the result
+   * type of.
+   */
+  void resolveArgumentType(Resolution res, Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.isArgument(),
+       this == outer.returnType());
+
+    // this will be redefined in FunctionReturnType, which is the return type of
+    // arguments.
+    throw new Error("Unexpected ReturnType of argument " + getClass());
+  }
+
+
 }
 
 /* end of file */
