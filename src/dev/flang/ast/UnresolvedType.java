@@ -710,12 +710,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outerfeat != null,
        outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    var result = findGenerics(outerfeat);
-    if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
-      {
-        result.ensureNotOpen(pos());
-      }
-    if (result == this)
+    findGenerics(outerfeat);
+    if (_resolved == null)
       {
         AbstractType freeResult = null;
         var of = originalOuterFeature(outerfeat);
@@ -738,7 +734,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           {
             if (CHECKS) check
               (!isThisType());
-            var ec = Errors.count();
             var mayBeFreeType = mayBeFreeType() && outerfeat.isValueArgument();
             var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType);
             if (fo == null)
@@ -769,9 +764,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                                       f,
                                                       _refOrVal,
                                                       false);
-        result = _resolved;
       }
-    return result;
+    if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
+      {
+        _resolved.ensureNotOpen(pos());
+      }
+    return _resolved;
   }
 
 
