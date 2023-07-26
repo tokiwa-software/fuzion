@@ -36,8 +36,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import java.lang.reflect.Array;
-import java.net.InetSocketAddress;
 import java.net.BindException;
+import java.net.InetSocketAddress;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -935,6 +935,32 @@ public class Intrinsics extends ANY
         {
           result[0] = SystemErrNo.ECONNREFUSED.errno;
           return new i32Value(-1);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.get_peer_address", (interpreter, innerClazz) -> args -> {
+      var sockfd = (SocketChannel)_openStreams_.get(args.get(1).i64Value());
+      try
+        {
+          byte[] address = ((InetSocketAddress)sockfd.getRemoteAddress()).getAddress().getAddress();
+          System.arraycopy(address, 0, args.get(2).arrayData()._array, 0, address.length);
+          return new i32Value(address.length);
+        }
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    putUnsafe("fuzion.sys.net.get_peer_port", (interpreter, innerClazz) -> args -> {
+      var sockfd = (SocketChannel)_openStreams_.get(args.get(1).i64Value());
+      try
+        {
+          return new u16Value(((InetSocketAddress)sockfd.getRemoteAddress()).getPort());
+        }
+      catch (IOException e)
+        {
+          return new u16Value(0);
         }
     });
 

@@ -282,6 +282,44 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   return con_res;
 }
 
+
+// get the peer's ip address
+// result is the length of the ip address written to buf
+// might return useless information when called on udp socket
+int fzE_get_peer_address(int sockfd, void * buf) {
+  struct sockaddr_storage peeraddr;
+  socklen_t peeraddrlen = sizeof(peeraddr);
+  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
+  if (peeraddr.ss_family == AF_INET) {
+    memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+    return 4;
+  } else if (peeraddr.ss_family == AF_INET6) {
+    memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+    return 16;
+  } else {
+    return -1;
+  }
+  return -1;
+}
+
+
+// get the peer's port
+// result is the port number
+// might return useless infomrmation when called on udp socket
+unsigned short fzE_get_peer_port(int sockfd) {
+  struct sockaddr_storage peeraddr;
+  socklen_t peeraddrlen = sizeof(peeraddr);
+  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
+  if (peeraddr.ss_family == AF_INET) {
+    return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
+  } else if (peeraddr.ss_family == AF_INET6) {
+    return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
+  } else {
+    return 0;
+  }
+}
+
+
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read

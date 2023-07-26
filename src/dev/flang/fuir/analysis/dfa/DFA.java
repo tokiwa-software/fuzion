@@ -1517,6 +1517,8 @@ public class DFA extends ANY
     put("fuzion.sys.net.listen"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.accept"          , cl -> cl._dfa._bool );
     put("fuzion.sys.net.connect0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.get_peer_address", cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.net.get_peer_port"   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.read"            , cl -> cl._dfa._bool );
     put("fuzion.sys.net.write"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.close0"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
