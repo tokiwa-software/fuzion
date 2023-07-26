@@ -1190,9 +1190,10 @@ public class Intrinsics extends ANY
 
     var in = c._fuir.clazzIntrinsicName(cl);
     var cg = _intrinsics_.get(in);
+    var result = CStmnt.EMPTY;
     if (cg != null)
       {
-        return cg.get(c, cl, outer, in);
+        result = cg.get(c, cl, outer, in);
       }
     else
       {
@@ -1200,19 +1201,21 @@ public class Intrinsics extends ANY
         if (at >= 0)
           {
             // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            return CStmnt.EMPTY;
+            result = CStmnt.EMPTY;
           }
         else
           {
             var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
             Errors.warning(msg);
-            return CStmnt.seq(CExpr.call("fprintf",
-                                         new List<>(new CIdent("stderr"),
-                                                    CExpr.string("*** error: NYI: %s\n"),
-                                                    CExpr.string(msg))),
-                              CExpr.call("exit", new List<>(CExpr.int32const(1))));
+            result = CStmnt.seq(CExpr.call("fprintf",
+                                           new List<>(new CIdent("stderr"),
+                                                      CExpr.string("*** error: NYI: %s\n"),
+                                                      CExpr.string(msg))),
+                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
           }
       }
+
+    return result;
   }
 
 
