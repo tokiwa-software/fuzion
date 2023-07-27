@@ -166,16 +166,10 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The formal arguments of this feature
    */
-  private List<Feature> _arguments;
-  public List<AbstractFeature> arguments0;
+  private List<AbstractFeature> _arguments;
   public List<AbstractFeature> arguments()
   {
-    if (arguments0 == null)
-      {
-        arguments0 = new List<>();
-        arguments0.addAll(_arguments);
-      }
-    return arguments0;
+    return _arguments;
   }
 
 
@@ -318,7 +312,7 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
@@ -364,7 +358,7 @@ public class Feature extends AbstractFeature implements Stmnt
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
-                       new List<Feature>(),
+                       new List<>(),
                        i,
                        c,
                        new Impl(b.pos(), b, Impl.Kind.Routine))
@@ -461,7 +455,7 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          null,
          impl);
@@ -498,7 +492,7 @@ public class Feature extends AbstractFeature implements Stmnt
          m,
          t == null ? NoType.INSTANCE: new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          c,
          i);
@@ -557,7 +551,7 @@ public class Feature extends AbstractFeature implements Stmnt
   Feature(SourcePosition pos,
           ReturnType r,
           List<String> qname,
-          List<Feature> a,
+          List<AbstractFeature> a,
           List<AbstractCall> i,
           Contract c,
           Impl     p)
@@ -597,7 +591,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<ParsedName> qpname,
-                 List<Feature> a,
+                 List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
                  Impl p)
@@ -636,7 +630,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<String> qname,
-                 List<Feature> a,
+                 List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
                  Impl p)
@@ -2000,7 +1994,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (f.featureName().baseName().equals(name))
           {
-            curres[0] = f;
+            curres[0] = (Feature) f;
           }
       }
 
@@ -2165,8 +2159,21 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
+    var a = _arguments;
+    _arguments = new List<>();
+    _arguments.addAll(a);
     _arguments.add(_typeArguments.size(), ta);
     _typeArguments.add(ta);
+    // NYI: For now, we keep the original FeatureName since changing it would
+    // require updating res._module.declaredFeatures /
+    // declaredOrInheritedFeatures. This means free types do not increase the
+    // arg count in feature name. This does not seem to cause problems when
+    // looking up features, but we may miss to report errors for duplicate
+    // features.  Note that when saved to a module file, this feature's name
+    // will have the actual argument count, so this inconsitency is restricted
+    // to the current source module.
+    //
+    //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
     var g = new Generic(ta);
     _generics = _generics.addTypeParameter(g);
@@ -2317,9 +2324,25 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (arguments().size() == _featureName.argCount());
+      (// the feature name is currently not changed in addTypeParameter, so
+       // we add freeTypesCount() here.
+       arguments().size() == _featureName.argCount() + freeTypesCount());
 
     return _featureName;
+  }
+
+
+  /**
+   * Number of free types amoung the type parameters.
+   */
+  int freeTypesCount()
+  {
+    var result = 0;
+    for (var tp : _arguments)
+      {
+        result += ((Feature) tp).isFreeType() ? 1 : 0;
+      }
+    return result;
   }
 
 

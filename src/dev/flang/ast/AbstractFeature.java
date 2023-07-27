@@ -732,7 +732,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.TYPE_PARAMETER);
-            var typeArgs = new List<>(typeArg);
+            var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : typeArguments())
               {
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
@@ -816,7 +816,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param inh the inheritance clause of the new type feature.
    */
-  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<Feature> typeArgs, List<AbstractCall> inh)
+  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (!isUniverse());

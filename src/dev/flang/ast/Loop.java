@@ -307,7 +307,7 @@ public class Loop extends ANY
         addIterators();
       }
 
-    var formalArguments = new List<Feature>();
+    var formalArguments = new List<AbstractFeature>();
     var initialActuals = new List<Actual>();
     var nextActuals = new List<Actual>();
     initialArguments(formalArguments, initialActuals, nextActuals);
@@ -517,7 +517,7 @@ public class Loop extends ANY
    *
    * @param nextActuals will receive the actual arguments after nextIteration
    */
-  private void initialArguments(List<Feature> formalArguments,
+  private void initialArguments(List<AbstractFeature> formalArguments,
                                 List<Actual> initialActuals,
                                 List<Actual> nextActuals)
   {
@@ -582,7 +582,7 @@ public class Loop extends ANY
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
                                          /* name */        new List<>(streamName),
-                                         /* args */        new List<Feature>(),
+                                         /* args */        new List<>(),
                                          /* inherits */    new List<>(),
                                          /* contract */    null,
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));

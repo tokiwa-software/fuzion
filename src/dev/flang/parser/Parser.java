@@ -906,9 +906,9 @@ formArgsOpt : formArgs
             |
             ;
    */
-  List<Feature> formArgsOpt()
+  List<AbstractFeature> formArgsOpt()
   {
-    return isEmptyFormArgs() ? new List<Feature>()
+    return isEmptyFormArgs() ? new List<AbstractFeature>()
                              : formArgs();
   }
 
@@ -952,11 +952,11 @@ argType     : type
             |
             ;
    */
-  List<Feature> formArgs()
+  List<AbstractFeature> formArgs()
   {
     return bracketTermWithNLs(PARENS, "formArgs",
                               () -> {
-                                var result = new List<Feature>();
+                                var result = new List<AbstractFeature>();
                                 do
                                   {
                                     SourcePosition pos = tokenSourcePos();
@@ -992,7 +992,7 @@ argType     : type
                                 while (skipComma());
                                 return result;
                               },
-                              () -> new List<Feature>()
+                              () -> new List<AbstractFeature>()
                               );
   }
 
