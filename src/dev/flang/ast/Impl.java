@@ -56,6 +56,8 @@ public class Impl extends ANY
 
   public static final Impl INTRINSIC_CONSTRUCTOR = new Impl(Kind.Intrinsic);
 
+  public static final Impl NATIVE = new Impl(Kind.Native);
+
   /**
    * A dummy Impl instance used in case of parsing error.
    */
@@ -114,7 +116,8 @@ public class Impl extends ANY
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
-    Of;           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
+    Of,           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
+    Native;       // a native feature
 
     public String toString(){
       return switch(this)
@@ -130,6 +133,7 @@ public class Impl extends ANY
           case Routine           : yield "routine";
           case Abstract          : yield "abstract";
           case Intrinsic         : yield "intrinsic";
+          case Native            : yield "native";
           case Of                : yield "choice of";
         };
     }

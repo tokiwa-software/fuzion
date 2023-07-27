@@ -95,7 +95,8 @@ public class IR extends ANY
     Field,
     Intrinsic,
     Abstract,
-    Choice
+    Choice,
+    Native
   }
 
 

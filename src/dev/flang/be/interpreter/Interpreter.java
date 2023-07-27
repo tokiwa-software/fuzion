@@ -768,6 +768,8 @@ public class Interpreter extends ANY
           case Intrinsic:
             result = Intrinsics.call(this, innerClazz);
             break;
+          case Native:
+            throw new Error("Java backend does not support native features");
           case Choice: // NYI: why choice here?
           case Routine:
             if (innerClazz == Clazzes.universe.get())

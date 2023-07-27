@@ -808,6 +808,7 @@ public class Feature extends AbstractFeature implements Stmnt
           case Routine, RoutineDef, Of                            -> Kind.Routine;
           case Abstract                                           -> Kind.Abstract;
           case Intrinsic                                          -> Kind.Intrinsic;
+          case Native                                             -> Kind.Native;
         };
   }
 

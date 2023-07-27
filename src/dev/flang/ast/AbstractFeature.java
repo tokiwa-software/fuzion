@@ -62,7 +62,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     OpenTypeParameter,
     Intrinsic,
     Abstract,
-    Choice;
+    Choice,
+    Native;
 
     /**
      * get the Kind that corresponds to the given ordinal number.

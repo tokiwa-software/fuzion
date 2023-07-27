@@ -1093,6 +1093,7 @@ public class C extends ANY
                      "Found call to  " + _fuir.clazzAsString(cc));
       case Routine  :
       case Intrinsic:
+      case Native   :
         {
           var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
@@ -1303,7 +1304,8 @@ public class C extends ANY
         switch (_fuir.clazzKind(cl))
           {
           case Routine  :
-          case Intrinsic: l.add(cFunctionDecl(cl, false, null));
+          case Intrinsic:
+          case Native   : l.add(cFunctionDecl(cl, false, null));
           }
         if (_fuir.hasPrecondition(cl))
           {
@@ -1331,9 +1333,11 @@ public class C extends ANY
           {
           case Routine:
           case Intrinsic:
+          case Native:
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false)
+              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false) :
+                      ck == FUIR.FeatureKind.Native  ? codeForNative(cl)
                                                      : _intrinsics.code(this, cl);
               l.add(cFunctionDecl(cl, false, o));
             }
@@ -1382,6 +1386,61 @@ public class C extends ANY
       };
     return CStmnt.seq(allocCurrent,
                       CStmnt.seq(l).label("start"));
+  }
+
+
+  /**
+   * Create code for a given native clazz cl.
+   *
+   * @param cl id of native clazz to generate code for
+   */
+  CStmnt codeForNative(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
+
+    var args = new List<CExpr>();
+    var result = CStmnt.EMPTY;
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var ac = _fuir.clazzArgClazz(cl, i);
+
+        if (_fuir.clazzBaseName(ac).equals("Any"))
+          {
+            args.add((new CIdent("arg" + i)).castTo("void*"));
+          }
+        else if (_fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i8)  ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i16) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i32) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i64) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u8)  ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u16) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u32) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u64) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f32) ||
+                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f64))
+          {
+            args.add(new CIdent("arg" + i));
+          }
+      }
+
+    var rc = _fuir.clazzResultClazz(cl);
+
+    if (_fuir.clazzBaseName(rc).equals("String"))
+      {
+        var str = new CIdent("str");
+        var res = new CIdent("res");
+        result = CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
+                            constString(str, CExpr.call("strlen", new List<>(str)), res),
+                            res.castTo(_types.clazz(rc)).ret());
+      }
+    else
+      {
+        result = CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+      }
+
+    return result;
   }
 
 
