@@ -110,22 +110,4 @@ assignable to       : 'Any',
 for value assigned  : 'x2.this.s'
 To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.
 
-
---CURDIR--/test_free_types_negative.fz:142:31: error 12: No type information can be inferred from a lambda expression
-  say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
-------------------------------^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
-
-
---CURDIR--/test_free_types_negative.fz:150:28: error 13: No type information can be inferred from a lambda expression
-  say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
----------------------------^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
-
-13 errors.
+11 errors.

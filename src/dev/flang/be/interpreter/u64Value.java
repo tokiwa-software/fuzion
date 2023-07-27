@@ -98,8 +98,8 @@ public class u64Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == 2);
+    if (PRECONDITIONS) require
+      (size == 2);
 
     slot.container.nonrefs[slot.offset    ] = (int) _val;
     slot.container.nonrefs[slot.offset + 1] = (int) (_val >> 32);

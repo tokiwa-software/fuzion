@@ -377,8 +377,8 @@ public class Instance extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     storeNonRef(slot, size, 0);
   }
@@ -417,8 +417,8 @@ public class Instance extends ValueWithClazz
    */
   boolean equalsBitWise(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     return equalsBitWise(slot, size, 0);
   }

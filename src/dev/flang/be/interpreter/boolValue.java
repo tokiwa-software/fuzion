@@ -98,8 +98,8 @@ public class boolValue extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == 1);
+    if (PRECONDITIONS) require
+      (size == 1);
 
     slot.container.nonrefs[slot.offset] = b ? 1 : 0;
   }

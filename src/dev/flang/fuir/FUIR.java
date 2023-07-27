@@ -323,9 +323,8 @@ public class FUIR extends IR
    */
   public int clazzField(int cl, int i)
   {
-    if (PRECONDITIONS)
-      require
-        (i >= 0 && i < clazzNumFields(cl));
+    if (PRECONDITIONS) require
+      (i >= 0 && i < clazzNumFields(cl));
 
     var cc = clazz(cl);
     var fc = cc.fields()[i];
@@ -364,9 +363,8 @@ public class FUIR extends IR
    */
   public int clazzChoice(int cl, int i)
   {
-    if (PRECONDITIONS)
-      require
-        (i >= 0 && i < clazzNumChoices(cl));
+    if (PRECONDITIONS) require
+      (i >= 0 && i < clazzNumChoices(cl));
 
     var cc = clazz(cl);
     var cg = cc.choiceGenerics().get(i);

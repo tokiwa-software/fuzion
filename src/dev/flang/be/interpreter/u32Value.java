@@ -99,8 +99,8 @@ public class u32Value extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (size != 1) System.out.println("Assigning "+this);
-    if (PRECONDITIONS)
-      require(size == 1);
+    if (PRECONDITIONS) require
+      (size == 1);
 
     slot.container.nonrefs[slot.offset] = _val;
   }
