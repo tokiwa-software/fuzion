@@ -2336,7 +2336,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Number of free types amoung the type parameters.
    */
-  int freeTypesCount()
+  public int freeTypesCount()
   {
     var result = 0;
     for (var tp : _arguments)
