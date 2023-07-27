@@ -59,7 +59,7 @@ public class BuiltInType extends ParsedType
   {
     super(SourcePosition.builtIn, n, NONE, null,
           ref ? RefOrVal.Boxed
-          : RefOrVal.LikeUnderlyingFeature);
+              : RefOrVal.LikeUnderlyingFeature);
   }
 
 }
