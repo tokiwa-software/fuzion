@@ -217,8 +217,6 @@ public class ResolvedParametricType extends ResolvedType
    */
   public String toString()
   {
-    String result;
-
     String n;
     if (_generic.isThisTypeInTypeFeature())
       {

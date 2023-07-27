@@ -377,6 +377,8 @@ public class Call extends AbstractCall
                AbstractFeature calledFeature,
                AbstractType type)
   {
+    if (PRECONDITIONS)
+      require(generics.stream().allMatch(g -> !g.containsError()));
     this._pos = pos;
     this._name = name;
     this._select = select;
@@ -2205,7 +2207,13 @@ public class Call extends AbstractCall
       {
         _type = _type.replace_type_parameters_of_type_feature_origin(outer);
       }
-    return result;
+
+    if (POSTCONDITIONS)
+      ensure(Errors.count() > 0 || _type != Types.t_ERROR);
+
+    return _type == Types.t_ERROR
+      ? Call.NO_VALUE // short circuit this call
+      : result;
   }
 
 
