@@ -2137,10 +2137,7 @@ PIPE        : "|"
    */
   boolean isOperator(int codePoint)
   {
-    return
-      current() == Token.t_op &&
-      codePointAt(_tokenPos) == codePoint &&
-      tokenEndPos() - tokenPos() == 1;
+    return isOperator(false, codePoint);
   }
 
 
