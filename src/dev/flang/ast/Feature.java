@@ -166,16 +166,10 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The formal arguments of this feature
    */
-  private List<Feature> _arguments;
-  public List<AbstractFeature> arguments0;
+  private List<AbstractFeature> _arguments;
   public List<AbstractFeature> arguments()
   {
-    if (arguments0 == null)
-      {
-        arguments0 = new List<>();
-        arguments0.addAll(_arguments);
-      }
-    return arguments0;
+    return _arguments;
   }
 
 
@@ -318,7 +312,7 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
@@ -364,7 +358,7 @@ public class Feature extends AbstractFeature implements Stmnt
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
-                       new List<Feature>(),
+                       new List<>(),
                        i,
                        c,
                        new Impl(b.pos(), b, Impl.Kind.Routine))
@@ -461,7 +455,7 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          null,
          impl);
@@ -498,7 +492,7 @@ public class Feature extends AbstractFeature implements Stmnt
          m,
          t == null ? NoType.INSTANCE: new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
-         new List<Feature>(),
+         new List<>(),
          new List<>(),
          c,
          i);
@@ -557,7 +551,7 @@ public class Feature extends AbstractFeature implements Stmnt
   Feature(SourcePosition pos,
           ReturnType r,
           List<String> qname,
-          List<Feature> a,
+          List<AbstractFeature> a,
           List<AbstractCall> i,
           Contract c,
           Impl     p)
@@ -597,7 +591,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<ParsedName> qpname,
-                 List<Feature> a,
+                 List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
                  Impl p)
@@ -636,7 +630,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<String> qname,
-                 List<Feature> a,
+                 List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
                  Impl p)
@@ -1301,6 +1295,18 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * Resolve argument types such that type parameters for free types will be
+   * added.
+   *
+   * @param res the resolution instance.
+   */
+  void resolveArgumentTypes(Resolution res)
+  {
+    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(res, af); } );
+  }
+
+
+  /**
    * Type resolution for a feature f: For all expressions and statements in f's
    * inheritance clause, contract, and implementation, determine the static type
    * of the expression. Were needed, perform type inference. Schedule f for
@@ -1323,6 +1329,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_TYPES;
 
+        resolveArgumentTypes(res);
         visit(new ResolveTypes(res));
 
         if (hasThisType())
@@ -1644,7 +1651,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultTypeRaw();
+        _resultType = resultTypeRaw(res);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -1988,7 +1995,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (f.featureName().baseName().equals(name))
           {
-            curres[0] = f;
+            curres[0] = (Feature) f;
           }
       }
 
@@ -2139,6 +2146,53 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * During type resolution, add a type parameter created for a free type like
+   * `T` in `f(x T) is ...`.
+   *
+   * @param res the resolution instance.
+   *
+   * @param ta the newly created type parameter feature.
+   *
+   * @return the generic instance for ta
+   */
+  Generic addTypeParameter(Resolution res, Feature ta)
+  {
+    if (PRECONDITIONS) require
+      (ta.isFreeType());
+
+    var a = _arguments;
+    _arguments = new List<>();
+    _arguments.addAll(a);
+    _arguments.add(_typeArguments.size(), ta);
+    _typeArguments.add(ta);
+    // NYI: For now, we keep the original FeatureName since changing it would
+    // require updating res._module.declaredFeatures /
+    // declaredOrInheritedFeatures. This means free types do not increase the
+    // arg count in feature name. This does not seem to cause problems when
+    // looking up features, but we may miss to report errors for duplicate
+    // features.  Note that when saved to a module file, this feature's name
+    // will have the actual argument count, so this inconsitency is restricted
+    // to the current source module.
+    //
+    //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
+    res._module.findDeclarations(ta, this);
+    var g = new Generic(ta);
+    _generics = _generics.addTypeParameter(g);
+    res.resolveTypes(ta);
+
+    return g;
+  }
+
+
+  /**
+   * Is this a type parameter created for a free type?
+   */
+  boolean isFreeType()
+  {
+    return false;
+  }
+
+  /**
    * Is this feature declared in the main block of its outer feature?  Features
    * declared in inner blocks are not visible to the outside.
    */
@@ -2170,7 +2224,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw()
+  AbstractType resultTypeRaw(Resolution res)
   {
     AbstractType result;
 
@@ -2183,7 +2237,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
+        result = (outer() instanceof Feature of) ? of.resultTypeRaw(res) : outer().resultType();
       }
     else if (_impl._kind == Impl.Kind.FieldDef    ||
              _impl._kind == Impl.Kind.FieldActual ||
@@ -2191,7 +2245,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(this);
+        result = _impl.inferredType(res, this);
 
         var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
                                                        : _impl._initialValue;
@@ -2236,7 +2290,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw(null) : null;
     if (result == null)
       {
         if (CHECKS) check
@@ -2271,9 +2325,25 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (arguments().size() == _featureName.argCount());
+      (// the feature name is currently not changed in addTypeParameter, so
+       // we add freeTypesCount() here.
+       arguments().size() == _featureName.argCount() + freeTypesCount());
 
     return _featureName;
+  }
+
+
+  /**
+   * Number of free types amoung the type parameters.
+   */
+  int freeTypesCount()
+  {
+    var result = 0;
+    for (var tp : _arguments)
+      {
+        result += ((Feature) tp).isFreeType() ? 1 : 0;
+      }
+    return result;
   }
 
 

@@ -1,0 +1,150 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_free_types_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+test_free_type_negative is
+
+  # free type with explicit constraint
+  #
+  a1(v T : Any    ) => say "a: $T $v"
+  a2(v T : numeric) => say "a: $T {v+v}"
+  a1 42
+  a1 "fourty two"
+  a2 42
+  a2 "fourty two"    # 1. should flag an error: type constraint not respected
+
+  # free type with implicit constraint `Any`
+  #
+  b(v T) => say "b: $T $v"
+  b 47.11
+  b "hello"
+
+  # free type used for two arguments
+  #
+  c1(v, w T)   => say "c1: $T $v $w"
+  c2(v T, w T) => say "c2: $T $v $w"
+  c1 3.14 2.18
+  c1 "pi" "e"
+  c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
+  c2 3.14 2.18
+  c2 "pi" "e"
+  c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
+
+  # anonymous free type used for two arguments
+  #
+  d(v, w _) => say "d: $v $w"
+  d 3.14 2.18
+  d "pi" "e"
+  d Any [1,3,5]
+  d "[1,3,5]" Any
+  d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
+
+  # two anonymous free types used for two arguments
+  #
+  e(v _, w _) => say "e: $v $w"
+  e 3.14 2.18
+  e "pi" "e"
+  e Any [1,3,5]
+  e "[1,3,5]" Any
+  e 3.14 "e"         # this works since both `_` are different
+
+  # not free types, but bound types that are inferred from the call site:
+  #
+  f(v,w) => say "f: $v $w"
+  f "[1,3,5]" Any    # 5.a should flag an error since two calls with incompatible actual argument types
+  f 3.14 "e"         # 5.b should flag an error since two calls with incompatible actual argument types
+
+  # two free types with constraints used inside an inline choice type
+  #
+  g(v (A : Any) | (B : numeric)) =>
+    say "g: $A $B"
+    match v
+      a A => say "g: A $a"
+      b B => say "g: B $b"
+
+  ga1 String | i32 := 42
+  ga2 String | u8  := "fourty two"
+  ga3 f64    | String := 3.14
+  g ga1
+  g ga2
+  g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
+
+  # mixture of explicit and free type parameters
+  #
+  h(T type, v T, w U) => say "h: $T $U $v $w"
+  h 42 "Hello"
+
+  # free types as type parameters to Sequence
+  #
+  x1(s Sequence T, v T) => [v] ++ s ++ [v]
+  say "x1: {x1 [4,6,4] 1}"
+
+  # different type parameters result in incompatible types
+  #
+  x2(s Sequence T, v U) => [v] ++ s ++ [v]    # 7. should flag an error since types are incompatible due to different free types
+  say "x2: {x2 [4,6,4] 1}"
+
+  # explicit type as type parameter to Seuqnce
+  #
+  x3(T type, s Sequence T, v T) => [v] ++ s ++ [v]
+  say "x3: {x3 [4,6,4] 1}"
+
+  # typo in a type that turns it into an accidental free type
+  #
+  neg(x i33) => -x   # 8. should flag an error that is not too confusing
+  say (neg 42)
+
+  # free type with same name as existing type in outer feature
+  #
+  EXISTING_TYPE is
+  y(a EXISTING_TYPE : numeric) =>             # 9. should flag an error, free type must not mask existing type
+    say a
+
+  # Use free type in result type of function type
+  #
+  Sequence.my_zip0(b Sequence U, f (T,U)->W) => as_list.zip0 b.as_list f
+  say (["eins", "zwei", "drei"].my_zip0 [1,2,3] a,b->"$a = $b")
+
+  # Use anonymous free type in result type of function type
+  #
+  Sequence.my_zip1(b Sequence U, f (T,U)->_) => as_list.zip0 b.as_list f
+  say (["一", "二", "三", "四" ].my_zip1 [1.0,2.0,3.0,4.0] a,b->"$a = $b")
+
+  # Use free type in function type
+  #
+  apply(fn (A,B)->String, a A, b B) => fn a b
+  say (apply a,b->"$a $b" 3 true)
+
+  # Use unknown free type in function type
+  #
+  apply2(fn (A,B)->String) => fn
+  say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
+
+  # Use unknown free type in function type
+  #
+  apply3(fn Function String A B) => fn
+  say ((apply3 bool u8 a,b->"$a $b").call true (u8 127))
+  apply3a(fn (A,B)->String) => fn
+  say ((apply3a bool u8 a,b->"$a $b").call true (u8 127))
+  say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters

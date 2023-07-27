@@ -81,7 +81,7 @@ public class Destructure extends ANY implements Stmnt
    * The fields created by this destructuring.  May be empty. null if _names !=
    * null.
    */
-  final List<Feature> _fields;
+  final List<AbstractFeature> _fields;
 
 
   final boolean _isDefinition;
@@ -106,7 +106,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param v
    */
-  private Destructure(SourcePosition pos, List<ParsedName> n, List<Feature> fs, boolean def, Expr v)
+  private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -141,7 +141,10 @@ public class Destructure extends ANY implements Stmnt
     List<Stmnt> stmnts = new List<Stmnt>();
     if (_fields != null)
       {
-        stmnts.addAll(_fields);
+        for (var f : _fields)
+          {
+            stmnts.add((Feature) f);
+          }
       }
     stmnts.add(this);
     return new Block(_pos,stmnts);
@@ -165,7 +168,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return a statement that implements the destructuring.
    */
-  public static Stmnt create(SourcePosition pos, List<Feature> fields, List<ParsedName> names, boolean def, Expr v)
+  public static Stmnt create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       ((fields == null) != (names == null),
@@ -175,7 +178,7 @@ public class Destructure extends ANY implements Stmnt
       {
         if (def)
           {
-            fields = new List<Feature>();
+            fields = new List<AbstractFeature>();
             for (var name : names)
               {
                 fields.add(new Feature(name._pos,
@@ -183,7 +186,7 @@ public class Destructure extends ANY implements Stmnt
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
                                        new List<String>(name._name),
-                                       new List<Feature>(),
+                                       new List<>(),
                                        new List<>(),
                                        Contract.EMPTY_CONTRACT,
                                        Impl.FIELD));
@@ -195,7 +198,7 @@ public class Destructure extends ANY implements Stmnt
         if (CHECKS) check
           (!def);
         names = new List<>();
-        for (Feature f : fields)
+        for (var f : fields)
           {
             names.add(new ParsedName(f.pos(), f.featureName().baseName()));
           }
@@ -233,7 +236,7 @@ public class Destructure extends ANY implements Stmnt
                          AbstractFeature f,
                          Iterator<ParsedName> names,
                          int select,
-                         Iterator<Feature> fields,
+                         Iterator<AbstractFeature> fields,
                          AbstractType t)
   {
     Expr thiz     = This.thiz(res, _pos, outer, outer);
@@ -242,7 +245,7 @@ public class Destructure extends ANY implements Stmnt
     Assign assign = null;
     if (fields != null && fields.hasNext())
       {
-        Feature newF = fields.next();
+        var newF = (Feature) fields.next();
         if (_isDefinition)
           {
             newF._returnType = new FunctionReturnType(t);
@@ -303,7 +306,7 @@ public class Destructure extends ANY implements Stmnt
         atmp.resolveTypes(res, outer);
         stmnts.add(atmp);
         var names = _names.iterator();
-        Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
+        var fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
         for (var f : t.featureOfType().valueArguments())
           {
@@ -337,7 +340,7 @@ public class Destructure extends ANY implements Stmnt
         // to avoid subsequent errors:
         for (var f : _fields)
           {
-            f._returnType = new FunctionReturnType(Types.t_ERROR);
+            ((Feature) f)._returnType = new FunctionReturnType(Types.t_ERROR);
           }
       }
     return new Block(_pos, stmnts);

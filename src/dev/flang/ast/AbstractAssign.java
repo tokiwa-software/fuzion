@@ -188,7 +188,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
-    if (resultTypeKnown())
+    if (resultTypeKnown(res))
       {
         _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
       }
@@ -209,7 +209,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
-    if (resultTypeKnown())
+    if (resultTypeKnown(res))
       {
         _value = _value.wrapInLazy(res, outer, _assignedField.resultType());
       }
@@ -219,11 +219,11 @@ public abstract class AbstractAssign extends ANY implements Stmnt
   /**
    * @return Is the result type of this field already known?
    */
-  private boolean resultTypeKnown()
+  private boolean resultTypeKnown(Resolution res)
   {
     return  _assignedField != Types.f_ERROR
          && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES)
-         && _assignedField.resultTypeRaw() != null;
+         && _assignedField.resultTypeRaw(res) != null;
   }
 
 

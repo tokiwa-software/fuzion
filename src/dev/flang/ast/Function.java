@@ -44,7 +44,7 @@ public class Function extends ExprWithPos
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<Feature> NO_FEATURES = new List<Feature>();
+  static final List<AbstractFeature> NO_FEATURES = new List<>();
   static final List<AbstractCall> NO_CALLS = new List<>();
 
 
@@ -223,7 +223,7 @@ public class Function extends ExprWithPos
          *         --Fun<id>--()
          * [..]
          */
-        List<Feature> a = new List<>();
+        var a = new List<AbstractFeature>();
         var gs = t.generics();
         int i = 1;
         for (var n : _names)
@@ -484,7 +484,7 @@ public class Function extends ExprWithPos
              *  - calling a feature in a different module
              */
             var actual_args = new List<Actual>();
-            var formal_args = new List<Feature>();
+            var formal_args = new List<AbstractFeature>();
             int argnum = 1;
             for (var f : calledFeature.arguments())
               {

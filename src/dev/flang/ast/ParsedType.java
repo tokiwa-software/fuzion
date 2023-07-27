@@ -66,7 +66,21 @@ public class ParsedType extends UnresolvedType implements HasSourcePosition
     super(pos, name, generics, outer);
   }
 
-  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, UnresolvedType.RefOrVal rov)
+
+  /**
+   * Constructor for a parsed type to be called by BuiltInType's constructor.
+   *
+   * @param pos the source code position of the type
+   *
+   * @param name the name of the type
+   *
+   * @param generics list of type parameters
+   *
+   * @param outer outer type or null if unqualified.
+   *
+   * @param rov UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.LikeUnderlyingFeature
+   */
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, UnresolvedType.RefOrVal rov)
   {
     super(pos, name, generics, outer, rov);
   }
@@ -130,6 +144,35 @@ public class ParsedType extends UnresolvedType implements HasSourcePosition
         }
       };
   }
+
+
+  /**
+   * May this unresolved type be a free type. This is the case for explicit free
+   * types such as `X : Any`, and for all normal types like `XYZ` that are not
+   * qualified by an outer type `outer.XYZ` and that do not have actual type
+   * parameters `XYZ T1 T2` and that are not boxed.
+   */
+  public boolean mayBeFreeType()
+  {
+    return
+      outer() == null      &&
+      generics().isEmpty() &&
+      _refOrVal == RefOrVal.LikeUnderlyingFeature;
+  }
+
+
+  /**
+   * For a type `XYZ` with mayBeFreeType() returning true, this gives the name
+   * of the free type, which would be `"XYZ"` in this example.
+   *
+   * @return the name of the free type, which becomes the name of the type
+   * parameter created for it.
+   */
+  public String freeTypeName()
+  {
+    return name();
+  }
+
 
 }
 
