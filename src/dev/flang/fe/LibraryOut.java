@@ -460,7 +460,8 @@ class LibraryOut extends ANY
         bn = "";
       }
     _data.writeName(bn);
-    _data.writeInt (n.argCount());  // NYI: use better integer encoding
+    var argCount = n.argCount() + f.freeTypesCount();
+    _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
     featureIndexOrZeroForUniverse(f.outer());
@@ -469,7 +470,7 @@ class LibraryOut extends ANY
         _data.writeOffset(f.typeFeature());
       }
     if (CHECKS) check
-      (f.arguments().size() == f.featureName().argCount());
+      (f.arguments().size() == argCount);
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());
