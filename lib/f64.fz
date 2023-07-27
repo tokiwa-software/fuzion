@@ -153,7 +153,7 @@ public f64(val f64) : float is
   #
   public redef as_string =>
     r := num.ryū
-    use_scientific_notation := val<1E-3 || val>=1E7
+    use_scientific_notation := abs<1E-3 || abs>=1E7
     r.as_string val use_scientific_notation r.rounding_conservative
 
 
