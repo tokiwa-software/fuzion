@@ -68,6 +68,8 @@ public class Generic extends ANY
    */
   public Generic(AbstractFeature typeParameter)
   {
+    if (PRECONDITIONS) require
+        (typeParameter.isTypeParameter());
     _typeParameter = typeParameter;
   }
 

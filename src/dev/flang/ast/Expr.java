@@ -531,6 +531,10 @@ public abstract class Expr extends ANY implements Stmnt
   private boolean needsBoxing(AbstractType frmlT)
   {
     var t = type();
+    if (frmlT.isThisTypeInTypeFeature())
+      {
+        return false;
+      }
     if (needsBoxingForGenericOrThis(frmlT))
       {
         return true;
