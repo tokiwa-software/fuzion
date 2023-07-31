@@ -301,7 +301,7 @@ private:public not_found is
 # descriptor for double-compare-single-swap operation
 # NYI ref, work around for issue #1604
 private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref
-pre exp.prev.v.is_nil
+pre exp.prev.read.is_nil
 is
 
   # this field does not have to be atomic
@@ -344,9 +344,7 @@ is
   #
   copy_to_gen(i Indirection_Node CTK CTV, new_gen u64) Indirection_Node CTK CTV
   pre debug: i.gen <= new_gen
-  post match result.data.v.prev.v
-          Nil => true
-          * => false
+  post result.data.read.prev.read.is_nil
   is
     indirection_node (gcas_read i) new_gen
 
