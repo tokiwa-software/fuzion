@@ -26,9 +26,12 @@
 ctrie_test is
   ctrie := (container.ctrie i32 String).type.empty
 
-  all := container.ps_set i32 0..100
-  removed := container.ps_set i32 0..100:2
-  readded := container.ps_set i32 0..100:3
+  set_from(s Sequence i32) =>
+    (container.ps_set i32).type.from_sequence s
+
+  all := set_from 0..100
+  removed := set_from 0..100:2
+  readded := set_from 0..100:3
 
   no_items := ctrie.snapshot true
 
@@ -47,7 +50,7 @@ ctrie_test is
 
   # NYI Set should have `except()` feature
   no  := removed.filter (x -> !(readded.contains x))
-  yes := (container.ps_set (all.filter (x -> !(removed.contains x)))) ∪ readded
+  yes := (set_from (all.filter (x -> !(removed.contains x)))) ∪ readded
 
   say (no  ∀ (k -> ctrie[k].is_nil))
 
