@@ -2138,8 +2138,24 @@ PIPE        : "|"
    */
   boolean isOperator(int codePoint)
   {
+    return isOperator(false, codePoint);
+  }
+
+
+  /**
+   * Check if the current token is the given single-code point operator, i.e,
+   * check that current() is Token.t_op and the operator is op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator we want to see
+   *
+   * @return true iff the current token is the given operator.
+   */
+  boolean isOperator(boolean atMinIndent, int codePoint)
+  {
     return
-      current() == Token.t_op &&
+      current(atMinIndent) == Token.t_op &&
       codePointAt(_tokenPos) == codePoint &&
       tokenEndPos() - tokenPos() == 1;
   }
@@ -2155,9 +2171,25 @@ PIPE        : "|"
    */
   boolean isOperator(String op)
   {
+    return isOperator(false, op);
+  }
+
+
+  /**
+   * Check if the current token is the given operator, i.e, check that current()
+   * is Token.t_op and the operator is op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator we want to see
+   *
+   * @return true iff the current token is the given operator.
+   */
+  boolean isOperator(boolean atMinIndent, String op)
+  {
     return
-      current() == Token.t_op &&
-      operator().equals(op);
+      current(atMinIndent) == Token.t_op &&
+      operator(atMinIndent).equals(op);
   }
 
 
@@ -2192,8 +2224,19 @@ PIPE        : "|"
    */
   String operator()
   {
+    return operator(false);
+  }
+
+
+  /**
+   * @param atMinIndent
+   *
+   * Return the actual operator of the current t_op token as a string.
+   */
+  String operator(boolean atMinIndent)
+  {
     if (PRECONDITIONS) require
-      (current() == Token.t_op);
+      (current(atMinIndent) == Token.t_op);
 
     return tokenAsString();
   }
@@ -3050,8 +3093,23 @@ QUESTION    : "?"
    */
   boolean skip(String op)
   {
+    return skip(false, op);
+  }
+
+
+  /**
+   * Parse specific t_op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator
+   *
+   * @return true iff an t_op op was found and skipped.
+   */
+  boolean skip(boolean atMinIndent, String op)
+  {
     boolean result = false;
-    if (isOperator(op))
+    if (isOperator(atMinIndent, op))
       {
         next();
         result = true;
