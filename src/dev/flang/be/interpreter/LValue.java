@@ -247,8 +247,8 @@ public class LValue extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     container.storeNonRef(slot, size, offset);
   }

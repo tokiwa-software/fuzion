@@ -98,8 +98,8 @@ public class f64Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == 2);
+    if (PRECONDITIONS) require
+      (size == 2);
 
     var l = Double.doubleToRawLongBits(_val);
     slot.container.nonrefs[slot.offset    ] = (int) l;

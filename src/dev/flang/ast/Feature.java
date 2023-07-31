@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -331,6 +330,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     this();
     _state = State.ERROR;
+    _featureName = FeatureName.get(Types.ERROR_NAME, arguments().size());
   }
 
 
@@ -1036,7 +1036,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         Expr nc = c.visit(v, this);
         if (CHECKS) check
-          (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
+          (Errors.count() > 0 || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);

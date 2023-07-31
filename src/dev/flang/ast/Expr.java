@@ -53,7 +53,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Dummy Expr value. Used in 'Actual' to represent non-existing value version
+   * Dummy Expr value. Used e.g. in 'Actual' to represent non-existing value version
    * of the actual.
    */
   public static Call NO_VALUE;
