@@ -207,7 +207,46 @@ public f64(val f64) : float is
   public fixed type.asin(val f64) f64 is intrinsic
   public fixed type.acos(val f64) f64 is intrinsic
   public fixed type.atan(val f64) f64 is intrinsic
-  public fixed type.atan2(y, x f64) f64 is intrinsic
+
+  # atan(y/x) with a few special cases
+  # see also: https://go.dev/src/math/atan2.go
+  #
+  public fixed type.atan2(y, x f64) f64 is
+    if is_NaN y || is_NaN x
+      NaN
+    if y = 0
+      if x > 0 || (x = 0 && x.is_sign_bit_set)
+        y
+      else
+        if y.is_sign_bit_set then -π else π
+    else if x = 0
+      if y > 0 then π/2 else -π/2
+    else if x = f64.type.positive_infinity
+      if y = f64.type.positive_infinity
+        π/4
+      else if y = f64.type.negative_infinity
+        -π/4
+      else
+        0
+    else if x = f64.type.negative_infinity
+      if y = f64.type.positive_infinity
+        3.0*π/4
+      else if y = f64.type.negative_infinity
+        -3.0*π/4
+      else if y > 0
+        π
+      else // y < 0
+        -π
+    else if y = f64.type.positive_infinity
+      π/2
+    else if y = f64.type.negative_infinity
+      -π/2
+    else
+      q := atan y/x
+      if x < 0
+        if q <= 0 then q+π else q-π
+      else
+        q
 
 
   public fixed type.sinh(val f64) f64 is intrinsic

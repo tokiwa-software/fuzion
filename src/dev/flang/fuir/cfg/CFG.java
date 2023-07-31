@@ -444,8 +444,6 @@ public class CFG extends ANY
     put("f64.type.acos"                  , (cfg, cl) -> { } );
     put("f32.type.atan"                  , (cfg, cl) -> { } );
     put("f64.type.atan"                  , (cfg, cl) -> { } );
-    put("f32.type.atan2"                 , (cfg, cl) -> { } );
-    put("f64.type.atan2"                 , (cfg, cl) -> { } );
     put("f32.type.sinh"                  , (cfg, cl) -> { } );
     put("f64.type.sinh"                  , (cfg, cl) -> { } );
     put("f32.type.cosh"                  , (cfg, cl) -> { } );
