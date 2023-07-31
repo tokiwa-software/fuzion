@@ -109,7 +109,7 @@ public enum Visi
   }
 
   /**
-   * @return The visibilty for features/calls encoded in this.
+   * @return The visibility for features/calls encoded in this.
    */
   public Visi featureVisibility()
   {
@@ -126,26 +126,18 @@ public enum Visi
 
 
   /**
-   * @return The visibilty for types encoded in this.
+   * @return The visibility for types encoded in this.
    * PRIV => PRIV, PRIVMOD => MOD, PRIVPUB => PUB, etc.
    */
   public Visi typeVisibility()
   {
-    switch (this)
+    return switch (this)
       {
-        case UNSPECIFIED:
-        case PRIV:
-          return Visi.PRIV;
-        case MOD:
-        case PRIVMOD:
-          return Visi.MOD;
-        case PRIVPUB:
-        case MODPUB:
-        case PUB:
-          return Visi.PUB;
-        default:
-          throw new RuntimeException("undhandled case in Visi.typeVisibility");
-      }
+        case UNSPECIFIED, PRIV    -> Visi.PRIV;
+        case MOD, PRIVMOD         -> Visi.MOD;
+        case PRIVPUB, MODPUB, PUB -> Visi.PUB;
+        default -> throw new RuntimeException("undhandled case in Visi.typeVisibility");
+      };
   }
 
 

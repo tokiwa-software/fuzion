@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Set;
+import java.util.function.Consumer;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -906,6 +909,18 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       };
     var g = outerfeat.outer().addTypeParameter(res, tp);
     return g.type();
+  }
+
+
+
+  /**
+   * traverse a type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected void usedFeatures(Set<AbstractFeature> s)
+  {
+    throw new RuntimeException("must not be called on unresolved types.");
   }
 
 

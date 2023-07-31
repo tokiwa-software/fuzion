@@ -197,7 +197,7 @@ module net is
   #
   # not useful for UDP sockets (information not necessarily available)
   #
-  get_peer_address(sockfd i64) outcome (list u8) is
+  module get_peer_address(sockfd i64) outcome (list u8) is
     addr array u8 := [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     l := get_peer_address sockfd addr.internal_array.data
     addr.take l
@@ -210,4 +210,4 @@ module net is
   #
   # not useful for UDP sockets (information not necessarily available)
   #
-  get_peer_port(sockfd i64) u16 is intrinsic
+  module get_peer_port(sockfd i64) u16 is intrinsic

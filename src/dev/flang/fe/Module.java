@@ -282,7 +282,6 @@ public abstract class Module extends ANY
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
 
-    // NYI check if generics/constraints visible?
     return af.definesType() && (usedIn.sameAs(definedIn)
       || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
       || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);

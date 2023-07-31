@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -67,6 +68,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private Object _appliedTypePars2CachedFor1;
   private Object _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
+
+
+  /**
+   * Cached result of calling usedFeatures(_usedFeatures).
+   */
+  Set<AbstractFeature> _usedFeatures = null;
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -1684,61 +1691,35 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * collect all the directly and indirectly - via generics -
-   * used types in this type.
-   * example: Cons i32 (list i32) => { Cons, i32, list }
+   * traverse a resolved type collecting all features this type uses.
    *
-   * @return
+   * @param s the features that have already been found
    */
-  private Set<AbstractType> usedTypes()
-  {
-    var result = new TreeSet<AbstractType>();
-    usedTypes(result);
-    return result;
-  }
+  protected abstract void usedFeatures(Set<AbstractFeature> s);
 
 
   /**
-   * recursion helper for `usedTypes (no args)`
-   * @param result
-   */
-  private void usedTypes(TreeSet<AbstractType> result)
-  {
-    if (result.add(this))
-      {
-        for (AbstractType at : this.generics())
-          {
-            at.usedTypes(result);
-          }
-        if (isChoice())
-          {
-            for (AbstractType at : this.choiceGenerics())
-              {
-                at.usedTypes(result);
-              }
-          }
-      }
-  }
-
-
-  /**
-   * This type and any of its generics that are less visible than `v`.
-   *
    * @param v
-   * @return
+   *
+   * @return this type and any of its generics that have more restrictive visibility than `v`.
    */
-  public Set<AbstractType> lessVisibleThan(Visi v)
+  public Set<AbstractFeature> moreRestrictiveVisibility(Visi v)
   {
     if (PRECONDITIONS) require
       (!v.definesTypeVisibility());
 
-    return isGenericArgument()
-      ? genericArgument().constraint().lessVisibleThan(v)
-      : usedTypes()
-          .stream()
-          .filter(at -> !at.isGenericArgument() && at.featureOfType().visibility().typeVisibility().ordinal() < v.ordinal())
-          .collect(Collectors.toSet());
+    if (_usedFeatures == null)
+      {
+        _usedFeatures = new TreeSet<AbstractFeature>();
+        usedFeatures(_usedFeatures);
+      }
+
+    return _usedFeatures
+      .stream()
+      .filter(af -> af.visibility().typeVisibility().ordinal() < v.ordinal())
+      .collect(Collectors.toSet());
   }
+
 
 }
 

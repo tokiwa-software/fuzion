@@ -10,23 +10,23 @@ public m =>
   # checkResultTypeVisibility
 
   private priv is
-  module mod priv is  // should flag an error result type less visible than a
+  module mod priv is  // should flag an error result type visibility more restrictive than a
     priv
-  module mod8 := priv_ce  // should flag an error priv_ce less visible than mod8
+  module mod8 := priv_ce  // should flag an error priv_ce visibility more restrictive than mod8
 
 
   # checkArgTypesVisibility
 
-  module mod2 (arg priv) is // should flag an error arg type less visible than a
+  module mod2 (arg priv) is // should flag an error arg type visibility more restrictive than a
 
 
-  # generic less visible
+  # generic visibility more restrictive
 
   private priv_ce is
-  module mod3 : choice priv_ce unit is // should flag an error priv_ce less visible than mod3
-  module mod4(T type : priv_ce) is // should flag an error priv_ce less visible than mod4
-  module mod5(arg array priv_ce) is // should flag an error priv_ce less visible than mod5
-  module mod9 := (list priv_ce).type.empty // should flag an error priv_ce less visible than mod9
+  module mod3 : choice priv_ce unit is // should flag an error priv_ce visibility more restrictive than mod3
+  module mod4(T type : priv_ce) is // should flag an error priv_ce visibility more restrictive than mod4
+  module mod5(arg array priv_ce) is // should flag an error priv_ce visibility more restrictive than mod5
+  module mod9 := (list priv_ce).type.empty // should flag an error priv_ce visibility more restrictive than mod9
 
   priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
 
@@ -36,14 +36,8 @@ public m =>
   private my_false => false
 
   module feat3
-  pre my_false  // should flag an error my_false less visible than feat4
+  pre my_false  // should flag an error my_false visibility more restrictive than feat4
   is
-
-
-  # checkOuterVisibility
-
-  priv2 is
-    private:module child is // should flag an error, outer is less visible
 
 
   # features from different modules

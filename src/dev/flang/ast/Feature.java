@@ -115,7 +115,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
   /**
    * This is used for feature defined using `choice of`
-   * to set same visibilty for choice elements as for choice in Parser.
+   * to set same visibility for choice elements as for choice in Parser.
    *
    * @param v
    */

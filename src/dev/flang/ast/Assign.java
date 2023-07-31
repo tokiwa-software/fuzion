@@ -190,8 +190,7 @@ public class Assign extends AbstractAssign
         var fo = FeatureAndOuter.filter(res._module.lookup(outer,
                                                            _name,
                                                            destructure == null ? this : destructure,
-                                                           true,
-                                                           null),
+                                                           true),
                                         pos(), FeatureAndOuter.Operation.ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {

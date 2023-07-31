@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.SortedMap;
 
 import dev.flang.util.List;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -68,7 +67,7 @@ public interface SrcModule
   SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer);
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
   void findDeclaredOrInheritedFeatures(Feature outer);
-  List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Stmnt use, boolean traverseOuter, SourceFile sf);
+  List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Stmnt use, boolean traverseOuter);
   void checkTypes(Feature f);
   FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean mayBeFreeType);
 
