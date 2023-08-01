@@ -534,7 +534,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * For a normal type, resolve the actual type parameters.
    *
-   * @param pos souce code position of the unresolved types whose generics we
+   * @param pos source code position of the unresolved types whose generics we
    * are resolving.
    *
    * @param res the resolution instance
