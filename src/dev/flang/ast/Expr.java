@@ -60,7 +60,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Dummy Expr value. Used in to represent error values.
+   * Dummy Expr value. Used to represent error values.
    */
   public static final Expr ERROR_VALUE = new Expr()
     {

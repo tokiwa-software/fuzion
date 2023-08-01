@@ -65,6 +65,12 @@ public class Call extends AbstractCall
   public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
 
 
+  /**
+   * Dummy Call. Used to represent errors.
+   */
+  public static Call ERROR;
+
+
   /*------------------------  static variables  -------------------------*/
 
   /**
@@ -2212,7 +2218,7 @@ public class Call extends AbstractCall
       (Errors.count() > 0 || result.typeIfKnown() != Types.t_ERROR);
 
     return result.typeIfKnown() == Types.t_ERROR
-      ? Call.NO_VALUE // short circuit this call
+      ? Call.ERROR // short circuit this call
       : result;
   }
 
@@ -2454,6 +2460,17 @@ public class Call extends AbstractCall
     return this;
   }
 
+
+  /**
+   * Reset static fields
+   */
+  public static void reset()
+  {
+    ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    {
+      { _type = Types.t_ERROR; }
+    };
+  }
 
 }
 

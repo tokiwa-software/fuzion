@@ -41,6 +41,7 @@ import java.util.TreeMap;
 import dev.flang.mir.MIR;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureAndOuter;
@@ -149,6 +150,7 @@ public class FrontEnd extends ANY
     Errors.reset();
     FeatureName.reset();
     Expr.reset();
+    Call.reset();
     var universe = new Universe();
     _universe = universe;
 
