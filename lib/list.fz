@@ -446,7 +446,7 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # create an empty list
   #
-  public redef type.empty list A is
+  public type.empty list A is
     nil
 
 

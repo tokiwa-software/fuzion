@@ -105,7 +105,7 @@ is
   # intersection of two ps_sets
   public infix ∩ (other ps_set.this) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
-    (ps_sets K).empty.add_all s
+    (ps_set K).type.empty.add_all s
 
 
   # add all elements of the given Sequence to this set
@@ -130,14 +130,15 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty ps_set
   #
-  empty => (ps_sets K).empty
+  public fixed type.empty container.ps_set K is
+    container.ps_set K (container.ps_map K unit).type.empty unit
 
 
   # monoid of ps_set with infix ∪ operation.
   #
-  public union : Monoid (ps_set K) is
-    redef infix ∙ (a, b ps_set K) => a ∪ b
-    redef e => empty
+  public type.union : Monoid (container.ps_set K) is
+    redef infix ∙ (a, b container.ps_set K) => a ∪ b
+    redef e => (container.ps_set K).type.empty
 
 
   # equality
@@ -147,21 +148,8 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     (a ∪ b).size = a.size
 
 
-# ps_sets -- unit type feature declaring features related to ps_set
-#
-# NYI: move to ps_set.type
-#
-public ps_sets(K type : property.orderable) is
-
-  # ps_set -- a partially sorted set based on ps_map
+  # initialize a partially sorted set from one Sequence
   #
-  # This feature creates an empty instance of ps_set.
+  # This feature creates a pre-initialized instance of ps_set.
   #
-  public empty => ps_set K (ps_map K unit).type.empty unit
-
-
-# ps_set -- routine to initialize a partially sorted set from one Sequence
-#
-# This feature creates a pre-initialized instance of ps_set.
-#
-public ps_set(K type : property.orderable, vs Sequence K) => (ps_sets K).empty.add_all vs
+  public type.from_sequence(vs Sequence K) => (container.ps_set K).type.empty.add_all vs

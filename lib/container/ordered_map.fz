@@ -109,5 +109,5 @@ is
   # create an empty instance of ordered_map
   #
   public type.empty => (container.ordered_map
-                        (Sequence OK).type.empty.as_array
-                        (Sequence V).type.empty.as_array)
+                        (list OK).type.empty.as_array
+                        (list V).type.empty.as_array)

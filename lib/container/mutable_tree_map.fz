@@ -54,7 +54,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
   public items Sequence (tuple KEY VAL) is
     match root.get
       e Entry => e.items
-      nil => (Sequence (tuple KEY VAL)).type.empty
+      nil => (list (tuple KEY VAL)).type.empty
 
 
   # returns a string representation of the map

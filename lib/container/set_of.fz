@@ -27,7 +27,7 @@
 #
 # This feature creates an instance of a Set.
 #
-public set_of_ordered(K type : property.orderable, vs Sequence K) Set K is ps_set vs
+public set_of_ordered(K type : property.orderable, vs Sequence K) container.Set K is (container.ps_set K).type.from_sequence vs
 
 
 # set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
