@@ -1,0 +1,9 @@
+issue1739 is
+
+  a : choice nil unit is
+    public fixed type.empty a.this is
+      nil  // should flag an error: Incompatible types in assignment
+
+  match a.type.empty
+    nil => say "nil"
+    unit => say "unit"
