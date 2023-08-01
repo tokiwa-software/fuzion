@@ -41,6 +41,12 @@ public array(redef T type,
   public length => internal_array.length
 
 
+  # redefines Sequence.count for array,
+  # reducing complexity from O(n) to O(1).
+  #
+  public redef count => length
+
+
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
