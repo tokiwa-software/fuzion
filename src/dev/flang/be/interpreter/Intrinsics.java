@@ -1199,7 +1199,6 @@ public class Intrinsics extends ANY
     put("f32.type.acos"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));
     put("f32.type.asin"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())));
     put("f32.type.atan"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
-    put("f32.type.atan2"        , (interpreter, innerClazz) -> args -> new f32Value ((float)  Math.atan2(args.get(1).f32Value(),args.get(2).f32Value())));
     put("f32.type.cos"          , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())));
     put("f32.type.cosh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
     put("f32.type.epsilon"      , (interpreter, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
@@ -1217,7 +1216,6 @@ public class Intrinsics extends ANY
     put("f64.type.acos"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
     put("f64.type.asin"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
     put("f64.type.atan"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
-    put("f64.type.atan2"        , (interpreter, innerClazz) -> args -> new f64Value (         Math.atan2(args.get(1).f64Value(),args.get(2).f64Value())));
     put("f64.type.cos"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(1).f64Value())));
     put("f64.type.cosh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
     put("f64.type.epsilon"      , (interpreter, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
