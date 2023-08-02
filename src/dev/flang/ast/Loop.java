@@ -185,7 +185,7 @@ public class Loop extends ANY
    * initial values. May be null if none.
    */
   private final Block _prolog;
-  private List<Stmnt> _prologSuccessBlock;
+  private List<Expr> _prologSuccessBlock;
 
 
   /**
@@ -193,7 +193,7 @@ public class Loop extends ANY
    * to be false.
    */
   private Expr _nextIteration = null;
-  private List<Stmnt> _nextItSuccessBlock = null;
+  private List<Expr> _nextItSuccessBlock = null;
 
 
   /**
@@ -592,8 +592,8 @@ public class Loop extends ANY
             Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
             Call next1    = new Call(p, new Call(p, streamName), "next");
             Call next2    = new Call(p, new Call(p, streamName), "next");
-            List<Stmnt> prolog2 = new List<>();
-            List<Stmnt> nextIt2 = new List<>();
+            List<Expr> prolog2 = new List<>();
+            List<Expr> nextIt2 = new List<>();
             If ifHasNext1 = new If(p, hasNext1, new Block(p, prolog2));
             If ifHasNext2 = new If(p, hasNext2, new Block(p, nextIt2));
             if (_loopElse != null)

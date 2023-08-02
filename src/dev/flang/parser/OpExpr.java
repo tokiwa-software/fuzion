@@ -234,7 +234,7 @@ public class OpExpr extends ANY
    */
   boolean isExpr(int i)
   {
-    return (i>=0) && (i<els.size()) && (els.get(i) instanceof Expr);
+    return (i>=0) && (i<els.size()) && (els.get(i) instanceof Expr e && e.producesResult());
   }
 
 

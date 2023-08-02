@@ -314,7 +314,7 @@ public class InlineArray extends ExprWithPos
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
-        var stmnts = new List<Stmnt>(sysArrayAssign);
+        var stmnts = new List<Expr>(sysArrayAssign);
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);

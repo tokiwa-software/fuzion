@@ -43,7 +43,7 @@ public abstract class AbstractBlock extends Expr
   /*----------------------------  variables  ----------------------------*/
 
 
-  public List<Stmnt> _statements;
+  public List<Expr> _statements;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -54,7 +54,7 @@ public abstract class AbstractBlock extends Expr
    *
    * @param s the list of statements
    */
-  public AbstractBlock(List<Stmnt> s)
+  public AbstractBlock(List<Expr> s)
   {
     this._statements = s;
   }
@@ -75,10 +75,10 @@ public abstract class AbstractBlock extends Expr
    */
   public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
   {
-    ListIterator<Stmnt> i = _statements.listIterator();
+    ListIterator<Expr> i = _statements.listIterator();
     while (i.hasNext())
       {
-        Stmnt s = i.next();
+        Expr s = i.next();
         i.set(s.visit(v, outer));
       }
     return this;
@@ -130,7 +130,7 @@ public abstract class AbstractBlock extends Expr
       {
         i--;
       }
-    return (i >= 0 && (_statements.get(i) instanceof Expr))
+    return (i >= 0 && (_statements.get(i).producesResult()))
       ? i
       : -1;
   }

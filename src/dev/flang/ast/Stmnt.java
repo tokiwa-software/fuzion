@@ -51,7 +51,7 @@ public interface Stmnt extends HasSourcePosition
    * @return this or an alternative Stmnt if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Stmnt visit(FeatureVisitor v, AbstractFeature outer);
+  public Expr visit(FeatureVisitor v, AbstractFeature outer);
 
 
   /**
