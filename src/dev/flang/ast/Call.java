@@ -2469,6 +2469,11 @@ public class Call extends AbstractCall
     ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
       { _type = Types.t_ERROR; }
+      @Override
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
     };
   }
 
