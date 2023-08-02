@@ -149,12 +149,18 @@ public f64(val f64) : float is
         0.0
 
 
+  # true when the absolute value
+  # is smaller than 0.001
+  # or greater than 9_999_999
+  #
+  module use_scientific_notation bool is
+    abs<1E-3 || abs>=1E7
+
+
   # convert this to a string.
   #
   public redef as_string =>
-    r := num.ryū
-    use_scientific_notation := abs<1E-3 || abs>=1E7
-    r.as_string val use_scientific_notation r.rounding_conservative
+    (num.ryū f64).as_string val
 
 
   # -----------------------------------------------------------------------
