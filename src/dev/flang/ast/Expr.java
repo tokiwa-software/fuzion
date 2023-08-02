@@ -505,6 +505,9 @@ public abstract class Expr extends ANY implements Stmnt
             AstErrors.ambiguousAssignmentToChoice(frmlT, value);
           }
 
+        if (CHECKS) check
+          (Errors.count() > 0 || cgs.size() == 1);
+
         return tag(frmlT, tag(cgs.get(0), value));
       }
   }
@@ -602,6 +605,11 @@ public abstract class Expr extends ANY implements Stmnt
     NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
       { _type = Types.t_ERROR; }
+      @Override
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
     };
   }
 
