@@ -599,7 +599,7 @@ public abstract class Expr extends ANY implements Stmnt
    */
   public static void reset()
   {
-    NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
       { _type = Types.t_ERROR; }
     };
