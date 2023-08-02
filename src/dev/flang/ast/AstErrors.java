@@ -462,7 +462,7 @@ public class AstErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param value the value to be assigned.
+   * @param typePar the unexpected type parameter
    */
   static void unexpectedTypeParameterInCall(SourcePosition pos,
                                             AbstractFeature calledFeature,
