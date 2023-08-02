@@ -67,7 +67,7 @@ import dev.flang.util.FuzionOptions;
  * 4. after inheritance resolution for a feature f, add it to the set of
  *    features to be type resolved.
  *
- * 5. As long as there are features to be inheritance resolved, got to step
+ * 5. As long as there are features to be inheritance resolved, go to step
  *    2. Otherwise, take the first feature of the list of features to be
  *    resolved for declarations.
  *
@@ -76,7 +76,7 @@ import dev.flang.util.FuzionOptions;
  *    features to the set of features to be resolved for inheritance. Schedule f
  *    for type resolution.
  *
- * 7. As long as there are features to be declaration resolved, got to step
+ * 7. As long as there are features to be declaration resolved, go to step
  *    6. Otherwise, take the first feature of the list of features to be
  *    resolved for types.
  *
