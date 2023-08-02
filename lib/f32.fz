@@ -113,9 +113,9 @@ public f32(val f32) : float is
   public mantissa =>
     m := cast_to_u32 & f32.type.mantissa_mask
     if exponent_biased = 0
-      m
+      m.as_u64
     else
-      (u32 1 << f32.type.mantissa_bits.as_u32) | m
+      ((u32 1 << f32.type.mantissa_bits.as_u32) | m).as_u64
 
 
 
@@ -136,10 +136,18 @@ public f32(val f32) : float is
         0.0
 
 
+  # true when the absolute value
+  # is smaller than 0.001
+  # or greater than 9_999_999
+  #
+  module use_scientific_notation bool is
+    abs<1E-3 || abs>=1E7
+
+
   # convert this to a string.
   #
   public redef as_string =>
-    as_f64.as_string
+    (num.ryū f32).as_string val
 
 
   # -----------------------------------------------------------------------
