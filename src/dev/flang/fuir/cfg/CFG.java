@@ -231,8 +231,6 @@ public class CFG extends ANY
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
-    put("fuzion.sys.out.write"           , (cfg, cl) -> { } );
-    put("fuzion.sys.err.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.delete"       , (cfg, cl) -> { } );
@@ -246,9 +244,11 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
-    put("fuzion.sys.out.flush"           , (cfg, cl) -> { } );
-    put("fuzion.sys.err.flush"           , (cfg, cl) -> { } );
-    put("fuzion.sys.stdin.next_byte"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.flush"        , (cfg, cl) -> { } );
+    put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
+    put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
+    put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
+
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
     put("i32.prefix -°"                  , (cfg, cl) -> { } );

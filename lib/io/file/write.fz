@@ -54,6 +54,9 @@ public write(fwh Write_Handler) : simple_effect is
     # dummy parameter for overloading
     write(fd i64, content array u8, _ unit) =>
       fuzion.sys.fileio.write fd content
+        .bind unit r->
+          if fuzion.sys.fileio.flush fd = 0 then r else error "flushing failed"
+
 
     mkdir(path String) =>
       fuzion.sys.fileio.create_dir path

@@ -39,6 +39,9 @@ import java.lang.reflect.Array;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -128,6 +131,9 @@ public class Intrinsics extends ANY
       }
     }
   };
+  private static Value _stdin  = new i64Value(_openStreams_.add(System.in ));
+  private static Value _stdout = new i64Value(_openStreams_.add(System.out));
+  private static Value _stderr = new i64Value(_openStreams_.add(System.err));
 
   /**
    * This contains all started threads.
@@ -338,49 +344,78 @@ public class Intrinsics extends ANY
               return  Interpreter.value(Interpreter._options_.getBackendArgs().get(i - 1));
             }
         });
-    put("fuzion.sys.out.write", (interpreter, innerClazz) ->
+    put("fuzion.sys.fileio.flush"  , (interpreter, innerClazz) -> args ->
         {
-          var s = System.out;
-          return args ->
+          var s = _openStreams_.get(args.get(1).i64Value());
+          if (s instanceof PrintStream ps)
             {
-              s.writeBytes((byte[])args.get(1).arrayData()._array);
-              return Value.EMPTY_VALUE;
-            };
+              ps.flush();
+            }
+          return new i32Value(0);
         });
-    putUnsafe("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
+
+    put("fuzion.sys.stdin.stdin0"  , (interpreter, innerClazz) -> args ->
+        {
+          return _stdin;
+        });
+    put("fuzion.sys.out.stdout"    , (interpreter, innerClazz) -> args ->
+        {
+          return _stdout;
+        });
+    put("fuzion.sys.err.stderr"    , (interpreter, innerClazz) -> args ->
+        {
+          return _stderr;
+        });
+    put("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
         {
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
-              int bytesRead = ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).read(byteArr);
-
-              if (args.get(3).i32Value() != bytesRead)
+              var s = _openStreams_.get(args.get(1).i64Value());
+              int bytesRead = 0;
+              if (s instanceof RandomAccessFile raf)
                 {
-                  if (bytesRead == -1)
+                  if (!ENABLE_UNSAFE_INTRINSICS)
                     {
-                      // no more data to read due to end of file
-                      return new i64Value(0);
+                      Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
                     }
+                  bytesRead = raf.read(byteArr);
+                }
+              else
+                {
+                  bytesRead = ((InputStream) s).read(byteArr);
                 }
 
-              return new i64Value(bytesRead);
+              return new i32Value(bytesRead);
             }
           catch (Exception e)
             {
-              return new i64Value(-1);
+              return new i32Value(-2);
             }
         });
-    putUnsafe("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
         {
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
-              ((RandomAccessFile)_openStreams_.get(args.get(1).i64Value())).write(fileContent);
-              return new i8Value(0);
+              var s = _openStreams_.get(args.get(1).i64Value());
+              if (s instanceof RandomAccessFile raf)
+                {
+                  if (!ENABLE_UNSAFE_INTRINSICS)
+                    {
+                      Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
+                    }
+                  raf.write(fileContent);
+                }
+              else
+                {
+                  ((OutputStream) s).write(fileContent);
+                }
+              return new i32Value(0);
             }
           catch (Exception e)
             {
-              return new i8Value(-1);
+              return new i32Value(-1);
             }
         });
     putUnsafe("fuzion.sys.fileio.delete", (interpreter, innerClazz) -> args ->
@@ -582,45 +617,6 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.sys.fileio.munmap", (interpreter, innerClazz) -> args ->
         {
           return new i32Value(0);
-        });
-    put("fuzion.sys.err.write", (interpreter, innerClazz) ->
-        {
-          var s = System.err;
-          return args ->
-            {
-              s.writeBytes((byte[])args.get(1).arrayData()._array);
-              return Value.EMPTY_VALUE;
-            };
-        });
-    put("fuzion.sys.stdin.next_byte", (interpreter, innerClazz) -> args ->
-        {
-          try
-            {
-              var nextByte = System.in.readNBytes(1);
-              return nextByte.length == 0 ? new i32Value(-1) : new i32Value(Byte.toUnsignedInt(nextByte[0]));
-            }
-            catch (IOException e)
-              {
-                return new i32Value(-2);
-              }
-        });
-    put("fuzion.sys.out.flush", (interpreter, innerClazz) ->
-        {
-          var s = System.out;
-          return args ->
-            {
-              s.flush();
-              return Value.EMPTY_VALUE;
-            };
-        });
-    put("fuzion.sys.err.flush", (interpreter, innerClazz) ->
-        {
-          var s = System.err;
-          return args ->
-            {
-              s.flush();
-              return Value.EMPTY_VALUE;
-            };
         });
     put("fuzion.std.exit", (interpreter, innerClazz) -> args ->
         {

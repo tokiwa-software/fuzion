@@ -170,15 +170,18 @@ public stdin(ip io.Byte_Input_Handler) : simple_effect is
   #
   type.default_input_handler(r choice u8 io.end_of_file error) : io.Byte_Input_Handler is
 
+    stdin := fuzion.sys.stdin.stdin0
 
     next io.Byte_Input_Handler is
-      v := fuzion.sys.stdin.next_byte
-      if v = -1
-        default_input_handler io.end_of_file
-      else if v < -1
+      res := [u8 0]
+      v := fuzion.sys.fileio.read stdin res.internal_array.data 1
+
+      if v < -1
         default_input_handler (error "an error occurred while reading stdin")
+      else if v <= 0
+          default_input_handler io.end_of_file
       else
-        default_input_handler v.as_u8
+        default_input_handler res[0]
 
 
     get => r
