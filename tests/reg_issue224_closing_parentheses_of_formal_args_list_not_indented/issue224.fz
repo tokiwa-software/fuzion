@@ -1,0 +1,5 @@
+x is
+  testIndent (
+    x i32,
+    y i32
+  ) is
