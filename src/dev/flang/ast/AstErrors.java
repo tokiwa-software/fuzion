@@ -1457,11 +1457,11 @@ public class AstErrors extends ANY
           "A choice feature must be a value type since it is not constructed ");
   }
 
-  static void choiceMustNotContainFields(SourcePosition pos, AbstractFeature f)
+  static void mustNotContainFields(SourcePosition pos, AbstractFeature f, String subject)
   {
     error(pos,
-          "Choice must not contain any fields",
-          "Field " + s(f) + " is not permitted in choice.\n" +
+          subject + " must not contain any fields",
+          "Field " + s(f) + " is not permitted.\n" +
           "Field declared at "+ f.pos().show());
   }
 
