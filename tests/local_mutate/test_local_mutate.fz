@@ -186,9 +186,9 @@ test_local_mutate is
       prev => p.get
 
     ring(T type, from Sequence T)
-      pre
-        !from.is_empty
-     =>
+    pre
+      !from.is_empty
+    =>
       m : mutate is
 
       ring2(from list T) Cell T m is   # NYI '=>' causes error cyclic type inference
@@ -340,9 +340,9 @@ test_local_mutate is
     # create a ring from the elements of a sequence
     #
     create_ring(T type, from Sequence T)
-      pre
-        !from.is_empty
-     =>
+    pre
+      !from.is_empty
+    =>
       # define mutate context to be used
       m : mutate is
 

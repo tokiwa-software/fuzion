@@ -124,9 +124,9 @@ public mutate : simple_effect is
     # read the mutable value that is now immutable after it was closed for mutation.
     #
     public val
-      pre
-        safety: !open
-     =>
+    pre
+      safety: !open
+    =>
       mutable_value
 
 
@@ -141,7 +141,7 @@ public mutate : simple_effect is
       ! mutate.this
     pre
       safety: open
-     =>
+    =>
       check_and_replace
       set mutable_value := to
 
@@ -157,7 +157,7 @@ public mutate : simple_effect is
       # function calculcating the new value from the old value
       f T->T
       )
-     =>
+    =>
       put (f get)
 
 

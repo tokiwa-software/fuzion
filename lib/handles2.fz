@@ -70,7 +70,7 @@ is
   public last
     pre
       has_last
-   =>
+  =>
     last_opt.get
 
 
@@ -82,7 +82,7 @@ is
     # initial value refered to by the new handle
     w T
     )
-   =>
+  =>
     (new w).last
 
 
@@ -92,7 +92,7 @@ is
     # a handle created by 'new'
     h handle2_0 T
     )
-   =>
+  =>
     h.get
 
 
@@ -111,7 +111,7 @@ is
       effect_mode.new     => false
       effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
-   =>
+  =>
     h.put w
     handles2 T X v last_opt mode
 
@@ -133,7 +133,7 @@ is
       effect_mode.new     => false
       effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
-   =>
+  =>
     h.put (f h.get)
     handles2 T X v last_opt mode
 

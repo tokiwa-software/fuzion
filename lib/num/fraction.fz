@@ -65,11 +65,11 @@ is
   public fixed redef infix -  (b fraction.this) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
   public fixed redef infix *  (b fraction.this) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
   public fixed redef infix /  (b fraction.this)
-    pre
-      # NYI: use type features
-      # safety: b != zero
-      safety: !b.numerator.is_zero
-    => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
+  pre
+    # NYI: use type features
+    # safety: b != zero
+    safety: !b.numerator.is_zero
+  => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
   public redef as_string => "" + numerator + "⁄" + denominator
 

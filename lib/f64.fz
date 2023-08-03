@@ -66,9 +66,9 @@ public f64(val f64) : float is
 
 
   public redef as_i64
-    pre
-      safety: fits_in_i64
-    => as_i64_lax
+  pre
+    safety: fits_in_i64
+  => as_i64_lax
 
 
   public as_f32 f32 is intrinsic

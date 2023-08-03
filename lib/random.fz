@@ -46,14 +46,14 @@ is
   #
   public next_i32(max i32)
   pre max ≥ 0
-   => (next.get max.as_u64).as_i32
+  => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
   public next_i64(max i64)
   pre max ≥ i64 0
-   => (next.get max.as_u64).as_i64
+  => (next.get max.as_u64).as_i64
 
 
   # return next random number of type u32 in the range 0..max-1
@@ -91,8 +91,8 @@ is
   # get the current random number in the range 0..max-1
   #
   public get (max u64)
-   =>
-     p.get % max  # NYI: This implementation is bad if max is big
+  =>
+    p.get % max  # NYI: This implementation is bad if max is big
 
 
   # install default instance of random
