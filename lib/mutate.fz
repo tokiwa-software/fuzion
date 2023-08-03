@@ -64,9 +64,7 @@ public mutate : simple_effect is
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  # NYI: #1129: u64 manually specified as a workaround, remove it
-  #
-  id u64 := fuzion.sys.misc.unique_id
+  id := fuzion.sys.misc.unique_id
 
   # 0 is used to indicate this is closed
   #
