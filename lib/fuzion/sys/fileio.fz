@@ -53,7 +53,7 @@ module fileio is
   # -1 at end of file
   # -2 for any other error
   #
-  private read(
+  module read(
                # the file descriptor
                fd i64,
                # the internal array data representing the container for the bytes to be read from the file
