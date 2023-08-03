@@ -51,19 +51,7 @@ public interface Stmnt extends HasSourcePosition
    * @return this or an alternative Stmnt if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Stmnt visit(FeatureVisitor v, AbstractFeature outer);
-
-
-  /**
-   * visit all the statements within this Stmnt.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited statements
-   */
-  default void visitStatements(StatementVisitor v)
-  {
-    v.action(this);
-  }
+  public Expr visit(FeatureVisitor v, AbstractFeature outer);
 
 
   /**

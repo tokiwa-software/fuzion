@@ -36,8 +36,7 @@ public out : character_encodings is
   public println =>
     write [ascii.lf]
 
-  private write(arr array u8) =>
-    write arr.internal_array.data arr.length
+  module stdout i64 is intrinsic
 
-  private write(array_data Any, length i32) unit is intrinsic
-  private flush unit is intrinsic
+  private write(arr array u8) =>
+    _ := fuzion.sys.fileio.write stdout arr

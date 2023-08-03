@@ -101,7 +101,7 @@ is
   public last
     pre
       has_last
-   =>
+  =>
     handle0 T count-1
 
 
@@ -113,7 +113,7 @@ is
     # initial value refered to by the new handle
     w T
     )
-   =>
+  =>
     (new w).last
 
 
@@ -123,7 +123,7 @@ is
     # a handle created by 'new'
     h handle0 T
     )
-   =>
+  =>
     ar[h.x]
 
 
@@ -135,7 +135,7 @@ is
 
     # the new value to be stored with 'h'
     w T)
-   =>
+  =>
     handles T X v (ar.put h.x w) mode
 
 
@@ -149,7 +149,7 @@ is
     # function calculcating the new value from the old value
     f T->T
     )
-   =>
+  =>
     update0 h.x f
 
 
@@ -163,7 +163,7 @@ is
     # function calculcating the new value from the old value
     f T->T
     )
-   =>
+  =>
     handles T X v (ar.put x (f ar[x])) mode
 
 

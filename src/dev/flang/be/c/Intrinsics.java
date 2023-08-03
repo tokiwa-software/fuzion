@@ -316,56 +316,33 @@ public class Intrinsics extends ANY
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
     put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
-    put("fuzion.sys.out.write" ,
-        "fuzion.sys.err.write" , (c,cl,outer,in) ->
-        {
-          // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
-          return CExpr.call("fwrite",
-                              new List<>(
-                                A0.castTo("void *"),
-                                CExpr.sizeOfType("char"),
-                                A1,
-                                outOrErr(in)
-                              ));
-        });
     put("fuzion.sys.fileio.read"         , (c,cl,outer,in) ->
         {
-          var readingIdent = new CIdent("reading");
-          var resultIdent = new CIdent("result");
+          var result = new CIdent("result");
           var zero = new CIdent("0");
           return CStmnt.seq(
-            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
-            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("fzT_1i64", resultIdent, readingIdent.castTo("fzT_1i64")),
-            CExpr.iff(
-              CExpr.notEq(readingIdent, A2.castTo("size_t")),
-              CStmnt.seq(
-                CExpr.iff(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(readingIdent.castTo("fzT_1i64"))),
-                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(CExpr.int64const(-1))),
-                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
-            resultIdent.ret());
+            CExpr.decl("int", result, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+              CExpr.int32const(-2).ret()),
+            CExpr.iff(result.eq(zero).and(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero)),
+              CExpr.int32const(-1).ret()),
+            result.castTo("fzT_1i32").ret()
+          );
         });
     put("fuzion.sys.fileio.write"        , (c,cl,outer,in) ->
         {
-          var writingIdent = new CIdent("writing");
-          var flushingIdent = new CIdent("flushing");
-          var resultIdent = new CIdent("result");
-          var zero = new CIdent("0");
           return CStmnt.seq(
-            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
-            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("fzT_1i8", resultIdent, CExpr.int8const(0)),
-            CExpr.iff(
-              CExpr.notEq(writingIdent, A2.castTo("size_t")),
-              CStmnt.seq(
-                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(CExpr.int8const(-1))),
-                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
-            CExpr.decl("bool", flushingIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
-            CExpr.iff(flushingIdent.not(), resultIdent.assign(errno.castTo("fzT_1i8"))),
-            resultIdent.ret());
+            CExpr.call("fwrite",
+                            new List<>(
+                              A1.castTo("void *"),      // the data
+                              CExpr.sizeOfType("char"), //
+                              A2,                       // how many bytes to write
+                              A0.castTo("FILE *")       // the file descriptor
+                            )),
+            CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), new CIdent("0")),
+              CExpr.int32const(-1).ret()),
+            CExpr.int32const(0).ret()
+          );
         });
     put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
         {
@@ -556,24 +533,14 @@ public class Intrinsics extends ANY
       A1.castTo("size_t")     // size
     )).ret());
 
-    put("fuzion.sys.out.flush"      ,
-        "fuzion.sys.err.flush"      , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
-    put("fuzion.sys.stdin.next_byte", (c,cl,outer,in) ->
-        {
-          var cIdent = new CIdent("c");
-          return CStmnt.seq(
-            CExpr.decl("int", cIdent, CExpr.call("getchar", new List<>())),
-            CExpr.iff(cIdent.eq(new CIdent("EOF")),
-              CStmnt.seq(
-                // -1 EOF
-                CExpr.iff(CExpr.call("feof", new List<>(CExpr.ident("stdin"))), CExpr.int32const(-1).ret()),
-                // -2 some other error
-                CExpr.int32const(-2).ret()
-              )
-            ),
-            cIdent.castTo("fzT_1i32").ret()
-          );
-        });
+    put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
+      CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
+    put("fuzion.sys.stdin.stdin0"      , (c,cl,outer,in) ->
+      new CIdent("stdin").castTo("fzT_1i64").ret());
+    put("fuzion.sys.out.stdout"      , (c,cl,outer,in) ->
+      new CIdent("stdout").castTo("fzT_1i64").ret());
+    put("fuzion.sys.err.stderr"      , (c,cl,outer,in) ->
+      new CIdent("stderr").castTo("fzT_1i64").ret());
 
         /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
@@ -792,8 +759,6 @@ public class Intrinsics extends ANY
     put("f64.type.acos"        , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
     put("f32.type.atan"        , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
     put("f64.type.atan"        , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
-    put("f32.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
-    put("f64.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
     put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
     put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
     put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
@@ -1162,22 +1127,6 @@ public class Intrinsics extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Get the proper output file handle 'stdout' or 'stderr' depending on the
-   * prefix of the intrinsic feature name in.
-   *
-   * @param in name of an intrinsic feature in fuzion.sys.out or fuzion.sys.err.
-   *
-   * @return CIdent of 'stdout' or 'stderr'
-   */
-  private static CIdent outOrErr(String in)
-  {
-    if      (in.startsWith("fuzion.sys.out.")) { return new CIdent("stdout"); }
-    else if (in.startsWith("fuzion.sys.err.")) { return new CIdent("stderr"); }
-    else                                       { throw new Error("outOrErr called on "+in); }
-  }
 
 
   /**

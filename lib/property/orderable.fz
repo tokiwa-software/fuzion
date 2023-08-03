@@ -36,7 +36,7 @@ public orderable : property.partially_orderable
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.for_all2 T T fun(a, b T) => a <= b || b <= a,
+    analysis: quantor.for_all2 T T fun(a, b T) => a <= b || b <= a,
 */
 
 is

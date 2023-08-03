@@ -262,7 +262,7 @@ public class Function extends ExprWithPos
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Stmnt> statements = new List<Stmnt>(f);
+            List<Expr> statements = new List<Expr>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
@@ -512,7 +512,7 @@ public class Function extends ExprWithPos
               }
             List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
 
-            List<Stmnt> statements = new List<Stmnt>(fcall);
+            List<Expr> statements = new List<Expr>(fcall);
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),

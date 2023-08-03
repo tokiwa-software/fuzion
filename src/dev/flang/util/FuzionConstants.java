@@ -42,6 +42,12 @@ public class FuzionConstants extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * String used in the dummy Expr Expr.NO_VALUE.
+   */
+  public static final String NO_VALUE_STRING = "**no value**";
+
+
   /*----------------------  special feature names  ----------------------*/
 
 

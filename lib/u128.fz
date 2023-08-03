@@ -82,13 +82,13 @@ public u128(hi, lo u64) : num.wrap_around, has_interval is
 
   # division and remainder with check for div-by-zero
   public fixed infix / (other u128)
-    pre
-      safety: other != u128.type.zero
-   => div other
+  pre
+    safety: other != u128.type.zero
+  => div other
   public fixed infix %  (other u128)
-    pre
-      safety: other != u128.type.zero
-   => mod other
+  pre
+    safety: other != u128.type.zero
+  => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is

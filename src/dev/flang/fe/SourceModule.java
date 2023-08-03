@@ -49,6 +49,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
 import dev.flang.ast.Current;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
@@ -194,7 +195,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return the features found in source file p, may be empty, never null.
    */
-  List<Stmnt> parseFile(Path p)
+  List<Expr> parseFile(Path p)
   {
     _options.verbosePrintln(2, " - " + p);
     return new Parser(p).unit();

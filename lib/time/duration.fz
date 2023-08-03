@@ -136,7 +136,7 @@ public durations : units is
   public ns (n u64)
   pre
     debug: n ≤ max_duration_nanos
-   => duration n
+  => duration n
 
 
   # create duration of n µs
@@ -146,7 +146,7 @@ public durations : units is
   public µs (n u64)
   pre
     debug: n ≤ max_duration_micros
-   => duration n*nanos_per_micro
+  => duration n*nanos_per_micro
 
 
   # create duration of n ms
@@ -156,7 +156,7 @@ public durations : units is
   public ms (n u64)
   pre
     debug: n ≤ max_duration_millis
-   => duration n*nanos_per_milli
+  => duration n*nanos_per_milli
 
 
   # create duration of n seconds
@@ -166,7 +166,7 @@ public durations : units is
   public s (n u64)
   pre
     debug: n ≤ max_duration_seconds
-   => duration n*nanos_per_second
+  => duration n*nanos_per_second
 
 
   # create duration of n seconds
@@ -176,7 +176,7 @@ public durations : units is
   public seconds (n u64)
   pre
     debug: n ≤ max_duration_seconds
-   => s n
+  => s n
 
 
   # create duration of n min
@@ -186,7 +186,7 @@ public durations : units is
   public min (n u64)
   pre
     debug: n ≤ max_duration_minutes
-   => duration n*nanos_per_minute
+  => duration n*nanos_per_minute
 
 
   # create duration of n min
@@ -196,7 +196,7 @@ public durations : units is
   public minutes (n u64)
   pre
     debug: n ≤ max_duration_minutes
-   => min n
+  => min n
 
 
   # create duration of n hours
@@ -206,7 +206,7 @@ public durations : units is
   public h (n u64)
   pre
     debug: n ≤ max_duration_hours
-   => duration n*nanos_per_hour
+  => duration n*nanos_per_hour
 
 
   # create duration of n hours
@@ -216,7 +216,7 @@ public durations : units is
   public hours (n u64)
   pre
     debug: n ≤ max_duration_hours
-   => h n
+  => h n
 
 
   # create duration of n days
@@ -226,7 +226,7 @@ public durations : units is
   public days  (n u64)
   pre
     debug: n ≤ max_duration_days
-   => duration n*nanos_per_day
+  => duration n*nanos_per_day
 
 
   # create duration of n weeks
@@ -236,7 +236,7 @@ public durations : units is
   public weeks (n u64)
   pre
     debug: n ≤ max_duration_weeks
-   => duration n*nanos_per_week
+  => duration n*nanos_per_week
 
 
   # create duration of n years
@@ -246,7 +246,7 @@ public durations : units is
   public a (n u64)
   pre
     debug: n ≤ max_duration_years
-   => duration n*nanos_per_year
+  => duration n*nanos_per_year
 
 
   # create duration of n years
@@ -256,7 +256,7 @@ public durations : units is
   public years (n u64)
   pre
     debug: n ≤ max_duration_years
-   => a n
+  => a n
 
 
 # time.duration.units -- unit time defining units used in duration

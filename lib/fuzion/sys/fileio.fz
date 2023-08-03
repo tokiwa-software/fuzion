@@ -37,16 +37,21 @@ module fileio is
     buf := array n.as_i32 i->(u8 0)
     res := read fd buf.internal_array.data buf.length
 
-    if res < i64 0
+    if res < -1
       error "unspecified read error: {res}"
-    else if res < n.as_i64 || res = n.as_i64
-      (buf.slice 0 res.as_i32).as_array
+    else if res < 0
+      r array u8 := [] # NYI type inference assigning array to choice
+      r
     else
-      error "read more than expected"
+      (buf.slice 0 res).as_array
 
 
   # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
-  # returns i8 0 in case of success and the error number/ -1 for the interpreter in case of failure
+  #
+  # returns:
+  # 0 or greater on success
+  # -1 at end of file
+  # -2 for any other error
   #
   private read(
                # the file descriptor
@@ -54,7 +59,7 @@ module fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array Any,
                # the length of the array that represents the file bytes
-               file_array_length i32) i64 is intrinsic
+               file_array_length i32) i32 is intrinsic
 
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
@@ -75,14 +80,13 @@ module fileio is
   module write(fd i64, content array u8) outcome unit is
     res := write fd content.internal_array.data content.length
 
-    if res = i8 0
+    if res = 0
       unit
     else
       error "write error: {res}"
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
-  # returns i8 0 in case of success
-  # and the error number/ -1 in the interpreter in case of failure
+  # returns 0 in case of success, -1 in case of failure
   #
   private write(
                 # the file descriptor
@@ -90,7 +94,7 @@ module fileio is
                 # the internal array data representing the content bytes to insert in file
                 content Any,
                 # the length of the internal array representing the content
-                content_length i32) i8 is intrinsic
+                content_length i32) i32 is intrinsic
 
 
   # deletes the file/dir found in the path
@@ -310,3 +314,9 @@ module fileio is
   #
   module munmap(address Any, size i64) i32 is intrinsic
 
+
+  # flush user-space buffers of file descriptor
+  #
+  # return: 0 on success everything else is an error
+  #
+  module flush(fd i64) i32 is intrinsic

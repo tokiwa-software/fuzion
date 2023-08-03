@@ -54,13 +54,13 @@ public i8(val i8) : num.wrap_around, has_interval is
 
   # division and remainder with check for div-by-zero
   public fixed infix / (other i8)
-    pre
-      safety: other != 0
-   => div(other)
+  pre
+    safety: other != 0
+  => div(other)
   fixed redef infix % (other i8)
-    pre
-      safety: other != 0
-   => mod(other)
+  pre
+    safety: other != 0
+  => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
   private div (other i8) i8 is intrinsic

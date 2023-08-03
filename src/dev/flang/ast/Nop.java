@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 
@@ -35,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Nop extends ANY implements Stmnt
+public class Nop extends Expr
 {
 
 
@@ -95,6 +94,16 @@ public class Nop extends ANY implements Stmnt
   public boolean containsOnlyDeclarations()
   {
     return true;
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
   }
 
 

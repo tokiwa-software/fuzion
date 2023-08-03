@@ -102,19 +102,19 @@ is
   # is not nil.  A runtime error will be created otherwise.
   #
   public get
-    pre
-      safety: option.this??
-    =>
-      option.this ? v T => v
-                  | nil => fuzion.std.panic "option.get called on nil"
+  pre
+    safety: option.this??
+  =>
+    option.this ? v T => v
+                | nil => fuzion.std.panic "option.get called on nil"
 
 
   # unwraps an option if it exists, returns default value otherwise.
   #
   public get(default Lazy T)
-    =>
-      option.this ? v T => v
-                  | nil => default
+  =>
+    option.this ? v T => v
+                | nil => default
 
 
   # return function

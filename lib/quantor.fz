@@ -23,13 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# quantors -- unit type feature containing quantors ∀ and ∃.
+# quantor -- unit type feature containing quantors ∀ and ∃.
 #
-# quantors provides for_all and exists-quantors for use in contracts qualified
+# quantor provides for_all and exists-quantors for use in contracts qualified
 # for analysis.
 #
 #
-public quantors is
+public quantor is
 
   # for_all quantors for use in analysis parts of contracts
   #

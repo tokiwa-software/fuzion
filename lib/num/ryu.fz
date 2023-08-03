@@ -31,7 +31,9 @@
 #
 # NYI lacks documentation
 #
-public ryū is
+public ryū(T type : float) is
+
+  five := T.from_u32 5
 
 
   # constructor for rounding mode
@@ -52,37 +54,48 @@ public ryū is
   public rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
 
 
-  # convert f64 to string
-  public as_string(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
+  # convert float to string using conservative rounding
+  #
+  # if the absolute value
+  # is smaller than 0.001
+  # or greater than 9_999_999
+  # scientific notation will be used.
+  #
+  public as_string(val T) String is
+    as_string val val.use_scientific_notation rounding_conservative
+
+
+  # convert float to string
+  public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String is
     # trivial cases first
-    if (f64.type.is_NaN val) then "NaN"
-    else if (val = f64.type.positive_infinity) then "Infinity"
-    else if (val = f64.type.negative_infinity) then "-Infinity"
-    else if (val = 0.0)
+    if (T.is_NaN val) then "NaN"
+    else if (val = T.positive_infinity) then "Infinity"
+    else if (val = T.negative_infinity) then "-Infinity"
+    else if (val = T.zero)
       if val.is_sign_bit_set then "-0.0" else "0.0"
     else
       as_string_nontrivial val scientific_notation rounding_mode
 
 
 
-  # convert f64 to string for nontrivial case
-  private as_string_nontrivial(val f64, scientific_notation bool, rounding_mode rounding_mode) String is
+  # convert float to string for nontrivial case
+  private as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String is
 
     (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
 
-    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-f64.type.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
+    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-T.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
 
     (output, output_length, exponent_decimal) := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
 
-    step_5 output output_length exponent_decimal (val < 0.0) scientific_notation
+    step_5 output output_length exponent_decimal (val < T.zero) scientific_notation
 
 
 
   # step 2: get the interval of legal decimal representations
-  private step_2(val f64) tuple i64 i64 i64 bool bool is
+  private step_2(val T) tuple i64 i64 i64 bool bool is
     m := val.mantissa.as_i64
     mv := m << 2
-    mm_shift := m != (i64 1 << f64.type.mantissa_bits.as_i64) || val.exponent_biased <= 1
+    mm_shift := m != (i64 1 << T.mantissa_bits.as_i64) || val.exponent_biased <= 1
     (mv - (if mm_shift then 2 else 1), mv, mv + 2, mm_shift, (m & 1) = 0)
 
 
@@ -95,8 +108,8 @@ public ryū is
     pre e >= 0,
         e <= 3528
     post
-      pow5bits.this.result = (f64.type.log 2.0 (5.0 ** e.as_f64)).as_i64
-      =>
+      pow5bits.this.result = (T.log T.two (five ** T.from_i64 e)).as_i64
+    =>
       (e * 1217359) >> 19
 
 
@@ -790,7 +803,7 @@ public ryū is
     private mul_pow5_div_pow2(m, i, j i64)
     pre (actual_shift j) >= 0,
         exponent < 0
-      =>
+    =>
       mul_pow5_div_pow2 m i j pow5_split
 
 
@@ -816,7 +829,7 @@ public ryū is
       pre e >= 0,
           e <= 1650
       post
-        floor_log₁₀_pow_2.this.result = (f64.type.log 10 (2.0 ** e.as_f64)).floor.as_i64
+        floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
       is
         exponent*78913 >> 18
 
@@ -848,8 +861,8 @@ public ryū is
       pre e >= 0,
           e <= 2620
       post
-        ( f64.type.log 10 (5.0 ** e.as_f64) = f64.type.infinity
-          || floor_log₁₀_pow_5.this.result = (f64.type.log 10 (5.0 ** e.as_f64)).floor.as_i64)
+        ( T.log T.ten (five ** T.from_i64 e) = T.infinity
+          || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
       is
         e*732923 >> 20
 

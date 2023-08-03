@@ -120,7 +120,7 @@ is
              match node
                i Indirection_Node => i.gen <= gen
                s singleton_node => true
-   =>
+  =>
     container_node bmp (array.put pos.as_i32 node) g
 
   # add a child node and return a new container_node
@@ -131,7 +131,7 @@ is
   remove(pos, flag u32, g u64)
   pre debug: pos < array.length.as_u32
   post array.length > result.array.length
-   =>
+  =>
     # NYI delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     container_node (bmp ^ flag) tmp.as_array g
@@ -220,7 +220,7 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
   pre match prev.read
     Nil => true
     * => false
-   =>
+  =>
     match data
       container_node container_node => container_node.as_list f
       tomb_node tomb_node => tomb_node.as_list

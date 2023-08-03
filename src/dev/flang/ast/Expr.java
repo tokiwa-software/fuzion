@@ -60,7 +60,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Dummy Expr value. Used in to represent error values.
+   * Dummy Expr value. Used to represent error values.
    */
   public static final Expr ERROR_VALUE = new Expr()
     {
@@ -217,6 +217,18 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
+   * visit all the statements within this Stmnt.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    v.action(this);
+  }
+
+
+  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a statement with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this
@@ -229,10 +241,10 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @param r the field this should be assigned to.
    *
-   * @return the Stmnt this Expr is to be replaced with, typically an Assign
+   * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Stmnt assignToField(Resolution res, AbstractFeature outer, Feature r)
+  Expr assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     return new Assign(res, pos(), r, this, outer);
   }
@@ -280,7 +292,7 @@ public abstract class Expr extends ANY implements Stmnt
         var declarationsInLazy = new List<Feature>();
         visit(new FeatureVisitor()
           {
-            public Stmnt action (Feature f, AbstractFeature outer)
+            public Expr action (Feature f, AbstractFeature outer)
             {
               declarationsInLazy.add(f);
               return f;
@@ -505,6 +517,9 @@ public abstract class Expr extends ANY implements Stmnt
             AstErrors.ambiguousAssignmentToChoice(frmlT, value);
           }
 
+        if (CHECKS) check
+          (Errors.count() > 0 || cgs.size() == 1);
+
         return tag(frmlT, tag(cgs.get(0), value));
       }
   }
@@ -588,7 +603,7 @@ public abstract class Expr extends ANY implements Stmnt
    * Some Expressions do not produce a result, e.g., a Block that is empty or
    * whose last statement is not an expression that produces a result.
    */
-  boolean producesResult()
+  public boolean producesResult()
   {
     return true;
   }
@@ -599,9 +614,14 @@ public abstract class Expr extends ANY implements Stmnt
    */
   public static void reset()
   {
-    NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
       { _type = Types.t_ERROR; }
+      @Override
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
     };
   }
 

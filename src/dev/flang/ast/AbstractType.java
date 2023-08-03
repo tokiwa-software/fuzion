@@ -141,7 +141,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, resolve the actual type parameters.
    *
-   * @param pos souce code position of the unresolved types whose generics we
+   * @param pos source code position of the unresolved types whose generics we
    * are resolving.
    *
    * @param res the resolution instance
@@ -412,7 +412,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    if (!result && target_type.isChoice())
+    if (!result && target_type.isChoice() && !isThisTypeInTypeFeature())
       {
         result = target_type.isChoiceMatch(actual_type);
       }
@@ -1629,7 +1629,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param actuals the actual type parameters
    *
    * @param unresolvedActuals when available, the list of unresolved actuals
-   * such that souce code positions can be shown.
+   * such that source code positions can be shown.
    *
    * @param callPos in case this is a call un unresolvedActuals is empty since
    * the actual type parameters are inferred, this gives the position of the

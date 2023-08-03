@@ -49,7 +49,7 @@ is
   # the month of the year
   month
   post result ≥ 1 & result ≤ 12
-    =>
+  =>
     # Increase the month and add the days in month to
     # the accumulated days. We found our month once
     # the sum of accumulated days and the days in the
@@ -65,7 +65,7 @@ is
   # the day of the month
   day_of_month
   post result ≥ 1 & result ≤ 31
-    =>
+  =>
     days_in_months
       .reduce day_in_year (d, md -> if d-md ≤ 0 then abort d else d-md)
 
@@ -74,7 +74,7 @@ is
   # the millisecond of this datetime.
   milli_second
   post result ≥ 0 & result ≤ 999
-    =>
+  =>
     nano_second / 1E3
 
 
@@ -88,15 +88,15 @@ is
 
 
   # # NYI
-  # infix + (other date_time) time.duration is
+  # infix + (other time.duration) date_time is
 
   # infix - (other date_time) time.duration is
+  # infix - (other time.duration) date_time is
 
   # as_string(f date_time_format, local/time_zone) String is
 
   # is_before(other date_time) bool is
   # is_after(other date_time) bool is
-  # is_same(other date_time) bool is
   # is_between(o1, o2 date_time) bool is
   # ...
 
