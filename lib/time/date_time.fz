@@ -88,15 +88,15 @@ is
 
 
   # # NYI
-  # infix + (other date_time) time.duration is
+  # infix + (other time.duration) date_time is
 
   # infix - (other date_time) time.duration is
+  # infix - (other time.duration) date_time is
 
   # as_string(f date_time_format, local/time_zone) String is
 
   # is_before(other date_time) bool is
   # is_after(other date_time) bool is
-  # is_same(other date_time) bool is
   # is_between(o1, o2 date_time) bool is
   # ...
 
