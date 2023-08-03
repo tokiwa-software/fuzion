@@ -47,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Feature extends AbstractFeature implements Stmnt
+public class Feature extends AbstractFeature
 {
 
 
@@ -316,7 +316,7 @@ public class Feature extends AbstractFeature implements Stmnt
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
                   new Block(SourcePosition.builtIn,
-                            new List<Stmnt>()),
+                            new List<Expr>()),
                   Impl.Kind.Routine));
   }
 
@@ -1282,8 +1282,8 @@ public class Feature extends AbstractFeature implements Stmnt
     public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
     public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Stmnt        action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Stmnt        action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+    public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    public Expr         action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
                                                                                 return f.resolveTypes   (res, f.outer() ); }
     public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
     public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
@@ -1885,7 +1885,7 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
+            public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
@@ -1910,7 +1910,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return this.
    */
-  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
@@ -1935,9 +1935,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    Stmnt result = this;
+    Expr result = this;
 
     if (CHECKS) check
       (this.outer() == outer,
@@ -2062,7 +2062,7 @@ public class Feature extends AbstractFeature implements Stmnt
               found();
             }
         }
-        public Stmnt action(Destructure d, AbstractFeature outer)
+        public Expr action(Destructure d, AbstractFeature outer)
         {
           if (d == use)
             { // Found the assign, so we got the result!
@@ -2092,7 +2092,7 @@ public class Feature extends AbstractFeature implements Stmnt
         {
           curres[0] = stack.pop();
         }
-        public Stmnt action(Feature f, AbstractFeature outer)
+        public Expr action(Feature f, AbstractFeature outer)
         {
           if (f == inner)
             {

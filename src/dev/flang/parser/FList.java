@@ -31,9 +31,8 @@ import java.util.LinkedList;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Stmnt;
+import dev.flang.ast.Expr;
 
-import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -44,7 +43,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FList extends ANY implements Stmnt
+public class FList extends Expr
 {
 
 

@@ -716,7 +716,7 @@ class LibraryOut extends ANY
             else
               {
                 lastPos = expressions(st, dumpResult, lastPos);
-                dumpResult = dumpResult || st instanceof Expr;
+                dumpResult = dumpResult || st instanceof AbstractBlock || st.producesResult();
               }
           }
         if (!dumpResult)

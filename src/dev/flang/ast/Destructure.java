@@ -48,7 +48,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Destructure extends ANY implements Stmnt
+public class Destructure extends Expr
 {
 
 
@@ -136,9 +136,9 @@ public class Destructure extends ANY implements Stmnt
   /**
    * Helper routine for create to expand this into a block of statements.
    */
-  private Stmnt expand()
+  private Expr expand()
   {
-    List<Stmnt> stmnts = new List<Stmnt>();
+    List<Expr> stmnts = new List<Expr>();
     if (_fields != null)
       {
         for (var f : _fields)
@@ -168,7 +168,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return a statement that implements the destructuring.
    */
-  public static Stmnt create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
+  public static Expr create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       ((fields == null) != (names == null),
@@ -217,7 +217,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return this
    */
-  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     return v.action(this, outer);
@@ -231,7 +231,7 @@ public class Destructure extends ANY implements Stmnt
    */
   private void addAssign(Resolution res,
                          AbstractFeature outer,
-                         List<Stmnt> stmnts,
+                         List<Expr> stmnts,
                          Feature tmp,
                          AbstractFeature f,
                          Iterator<ParsedName> names,
@@ -276,9 +276,9 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    List<Stmnt> stmnts = new List<>();
+    List<Expr> stmnts = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the decomposition code later, after resolveTypes is done.
     var t = _value.type();
@@ -354,6 +354,16 @@ public class Destructure extends ANY implements Stmnt
   public boolean containsOnlyDeclarations()
   {
     throw new Error("Destructure should have disappeared after resolveTypes");
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
   }
 
 

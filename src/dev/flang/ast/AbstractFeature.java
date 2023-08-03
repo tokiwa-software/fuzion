@@ -44,7 +44,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>, HasSourcePosition
+public abstract class AbstractFeature extends Expr implements Comparable<AbstractFeature>
 {
 
 
@@ -1714,6 +1714,33 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         result++;
       }
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
+
+
+  /**
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this or an alternative Expr if the action performed during the
+   * visit replaces this by the alternative.
+   */
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    throw new RuntimeException("not meant to be used...");
   }
 
 

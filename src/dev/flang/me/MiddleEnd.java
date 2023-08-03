@@ -282,7 +282,7 @@ public class MiddleEnd extends ANY
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
-        //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
+        //        public Expr action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
       };
     f.visitCode(fv);

@@ -195,7 +195,7 @@ public class Parser extends Lexer
 unit        : stmnts EOF
             ;
    */
-  public List<Stmnt> unit()
+  public List<Expr> unit()
   {
     var result = stmnts();
     if (Errors.count() == 0)
@@ -2620,13 +2620,13 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
             |
             ;
    */
-  List<Stmnt> stmnts()
+  List<Expr> stmnts()
   {
-    List<Stmnt> l = new List<>();
+    List<Expr> l = new List<>();
     var in = new Indentation();
     while (!endOfStmnts() && in.ok())
       {
-        Stmnt s = stmnt();
+        Expr s = stmnt();
         if (s instanceof FList fl)
           {
             l.addAll(fl._list);
@@ -2777,7 +2777,7 @@ stmnt       : feature
             | checkstmnt
             ;
    */
-  Stmnt stmnt()
+  Expr stmnt()
   {
     return
       isCheckPrefix()       ? checkstmnt()  :
@@ -3024,7 +3024,7 @@ elseBlock   : "else" block
 checkstmnt   : "check" cond
             ;
    */
-  Stmnt checkstmnt()
+  Expr checkstmnt()
   {
     match(Token.t_check, "checkstmnt");
     return new Check(tokenSourcePos(), cond());
@@ -3049,7 +3049,7 @@ checkstmnt   : "check" cond
 assign      : "set" name ":=" exprInLine
             ;
    */
-  Stmnt assign()
+  Expr assign()
   {
     if (!ENABLE_SET_KEYWORD)
       {
@@ -3101,7 +3101,7 @@ destructrDcl: formArgs               ":=" exprInLine
 destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
-  Stmnt destructure()
+  Expr destructure()
   {
     if (fork().skipFormArgs())
       {

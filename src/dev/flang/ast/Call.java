@@ -599,12 +599,12 @@ public class Call extends AbstractCall
               {
                 boolean isChainedBoolRHS() { return true; }
               };
-            Stmnt as = new Assign(res, pos(), tmp, b, thiz);
+            Expr as = new Assign(res, pos(), tmp, b, thiz);
             t1 = res.resolveType(t1    , thiz);
             as = res.resolveType(as    , thiz);
             result = res.resolveType(result, thiz);
             cb._actuals.set(cb._actuals.size()-1,
-                            new Block(b.pos(),new List<Stmnt>(as, t1)));
+                            new Block(b.pos(),new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
             _calledFeature = Types.resolved.f_bool_AND;
             _name = _calledFeature.featureName().baseName();

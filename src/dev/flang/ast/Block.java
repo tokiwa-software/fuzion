@@ -83,7 +83,7 @@ public class Block extends AbstractBlock
    */
   private Block(SourcePosition pos,
                 SourcePosition closingBracePos,
-                List<Stmnt> s,
+                List<Expr> s,
                 boolean newScope)
   {
     super(s);
@@ -108,7 +108,7 @@ public class Block extends AbstractBlock
    */
   public Block(SourcePosition pos,
                SourcePosition closingBracePos,
-               List<Stmnt> s)
+               List<Expr> s)
   {
     this(pos, closingBracePos, s, true);
   }
@@ -123,7 +123,7 @@ public class Block extends AbstractBlock
    * @param s the list of statements
    */
   public Block(SourcePosition pos,
-               List<Stmnt> s)
+               List<Expr> s)
   {
     this(pos, pos, s, false);
   }
@@ -141,7 +141,7 @@ public class Block extends AbstractBlock
    * that can be ignored if assigned to unit type.
    */
   public Block(SourcePosition pos,
-               List<Stmnt> s,
+               List<Expr> s,
                boolean hasImplicitResult)
   {
     this(pos, s);
@@ -173,7 +173,7 @@ public class Block extends AbstractBlock
       }
     else
       {
-        result = new Block(e.pos(), new List<Stmnt>(e));
+        result = new Block(e.pos(), new List<Expr>(e));
       }
     return result;
   }
@@ -219,10 +219,10 @@ public class Block extends AbstractBlock
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this, outer);
-    ListIterator<Stmnt> i = _statements.listIterator();
+    ListIterator<Expr> i = _statements.listIterator();
     while (i.hasNext())
       {
-        Stmnt s = i.next();
+        Expr s = i.next();
         i.set(s.visit(v, outer));
       }
     v.actionAfter(this, outer);
@@ -404,7 +404,7 @@ public class Block extends AbstractBlock
    * Some Expressions do not produce a result, e.g., a Block that is empty or
    * whose last statement is not an expression that produces a result.
    */
-  boolean producesResult()
+  public boolean producesResult()
   {
     var expr = resultExpression();
     return expr != null && expr.producesResult();
