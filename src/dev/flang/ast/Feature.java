@@ -1520,7 +1520,7 @@ public class Feature extends AbstractFeature implements Stmnt
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef())
           {
-            AstErrors.choiceMustNotContainFields(_pos,p);
+            AstErrors.mustNotContainFields(_pos, p, "Choice");
           }
       }
     // choice type must not contain any code, but may contain inner features
@@ -1622,7 +1622,30 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         checkChoiceAndAddInternalFields(res);
       }
+    if (isBuiltInPrimitive())
+      {
+        checkBuiltInPrimitive(res);
+      }
   }
+
+
+  /**
+   * check that primitives do not contain fields
+   *
+   * @param res
+   */
+  private void checkBuiltInPrimitive(Resolution res)
+  {
+    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+      {
+        // primitives must not have any fields
+        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().equals(selfType())) )
+          {
+            AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
+          }
+      }
+  }
+
 
   /**
    * Type inference determines static types that are not given explicitly in the
