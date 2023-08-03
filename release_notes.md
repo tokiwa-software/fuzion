@@ -1,4 +1,261 @@
-## 2023-**-**: V0.084
+## 2023-**-**: V0.085
+
+## 2023-08-**: V0.084
+
+- Fuzion language
+
+  - In preparation of enforcing visibility, many things relating to
+    visibility have been improved or changed:
+    [#1690](https://github.com/tokiwa-software/fuzion/pull/1690),
+    [#1691](https://github.com/tokiwa-software/fuzion/pull/1691),
+    [#1695](https://github.com/tokiwa-software/fuzion/pull/1695),
+    [#1714](https://github.com/tokiwa-software/fuzion/pull/1714),
+    [#1731](https://github.com/tokiwa-software/fuzion/pull/1731),
+    [#1734](https://github.com/tokiwa-software/fuzion/pull/1734),
+    [#1736](https://github.com/tokiwa-software/fuzion/pull/1736),
+    [#1744](https://github.com/tokiwa-software/fuzion/pull/1744).
+
+  - Type inference for arguments from actuals in a call:
+    [#1722](https://github.com/tokiwa-software/fuzion/pull/1722).
+    In a declaration like
+
+            point(x, y i32) is
+                  
+
+    The argument type `i32` can be omitted if there are calls to
+    that feature:
+
+            point(x, y) is
+
+            p1 := point 3 4
+            p2 := point 5 12
+                  
+
+  - Support for *free types*
+    [#1774](https://github.com/tokiwa-software/fuzion/pull/1722)
+    to simplify declarations using type parameters. It is now
+    possible to write
+
+            first (s Sequence T) => s.nth 0
+                  
+
+    instead of
+
+            first (T type, s Sequence T) => s.nth 0
+                  
+
+    Free types can be anonymous using `_`:
+
+            first (s Sequence _) => s.nth 0
+                  
+
+    one can also use constraints as in
+
+            add_to_all (s array N:numeric, v N) => s.map x->x+v
+
+            say (add_to_all [1, 2, 3] 10)
+                  
+
+    or complex type expressions like
+
+            g(v A | (B : numeric)) => ...
+                  
+
+  - Explicit `ref` types have been removed:
+    [#1705](https://github.com/tokiwa-software/fuzion/pull/1705).
+    If a `ref` type variant is required, one must now declare a
+    `ref` feature and inherit from this.
+
+  - The type of an outer instance `a` is now just `a.this`, it used
+    to be `a.this.type`:
+    [#1706](https://github.com/tokiwa-software/fuzion/pull/1706).
+    This is consistent with, e.g., `nil` being \--depending on
+    context\-- either a type or a call resulting in a value.
+
+  - The `set` keyword to assign a new value to a field is no longer
+    permitted:
+    [#1720](https://github.com/tokiwa-software/fuzion/pull/1720).
+
+    As an alternative, use the `mutate` effect in your code.
+
+- front end
+
+  - Improve support for lazy values:
+    [#1667](https://github.com/tokiwa-software/fuzion/pull/1667),
+    [#1672](https://github.com/tokiwa-software/fuzion/pull/1672).
+
+  - Fix a bug which caused unjustified errors when chained booleans
+    were used in postconditions:
+    [#1685](https://github.com/tokiwa-software/fuzion/pull/1685).
+
+  - The parser and frontend now keep more accurate position
+    information for names, in particular in feature declarations:
+    [#1735](https://github.com/tokiwa-software/fuzion/pull/1735).
+
+    This improves confusing error messages when multiple feature
+    names are given in a declaration. Furthermore, source ranges are
+    now supported such that the entire name is now marked in error
+    messages.
+
+  - Improve some error messages:
+    [#1693](https://github.com/tokiwa-software/fuzion/pull/1693),
+    [#1753](https://github.com/tokiwa-software/fuzion/pull/1753).
+
+  - fix check failure in case `x` is not found in `x.this.type`
+    [#1718](https://github.com/tokiwa-software/fuzion/pull/1718).
+
+  - permit all calls with `void` as the target type
+    [#1725](https://github.com/tokiwa-software/fuzion/pull/1725).
+
+  - fix an issue where in some cases an unjustified "Choice feature
+    must not contain any code" error would appear:
+    [#1740](https://github.com/tokiwa-software/fuzion/pull/1740).
+
+  - fix contract violations of lineStartPos, for files with errors on
+    last line:
+    [#1743](https://github.com/tokiwa-software/fuzion/pull/1743).
+
+  - fix NullPointerException when building a bad `base.fum`:
+    [#1767](https://github.com/tokiwa-software/fuzion/pull/1767).
+
+  - harmonize indentation handling of `is`, `=>`, `:=`, and `.`:
+    [#1768](https://github.com/tokiwa-software/fuzion/pull/1768).
+
+  - flag error when assigning choice element to this type of
+    type feature
+    [#1793](https://github.com/tokiwa-software/fuzion/pull/1793).
+
+  - ast: handle boxing of erroneous and empty values gracefully
+    [#1795](https://github.com/tokiwa-software/fuzion/pull/1795).
+
+  - parser: allow closing brace of formal args list at min indent:
+    [#1803](https://github.com/tokiwa-software/fuzion/pull/1803).
+
+  - check that primitives do not contain fields:
+    [#1808](https://github.com/tokiwa-software/fuzion/pull/1808).
+
+
+- back end
+
+  - Add intrinsics to get a network socket\'s peer\'s address and
+    port information:
+    [#1712](https://github.com/tokiwa-software/fuzion/pull/1712).
+
+    This is useful when writing server applications using Fuzion,
+    for example to implement IP based access control.
+
+- C back end
+
+  - If the environment variable `FUZION_DEBUG_TAIL_CALL` is set to
+    `true`, `fz` will print debug information about tail call
+    optimization:
+    [#1687](https://github.com/tokiwa-software/fuzion/pull/1687).
+
+  - In the intrinsics for atomic values, use atomic compare and swap
+    operations when possible, instead of emulating this using a
+    global lock:
+    [#1689](https://github.com/tokiwa-software/fuzion/pull/1689).
+
+  - C FFI: `native` features have been implemented, which in the C
+    backend, allow C functions to be called:
+    [#1772](https://github.com/tokiwa-software/fuzion/pull/1772).
+
+    To work with this, the C functions need to be reasonable simple,
+    that is their arguments and return value must be integers,
+    floating point numbers, or Strings. Additionally, Fuzion will
+    not automatically take care of including the right headers and
+    passing the proper arguments to the compiler and linker.
+
+    `native` features are not supported in the interpreter.
+
+- base library
+
+  - The features `equatable`, `orderable`, `partially_orderable`
+    have been renamed and moved into the grouping feature
+    `property`:
+    [#1466](https://github.com/tokiwa-software/fuzion/pull/1466).
+
+  - The `CTrie` data structure now uses atomic compare and swap
+    operations, in an attempt at making it actually thread-safe and
+    lock-free:
+    [#1598](https://github.com/tokiwa-software/fuzion/pull/1598).
+    There are however still remaining issues related to taking
+    snapshots in a multi-threaded environment.
+
+  - Fuzion now supports IEEE floating point comparisons:
+    [#1644](https://github.com/tokiwa-software/fuzion/pull/1644).
+    In particular, comparing against `NaN` always results in
+    `false`. IEEE semantics for floating point comparison are used
+    for infix operations `=` or `<=`, etc.
+
+    In contrast, `type.equality` and `type.lteq` for floats define
+    an equality relation and a total order in a mathematical sense.
+    These will be used in type parametric code requiring `equatable`
+    or `orderable` and they can be used directly via
+    `equals f64 a b` or `lteq f64 a b` defined in the base library.
+
+  - Add a `join` operation to the `concur.threads` effect:
+    [#1651](https://github.com/tokiwa-software/fuzion/pull/1651).
+
+    This allows waiting for the end of threads in another thread.
+
+  - Parameterize the `try` effect
+    [#1696](https://github.com/tokiwa-software/fuzion/pull/1696).
+
+    This makes it possible to use multiple different instances of
+    the `try` effect at the same time.
+
+  - `plus`, `minus`, `sign` moved from the universe to the `num`
+    hierarchy:
+    [#1702](https://github.com/tokiwa-software/fuzion/pull/1702).
+
+  - `wrapping_integer` is now `num.wrap_around`:
+    [#1719](https://github.com/tokiwa-software/fuzion/pull/1719).
+
+  - Rename effect handlers in a consistent manner:
+    [#1729](https://github.com/tokiwa-software/fuzion/pull/1729).
+
+  - Move some features to the type features of `ps_map`:
+    [#1756](https://github.com/tokiwa-software/fuzion/pull/1756).
+
+  - Use the Ryū algorithm, which is implemented in pure Fuzion, to
+    convert floating point numbers to strings:
+    [#1758](https://github.com/tokiwa-software/fuzion/pull/1758).
+
+  - Fix issues which caused the `fuzion.sys.misc.unique_id`
+    intrinsic (used by the `mutate` effect) and `say` to not be
+    thread-safe:
+    [#1762](https://github.com/tokiwa-software/fuzion/pull/1762),
+    [#1764](https://github.com/tokiwa-software/fuzion/pull/1764).
+
+  - implement `float.type.atan2` in Fuzion, to fix an inconsistency
+    between the implementations of `glibc`, `musl`, the OpenBSD `libc`,
+    among others:
+    [#1791](https://github.com/tokiwa-software/fuzion/pull/1791).
+
+  - move `ps_sets` to `ps_set.type`:
+    [#1738](https://github.com/tokiwa-software/fuzion/pull/1738).
+
+  - parameterized `ryu` to also work with `f32` natively:
+    [#1802](https://github.com/tokiwa-software/fuzion/pull/1802).
+
+  - rename `quantors` as `quantor`:
+    [#1810](https://github.com/tokiwa-software/fuzion/pull/1810).
+
+- fz tool
+
+  - Do not erase internal names from fum files by default:
+    [#1623](https://github.com/tokiwa-software/fuzion/pull/1623).
+    This allows better debugging of the standard library.
+
+  - fix index out of bounds in `showInSource`
+    [#1746](https://github.com/tokiwa-software/fuzion/pull/1746).
+
+- tests
+
+  - The simple C tests are now stricter and fail as well when the
+    error they return differs from the expected error:
+    [#1710](https://github.com/tokiwa-software/fuzion/pull/1710).
 
 ## 2023-07-03: V0.083
 
