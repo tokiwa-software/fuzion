@@ -109,7 +109,7 @@ public ryū(T type : float) is
         e <= 3528
     post
       pow5bits.this.result = (T.log T.two (five ** T.from_i64 e)).as_i64
-      =>
+    =>
       (e * 1217359) >> 19
 
 
@@ -803,7 +803,7 @@ public ryū(T type : float) is
     private mul_pow5_div_pow2(m, i, j i64)
     pre (actual_shift j) >= 0,
         exponent < 0
-      =>
+    =>
       mul_pow5_div_pow2 m i j pow5_split
 
 

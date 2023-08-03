@@ -70,9 +70,9 @@ public Sequence(T type) ref is
   # runs forever if executed on an endless list
   #
   public count
-    pre
-      analysis: finite  # in practice, we do not always have this information
-    => (map_sequence i32 (_ -> 1)).fold i32.type.sum
+  pre
+    analysis: finite  # in practice, we do not always have this information
+  => (map_sequence i32 (_ -> 1)).fold i32.type.sum
 
 
   # get the first element of this Sequence
@@ -80,16 +80,16 @@ public Sequence(T type) ref is
   # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   public first
-    pre
-      debug: !is_empty
-    => as_list.head.get
+  pre
+    debug: !is_empty
+  => as_list.head.get
 
 
   # get the first element of this Sequence or default if sequence is empty
   #
   public first(default T)
-    =>
-      if is_empty then default else first
+  =>
+    if is_empty then default else first
 
 
   # get the last element of this Sequence
@@ -100,15 +100,15 @@ public Sequence(T type) ref is
   # for an infinite Sequence.
   #
   public last
-    pre
-      debug: !is_empty
-   => as_list.last
+  pre
+    debug: !is_empty
+  => as_list.last
 
 
   # get the last element of this Sequence or default if sequence is empty
   #
   public last(default T)
-    =>
+  =>
     if is_empty then default else last
 
 
@@ -320,9 +320,9 @@ public Sequence(T type) ref is
   # insert element v at position at
   #
   public insert(at i32, v T)
-   pre
-     debug: at ≥ 0
-   =>
+  pre
+    debug: at ≥ 0
+  =>
     take at ++ [v] ++ drop at
 
 

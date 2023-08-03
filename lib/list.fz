@@ -103,10 +103,10 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
   # list must not be empty, causes precondition failure if debug is enabled.
   #
   force_tail
-    pre
-      debug: !is_empty
-    => (list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
-                  | c Cons => c.tail)
+  pre
+    debug: !is_empty
+  => (list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
+                | c Cons => c.tail)
 
 
   # get the head of this list
@@ -114,9 +114,9 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
   # list must not be empty, causes precondition failure if debug is enabled.
   #
   public redef first
-    pre
-      debug: !is_empty
-    => head.get
+  pre
+    debug: !is_empty
+  => head.get
 
 
   # returns the list of all but the last element of this list
