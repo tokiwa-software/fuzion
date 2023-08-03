@@ -804,13 +804,12 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = tokenPos() == _minIndentStartPos;
     var result = skip(false, start) && relaxLineAndSpaceLimit(c);
     if (result)
       {
         var nl = line();
         result = relaxLineAndSpaceLimit(() -> {
-            return skip(startsIndent , end);
+            return skip(true , end);
           });
         var sl = sameLine(-1);
         if (sl == ol)

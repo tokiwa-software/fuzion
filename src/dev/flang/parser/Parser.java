@@ -1074,7 +1074,7 @@ typeType    : "type"
     var result = new FormalOrActual[] { FormalOrActual.both };
     var sr = isEmptyFormArgs() ||
       skipBracketTermWithNLs(PARENS, () -> {
-        if (current() != Token.t_rparen)
+        if (currentAtMinIndent() != Token.t_rparen)
           {
             do
               {
@@ -1118,7 +1118,7 @@ typeType    : "type"
               }
             while (skipComma());
           }
-        if (current() != Token.t_rparen)
+        if (currentAtMinIndent() != Token.t_rparen)
           {
             result[0] = FormalOrActual.actual;
             return false;
