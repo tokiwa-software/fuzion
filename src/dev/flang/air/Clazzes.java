@@ -818,9 +818,9 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractBlock b)
       {
         var s = b._statements;
-        if (!s.isEmpty() && s.get(s.size()-1) instanceof Expr e0)
+        if (!s.isEmpty())
           {
-            propagateExpectedClazz(e0, ec, outerClazz);
+            propagateExpectedClazz(s.getLast(), ec, outerClazz);
           }
       }
     else if (e instanceof Tag t)

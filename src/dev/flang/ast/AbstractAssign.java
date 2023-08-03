@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 
@@ -36,7 +35,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractAssign extends ANY implements Stmnt
+public abstract class AbstractAssign extends Expr
 {
 
 
@@ -138,7 +137,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
   {
     _value.visitStatements(v);
     _target.visitStatements(v);
-    Stmnt.super.visitStatements(v);
+    super.visitStatements(v);
   }
 
 
@@ -283,6 +282,15 @@ public abstract class AbstractAssign extends ANY implements Stmnt
     return false;
   }
 
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
 
   /**
    * toString

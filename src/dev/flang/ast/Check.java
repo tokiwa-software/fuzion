@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Check implements Stmnt
+public class Check extends Expr
 {
 
 
@@ -106,7 +106,7 @@ public class Check implements Stmnt
    */
   public void visitStatements(StatementVisitor v)
   {
-    Stmnt.super.visitStatements(v);
+    super.visitStatements(v);
     cond.visitStatements(v);
   }
 
@@ -119,6 +119,16 @@ public class Check implements Stmnt
   {
     return false;
   };
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
 
 
   /**

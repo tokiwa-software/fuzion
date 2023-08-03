@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -43,7 +41,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Consts;
@@ -54,9 +51,6 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.Generic;
-import dev.flang.ast.Impl;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
@@ -584,7 +578,7 @@ public class LibraryFeature extends AbstractFeature
    */
   AbstractBlock code(int at, Stack<Expr> s, int pos)
   {
-    var l = new List<Stmnt>();
+    var l = new List<Expr>();
     var sz = _libModule.codeSize(at);
     var eat = _libModule.codeExpressionsPos(at);
     var e = eat;
@@ -594,8 +588,7 @@ public class LibraryFeature extends AbstractFeature
         var iat = _libModule.expressionExprPos(e);
         pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
         var fpos = pos;
-        Expr ex = null;
-        Stmnt c = null;
+        Expr c = null;
         Expr x = null;
         switch (k)
           {

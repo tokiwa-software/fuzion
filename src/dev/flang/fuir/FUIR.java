@@ -1960,7 +1960,7 @@ hw25 is
       (ix >= 0, withinCode(c, ix));
 
     var e = _codeIds.get(c).get(ix);
-    return (e instanceof Stmnt s) ? s.pos() :
+    return (e instanceof Expr s) ? s.pos() :
            (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
   }
