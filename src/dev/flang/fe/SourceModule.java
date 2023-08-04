@@ -1008,7 +1008,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
             if (!fields.isEmpty())
               {
-                var f = curOuter instanceof Feature of /* NYI: AND cutOuter loaded by this module */
+                var f = curOuter instanceof Feature of
                   ? of.findFieldDefInScope(name, use, inner)
                   : null;
                 fs = new TreeMap<>(fs);
@@ -1029,13 +1029,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        for (var e : fs.entrySet()
-                       .stream()
-                       .filter(fn -> use == null || featureVisible(use.pos()._sourceFile, fn.getValue()))
-                       .collect(List.collector()))
+        for (var e : fs.entrySet())
           {
             var v = e.getValue();
-            if (!v.isField() || !foundFieldInScope)
+            if ((use == null || featureVisible(use.pos()._sourceFile, v)) &&
+                (!v.isField() || !foundFieldInScope))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
                 foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
@@ -1116,21 +1114,20 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
         _res.resolveDeclarations(outer);
-        var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter)
-                   .stream()
-                   .filter(fo -> typeVisible(pos._sourceFile, fo._feature))
-                   .collect(Collectors.toList());
+        var fs = lookup(outer, name, null, traverseOuter);
         for (var fo : fs)
           {
             var f = fo._feature;
-            (f.definesType() ? type_fs
-                             : nontype_fs).add(f);
-            if (f.definesType())
+            if (typeVisible(pos._sourceFile, f))
               {
-                result = fo;
+                (f.definesType() ? type_fs
+                                 : nontype_fs).add(f);
+                if (f.definesType())
+                  {
+                    result = fo;
+                  }
               }
           }
         if (type_fs.size() > 1)
