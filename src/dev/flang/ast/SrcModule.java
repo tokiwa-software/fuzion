@@ -67,7 +67,7 @@ public interface SrcModule
   SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer);
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
   void findDeclaredOrInheritedFeatures(Feature outer);
-  List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Stmnt use, boolean traverseOuter);
+  List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter);
   void checkTypes(Feature f);
   FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean mayBeFreeType);
 

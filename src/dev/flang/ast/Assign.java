@@ -108,7 +108,7 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Assign(SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
@@ -137,7 +137,7 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
@@ -164,7 +164,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -177,10 +177,10 @@ public class Assign extends AbstractAssign
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure statement.
+   * replace a Destructure, this refers to the Destructure expression.
    */
   void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {

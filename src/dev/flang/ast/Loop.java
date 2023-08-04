@@ -329,7 +329,7 @@ public class Loop extends ANY
                                 Block.newIfNull(succPos, _successBlock),
                                 _nextIteration);
       }
-    block._statements.add(_nextIteration);
+    block._expressions.add(_nextIteration);
     if (whileCond != null)
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
@@ -444,7 +444,7 @@ public class Loop extends ANY
     else if (booleanAsImplicitResult(whileCond, untilCond))
       { /* add implicit TRUE / FALSE results to success and else blocks: */
         _successBlock = Block.newIfNull(succPos, _successBlock);
-        _successBlock._statements.add(BoolConst.TRUE );
+        _successBlock._expressions.add(BoolConst.TRUE );
         if (_elseBlock0 == null)
           {
             _elseBlock0 = BoolConst.FALSE;
@@ -454,8 +454,8 @@ public class Loop extends ANY
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
-            e0._statements.add(BoolConst.FALSE);
-            e1._statements.add(BoolConst.FALSE);
+            e0._expressions.add(BoolConst.FALSE);
+            e1._expressions.add(BoolConst.FALSE);
             _elseBlock0 = e0;
             _elseBlock1 = e1;
           }

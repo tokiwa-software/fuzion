@@ -462,9 +462,9 @@ public class Lexer extends SourceFile
 
   /**
    * Token at this pos will be returned by current() even if its indentaion is
-   * at <= _minIndent. If set to the first token of a statement that sets
+   * at <= _minIndent. If set to the first token of a expression that sets
    * _minIndent, this ensures that we can still parse the first token of this
-   * statement.
+   * expression.
    */
   private int _minIndentStartPos = -1;
 

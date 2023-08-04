@@ -39,7 +39,6 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
@@ -57,7 +56,6 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.AbstractFeature.State;
@@ -171,7 +169,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (p != null)
       {
         var stmnts = parseFile(p);
-        ((AbstractBlock) _universe.code())._statements.addAll(stmnts);
+        ((AbstractBlock) _universe.code())._expressions.addAll(stmnts);
         for (var s : stmnts)
           {
             if (s instanceof Feature f)
@@ -221,7 +219,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         else if (Errors.count() == 0)
           {
-            AstErrors.statementNotAllowedOutsideOfFeatureDeclaration(s);
+            AstErrors.expressionNotAllowedOutsideOfFeatureDeclaration(s);
           }
       }
     return result;
@@ -592,7 +590,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                           */
         )
       { // declaring field with initial value in different file than outer
-        // feature.  We would have to add this to the statements of the outer
+        // feature.  We would have to add this to the expressions of the outer
         // feature.  But if there are several such fields, in what order?
         AstErrors.initialValueNotAllowed(inner);
       }
@@ -977,7 +975,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));

@@ -137,9 +137,9 @@ public class Parser extends Lexer
    *
    * Ex., this might result in
    *
-   *   "semi, stmnts (69 times), block, impl, feature, unit"
+   *   "semi, exprs (69 times), block, impl, feature, unit"
    *
-   * if a semicolon was expected after parsing 69 statements in a block in the
+   * if a semicolon was expected after parsing 69 expressions in a block in the
    * impl of a feature in a unit.
    */
   static String parseStack()
@@ -190,14 +190,14 @@ public class Parser extends Lexer
 
 
   /**
-   * Parse a unit, i.e., stmnts followed by Token.t_eof.
+   * Parse a unit, i.e., exprs followed by Token.t_eof.
    *
-unit        : stmnts EOF
+unit        : exprs EOF
             ;
    */
   public List<Expr> unit()
   {
-    var result = stmnts();
+    var result = exprs();
     if (Errors.count() == 0)
       {
         match(Token.t_eof, "Unit");
@@ -377,7 +377,7 @@ field       : returnType
    * @param list list of features the inner features ('x', 'y', 'z') will be
    * added to provided that first is true.
    *
-   * @param s the statements containing the feature declarations to be added, in
+   * @param e the expressions containing the feature declarations to be added, in
    * this case "x, y, z."
    *
    * @param g the list of types to be collected, will be added as generic
@@ -388,13 +388,13 @@ field       : returnType
    * @param v the visiblity to be used for the features defined in of <block>
    *
    */
-  private void addFeaturesFromBlock(boolean first, List<Feature> list, Stmnt s, List<AbstractType> g, Impl p, Visi v)
+  private void addFeaturesFromBlock(boolean first, List<Feature> list, Expr e, List<AbstractType> g, Impl p, Visi v)
   {
-    if (s instanceof Block b)
+    if (e instanceof Block b)
       {
-        b._statements.forEach(x -> addFeaturesFromBlock(first, list, x, g, p, v));
+        b._expressions.forEach(x -> addFeaturesFromBlock(first, list, x, g, p, v));
       }
-    else if (s instanceof Feature f)
+    else if (e instanceof Feature f)
       {
         boolean ok = true;
         if (f._qname.size() > 1)
@@ -425,7 +425,7 @@ field       : returnType
       }
     else
       {
-        AstErrors.featureOfMustContainOnlyDeclarations(s, p.pos);
+        AstErrors.featureOfMustContainOnlyDeclarations(e, p.pos);
       }
   }
 
@@ -1759,7 +1759,7 @@ actual   : expr | type
       {
         var f = fork();
         var t0 = f.type();
-        e = expr();
+        e = exprWithResult();
         // we might have an expr 'a.x+d(4)' while the type parsed is
         // just 'a.x', so eagerly take the expr in this case:
         t = f.tokenPos() == tokenPos() ? t0 : null;
@@ -1769,7 +1769,7 @@ actual   : expr | type
     else if (hasExpr)
       {
         t = null;
-        e = expr();
+        e = exprWithResult();
       }
     else
       {
@@ -1787,7 +1787,7 @@ actual   : expr | type
    * An expr that does not exceed a single line unless it is enclosed by { } or
    * ( ).
    *
-exprInLine  : expr             // within one line
+exprInLine  : exprWithResult   // within one line
             | bracketTerm      // stretching over one or several lines
             ;
    */
@@ -1826,7 +1826,7 @@ exprInLine  : expr             // within one line
         break;
       }
     sameLine(line);
-    result = expr();
+    result = exprWithResult();
     sameLine(oldLine);
     return result;
   }
@@ -1835,14 +1835,14 @@ exprInLine  : expr             // within one line
   /**
    * Parse
    *
-expr        : opExpr
+exprWithResult: opExpr
               ( QUESTION expr  COLON expr
               | QUESTION casesBars
               |
               )
             ;
    */
-  Expr expr()
+  Expr exprWithResult()
   {
     Expr result = opExpr();
     SourcePosition pos = tokenSourcePos();
@@ -1859,12 +1859,12 @@ expr        : opExpr
           {
             i.ok();
             var eac = endAtColon(true);
-            Expr f = expr();
+            Expr f = exprWithResult();
             endAtColon(eac);
             i.next();
             i.ok();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = expr();
+            Expr g = exprWithResult();
             i.end();
             result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
                                                                      new Actual(g)));
@@ -1950,7 +1950,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(expr()));
+                             tupleElements.add(new Actual(exprWithResult()));
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -2103,7 +2103,7 @@ addSemiElmts: SEMI semiSepElmts
     var elements = new List<Expr>();
     bracketTermWithNLs(CROCHETS, "inlineArray",
                        () -> {
-                         elements.add(expr());
+                         elements.add(exprWithResult());
                          var sep = current();
                          var s = sep;
                          var p1 = tokenPos();
@@ -2112,7 +2112,7 @@ addSemiElmts: SEMI semiSepElmts
                            {
                              if (current() != Token.t_rcrochet)
                                {
-                                 elements.add(expr());
+                                 elements.add(exprWithResult());
                                }
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
@@ -2355,10 +2355,10 @@ casesNoBars : caze semiOrFlatLF casesNoBars
     else
       {
         result = new List<AbstractCase>();
-        while (!endOfStmnts() && in.ok())
+        while (!endOfExprs() && in.ok())
           {
             result.add(caze());
-            if (!endOfStmnts())
+            if (!endOfExprs())
               {
                 semiOrFlatLF();
               }
@@ -2374,7 +2374,7 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    * Parse casesBars
    *
    * @param in the Indentation instance created at the position of '?' or at
-   * current position (for a 'match'-statement).
+   * current position (for a 'match'-expression).
    *
 casesBars   : caze ( '|' casesBars
                    |
@@ -2384,7 +2384,7 @@ casesBars   : caze ( '|' casesBars
   List<AbstractCase> casesBars(Indentation in)
   {
     List<AbstractCase> result = new List<>();
-    while (!endOfStmnts() && in.ok())
+    while (!endOfExprs() && in.ok())
       {
         if (!result.isEmpty())
           {
@@ -2521,7 +2521,7 @@ caseBlock   : ARROW          // if followed by '|'
   /**
    * Parse block
    *
-block       : stmnts
+block       : exprs
             | brblock
             ;
    */
@@ -2545,7 +2545,7 @@ block       : stmnts
       }
     else if (currentAtMinIndent() != Token.t_lbrace)
       {
-        var l = stmnts();
+        var l = exprs();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
         if (pos1 == pos2 && current() == Token.t_indentationLimit)
           { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
@@ -2570,7 +2570,7 @@ block       : stmnts
   /**
    * Parse block
    *
-brblock     : BRACEL stmnts BRACER
+brblock     : BRACEL exprs BRACER
             ;
    */
   Block brblock()
@@ -2578,7 +2578,7 @@ brblock     : BRACEL stmnts BRACER
     SourcePosition pos1 = tokenSourcePos();
     return bracketTermWithNLs(BRACES, "block",
                               () -> {
-                                var l = stmnts();
+                                var l = exprs();
                                 var pos2 = tokenSourcePos();
                                 return new Block(pos1, pos2, l);
                               });
@@ -2587,9 +2587,9 @@ brblock     : BRACEL stmnts BRACER
 
   /**
    * As long as this is false and we make progress, we try to parse more
-   * statements within stmnts.
+   * expressions within exprs.
    */
-  boolean endOfStmnts()
+  boolean endOfExprs()
   {
     return switch (currentAtMinIndent())
       {
@@ -2611,28 +2611,28 @@ brblock     : BRACEL stmnts BRACER
 
 
   /**
-   * Parse stmnts
+   * Parse exprs
    *
-stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
+exprs      : exprWithResult semiOrFlatLF exprs (semiOrFlatLF | )
             |
             ;
    */
-  List<Expr> stmnts()
+  List<Expr> exprs()
   {
     List<Expr> l = new List<>();
     var in = new Indentation();
-    while (!endOfStmnts() && in.ok())
+    while (!endOfExprs() && in.ok())
       {
-        Expr s = stmnt();
-        if (s instanceof FList fl)
+        Expr e = expr();
+        if (e instanceof FList fl)
           {
             l.addAll(fl._list);
           }
         else
           {
-            l.add(s);
+            l.add(e);
           }
-        if (!endOfStmnts())
+        if (!endOfExprs())
           {
             semiOrFlatLF();
           }
@@ -2731,7 +2731,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)
                 {
-                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail("stmnts"));
+                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail("exprs"));
                 }
               setMinIndent(okPos);
               okLineNum = lineNum(okPos);
@@ -2765,22 +2765,22 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
 
 
   /**
-   * Parse stmnt
+   * Parse expr
    *
-stmnt       : feature
+expr        : feature
             | assign
             | destructure
             | exprInLine
             | checkstmnt
             ;
    */
-  Expr stmnt()
+  Expr expr()
   {
     return
       isCheckPrefix()       ? checkstmnt()  :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
-      isFeaturePrefix()     ? feature()     : expr();
+      isFeaturePrefix()     ? feature()     : exprWithResult();
   }
 
 
@@ -2957,7 +2957,7 @@ ifstmnt      : "if" exprInLine thenPart elseBlock
         Block b = thenPart(false);
         If result = new If(pos, e, b);
         var els = elseBlock();
-        if (els != null && els._statements.size() > 0)
+        if (els != null && els._expressions.size() > 0)
           { // do no set empty blocks as else blocks since the source position
             // of those block might be somewhere unexpected.
             result.setElse(els);

@@ -130,7 +130,7 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -148,15 +148,15 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * visit all the statements within this Unbox.
+   * visit all the expressions within this Unbox.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    _adr.visitStatements(v);
-    super.visitStatements(v);
+    _adr.visitExpressions(v);
+    super.visitExpressions(v);
   }
 
 

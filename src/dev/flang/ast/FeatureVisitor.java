@@ -30,7 +30,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
 
 /**
- * This is used to perform some action on a feature and all the statements,
+ * This is used to perform some action on a feature and all the expressions,
  * expressions, types, etc. within this feature
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)

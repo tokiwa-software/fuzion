@@ -166,7 +166,7 @@ indentation_negative is
     # 'if' requires the condition to be in a single line, doest not allow vertically aligned arguments
     #
     if callWith2Args arg
-                     arg  // this arg is parsed as first stmnt in the then-block
+                     arg  // this arg is parsed as first expr in the then-block
       say "ok"            // 11. should flag an error: wrong indentation
     else
       panic "expected true"
