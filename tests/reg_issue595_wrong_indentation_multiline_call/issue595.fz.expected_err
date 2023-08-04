@@ -1,0 +1,19 @@
+
+--CURDIR--/issue595.fz:5:8: error 1: Inconsistent indentation
+       3)
+-------^
+Indentation reference point is --CURDIR--/issue595.fz:4:9:
+  (test 2
+--------^
+While parsing: call, parse stack: checkIndentation, call, callOrFeatOrThis, term, opTail, opExpr, expr, klammer, bracketTerm, term, opTail, opExpr, expr, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+
+
+--CURDIR--/issue595.fz:4:4: error 2: Could not find called feature
+  (test 2
+---^^^^
+Feature not found: 'test' (one argument)
+Target feature: 'issue595'
+In call: 'test 2'
+To solve this, you might change the actual number of arguments to match this feature: 'test' (2 arguments)
+
+2 errors.

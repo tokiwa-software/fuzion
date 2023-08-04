@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = issue662
+override NAME = issue595
 include ../simple.mk
