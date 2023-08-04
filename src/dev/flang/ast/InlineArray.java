@@ -119,7 +119,7 @@ public class InlineArray extends ExprWithPos
                                               _elements.iterator());
             _type = Types.t_ERROR;
           }
-        if (_type == null)
+        else
           {
             _type =
               t == null ? null :
@@ -162,7 +162,7 @@ public class InlineArray extends ExprWithPos
               {
                 e.propagateExpectedType(res, outer, elementType);
               }
-            _type = t;
+            _type = Types.resolved.f_array.resultTypeIfPresent(res, new List<>(elementType));
           }
       }
     return this;
@@ -181,7 +181,8 @@ public class InlineArray extends ExprWithPos
     if (PRECONDITIONS) require
       (t != null);
 
-    if (t.featureOfType() == Types.resolved.f_array &&
+    // NYI see issue: #1817
+    if (Types.resolved.f_array.inheritsFrom(t.featureOfType()) &&
         t.generics().size() == 1)
       {
         return t.generics().get(0);
