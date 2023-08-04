@@ -2217,7 +2217,7 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || result.typeIfKnown() != Types.t_ERROR);
 
-    return result.typeIfKnown() == Types.t_ERROR
+    return result.typeIfKnown() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
       : result;
   }
