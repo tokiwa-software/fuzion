@@ -19,8 +19,6 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Michael (michael.lill@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
 override NAME = transducertest

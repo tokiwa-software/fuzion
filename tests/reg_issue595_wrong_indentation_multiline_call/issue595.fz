@@ -1,0 +1,5 @@
+issue595 is
+  test(_ i32, _ i32) is
+
+  (test 2
+       3)
