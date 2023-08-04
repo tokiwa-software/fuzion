@@ -193,6 +193,11 @@ public class FuzionOptions extends ANY
     return _fuzionHome;
   }
 
+  public boolean isLanguageServer()
+  {
+    return false;
+  }
+
 
 }
 
