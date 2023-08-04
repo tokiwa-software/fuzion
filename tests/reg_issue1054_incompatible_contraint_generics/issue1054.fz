@@ -1,0 +1,7 @@
+ex =>
+  floaty(T type : float) is
+
+  c(T type : floaty f64) is
+
+  c (floaty f64) // good
+  c (floaty f32) // bad

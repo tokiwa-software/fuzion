@@ -470,21 +470,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 if (actual.featureOfType() == featureOfType())
                   {
-                    if (actual.generics().size() == generics().size()) // NYI: Check: What about open generics?
+                    if (genericsAssignable(actual)) // NYI: Check: What about open generics?
                       {
                         result = true;
-                        // NYI: Should we check if the generics are assignable as well?
-                        //
-                        //  for (int i = 0; i < _generics.size(); i++)
-                        //    {
-                        //      var g0 = _generics.get(i);
-                        //      var g = _generics.get(i);
-                        //      if (g.isGenericArgument())
-                        //        {
-                        //          g = g.generic.constraint();
-                        //        }
-                        //      result = result && g0.constraintAssignableFrom(actual._generics.get(i));
-                        //    }
                       }
                   }
                 if (!result)
@@ -502,6 +490,44 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * Check if generics of type parameter `actual` are assignable to
+   * generics of type parameter with constraint `this`.
+   *
+   */
+  private boolean genericsAssignable(AbstractType actual)
+  {
+    if (PRECONDITIONS) require
+      (!this.isGenericArgument(),
+       !actual.isGenericArgument());
+
+    var ogs = actual.generics();
+    if (ogs.size() != generics().size())
+      {
+        return false;
+      }
+    var i1 = generics().iterator();
+    var i2 = ogs.iterator();
+    while(i1.hasNext())
+      {
+        var g = i1.next();
+        var og = i2.next();
+        if (
+          // NYI check recursive type, e.g.:
+          // this  = monad monad.A monad.MA
+          // other = monad option.T (option option.T)
+          // for now just prevent infinite recursion
+          !(g.isGenericArgument() && (g.genericArgument().constraint() == this ||
+                                      g.genericArgument().constraint().constraintAssignableFrom(og))))
+          // NYI what if g is not a generic argument?
+          {
+            return false;
+          }
+      }
+    return true;
   }
 
 
