@@ -101,12 +101,21 @@ public class Feature extends AbstractFeature
    * The visibility of this feature
    */
   private Visi _visibility;
-  public Visi visibility() { return _visibility; }
+  public Visi visibility()
+  {
+    return
+      // NYI anonymous feature should have correct visibility set.
+      isAnonymousInnerFeature()
+      ? outer().visibility()
+      : _visibility == Visi.UNSPECIFIED
+      ? Visi.PRIV
+      : _visibility;
+  }
 
 
   /**
    * This is used for feature defined using `choice of`
-   * to set same visibilty for choice elements as for choice in Parser.
+   * to set same visibility for choice elements as for choice in Parser.
    *
    * @param v
    */
@@ -354,7 +363,7 @@ public class Feature extends AbstractFeature
                                   Block b)
   {
     return new Feature(pos,
-                       Visi.PRIV,
+                       Visi.UNSPECIFIED,
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),

@@ -27,18 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.Generic;
 import dev.flang.ast.ResolvedType;
-
-import dev.flang.util.List;
-
-import dev.flang.util.HasSourcePosition;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -81,6 +73,18 @@ public abstract class LibraryType extends ResolvedType
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * traverse a type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected void usedFeatures(Set<AbstractFeature> s){
+    // a library type has already been checked. nothing to be done.
+  }
+
+
 
 }
 

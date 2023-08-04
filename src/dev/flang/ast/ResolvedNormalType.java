@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -644,6 +649,33 @@ public class ResolvedNormalType extends ResolvedType
           return originalOuterFeature;
         }
       };
+  }
+
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected void usedFeatures(Set<AbstractFeature> s)
+  {
+    // NYI: "This currently does not touch the outer features.
+    //       This means that for a type like (x T).y U the visibility of x and T will be ignored, which is probably wrong."
+    var f = featureOfType();
+    if (s.add(f))
+      {
+        for (var g : generics())
+          {
+            g.usedFeatures(s);
+          }
+        if (isChoice())
+          {
+            for (var g : choiceGenerics())
+              {
+                g.usedFeatures(s);
+              }
+          }
+      }
   }
 
 }

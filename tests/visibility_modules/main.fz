@@ -1,0 +1,20 @@
+m =>
+  say "calling b.hello"
+  b.hello
+
+  say "calling b.hello3"
+  b.hello3
+
+  say "calling b.ret_a.hello_a"
+  b.ret_a.hello_a
+
+  say "calling b.ret_b.hello_a"
+  b.ret_b.hello_a
+
+  say "calling b.get_aa.aaa"
+  b.get_aa.aaa
+
+  say b.get_any.as_string // indirectly calling private feature
+
+  # NYI this does not work yet
+  # say b.get_field

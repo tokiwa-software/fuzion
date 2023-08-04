@@ -27,5 +27,5 @@
 # NYI name in does not work right now since in is reserved keyword
 public stdin is
 
-  private stdin0 i64 is intrinsic
+  module stdin0 i64 is intrinsic
 

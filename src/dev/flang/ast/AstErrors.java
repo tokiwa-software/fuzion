@@ -132,6 +132,13 @@ public class AstErrors extends ANY
   {
     return ss(a.toString());
   }
+  static String s(Visi v)
+  {
+    if (PRECONDITIONS) require
+      (v != Visi.UNSPECIFIED);
+
+    return code(v.toString());
+  }
   static String ss(String s) // statement or expression
   {
     return expr(s);
@@ -169,6 +176,10 @@ public class AstErrors extends ANY
   static String sqn(List<String> names) // names as qualified name "a.b.c"
   {
     return ss(names.toString("", ".", ""));
+  }
+  static String sv(AbstractFeature f)
+  {
+    return s(f.visibility()) + " " + s(f);
   }
   static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
   static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
@@ -1953,6 +1964,37 @@ public class AstErrors extends ANY
           "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
           "The existing type was declared at " + f.pos().show() + "\n" +
           "To solve this, you may use a different name for free type " + s(t) + ".");
+  }
+
+  public static void calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(Feature f, AbstractCall c)
+  {
+    error(c.pos(), "Called feature in precondition has more restrictive visibility than feature.",
+      "To solve this, increase the visibility of " + s(c.calledFeature()) + " or do not" +
+      " use this feature in the precondition."
+    );
+  }
+
+  public static void illegalVisibilityModifier(Feature f)
+  {
+    error(f.pos(), "Feature specifying type visibility does not define a type.",
+     "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
+    );
+  }
+
+  public static void argTypeMoreRestrictiveVisbility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
+  {
+    error(f.pos(), "Argument types or any of its generics have more restrictive visibility than feature.",
+      "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
+      " or specify a different type for the argument " + sbn(arg) + "."
+    );
+  }
+
+  public static void resultTypeMoreRestrictiveVisibility(Feature f, Set<AbstractFeature> s)
+  {
+    error(f.pos(), "Result type or any of its generics have more restrictive visibility than feature.",
+      "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
+      " or specify a different return type."
+    );
   }
 
 }

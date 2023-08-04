@@ -416,9 +416,6 @@ field       : returnType
           {
             if (first)
               {
-                if (CHECKS) check
-                  (f.visibility().equals(Visi.UNSPECIFIED));
-
                 f.setVisbility(v);
 
                 list.add(f);

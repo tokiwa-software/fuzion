@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -65,6 +68,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private Object _appliedTypePars2CachedFor1;
   private Object _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
+
+
+  /**
+   * Cached result of calling usedFeatures(_usedFeatures).
+   */
+  Set<AbstractFeature> _usedFeatures = null;
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -1679,6 +1688,38 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return this;
   }
+
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected abstract void usedFeatures(Set<AbstractFeature> s);
+
+
+  /**
+   * @param v
+   *
+   * @return this type and any of its generics that have more restrictive visibility than `v`.
+   */
+  public Set<AbstractFeature> moreRestrictiveVisibility(Visi v)
+  {
+    if (PRECONDITIONS) require
+      (!v.definesTypeVisibility());
+
+    if (_usedFeatures == null)
+      {
+        _usedFeatures = new TreeSet<AbstractFeature>();
+        usedFeatures(_usedFeatures);
+      }
+
+    return _usedFeatures
+      .stream()
+      .filter(af -> af.visibility().typeVisibility().ordinal() < v.ordinal())
+      .collect(Collectors.toSet());
+  }
+
 
 }
 

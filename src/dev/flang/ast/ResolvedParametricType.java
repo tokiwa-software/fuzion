@@ -27,9 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -207,6 +209,20 @@ public class ResolvedParametricType extends ResolvedType
   public AbstractType asThis()
   {
     throw new Error("ResolvedParametricType.asThis() not defined");
+  }
+
+
+  /**
+   * traverse a type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected void usedFeatures(Set<AbstractFeature> s)
+  {
+    if (!genericArgument().typeParameter().isTypeFeaturesThisType())
+      {
+        genericArgument().typeParameter().resultType().usedFeatures(s);
+      }
   }
 
 
