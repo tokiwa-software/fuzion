@@ -137,7 +137,7 @@ public exit(handler Exit_Handler, code ()->unit) =>
 
 # Exit_Handler -- abstract exit
 #
-private:public Exit_Handler ref is
+public Exit_Handler ref is
 
   # exit with the given code
   #
