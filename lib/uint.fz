@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-private:public uint (b Sequence u32, _ unit) : has_interval
+private:public uint (public b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.

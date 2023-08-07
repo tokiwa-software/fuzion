@@ -25,7 +25,7 @@
 
 # i8 -- 8-bit signed integer values
 #
-public i8(val i8) : num.wrap_around, has_interval is
+public i8(public val i8) : num.wrap_around, has_interval is
 
   public thiz => i8.this.val
 

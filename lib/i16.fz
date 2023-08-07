@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-public i16(val i16) : num.wrap_around, has_interval is
+public i16(public val i16) : num.wrap_around, has_interval is
 
   public thiz => i16.this.val
 

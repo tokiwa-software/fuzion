@@ -25,7 +25,7 @@
 
 # u16 -- 16-bit unsigned integer values
 #
-public u16(val u16) : num.wrap_around, has_interval is
+public u16(public val u16) : num.wrap_around, has_interval is
 
   public thiz => u16.this.val
 

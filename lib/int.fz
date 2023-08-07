@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-module:public int (s num.sign, n uint) : has_interval
+module:public int (public s num.sign, public n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
