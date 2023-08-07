@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-public i64(val i64) : num.wrap_around, has_interval is
+public i64(public val i64) : num.wrap_around, has_interval is
 
   public thiz => i64.this.val
 

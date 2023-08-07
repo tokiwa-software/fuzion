@@ -25,7 +25,7 @@
 #
 # this can be plus or minus
 #
-module sign : choice num.plus num.minus, property.equatable is
+public sign : choice num.plus num.minus, property.equatable is
 
   module is_plus =>
     match sign.this

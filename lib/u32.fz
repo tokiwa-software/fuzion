@@ -25,7 +25,7 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-public u32(val u32) : num.wrap_around, has_interval is
+public u32(public val u32) : num.wrap_around, has_interval is
 
   public thiz => u32.this.val
 

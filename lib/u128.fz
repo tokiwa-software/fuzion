@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-public u128(hi, lo u64) : num.wrap_around, has_interval is
+public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   public thiz => u128 hi lo
 

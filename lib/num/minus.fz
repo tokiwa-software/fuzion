@@ -25,4 +25,4 @@
 #
 # note that this value is of unit type minus, not of type sign
 #
-module minus is
+public minus is

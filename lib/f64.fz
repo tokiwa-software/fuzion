@@ -29,7 +29,7 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-public f64(val f64) : float is
+public f64(public val f64) : float is
 
   public thiz => f64.this.val
 
