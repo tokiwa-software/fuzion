@@ -24,7 +24,7 @@
 #  NAME -- the name of the main feature to be tested
 #  FUZION -- the fz command
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
-NAME = main
+override NAME = main
 FUZION_OPTIONS = -XmaxErrors=-1 -modules=mod -moduleDirs=modules
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
