@@ -1,11 +1,11 @@
 ## 2023-**-**: V0.085
 
-## 2023-08-**: V0.084
+## 2023-08-08: V0.084
 
 - Fuzion language
 
-  - In preparation of enforcing visibility, many things relating to
-    visibility have been improved or changed:
+  - Preparational improvements and changes with respect to
+    visibility (see:
     [#1690](https://github.com/tokiwa-software/fuzion/pull/1690),
     [#1691](https://github.com/tokiwa-software/fuzion/pull/1691),
     [#1695](https://github.com/tokiwa-software/fuzion/pull/1695),
@@ -13,7 +13,10 @@
     [#1731](https://github.com/tokiwa-software/fuzion/pull/1731),
     [#1734](https://github.com/tokiwa-software/fuzion/pull/1734),
     [#1736](https://github.com/tokiwa-software/fuzion/pull/1736),
-    [#1744](https://github.com/tokiwa-software/fuzion/pull/1744).
+    [#1744](https://github.com/tokiwa-software/fuzion/pull/1744))
+    have resulted in visibility finally being enforced by the
+    Fuzion compiler:
+    [#1745](https://github.com/tokiwa-software/fuzion/pull/1745).
 
   - Type inference for arguments from actuals in a call:
     [#1722](https://github.com/tokiwa-software/fuzion/pull/1722).
@@ -134,6 +137,15 @@
   - check that primitives do not contain fields:
     [#1808](https://github.com/tokiwa-software/fuzion/pull/1808).
 
+  - ast: use `Expr` instead of `Stmnt`:
+    [#1812](https://github.com/tokiwa-software/fuzion/pull/1812).
+
+  - improve backward type propagation for arrays:
+    [#1814](https://github.com/tokiwa-software/fuzion/pull/1814).
+
+    This means that the empty array can now be assigned to fields
+    of explicit type `array T`, and its type will be correctly
+    determined.
 
 - back end
 
