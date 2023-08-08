@@ -1,5 +1,3 @@
-## 2023-**-**: V0.085
-
 ## 2023-08-08: V0.084
 
 - Fuzion language
@@ -23,7 +21,7 @@
     In a declaration like
 
             point(x, y i32) is
-                  
+
 
     The argument type `i32` can be omitted if there are calls to
     that feature:
@@ -32,7 +30,7 @@
 
             p1 := point 3 4
             p2 := point 5 12
-                  
+
 
   - Support for *free types*
     [#1774](https://github.com/tokiwa-software/fuzion/pull/1722)
@@ -40,29 +38,29 @@
     possible to write
 
             first (s Sequence T) => s.nth 0
-                  
+
 
     instead of
 
             first (T type, s Sequence T) => s.nth 0
-                  
+
 
     Free types can be anonymous using `_`:
 
             first (s Sequence _) => s.nth 0
-                  
+
 
     one can also use constraints as in
 
             add_to_all (s array N:numeric, v N) => s.map x->x+v
 
             say (add_to_all [1, 2, 3] 10)
-                  
+
 
     or complex type expressions like
 
             g(v A | (B : numeric)) => ...
-                  
+
 
   - Explicit `ref` types have been removed:
     [#1705](https://github.com/tokiwa-software/fuzion/pull/1705).
