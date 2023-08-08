@@ -142,8 +142,8 @@
     [#1814](https://github.com/tokiwa-software/fuzion/pull/1814).
 
     This means that the empty array can now be assigned to fields
-    of explicit type `array T`, and its type will be correctly
-    determined.
+    of explicit type `array T`, and its type will be determined
+    correctly.
 
 - back end
 
