@@ -1209,7 +1209,7 @@ public class AstErrors extends ANY
                                ? "check the spelling of the type you have used"
                                : ((hasAbstract ? "implement (make non-abstract) " : "") +
                                   (hasAbstract && hasReturnType ? "and " : "") +
-                                  (hasReturnType ? "remove the return type (or replace it by " + skw("ref") +") of " : "") + "one of these features")
+                                  (hasReturnType ? "remove the return type (or replace it by " + skw("ref") +") of " : "") + ((n > 1) ? "one of these features" : "this feature"))
                                ) + ".");
   }
 
