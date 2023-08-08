@@ -278,11 +278,27 @@ public abstract class Module extends ANY
    */
   protected boolean typeVisible(SourceFile usedIn, AbstractFeature af)
   {
+    return typeVisible(usedIn, af, false);
+  }
+
+
+  /**
+   * Is type defined by feature `af` visible in file `usedIn`?
+   * If `af` does not define a type, result is false.
+   *
+   * @param usedIn
+   * @param af
+   * @param ignoreDefinesType leave checking whethere `af` defines a type to the caller
+   * @return
+   */
+  protected boolean typeVisible(SourceFile usedIn, AbstractFeature af, boolean ignoreDefinesType)
+  {
     var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
+    var definesType = af.definesType() || ignoreDefinesType;
 
-    return af.definesType() && (usedIn.sameAs(definedIn)
+    return definesType && (usedIn.sameAs(definedIn)
       || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
       || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
   }
