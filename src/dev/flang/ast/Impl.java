@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.stream.Collectors;
 import java.util.TreeMap;
+
+import dev.flang.ast.AbstractFeature.State;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
@@ -522,10 +525,40 @@ public class Impl extends ANY
     return switch (_kind)
       {
       case FieldDef    -> _initialValue.typeIfKnown();
-      case RoutineDef  -> _code.typeIfKnown();
+      case RoutineDef  -> typeFromRedefinedFeatures(f);
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> throw new Error("missing case "+_kind);
       };
+  }
+
+
+  AbstractType typeFromRedefinedFeatures(AbstractFeature f)
+  {
+    AbstractType result;
+
+    if (PRECONDITIONS) require
+      (_kind == Kind.RoutineDef);
+
+    var rf = f.redefines()
+              .stream()
+              .filter(x -> x.state().atLeast(State.RESOLVED_TYPES))
+              .map(x -> x.resultType())
+              .filter(x -> !x.isGenericArgument())
+              .filter(x -> x.generics().size() == 0)
+              .filter(x -> !x.isThisType())
+              .filter(x -> x != Types.t_UNDEFINED)
+              .collect(Collectors.toList());
+
+    if (rf.size() == 1)
+      {
+        result = rf.get(0);
+      }
+    else
+      {
+        result = _code.typeIfKnown();
+      }
+
+    return result;
   }
 
 
