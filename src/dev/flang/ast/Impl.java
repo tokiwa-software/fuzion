@@ -546,7 +546,6 @@ public class Impl extends ANY
               .filter(x -> !x.isGenericArgument())
               .filter(x -> x.generics().size() == 0)
               .filter(x -> !x.isThisType())
-              .filter(x -> x != Types.t_UNDEFINED)
               .collect(Collectors.toList());
 
     if (rf.size() == 1)
