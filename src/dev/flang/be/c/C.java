@@ -495,12 +495,13 @@ public class C extends ANY
            FUIR fuir)
   {
     _options = opt;
-    _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
+    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
+    _fuir = fuir;
     _tailCall = new TailCall(fuir);
-    _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
+    _ai = new AbstractInterpreter<>(fuir, new CodeGen());
 
     _names = new CNames(fuir);
-    _types = new CTypes(_fuir, _names);
+    _types = new CTypes(fuir, _names);
     _intrinsics = new Intrinsics();
     Errors.showAndExit();
   }
