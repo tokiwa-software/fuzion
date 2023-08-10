@@ -1621,7 +1621,15 @@ public class AstErrors extends ANY
         error(pos,
               "Incompatible type parameter",
               "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-              "actual type parameter " + s(g) + "\n");
+              "actual type parameter " + s(g) + "\n" +
+              (f.constraint().isChoice() ? "A choice type cannot be used as a constraint.\n" +
+                                           "To solve this, you could change the constraint to a newly created dummy feature and make " +
+                                           f.constraint().choiceGenerics()
+                                            .stream()
+                                            .map(x -> s(x))
+                                            .collect(Collectors.joining(", ")) +
+                                           " inherit from it.\n"
+                                         : ""));
       }
   }
 
