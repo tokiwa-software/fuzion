@@ -281,14 +281,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Check if the given clazz has a unique value that does not need to be pushed
-   * onto the stack.
+   * Check if values of given clazz are not pushed onto the stack.  This is the case
+   * for non-ref unit type values and for universe.
    */
-  public static boolean clazzHasUniqueValue(FUIR fuir, int cl)
+  public static boolean valueIgnoredOnStack(FUIR fuir, int cl)
   {
     return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
-    // NYI: maybe we should restrict this to c_unit only?
-    // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
   }
 
 
@@ -296,9 +294,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Check if the given clazz has a unique value that does not need to be pushed
    * onto the stack.
    */
-  public boolean clazzHasUniqueValue(int cl)
+  public boolean valueIgnoredOnStack(int cl)
   {
-    return clazzHasUniqueValue(_fuir, cl);
+    return valueIgnoredOnStack(_fuir, cl);
   }
 
 
@@ -318,13 +316,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (!clazzHasUniqueValue(cl))
+    if (!valueIgnoredOnStack(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (clazzHasUniqueValue(cl) || stack.get(stack.size()-1) == val,
+      (valueIgnoredOnStack(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -342,11 +340,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (clazzHasUniqueValue(cl) || stack.size() > 0,
+      (valueIgnoredOnStack(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      clazzHasUniqueValue(cl) ? _processor.unitValue() : stack.pop();
+      valueIgnoredOnStack(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
