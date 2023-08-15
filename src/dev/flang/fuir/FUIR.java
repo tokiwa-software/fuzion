@@ -304,6 +304,29 @@ public class FUIR extends IR
     return id(_main);
   }
 
+
+  /**
+   * Convert a clazz id into a number 0, 1, 2, 3, ...
+   *
+   * The clazz id is intentionally large to detect accidental usage of a clazz
+   * id in a wrong context.
+   *
+   * @param cl a clazz id
+   */
+  public int clazzId2num(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz() && cl <= lastClazz());
+
+    var result = cl - FUIR.CLAZZ_BASE;
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0 && result <= lastClazz() - firstClazz());
+
+    return result;
+  }
+
+
   public int clazzNumFields(int cl)
   {
     return clazz(cl).fields().length;
