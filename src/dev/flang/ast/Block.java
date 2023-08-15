@@ -290,7 +290,7 @@ public class Block extends AbstractBlock
 
   /**
    * removeResultExpression removes and returns the last non-NOP expression of
-   * this block if it is an expression.  Does nothing an returns null if the
+   * this block if it is an expression.  Does nothing and returns null if the
    * block is empty or the last non-NOP expression is not an Expr.
    *
    * @return the Expr that produces this Block's result
@@ -299,7 +299,7 @@ public class Block extends AbstractBlock
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) _expressions.remove(i)
+      ? _expressions.remove(i)
       : null;
   }
 

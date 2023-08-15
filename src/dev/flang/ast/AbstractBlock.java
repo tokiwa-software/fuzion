@@ -52,11 +52,11 @@ public abstract class AbstractBlock extends Expr
   /**
    * Generic constructor
    *
-   * @param s the list of expressions
+   * @param e the list of expressions
    */
-  public AbstractBlock(List<Expr> s)
+  public AbstractBlock(List<Expr> e)
   {
-    this._expressions = s;
+    this._expressions = e;
   }
 
 
@@ -93,10 +93,10 @@ public abstract class AbstractBlock extends Expr
    */
   public void visitExpressions(ExpressionVisitor v)
   {
-    var s = _expressions;
-    for (int i = 0; i < s.size(); i++)
+    var e = _expressions;
+    for (int i = 0; i < e.size(); i++)
       {
-        s.get(i).visitExpressions(v);
+        e.get(i).visitExpressions(v);
       }
     super.visitExpressions(v);
   }
@@ -130,7 +130,7 @@ public abstract class AbstractBlock extends Expr
       {
         i--;
       }
-    return (i >= 0 && (_expressions.get(i).producesResult()))
+    return i >= 0 && (_expressions.get(i).producesResult())
       ? i
       : -1;
   }
@@ -147,7 +147,7 @@ public abstract class AbstractBlock extends Expr
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) _expressions.get(i)
+      ? _expressions.get(i)
       : null;
   }
 

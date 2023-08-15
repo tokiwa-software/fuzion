@@ -168,14 +168,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var p = _inputFile;
     if (p != null)
       {
-        var stmnts = parseFile(p);
-        ((AbstractBlock) _universe.code())._expressions.addAll(stmnts);
-        for (var s : stmnts)
+        var expr = parseFile(p);
+        ((AbstractBlock) _universe.code())._expressions.addAll(expr);
+        for (var s : expr)
           {
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1 && !f.isField())
+                if (expr.size() == 1 && !f.isField())
                   {
                     res = f.featureName().baseName();
                   }
@@ -209,9 +209,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var stmnts = parseFile(p);
+    var exprs = parseFile(p);
     var result = new List<Feature>();
-    for (var s : stmnts)
+    for (var s : exprs)
       {
         if (s instanceof Feature f)
           {

@@ -407,8 +407,7 @@ public class Loop extends ANY
       /* loop can fail: */     (iterates() || whileCond != null) &&
       /* loop can succeed: */  (untilCond != null) &&
       /* success and else block do not end in expression: */
-      (_successBlock == null || !_successBlock.producesResult() ||
-       _elseBlock0 == null   || !_elseBlock0  .producesResult());
+      (_successBlock == null || _elseBlock0 == null);
   }
 
 

@@ -2027,7 +2027,7 @@ lambda      : contract "->" block
     var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
     Contract   c = contract();
     matchOperator("->", "lambda");
-    return new Function(pos, n, i, c, (Expr) block());
+    return new Function(pos, n, i, c, block());
   }
 
 

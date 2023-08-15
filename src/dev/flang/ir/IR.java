@@ -220,11 +220,11 @@ public class IR extends ANY
       }
     else if (e instanceof AbstractBlock b)
       {
-        // for (var st : b.expressions_)  -- not possible since we need index i
+        // for (var expr : b.expressions_)  -- not possible since we need index i
         for (int i=0; i<b._expressions.size(); i++)
           {
-            var st = b._expressions.get(i);
-            toStack(l, st, dumpResult || i < b._expressions.size()-1);
+            var expr = b._expressions.get(i);
+            toStack(l, expr, dumpResult || i < b._expressions.size()-1);
           }
       }
     else if (e instanceof AbstractConstant)

@@ -2235,9 +2235,9 @@ public class Feature extends AbstractFeature
         var b = _outer.code();
         if (b instanceof Block)
           {
-            for (var s : ((Block)b)._expressions)
+            for (var e : ((Block)b)._expressions)
               {
-                if (s == this)
+                if (e == this)
                   {
                     return true;
                   }
