@@ -224,6 +224,18 @@ public class Call extends ANY implements Comparable<Call>, Context
               {
                 var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
                 Errors.warning(msg);
+                var rc = _dfa._fuir.clazzResultClazz(_cc);
+                result = switch (_dfa._fuir.getSpecialId(rc))
+                  {
+                  case c_i8, c_i16, c_i32, c_i64,
+                       c_u8, c_u16, c_u32, c_u64,
+                       c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                  case c_bool                    -> _dfa._bool;
+                  case c_TRUE, c_FALSE           -> Value.UNIT;
+                  case c_Const_String            -> _dfa.newConstString(null, this);
+                  case c_unit                    -> Value.UNIT;
+                  case c_NOT_FOUND               -> null;
+                  };
               }
           }
       }
