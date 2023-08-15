@@ -456,10 +456,6 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
-      {
-        return true;
-      }
     if (!skipQual())
       {
         return false;
@@ -959,7 +955,6 @@ argType     : type
                                 var result = new List<AbstractFeature>();
                                 do
                                   {
-                                    SourcePosition pos = tokenSourcePos();
                                     Visi v = visibility();
                                     int m = modifiers();
                                     var n = argNames();
