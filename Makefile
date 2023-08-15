@@ -976,12 +976,14 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveLib=$@
 
+.PHONY: $(BUILD_DIR)/tests
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
 	rm -rf $@
 	cp -rf $^ $@
 	chmod +x $@/*.sh
 
+.PHONY: $(BUILD_DIR)/include
 $(BUILD_DIR)/include: $(FZ_SRC)/include
 	mkdir -p $(@D)
 	rm -rf $@
