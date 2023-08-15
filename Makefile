@@ -89,8 +89,12 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_LIB = $(FZ_SRC)/lib
-FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
+FZ_SRC_LIB           = $(FZ_SRC)/lib
+FUZION_FILES_LIB     = $(shell find $(FZ_SRC_LIB) -name "*.fz")
+FZ_SRC_TESTS         = $(FZ_SRC)/tests
+FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
+FZ_SRC_INCLUDE       = $(FZ_SRC)/include
+FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -976,16 +980,16 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveLib=$@
 
-$(BUILD_DIR)/tests: $(FZ_SRC)/tests
-	mkdir -p $(@D)
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
 	rm -rf $@
-	cp -rf $^ $@
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC_TESTS) $@
 	chmod +x $@/*.sh
 
-$(BUILD_DIR)/include: $(FZ_SRC)/include
-	mkdir -p $(@D)
+$(BUILD_DIR)/include: $(FUZION_FILES_INCLUDE)
 	rm -rf $@
-	cp -rf $^ $@
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC_INCLUDE) $@
 
 $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	mkdir -p $(@D)
