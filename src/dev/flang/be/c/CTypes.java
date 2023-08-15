@@ -53,7 +53,7 @@ public class CTypes extends ANY
 
 
   /**
-   * The C backend
+   * The C names that are defined
    */
   private final CNames _names;
 
