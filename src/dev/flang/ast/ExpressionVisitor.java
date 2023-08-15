@@ -20,46 +20,37 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of interface Stmnt
+ * Source of class StatementVisitor
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
-import dev.flang.util.HasSourcePosition;
-
 
 /**
- * Stmnt <description>
+ * This is used to perform some action on all Expr's within a Feature or other
+ * structure of the AST.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface Stmnt extends HasSourcePosition
+public interface ExpressionVisitor
 {
 
 
   /*-----------------------------  methods  -----------------------------*/
 
-  /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this or an alternative Stmnt if the action performed during the
-   * visit replaces this by the alternative.
-   */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer);
-
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
-   * code that actually would be executed at runtime.
+   * action is to be called an all Expr's encountered.
    */
-  boolean containsOnlyDeclarations();
+  abstract void action (Expr e);
 
+  /**
+   * action is to be called an all AbstractCase's encountered.
+   */
+  default void action(AbstractCase c)
+  {
+  }
 
 }
 

@@ -125,7 +125,7 @@ public class Destructure extends Expr
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -134,7 +134,7 @@ public class Destructure extends Expr
 
 
   /**
-   * Helper routine for create to expand this into a block of statements.
+   * Helper routine for create to expand this into a block of expressions.
    */
   private Expr expand()
   {
@@ -157,7 +157,7 @@ public class Destructure extends Expr
    * @param pos the source code position
    *
    * @param fields the fields we are destructuring into in case they are declared
-   * within the destructure statement
+   * within the destructure expression
    *
    * @param names the names of the variables to store the destructured values if
    * we are not destructuring to new fields.
@@ -166,7 +166,7 @@ public class Destructure extends Expr
    *
    * @param v the value that is destructured.
    *
-   * @return a statement that implements the destructuring.
+   * @return a expression that implements the destructuring.
    */
   public static Expr create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
   {
@@ -208,7 +208,7 @@ public class Destructure extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -274,7 +274,7 @@ public class Destructure extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -348,7 +348,7 @@ public class Destructure extends Expr
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -359,7 +359,7 @@ public class Destructure extends Expr
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
   {

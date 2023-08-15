@@ -1443,20 +1443,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Call v.action(s) on all statements s within this feature.
+   * Call v.action(s) on all expressions s within this feature.
    *
-   * @param v the action to be performed on the statements.
+   * @param v the action to be performed on the expressions.
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     for (var c: inherits())
       {
-        c.visitStatements(v);
+        c.visitExpressions(v);
       }
     contract().visitStatements(v);
     if (isRoutine())
       {
-        code().visitStatements(v);
+        code().visitExpressions(v);
       }
   }
 
@@ -1719,7 +1719,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
   {
@@ -1728,7 +1728,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.

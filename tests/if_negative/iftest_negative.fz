@@ -63,7 +63,7 @@ iftest_negative is
 
   # NYI improve error message
   function1 (b bool) String is
-    if b // 6. should flag an error: Incompatible types in branches of if statement
+    if b // 6. should flag an error: Incompatible types in branches of if expression
       "Hello"
 
   function2 (b bool) unit is

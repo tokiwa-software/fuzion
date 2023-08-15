@@ -110,7 +110,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -137,7 +137,7 @@ public class Match extends AbstractMatch
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -195,9 +195,9 @@ public class Match extends AbstractMatch
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statement with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
+   * this is a expression with several branches such as an "if" or a "match"
+   * expression, add corresponding assignments in each branch and convert this
+   * into a expression that does not produce a value.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -206,7 +206,7 @@ public class Match extends AbstractMatch
    *
    * @param r the field this should be assigned to.
    *
-   * @return the Stmnt this Expr is to be replaced with, typically an Assign
+   * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
   Match assignToField(Resolution res, AbstractFeature outer, Feature r)
@@ -235,7 +235,7 @@ public class Match extends AbstractMatch
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {

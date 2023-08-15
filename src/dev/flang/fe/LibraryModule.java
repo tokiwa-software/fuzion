@@ -1432,7 +1432,7 @@ Expression
    | k==Unb   | 1      | Unbox         | unbox expression
    | k==Con   | 1      | Constant      | constant
    | k==Cal   | 1      | Call          | feature call
-   | k==Mat   | 1      | Match         | match statement
+   | k==Mat   | 1      | Match         | match expression
    | k==Tag   | 1      | Tag           | tag expression
    | k==Env   | 1      | Env           | env expression
 |====
@@ -1456,7 +1456,7 @@ Expression
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Cal | 1      | Call          | feature call                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Mat | 1      | Match         | match statement                               |
+   *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+

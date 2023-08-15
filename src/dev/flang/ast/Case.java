@@ -79,7 +79,7 @@ public class Case extends AbstractCase
 
 
   /**
-   * Counter for a unique id for this case statement. This is used to store data
+   * Counter for a unique id for this case expression. This is used to store data
    * in the runtime clazz for this case.
    */
   public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
@@ -174,7 +174,7 @@ public class Case extends AbstractCase
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -207,7 +207,7 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match statement
+   * @param outer the outer feature that contains this match expression
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error
@@ -275,7 +275,7 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match statement
+   * @param outer the outer feature that contains this match expression
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error

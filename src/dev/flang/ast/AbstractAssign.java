@@ -49,7 +49,7 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Field that is assigned by this assign statement. initialized
+   * Field that is assigned by this assign expression. initialized
    * during init() phase.
    */
   public AbstractFeature _assignedField;
@@ -106,7 +106,7 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -128,16 +128,16 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * visit all the statements within this Assign.
+   * visit all the expressions within this Assign.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    _value.visitStatements(v);
-    _target.visitStatements(v);
-    super.visitStatements(v);
+    _value.visitExpressions(v);
+    _target.visitExpressions(v);
+    super.visitExpressions(v);
   }
 
 
@@ -146,7 +146,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -159,10 +159,10 @@ public abstract class AbstractAssign extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure statement.
+   * replace a Destructure, this refers to the Destructure expression.
    */
   void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {
@@ -247,7 +247,7 @@ public abstract class AbstractAssign extends Expr
   /**
    * check the types in this assignment
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes(Resolution res)
   {
@@ -274,7 +274,7 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -285,7 +285,7 @@ public abstract class AbstractAssign extends Expr
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
   {

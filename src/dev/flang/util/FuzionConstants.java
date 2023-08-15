@@ -114,7 +114,7 @@ public class FuzionConstants extends ANY
 
   /**
    * Artificial name of implicitly declared result field in case the assignment
-   * to result is implicitly from the last statement's value.
+   * to result is implicitly from the last expression's value.
    */
   public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_PREFIX + "result";
 

@@ -149,7 +149,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -206,7 +206,7 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -228,17 +228,17 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the statements within this InlineArray.
+   * visit all the expressions within this InlineArray.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    super.visitStatements(v);
+    super.visitExpressions(v);
     for (var e : _elements)
       {
-        e.visitStatements(v);
+        e.visitExpressions(v);
       }
   }
 
@@ -263,7 +263,7 @@ public class InlineArray extends ExprWithPos
   /**
    * check the types in this assignment
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes()
   {
@@ -292,7 +292,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {

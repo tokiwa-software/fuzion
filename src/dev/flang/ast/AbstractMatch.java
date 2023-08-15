@@ -87,7 +87,7 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -112,26 +112,26 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * visit all the statements within this Match.
+   * visit all the expressions within this Match.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    subject().visitStatements(v);
-    super.visitStatements(v);
+    subject().visitExpressions(v);
+    super.visitExpressions(v);
     var c = cases();
     for (int i = 0; i < c.size(); i++)
       {
-        c.get(i).visitStatements(v);
+        c.get(i).visitExpressions(v);
       }
   }
 
 
   /**
    * Helper routine for typeIfKnown to determine the type of this match
-   * statement on demand, i.e., as late as possible.
+   * expression on demand, i.e., as late as possible.
    */
   private AbstractType typeFromCases()
   {
@@ -144,7 +144,7 @@ public abstract class AbstractMatch extends Expr
     if (result == Types.t_UNDEFINED)
       {
         new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in cases of match statement",
+                                          "Incompatible types in cases of match expression",
                                           new Iterator<Expr>()
                                           {
                                             Iterator<AbstractCase> it = cases().iterator();

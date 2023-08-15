@@ -93,7 +93,7 @@
 #     c centigrade => say "it's " + c.degrees + "°C"
 #     f fahrenheit => say "it's " + f.degrees + "°F"
 #
-# NYI: Once Fuzion's match statement supports destructuring as well, we should
+# NYI: Once Fuzion's match expression supports destructuring as well, we should
 # be able to extract the degrees directly as in
 #
 #   match temp

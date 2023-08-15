@@ -94,22 +94,22 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * visit all the statements within this Call.
+   * visit all the expressions within this Call.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     for (var a : actuals())
       {
-        a.visitStatements(v);
+        a.visitExpressions(v);
       }
     if (target() != null)
       {
-        target().visitStatements(v);
+        target().visitExpressions(v);
       }
-    super.visitStatements(v);
+    super.visitExpressions(v);
   }
 
 

@@ -296,7 +296,7 @@ hw25 is
     var af =
       (s instanceof AbstractCall   call) ? call.calledFeature() :
       (s instanceof AbstractAssign a   ) ? a._assignedField :
-      (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
+      (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Expr."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);
   }

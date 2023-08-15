@@ -32,7 +32,7 @@ import dev.flang.util.List;
 
 
 /**
- * Block represents a Block of statements
+ * Block represents a Block of expressions
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -43,7 +43,7 @@ public abstract class AbstractBlock extends Expr
   /*----------------------------  variables  ----------------------------*/
 
 
-  public List<Expr> _statements;
+  public List<Expr> _expressions;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -52,11 +52,11 @@ public abstract class AbstractBlock extends Expr
   /**
    * Generic constructor
    *
-   * @param s the list of statements
+   * @param s the list of expressions
    */
   public AbstractBlock(List<Expr> s)
   {
-    this._statements = s;
+    this._expressions = s;
   }
 
 
@@ -64,7 +64,7 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -75,30 +75,30 @@ public abstract class AbstractBlock extends Expr
    */
   public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
   {
-    ListIterator<Expr> i = _statements.listIterator();
+    ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
-        Expr s = i.next();
-        i.set(s.visit(v, outer));
+        Expr e = i.next();
+        i.set(e.visit(v, outer));
       }
     return this;
   }
 
 
   /**
-   * visit all the statements within this Block.
+   * visit all the expressions within this Block.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    var s = _statements;
+    var s = _expressions;
     for (int i = 0; i < s.size(); i++)
       {
-        s.get(i).visitStatements(v);
+        s.get(i).visitExpressions(v);
       }
-    super.visitStatements(v);
+    super.visitExpressions(v);
   }
 
 
@@ -116,29 +116,29 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * resultExpressionIndex returns the index of the last non-NOP statement of
+   * resultExpressionIndex returns the index of the last non-NOP expression of
    * this block if it is an expression, -1 if the block is empty or the last
-   * non-NOP statement is not an Expr.
+   * non-NOP expression is not an Expr.
    *
    * @return the index of the Expr that produces this Block's result, -1 if none
    * exists.
    */
   protected int resultExpressionIndex()
   {
-    var i = _statements.size() - 1;
-    while (i >= 0 && (_statements.get(i) instanceof Nop))
+    var i = _expressions.size() - 1;
+    while (i >= 0 && (_expressions.get(i) instanceof Nop))
       {
         i--;
       }
-    return (i >= 0 && (_statements.get(i).producesResult()))
+    return (i >= 0 && (_expressions.get(i).producesResult()))
       ? i
       : -1;
   }
 
 
   /**
-   * resultExpression returns the last non-NOP statement of this block if it is
-   * an expression, null if the block is empty or the last non-NOP statement is
+   * resultExpression returns the last non-NOP expression of this block if it is
+   * an expression, null if the block is empty or the last non-NOP expression is
    * not an Expr.
    *
    * @return the Expr that produces this Block's result, or null if none.
@@ -147,21 +147,21 @@ public abstract class AbstractBlock extends Expr
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) _statements.get(i)
+      ? (Expr) _expressions.get(i)
       : null;
   }
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
-    for (Stmnt s : _statements)
+    for (Expr e : _expressions)
       {
-        result = result && s.containsOnlyDeclarations();
+        result = result && e.containsOnlyDeclarations();
       }
     return result;
   }
@@ -194,7 +194,7 @@ public abstract class AbstractBlock extends Expr
    */
   public String toString(String prefix)
   {
-    String s = _statements.toString("\n");
+    String s = _expressions.toString("\n");
     StringBuilder sb = new StringBuilder();
     if (s.length() > 0)
       {

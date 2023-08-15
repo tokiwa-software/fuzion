@@ -91,7 +91,7 @@ public class Env extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -112,7 +112,7 @@ public class Env extends ExprWithPos
    * Find all the types used in this that refer to formal generic arguments of
    * this or any of this' outer classes.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void findGenerics(AbstractFeature outer)
   {
@@ -127,7 +127,7 @@ public class Env extends ExprWithPos
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @return a call to the outer references to access the value represented by
    * this.

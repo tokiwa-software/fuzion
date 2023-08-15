@@ -50,11 +50,9 @@ import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.Generic;
 import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
@@ -63,7 +61,6 @@ import dev.flang.ast.Universe;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
-import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -623,11 +620,11 @@ class LibraryOut extends ANY
    *   | true   | n      | Expression    | the single expressions                        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
-   * @param s the statement to write
+   * @param e the expression to write
    */
-  SourcePosition expressions(Stmnt s, SourcePosition lastPos)
+  SourcePosition expressions(Expr e, SourcePosition lastPos)
   {
-    return expressions(s, false, lastPos);
+    return expressions(e, false, lastPos);
   }
 
   /**
@@ -653,22 +650,22 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Cal | 1      | Call          | feature call                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Mat | 1      | Match         | match statement                               |
+   *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
-   * @param s the statement to write
+   * @param e the expression to write
    *
    * @param dumpResult true to add a 'Pop' to ignore the result produced by s.
    */
-  SourcePosition expressions(Stmnt s, boolean dumpResult, SourcePosition lastPos)
+  SourcePosition expressions(Expr e, boolean dumpResult, SourcePosition lastPos)
   {
-    if (s instanceof AbstractAssign a)
+    if (e instanceof AbstractAssign a)
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Assign, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Assign, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -680,10 +677,10 @@ class LibraryOut extends ANY
    */
         _data.writeOffset(a._assignedField);
       }
-    else if (s instanceof Unbox u)
+    else if (e instanceof Unbox u)
       {
         lastPos = expressions(u._adr, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Unbox                                                                           |
@@ -698,18 +695,18 @@ class LibraryOut extends ANY
         type(u.type());
         _data.writeByte(u._needed ? 1 : 0);
       }
-    else if (s instanceof Box b)
+    else if (e instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Box, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Box, lastPos, e.pos());
       }
-    else if (s instanceof AbstractBlock b)
+    else if (e instanceof AbstractBlock b)
       {
         int i = 0;
-        for (var st : b._statements)
+        for (var st : b._expressions)
           {
             i++;
-            if (i < b._statements.size())
+            if (i < b._expressions.size())
               {
                 lastPos = expressions(st, true, lastPos);
               }
@@ -724,9 +721,9 @@ class LibraryOut extends ANY
             _data.writeByte(IR.ExprKind.Unit.ordinal());
           }
       }
-    else if (s instanceof Constant c)
+    else if (e instanceof Constant c)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Const, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Const, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -745,14 +742,14 @@ class LibraryOut extends ANY
         _data.writeInt(d.length);
         _data.write(d);
       }
-    else if (s instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Current, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Current, lastPos, e.pos());
       }
-    else if (s instanceof If i)
+    else if (e instanceof If i)
       {
         lastPos = expressions(i.cond, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, e.pos());
         _data.writeInt(2);
         _data.writeInt(1);
         type(Types.resolved.f_TRUE.resultType());
@@ -772,14 +769,14 @@ class LibraryOut extends ANY
             code(new Block(i.pos(), new List<>()));
           }
       }
-    else if (s instanceof Call c)
+    else if (e instanceof Call c)
       {
         lastPos = expressions(c.target(), lastPos);
         for (var a : c._actuals)
           {
             lastPos = expressions(a, lastPos);
           }
-        lastPos = exprKindAndPos(IR.ExprKind.Call, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Call, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -841,10 +838,10 @@ class LibraryOut extends ANY
             _data.writeByte(IR.ExprKind.Pop.ordinal());
           }
       }
-    else if (s instanceof AbstractMatch m)
+    else if (e instanceof AbstractMatch m)
       {
         lastPos = expressions(m.subject(), lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -895,10 +892,10 @@ class LibraryOut extends ANY
             code(c.code());
           }
       }
-    else if (s instanceof Tag t)
+    else if (e instanceof Tag t)
       {
         lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Tag, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Tag, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -910,9 +907,9 @@ class LibraryOut extends ANY
    */
         type(t.type());
       }
-    else if (s instanceof Env e)
+    else if (e instanceof Env)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, s.pos());
+        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Env                                                                             |
@@ -924,21 +921,21 @@ class LibraryOut extends ANY
    */
         type(e.type());
       }
-    else if (s instanceof Nop)
+    else if (e instanceof Nop)
       {
       }
-    else if (s instanceof Universe)
+    else if (e instanceof Universe)
       {
         // Universe is ignored, a call with target clazz universe will get its
         // target implicitly.
         //
         // write(IR.ExprKind.Universe.ordinal());
       }
-    else if (s instanceof InlineArray)
+    else if (e instanceof InlineArray)
       {
-        throw new Error("Cannot write Library code for "+s.getClass());
+        throw new Error("Cannot write Library code for "+e.getClass());
       }
-    else if (s instanceof Check c)
+    else if (e instanceof Check c)
       {
         // NYI: Check not supported yet
         //
@@ -946,7 +943,7 @@ class LibraryOut extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+s.getClass()+" in LibraryOut.expressions");
+        System.err.println("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
       }
     return lastPos;
   }

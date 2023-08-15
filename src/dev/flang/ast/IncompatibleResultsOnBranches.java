@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * IncompatibleResultsOnBranches creates informative error messages for branching
- * statements like "if" or "match" in case the different branches produce
+ * expressions like "if" or "match" in case the different branches produce
  * incompatible results.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
