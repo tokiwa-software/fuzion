@@ -30,71 +30,71 @@ public ascii is
   ##
 
   # Null
-  module nul => u8 0
+  public nul => u8 0
   # Start of Heading
-  module soh => u8 1
+  public soh => u8 1
   # Start of Text
-  module stx => u8 2
+  public stx => u8 2
   # End of Text
-  module etx => u8 3
+  public etx => u8 3
   # End of Transmission
-  module eot => u8 4
+  public eot => u8 4
   # Enquiry
-  module enq => u8 5
+  public enq => u8 5
   # Acknowledgement
-  module ack => u8 6
+  public ack => u8 6
   # Bell
-  module bel => u8 7
+  public bel => u8 7
   # Backspace
-  module bs  => u8 8
+  public bs  => u8 8
   # Horizontal Tab
-  module ht  => u8 9
+  public ht  => u8 9
   # Line Feed
-  module lf  => u8 10
+  public lf  => u8 10
   # Vertical Tab
-  module vt  => u8 11
+  public vt  => u8 11
   # Form Feed
-  module ff  => u8 12
+  public ff  => u8 12
   # Carriage Return
-  module cr  => u8 13
+  public cr  => u8 13
   # Shift Out
-  module so  => u8 14
+  public so  => u8 14
   # Shift In
-  module si  => u8 15
+  public si  => u8 15
   # Data Link Escape
-  module dle => u8 16
+  public dle => u8 16
   # Device Control 1 (often XON)
-  module dc1 => u8 17
+  public dc1 => u8 17
   # Device Control 2
-  module dc2 => u8 18
+  public dc2 => u8 18
   # Device Control 3 (often XOFF)
-  module dc3 => u8 19
+  public dc3 => u8 19
   # Device Control 4
-  module dc4 => u8 20
+  public dc4 => u8 20
   # Negative Acknowledgement
-  module nak => u8 21
+  public nak => u8 21
   # Synchronous Idle
-  module syn => u8 22
+  public syn => u8 22
   # End of Transmission Block
-  module etb => u8 23
+  public etb => u8 23
   # Cancel
-  module can => u8 24
+  public can => u8 24
   # End of Medium
-  module em  => u8 25
+  public em  => u8 25
   # SUB  Substitute
-  module ss  => u8 26
+  public ss  => u8 26
   # Escape
-  module esc => u8 27
+  public esc => u8 27
   # File Separator
-  module fs  => u8 28
+  public fs  => u8 28
   # Group Separator
-  module gs  => u8 29
+  public gs  => u8 29
   # Record Separator
-  module rs  => u8 30
+  public rs  => u8 30
   # Unit Separator
-  module us  => u8 31
+  public us  => u8 31
   # Delete
-  module del => u8 127
+  public del => u8 127
 
 
   ##
@@ -102,68 +102,68 @@ public ascii is
   ##
 
   # Null
-  module nul_str => String.type.from_bytes [nul]
+  public nul_str => String.type.from_bytes [nul]
   # Start of Heading
-  module soh_str => String.type.from_bytes [soh]
+  public soh_str => String.type.from_bytes [soh]
   # Start of Text
-  module stx_str => String.type.from_bytes [stx]
+  public stx_str => String.type.from_bytes [stx]
   # End of Text
-  module etx_str => String.type.from_bytes [etx]
+  public etx_str => String.type.from_bytes [etx]
   # End of Transmission
-  module eot_str => String.type.from_bytes [eot]
+  public eot_str => String.type.from_bytes [eot]
   # Enquiry
-  module enq_str => String.type.from_bytes [enq]
+  public enq_str => String.type.from_bytes [enq]
   # Acknowledgement
-  module ack_str => String.type.from_bytes [ack]
+  public ack_str => String.type.from_bytes [ack]
   # Bell
-  module bel_str => String.type.from_bytes [bel]
+  public bel_str => String.type.from_bytes [bel]
   # Backspace
-  module bs_str  => String.type.from_bytes [bs]
+  public bs_str  => String.type.from_bytes [bs]
   # Horizontal Tab
-  module ht_str  => String.type.from_bytes [ht]
+  public ht_str  => String.type.from_bytes [ht]
   # Line Feed
-  module lf_str  => String.type.from_bytes [lf]
+  public lf_str  => String.type.from_bytes [lf]
   # Vertical Tab
-  module vt_str  => String.type.from_bytes [vt]
+  public vt_str  => String.type.from_bytes [vt]
   # Form Feed
-  module ff_str  => String.type.from_bytes [ff]
+  public ff_str  => String.type.from_bytes [ff]
   # Carriage Return
-  module cr_str  => String.type.from_bytes [cr]
+  public cr_str  => String.type.from_bytes [cr]
   # Shift Out
-  module so_str  => String.type.from_bytes [so]
+  public so_str  => String.type.from_bytes [so]
   # Shift In
-  module si_str  => String.type.from_bytes [si]
+  public si_str  => String.type.from_bytes [si]
   # Data Link Escape
-  module dle_str => String.type.from_bytes [dle]
+  public dle_str => String.type.from_bytes [dle]
   # Device Control 1 (often XON)
-  module dc1_str => String.type.from_bytes [dc1]
+  public dc1_str => String.type.from_bytes [dc1]
   # Device Control 2
-  module dc2_str => String.type.from_bytes [dc2]
+  public dc2_str => String.type.from_bytes [dc2]
   # Device Control 3 (often XOFF)
-  module dc3_str => String.type.from_bytes [dc3]
+  public dc3_str => String.type.from_bytes [dc3]
   # Device Control 4
-  module dc4_str => String.type.from_bytes [dc4]
+  public dc4_str => String.type.from_bytes [dc4]
   # Negative Acknowledgement
-  module nak_str => String.type.from_bytes [nak]
+  public nak_str => String.type.from_bytes [nak]
   # Synchronous Idle
-  module syn_str => String.type.from_bytes [syn]
+  public syn_str => String.type.from_bytes [syn]
   # End of Transmission Block
-  module etb_str => String.type.from_bytes [etb]
+  public etb_str => String.type.from_bytes [etb]
   # Cancel
-  module can_str => String.type.from_bytes [can]
+  public can_str => String.type.from_bytes [can]
   # End of Medium
-  module em_str  => String.type.from_bytes [em]
+  public em_str  => String.type.from_bytes [em]
   # SUB  Substitute
-  module ss_str  => String.type.from_bytes [ss]
+  public ss_str  => String.type.from_bytes [ss]
   # Escape
-  module esc_str => String.type.from_bytes [esc]
+  public esc_str => String.type.from_bytes [esc]
   # File Separator
-  module fs_str  => String.type.from_bytes [fs]
+  public fs_str  => String.type.from_bytes [fs]
   # Group Separator
-  module gs_str  => String.type.from_bytes [gs]
+  public gs_str  => String.type.from_bytes [gs]
   # Record Separator
-  module rs_str  => String.type.from_bytes [rs]
+  public rs_str  => String.type.from_bytes [rs]
   # Unit Separator
-  module us_str  => String.type.from_bytes [us]
+  public us_str  => String.type.from_bytes [us]
   # Delete
-  module del_str => String.type.from_bytes [del]
+  public del_str => String.type.from_bytes [del]
