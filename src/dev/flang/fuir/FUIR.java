@@ -1370,7 +1370,7 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Comment);
 
-    return (String) _codeIds.get(c).get(ix);
+    return comment(c, ix);
   }
 
 
@@ -1922,7 +1922,7 @@ hw25 is
       case Unbox   -> "Unbox "     + clazzAsString(unboxOuterRefClazz(cl, c, ix)) + " => " + clazzAsString(unboxResultClazz(cl, c, ix));
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
-      case Comment -> "Comment";
+      case Comment -> "Comment: " + comment(c, ix);
       case Const   -> "Const";
       case Dup     -> "Dup";
       case Match   -> {

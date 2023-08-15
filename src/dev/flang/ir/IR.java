@@ -453,6 +453,24 @@ public class IR extends ANY
     return result;
   }
 
+
+  /**
+   * Get the code for a comment expression.  This is used for debugging.
+   *
+   * @param c code block containing the comment
+   *
+   * @param ix index of the comment
+   */
+  public String comment(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Comment);
+
+    return (String) _codeIds.get(c).get(ix);
+  }
+
 }
 
 /* end of file */
