@@ -272,7 +272,7 @@ public class DFA extends ANY
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
               check
-                (t != Value.UNIT || AbstractInterpreter.valueIgnoredOnStack(_fuir, tt));
+                (t != Value.UNIT || AbstractInterpreter.ignoredOnStack(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
                   _fuir.clazzAsValue(t._clazz) == tt)

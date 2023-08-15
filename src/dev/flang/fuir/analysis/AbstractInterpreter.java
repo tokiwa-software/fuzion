@@ -282,21 +282,21 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
   /**
    * Check if values of given clazz are not pushed onto the stack.  This is the case
-   * for non-ref unit type values and for universe.
+   * for non-ref effective unit type values and for universe.
    */
-  public static boolean valueIgnoredOnStack(FUIR fuir, int cl)
+  public static boolean ignoredOnStack(FUIR fuir, int cl)
   {
     return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
   }
 
 
   /**
-   * Check if the given clazz has a unique value that does not need to be pushed
-   * onto the stack.
+   * Check if values of given clazz are not pushed onto the stack.  This is the case
+   * for non-ref effective unit type values and for universe.
    */
-  public boolean valueIgnoredOnStack(int cl)
+  public boolean ignoredOnStack(int cl)
   {
-    return valueIgnoredOnStack(_fuir, cl);
+    return ignoredOnStack(_fuir, cl);
   }
 
 
@@ -316,13 +316,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (!valueIgnoredOnStack(cl))
+    if (!ignoredOnStack(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (valueIgnoredOnStack(cl) || stack.get(stack.size()-1) == val,
+      (ignoredOnStack(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -340,11 +340,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (valueIgnoredOnStack(cl) || stack.size() > 0,
+      (ignoredOnStack(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      valueIgnoredOnStack(cl) ? _processor.unitValue() : stack.pop();
+      ignoredOnStack(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
