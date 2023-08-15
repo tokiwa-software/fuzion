@@ -568,18 +568,19 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Assign:
         {
           // NYI: pop the stack values even in case field is unused.
-          if (_fuir.accessedClazz(cl, c, i) != -1)  // field we are assigning to may be unused, i.e., -1
+          var ft = _fuir.assignedType(cl, c, i);
+          var tc = _fuir.accessTargetClazz(cl, c, i);
+          var tvalue = pop(stack, tc);
+          var avalue = pop(stack, ft);
+          var f = _fuir.accessedClazz  (cl, c, i);
+          if (f != -1)  // field we are assigning to may be unused, i.e., -1
             {
-              var f = _fuir.accessedClazz  (cl, c, i);
-              var ft = _fuir.clazzResultClazz(f);
-              var tc = _fuir.accessTargetClazz(cl, c, i);
-              var tvalue = pop(stack, tc);
-              var avalue = pop(stack, ft);
               return _processor.assign(cl, pre, c, i, tvalue, avalue);
             }
           else
             {
-              return _processor.nop();
+              return _processor.sequence(new List<>(_processor.drop(tvalue, tc),
+                                                    _processor.drop(avalue, ft)));
             }
         }
       case Box:

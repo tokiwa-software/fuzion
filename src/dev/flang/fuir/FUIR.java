@@ -1475,6 +1475,36 @@ hw25 is
 
 
   /**
+   * Get the type of an assigned value. This returns the type even if the
+   * assigned field has been removed and accessedClazz() returns -1.
+   *
+   * @param cl index of clazz containing the assignment
+   *
+   * @param c code block containing the assignment
+   *
+   * @param ix index of the assignment
+   *
+   * @return the type of the assigned value.
+   */
+  public int assignedType(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign    );
+
+    var outerClazz = clazz(cl);
+    var s = _codeIds.get(c).get(ix);
+    var t =
+      (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 2) :
+      (s instanceof Clazz          fld ) ? fld.resultClazz() :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr."); } } /* Java is ugly... */;
+
+    return id(t);
+  }
+
+
+  /**
    * Get the possible inner clazzes for a dynamic call or assignment to a field
    *
    * @param cl index of clazz containing the access

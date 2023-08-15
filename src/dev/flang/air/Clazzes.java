@@ -742,7 +742,7 @@ public class Clazzes extends ANY
       {
         if (a._tid < 0)
           {
-            a._tid = getRuntimeClazzIds(2);
+            a._tid = getRuntimeClazzIds(3);
           }
 
         Clazz sClazz = clazz(a._target, outerClazz);
@@ -754,6 +754,7 @@ public class Clazzes extends ANY
           {
             outerClazz.setRuntimeClazz(a._tid + 1, fc);
           }
+        outerClazz.setRuntimeClazz(a._tid + 2, fc.resultClazz());
       }
   }
 
