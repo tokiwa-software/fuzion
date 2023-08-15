@@ -255,11 +255,8 @@ public u128(hi, lo u64) : num.wrap_around, has_interval is
   public fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  public fixed type.zero => u128 0 0
-
-
-  # identity element for 'infix *'
-  #
-  public fixed type.one => u128 0 1
+  public fixed type.from_u32(v u32) => v.as_u128

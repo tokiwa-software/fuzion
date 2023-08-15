@@ -224,14 +224,11 @@ public u64(val u64) : num.wrap_around, has_interval is
   # type features:
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  fixed type.zero u64 is 0
-
-
-  # identity element for 'infix *'
-  #
-  fixed type.one  u64 is 1
+  public fixed type.from_u32(v u32) => v.as_u64
 
 
   # equality

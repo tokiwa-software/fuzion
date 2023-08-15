@@ -178,19 +178,21 @@ module:public numeric : property.hashable, property.orderable is
 
   # identity element for 'infix +'
   #
-  public type.zero numeric.this is abstract
+  public type.zero numeric.this is
+    from_u32 0
 
 
   # identity element for 'infix *'
   #
-  public type.one  numeric.this is abstract
+  public type.one  numeric.this is
+    from_u32 1
 
 
-  # the value corresponding to v in whatever integer implementation we have,
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
   # maximum in case of overflow
   #
-  public type.from_u32(v u32) numeric.this is
-    if v = 0 zero else (from_u32 v-1) +^ one
+  public type.from_u32(v u32) numeric.this is abstract
 
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow

@@ -277,12 +277,6 @@ is
   public fixed infix **?(other uint) num_option uint is thiz ** other
   public fixed infix **^(other uint) uint is thiz ** other
 
-  public fixed type.zero uint is
-    uint [u32 0] unit
-
-  public fixed type.one uint is
-    uint [u32 1] unit
-
   public thiz => uint b unit
 
 
@@ -356,6 +350,13 @@ is
       "0"
     else
       as_string0
+
+
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
+  #
+  public fixed type.from_u32(v u32) => uint [v] unit
 
 
   # helper feature to init uint from an u64

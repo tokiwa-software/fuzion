@@ -40,12 +40,6 @@ is
   name String is
     "int"
 
-  public fixed type.zero int is
-    int num.plus uint.type.zero
-
-  public fixed type.one int is
-    int num.plus uint.type.one
-
 
   fixed redef prefix - int is
     match ns
@@ -139,6 +133,14 @@ is
     match other.ns
       num.plus => thiz ** other
       num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+
+
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
+  #
+  public fixed type.from_u32(v u32) => v.as_int
+
 
   # equality: are these two ints equal?
   #

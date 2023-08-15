@@ -167,14 +167,12 @@ public i32(val i32) : num.wrap_around, has_interval is
   # type features:
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  fixed type.zero i32 is 0
-
-
-  # identity element for 'infix *'
-  #
-  fixed type.one  i32 is 1
+  public fixed type.from_u32(v u32) =>
+    if v > i32.type.max.as_u32 then i32.type.max else v.as_i32
 
 
   # equality

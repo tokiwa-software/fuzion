@@ -81,16 +81,11 @@ is
     "{real}$p{si}i"
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  public fixed type.zero num.complex C is
-    num.complex C.zero C.zero
-
-
-  # identity element for 'infix *'
-  #
-  public fixed type.one num.complex C is
-    num.complex C.one C.zero
+  public fixed type.from_u32(v u32) => num.complex (C.from_u32 v) (C.from_u32 0)
 
 
   # the imaginary unit

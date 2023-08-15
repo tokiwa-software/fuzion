@@ -168,14 +168,11 @@ public f64(val f64) : float is
   # type features:
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  public fixed type.zero f64 is 0
-
-
-  # identity element for 'infix *'
-  #
-  public fixed type.one  f64 is 1
+  public fixed type.from_u32(v u32) => v.as_f64
 
 
   public fixed type.bytes => 8

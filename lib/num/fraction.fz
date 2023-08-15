@@ -79,14 +79,12 @@ is
   # type features:
 
 
-  # identity element for 'infix +'
+  # the value corresponding to v in whatever
+  # numeric implementation we have,
+  # maximum in case of overflow
   #
-  module fixed type.zero => B.zero ⁄ B.one
-
-
-  # identity element for 'infix *'
-  #
-  module fixed type.one => B.one ⁄ B.one
+  public fixed type.from_u32(v u32) =>
+    num.fraction (B.from_u32 v) (B.from_u32 1)
 
 
   # equality
