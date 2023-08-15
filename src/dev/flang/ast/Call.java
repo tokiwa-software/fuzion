@@ -1103,7 +1103,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -1170,7 +1170,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
@@ -1585,7 +1585,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance
    *
-   * @param outer the root feature that contains this statement
+   * @param outer the root feature that contains this expression
    */
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
                                         ListIterator<Expr> aargs,
@@ -1633,7 +1633,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   private void inferGenericsFromArgs(Resolution res, AbstractFeature outer)
   {
@@ -1704,7 +1704,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param checked boolean array for all cf.valuedArguments() that have been
    * checked already.
@@ -2119,7 +2119,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -2331,7 +2331,7 @@ public class Call extends AbstractCall
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes(AbstractFeature outer)
   {
@@ -2418,7 +2418,7 @@ public class Call extends AbstractCall
   /**
    * Syntactic sugar resolution: This does the following:
    *
-   *  - convert boolean operations &&, || and : into if-statements
+   *  - convert boolean operations &&, || and : into if-expressions
    *  - convert repeated boolean operations ! into identity   // NYI
    *  - perform constant propagation for basic algebraic ops  // NYI
    *  - replace calls to intrinsics that return compile time constants

@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Block represents a Block of statements
+ * Block represents a Block of expressions
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -75,7 +75,7 @@ public class Block extends AbstractBlock
    * brace. In case this block does not originate in source code, but was added
    * by AST manipulations, this might as well be equal to pos.
    *
-   * @param s the list of statements
+   * @param s the list of expressions
    *
    * @param newScope true iff this block opens a new scope, false if declaration
    * in this block should remain visible after the block (which is usually the
@@ -94,7 +94,7 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Generate a block of statements that define a new scope. This is generally
+   * Generate a block of expressions that define a new scope. This is generally
    * called from the Parser when the source contains a block.
    *
    * @param pos the sourcecode position of the start of this block, used for
@@ -104,7 +104,7 @@ public class Block extends AbstractBlock
    * brace. In case this block does not originate in source code, but was added
    * by AST manipulations, this might as well be equal to pos.
    *
-   * @param s the list of statements
+   * @param s the list of expressions
    */
   public Block(SourcePosition pos,
                SourcePosition closingBracePos,
@@ -115,12 +115,12 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Generate a block of statements that do not define a new scope, i.e.,
+   * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param s the list of statements
+   * @param s the list of expressions
    */
   public Block(SourcePosition pos,
                List<Expr> s)
@@ -130,12 +130,12 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Generate a block of statements that do not define a new scope, i.e.,
+   * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param s the list of statements
+   * @param s the list of expressions
    *
    * @param hasImplicitResult true iff this block produces an implicit result
    * that can be ignored if assigned to unit type.
@@ -207,7 +207,7 @@ public class Block extends AbstractBlock
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -219,11 +219,11 @@ public class Block extends AbstractBlock
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this, outer);
-    ListIterator<Expr> i = _statements.listIterator();
+    ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
-        Expr s = i.next();
-        i.set(s.visit(v, outer));
+        Expr e = i.next();
+        i.set(e.visit(v, outer));
       }
     v.actionAfter(this, outer);
     return this;
@@ -289,9 +289,9 @@ public class Block extends AbstractBlock
 
 
   /**
-   * removeResultExpression removes and returns the last non-NOP statement of
+   * removeResultExpression removes and returns the last non-NOP expression of
    * this block if it is an expression.  Does nothing an returns null if the
-   * block is empty or the last non-NOP statement is not an Expr.
+   * block is empty or the last non-NOP expression is not an Expr.
    *
    * @return the Expr that produces this Block's result
    */
@@ -299,7 +299,7 @@ public class Block extends AbstractBlock
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) _statements.remove(i)
+      ? (Expr) _expressions.remove(i)
       : null;
   }
 
@@ -317,7 +317,7 @@ public class Block extends AbstractBlock
     var r = removeResultExpression();
     if (r != null)
       {
-        _statements.add(r.box(frmlT));
+        _expressions.add(r.box(frmlT));
       }
     return this;
   }
@@ -341,9 +341,9 @@ public class Block extends AbstractBlock
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statement with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
+   * this is a expression with several branches such as an "if" or a "match"
+   * expression, add corresponding assignments in each branch and convert this
+   * into a expression that does not produce a value.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -357,7 +357,7 @@ public class Block extends AbstractBlock
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _statements.add(resExpr.assignToField(res, outer, r));
+        _expressions.add(resExpr.assignToField(res, outer, r));
       }
     else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
@@ -382,19 +382,19 @@ public class Block extends AbstractBlock
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
         // something else:
-        _statements.add(new Block(pos(), new List<>()));
+        _expressions.add(new Block(pos(), new List<>()));
       }
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _statements.add(resExpr.propagateExpectedType(res, outer, type));
+        _expressions.add(resExpr.propagateExpectedType(res, outer, type));
       }
     return this;
   }
@@ -402,7 +402,7 @@ public class Block extends AbstractBlock
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
   {

@@ -31,6 +31,10 @@ BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
 FUZION_BIN_SH = /bin/sh
 
+ifeq ($(FUZION_DEBUG_SYMBOLS),true)
+	JAVAC += -g
+endif
+
 JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
 JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
 

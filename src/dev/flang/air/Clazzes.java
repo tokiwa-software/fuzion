@@ -661,7 +661,7 @@ public class Clazzes extends ANY
   /**
    * # if ids created by getRuntimeClazzId[s].
    *
-   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same statement.
+   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same expression.
    */
   private static int _runtimeClazzIdCount = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
@@ -817,10 +817,10 @@ public class Clazzes extends ANY
       }
     else if (e instanceof AbstractBlock b)
       {
-        var s = b._statements;
-        if (!s.isEmpty() && s.get(s.size()-1) instanceof Expr e0)
+        var s = b._expressions;
+        if (!s.isEmpty())
           {
-            propagateExpectedClazz(e0, ec, outerClazz);
+            propagateExpectedClazz(s.getLast(), ec, outerClazz);
           }
       }
     else if (e instanceof Tag t)

@@ -155,7 +155,7 @@ is
   # from a file called "example.txt" into a string, and we wrap this into an outcome,
   # for handling the case that an error occurs when opening the file (i.e. it does
   # not exist) or when reading the file (i.e. example.txt is not actually a file but
-  # a directory). Using match statements, this is very cumbersome:
+  # a directory). Using match expressions, this is very cumbersome:
   #
   #     # open example file
   #     match open "example.txt"

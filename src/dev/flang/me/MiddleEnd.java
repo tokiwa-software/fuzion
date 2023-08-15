@@ -35,14 +35,10 @@ import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
-import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
-import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 

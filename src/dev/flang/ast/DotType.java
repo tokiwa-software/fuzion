@@ -85,7 +85,7 @@ public class DotType extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -106,7 +106,7 @@ public class DotType extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {

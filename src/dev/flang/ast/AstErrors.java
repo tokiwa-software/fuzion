@@ -139,7 +139,7 @@ public class AstErrors extends ANY
 
     return code(v.toString());
   }
-  static String ss(String s) // statement or expression
+  static String ss(String s) // expression or expression
   {
     return expr(s);
   }
@@ -236,13 +236,13 @@ public class AstErrors extends ANY
   }
 
 
-  public static void statementNotAllowedOutsideOfFeatureDeclaration(Stmnt s)
+  public static void expressionNotAllowedOutsideOfFeatureDeclaration(Expr e)
   {
-    error(s.pos(),
+    error(e.pos(),
           "Statements other than feature declarations not allowed here",
-          "Statements require a surrounding feature declaration.  The statements " +
+          "Statements require a surrounding feature declaration.  The expressions " +
           "are executed when that surrounding feature is called.  Without a surrounding " +
-          "feature, is it not clear when and in which order statements should be executed. " +
+          "feature, is it not clear when and in which order expressions should be executed. " +
           "The only exception to this is the main source file given as an argument directly " +
           "to the 'fz' command.");
   }
@@ -257,9 +257,9 @@ public class AstErrors extends ANY
   }
 
 
-  public static void featureOfMustContainOnlyDeclarations(Stmnt s, SourcePosition ofPos)
+  public static void featureOfMustContainOnlyDeclarations(Expr e, SourcePosition ofPos)
   {
-    error(s.pos(),
+    error(e.pos(),
           "Feature implementation using " + code("of") + " must contain only feature declarations. ",
           "Declaration started at " + ofPos.show() + "\n"
           );
@@ -721,7 +721,7 @@ public class AstErrors extends ANY
           "To solve this, you could turn this constructor into a routine by adding a matching result type " +
           "compatible to " + srt + " or by using " + code("=>") + " instead of " + code("is") + " to "+
           "infer the result type from the result expression.\n" +
-          "Alternatively, you could explicitly return " + st("unit") + " as the last statement or " +
+          "Alternatively, you could explicitly return " + st("unit") + " as the last expression or " +
           "explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".");
   }
 
@@ -827,7 +827,7 @@ public class AstErrors extends ANY
   static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject.",
+          "" + skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
           subjectTypes(choiceGenerics));
   }
@@ -835,7 +835,7 @@ public class AstErrors extends ANY
   static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " statement matches several types of the subject",
+          "" + skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
           subjectTypes(choiceGenerics) +
           "matches are " + typeListConjunction(matches));
@@ -847,13 +847,13 @@ public class AstErrors extends ANY
       {
         error(pos,
               "" + skw("match") + " expression requires at least one case",
-              "Match statement at " + pos.show() + "\n" +
+              "Match expression at " + pos.show() + "\n" +
               "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
       }
     else
       {
         error(pos,
-              "" + skw("match") + " statement does not cover all of the subject's types",
+              "" + skw("match") + " expression does not cover all of the subject's types",
               "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
               subjectTypes(choiceGenerics));
       }
@@ -1273,7 +1273,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Block must end with a result expression",
-              "This block must produce a value since its result is used by the enclosing statement.\n" +
+              "This block must produce a value since its result is used by the enclosing expression.\n" +
               "Expected type of value: " + s(expectedType) + "");
       }
   }

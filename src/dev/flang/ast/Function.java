@@ -164,7 +164,7 @@ public class Function extends ExprWithPos
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -262,7 +262,7 @@ public class Function extends ExprWithPos
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Expr> statements = new List<Expr>(f);
+            List<Expr> expressions = new List<Expr>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
@@ -272,7 +272,7 @@ public class Function extends ExprWithPos
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
-                                   new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
+                                   new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
@@ -290,7 +290,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -375,7 +375,7 @@ public class Function extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -446,7 +446,7 @@ public class Function extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
@@ -512,7 +512,7 @@ public class Function extends ExprWithPos
               }
             List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
 
-            List<Expr> statements = new List<Expr>(fcall);
+            List<Expr> expressions = new List<Expr>(fcall);
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
@@ -523,7 +523,7 @@ public class Function extends ExprWithPos
                                            NO_FEATURES,
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
-                                           new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
+                                           new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
                               call.target(),

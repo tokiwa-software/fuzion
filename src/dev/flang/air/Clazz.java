@@ -48,12 +48,10 @@ import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
-import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
-import dev.flang.ast.Stmnt; // NYI: remove dependency!
+import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -1493,9 +1491,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * visit all the code in f, including inherited features, by fc.
    */
-  private void inspectCode(StatementVisitor fc, AbstractFeature f)
+  private void inspectCode(ExpressionVisitor fc, AbstractFeature f)
   {
-    f.visitStatements(fc);
+    f.visitExpressions(fc);
     for (var c: f.inherits())
       {
         AbstractFeature cf = c.calledFeature();
@@ -1539,19 +1537,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (this._type != Types.t_ADDRESS)
       {
         var f = feature();
-        inspectCode(new StatementVisitor()
+        inspectCode(new ExpressionVisitor()
           {
-            public void action (Stmnt s)
+            public void action (Expr e)
             {
-              if      (s instanceof Unbox            u) { Clazzes.findClazzes(u, Clazz.this); }
-              else if (s instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
-              else if (s instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (s instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (s instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
-              else if (s instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
-              else if (s instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
+              if      (e instanceof Unbox            u) { Clazzes.findClazzes(u, Clazz.this); }
+              else if (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
+              else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
+              else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
+              else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
             }
             public void action(AbstractCase c)
             {

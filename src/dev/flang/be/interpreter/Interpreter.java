@@ -62,7 +62,6 @@ import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -246,7 +245,7 @@ public class Interpreter extends ANY
   }
 
 
-  /*----------------  methods to execute statements  ----------------*/
+  /*----------------  methods to execute expressions  ----------------*/
 
 
   /**
@@ -285,10 +284,10 @@ public class Interpreter extends ANY
    * binding and it uses way too much stack since recursion keeps this giant
    * stack frame alive.
    */
-  public Value execute(Stmnt s, Clazz staticClazz, Value cur)
+  public Value execute(Expr e, Clazz staticClazz, Value cur)
   {
     Value result;
-    if (s instanceof AbstractCall c)
+    if (e instanceof AbstractCall c)
       {
         if (PRECONDITIONS) require
           (!c.isInheritanceCall(),  // inheritance calls are handled in Feature.callOnInstance
@@ -333,12 +332,12 @@ public class Interpreter extends ANY
         FuzionThread.current()._callStack.pop();
       }
 
-    else if (s instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent)
       {
         result = cur;
       }
 
-    else if (s instanceof AbstractAssign a)
+    else if (e instanceof AbstractAssign a)
       {
         Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);
@@ -356,7 +355,7 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof AbstractConstant i)
+    else if (e instanceof AbstractConstant i)
       {
         result = _cachedConsts_.get(i);
         if (result == null)
@@ -380,16 +379,16 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof AbstractBlock b)
+    else if (e instanceof AbstractBlock b)
       {
         result = Value.NO_VALUE;
-        for (Stmnt stmnt : b._statements)
+        for (Expr expr : b._expressions)
           {
-            result = execute(stmnt, staticClazz, cur);
+            result = execute(expr, staticClazz, cur);
           }
       }
 
-    else if (s instanceof If i)
+    else if (e instanceof If i)
       {
         Value c = execute(i.cond, staticClazz, cur);
         if (c.boolValue())
@@ -410,7 +409,7 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof AbstractMatch m)
+    else if (e instanceof AbstractMatch m)
       {
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m._runtimeClazzId);
@@ -500,7 +499,7 @@ public class Interpreter extends ANY
 
       }
 
-    else if (s instanceof Unbox u)
+    else if (e instanceof Unbox u)
       {
         // This is a NOP here since values of reference type and value type are
         // treated the same way by the interpreter.
@@ -515,12 +514,12 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Universe)
+    else if (e instanceof Universe)
      {
        result = Instance.universe;
      }
 
-    else if (s instanceof Box b)
+    else if (e instanceof Box b)
       {
         Value val = execute(b._value, staticClazz, cur);
         var id = b._valAndRefClazzId;
@@ -540,7 +539,7 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Tag t)
+    else if (e instanceof Tag t)
       {
         Value v      = execute(t._value, staticClazz, cur);
         Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
@@ -548,7 +547,7 @@ public class Interpreter extends ANY
         result = tag(tClazz, vClazz, v);
       }
 
-    else if (s instanceof Check c)
+    else if (e instanceof Check c)
       {
         // NYI: check not supported yet
         // System.err.println("NYI: "+c);
@@ -556,12 +555,12 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof Nop)
+    else if (e instanceof Nop)
       {
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof InlineArray i)
+    else if (e instanceof InlineArray i)
       {
         Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
@@ -579,7 +578,7 @@ public class Interpreter extends ANY
         setField(Types.resolved.f_array_internal_array, -1, ac, result, sa);
       }
 
-    else if (s instanceof Env v)
+    else if (e instanceof Env v)
       {
         Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
         result = FuzionThread.current()._effects.get(vClazz);
@@ -593,7 +592,7 @@ public class Interpreter extends ANY
 
     else
       {
-        throw new Error("Execution of " + s.getClass() + " not implemented");
+        throw new Error("Execution of " + e.getClass() + " not implemented");
       }
     return result;
   }

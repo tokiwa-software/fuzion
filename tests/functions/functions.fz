@@ -58,7 +58,7 @@ functions is
 //    x (fun (o, i) -> o.hash_code + i)
 //    x (fun (o, i) { set result := o.hash_code + i})
     x ((o, i) -> { set result := o.hash_code + i })
-    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last statement
+    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last expression
 
     say "here 1c---------------"
     x (ref : Function i32 Any i32 {

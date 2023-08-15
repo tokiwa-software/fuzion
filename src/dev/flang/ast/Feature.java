@@ -658,7 +658,7 @@ public class Feature extends AbstractFeature
     if (n.equals("_"))
       {
         // NYI: Check that this feature is allowed to have this name, i.e., it
-        // is declared in a Destructure statement.
+        // is declared in a Destructure expression.
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
@@ -731,7 +731,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -1034,7 +1034,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -1316,7 +1316,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Type resolution for a feature f: For all expressions and statements in f's
+   * Type resolution for a feature f: For all expressions and expressions in f's
    * inheritance clause, contract, and implementation, determine the static type
    * of the expression. Were needed, perform type inference. Schedule f for
    * syntactic sugar resolution.
@@ -1433,7 +1433,7 @@ public class Feature extends AbstractFeature
     List<AbstractCall> result = new List<>();
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
-        af.visitStatements(s -> {
+        af.visitExpressions(s -> {
             if (s instanceof AbstractCall c && dependsOnOuterRef(c))
               {
                 result.add(c);
@@ -1481,7 +1481,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -1876,7 +1876,7 @@ public class Feature extends AbstractFeature
 
   /**
    * Syntactic sugar resolution of a feature f: For all expressions and
-   * statements in f's inheritance clause, contract, and implementation, resolve
+   * expressions in f's inheritance clause, contract, and implementation, resolve
    * syntactic sugar, e.g., by replacing anonymous inner functions by
    * declaration of corresponding inner features. Add (f,<>) to the list of
    * features to be searched for runtime types to be layouted.
@@ -1910,7 +1910,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -1942,7 +1942,7 @@ public class Feature extends AbstractFeature
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -2008,7 +2008,7 @@ public class Feature extends AbstractFeature
    * @return in case we found a feature visible in the call's or assign's scope,
    * this is the feature.
    */
-  public Feature findFieldDefInScope(String name, Stmnt use, AbstractFeature inner)
+  public Feature findFieldDefInScope(String name, Expr use, AbstractFeature inner)
   {
     if (PRECONDITIONS) require
       (name != null,
@@ -2054,7 +2054,7 @@ public class Feature extends AbstractFeature
             }
           else
             {
-              // NYI: Special handling for anonymous inner features that currently do not appear as statements
+              // NYI: Special handling for anonymous inner features that currently do not appear as expressions
               if (c.calledFeatureKnown() &&
                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
                   c.calledFeature() == inner)
@@ -2147,7 +2147,7 @@ public class Feature extends AbstractFeature
         p.visit(fv, this);
       }
 
-    // then iterate the statements making fields visible as they are declared
+    // then iterate the expressions making fields visible as they are declared
     // and checking which one is visible when we reach call:
     if (_impl._code != null)
       {
@@ -2235,7 +2235,7 @@ public class Feature extends AbstractFeature
         var b = _outer.code();
         if (b instanceof Block)
           {
-            for (var s : ((Block)b)._statements)
+            for (var s : ((Block)b)._expressions)
               {
                 if (s == this)
                   {

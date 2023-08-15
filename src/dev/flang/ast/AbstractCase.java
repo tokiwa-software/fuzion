@@ -61,7 +61,7 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
 
 
   /**
-   * Counter for a unique id for this case statement. This is used to store data
+   * Counter for a unique id for this case expression. This is used to store data
    * in the runtime clazz for this case.
    */
   public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
@@ -113,7 +113,7 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -143,14 +143,14 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
 
 
   /**
-   * visit all the statements within this Case.
+   * visit all the expressions within this Case.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    code().visitStatements(v);
+    code().visitExpressions(v);
     v.action(this);
   }
 

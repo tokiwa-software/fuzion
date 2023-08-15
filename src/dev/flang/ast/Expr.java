@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -40,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends ANY implements Stmnt
+public abstract class Expr extends ANY implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -87,7 +88,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * quick-and-dirty way to make unique names for statement result vars
+   * quick-and-dirty way to make unique names for expression result vars
    */
   static private long _id_ = 0;
 
@@ -203,7 +204,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -217,12 +218,12 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * visit all the statements within this Stmnt.
+   * visit all the expressions within this Expr.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     v.action(this);
   }
@@ -230,9 +231,9 @@ public abstract class Expr extends ANY implements Stmnt
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statement with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
+   * this is a expression with several branches such as an "if" or a "match"
+   * expression, add corresponding assignments in each branch and convert this
+   * into a expression that does not produce a value.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -368,7 +369,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -423,7 +424,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -601,7 +602,7 @@ public abstract class Expr extends ANY implements Stmnt
 
   /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
   {

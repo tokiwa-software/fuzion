@@ -65,7 +65,7 @@ public class Cond
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -80,14 +80,14 @@ public class Cond
 
 
   /**
-   * visit all the statements within this Cond.
+   * visit all the expressions within this Cond.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitStatements(ExpressionVisitor v)
   {
-    cond.visitStatements(v);
+    cond.visitExpressions(v);
   }
 
 

@@ -43,13 +43,11 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Call; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ast.Unbox; // NYI: remove dependency
@@ -1253,7 +1251,7 @@ hw25 is
     if (result == null)
       {
         Errors.fatal(codeAtAsPos(c, ix),
-                     "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
+                     "Expr not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
@@ -1413,7 +1411,7 @@ hw25 is
     var s = _codeIds.get(c).get(ix);
     Clazz innerClazz =
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 2) :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     var res = innerClazz == null ? -1 : id(innerClazz);
     return res != -1 && hasPrecondition(res) ? res : -1;
@@ -1447,7 +1445,7 @@ hw25 is
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 0) :
       (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 1) :
       (s instanceof Clazz          fld ) ? fld :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     return innerClazz == null ? -1 : id(innerClazz);
   }
@@ -1595,7 +1593,7 @@ hw25 is
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
       (s instanceof AbstractCall   call) ? ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef()  :
-      new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
+      new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr."); } } == null /* Java is ugly... */;
 
     return res;
   }
@@ -1656,7 +1654,7 @@ hw25 is
       (s instanceof AbstractAssign ass ) ? (Clazz) outerClazz.getRuntimeData(ass._tid) : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 1) :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     return id(tclazz);
   }
@@ -1727,7 +1725,7 @@ hw25 is
 
 
   /**
-   * For a match statement, get the static clazz of the subject.
+   * For a match expression, get the static clazz of the subject.
    *
    * @param cl index of clazz containing the match
    *
@@ -1754,7 +1752,7 @@ hw25 is
 
 
   /**
-   * For a match statement, get the field of a given case
+   * For a match expression, get the field of a given case
    *
    * @param cl index of clazz containing the match
    *
@@ -1790,7 +1788,7 @@ hw25 is
 
 
   /**
-   * For a match statement, get the tags matched by a given case
+   * For a match expression, get the tags matched by a given case
    *
    * @param cl index of clazz containing the match
    *
@@ -1851,7 +1849,7 @@ hw25 is
 
 
   /**
-   * For a match statement, get the code associated with a given case
+   * For a match expression, get the code associated with a given case
    *
    * @param c code block containing the match
    *
@@ -1960,7 +1958,7 @@ hw25 is
       (ix >= 0, withinCode(c, ix));
 
     var e = _codeIds.get(c).get(ix);
-    return (e instanceof Expr s) ? s.pos() :
+    return (e instanceof Expr expr) ? expr.pos() :
            (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
   }
@@ -1983,7 +1981,7 @@ hw25 is
    * Print the contents of the given code block to System.out, for debugging.
    *
    * In case printed != null, recursively print all successor code blocks for
-   * Match statements and add their ids to printed, unless they has been added
+   * Match expressions and add their ids to printed, unless they has been added
    * already.
    *
    * @param cl index of the clazz containing the code block.
