@@ -63,7 +63,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Interface that defines the operations of the actual interpreter
    * that processes this code.
    */
-  public static abstract class ProcessStatement<VALUE, RESULT>
+  public static abstract class ProcessStatement<VALUE, RESULT> extends ANY
   {
     /**
      * Join a List of RESULT from subsequent statements into a compound
@@ -93,6 +93,26 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * no operation, like comment, but without giving any comment.
      */
     public abstract RESULT nop();
+
+    /**
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * For backends that do not perform any side-effects in RESULT, this does
+     * not need to be redefined, the default implementation is nop() which is
+     * fine in this case.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
+     */
+    public RESULT drop(VALUE v, int type)
+    {
+      return nop(); // NYI, should be implemented by BEs.
+    }
 
     /**
      * Determine the address of a given value.  This is used on a call to an
@@ -676,15 +696,28 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           return r._v1;
         }
       case Dup:
-        {
+        { // NYI: Would be cleaner if Dup would have access to the type of the
+          // duplicated value.  Currently, Dup is only added by FUIR.addCode
+          // after an explicit check that the type is not a unit type, so we are
+          // fine for now:
+          //
           var v = stack.pop();
           stack.push(v);
           stack.push(v);
           return _processor.nop();
         }
       case Pop:
-        { // NYI: pop should not be a NOP.
-          return _processor.nop();
+        {
+          // Pop can only follow a Call, we need the call to determine the type
+          // of the popped value, which might be a unit type value.
+          //
+          if (CHECKS) check
+            (_fuir.codeAt(c, i-1) == FUIR.ExprKind.Call);
+
+          var cc = _fuir.accessedClazz(cl, c, i-1);
+          var rt = _fuir.clazzResultClazz(cc);
+          var v = pop(stack, rt);
+          return _processor.drop(v, rt);
         }
       default:
         {
