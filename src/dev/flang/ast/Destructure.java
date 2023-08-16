@@ -358,16 +358,6 @@ public class Destructure extends Expr
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    return false;
-  }
-
-
-  /**
    * toString
    *
    * @return

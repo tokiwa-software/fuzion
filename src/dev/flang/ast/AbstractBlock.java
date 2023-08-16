@@ -32,7 +32,7 @@ import dev.flang.util.List;
 
 
 /**
- * Block represents a Block of expressions
+ * AbstractBlock represents a list of expressions
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
