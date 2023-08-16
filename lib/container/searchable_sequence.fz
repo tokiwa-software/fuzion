@@ -108,7 +108,9 @@ is
   # get the number of matches of l
   #
   public count_matches_overlapping (l Sequence A) i32 is
-    (tails & (t -> ((searchable_sequence t).starts_with l))).count
+    tails
+      .filter (t -> (searchable_sequence t).starts_with l)
+      .count
 
 
   # get the number of non-overlapping matches of l within this

@@ -1395,11 +1395,11 @@ public class Call extends AbstractCall
    *
    * In particular, this replaces formal generic types by actual generics
    * provided to this call and it replaces select calls to fields of open
-   * genenric type by calls to the actual fields.
+   * generic type by calls to the actual fields.
    *
    * @param res the resolution instance.
    *
-   * @param frmlT the result type of the called feature, might be open genenric.
+   * @param frmlT the result type of the called feature, might be open generic.
    */
   private void setActualResultType(Resolution res, AbstractType frmlT)
   {
@@ -1426,7 +1426,7 @@ public class Call extends AbstractCall
    * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
-   * @param t the result type of the called feature, might be open genenric.
+   * @param t the result type of the called feature, might be open generic.
    *
    * @param tt target type or constraint.
    *
