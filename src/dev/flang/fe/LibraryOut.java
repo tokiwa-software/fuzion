@@ -703,17 +703,17 @@ class LibraryOut extends ANY
     else if (e instanceof AbstractBlock b)
       {
         int i = 0;
-        for (var st : b._expressions)
+        for (var expr : b._expressions)
           {
             i++;
             if (i < b._expressions.size())
               {
-                lastPos = expressions(st, true, lastPos);
+                lastPos = expressions(expr, true, lastPos);
               }
             else
               {
-                lastPos = expressions(st, dumpResult, lastPos);
-                dumpResult = dumpResult || st instanceof AbstractBlock || st.producesResult();
+                lastPos = expressions(expr, dumpResult, lastPos);
+                dumpResult = dumpResult || expr instanceof AbstractBlock || expr.producesResult();
               }
           }
         if (!dumpResult)

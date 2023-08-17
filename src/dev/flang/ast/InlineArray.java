@@ -315,7 +315,7 @@ public class InlineArray extends ExprWithPos
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
-        var stmnts = new List<Expr>(sysArrayAssign);
+        var exprs = new List<Expr>(sysArrayAssign);
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
@@ -325,7 +325,7 @@ public class InlineArray extends ExprWithPos
             var setElement      = new Call(e.pos(), readSysArrayVar,
                                            FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
                                            setArgs                                    ).resolveTypes(res, outer);
-            stmnts.add(setElement);
+            exprs.add(setElement);
           }
         var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
         var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
@@ -337,8 +337,8 @@ public class InlineArray extends ExprWithPos
                                                new Actual(unit2),
                                                new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
-        stmnts.add(arrayCall);
-        result = new Block(pos(), stmnts);
+        exprs.add(arrayCall);
+        result = new Block(pos(), exprs);
       }
     return result;
   }
