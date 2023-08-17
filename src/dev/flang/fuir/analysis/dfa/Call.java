@@ -234,6 +234,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                   case c_TRUE, c_FALSE           -> Value.UNIT;
                   case c_Const_String            -> _dfa.newConstString(null, this);
                   case c_unit                    -> Value.UNIT;
+                  case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
                   case c_NOT_FOUND               -> null;
                   };
               }

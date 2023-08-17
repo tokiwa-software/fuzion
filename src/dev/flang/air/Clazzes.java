@@ -188,6 +188,7 @@ public class Clazzes extends ANY
       }
     };
   public static Clazz constStringInternalArray;  // field Const_String.internal_array
+  public static Clazz fuzionSysPtr;              // internal pointer type
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
@@ -436,6 +437,7 @@ public class Clazzes extends ANY
     fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
     fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
+    fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
 
     while (!clazzesToBeVisited.isEmpty())
       {

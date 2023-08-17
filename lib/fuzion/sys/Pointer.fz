@@ -17,41 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys.internal_array
+#  Source code of Fuzion standard library feature sys.Pointer
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# helper to allocate memory for an internal_array.
-# returns an internal_array.
+# backend-specific pointer type used, e.g., to refer to the actual data in an
+# array
 #
-public internal_array_init(T type, private length i32) =>
+# This must not be used for anything except assignments to other pointers, no
+# calls on this value are permitted, not even `p.as_string`, this will lead to
+# undefined behaviour.
+#
+public /* NYI: private */ Pointer ref is
 
-  private alloc(X type, l i32) Pointer is intrinsic
-
-  internal_array T (alloc T length) length
-
-
-# fuzion.sys.internal_array_init -- one-dimensional low-level array
-module:public internal_array(T type, module data Pointer, public length i32) is
-
-  private get  (X type, d Pointer, i i32) X is intrinsic
-  private setel(X type, d Pointer, i i32, o X) unit is intrinsic
-
-
-  module indices => 0..length-1
-
-  public index [ ] (i i32) T
-    pre
-      safety: 0 ≤ i < length
-  is
-    get T data i
-
-  public set [ ] (i i32, o T) unit
-    pre
-      safety: 0 ≤ i < length
-  # post   NYI
-    #array.this[i] == o
-  is
-    setel T data i o
+  # this must not contain any declarations.
