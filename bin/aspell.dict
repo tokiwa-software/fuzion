@@ -597,7 +597,6 @@ fzTag
 fzThrd
 gc
 GC
-genenric
 genericArgument
 genericsToReplace
 GenericType
@@ -990,7 +989,6 @@ outerCache
 outercl
 outerClazz
 outerfeat
-outerlClazz
 outerOfInitialValue
 outerref
 outerRef
