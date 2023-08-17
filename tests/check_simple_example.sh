@@ -59,9 +59,20 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
     (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 "$2" >tmp_out.txt 2>tmp_err.txt) || true
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
-    diff "$2".expected_out tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
-    diff "$2".expected_err tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")
-    diff "$2".expected_out tmp_out.txt >/dev/null && diff "$2".expected_err tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
+    expout=$2.expected_out
+    experr=$2.expected_err
+    if [ -f "$2".expected_out_int ]; then
+        expout=$2.expected_out_int
+    fi
+    if [ -f "$2".expected_err_int ]; then
+        experr=$2.expected_err_int
+    fi
+    # show diff in stdout unless an unexpected output occured to stderr:
+    if [ ! -s tmp_err.txt  ] && [ -s "$experr" ]; then
+        diff "$expout" tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
+    fi
+    diff "$experr" tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")
+    diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
     RC=$?
     rm tmp_out.txt tmp_err.txt
 fi
