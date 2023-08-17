@@ -1054,10 +1054,6 @@ public class C extends ANY
       (t != null || !_fuir.hasData(rt) || tc == _fuir.clazzUniverse());
     var occ   = _fuir.clazzOuterClazz(f);
     var vocc  = _fuir.clazzAsValue(occ);
-    if (occ != tc && _fuir.clazzIsRef(occ))
-      {
-        t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
-      }
     return (_types.isScalar(vocc)     ? fields(t, tc)         :
             _fuir.clazzIsVoidType(rt) ? null :
             _fuir.hasData(rt)        ? field(tc, t, f) : CExpr.UNIT);
