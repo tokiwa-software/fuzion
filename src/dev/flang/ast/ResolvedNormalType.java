@@ -199,7 +199,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param o
    *
    * @param f if this type corresponds to a feature, then this is the
-   * feature, else null.
+   * feature, otherwise null.
    *
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
@@ -556,7 +556,10 @@ public class ResolvedNormalType extends ResolvedType
       }
     this._generics = FormalGenerics.resolve(res, _generics, outerfeat);
     this._generics.freeze();
-    if (!_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+    if (CHECKS) check
+      (Errors.count() > 0 || _feature != null);
+    if (_feature != null &&
+        !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                            pos.pos(),
                                                            "type",
                                                            "Type: " + toString() + "\n"))
