@@ -305,7 +305,7 @@ module fileio is
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
   #
-  module mmap(fd i64, offset, size i64, res Any) Any is intrinsic
+  module mmap(fd i64, offset, size i64, res Any) Pointer is intrinsic
 
 
   # close a memory mapped file
