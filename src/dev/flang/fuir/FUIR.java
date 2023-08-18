@@ -376,12 +376,8 @@ public class FUIR extends IR
    *
    * @param i the choice number
    *
-   * @return the clazz id of the choice type, or -1 if the clazz is never
-   * instantiated and hence does not need to be taken care for.
-   *
-   * NYI: Instead of returning -1 for non-instantiated value clazzes, it would
-   * be much nicer if those clazzes would be removed completely from the IR or
-   * replaced by something obvious like 'void'.
+   * @return the clazz id of the choice type, or void clazz if the clazz is
+   * never instantiated and hence does not need to be taken care for.
    */
   public int clazzChoice(int cl, int i)
   {
@@ -390,7 +386,10 @@ public class FUIR extends IR
 
     var cc = clazz(cl);
     var cg = cc.choiceGenerics().get(i);
-    return cg.isRef() || cg.isInstantiated() ? id(cg) : -1;
+    var res = cg.isRef()          ||
+              cg.isInstantiated()    ? cg
+                                     : Clazzes.c_void.get();
+    return id(res);
   }
 
 
@@ -687,6 +686,9 @@ public class FUIR extends IR
    */
   public int clazzChoiceTag(int cl, int valuecl)
   {
+    if (PRECONDITIONS) require
+      (!clazzIsVoidType(valuecl));
+
     var cc = clazz(cl);
     var vc = clazz(valuecl);
     return cc.getChoiceTag(vc._type);

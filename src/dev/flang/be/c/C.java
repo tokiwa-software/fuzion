@@ -287,21 +287,18 @@ public class C extends ANY
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (tc != -1)
+              if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
                 {
-                  if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
+                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
-                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                        {
-                          rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
-                        }
+                      rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
                     }
-                  else
-                    {
-                      ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
-                      if (CHECKS) check
-                        (hasTag || !_fuir.hasData(tc));
-                    }
+                }
+              else if (!_fuir.clazzIsVoidType(tc))
+                {
+                  ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
+                  if (CHECKS) check
+                    (hasTag || !_fuir.hasData(tc));
                 }
             }
           var sl = new List<CStmnt>();
