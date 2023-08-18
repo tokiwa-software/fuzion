@@ -891,23 +891,7 @@ public class Clazzes extends ANY
         tclazz._isCalledAsOuter = true;
       }
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
-    if (cf.isChoice())
-      {
-        typePars
-          .stream()
-          .forEach(ag ->
-            {
-              if (!ag.isRef())
-                {
-                  // Even though choice element ag
-                  // might never actually be instantiated
-                  // there might be tagging code being generated for ag.
-                  // related: tests/issue459.fz
-                  clazz(ag).instantiated(c.pos());
-                }
-            });
-      }
-    else if (tclazz != c_void.get())
+    if (tclazz != c_void.get())
       {
         if (dynamic)
           {
