@@ -195,7 +195,6 @@ chainedBool
 chainedBoolTemp
 checkChoiceAndAddInternalFields
 CheckIntrinsics
-checkstmnt
 checkTypes
 choiceClazz
 choiceGenerics
@@ -663,7 +662,6 @@ IDENT
 identifierInStringExpected
 ie
 iff
-ifstmnt
 ignoredTokenBefore
 ignoreError
 ignoreVisibility
@@ -1213,7 +1211,6 @@ stmnt
 Stmnt
 Stmnt's
 stmnts
-stmtResult
 str
 StrConst
 stringB
@@ -1429,8 +1426,6 @@ Zp
 zu
 wrapInBrackets
 ifdef
-ifStmnt
-elseStmnt
 unlink
 rmdir
 CreateDirectory

@@ -47,7 +47,7 @@ indentation is
               say "2b"
               say "2c"
 
-  # first line of code starts without LF and contains several stmnts
+  # first line of code starts without LF and contains several exprs
   #
   feature3 is say "3a"; say "3b"
               say "3c"

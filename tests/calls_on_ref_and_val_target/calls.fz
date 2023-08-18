@@ -58,23 +58,23 @@ calls is
      on is
        # function f
        f result_type is
-         stmnts
+         exprs
 
      on is
        # constructor f
        f is
-         stmnts
+         exprs
 
   declared for value / declared for ref: `on` may be a `ref` instance
 
      # f declared for value
      on is
        f ... is
-         stmnts
+         exprs
      # f declared for ref
      on ref is
        f ... is
-         stmnts
+         exprs
 
   called on value / ref / boxed: `oa` is a value instance, a ref instance, a boxed value instance
 

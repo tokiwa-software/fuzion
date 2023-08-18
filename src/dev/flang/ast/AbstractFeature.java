@@ -1452,7 +1452,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         c.visitExpressions(v);
       }
-    contract().visitStatements(v);
+    contract().visitExpressions(v);
     if (isRoutine())
       {
         code().visitExpressions(v);

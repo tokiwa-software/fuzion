@@ -138,16 +138,16 @@ public class Destructure extends Expr
    */
   private Expr expand()
   {
-    List<Expr> stmnts = new List<Expr>();
+    List<Expr> exprs = new List<Expr>();
     if (_fields != null)
       {
         for (var f : _fields)
           {
-            stmnts.add((Feature) f);
+            exprs.add((Feature) f);
           }
       }
-    stmnts.add(this);
-    return new Block(_pos,stmnts);
+    exprs.add(this);
+    return new Block(_pos,exprs);
   }
 
 
@@ -231,7 +231,7 @@ public class Destructure extends Expr
    */
   private void addAssign(Resolution res,
                          AbstractFeature outer,
-                         List<Expr> stmnts,
+                         List<Expr> exprs,
                          Feature tmp,
                          AbstractFeature f,
                          Iterator<ParsedName> names,
@@ -264,7 +264,7 @@ public class Destructure extends Expr
     if (assign != null)
       {
         assign.resolveTypes(res, outer, this);
-        stmnts.add(assign);
+        exprs.add(assign);
       }
   }
 
@@ -278,7 +278,7 @@ public class Destructure extends Expr
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    List<Expr> stmnts = new List<>();
+    List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the decomposition code later, after resolveTypes is done.
     var t = _value.type();
@@ -301,10 +301,10 @@ public class Destructure extends Expr
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);
         tmp.scheduleForResolution(res);
-        stmnts.add(tmp.resolveTypes(res, outer));
+        exprs.add(tmp.resolveTypes(res, outer));
         Assign atmp = new Assign(res, _pos, tmp, _value, outer);
         atmp.resolveTypes(res, outer);
-        stmnts.add(atmp);
+        exprs.add(atmp);
         var names = _names.iterator();
         var fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
@@ -320,14 +320,14 @@ public class Destructure extends Expr
                 for (var tfs : g.replaceOpen(t.generics()))
                   {
                     fieldNames.add(f.featureName().baseName() + "." + select);
-                    addAssign(res, outer,stmnts, tmp, f, names, select, fields, tfs);
+                    addAssign(res, outer,exprs, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
                 fieldNames.add(f.featureName().baseName());
-                addAssign(res, outer, stmnts, tmp, f, names, -1, fields, tf);
+                addAssign(res, outer, exprs, tmp, f, names, -1, fields, tf);
               }
           }
         if (fieldNames.size() != _names.size())
@@ -343,7 +343,7 @@ public class Destructure extends Expr
             ((Feature) f)._returnType = new FunctionReturnType(Types.t_ERROR);
           }
       }
-    return new Block(_pos, stmnts);
+    return new Block(_pos, exprs);
   }
 
 

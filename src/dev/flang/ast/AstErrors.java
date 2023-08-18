@@ -239,8 +239,8 @@ public class AstErrors extends ANY
   public static void expressionNotAllowedOutsideOfFeatureDeclaration(Expr e)
   {
     error(e.pos(),
-          "Statements other than feature declarations not allowed here",
-          "Statements require a surrounding feature declaration.  The expressions " +
+          "Expressions other than feature declarations not allowed here",
+          "Expressions require a surrounding feature declaration.  The expressions " +
           "are executed when that surrounding feature is called.  Without a surrounding " +
           "feature, is it not clear when and in which order expressions should be executed. " +
           "The only exception to this is the main source file given as an argument directly " +

@@ -151,12 +151,12 @@ public class FuzionConstants extends ANY
    * converted to
    *
    *   if a then
-   *     #stmtResult123 := 0
+   *     #exprResult123 := 0
    *   else
-   *     #stmtResult123 := 1
-   *   x := #stmtResult123
+   *     #exprResult123 := 1
+   *   x := #exprResult123
    */
-  public static final String STATEMENT_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "stmtResult";
+  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
 
 
   /**

@@ -124,17 +124,17 @@ typeinference_negative is
 
      xx := d() // should work
 
-  stmnt1 is
+  expr1 is
      a := 3
      b := { a }
 
-  stmnt2 is
+  expr2 is
      a := 3
      b := 5
      c := true
      d := { if c { a } else { b } }
 
-  stmnt3 is
+  expr3 is
      a := 3
      b := 5
      c := a > b
