@@ -526,7 +526,7 @@ public class CFG extends ANY
     for (int i = 0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
-        createCallGraphForStmnt(cl, c, i, s);
+        createCallGraphForExpr(cl, c, i, s);
       }
   }
 
@@ -543,7 +543,7 @@ public class CFG extends ANY
    *
    * @param s the FUIR.ExprKind of the statement to analyze
    */
-  void createCallGraphForStmnt(int cl, int c, int i, FUIR.ExprKind s)
+  void createCallGraphForExpr(int cl, int c, int i, FUIR.ExprKind s)
   {
     switch (s)
       {

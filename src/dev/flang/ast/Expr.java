@@ -412,7 +412,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                 pos,
                                 Visi.PRIV,
                                 t,
-                                FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();

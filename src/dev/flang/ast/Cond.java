@@ -85,7 +85,7 @@ public class Cond
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitStatements(ExpressionVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     cond.visitExpressions(v);
   }

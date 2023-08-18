@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.HasSourcePosition;
 
 /**
  * This is used to perform some action on a feature and all the expressions,

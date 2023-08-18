@@ -2142,7 +2142,7 @@ simpleterm  : bracketTerm
             | NUM_LITERAL
             | match
             | loop
-            | ifstmnt
+            | ifexpr
             | dotEnv
             | dotType
             | callOrFeatOrThis
@@ -2175,7 +2175,7 @@ simpleterm  : bracketTerm
           case t_variant   :
           case t_while     :
           case t_do        :         result = loop();                                   break;
-          case t_if        :         result = ifstmnt();                                break;
+          case t_if        :         result = ifexpr();                                 break;
           default          :
             if (isStartedString(current()))
               {
@@ -2771,13 +2771,13 @@ expr        : feature
             | assign
             | destructure
             | exprInLine
-            | checkstmnt
+            | checkexpr
             ;
    */
   Expr expr()
   {
     return
-      isCheckPrefix()       ? checkstmnt()  :
+      isCheckPrefix()       ? checkexpr()  :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : exprWithResult();
@@ -2943,16 +2943,16 @@ cond        : exprInLine
 
 
   /**
-   * Parse ifstmnt
+   * Parse ifexpr
    *
-ifstmnt      : "if" exprInLine thenPart elseBlock
+ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifstmnt()
+  If ifexpr()
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
-        match(Token.t_if, "ifstmnt");
+        match(Token.t_if, "ifexpr");
         Expr e = exprInLine();
         Block b = thenPart(false);
         If result = new If(pos, e, b);
@@ -3004,10 +3004,10 @@ elseBlock   : "else" block
 
 
   /**
-   * Check if the current position starts an ifstmnt.  Does not change the
+   * Check if the current position starts an ifexpr.  Does not change the
    * position of the parser.
    *
-   * @return true iff the next token(s) start an ifstmnt.
+   * @return true iff the next token(s) start an ifexpr.
    */
   boolean isIfPrefix()
   {
@@ -3016,23 +3016,23 @@ elseBlock   : "else" block
 
 
   /**
-   * Parse checkstmnt
+   * Parse checkexpr
    *
-checkstmnt   : "check" cond
+checkexpr   : "check" cond
             ;
    */
-  Expr checkstmnt()
+  Expr checkexpr()
   {
-    match(Token.t_check, "checkstmnt");
+    match(Token.t_check, "checkexpr");
     return new Check(tokenSourcePos(), cond());
   }
 
 
   /**
-   * Check if the current position starts a checkstmnt.  Does not change the
+   * Check if the current position starts a checkexpr.  Does not change the
    * position of the parser.
    *
-   * @return true iff the next token(s) start a checkstmnt.
+   * @return true iff the next token(s) start a checkexpr.
    */
   boolean isCheckPrefix()
   {
