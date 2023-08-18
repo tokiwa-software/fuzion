@@ -1208,7 +1208,7 @@ public class Intrinsics extends ANY
     put("f32.type.sinh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
     put("f32.type.square_root"  , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
     put("f32.type.tan"          , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
-    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
+    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(1).f32Value())));
     put("f64.type.acos"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
     put("f64.type.asin"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
     put("f64.type.atan"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
@@ -1225,7 +1225,7 @@ public class Intrinsics extends ANY
     put("f64.type.sinh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
     put("f64.type.square_root"  , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64.type.tan"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
+    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
     put("Any.hash_code"         , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
     put("Any.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
     put("fuzion.std.nano_time"  , (interpreter, innerClazz) -> args -> new u64Value (System.nanoTime()));
