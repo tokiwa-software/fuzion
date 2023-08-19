@@ -95,7 +95,7 @@ public class Box extends Expr
   {
     if (PRECONDITIONS) require
       (value != null,
-       true /* NYI */ || !value.type().isRef() || value.isCallToOuterRef());
+       !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
     var t = value.type();
