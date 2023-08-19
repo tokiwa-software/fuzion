@@ -82,7 +82,7 @@ public class Tag extends Expr
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
-       Errors.count() > 0
+       Errors.any()
         || taggedType
             .choiceGenerics()
             .stream()

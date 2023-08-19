@@ -268,12 +268,12 @@ public class InlineArray extends ExprWithPos
   public void checkTypes()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _type != null);
+      (Errors.any() || _type != null);
 
     var elementType = elementType();
 
     if (CHECKS) check
-      (Errors.count() > 0 || elementType != Types.t_ERROR);
+      (Errors.any() || elementType != Types.t_ERROR);
 
     for (var e : _elements)
       {

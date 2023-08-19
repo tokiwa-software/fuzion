@@ -192,8 +192,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     this(t.pos(), t._name, g, o, t._refOrVal, false);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       Errors.count() > 0 || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
+      (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+       Errors.any() || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
   }
 

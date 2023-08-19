@@ -217,7 +217,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             result.add(f);
           }
-        else if (Errors.count() == 0)
+        else if (!Errors.any())
           {
             AstErrors.expressionNotAllowedOutsideOfFeatureDeclaration(s);
           }
@@ -285,7 +285,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   MIR createMIR(AbstractFeature main)
   {
-    if (main != null && Errors.count() == 0)
+    if (main != null && !Errors.any())
       {
         if (main.valueArguments().size() != 0)
           {
@@ -305,7 +305,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     var result = new MIR(_universe, main, this);
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         new DFA(result).check();
       }
@@ -567,7 +567,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
-                (Errors.count() > 0  || c.calledFeature() != null);
+                (Errors.any()  || c.calledFeature() != null);
 
               if (c.calledFeature() instanceof Feature cf
                   // fixes issue #1358
@@ -781,7 +781,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if ((Errors.count() == 0 || !f.isTypeFeature()) && visibleFor(existing, f))
+        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
           {
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
@@ -916,7 +916,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             var cf = p.calledFeature();
             if (CHECKS) check
-              (Errors.count() > 0 || cf != null);
+              (Errors.any() || cf != null);
 
             if (cf != null)
               {
@@ -1106,7 +1106,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                     boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || outer != Types.f_ERROR);
+      (Errors.any() || outer != Types.f_ERROR);
 
     FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
@@ -1283,7 +1283,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
-                      (Errors.count() > 0 ||
+                      (Errors.any() ||
                        i < args.size() ||
                        args.get(args.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(args.size() - 1, i);

@@ -211,12 +211,12 @@ public class Generic extends ANY
   public AbstractType replace(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !isOpen(),
-       Errors.count() > 0 || formalGenerics().sizeMatches(actuals));
+      (Errors.any() || !isOpen(),
+       Errors.any() || formalGenerics().sizeMatches(actuals));
 
     int i = index();
     if (CHECKS) check
-      (Errors.count() > 0 || actuals.size() > i);
+      (Errors.any() || actuals.size() > i);
     return actuals.size() > i ? actuals.get(i) : Types.t_ERROR;
   }
 
@@ -238,7 +238,7 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (isOpen(),
-      Errors.count() >= 0 || formalGenerics().sizeMatches(actuals));
+      formalGenerics().sizeMatches(actuals));
 
     if (CHECKS) check
       (formalGenerics().list.getLast() == this);

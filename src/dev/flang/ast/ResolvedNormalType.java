@@ -213,7 +213,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.count() > 0 || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g));
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g));
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
@@ -557,7 +557,7 @@ public class ResolvedNormalType extends ResolvedType
     this._generics = FormalGenerics.resolve(res, _generics, outerfeat);
     this._generics.freeze();
     if (CHECKS) check
-      (Errors.count() > 0 || _feature != null);
+      (Errors.any() || _feature != null);
     if (_feature != null &&
         !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                            pos.pos(),
@@ -580,7 +580,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _feature != null);
+      (Errors.any() || _feature != null);
 
     return _feature != null
       ? _feature

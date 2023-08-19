@@ -183,7 +183,7 @@ public class Clazzes extends ANY
       public Clazz get()
       {
         if (CHECKS) check
-          (Errors.count() > 0);
+          (Errors.any());
         return super.get();
       }
     };
@@ -250,7 +250,7 @@ public class Clazzes extends ANY
   public static Clazz intern(Clazz c)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c._type != Types.t_ERROR);
+      (Errors.any() || c._type != Types.t_ERROR);
 
     Clazz existing = clazzes.get(c);
     if (existing == null)
@@ -300,8 +300,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.dependsOnGenerics(),
-       Errors.count() > 0 || !actualType.containsThisType());
+       Errors.any() || !actualType.dependsOnGenerics(),
+       Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
     var ao = actualType.featureOfType().outer();
@@ -364,7 +364,7 @@ public class Clazzes extends ANY
     if (result == newcl)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
+          (Errors.any() || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
         if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
           {
             clazzesToBeVisited.add(result);
@@ -382,7 +382,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0 || true,
+      (Errors.any() || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0 || true,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -395,7 +395,7 @@ public class Clazzes extends ANY
   private static boolean wouldCreateCycleInOuters(AbstractType actualType, Clazz outer)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !actualType.dependsOnGenerics());
+      (Errors.any() || !actualType.dependsOnGenerics());
     return outer != null && outer.selfAndOuters().anyMatch(ou -> actualType.featureOfType().equals(ou.feature()));
   }
 
@@ -417,7 +417,7 @@ public class Clazzes extends ANY
 
     // mark internally referenced clazzes as called or instantiated:
     if (CHECKS) check
-      (Errors.count() > 0 || main != null);
+      (Errors.any() || main != null);
     if (main != null)
       {
         main.called(SourcePosition.builtIn);
@@ -534,7 +534,7 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f, List<AbstractType> tp)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || isUsed(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
+      (Errors.any() || isUsed(f) || true /* NYI: clazzes are created for type features's type parameters without being called,
                                                 * see tests/reg_issue1236 for an example. We might treat clazzes that are only used
                                                 * in types differently.
                                                 */);
@@ -738,7 +738,7 @@ public class Clazzes extends ANY
       (a != null, outerClazz != null);
 
     if (CHECKS) check
-      (Errors.count() > 0 || a._target != null);
+      (Errors.any() || a._target != null);
 
     if (a._target != null)
       {
@@ -786,7 +786,7 @@ public class Clazzes extends ANY
           {
             rc = vc.asRef();
             if (CHECKS) check
-              (Errors.count() >= 0 || ec._type.isAssignableFrom(rc._type));
+              (ec._type.isAssignableFrom(rc._type));
           }
         if (b._valAndRefClazzId < 0)
           {
@@ -875,7 +875,7 @@ public class Clazzes extends ANY
   public static void findClazzes(AbstractCall c, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature() != null && c.target() != null);
+      (Errors.any() || c.calledFeature() != null && c.target() != null);
 
     if (c.calledFeature() == null  || c.target() == null)
       {
@@ -1189,7 +1189,7 @@ public class Clazzes extends ANY
 
     else
       {
-        if (Errors.count() == 0)
+        if (!Errors.any())
           {
             throw new Error("" + e.getClass() + " should no longer exist at runtime");
           }
@@ -1215,7 +1215,7 @@ public class Clazzes extends ANY
   public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !thiz.dependsOnGenerics(),
+      (Errors.any() || !thiz.dependsOnGenerics(),
        !thiz.isThisType());
 
     Clazz outerClazz;
@@ -1260,9 +1260,9 @@ public class Clazzes extends ANY
   public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.count()>0 || !thiz.dependsOnGenerics(),
+      (Errors.any() || !thiz.dependsOnGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.count()>0 || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
     var t = Types.intern(thiz);
     var result = create(t, select, outerClazz);

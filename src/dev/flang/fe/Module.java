@@ -192,7 +192,7 @@ public abstract class Module extends ANY
       {
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
+          (Errors.any() || cf != null);
 
         if (cf != null && (cf.isConstructor() || cf.isChoice()))
           {

@@ -404,7 +404,7 @@ public class Resolution extends ANY
         Feature f = forCheckTypes2.removeFirst();
         f.checkTypes1and2(this);
       }
-    else if (false && Errors.count() > 0)  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
+    else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
       {
         // The following phases should not reveal any new errors and will assume
         // correct input.  So if there were any errors, let's give up at this
@@ -462,7 +462,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || af.state().atLeast(Feature.State.RESOLVED_TYPES));
+      (Errors.any() || af.state().atLeast(Feature.State.RESOLVED_TYPES));
   }
 
 

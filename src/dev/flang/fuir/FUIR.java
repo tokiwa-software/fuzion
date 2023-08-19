@@ -266,14 +266,14 @@ public class FUIR extends IR
         for (var cl : Clazzes.all())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || cl._type != Types.t_ERROR);
+              (Errors.any() || cl._type != Types.t_ERROR);
 
             if (cl._type == Types.t_ERROR)
               {
                 if (CHECKS) check
-                  (Errors.count() > 0);
+                  (Errors.any());
 
-                if (Errors.count() == 0)
+                if (!Errors.any())
                   {
                     Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
                                  "were reported.  This can only be the result of a severe bug.");
