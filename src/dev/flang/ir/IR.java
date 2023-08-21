@@ -105,7 +105,6 @@ public class IR extends ANY
     Current,
     Comment,
     Const,
-    Dup,
     Match,
     Tag,
     Env,
@@ -193,7 +192,7 @@ public class IR extends ANY
    *
    * @param dumpResult flag indicating that we are not interested in the result.
    */
-  private void toStack(List<Object> l, Expr e, boolean dumpResult)
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -207,16 +206,19 @@ public class IR extends ANY
       }
     else if (e instanceof Unbox u)
       {
-        toStack(l, u._adr);
-        if (u._needed)
+        toStack(l, u._adr, dumpResult);
+        if (!dumpResult && u._needed)
           {
             l.add(u);
           }
       }
     else if (e instanceof Box b)
       {
-        toStack(l, b._value);
-        l.add(b);
+        toStack(l, b._value, dumpResult);
+        if (!dumpResult)
+          {
+            l.add(b);
+          }
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -229,11 +231,17 @@ public class IR extends ANY
       }
     else if (e instanceof AbstractConstant)
       {
-        l.add(e);
+        if (!dumpResult)
+          {
+            l.add(e);
+          }
       }
     else if (e instanceof AbstractCurrent)
       {
-        l.add(ExprKind.Current);
+        if (!dumpResult)
+          {
+            l.add(ExprKind.Current);
+          }
       }
     else if (e instanceof If i)
       {
@@ -268,12 +276,18 @@ public class IR extends ANY
       }
     else if (e instanceof Tag t)
       {
-        toStack(l, t._value);
-        l.add(t);
+        toStack(l, t._value, dumpResult);
+        if (!dumpResult)
+          {
+            l.add(t);
+          }
       }
     else if (e instanceof Env v)
       {
-        l.add(v);
+        if (!dumpResult)
+          {
+            l.add(v);
+          }
       }
     else if (e instanceof Nop)
       {

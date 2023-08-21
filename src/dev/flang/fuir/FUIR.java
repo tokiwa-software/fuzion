@@ -599,7 +599,7 @@ public class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return clazz id  of corresponding value clazz.
+   * @return clazz id of corresponding value clazz.
    */
   public int clazzAsValue(int cl)
   {
@@ -826,8 +826,10 @@ public class FUIR extends IR
 
 
   /**
-   * Are values of this clazz all the same, so they are essentially C/Java void
-   * values?
+   * Is there just one single value of this class, so this type is essentially a
+   * C/Java `void` type?
+   *
+   * NOTE: This is false for Fuzion's `void` type!
    */
   public boolean clazzIsUnitType(int cl)
   {
@@ -916,14 +918,14 @@ hw25 is
         var pf = p.calledFeature();
         var of = pf.outerRef();
         var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
-        toStack(code, p.target());
-        if (or != null && !or.resultClazz().isUnitType())
+        var needsOuterRef = (or != null && !or.resultClazz().isUnitType());
+        toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
+        if (needsOuterRef)
           {
             if (clazzFieldIsAdrOfValue(or))
               {
                 code.add(ExprKind.AdrOf);
               }
-            code.add(ExprKind.Dup);
             code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
           }
@@ -1979,7 +1981,6 @@ hw25 is
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
       case Const   -> "Const";
-      case Dup     -> "Dup";
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
@@ -2246,7 +2247,6 @@ hw25 is
       case Current -> codeIndex(c, ix, -1);
       case Comment -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Const   -> codeIndex(c, ix, -1);
-      case Dup     -> codeIndex(c, ix, -1);
       case Match   ->
         {
           ix = codeIndex(c, ix, -1);
