@@ -296,10 +296,6 @@ public class IR extends ANY
       {
         var un = (Universe) e;
       }
-    else if (e instanceof InlineArray)
-      {
-        l.add(e);
-      }
     else if (e instanceof Check c)
       {
         // NYI: Check not supported yet
