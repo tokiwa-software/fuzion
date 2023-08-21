@@ -428,14 +428,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         l.add(_processor.assignStatic(cl, or, rt, cur._v0, out._v0));
       }
 
-    var vcl = _fuir.clazzAsValue(cl);
-    var ac = _fuir.clazzArgCount(vcl);
+    var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
         var cur = _processor.current(cl, pre);
         l.add(cur._v1);
-        var af = _fuir.clazzArg(vcl, i);
-        var at = _fuir.clazzArgClazz(vcl, i);
+        var af = _fuir.clazzArg(cl, i);
+        var at = _fuir.clazzArgClazz(cl, i);
         var ai = _processor.arg(cl, i);
         if (ai != null)
           {
