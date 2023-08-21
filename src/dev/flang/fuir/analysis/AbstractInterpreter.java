@@ -702,6 +702,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             {
               stack.push(null);
             }
+          if (CHECKS) check
+            (r._v0 == null || r._v0 == _processor.unitValue());
           return _processor.sequence(new List<>(code, r._v1));
         }
       case Tag:
