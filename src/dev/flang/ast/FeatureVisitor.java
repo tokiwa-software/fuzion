@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.HasSourcePosition;
 
 /**
  * This is used to perform some action on a feature and all the expressions,
@@ -70,7 +69,7 @@ public abstract class FeatureVisitor extends ANY
   public void         action      (If             i, AbstractFeature outer) { }
   public void         action      (Impl           i, AbstractFeature outer) { }
   public Expr         action      (InlineArray    i, AbstractFeature outer) { return i; }
-  public void         action      (AbstractMatch  m                      ) { }
+  public void         action      (AbstractMatch  m                      )  { }
   public void         action      (Match          m, AbstractFeature outer) { }
   public void         action      (Tag            b, AbstractFeature outer) { }
   public Expr         action      (This           t, AbstractFeature outer) { return t; }

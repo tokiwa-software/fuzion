@@ -1025,7 +1025,6 @@ public class Clazzes extends ANY
         m._runtimeClazzId = getRuntimeClazzIds(1);
       }
     var subjClazz = clazz(m.subject(), outerClazz);
-    var subjClazzValue = subjClazz.asValue(); // this is used in the be/interpreter
     outerClazz.setRuntimeClazz(m._runtimeClazzId, subjClazz);
   }
 
@@ -1117,7 +1116,7 @@ public class Clazzes extends ANY
       }
     else if (e instanceof Box b)
       {
-        result = outerClazz.actualClazz(b._type);
+        result = outerClazz.actualClazz(b.type());
       }
 
     else if (e instanceof AbstractCall c)

@@ -53,7 +53,7 @@ public class Box extends Expr
   /**
    * The type of this, set during creation.
    */
-  public AbstractType _type;
+  private final AbstractType _type;
 
 
   /**
