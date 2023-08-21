@@ -169,11 +169,31 @@ class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_), fuir).compile();
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false), fuir).compile();
       }
     },
 
-    classes    ("-classes"),
+    classes    ("-classes")
+    {
+      String usage()
+      {
+        return "[-Xdfa=(on|off)] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
+            result = true;
+          }
+        return result;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ true), fuir).compile();
+      }
+    },
 
     llvm       ("-llvm"),
 
