@@ -301,22 +301,24 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Check if values of given clazz are not pushed onto the stack.  This is the case
-   * for non-ref effective unit type values and for universe.
+   * Check if the given clazz has a unique value that does not need to be pushed
+   * onto the stack.
    */
-  public static boolean ignoredOnStack(FUIR fuir, int cl)
+  public static boolean clazzHasUniqueValue(FUIR fuir, int cl)
   {
     return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
+    // NYI: maybe we should restrict this to c_unit only?
+    // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
   }
 
 
   /**
-   * Check if values of given clazz are not pushed onto the stack.  This is the case
-   * for non-ref effective unit type values and for universe.
+   * Check if the given clazz has a unique value that does not need to be pushed
+   * onto the stack.
    */
-  public boolean ignoredOnStack(int cl)
+  public boolean clazzHasUniqueValue(int cl)
   {
-    return ignoredOnStack(_fuir, cl);
+    return clazzHasUniqueValue(_fuir, cl);
   }
 
 
@@ -336,13 +338,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (!ignoredOnStack(cl))
+    if (!clazzHasUniqueValue(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (ignoredOnStack(cl) || stack.get(stack.size()-1) == val,
+      (clazzHasUniqueValue(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -360,11 +362,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (ignoredOnStack(cl) || stack.size() > 0,
+      (clazzHasUniqueValue(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      ignoredOnStack(cl) ? _processor.unitValue() : stack.pop();
+      clazzHasUniqueValue(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
@@ -492,12 +494,38 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
+    int last_i = -1;
     for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         l.add(_processor.statementHeader(cl, c, i));
         l.add(process(cl, pre, stack, c, i));
+        last_i = i;
       }
-    var v = containsVoid(stack) ? null : _processor.unitValue();
+
+    var v = containsVoid(stack) ? null
+                                : _processor.unitValue();
+
+    if (!containsVoid(stack) && stack.size() > 0)
+      { // NYI: #1875: Manaul stack cleanup.  This should not be needed since the
+        // FUIR has the (so far undocumented) invariant that the stack must be
+        // empty at the end of a basic block. There ware some cases
+        // (tests/reg_issue1294) where this is not the case that need to be
+        // fixed, the FUIR code should contain a POP instructions to avoid this
+        // special handling here!
+        //
+        var s = _fuir.codeAt(c, last_i);
+        switch (s)
+          {
+          case Call:
+            var cc0 = _fuir.accessedClazz  (cl, c, last_i);
+            var rt = _fuir.clazzResultClazz(cc0);
+            l.add(_processor.drop(stack.pop(), rt));
+            break;
+          default:
+            break; // NYI: ignore this case for now, this occurs infrequently, one example is tests/reg_issue1294.
+          }
+      }
+
     return new Pair<>(v, _processor.sequence(l));
   }
 
@@ -695,17 +723,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var r = _processor.env(ecl);
           push(stack, ecl, r._v0);
           return r._v1;
-        }
-      case Dup:
-        { // NYI: Would be cleaner if Dup would have access to the type of the
-          // duplicated value.  Currently, Dup is only added by FUIR.addCode
-          // after an explicit check that the type is not a unit type, so we are
-          // fine for now:
-          //
-          var v = stack.pop();
-          stack.push(v);
-          stack.push(v);
-          return _processor.nop();
         }
       case Pop:
         {

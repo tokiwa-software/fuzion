@@ -582,7 +582,6 @@ public class CFG extends ANY
           addEffect(cl, ecl);
           break;
         }
-      case Dup: break;
       case Pop: break;
       default:
         {
