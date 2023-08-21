@@ -248,11 +248,11 @@ public class Names extends ANY implements ClassFileConstants
       String sep = "";
       if (o != -1 &&
           _fuir.clazzOuterClazz(o) != -1)
-        { // add o a prefix unless cl or o are universe
+        { // add a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";
         }
-      sb.append(_fuir.clazzIsRef(cl) ? "_R" : sep);
+      sb.append(_fuir.clazzIsBoxed(cl) ? "_B" : sep);
       var n = _fuir.clazzArgCount(cl);
       if (n > 0)
         {
