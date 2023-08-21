@@ -1,0 +1,4 @@
+
+error 1: CONTRACT FAILED: pre-condition on call to 'SquareRoot.sqrt'
+
+*** fatal errors encountered, stopping.
