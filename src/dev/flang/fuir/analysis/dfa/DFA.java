@@ -275,7 +275,7 @@ public class DFA extends ANY
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
-                  _fuir.clazzAsValue(t._clazz) == tt)
+                  t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
                   var r = access0(cl, c, i, t, args, cc, tvalue);
