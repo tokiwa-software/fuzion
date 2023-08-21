@@ -69,7 +69,7 @@ public abstract class FeatureVisitor extends ANY
   public void         action      (If             i, AbstractFeature outer) { }
   public void         action      (Impl           i, AbstractFeature outer) { }
   public Expr         action      (InlineArray    i, AbstractFeature outer) { return i; }
-  public void         action      (AbstractMatch  m                      ) { }
+  public void         action      (AbstractMatch  m                      )  { }
   public void         action      (Match          m, AbstractFeature outer) { }
   public void         action      (Tag            b, AbstractFeature outer) { }
   public Expr         action      (This           t, AbstractFeature outer) { return t; }

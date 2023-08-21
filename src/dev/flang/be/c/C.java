@@ -1227,12 +1227,12 @@ public class C extends ANY
       }
     else
       {
-        var ac = _fuir.clazzOuterClazz(cc);
+        var oc = _fuir.clazzOuterClazz(cc);
         var or = _fuir.clazzOuterRef(cc);
         result = new List<>();
-        if (or != -1 && _fuir.hasData(ac))
+        if (or != -1 && _fuir.hasData(oc))
           {
-            result.add(_fuir.clazzIsRef(ac)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
+            result.add(_fuir.clazzIsRef(oc)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
                        /* NYI: special handling in backend should be
                         * replaced by AdrOf in FUIR code: */
                        _fuir.clazzFieldIsAdrOfValue(or) ? tvalue.adrOf().castTo(_types.clazzField(_fuir.clazzOuterRef(cc)))

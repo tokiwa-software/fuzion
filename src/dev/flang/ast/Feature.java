@@ -255,7 +255,7 @@ public class Feature extends AbstractFeature
    * Field containing reference to outer feature, set after
    * RESOLVED_DECLARATIONS.
    */
-  public Feature _outerRef = null;
+  private Feature _outerRef = null;
 
 
   /**
@@ -720,17 +720,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-   */
-  public void resetState()
-  {
-    if (PRECONDITIONS) require
-      (isUniverse());
-    _state = Feature.State.LOADING;
-  }
-
-
-  /**
    * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
@@ -804,7 +793,7 @@ public class Feature extends AbstractFeature
     return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
           !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
       ? Kind.Choice
-      : switch (_impl._kind) {
+      : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
           case TypeParameter                                      -> Kind.TypeParameter;
           case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
