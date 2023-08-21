@@ -1199,6 +1199,18 @@ hw25 is
 
 
   /**
+   * Get the id of clazz fuzion.sys.array<u8>
+   *
+   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionSysArray_u8()
+  {
+    var cc = Clazzes.fuzionSysArray_u8;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
    * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
