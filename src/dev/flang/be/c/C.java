@@ -889,9 +889,11 @@ public class C extends ANY
             var cc = ccs[cci+1];                   // called clazz in case of match
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
-            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+            var tv = tvalue;
             if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
-              { // in case we access the value in a boxed target, unbox it first:
+              {
+                tv = tt != tc ? tv.castTo(_types.clazz(tt)): tv;
+                // in case we access the value in a boxed target, unbox it first:
                 tv = fields(tv, tt);
               }
             if (isCall)
