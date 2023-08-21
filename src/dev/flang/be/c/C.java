@@ -1053,7 +1053,7 @@ public class C extends ANY
     var vocc  = _fuir.clazzAsValue(occ);
     return (_types.isScalar(vocc)     ? fields(t, tc)         :
             _fuir.clazzIsVoidType(rt) ? null :
-            _fuir.hasData(rt)        ? field(tc, t, f) : CExpr.UNIT);
+            _fuir.hasData(rt)         ? field(tc, t, f) : CExpr.UNIT);
   }
 
 
