@@ -121,7 +121,6 @@ public class Types extends ANY implements ClassFileConstants
    */
   void createClassFile(int cl)
   {
-    //System.out.println("CREATE "+(needsTypeDeclaration(cl) ? " CLASS ": " NOTHING ")+" for "+_fuir.clazzAsString(cl)+" "+_fuir.clazzKind(cl));
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
@@ -344,6 +343,20 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
+   * check if an interface class file was generated for the given clazz.
+   *
+   * @param cl a clazz id.
+   *
+   * @return true if an interface was created for cl.
+   */
+  boolean hasInterfaceFile(int cl)
+  {
+    return _interfaceFiles.get(cl) != null;
+  }
+
+
+
+  /**
    * Get interface class file if required for the given clazz, create one on demand if
    * this requirement was only detedted now.
    *
@@ -467,7 +480,7 @@ public class Types extends ANY implements ClassFileConstants
   {
     if (_fuir.clazzIsRef(cl) && hasRealHeirs(cl))
       {
-        return new ClassType(_names.javaInterface(cl));
+        return interfaceFile(cl).classType();
       }
     else
       {

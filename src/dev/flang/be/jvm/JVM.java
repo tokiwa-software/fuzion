@@ -469,9 +469,9 @@ should be avoided as much as possible.
           {
             jvm._runner.add(cf);
           }
-        var ci = jvm._types.interfaceFile(cl);
-        if (ci != null)
+        if (jvm._types.hasInterfaceFile(cl))
           {
+            var ci = jvm._types.interfaceFile(cl);
             jvm._runner.add(ci);
           }
       }
@@ -515,9 +515,9 @@ should be avoided as much as possible.
                              "While creating class '" + cf.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
               }
           }
-        var ci = jvm._types.interfaceFile(cl);
-        if (ci != null)
+        if (jvm._types.hasInterfaceFile(cl))
           {
+            var ci = jvm._types.interfaceFile(cl);
             try
               {
                 ci.write(PATH_FOR_CLASSES);

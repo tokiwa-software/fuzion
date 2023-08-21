@@ -876,6 +876,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   public final String _name;
+  public final ClassType _type;
 
   public final byte[] _version;
 
@@ -914,6 +915,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   public ClassFile(String name, String supr, boolean interfce)
   {
     _name = name;
+    _type = new ClassType(name);
     _version = DEFAULT_VERSION;
     _cpool = new CPool();
     _flags = ACC_PUBLIC | (interfce ? ACC_INTERFACE : ACC_SUPER);
@@ -1094,6 +1096,15 @@ public class ClassFile extends ANY implements ClassFileConstants
                     List<Attribute> attributes)
   {
     _fields.add(new Field(access_flags, name, descr, attributes));
+  }
+
+
+  /**
+   * Get the type of this class as a ClassType instance
+   */
+  public ClassType classType()
+  {
+    return _type;
   }
 
 
