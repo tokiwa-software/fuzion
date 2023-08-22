@@ -1660,11 +1660,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
-                                                    callPos != null                ? callPos
-                                                                                   : called.pos(),
-                                                    f,
-                                                    a);
+                if (f.constraint().isChoice())
+                  {
+                    AstErrors.constraintMustNotBeChoice(f);
+                  }
+                else
+                  {
+                    AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
+                                                        callPos != null                ? callPos
+                                                                                       : called.pos(),
+                                                        f,
+                                                        a);
+                  }
+
                 result = false;
               }
           }
