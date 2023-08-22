@@ -909,7 +909,6 @@ public abstract class Expr extends ByteCode
         public byte[] byteCode(ClassFile cf)
         {
           return bc(O_checkcast, cf.cpClass(type.descriptor2()));
-          // return bc(O_checkcast, cf.cpClass(type.className()));
         }
     };
   }
@@ -932,7 +931,6 @@ public abstract class Expr extends ByteCode
         public byte[] byteCode(ClassFile cf)
         {
           return bcsigned(O_goto, 0);
-          // return bc(O_checkcast, cf.cpClass(type.className()));
         }
     };
   }

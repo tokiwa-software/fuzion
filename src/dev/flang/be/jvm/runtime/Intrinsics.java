@@ -216,7 +216,6 @@ public class Intrinsics extends ANY
   public static float   f32_type_acos               (float  a          ) { return (float) Math.acos (         a); }
   public static float   f32_type_asin               (float  a          ) { return (float) Math.asin (         a); }
   public static float   f32_type_atan               (float  a          ) { return (float) Math.atan (         a); }
-//public static float   f32_type_atan2              (float  a, float  b) { return (float) Math.atan2(a,       b); }
   public static float   f32_type_cos                (float  a          ) { return (float) Math.cos  (         a); }
   public static float   f32_type_cosh               (float  a          ) { return (float) Math.cosh (         a); }
   public static float   f32_type_epsilon            (float  a          ) { return (float) Math.ulp  ((float)  1); }
@@ -234,7 +233,6 @@ public class Intrinsics extends ANY
   public static double  f64_type_acos               (double a          ) { return         Math.acos (         a); }
   public static double  f64_type_asin               (double a          ) { return         Math.asin (         a); }
   public static double  f64_type_atan               (double a          ) { return         Math.atan (         a); }
-//public static double  f64_type_atan2              (double a, double b) { return         Math.atan2(a,       b); }
   public static double  f64_type_cos                (double a          ) { return         Math.cos  (         a); }
   public static double  f64_type_cosh               (double a          ) { return         Math.cosh (         a); }
   public static double  f64_type_epsilon            (double a          ) { return         Math.ulp  ((double) 1); }
