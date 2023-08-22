@@ -468,8 +468,18 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
             result = tag(frmlT, result);
+            if (CHECKS) check
+              (!result.needsBoxing(frmlT));
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.count() > 0
+        || t.compareTo(Types.resolved.t_void) == 0
+        || frmlT.isGenericArgument()
+        || frmlT.isThisType()
+        || !result.needsBoxing(frmlT));
+
     return result;
   }
 

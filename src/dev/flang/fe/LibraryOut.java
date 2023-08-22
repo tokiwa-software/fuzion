@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
@@ -429,6 +430,9 @@ class LibraryOut extends ANY
    */
   void feature(Feature f)
   {
+    if (PRECONDITIONS) require
+      (f.state().atLeast(State.RESOLVED));
+
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
     k = k | (!f.isConstructor() ? f.kind().ordinal() :
