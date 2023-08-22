@@ -1687,15 +1687,6 @@ public class AstErrors extends ANY
           "Field declared: " + s(f));
   }
 
-  static void illegalResultTypeRoutineDef(AbstractFeature f, ReturnType rt)
-  {
-    error(f.pos(),
-          "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
-          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
-          "it must not be given explicitly.\n" +
-          "Feature declared: " + s(f));
-  }
-
   static void illegalResultTypeRefTypeRoutineDef(Feature f)
   {
     error(f.pos(),
