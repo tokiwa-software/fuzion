@@ -232,7 +232,7 @@ public class This extends ExprWithPos
           {
             var or = cur.outerRef();
             if (CHECKS) check
-              (Errors.count() > 0 || (or != null));
+              (Errors.any() || (or != null));
             if (or != null)
               {
                 Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);

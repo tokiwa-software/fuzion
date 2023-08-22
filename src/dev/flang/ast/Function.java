@@ -318,7 +318,7 @@ public class Function extends ExprWithPos
     var f = this._feature == null ? this._call.calledFeature()
                                   : this._feature;
     if (CHECKS) check
-      (Errors.count() > 0 || f != null);
+      (Errors.any() || f != null);
 
     if (f != null)
       {
@@ -353,7 +353,7 @@ public class Function extends ExprWithPos
     var f = this._feature == null ? this._call.calledFeature()
                                   : this._feature;
     if (CHECKS) check
-      (Errors.count() > 0 || f != null);
+      (Errors.any() || f != null);
 
     if (f != null)
       {
@@ -452,7 +452,7 @@ public class Function extends ExprWithPos
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (Errors.count() == 0)  // avoid null pointer handling in case calledFeature not found etc.
+    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
       {
         if (this._feature == null)
           { /* We have an expression of the form

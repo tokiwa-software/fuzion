@@ -440,7 +440,7 @@ class LibraryOut extends ANY
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
     if (f.isIntrinsicConstructor())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;

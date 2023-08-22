@@ -728,14 +728,14 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || _name != Errors.ERROR_STRING);
+          (Errors.any() || _name != Errors.ERROR_STRING);
 
         var actualsResolved = false;
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
-              (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
+              (Errors.any() || targetFeature != null && targetFeature != Types.f_ERROR);
             targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != thiz;
             if (!targetVoid && targetFeature != Types.f_ERROR)
               {
@@ -814,8 +814,8 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != Types.f_ERROR || targetVoid,
-       Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
+      (Errors.any() || calledFeature() != Types.f_ERROR || targetVoid,
+       Errors.any() || _target         != Expr.ERROR_VALUE,
        calledFeature() != null,
        _target         != null);
 
@@ -1037,7 +1037,7 @@ public class Call extends AbstractCall
   public AbstractFeature calledFeature()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || calledFeatureKnown());
+      (Errors.any() || calledFeatureKnown());
 
     AbstractFeature result = _calledFeature != null ? _calledFeature : Types.f_ERROR;
 
@@ -1249,7 +1249,7 @@ public class Call extends AbstractCall
             // _resolvedFormalArgumentTypes array would invalidate
             // argnum for following arguments.
             if (CHECKS) check
-              (Errors.count() > 0 || argnum == _resolvedFormalArgumentTypes.length - 1);
+              (Errors.any() || argnum == _resolvedFormalArgumentTypes.length - 1);
             if (argnum != _resolvedFormalArgumentTypes.length -1)
               {
                 a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
@@ -1267,7 +1267,7 @@ public class Call extends AbstractCall
     for (int i = 0; i < cnt; i++)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || argnum + i <= _resolvedFormalArgumentTypes.length);
+          (Errors.any() || argnum + i <= _resolvedFormalArgumentTypes.length);
 
         if (argnum + i < _resolvedFormalArgumentTypes.length)
           {
@@ -1671,7 +1671,7 @@ public class Call extends AbstractCall
           {
             missing.add(g);
             if (CHECKS) check
-              (Errors.count() > 0 || g.isOpen() || i < _generics.size());
+              (Errors.any() || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
                 _generics = _generics.setOrClone(i, Types.t_ERROR);
@@ -1687,7 +1687,7 @@ public class Call extends AbstractCall
     // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
     if (!missing.isEmpty() &&
-        (Errors.count() == 0 ||
+        (!Errors.any() ||
          !_actuals.stream().anyMatch(x -> x.typeIfKnown() == Types.t_ERROR)))
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
@@ -1728,7 +1728,7 @@ public class Call extends AbstractCall
         for (var frml : va)
           {
             if (CHECKS) check
-                          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+                          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
             if (!checked[vai])
               {
@@ -2215,7 +2215,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || result.typeIfKnown() != Types.t_ERROR);
+      (Errors.any() || result.typeIfKnown() != Types.t_ERROR);
 
     return result.typeIfKnown() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
@@ -2429,7 +2429,7 @@ public class Call extends AbstractCall
   {
     Expr result = this;
     //    if (true) return result;
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         // convert
         //   a && b into if a b     else false

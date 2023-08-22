@@ -696,7 +696,7 @@ public class AstErrors extends ANY
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
-    if (count() == 0 || (originalType                  != Types.t_ERROR &&
+    if (!any() || (originalType                  != Types.t_ERROR &&
                          redefinedFeature.resultType() != Types.t_ERROR    ))
       {
         error(redefinedFeature.pos(),
@@ -739,7 +739,7 @@ public class AstErrors extends ANY
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -754,7 +754,7 @@ public class AstErrors extends ANY
   static void untilConditionMustBeBool(SourcePosition pos, Type type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -768,7 +768,7 @@ public class AstErrors extends ANY
   static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -957,7 +957,7 @@ public class AstErrors extends ANY
   {
     // suppress error message if errors were reported already and any feature
     // involved is f_ERROR
-    if (count() == 0 || (f                != Types.f_ERROR &&
+    if (!any() || (f                != Types.f_ERROR &&
                          f       .outer() != Types.f_ERROR &&
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
@@ -1132,7 +1132,7 @@ public class AstErrors extends ANY
                                     Expr target,
                                     List<FeatureAndOuter> candidates)
   {
-    if (count() == 0 || !errorInOuterFeatures(targetFeature))
+    if (!any() || !errorInOuterFeatures(targetFeature))
       {
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                           calledName.argCount());
@@ -1227,7 +1227,7 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
+      (any() || !f.featureName().baseName().equals(ERROR_STRING));
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
@@ -1267,7 +1267,7 @@ public class AstErrors extends ANY
   static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
     if (CHECKS) check
-      (count() > 0  || expectedType != Types.t_ERROR);
+      (any()  || expectedType != Types.t_ERROR);
 
     if (expectedType != Types.t_ERROR)
       {
@@ -1555,7 +1555,7 @@ public class AstErrors extends ANY
 
   static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
   {
-    if (count() == 0 || t != Types.t_ERROR)
+    if (!any() || t != Types.t_ERROR)
       {
         error(pos,
               "Use of selector requires call to feature whose type is an open type parameter",
@@ -1616,7 +1616,7 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    if (g != Types.t_UNDEFINED || count() == 0)
+    if (g != Types.t_UNDEFINED || !any())
       {
         error(pos,
               "Incompatible type parameter",

@@ -185,7 +185,7 @@ public abstract class AbstractAssign extends Expr
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
@@ -206,7 +206,7 @@ public abstract class AbstractAssign extends Expr
   public void wrapValueInLazy(Resolution res, AbstractFeature outer)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
@@ -235,7 +235,7 @@ public abstract class AbstractAssign extends Expr
   public void box(AbstractFeature outer)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
@@ -252,7 +252,7 @@ public abstract class AbstractAssign extends Expr
   public void checkTypes(Resolution res)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     var f = _assignedField;
     if (f != Types.f_ERROR)
@@ -260,7 +260,7 @@ public abstract class AbstractAssign extends Expr
         var frmlT = f.resultType();
 
         if (CHECKS) check
-          (Errors.count() > 0 || frmlT != Types.t_ERROR);
+          (Errors.any() || frmlT != Types.t_ERROR);
 
         if (!frmlT.isAssignableFrom(_value.type()))
           {
@@ -268,7 +268,7 @@ public abstract class AbstractAssign extends Expr
           }
 
         if (CHECKS) check
-          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.count() > 0);
+          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.any());
       }
   }
 

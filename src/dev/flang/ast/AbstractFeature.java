@@ -340,7 +340,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
-          (Errors.count() > 0 || argCount >= 0);
+          (Errors.any() || argCount >= 0);
         if (argCount < 0)
           {
             argCount = 0;
@@ -419,7 +419,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         for (var p: inherits())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || p.calledFeature() != null);
+              (Errors.any() || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -520,9 +520,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
        );
@@ -699,7 +699,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       Errors.count() > 0 || !isUniverse(),
+       Errors.any() || !isUniverse(),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -711,7 +711,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         else if (isUniverse())
           {
             if (CHECKS) check
-              (Errors.count() > 0);
+              (Errors.any());
             _typeFeature = Types.f_ERROR;
           }
         else
@@ -922,9 +922,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
        );
@@ -1235,7 +1235,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var inh = heir.findInheritanceChain(outer());
         if (CHECKS) check
-          (Errors.count() >= 0 || inh != null);
+          (inh != null);
 
         if (inh != null)
           {
@@ -1297,7 +1297,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var a = handDown(res, new AbstractType[] { t }, heir);
 
     if (CHECKS) check
-      (Errors.count() > 0 || a.length == 1);
+      (Errors.any() || a.length == 1);
 
     return a.length == 1 ? a[0] : Types.t_ERROR;
   }
@@ -1363,7 +1363,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     List<AbstractCall> result = tryFindInheritanceChain(ancestor);
 
     if (POSTCONDITIONS) ensure
-      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
+      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.any() || result != null);
 
     return result;
   }
@@ -1472,7 +1472,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     for (var frml : arguments())
       {
         if (CHECKS) check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
         if (CHECKS) check
@@ -1558,7 +1558,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     else if (set.isEmpty())
       {
         check
-          (this != Types.f_ERROR || Errors.count() > 0);
+          (this != Types.f_ERROR || Errors.any());
         if (this != Types.f_ERROR)
           {
             AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);

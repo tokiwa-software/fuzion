@@ -286,7 +286,7 @@ public class Types extends ANY
   public static AbstractType intern(AbstractType at)
   {
     if (PRECONDITIONS) require
-      (!(at instanceof UnresolvedType t) || Errors.count() > 0);
+      (!(at instanceof UnresolvedType t) || Errors.any());
 
     if (at instanceof ResolvedNormalType t)
       {

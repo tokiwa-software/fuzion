@@ -294,11 +294,11 @@ public class Case extends AbstractCase
       }
     var hasErrors = t.containsError();
     check
-      (!hasErrors || Errors.count() > 0);
+      (!hasErrors || Errors.any());
     for (var cg : cgs)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || cg != null);
+          (Errors.any() || cg != null);
         if (cg != null &&
             (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
@@ -306,7 +306,7 @@ public class Case extends AbstractCase
             t = cg;
             hasErrors = hasErrors || t.containsError();
             check
-              (!hasErrors || Errors.count() > 0);
+              (!hasErrors || Errors.any());
             matches.add(cg);
             if (matched[i] != null && !hasErrors)
               {

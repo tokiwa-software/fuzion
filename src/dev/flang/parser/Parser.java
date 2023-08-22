@@ -198,7 +198,7 @@ unit        : exprs EOF
   public List<Expr> unit()
   {
     var result = exprs();
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         match(Token.t_eof, "Unit");
       }
@@ -2716,7 +2716,7 @@ exprs      : exprWithResult semiOrFlatLF exprs (semiOrFlatLF | )
       okPos = tokenPos();
       var progress = lastPos < okPos;
       if (CHECKS) check
-        (Errors.count() > 0 || progress);
+        (Errors.any() || progress);
       var ok = progress;
       if (ok && firstIndent != -1)
         {

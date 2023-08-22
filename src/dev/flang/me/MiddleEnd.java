@@ -308,7 +308,7 @@ public class MiddleEnd extends ANY
   void findUsedFeatures(AbstractCall c)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature() != null);
+      (Errors.any() || c.calledFeature() != null);
 
     var cf = c.calledFeature();
     if (cf != null)
@@ -321,7 +321,7 @@ public class MiddleEnd extends ANY
                 AbstractFeature f = t.featureOfType();
                 markUsed(f, c);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
                 if (CHECKS) check
-                  (Errors.count() > 0 || f.hasTypeFeature());
+                  (Errors.any() || f.hasTypeFeature());
 
                 if (f.hasTypeFeature())
                   {

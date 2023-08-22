@@ -143,7 +143,7 @@ public class Match extends AbstractMatch
   {
     var st = _subject.type();
     if (CHECKS) check
-      (Errors.count() > 0 || st != Types.t_ERROR);
+      (Errors.any() || st != Types.t_ERROR);
     if (st != Types.t_ERROR)
       {
         if (st.isGenericArgument())
@@ -158,14 +158,14 @@ public class Match extends AbstractMatch
       }
     var cgs = st.choiceGenerics();
     if (CHECKS) check
-      (cgs != null || Errors.count() > 0);
+      (cgs != null || Errors.any());
     if (cgs != null)
       {
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
             if (CHECKS) check
-              (Errors.count() > 0 || n != null);
+              (Errors.any() || n != null);
             if (n != null)
               {
                 cgs = cgs.setOrClone(i, n.resolve(res, outer));

@@ -529,7 +529,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
           }
 
         if (CHECKS) check
-          (Errors.count() > 0 || cgs.size() == 1);
+          (Errors.any() || cgs.size() == 1);
 
         return tag(frmlT, tag(cgs.get(0), value));
       }

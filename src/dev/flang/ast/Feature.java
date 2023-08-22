@@ -938,7 +938,7 @@ public class Feature extends AbstractFeature
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVING_TYPES),
-       Errors.count() > 0);
+       Errors.any());
 
     if (this == Types.resolved.f_choice)
       { // if this == choice, there are only formal generics, so nothing to erase
@@ -948,7 +948,7 @@ public class Feature extends AbstractFeature
         for (var p: _inherits)
           {
             if (CHECKS) check
-              (Errors.count() > 0 || p.calledFeature() != null);
+              (Errors.any() || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -978,7 +978,7 @@ public class Feature extends AbstractFeature
             for (var p: inherits())
               {
                 if (CHECKS) check
-                  (Errors.count() > 0 || p.calledFeature() != null);
+                  (Errors.any() || p.calledFeature() != null);
 
                 var pf = p.calledFeature();
                 if (pf != null && pf.isBaseChoice())
@@ -1034,7 +1034,7 @@ public class Feature extends AbstractFeature
       {
         Expr nc = c.visit(v, this);
         if (CHECKS) check
-          (Errors.count() > 0 || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
+          (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
@@ -1173,7 +1173,7 @@ public class Feature extends AbstractFeature
               }
             var parent = p.calledFeature();
             if (CHECKS) check
-              (Errors.count() > 0 || parent != null);
+              (Errors.any() || parent != null);
             if (parent instanceof Feature fp)
               {
                 fp.resolveInheritance(res);
@@ -1560,7 +1560,7 @@ public class Feature extends AbstractFeature
     for (var t : choiceGenerics())
       {
         if (CHECKS) check
-          (Errors.count() > 0 || t != null);
+          (Errors.any() || t != null);
         if (t != null && !t.isRef())
           {
             if (t.compareTo(thisType()) == 0)
@@ -1609,7 +1609,7 @@ public class Feature extends AbstractFeature
         // choice type is leaf
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
+          (Errors.any() || cf != null);
 
         if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
@@ -1831,7 +1831,7 @@ public class Feature extends AbstractFeature
     Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || hasResultField() == (result != null));
+      (Errors.any() || hasResultField() == (result != null));
     return result;
   }
 
@@ -1939,7 +1939,7 @@ public class Feature extends AbstractFeature
 
     if (CHECKS) check
       (this.outer() == outer,
-        Errors.count() > 0 ||
+        Errors.any() ||
         (_impl._kind != Impl.Kind.FieldDef    &&
          _impl._kind != Impl.Kind.FieldActual &&
          _impl._kind != Impl.Kind.RoutineDef)
@@ -2309,13 +2309,13 @@ public class Feature extends AbstractFeature
   public AbstractType resultType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
     var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw(null) : null;
     if (result == null)
       {
         if (CHECKS) check
-          (Errors.count() > 0);
+          (Errors.any());
 
         result = Types.t_ERROR;
       }

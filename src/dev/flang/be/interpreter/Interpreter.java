@@ -217,7 +217,7 @@ public class Interpreter extends ANY
           }
       }
 
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         ArrayList<Value> mainargs = new ArrayList<>();
         mainargs.add(Instance.universe); // outer instance
@@ -240,7 +240,7 @@ public class Interpreter extends ANY
             throw e;
           }
         if (CHECKS) check
-          (Errors.count() == 0);
+          (!Errors.any());
       }
   }
 
@@ -688,7 +688,7 @@ public class Interpreter extends ANY
     else if (innerClazz == null)
       {
         if (CHECKS) check
-          (Errors.count() > 0);
+          (Errors.any());
         result = (args) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
       }
     else

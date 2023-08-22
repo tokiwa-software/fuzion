@@ -262,7 +262,7 @@ class Fuzion extends Tool
         /*
          * Save _module to a module file
          */
-        if (Errors.count() == 0)
+        if (!Errors.any())
           {
             var p = f._saveLib;
             var n = p.getFileName().toString();
