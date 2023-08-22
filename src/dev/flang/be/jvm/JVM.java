@@ -822,11 +822,6 @@ should be avoided as much as possible.
     var t = _fuir.clazzResultClazz(cl);
     if (pre || !_fuir.clazzIsRef(t) /* NYI: needed? */ && _fuir.clazzIsUnitType(t))
       {
-        if (false)
-          System.out.println(">>>>>>> result of " + _fuir.clazzAsString(cl) + " is "+
-                           ((pre || r==-1) ? " r is -1 " : ((_fuir.clazzIsRef(t) ? "ref" : "non-ref") + " "+
-                                                            (_fuir.clazzIsUnitType(t) ? "unit" : "non-unit") + " "+
-                                                            _fuir.clazzAsString(t))));
         return traceReturn(cl, pre)
           .andThen(Expr.RETURN);
       }
