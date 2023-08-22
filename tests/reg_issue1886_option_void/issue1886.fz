@@ -34,8 +34,8 @@ test_option_void is
   # match on a type parametric option
   f(T type, x option T) =>
     match x
-      nil => say "got nil"
-      T   => say "got void"
+      nil => say "got nil, not $T"
+      T   => say "got $T"
 
   # this should show `got nil`
   f void (rhein void)
