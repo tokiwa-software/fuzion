@@ -295,7 +295,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.abortable.  Install an instanc of effect
+   * Helper method to implement effect.abortable.  Install an instance of effect
    * type specified by id and run f.call while it is installed.  Helper to
    * implement intrinsic effect.abort.
    *

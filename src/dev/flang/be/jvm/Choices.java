@@ -651,7 +651,7 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.POP);                                                 //          -
           break;
         }
-      default: throw new Error("Unexpeced choice kind in match of JVM backend: " + kind(subjClazz));
+      default: throw new Error("Unexpected choice kind in match of JVM backend: " + kind(subjClazz));
       }
     return code;
   }
@@ -762,7 +762,7 @@ public class Choices extends ANY implements ClassFileConstants
             }
           break;
         }
-      default: throw new Error("Unexpeced choice kind in tag of JVM backend: " + kind(newcl));
+      default: throw new Error("Unexpected choice kind in tag of JVM backend: " + kind(newcl));
       }
     return res;
   }

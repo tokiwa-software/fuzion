@@ -206,7 +206,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
           else
             { // unreachable, call type cannot be primitive type
-              throw new Error("unexpeced type " + call_t + " for " + jvm._fuir.clazzAsString(call));
+              throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
             }
         });
 
