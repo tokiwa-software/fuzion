@@ -69,6 +69,7 @@ public class Names extends ANY implements ClassFileConstants
    */
   static final String ANY_CLASS = Any.class.getName().replace(".","/");
   static final ClassType ANY_TYPE = new ClassType(ANY_CLASS);
+  static final String ANY_DESCR = ANY_TYPE.descriptor();
 
 
   /**
@@ -90,7 +91,7 @@ public class Names extends ANY implements ClassFileConstants
    * Name and signature of Runtime.effect_get()
    */
   static final String RUNTIME_EFFECT_GET     = "effect_get";
-  static final String RUNTIME_EFFECT_GET_SIG = "(I)Ldev/flang/be/jvm/runtime/Any;";
+  static final String RUNTIME_EFFECT_GET_SIG = "(I)" + ANY_DESCR;
 
 
   /**
@@ -109,6 +110,11 @@ public class Names extends ANY implements ClassFileConstants
 
   static final String PRECONDITION_NAME = "fzPrecondition";
   static final String ROUTINE_NAME = "fzRoutine";
+  static
+  {
+    if (CHECKS) check
+      (ROUTINE_NAME.equals(Runtime.ROUTINE_NAME));
+  }
 
   /**
    * Prefix for Java fields created for Fuzion fields

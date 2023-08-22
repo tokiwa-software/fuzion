@@ -30,10 +30,14 @@ import dev.flang.be.interpreter.OpenResources; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.OutputStream;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
 
@@ -46,10 +50,38 @@ import java.nio.charset.StandardCharsets;
 public class Runtime extends ANY
 {
 
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Exception that is thrown by effect.abort
+   */
+  static class Abort extends Error
+  {
+
+    int _effect;
+
+    /**
+     * @param effect the id of the effect that is aborted.
+     */
+    Abort(int effect)
+    {
+      super();
+      this._effect = effect;
+    }
+
+  }
+
 
   /*----------------------------  constants  ----------------------------*/
 
-  static final int NYI_MAX_EFFECT_ID = 10000; // NYI: remove!
+
+  /**
+   * Copy of dev.flang.be.jvm.Names.ROUTINE_NAME without adding a dependency on
+   * that package.  We do not want to bundle the backend classes with a
+   * stand-alone application that needs the runtime classes, so this is copied.
+   */
+  public static final String ROUTINE_NAME = "fzRoutine";
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -59,11 +91,8 @@ public class Runtime extends ANY
    * Currently installed effects.
    *
    * NYI: this should be thread local
-   *
-   * NYI: this should not have a static size but allocated to hold the # of
-   * effects in use
    */
-  static Any[] _installedEffects_ = new Any[NYI_MAX_EFFECT_ID];
+  static List<Any> _installedEffects_ = new List<>();
 
 
   /**
@@ -137,43 +166,218 @@ public class Runtime extends ANY
   static Thread _nyi_remove_single_thread = Thread.currentThread();
 
 
+  /**
+   * Make sure _installedEffects_ is large enough to hold effect with given id.
+   *
+   * @param id an effect id.
+   */
+  private static void ensure_effect_capacity(int id)
+  {
+    while (_installedEffects_.size() < id+1)
+      {
+        _installedEffects_.add(null);
+      }
+  }
+
+
+  /**
+   * Internal helper to load an effect instance from the given id.
+   *
+   * @param id an effect id.
+   */
+  private static Any effect_load(int id)
+  {
+    if (CHECKS) check
+      (_nyi_remove_single_thread == Thread.currentThread());
+
+    ensure_effect_capacity(id);
+    return _installedEffects_.get(id);
+  }
+
+  /**
+   * Internal helper to store an effect instance for the given id.
+   *
+   * @param id an effect id.
+   */
+  private static void effect_store(int id, Any instance)
+  {
+    if (CHECKS) check
+      (_nyi_remove_single_thread == Thread.currentThread());
+
+    ensure_effect_capacity(id);
+    _installedEffects_.set(id, instance);
+  }
+
+
   public static void effect_default(int id, Any instance)
   {
     if (CHECKS) check
       (_nyi_remove_single_thread == Thread.currentThread());
 
-    if (_installedEffects_[id] == null)
+    _installedEffects_.ensureCapacity(id + 1);
+    if (effect_load(id) == null)
       {
-        _installedEffects_[id] = instance;
+        effect_store(id, instance);
       }
   }
 
+
+  /**
+   * Helper method to implement intrinsic effect.type.is_installed.
+   *
+   * @param id an effect id.
+   *
+   * @return true iff an effect with that id was installed.
+   */
   public static boolean effect_is_installed(int id)
   {
     if (CHECKS) check
       (_nyi_remove_single_thread == Thread.currentThread());
 
-    return _installedEffects_[id] != null;
+    return effect_load(id) != null;
   }
 
+
+  /**
+   * Helper method to implement intrinsic effect.replace.
+   *
+   * @param id an effect id.
+   *
+   * @instance a new instance to replace the old one
+   */
   public static void effect_replace(int id, Any instance)
   {
     if (CHECKS) check
       (_nyi_remove_single_thread == Thread.currentThread());
 
-    _installedEffects_[id] = instance;
+    effect_store(id, instance);
   }
 
+
+  /**
+   * Helper method to handle an InvocationTargetException caused by a call to
+   * java.lang.reflect.Method.invoke.  This checks the causing exception, if
+   * that is an unchecked RuntimeException or Error, it just re-throws it to be
+   * handled by the caller.
+   *
+   * Otherwise, it causes a fatal error immediately.
+   *
+   * @param e the caught exception
+   *
+   * @return does not.
+   */
+  public static void handleInvocationTargetException(InvocationTargetException e)
+  {
+    var o = e.getCause();
+    if (o instanceof RuntimeException r) { throw r; }
+    if (o instanceof Error            r) { throw r; }
+    if (o != null)
+      {
+        Errors.fatal("Error while running JVM compiled code: " + o);
+      }
+    else
+      {
+        Errors.fatal("Error while running JVM compiled code: " + e);
+      }
+  }
+
+
+  /**
+   * Helper method to implement effect.abort.  Abort the currently installed
+   * effect with given id.  Helper to implement intrinsic effect.abort.
+   *
+   * @param id the id of the effect type that is aborted.
+   */
+  public static void effect_abort(int id)
+  {
+    throw new Abort(id);
+  }
+
+
+  /**
+   * Helper method to implement effect.abortable.  Install an instance of effect
+   * type specified by id and run f.call while it is installed.  Helper to
+   * implement intrinsic effect.abort.
+   *
+   * @param id the id of the effect that is installed
+   *
+   * @param instance the effect instance that is installed
+   *
+   * @param code the Unary instance to be executed
+   *
+   * @param call the Java clazz of the Unary instance to be executed.
+   */
+  public static void effect_abortable(int id, Any instance, Any code, Class call)
+  {
+    if (CHECKS) check
+      (_nyi_remove_single_thread == Thread.currentThread());
+
+    var old = effect_load(id);
+    effect_store(id, instance);
+    Method r = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals("fzRoutine"))
+          {
+            r = m;
+          }
+      }
+    if (r == null)
+      {
+        Errors.fatal("in effect.abortable, missing `fzRoutine` in class `" + call + "`");
+      }
+    else
+      {
+        try
+          {
+            r.invoke(null, code);
+          }
+        catch (IllegalAccessException e)
+          {
+            Errors.fatal("effect.abortable call caused `" + e + "` when calling `" + call + "`");
+          }
+        catch (InvocationTargetException e)
+          {
+            if (e.getCause() instanceof Abort a)
+              {
+                if (a._effect != id)
+                  {
+                    throw a;
+                  }
+              }
+            else
+              {
+                handleInvocationTargetException(e);
+              }
+          }
+        finally
+          {
+            effect_store(id, old);
+          }
+      }
+  }
+
+  /**
+   * Helper method to implement `effect.env` expressions.  Returns the installed
+   * effect with the given id.  Causes an error in case no such effect exists.
+   *
+   * @param id the id of the effect that should be loaded.
+   *
+   * @return the instance that was installed for this id
+   *
+   * @throws Error in case no instance was installed.
+   */
   public static Any effect_get(int id)
   {
     if (CHECKS) check
       (_nyi_remove_single_thread == Thread.currentThread());
 
-    if (_installedEffects_[id] == null)
+    var result = effect_load(id);
+    if (result == null)
       {
         throw new Error("No effect of "+id+" installed");
       }
-    return _installedEffects_[id];
+    return result;
   }
 
 
