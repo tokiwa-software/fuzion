@@ -1287,6 +1287,14 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
+  static void constraintMustNotBeChoice(Generic g)
+  {
+    error(g.typeParameter().pos(),
+          "Constraint for type parameter must not be a choice type",
+          "Affected type parameter: " + s(g) + "\n" +
+          "constraint: " + s(g.constraint()) + "\n");
+  }
+
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
   {
     error(pos, "Loop without while condition cannot have an else block",
@@ -1621,15 +1629,7 @@ public class AstErrors extends ANY
         error(pos,
               "Incompatible type parameter",
               "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
-              "actual type parameter " + s(g) + "\n" +
-              (f.constraint().isChoice() ? "A choice type cannot be used as a constraint.\n" +
-                                           "To solve this, you could change the constraint to a newly created dummy feature and make " +
-                                           f.constraint().choiceGenerics()
-                                            .stream()
-                                            .map(x -> s(x))
-                                            .collect(Collectors.joining(", ")) +
-                                           " inherit from it.\n"
-                                         : ""));
+              "actual type parameter " + s(g) + "\n");
       }
   }
 
