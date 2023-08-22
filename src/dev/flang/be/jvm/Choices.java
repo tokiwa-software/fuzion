@@ -346,7 +346,7 @@ public class Choices extends ANY implements ClassFileConstants
               for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                 {
                   var tc = _fuir.clazzChoice(cl, i);
-                  if (_fuir.clazzIsRef     (tc))
+                  if (_fuir.clazzIsRef(tc))
                     {
                       if (!cf.hasField(Names.CHOICE_REF_ENTRY_NAME))
                         {
@@ -356,13 +356,16 @@ public class Choices extends ANY implements ClassFileConstants
                                    new List<>());
                         }
                     }
-                  else if (!_fuir.clazzIsVoidType(tc) &&
-                           !_fuir.clazzIsUnitType(tc))
+                  else
                     {
-                      cf.field(ACC_PUBLIC,
-                               generalValueFieldName(cl, i),
-                               generalValueFieldType(cl, i).descriptor(),
-                               new List<>());
+                      var ft = generalValueFieldType(cl, i);
+                      if (ft != PrimitiveType.type_void)
+                        {
+                          cf.field(ACC_PUBLIC,
+                                   generalValueFieldName(cl, i),
+                                   ft.descriptor(),
+                                   new List<>());
+                        }
                     }
                 }
             }
@@ -746,7 +749,9 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.putfield(_names.javaClass(newcl),
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int.descriptor()));
-          if (_fuir.clazzIsUnitType(tc))
+          var fn = generalValueFieldName(newcl, tagNum);
+          var ft = generalValueFieldType(newcl, tagNum);
+          if (ft == PrimitiveType.type_void)
             {
               res = value.drop().andThen(create);
             }
@@ -756,8 +761,8 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(Expr.DUP)
                 .andThen(value)
                 .andThen(Expr.putfield(_names.javaClass(newcl),
-                                       generalValueFieldName(newcl, tagNum),
-                                       generalValueFieldType(newcl, tagNum).descriptor()))
+                                       fn,
+                                       ft.descriptor()))
                 .is(_types.javaType(newcl));
             }
           break;

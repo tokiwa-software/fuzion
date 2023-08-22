@@ -851,12 +851,11 @@ should be avoided as much as possible.
         var jt = _types.javaType(t);
         var ft = _types.resultType(t);
         var getf =
-          _fuir.hasData(t)
-          ? (Expr.aload(current_index(cl), jt)
-             .andThen(Expr.getfield(_names.javaClass(cl),
-                                    _names.field(r),
-                                    ft)))
-          : Expr.UNIT;
+          ft != PrimitiveType.type_void ? (Expr.aload(current_index(cl), jt)
+                                           .andThen(Expr.getfield(_names.javaClass(cl),
+                                                                  _names.field(r),
+                                                                  ft)))
+                                        : Expr.UNIT;
         return
           traceReturn(cl, pre)
           .andThen(getf)
