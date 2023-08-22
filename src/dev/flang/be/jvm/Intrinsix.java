@@ -169,6 +169,47 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, code);
         });
 
+    put("effect.abort",
+        (jvm, cc, tvalue, args) ->
+        {
+          var ecl = jvm._fuir.clazzActualGeneric(cc, 0);
+          var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_abort",
+                                       "(I)V",
+                                       ClassFileConstants.PrimitiveType.type_void));
+          return new Pair<>(Expr.UNIT, code);
+        });
+
+    put("effect.abortable",
+        (jvm, cc, tvalue, args) ->
+        {
+          var ecl = jvm._fuir.effectType(cc);
+          var oc = jvm._fuir.clazzActualGeneric(cc, 0);
+          var call = jvm._fuir.lookupCall(oc);
+          var call_t = jvm._types.javaType(call);
+          if (call_t instanceof ClassType call_ct)
+            {
+              var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+                .andThen(tvalue)
+                .andThen(args.get(0))
+                .andThen(Expr.classconst(call_ct))
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                           "effect_abortable",
+                                           "(" + ("I" +
+                                                  Names.ANY_DESCR +
+                                                  Names.ANY_DESCR +
+                                                  JAVA_LANG_CLASS.descriptor()) +
+                                           ")V",
+                                           ClassFileConstants.PrimitiveType.type_void));
+              return new Pair<>(Expr.UNIT, result);
+            }
+          else
+            { // unreachable, call type cannot be primitive type
+              throw new Error("unexpeced type " + call_t + " for " + jvm._fuir.clazzAsString(call));
+            }
+        });
+
     put("effect.default",
         (jvm, cc, tvalue, args) ->
         {
@@ -177,7 +218,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(tvalue)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_default",
-                                       "(ILdev/flang/be/jvm/runtime/Any;)V",
+                                       "(" + ("I" +
+                                              Names.ANY_DESCR) +
+                                       ")V",
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
@@ -189,7 +232,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(tvalue)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_replace",
-                                       "(ILdev/flang/be/jvm/runtime/Any;)V",
+                                       "(" + ("I" +
+                                              Names.ANY_DESCR) +
+                                       ")V",
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
@@ -214,8 +259,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.write0",
         "concur.util.loadFence",
         "concur.util.storeFence",
-        "effect.abort",
-        "effect.abortable",
         "fuzion.java.Java_Object.is_null",
         "fuzion.java.array_get",
         "fuzion.java.array_length",

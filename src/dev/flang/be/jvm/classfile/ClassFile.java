@@ -327,6 +327,11 @@ public class ClassFile extends ANY implements ClassFileConstants
       this(cpUtf8(name));
     }
 
+    CPClass(AType t)
+    {
+      this(t.descriptor2());
+    }
+
     CPoolTag tag() { return CPoolTag.tag_class; }
 
     int compareTo2(CPEntry other)
@@ -689,6 +694,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   CPNameAndType     cpNameAndType    (String name, String type  ) { return (CPNameAndType    ) (new CPNameAndType    (name, type)).add(); }
   CPClass           cpClass          (CPUtf8 name               ) { return (CPClass          ) (new CPClass          (name      )).add(); }
   CPClass           cpClass          (String name               ) { return (CPClass          ) (new CPClass          (name      )).add(); }
+  CPClass           cpClass          (AType  t                  ) { return (CPClass          ) (new CPClass          (t         )).add(); }
   CPField           cpField          (CPClass c, CPNameAndType n) { return (CPField          ) (new CPField          (c, n      )).add(); }
   CPMethod          cpMethod         (CPClass c, CPNameAndType n) { return (CPMethod         ) (new CPMethod         (c, n      )).add(); }
   CPInterfaceMethod cpInterfaceMethod(CPClass c, CPNameAndType n) { return (CPInterfaceMethod) (new CPInterfaceMethod(c, n      )).add(); }

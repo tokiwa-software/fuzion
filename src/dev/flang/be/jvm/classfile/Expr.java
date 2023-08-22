@@ -546,6 +546,19 @@ public abstract class Expr extends ByteCode
 
 
   /**
+   * Load a java.lang.Class constant given by ClassType
+   */
+  public static Expr classconst(ClassType t)
+  {
+    return new LoadConst()
+      {
+        public String toString() { return "class " + t;                 }
+        public JavaType type()   { return JAVA_LANG_CLASS;              }
+        ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpClass(t); }
+    };
+  }
+
+  /**
    * Load int local variable from slot at given index.
    */
   public static Expr iload(int index)

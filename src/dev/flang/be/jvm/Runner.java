@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.be.jvm.classfile.ClassFile;
+import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.Errors;
 
@@ -44,15 +45,45 @@ import java.lang.reflect.Method;
 public class Runner extends ClassLoader
 {
 
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * All the classfiles that can be created by this runner.
+   */
   private TreeMap<String, ClassFile> _classFiles = new TreeMap<>();
 
 
+  /*---------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Constructor.  After call, requires classes to be added via Runner.add(),
+   * then execution can start via Runner.runMain().
+   */
+  Runner()
+  {
+  }
+
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Add a class file that can be loaded by this runner.
+   */
   public void add(ClassFile cf)
   {
     _classFiles.put(cf._name, cf);
   }
 
 
+  /**
+   * JVM callback to load class with given name
+   *
+   * @param name the class name, e.g. "java/lang/Object".q
+   */
   public Class findClass(String name)
   {
     Class result = null;
@@ -66,7 +97,11 @@ public class Runner extends ClassLoader
   }
 
 
-
+  /**
+   * Run the fuzion code in the generated classes.
+   *
+   * This executes the main method defined in the universe.
+   */
   public void runMain()
   {
     Class<?> c = findClass("fzC_universe");
@@ -89,17 +124,7 @@ public class Runner extends ClassLoader
       }
     catch (InvocationTargetException e)
       {
-        var o = e.getCause();
-        if (o instanceof RuntimeException r) { throw r; }
-        if (o instanceof Error            r) { throw r; }
-        if (o != null)
-          {
-            Errors.fatal("Error while running JVM compiled code: " + o);
-          }
-        else
-          {
-            Errors.fatal("Error while running JVM compiled code: " + e);
-          }
+        Runtime.handleInvocationTargetException(e);
       }
   }
 
