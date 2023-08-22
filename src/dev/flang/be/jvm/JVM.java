@@ -32,10 +32,21 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
 
+import dev.flang.be.jvm.classfile.ClassFileConstants;
+import dev.flang.be.jvm.classfile.Expr;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+
+import java.io.IOException;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import java.util.stream.Stream;
 
 
 /**
@@ -43,7 +54,7 @@ import dev.flang.util.Pair;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class JVM extends ANY
+public class JVM extends ANY implements ClassFileConstants
 {
 
   /*
@@ -339,10 +350,207 @@ should be avoided as much as possible.
 
    */
 
-  /*-----------------------------  classes  -----------------------------*/
-
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * property-controlled flag to enable trace debug output.
+   *
+   * To enable tracing, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE=true
+   */
+  static final boolean TRACE =
+    System.getProperty("dev.flang.be.jvm.JVM.TRACE",
+                       "false").equals("true");
+
+
+  /**
+   * property-controlled flag to enable trace debug output when returning from a
+   * feature.
+   *
+   * To enable tracing returns, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE_RETURN=true
+   */
+  static final boolean TRACE_RETURN =
+    System.getProperty("dev.flang.be.jvm.JVM.TRACE_RETURN",
+                       "false").equals("true");
+
+
+  /**
+   * property-controlled flag to enable comments created in bytecode to improve
+   * readability when disassembling (using javap or similar).  Comments are put
+   * in the form of String constants that are loaed with O_ldc follwed by O_pop.
+   *
+   * To enable comments, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.CODE_COMMENTS=true
+   */
+  static final boolean CODE_COMMENTS =
+    System.getProperty("dev.flang.be.jvm.JVM.CODE_COMMENTS",
+                       "false").equals("true");
+  static
+  {
+    Expr.ENABLE_COMMENTS = CODE_COMMENTS;
+  }
+
+
+  static Path PATH_FOR_CLASSES = Path.of("fuzion_generated_clazzes");
+
+
+  /**
+   * JVM code generation phases
+   */
+  private enum CompilePhase
+  {
+    // create classes
+    CLASSES
+    {
+      void compile(JVM jvm, int cl)
+      {
+        jvm._types.createClassFile(cl);
+      }
+    },
+
+    // create fields
+    FIELDS
+    {
+      void compile(JVM jvm, int cl)
+      {
+        if (jvm._fuir.clazzKind(cl) == FUIR.FeatureKind.Field && jvm.fieldExists(cl))
+          {
+            var o = jvm._fuir.clazzOuterClazz(cl);
+            var cf = jvm._types.classFile(o);
+            if (cf != null)
+              {
+                cf.field(ACC_PUBLIC,
+                         jvm._names.field(cl),
+                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor(),
+                         new List<>());
+              }
+          }
+      }
+    },
+
+    // compile
+    CODE
+    {
+      void compile(JVM jvm, int cl)
+      {
+        var k = jvm._fuir.clazzKind(cl);
+        switch (k)
+          {
+          case Intrinsic    :
+          case Routine      : jvm.code(cl); break;
+          case Choice       : jvm._types._choices.createCode(cl); break;
+          case Field        : break;
+          case Abstract     : break;
+          case Native       : Errors.warning("JVM backend cannot compile native " + jvm._fuir.clazzAsString(cl)); break;
+          default           : throw new Error ("Unexpected feature kind: " + k);
+          };
+      }
+    },
+    RUN {
+      boolean condition(JVM jvm)
+      {
+        return jvm._options._run;
+      }
+      void prepare(JVM jvm)
+      {
+        Errors.showAndExit();
+        jvm._runner = new Runner();
+      }
+      void compile(JVM jvm, int cl)
+      {
+        var cf = jvm._types.classFile(cl);
+        if (cf != null)
+          {
+            jvm._runner.add(cf);
+          }
+        if (jvm._types.hasInterfaceFile(cl))
+          {
+            var ci = jvm._types.interfaceFile(cl);
+            jvm._runner.add(ci);
+          }
+      }
+      void finish(JVM jvm)
+      {
+        jvm._runner.runMain();
+      }
+    },
+    SAVE {
+      boolean condition(JVM jvm)
+      {
+        return jvm._options._saveClasses;
+      }
+      void prepare(JVM jvm)
+      {
+        if (!Files.exists(PATH_FOR_CLASSES))
+          {
+            try
+              {
+                Files.createDirectory(PATH_FOR_CLASSES);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating directory '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
+              }
+          }
+      }
+      void compile(JVM jvm, int cl)
+      {
+        var cf = jvm._types.classFile(cl);
+        if (cf != null)
+          {
+            try
+              {
+                cf.write(PATH_FOR_CLASSES);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + cf.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
+              }
+          }
+        if (jvm._types.hasInterfaceFile(cl))
+          {
+            var ci = jvm._types.interfaceFile(cl);
+            try
+              {
+                ci.write(PATH_FOR_CLASSES);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + ci.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
+              }
+          }
+      }
+    };
+
+    /**
+     * Perform this compilation phase on given clazz using given backend.
+     *
+     * @param jvm the backend
+     *
+     * @param cl the clazz.
+     */
+    abstract void compile(JVM jvm, int cl);
+
+    void prepare(JVM jvm)
+    {
+    }
+    boolean condition(JVM jvm)
+    {
+      return true;
+    }
+    void finish(JVM jvm)
+    {
+    }
+  }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -369,7 +577,27 @@ should be avoided as much as possible.
   /**
    * Abstract interpreter framework used to walk through the code.
    */
-  // final AbstractInterpreter<CExpr, CStmnt> _ai;
+  final AbstractInterpreter<Expr, Expr> _ai;
+
+
+  /**
+   * JVM identifier handling goes through _names:
+   */
+  final Names _names;
+
+
+  /**
+   * JVM types handling goes through _types:
+   */
+  final Types _types;
+
+
+  final int[][] _numLocals;
+
+
+  Runner _runner;
+
+  Expr LOAD_UNIVERSE;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -386,9 +614,13 @@ should be avoided as much as possible.
              FUIR fuir)
   {
     _options = opt;
-    _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
+    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
+    _fuir = fuir;
+    _names = new Names(fuir);
+    _types = new Types(fuir, _names);
     _tailCall = new TailCall(fuir);
-    // _ai = new AbstractInterpreter<>(_fuir, new CodeGen());
+    _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
+    _numLocals = new int[2][_fuir.clazzId2num(_fuir.lastClazz())+1];
 
     Errors.showAndExit();
   }
@@ -402,10 +634,396 @@ should be avoided as much as possible.
    */
   public void compile()
   {
-    Errors.error("JVM backend still under development");
+    var cl = _fuir.mainClazzId();
+    var name = _fuir.clazzBaseName(cl);
+
+    var ucl = _names.javaClass(_fuir.clazzUniverse());
+    _types.UNIVERSE_TYPE = new ClassType(ucl);
+    LOAD_UNIVERSE = Expr.getstatic
+      (ucl,
+       _names.UNIVERSE_FIELD,
+       _types.UNIVERSE_TYPE);
+
+    createCode();
     Errors.showAndExit();
   }
 
+
+  /**
+   * create byte code
+   *
+   * @throws IOException
+   */
+  private void createCode()
+  {
+    var ordered = _types.inOrder();
+
+    Stream.of(CompilePhase.values()).forEachOrdered
+      ((p) ->
+       {
+         if (p.condition(this))
+           {
+             p.prepare(this);
+             for (var c : ordered)
+               {
+                 p.compile(this, c);
+               }
+             p.finish(this);
+           }
+       });
+  }
+
+
+
+  /**
+   * Create code for given clazz cl.
+   *
+   * @param cl id of clazz to compile
+   *
+   * @return C statements with the forward declarations required for cl.
+   */
+  public void code(int cl)
+  {
+    if (_types.clazzNeedsCode(cl))
+      {
+        var ck = _fuir.clazzKind(cl);
+        switch (ck)
+          {
+          case Routine:
+          case Intrinsic:
+            {
+              codeForRoutine(cl, false);
+            }
+          }
+        if (_fuir.hasPrecondition(cl))
+          {
+            codeForRoutine(cl, true);
+          }
+      }
+  }
+
+  int current_index(int cl)
+  {
+    if (_types.isScalar(cl))
+      {
+        return 0;
+      }
+    var o = _fuir.clazzOuterClazz(cl);
+    var l = _types.hasOuterRef(cl) ? (_types.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
+                                                         : 1)
+                                   : 0;
+    for (var j = 0; j < _fuir.clazzArgCount(cl); j++)
+      {
+        var t = _fuir.clazzArgClazz(cl, j);
+        var jt = _types.javaType(t);
+        l = l + jt.stackSlots();
+      }
+    return l;
+  }
+
+  Expr new0(int cl)
+  {
+    var n = _names.javaClass(cl);
+    return Expr.new0(n, _types.javaType(cl))
+      .andThen(Expr.DUP)
+      .andThen(Expr.invokeSpecial(n,"<init>","()V"));
+  }
+
+  Expr prolog(int cl, boolean pre)
+  {
+    if (false && pre)
+      {
+        return Expr.UNIT;
+      }
+    else if (_types.isScalar(cl))
+      {
+        // arg 0 is current
+        return Expr.UNIT;
+      }
+    else
+      {
+        var x = Expr.UNIT;
+        if (_fuir.clazzOuterRef(cl) != -1 && !_fuir.hasData(_fuir.clazzResultClazz
+                                                                    (_fuir.clazzOuterRef(cl))))
+          {
+            x = Expr.aload(0, JAVA_LANG_OBJECT)
+              .andThen(Expr.branch(O_ifnull,
+                                   reportErrorInCode("outer in "+_fuir.clazzAsString(cl)+" "+pre+" of type " +
+                                                     _fuir.clazzAsString
+                                                     (_fuir.clazzResultClazz
+                                                      (_fuir.clazzOuterRef(cl)))+" is null"),
+                                   Expr.UNIT));
+          }
+        return x.andThen(new0(cl))
+          .andThen(cl == _fuir.clazzUniverse()
+                   ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
+                                                     _names.UNIVERSE_FIELD,
+                                                     _types.UNIVERSE_TYPE.descriptor()))
+                   : Expr.UNIT)
+          .andThen(Expr.astore(current_index(cl)));
+      }
+  }
+
+
+  /**
+   * Create code to print msg as trace output.
+   *
+   * @param msg the message to be shown
+   */
+  private Expr callRuntimeTrace(String msg)
+  {
+    return Expr.stringconst(msg)
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "trace", "(Ljava/lang/String;)V", PrimitiveType.type_void));
+  }
+
+
+  /**
+   * If trace output is enabled, create bytecode for the given instruction
+   *
+   * @param cl the current clazz that is being compiled
+   *
+   * @param c the current code block
+   *
+   * @param i the index in the current code block
+   *
+   * @return code to output the trace or a NOP.
+   */
+  Expr trace(int cl, int c, int i)
+  {
+    if (TRACE)
+      {
+        var p = _fuir.codeAtAsPos(c,i);
+        var msg = "IN " + _fuir.clazzAsString(cl) + ": " + _fuir.codeAtAsString(cl,c,i) +
+          (p == null ? "" : " " + p.show());
+        return callRuntimeTrace(msg);
+      }
+    else
+      {
+        return Expr.UNIT;
+      }
+  }
+  Expr traceReturn(int cl, boolean pre)
+  {
+    if (TRACE_RETURN)
+      {
+        var msg = "return from "+_fuir.clazzAsString(cl)+(pre ? " PRECONDITION" : "");
+        return callRuntimeTrace(msg);
+      }
+    else
+      {
+        return Expr.UNIT;
+      }
+  }
+
+
+  Expr epilog(int cl, boolean pre)
+  {
+    var r = _fuir.clazzResultField(cl);
+    var t = _fuir.clazzResultClazz(cl);
+    if (pre || !_fuir.clazzIsRef(t) /* NYI: needed? */ && _fuir.clazzIsUnitType(t))
+      {
+        if (false)
+          System.out.println(">>>>>>> result of " + _fuir.clazzAsString(cl) + " is "+
+                           ((pre || r==-1) ? " r is -1 " : ((_fuir.clazzIsRef(t) ? "ref" : "non-ref") + " "+
+                                                            (_fuir.clazzIsUnitType(t) ? "unit" : "non-unit") + " "+
+                                                            _fuir.clazzAsString(t))));
+        return traceReturn(cl, pre)
+          .andThen(Expr.RETURN);
+      }
+    else if (r == -1)   // a constructor
+      {
+        var jt = _types.javaType(t);
+        return
+          traceReturn(cl, pre)
+          .andThen(jt.load(current_index(cl)))
+          .andThen(jt.return0());
+      }
+    else
+      {
+        /* NYI the following simple examples creates an reference to an undefined result field:
+
+             a =>
+               b (c i32) is
+               b 0
+
+        */
+
+        var jt = _types.javaType(t);
+        var ft = _types.resultType(t);
+        var getf =
+          _fuir.hasData(t)
+          ? (Expr.aload(current_index(cl), jt)
+             .andThen(Expr.getfield(_names.javaClass(cl),
+                                    _names.field(r),
+                                    ft)))
+          : Expr.UNIT;
+        return
+          traceReturn(cl, pre)
+          .andThen(getf)
+          .andThen(ft.return0());
+      }
+  }
+
+
+  /**
+   * In case of an unexpected situation such as code that should be unreachable,
+   * this should be used to print a corresponding error and exit(1).
+   *
+   * @param msg the message to be shown, may include %-escapes for additional args
+   *
+   * @param args the additional args to be fprintf-ed into msg.
+   *
+   * @return the C statement to report the error and exit(1).
+   */
+  Expr reportErrorInCode(String msg)
+  {
+    return Expr.stringconst(msg)
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
+      .andThen(Expr.endless_loop());
+  }
+
+  int allocLocal(int cl, boolean pre, int numSlots)
+  {
+    var res = _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)];
+    _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = res + numSlots;
+    return res;
+  }
+
+  /**
+   * Create code for given clazz cl.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   */
+  void codeForRoutine(int cl, boolean pre)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
+       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic || pre);
+
+    var cf = _types.classFile(cl);
+    if (cf == null) return;
+    var prolog = Expr.UNIT;
+    var epilog = Expr.UNIT;
+    Expr code;
+    var name = _names.function(cl, pre);
+
+    // for an intrinsic that is not type type parameter, we do not generate code:
+    if (pre ||
+        _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
+        _fuir.clazzTypeParameterActualType(cl) >= 0)
+      {
+        if (pre || _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
+          {
+            _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots());
+            prolog = prolog(cl, pre);
+            code = _ai.process(cl, pre)._v1;
+            epilog = epilog(cl, pre);
+          }
+        else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
+          {
+            code = Expr.RETURN;
+            name = "fzRoutine";
+          }
+
+        check
+          (cf != null);
+
+        var bc_cl = prolog
+          .andThen(code)
+          .andThen(epilog);
+        var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
+                                       bc_cl.max_stack(),
+                                       //(cl == _fuir.clazzUniverse() ? 1 : 0) +
+                                       _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)], bc_cl, new List<>(), new List<>());
+
+        cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
+      }
+  }
+
+
+  /**
+   * Create code to create a constant string.
+   *
+   * @param bytes the utf8 bytes of the string.
+   */
+  Pair<Expr, Expr> constString(byte[] bytes)
+  {
+    return constString(Expr.stringconst(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG,
+                                                  PrimitiveType.type_byte.array())));
+
+  }
+
+
+  /**
+   * Create code to create a constant string.
+   *
+   * @param bytes the utf8 bytes of the string as a Java string.
+   */
+  Pair<Expr, Expr> constString(Expr bytes)
+  {
+    var cs = _fuir.clazz_Const_String();
+    var internalArray = _fuir.clazz_Const_String_internal_array();
+    var data = _fuir.clazz_fuzionSysArray_u8_data();
+    var length = _fuir.clazz_fuzionSysArray_u8_length();
+    var fuzionSysArray = _fuir.clazzOuterClazz(data);
+    var res = new0(cs)                                // stack: cs
+      .andThen(Expr.DUP)                              //        cs, cs
+      .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
+      .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
+      .andThen(bytes)                                 //        cs, cs, fsa, fsa, byt
+      .andThen(Expr.DUP_X2)                           //        cs, cs, byt, fsa, fsa, byt
+      .andThen(putfield(data))                        //        cs, cs, byt, fsa
+      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, byt, fsa
+      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, byt
+      .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, fsa, fsa, len
+      .andThen(putfield(length))                      //        cs, cs, fsa
+      .andThen(putfield(internalArray))               //        cs
+      .is(_types.javaType(cs));                       //        -
+    return new Pair<>(res, Expr.UNIT);
+  }
+
+  /**
+   * Create code to create a constant string.
+   *
+   * @param str the string to create
+   */
+  Pair<Expr, Expr> constString(String str)
+  {
+    return constString(str.getBytes(StandardCharsets.UTF_8));
+  }
+
+
+  boolean fieldExists(int field)
+  {
+    var occ   = _fuir.clazzOuterClazz(field);
+    var rt = _fuir.clazzResultClazz(field);
+
+    return _fuir.hasData(rt)       &&
+      !_types.isScalar(occ)        &&
+      _types.clazzNeedsCode(field) &&
+      _types.resultType(rt) != PrimitiveType.type_void;
+  }
+
+
+  Expr putfield(int field)
+  {
+    if (PRECONDITIONS) require
+      (fieldExists(field));
+
+    var cl = _fuir.clazzOuterClazz(field);
+    var rt = _fuir.clazzResultClazz(field);
+    return
+      Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+      .andThen(Expr.putfield(_names.javaClass(cl),
+                             _names.field(field),
+                             _types.resultType(rt).descriptor()));
+  }
 
 }
 

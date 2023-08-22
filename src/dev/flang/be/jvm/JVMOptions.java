@@ -47,17 +47,33 @@ public class JVMOptions extends FuzionOptions
   final boolean _Xdfa;
 
 
+  /**
+   * Should the generated JVM bytecode be run immediately?
+   */
+  final boolean _run;
+
+  /**
+   * Should the generated JVM bytecode be saved as class files?
+   */
+  final boolean _saveClasses;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
    */
-  public JVMOptions(FuzionOptions fo, boolean Xdfa)
+  public JVMOptions(FuzionOptions fo,
+                    boolean Xdfa,
+                    boolean run,
+                    boolean saveClasses)
   {
     super(fo);
 
-    this._Xdfa = Xdfa;
+    this._Xdfa        = Xdfa;
+    this._run         = run;
+    this._saveClasses = saveClasses;
   }
 
 
