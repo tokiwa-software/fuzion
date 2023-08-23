@@ -1106,6 +1106,7 @@ public class AstErrors extends ANY
 
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
+        cf.state().atLeast(AbstractFeature.State.RESOLVED_TYPES)                &&
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
         tp.isFreeType()                                                         &&
