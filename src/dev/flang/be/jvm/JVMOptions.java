@@ -28,6 +28,8 @@ package dev.flang.be.jvm;
 
 import dev.flang.util.FuzionOptions;
 
+import java.util.ArrayList;
+
 
 /**
  * JVMOptions specify the configuration of the JVM back end
@@ -52,10 +54,17 @@ public class JVMOptions extends FuzionOptions
    */
   final boolean _run;
 
+
   /**
    * Should the generated JVM bytecode be saved as class files?
    */
   final boolean _saveClasses;
+
+
+  /**
+   * List of arguments to pass to the program, if it is run immediately.
+   */
+  final ArrayList<String> _applicationArgs;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -74,6 +83,7 @@ public class JVMOptions extends FuzionOptions
     this._Xdfa        = Xdfa;
     this._run         = run;
     this._saveClasses = saveClasses;
+    this._applicationArgs = fo.getBackendArgs();
   }
 
 

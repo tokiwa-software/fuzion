@@ -179,7 +179,9 @@ public class Types extends ANY implements ClassFileConstants
           {
             var maincl = _fuir.mainClazzId();
             var bc_main =
-              (_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
+              Expr.aload(0, JAVA_LANG_STRING.array())
+              .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array().descriptor()))
+              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
               .andThen(invokeStatic(maincl, false)).drop()
               .andThen(Expr.RETURN);
             var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>());
