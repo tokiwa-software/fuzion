@@ -346,7 +346,7 @@ public class Choices extends ANY implements ClassFileConstants
               for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                 {
                   var tc = _fuir.clazzChoice(cl, i);
-                  if (_fuir.clazzIsRef     (tc))
+                  if (_fuir.clazzIsRef(tc))
                     {
                       if (!cf.hasField(Names.CHOICE_REF_ENTRY_NAME))
                         {
@@ -356,13 +356,16 @@ public class Choices extends ANY implements ClassFileConstants
                                    new List<>());
                         }
                     }
-                  else if (!_fuir.clazzIsVoidType(tc) &&
-                           !_fuir.clazzIsUnitType(tc))
+                  else
                     {
-                      cf.field(ACC_PUBLIC,
-                               generalValueFieldName(cl, i),
-                               generalValueFieldType(cl, i).descriptor(),
-                               new List<>());
+                      var ft = generalValueFieldType(cl, i);
+                      if (ft != PrimitiveType.type_void)
+                        {
+                          cf.field(ACC_PUBLIC,
+                                   generalValueFieldName(cl, i),
+                                   ft.descriptor(),
+                                   new List<>());
+                        }
                     }
                 }
             }
@@ -446,7 +449,24 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case unitlike:
         {
-          code = Expr.UNIT;
+          code = null;
+          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+            {
+              var caze = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              for (var tagNum : tags)
+                {
+                  var tc = _fuir.clazzChoice(subjClazz, tagNum);
+                  if (!_fuir.clazzIsVoidType(tc))
+                    {
+                      if (CHECKS) check
+                        (code == null);  // if there are several non-voids, we would have at least boollike kind
+                      code = caze;
+                    }
+                }
+            }
+          if (CHECKS) check
+            (code != null);  // if there is no non-void, we would have voidlike kind
           break;
         }
       case boollike:
@@ -746,7 +766,9 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.putfield(_names.javaClass(newcl),
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int.descriptor()));
-          if (_fuir.clazzIsUnitType(tc))
+          var fn = generalValueFieldName(newcl, tagNum);
+          var ft = generalValueFieldType(newcl, tagNum);
+          if (ft == PrimitiveType.type_void)
             {
               res = value.drop().andThen(create);
             }
@@ -756,8 +778,8 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(Expr.DUP)
                 .andThen(value)
                 .andThen(Expr.putfield(_names.javaClass(newcl),
-                                       generalValueFieldName(newcl, tagNum),
-                                       generalValueFieldType(newcl, tagNum).descriptor()))
+                                       fn,
+                                       ft.descriptor()))
                 .is(_types.javaType(newcl));
             }
           break;

@@ -361,7 +361,8 @@ public abstract class Expr extends ByteCode
     if (PRECONDITIONS) require
       (cls != null,
        name != null,
-       type != null);
+       type != null,
+       !type.equals("V"));
 
     return new Expr()
       {
@@ -380,6 +381,12 @@ public abstract class Expr extends ByteCode
    */
   public static Expr getstatic(String cls, String name, JavaType type)
   {
+    if (PRECONDITIONS) require
+      (cls != null,
+       name != null,
+       type != null,
+       !type.equals("V"));
+
     return new Expr()
       {
         public String toString() { return "getstatic " + cls + "." + name; }
@@ -403,7 +410,8 @@ public abstract class Expr extends ByteCode
     if (PRECONDITIONS) require
       (cls != null,
        name != null,
-       type != null);
+       type != null,
+       !type.equals("V"));
 
     return new Expr()
       {
