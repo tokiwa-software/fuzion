@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Any
+ * Source of class AnyI
  *
  *---------------------------------------------------------------------*/
 
@@ -30,14 +30,13 @@ import dev.flang.util.ANY;
 
 
 /**
- * Any is used in the JVM backend as super class of all Java classes created for Fuzion features.
+ * AnyI is used in the JVM backend as implemented interface of all Java classes
+ * created for Fuzion features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Any extends ANY implements AnyI
+public interface AnyI
 {
-
-
 }
 
 /* end of file */

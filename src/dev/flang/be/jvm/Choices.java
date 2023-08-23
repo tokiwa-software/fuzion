@@ -352,7 +352,7 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           cf.field(ACC_PUBLIC,
                                    Names.CHOICE_REF_ENTRY_NAME,
-                                   Names.ANY_TYPE.descriptor(),
+                                   Names.ANYI_TYPE.descriptor(),
                                    new List<>());
                         }
                     }
@@ -829,7 +829,7 @@ public class Choices extends ANY implements ClassFileConstants
        0 <= tagNum && tagNum <= _fuir.clazzNumChoices(cl));
 
     var tc = _fuir.clazzChoice(cl, tagNum);
-    var ft = _fuir.clazzIsRef(tc) ? Names.ANY_TYPE
+    var ft = _fuir.clazzIsRef(tc) ? Names.ANYI_TYPE
                                   : _types.javaType(tc);
     return ft;
   }
