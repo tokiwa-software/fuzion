@@ -31,6 +31,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.Errors;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -102,7 +103,7 @@ public class Runner extends ClassLoader
    *
    * This executes the main method defined in the universe.
    */
-  public void runMain()
+  public void runMain(ArrayList<String> applicationArgs)
   {
     Class<?> c = findClass("fzC_universe");
     Method m = null;
@@ -116,7 +117,7 @@ public class Runner extends ClassLoader
       }
     try
       {
-        m.invoke(null, (Object) new String[0]);
+        m.invoke(null, (Object) applicationArgs.toArray(String[]::new));
       }
     catch (IllegalAccessException e)
       {

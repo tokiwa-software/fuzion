@@ -171,6 +171,10 @@ class Fuzion extends Tool
       {
         new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false), fuir).compile();
       }
+      boolean takesApplicationArgs()
+      {
+        return true;
+      }
     },
 
     classes    ("-classes")

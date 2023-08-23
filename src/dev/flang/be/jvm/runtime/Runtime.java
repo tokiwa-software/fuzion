@@ -127,7 +127,7 @@ public class Runtime extends ANY
   static final Object UNIQUE_ID_LOCK = new Object() {};
 
 
-  public static final String[] args = new String[] { "<unknown command>" };
+  public static String[] args = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
 
   /*-------------------------  static methods  --------------------------*/

@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 
@@ -477,7 +478,9 @@ should be avoided as much as possible.
       }
       void finish(JVM jvm)
       {
-        jvm._runner.runMain();
+        var applicationArgs = new ArrayList<>(jvm._options._applicationArgs);
+        applicationArgs.add(0, jvm._fuir.clazzAsString(jvm._fuir.mainClazzId()));
+        jvm._runner.runMain(applicationArgs);
       }
     },
     SAVE {
