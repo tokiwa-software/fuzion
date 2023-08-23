@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.be.jvm.runtime.Any;
+import dev.flang.be.jvm.runtime.AnyI;
 import dev.flang.be.jvm.runtime.Runtime;
 import dev.flang.be.jvm.runtime.Intrinsics;
 
@@ -65,11 +66,14 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Name of JVM backend's runtime's class Any
+   * Name of JVM backend's runtime's class Any and interface AnyI
    */
-  static final String ANY_CLASS = Any.class.getName().replace(".","/");
-  static final ClassType ANY_TYPE = new ClassType(ANY_CLASS);
-  static final String ANY_DESCR = ANY_TYPE.descriptor();
+  static final String    ANY_CLASS  = Any.class.getName().replace(".","/");
+  static final ClassType ANY_TYPE   = new ClassType(ANY_CLASS);
+  static final String    ANY_DESCR  = ANY_TYPE.descriptor();
+  static final String    ANYI_CLASS = AnyI.class.getName().replace(".","/");
+  static final ClassType ANYI_TYPE  = new ClassType(ANYI_CLASS);
+  static final String    ANYI_DESCR = ANYI_TYPE.descriptor();
 
 
   /**
