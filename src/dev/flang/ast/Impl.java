@@ -259,21 +259,17 @@ public class Impl extends ANY
       case RoutineDef:
         // Function definition of the form
         //
-        //   f => 0;
+        //   f => 0
+        //   f i32 => 0
         //
-        // requires no return type
+        // may or may not have a return type but must not be
+        // `ref` type:
         //
-        if (rt != NoType.INSTANCE)
+        //   f ref => x
+        //
+        if (rt == RefType.INSTANCE)
           {
-            if (rt != RefType.INSTANCE)
-              {
-                AstErrors.illegalResultTypeRoutineDef(f, rt);
-                rt = NoType.INSTANCE;
-              }
-            else
-              {
-                AstErrors.illegalResultTypeRefTypeRoutineDef(f);
-              }
+            AstErrors.illegalResultTypeRefTypeRoutineDef(f);
           }
         break;
 
@@ -287,6 +283,15 @@ public class Impl extends ANY
         if (rt == NoType.INSTANCE)
           {
             rt = ValueType.INSTANCE;
+          }
+        else if (rt instanceof FunctionReturnType)
+          {
+            // NYI: function declaration using `is` should be forbidden
+            //
+            //   f type is ...
+            //   f type { ... }
+            //
+            // AstErrors.illegalResultTypeInConstructorDeclaration(f);  -- NYI
           }
         break;
       }
