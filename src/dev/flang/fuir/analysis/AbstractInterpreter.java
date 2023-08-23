@@ -658,18 +658,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var subv      = pop(stack, subjClazz);
           RESULT code = _processor.nop();
 
-          // Unbox in case subject is a ref.
-          //
-          // NYI: it might be better to unbox the subject of a match using an
-          // explicit command in the IR instead of this implicit handling:
-          //
-          if (_fuir.clazzIsRef(subjClazz))
-            {
-              var ub = _processor.unbox(subv, subjClazz);
-              subv = ub._v0;
-              code = ub._v1;
-            }
-
           var r = _processor.match(this, cl, pre, c, i, subv);
           if (r._v0 == null)
             {
