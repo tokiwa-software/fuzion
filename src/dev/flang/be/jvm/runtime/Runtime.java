@@ -41,6 +41,11 @@ import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 
 /**
  * Runtime provides the runtime system for the JVM backend.
@@ -391,6 +396,20 @@ public class Runtime extends ANY
   public static void contract_fail(String msg)
   {
     Errors.fatal("CONTRACT FAILED: " + msg);
+  }
+
+
+  public static void fuzion_std_date_time(int[] arg0)
+  {
+    var date = new Date();
+    var calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+    calendar.setTime(date);
+    arg0[0] = calendar.get(Calendar.YEAR);
+    arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
+    arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
+    arg0[3] = calendar.get(Calendar.MINUTE);
+    arg0[4] = calendar.get(Calendar.SECOND);
+    arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
   }
 
 
