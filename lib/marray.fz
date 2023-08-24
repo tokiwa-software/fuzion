@@ -89,11 +89,11 @@ is
       # debug: result[length] = o  -- there is no 'infix =' defined for T
   is
     d := if (data.length > length) data
-      else
-        new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
-        for i in indices do
-          new_data[i] := data[i]
-        new_data
+         else
+           new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
+           for i in indices do
+             new_data[i] := data[i]
+           new_data
     d[length] := o
     marray T length+1 d unit
 

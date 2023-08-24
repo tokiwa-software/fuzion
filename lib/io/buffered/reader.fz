@@ -27,33 +27,29 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
 
-
-  # mutuable field to receive the error in case raise is called
-  #
-  private reader_err option error := nil
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  with(R type, f ()->R) outcome R is
-    run (outcome R) (()->outcome f()) (_)->reader_err.get
+  public with(R type, f ()->R) outcome R is
+    try reader R ()->(run f (_ -> exit 1))
+
 
   # terminate immediately with the given error wrapped in 'option'.
   #
-  private raise(e error) =>
-    set reader_err := e
-    abort
+  raise(e error) =>
+    (try reader).env.raise e
 
 
   # read returns the current buffer or end of file.
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  read array u8 | io.end_of_file is
+  public read array u8 | io.end_of_file is
     match buffer
       b array =>
         if b.is_empty
@@ -83,7 +79,7 @@ reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file)
 
   # discard n items from buffer
   #
-  discard(n i32)
+  public discard(n i32)
   pre n >= 0
   is
     match buffer
@@ -97,7 +93,7 @@ reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file)
   # discard complete buffer
   #
   # NYI naming this feature discard leads to error: Duplicate feature declaration
-  discard_all
+  public discard_all
   is
     match buffer
       b array =>
@@ -142,7 +138,8 @@ read_bytes(n i32) Sequence u8 ! reader is
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-read_string(n i32) String ! reader is
+public read_string(n i32) String ! reader is
+
 
   as_string(x array u8 | io.end_of_file) =>
     match x
@@ -166,7 +163,7 @@ read_string(n i32) String ! reader is
   while (codepoints str_arr < n &&
     match reader.read
       io.end_of_file =>
-        # if we have not read anything yet, raise end of file error
+        # if we have not discarded/read anything yet, raise end of file error
         if str_arr.count = 1
           reader.raise (error "-- end of file --")
         false
@@ -178,7 +175,7 @@ read_string(n i32) String ! reader is
     str := String.type.join str_arr
     res := str.substring_codepoint 0 n
 
-    # discard only the bytes we are using
+    # discard only the bytes we are using in result
     reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
 
     res
@@ -189,7 +186,7 @@ read_string(n i32) String ! reader is
 # to read until a line feed occurs.
 # returns the line
 #
-read_line String ! reader is
+public read_line String ! reader is
 
   res := mut ((marray (array u8)).type.new)
 
@@ -223,10 +220,6 @@ read_line String ! reader is
       .flat_map_sequence u8 x->x
       .as_array
 
-
-  # NYI #1561 Incompatible types, actual type found: long.feature.name.#anonymous0
-  a String := ref : String
+  ref : String
     utf8 Sequence u8 is
       bytes
-  a
-

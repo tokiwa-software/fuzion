@@ -21,8 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-Read_Provider ref is
-  read(count i32) choice (array u8) io.end_of_file error
+public Read_Provider ref is
+  public read(count i32) choice (array u8) io.end_of_file error
   # NYI
   # post match result
   #        a array => !a.is_empty

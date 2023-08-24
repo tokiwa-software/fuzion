@@ -686,7 +686,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # Takes a sequence of strings and concatenates its elements.
   # In case an empty sequence is given, returns the empty string.
   #
-  type.join(elems Sequence String) String is
+  public type.join(elems Sequence String) String is
     elems.fold concat
 
 

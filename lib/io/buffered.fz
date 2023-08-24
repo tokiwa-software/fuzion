@@ -24,4 +24,4 @@
 
 # unit type to group buffered io
 #
-buffered is
+public buffered is

@@ -37,15 +37,15 @@ public stdin io.buffered.reader is
 
 
   read_provider : io.Read_Provider is
-
     read(count i32) choice (array u8) io.end_of_file error is
-      v := fuzion.sys.stdin.next_byte
-      if v = -1
-        io.end_of_file
-      else if v < -1
+      res := [u8 0]
+      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 res.internal_array.data 1
+      if v < -1
         error "an error occurred while reading stdin"
+      else if v <= 0
+        io.end_of_file
       else
-        [v.as_u8]
+        res
 
 
   # NYI #169 backward type propagation for []
