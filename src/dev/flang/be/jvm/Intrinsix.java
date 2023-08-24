@@ -97,6 +97,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.constString(str)), Expr.UNIT);
         });
 
+    put("fuzion.std.date_time",
+        (jvm, cc, tvalue, args) ->
+        {
+          var res =
+            args.get(0)
+            .andThen(Expr.checkcast(PrimitiveType.type_int.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_std_date_time",
+                                       "([I)V",
+                                       PrimitiveType.type_void));
+            ;
+          return new Pair<>(Expr.UNIT, res);
+        });
+
     put("fuzion.sys.args.count",
         (jvm, cc, tvalue, args) ->
         {
@@ -278,7 +292,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.java.java_string_to_string",
         "fuzion.java.string_to_java_object0",
         "fuzion.java.u16_to_java_object",
-        "fuzion.std.date_time",
         "fuzion.std.nano_sleep",
         "fuzion.std.nano_time",
         "fuzion.sys.env_vars.get0",
