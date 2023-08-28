@@ -49,11 +49,13 @@ is
     set err := e
     abort
 
+
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it.
 #
 public try(T, R type, f ()->R) =>
   (try T).on f
+
 
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
