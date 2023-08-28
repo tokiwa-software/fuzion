@@ -574,7 +574,7 @@ public class C extends ANY
         command.addAll("-lgc");
       }
     // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-o", name, cname);
+    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
     if (isWindows())
       {
@@ -637,6 +637,7 @@ public class C extends ANY
   {
     cf.print
       ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
+       "#define _POSIX_C_SOURCE 200809L\n" +
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
