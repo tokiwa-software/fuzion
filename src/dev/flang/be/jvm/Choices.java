@@ -698,9 +698,6 @@ public class Choices extends ANY implements ClassFileConstants
     Expr res;
     var tc = _fuir.clazzChoice(newcl, tagNum);
 
-    if (CHECKS) check
-      (!_fuir.clazzIsVoidType(tc));
-
     switch (kind(newcl))
       {
       case voidlike:
