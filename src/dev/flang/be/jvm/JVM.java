@@ -633,7 +633,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create the C code from the intermediate code.
+   * Create the JVM bytecode from the intermediate code.
    */
   public void compile()
   {
