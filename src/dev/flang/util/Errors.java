@@ -719,6 +719,11 @@ public class Errors extends ANY
                 "To solve this, remove this whitespace or replace it by escape codes.");
   }
 
+  public static void usedEffectNeverInstantiated(String e)
+  {
+    error(null, "Used effect `"  + e + "` never instantiated.", "");
+  }
+
 
   /*
    * get copy of current errors
