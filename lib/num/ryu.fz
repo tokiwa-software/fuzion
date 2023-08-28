@@ -129,24 +129,24 @@ public ryū(T type : float) is
     private powers_of_5 => (cache powers_of_5_cache_key ()->(powers_of_5_cache_key (array 326 i->(uint 5 ** uint i.as_u64)))).data
 
 
-    private pow5_split_cache_key(data array2 i64) is
+    private pow5_split_cache_key(data array (array i64)) is
     private pow5_split => (cache pow5_split_cache_key (() ->
-      pow5_split_cache_key (array2 326 4 (i,j ->
+      pow5_split_cache_key (array 326 (i -> array 4 (j ->
         shift := powers_of_5[i].highest_bit.as_i64 - pow5_bitcount + (i64 3 - j.as_i64) * pow5_quarter_bitcount
         shifted := if shift >= 0 then powers_of_5[i] >> shift.as_uint else powers_of_5[i] << (-shift).as_uint
         (shifted & mask).as_i64
-      )))).data
+      ))))).data
 
 
-    private pow5_inv_split_cache_key(data array2 i64) is
+    private pow5_inv_split_cache_key(data array (array i64)) is
     private pow5_inv_split => (cache pow5_inv_split_cache_key (() ->
-      pow5_inv_split_cache_key (array2 291 4 (i,k ->
+      pow5_inv_split_cache_key (array 291 (i -> array 4 (k ->
         j := powers_of_5[i].highest_bit.as_i64 - 1 + pow5_inv_bitcount
         inve := (uint 1 << j.as_uint) / powers_of_5[i] + uint 1
 
         tmp := inve >> ((3-k).as_i64 * pow5_quarter_bitcount).as_uint
         (if k = 0 then tmp else tmp & mask).as_i64
-      )))).data
+      ))))).data
 
 
     ***************/

@@ -133,7 +133,7 @@ is
   # example: uint 0 => 0
   # example: uint 1 => 1
   # example: uint 8 => 4
-  highest_bit uint
+  public highest_bit uint
   is
     if thiz = uint.type.zero
       uint.type.zero
