@@ -31,6 +31,8 @@ import dev.flang.be.jvm.classfile.Expr;
 
 import dev.flang.be.jvm.runtime.Intrinsics;
 
+import dev.flang.fuir.FUIR;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -95,6 +97,27 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var str = jvm._fuir.clazzTypeName(jvm._fuir.clazzOuterClazz(cc));
           return new Pair<>(tvalue.drop().andThen(jvm.constString(str)), Expr.UNIT);
+        });
+
+    put("concur.atomic.racy_accesses_supported",
+        (jvm, cc, tvalue, args) ->
+        {
+          var v = jvm._fuir.lookupAtomicValue(jvm._fuir.clazzOuterClazz(cc));
+          var rc  = jvm._fuir.clazzResultClazz(v);
+          var r =
+            jvm._fuir.clazzIsRef(rc) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
+            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+          return new Pair<>(Expr.UNIT, Expr.iconst(r ? 1 : 0));
         });
 
     put("fuzion.std.date_time",
@@ -268,7 +291,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
       { "Any.hash_code",
         "concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
-        "concur.atomic.racy_accesses_supported",
         "concur.atomic.read0",
         "concur.atomic.write0",
         "concur.util.loadFence",
