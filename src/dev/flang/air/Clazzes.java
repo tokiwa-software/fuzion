@@ -50,7 +50,6 @@ import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
-import dev.flang.ast.Unbox; // NYI: remove dependency!
 import dev.flang.ast.Universe; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
@@ -803,21 +802,6 @@ public class Clazzes extends ANY
             propagateExpectedClazz(b._value, ec, outerClazz);
           }
       }
-    else if (e instanceof Unbox u)
-      {
-        Clazz rc = clazz(u._adr, outerClazz);
-        Clazz vc = rc;
-        if (!ec.isRef())
-          {
-            vc = rc.asValue();
-          }
-        if (u._refAndValClazzId < 0)
-          {
-            u._refAndValClazzId = getRuntimeClazzIds(2);
-          }
-        outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
-        outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
-      }
     else if (e instanceof AbstractBlock b)
       {
         var s = b._expressions;
@@ -829,25 +813,6 @@ public class Clazzes extends ANY
     else if (e instanceof Tag t)
       {
         propagateExpectedClazz(t._value, ec, outerClazz);
-      }
-  }
-
-
-  /**
-   * Find all static clazzes for this Unbox and store them in outerClazz.
-   */
-  public static void findClazzes(Unbox u, Clazz outerClazz)
-  {
-    Clazz rc = clazz(u._adr, outerClazz);
-    Clazz vc = rc.asValue();
-    if (u._refAndValClazzId < 0)
-      {
-        u._refAndValClazzId = getRuntimeClazzIds(2);
-      }
-    if (outerClazz._runtimeClazzes.size() <= u._refAndValClazzId || outerClazz.getRuntimeClazz(u._refAndValClazzId) == null)
-      {
-        outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
-        outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, rc);
       }
   }
 
@@ -1078,21 +1043,7 @@ public class Clazzes extends ANY
   public static Clazz clazz(Expr e, Clazz outerClazz)
   {
     Clazz result;
-    if (e instanceof Unbox u)
-      {
-        result = clazz(u._adr, outerClazz);
-        var id = u._refAndValClazzId;
-        if (id >= 0)
-          {
-            var rc = outerClazz.getRuntimeClazz(id  );
-            var vc = outerClazz.getRuntimeClazz(id+1);
-            if (rc != null && vc != null && rc.isRef() && !vc.isRef() && result.isBoxed())
-              {
-                result = result.asValue();
-              }
-          }
-      }
-    else if (e instanceof AbstractBlock b)
+    if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
         result = resExpr != null ? clazz(resExpr, outerClazz)

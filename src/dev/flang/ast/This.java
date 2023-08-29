@@ -235,13 +235,17 @@ public class This extends ExprWithPos
               (Errors.any() || (or != null));
             if (or != null)
               {
-                Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
-                if (cur.isOuterRefAdrOfValue())
+                var t = cur.outer().thisType(cur.isFixed());
+                var isAdr = cur.isOuterRefAdrOfValue();
+                Expr c = new Call(pos(), getOuter, or, -1)
                   {
-                    var t = cur.outer().thisType(cur.isFixed());
-                    c = new Unbox(c, t, cur.outer())
-                      { public SourcePosition pos() { return This.this.pos(); } };
-                  }
+                    @Override
+                    AbstractType typeIfKnown()
+                    {
+                      return isAdr ? t : _type;
+                    }
+                  }.resolveTypes(res, outer);
+
                 getOuter = c;
               }
             cur = cur.outer();

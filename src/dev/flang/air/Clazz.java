@@ -54,7 +54,6 @@ import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
-import dev.flang.ast.Unbox; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -1541,8 +1540,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             public void action (Expr e)
             {
-              if      (e instanceof Unbox            u) { Clazzes.findClazzes(u, Clazz.this); }
-              else if (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
+              if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
               else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
               else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
               else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }

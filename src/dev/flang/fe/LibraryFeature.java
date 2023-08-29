@@ -53,7 +53,6 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
@@ -600,16 +599,6 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
-              break;
-            }
-          case Unbox:
-            {
-              var fx = s.pop();
-              if (CHECKS) check
-                (!(fx instanceof Box));
-              x = new Unbox(fx, _libModule.unboxType(iat))
-                { public SourcePosition pos() { return fx.pos(); } };
-              ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
               break;
             }
           case Box:
