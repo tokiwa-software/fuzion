@@ -97,6 +97,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.constString(str)), Expr.UNIT);
         });
 
+    put("concur.util.loadFence",
+        "concur.util.storeFence",
+        (jvm, cc, tvalue, args) ->
+        {
+          var val = Expr.getstatic(Names.RUNTIME_CLASS,
+                                   "LOCK_FOR_ATOMIC",
+                                   JAVA_LANG_OBJECT)
+            .andThen(Expr.MONITORENTER)
+            .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
+                                    "LOCK_FOR_ATOMIC",
+                                    JAVA_LANG_OBJECT))
+            .andThen(Expr.MONITOREXIT);
+          return new Pair<>(Expr.UNIT, val);
+        });
+
     put("fuzion.std.date_time",
         (jvm, cc, tvalue, args) ->
         {
@@ -271,8 +286,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.racy_accesses_supported",
         "concur.atomic.read0",
         "concur.atomic.write0",
-        "concur.util.loadFence",
-        "concur.util.storeFence",
         "fuzion.java.Java_Object.is_null",
         "fuzion.java.array_get",
         "fuzion.java.array_length",

@@ -132,6 +132,9 @@ public class Runtime extends ANY
   static final Object UNIQUE_ID_LOCK = new Object() {};
 
 
+  public static final Object LOCK_FOR_ATOMIC = new Object();
+
+
   public static String[] args = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
 
