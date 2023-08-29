@@ -26,9 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-import dev.flang.util.List;
 import dev.flang.util.Pair;
 
 
@@ -403,7 +400,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * create putfield bytecode to write field described by cls, name and type.
+   * create putstatic bytecode to write field described by cls, name and type.
    */
   public static Expr putstatic(String cls, String name, String type)
   {
@@ -415,7 +412,7 @@ public abstract class Expr extends ByteCode
 
     return new Expr()
       {
-        public String toString() { return "putfield " + cls + "." + name; }
+        public String toString() { return "putstatic " + cls + "." + name; }
         public JavaType type() { return PrimitiveType.type_void;  }
         public byte[] byteCode(ClassFile cf)
         {
