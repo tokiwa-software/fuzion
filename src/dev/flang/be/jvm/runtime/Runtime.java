@@ -395,7 +395,7 @@ public class Runtime extends ANY
    */
   public static void contract_fail(String msg)
   {
-    Errors.fatal("CONTRACT FAILED: " + msg);
+    Errors.fatal(new Error("CONTRACT FAILED: " + msg));
   }
 
 
