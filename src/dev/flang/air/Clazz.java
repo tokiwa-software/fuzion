@@ -1104,8 +1104,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (fa != null,
-       !fa._f.isUniverse(),
-       !this.isVoidType());
+       !fa._f.isUniverse());
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
