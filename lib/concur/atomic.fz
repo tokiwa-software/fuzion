@@ -30,7 +30,7 @@
 #
 public atomic (
   T type,
-  /* NYI: private */ v T
+  v T
   )
 is
 
@@ -114,14 +114,12 @@ is
   # intrinsic to read this value in a way that is atomic with respect to write
   # operations performed by concurrent threads
   #
-  /* NYI: private */
   read0 T is intrinsic
 
 
   # intrinsic to write this value in a way that is atomic with respect to read
   # and write operations performed by concurrent threads
   #
-  /* NYI: private */
   write0(new_value T) unit is intrinsic
 
 
@@ -131,7 +129,6 @@ is
   # returns the old value, independent of whether the old value is bit-wise
   # equal to `expected` or not.
   #
-  /* NYI: private */
   compare_and_swap0(expected, new_value T) T is intrinsic
 
 
@@ -140,5 +137,4 @@ is
   #
   # returns true, if successful
   #
-  /* NYI: private */
   compare_and_set0(expected, new_value T) bool is intrinsic

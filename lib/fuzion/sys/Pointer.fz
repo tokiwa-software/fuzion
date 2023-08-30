@@ -30,6 +30,6 @@
 # calls on this value are permitted, not even `p.as_string`, this will lead to
 # undefined behaviour.
 #
-public /* NYI: private */ Pointer ref is
+private:module Pointer ref is
 
   # this must not contain any declarations.
