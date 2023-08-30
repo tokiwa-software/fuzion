@@ -18,9 +18,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
   redef as_string String is
     match json_value.this
       s String => "\"$s\""
-      f f64 =>
-        # NYI: interpreter and c backend produce different outputs for float.as_string currently
-        "{f.as_i64}.{f.fract != 0}"
+      f f64 => $f
       b bool => $b
       n nil => "null"
       seq Sequence => $seq
