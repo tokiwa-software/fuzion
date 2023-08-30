@@ -71,13 +71,15 @@ public stream(redef T type) ref : Sequence T is
   # take n items from stream, less if stream has fewer than n items
   #
   public redef take (n i32) =>
-    for
-      a := (marray T).type.new, a.add x
-      i in (1..n)
-    while has_next
-      x := next
-    else
-      (a.take i).as_list
+    m : mutate is
+    m.go ()->
+      for
+        a := (mutate.array T).type.new m, {a.add x ; a}
+        i in (1..n)
+      while has_next
+        x := next
+      else
+        (a.take i).as_list
 
 
   # Return this stream as a stream.
@@ -160,12 +162,14 @@ public stream(redef T type) ref : Sequence T is
   # collect all items from this stream into an array
   #
   public redef as_array array T is
-    for
-      a := (marray T).type.new, a.add x
-    while has_next
-      x := next
-    else
-      a.as_array
+    m : mutate is
+    m.go ()->
+      for
+        a := (mutate.array T).type.new m, {a.add x ; a}
+      while has_next
+        x := next
+      else
+        a.as_array
 
 
   # create a stream that consists of all be the elements if this stream followed

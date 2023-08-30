@@ -44,11 +44,11 @@ module:public open(T type, private fd i64, public file_name String) : simple_eff
 
 
   # mmap effect
-  private mmap(data marray u8) : simple_effect is
+  private mmap(data mutate.array u8) : simple_effect is
 
 
   # shorthand to get the memory mapped file as an array
-  public mmap marray u8
+  public mmap mutate.array u8
   pre effect.type.is_installed (io.file.open T).mmap
   is
     (io.file.open T).mmap.env.data
@@ -75,7 +75,8 @@ module:public open(T type, private fd i64, public file_name String) : simple_eff
     if res[0] = -1
       error "mmap failed"
     else
-      marr := marray u8 size.as_i32 (fuzion.sys.internal_array u8 allocated_memory size.as_i32) unit
+      mi := mutate.type.install_default # NYI local mutate
+      marr := mutate.env.array u8 size.as_i32 (fuzion.sys.internal_array u8 allocated_memory size.as_i32) unit
 
       r := mmap marr
         .go code

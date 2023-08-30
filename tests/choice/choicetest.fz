@@ -62,17 +62,22 @@ choicetest is
       Quarter => 25
 
   say "creating array:"
-  a := (marray Coin).type.new 10 Penny
-  a[0] := Penny
-  a[1] := Penny
-  a[2] := Penny
-  a[3] := Penny
-  a[4] := Nickel
-  a[5] := Dime
-  a[6] := Dime
-  a[7] := Quarter
-  a[8] := Quarter
-  a[9] := Quarter
+  mi : mutate is
+  a := mi.go (()->
+    a := (mutate.array Coin).type.new mi 10 Penny
+    a[0] := Penny
+    a[1] := Penny
+    a[2] := Penny
+    a[3] := Penny
+    a[4] := Nickel
+    a[5] := Dime
+    a[6] := Dime
+    a[7] := Quarter
+    a[8] := Quarter
+    a[9] := Quarter
+    a
+  )
+
 
   yak "summing array using loop: "
   sum := { for i := -1, i+1
