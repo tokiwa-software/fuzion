@@ -14,7 +14,7 @@
 
 
 # json supports the following types: strings, numbers, booleans, null, arrays and objects
-json_value : choice String f64 bool nil (Sequence json_value) (Map String json_value) is
+public json_value : choice String f64 bool nil (Sequence json_value) (container.Map String json_value) is
   redef as_string String is
     match json_value.this
       s String => "\"$s\""
@@ -24,12 +24,12 @@ json_value : choice String f64 bool nil (Sequence json_value) (Map String json_v
       b bool => $b
       n nil => "null"
       seq Sequence => $seq
-      m (Map String json_value) => "\{$m}"
+      m (container.Map String json_value) => "\{$m}"
 
 
 # a json parser
 #
-json : combinator, string_parsers, sequence, sequences, branch, multi =>
+public json : combinator, string_parsers, sequence, sequences, branch, multi =>
 
   # parser for a json string
   parser_string =>
@@ -46,7 +46,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
           [(codepoint c)])
 
     parse_and_map(t, r String) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
-      (tag t).map (Sequence codepoint) (_ -> r.as_codepoint_sequence)
+      (tag t).map (Sequence codepoint) (_ -> r.as_codepoints)
 
     parser_escapings :=
       alt [
@@ -69,7 +69,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
       many0 (alt [parser_regular_codepoint, parser_escapings])
 
     delimited (tag "\"") p (tag "\"")
-      .map String (x -> String.type.join (x.mapSequence String (y -> String.type.from_codepoint_sequence y)) "")
+      .map String (x -> String.type.join (x.map_sequence String (y -> String.type.from_codepoints y)) "")
 
 
   # parser for a json number
@@ -86,7 +86,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
     parser_digits := take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 
     parser_whole := alt [tag "0", parser_digits]
-      .map f64 (x -> (String.type.from_codepoint_sequence x)
+      .map f64 (x -> (String.type.from_codepoints x)
                         .parse_u64
                         .val 1
                         .as_f64)
@@ -96,7 +96,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
         if x.is_empty
           0.0
         else
-          (String.type.from_codepoint_sequence x.first)
+          (String.type.from_codepoints x.first)
             .parse_u64
             .val 0
             .as_f64 / (10.0*x.count.as_f64))
@@ -145,7 +145,7 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
   # parser for json array
   parser_array =>
     parser_no_values parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
-      whitespace0.map (Sequence json_value) (x -> lists.empty json_value)
+      whitespace0.map (Sequence json_value) (x -> (list json_value).type.empty)
 
     parser_comma_sep_value parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
       separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
@@ -160,13 +160,13 @@ json : combinator, string_parsers, sequence, sequences, branch, multi =>
       separated_pair (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) String (Sequence codepoint) json_value (delimited whitespace0 parser_string whitespace0) (tag ":") ()->parser_json_value_delimited
 
     parser_no_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) is
-      whitespace0.map (Sequence (tuple String json_value)) (x -> lists.empty (tuple String json_value))
+      whitespace0.map (Sequence (tuple String json_value)) (x -> (list (tuple String json_value)).type.empty)
 
     parser_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) is
       separated_list1 (Sequence codepoint) (tuple String json_value) (Sequence codepoint) (tag ",") ()->parser_key_value
 
     delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
-      .map json_value (x -> map_of x.as_array)
+      .map json_value (x -> container.map_of x.as_array)
 
 
   # parser for a json_value: true, false, [], {}, numbers, strings etc.

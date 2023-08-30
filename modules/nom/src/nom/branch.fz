@@ -15,13 +15,13 @@
 
 # nom.branch -- choice combinators
 #
-branch is
+public branch is
 
   # return result of first succeeding parser
-  alt(I, R, O type, p array (parser I R O)) parser I R O is
+  public alt(I, R, O type, p array (parser I R O)) parser I R O is
     parser I R O (input ->
       p
-        .mapSequence (p -> p.parse input)
+        .map_sequence (p -> p.parse input)
         .filter (r -> match r
                         success => true
                         error => false)

@@ -15,10 +15,10 @@
 
 # nom.multi -- parsers applied multiple times
 #
-multi is
+public multi is
 
   # apply parser multiple times, return results as sequence
-  many0 (I, O type, p parser I I O) parser I I (Sequence O) is
+  public many0 (I, O type, p parser I I O) parser I I (Sequence O) is
     parse(input I) parse_result I (Sequence O) is
       match p.parse input
         s1 success I O =>
@@ -26,12 +26,12 @@ multi is
             s2 success I (Sequence O) => success s2.rest ([s1.out]++s2.out).as_seq
             error => panic "invalid state, many0 must always succeed."
         # NYI type inference should infer correct type of empty array
-        error => success input (lists.empty O).as_seq
+        error => success input (list O).type.empty.as_seq
     parser I I (Sequence O) (input -> parse input)
 
 
   # apply parser at least once, return results as sequence
-  many1 (I, O type, p parser I I O) parser I I (Sequence O) is
+  public many1 (I, O type, p parser I I O) parser I I (Sequence O) is
     parse(input I) parse_result I (Sequence O) is
       match p.parse input
         s1 success I O => (many0 p).parse input
@@ -40,28 +40,28 @@ multi is
 
 
   # apply parser between m and n times, return results as sequence
-  many_m_n (I, O type, m, n i32, p parser I I O) parser I I (Sequence O)
+  public many_m_n (I, O type, m, n i32, p parser I I O) parser I I (Sequence O)
   pre m<=n,
       n>0
   is
     parser I I (Sequence O) (input ->
       (rest, acc) := (1..n)
-        .reduce (input, (Sequence O).type.empty) (r, t ->
+        .reduce (input, (list O).type.empty) (r, t ->
           (rest, acc) := r
           match p.parse rest
             s success =>
-              (s.rest, (acc ++ [s.out]).as_seq)
+              (s.rest, acc ++ [s.out])
             error =>
               abort (rest, acc)
         )
       if acc.count < m
         error "matched only {acc.count} times"
       else
-        success rest acc)
+        success rest acc.as_seq)
 
 
   # parse a separated list of values, zero or more values
-  separated_list0(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
+  public separated_list0(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
     parse(input I) parse_result I (Sequence O) is
       match p_value.parse input
         s1 success =>
@@ -69,12 +69,12 @@ multi is
             s2 success => success s2.rest ([s1.out]++s2.out).as_seq
             e error => panic "invalid state, many0 always succeeds"
         # NYI type inference should infer correct type of empty array
-        error => success input (lists.empty O).as_seq
+        error => success input (list O).type.empty.as_seq
     parser I I (Sequence O) (input -> parse input)
 
 
   # parse a separated list of values, one or more values
-  separated_list1(I, O, D type, p_sep parser I I D, p_value () -> (parser I I O)) parser I I (Sequence O) is
+  public separated_list1(I, O, D type, p_sep parser I I D, p_value () -> (parser I I O)) parser I I (Sequence O) is
     parse(input I) parse_result I (Sequence O) is
       match p_value().parse input
         s1 success =>

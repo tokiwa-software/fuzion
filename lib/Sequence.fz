@@ -460,7 +460,7 @@ public Sequence(public T type) ref is
 
   # convenience feature to work around type inference issues
   # NYI remove when type inference gets better
-  as_seq Sequence T is
+  public as_seq Sequence T is
     Sequence.this
 
 

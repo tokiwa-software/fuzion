@@ -15,4 +15,4 @@
 
 # nom.parsers -- namespace for parsers built with nom
 #
-parsers is
+public parsers is

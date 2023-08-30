@@ -15,10 +15,10 @@
 
 # nom.combinator -- general purpose combinators
 #
-combinator is
+public combinator is
 
   # map input to parser p
-  map_inp(I1, I2, R, O type, p parser I1 R O, mapper1 I2 -> I1) parser I2 R O is
+  public map_inp(I1, I2, R, O type, p parser I1 R O, mapper1 I2 -> I1) parser I2 R O is
     parse(input I2) parse_result R O is
       p.parse (mapper1 input)
     parser I2 R O (input -> parse input)

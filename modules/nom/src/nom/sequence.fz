@@ -15,10 +15,10 @@
 
 # nom.sequence -- parsers applied in sequence
 #
-sequence is
+public sequence is
 
   # apply p1 then p2 and return their results as a tuple.
-  tuple2(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I (tuple O1 O2) is
+  public tuple2(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I (tuple O1 O2) is
     parse(input I) parse_result I (tuple O1 O2) is
       match p1.parse(input)
         s1 success I O1 =>
@@ -31,7 +31,7 @@ sequence is
 
 
   # apply p1 then p2 then p3 and return their results as a tuple.
-  tuple3(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I (tuple O1 O2 O3) is
+  public tuple3(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I (tuple O1 O2 O3) is
     parse(input I) parse_result I (tuple O1 O2 O3) is
       match p1.parse(input)
         s1 success I O1 =>
@@ -46,7 +46,7 @@ sequence is
 
 
   # apply p1 then p2 then p3, then p4 and return their results as a tuple.
-  tuple4(I, O1, O2, O3, O4 type,
+  public tuple4(I, O1, O2, O3, O4 type,
     p1 parser I I O1,
     p2 parser I I O2,
     p3 parser I I O3,
@@ -69,7 +69,7 @@ sequence is
 
 
   # discard the output of the first parser, return the result of the second parser
-  preceded(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I O2 is
+  public preceded(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I O2 is
     parse(input I) parse_result I O2 is
       match p1.parse input
         s1 success I O1 =>
@@ -79,7 +79,7 @@ sequence is
 
 
   # discard p1 and p3, return result of p2
-  delimited(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I O2 is
+  public delimited(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I O2 is
     parse(input I) parse_result I O2 is
       match p1.parse(input)
         s1 success I O1 =>
@@ -94,7 +94,7 @@ sequence is
 
 
   # return result of p1 and p2 as tuple, drop result of p_sep
-  separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 () -> (parser R2 R3 O3)) parser I R3 (tuple O1 O3) is
+  public separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 () -> (parser R2 R3 O3)) parser I R3 (tuple O1 O3) is
     parser I R3 (tuple O1 O3) (input ->
       match p1.parse input
         s1 success =>

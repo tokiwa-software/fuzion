@@ -49,7 +49,7 @@ nom_test =>
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (seqs.take_while_m_n codepoint 2 2 (fun is_valid)).map u8 (o1 -> (String.type.from_codepoint_sequence o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (seqs.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.type.from_codepoints o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := seq.preceded (sp.tag "#") (seq.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
@@ -58,10 +58,10 @@ nom_test =>
     # NYI: using this crashes in c backend currently
     parser_hex_color := sp.to_string_input parser_hex_color_seq_codepoints
 
-    say (parser_hex_color_seq_codepoints.parse "#9F3A10".as_codepoint_sequence)
-    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".as_codepoint_sequence)
-    say (parser_hex_color_seq_codepoints.parse "Hello".as_codepoint_sequence)
-    say (parser_hex_color_seq_codepoints.parse "".as_codepoint_sequence)
+    say (parser_hex_color_seq_codepoints.parse "#9F3A10".as_codepoints)
+    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".as_codepoints)
+    say (parser_hex_color_seq_codepoints.parse "Hello".as_codepoints)
+    say (parser_hex_color_seq_codepoints.parse "".as_codepoints)
 
 
   json_parser_test is
