@@ -137,7 +137,7 @@ module:public integer : numeric is
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  module as_string(len i32, base u32) String
+  public as_string(len i32, base u32) String
     pre
       debug: 1 < base ≤ 36
     post
