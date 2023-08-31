@@ -466,7 +466,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     if (inner.isField())
       {
-        AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+        // NYI inner.isTypeFeature() does not work currently
+        if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
+          {
+            AstErrors.typeFeaturesMustNotBeFields(inner);
+          }
+        else
+          {
+            AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+          }
       }
 
     setOuterAndAddInnerForQualifiedRec(inner, 0, outer);
