@@ -272,10 +272,8 @@ public class Intrinsics extends ANY
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
               if (interpreter.compareField(f, -1, a, thiz, expected))
                 {
-                  res = expected;   // NYI: HACK: workaround since res was not cloned
                   interpreter.setField(f, -1, a, thiz, new_value);
                   return new boolValue(true);
                 }
