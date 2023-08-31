@@ -991,6 +991,13 @@ public class AstErrors extends ANY
           ".  Alternatively, you can declare a routine instead.");
   }
 
+  public static void typeFeaturesMustNotBeFields(Feature f)
+  {
+    error(f.pos(),
+          "Type features must not be fields.",
+          "To solve this, you could declare a routine instead.");
+  }
+
   static void cannotRedefine(SourcePosition pos, AbstractFeature f, AbstractFeature existing, String msg, String solution)
   {
     error(pos,
