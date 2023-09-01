@@ -39,7 +39,7 @@
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
 # instance of ps_map is performance critical. If the resulting map's size n is a
-# power of 2, this will trigger the worst-case addition time resutling in
+# power of 2, this will trigger the worst-case addition time resulting in
 # O(m*n log² n) for adding an element m times.
 #
 # This constructor is for internal use only, to create instance of ps_map, use

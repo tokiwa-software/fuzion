@@ -926,7 +926,7 @@ class CodeGen
    *
    * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
-   * @param sub code to prduce the match subject value
+   * @param sub code to produce the match subject value
    *
    * @return the code for the match, produces unit type result.
    */

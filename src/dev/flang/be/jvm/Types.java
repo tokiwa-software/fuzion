@@ -360,7 +360,7 @@ public class Types extends ANY implements ClassFileConstants
 
   /**
    * Get interface class file if required for the given clazz, create one on demand if
-   * this requirement was only detedted now.
+   * this requirement was only detected now.
    *
    * @param cl a clazz id.
    *
@@ -515,10 +515,10 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the signatuer descriptor string for calling cl or its precondition
+   * Get the signature descriptor string for calling cl or its precondition
    *
    * @param explicitOuter true if the target instance is required (for Java
-   * dynamic binging) even if the called clazz does not need it.
+   * dynamic binding) even if the called clazz does not need it.
    *
    * @param cl the called clazz
    *
@@ -526,7 +526,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   String descriptor(boolean explicitOuter, int cl, boolean pre)
   {
-    var resulType = _fuir.clazzResultClazz(cl);
+    var resultType = _fuir.clazzResultClazz(cl);
     var as = new StringBuilder();
     as.append("(");
     if (explicitOuter && hasOuterRef(cl))

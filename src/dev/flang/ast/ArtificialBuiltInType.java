@@ -30,7 +30,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * A BuiltInType is an unresolved type representing a built-in type that does
- * not appear explicity in the source code but that is needed in the parsing
+ * not appear explicitly in the source code but that is needed in the parsing
  * phase.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)

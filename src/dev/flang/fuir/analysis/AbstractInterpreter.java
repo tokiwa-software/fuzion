@@ -505,7 +505,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
                                 : _processor.unitValue();
 
     if (!containsVoid(stack) && stack.size() > 0)
-      { // NYI: #1875: Manaul stack cleanup.  This should not be needed since the
+      { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
         // FUIR has the (so far undocumented) invariant that the stack must be
         // empty at the end of a basic block. There ware some cases
         // (tests/reg_issue1294) where this is not the case that need to be

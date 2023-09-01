@@ -62,7 +62,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    * Kaku is japanese for writing, this is our writer. Maybe Sakka (作家) would
    * be better?
    *
-   * This provies convenience methods to write data as needed in the class file
+   * This provides convenience methods to write data as needed in the class file
    * to a byte array.
    */
   static class Kaku
@@ -192,7 +192,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     /**
      * Add this to the surrounding _cpool and set index. If an equal entry
-     * exisits, return that entry.
+     * exists, return that entry.
      *
      * @return this or an equal entry that was already added.
      */
@@ -873,7 +873,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   /*----------------------------  constants  ----------------------------*/
 
 
-  // constnats inherited from interface ClassFileConstants!
+  // constants inherited from interface ClassFileConstants!
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -1116,7 +1116,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   /**
-   * String representation for debuggingh.
+   * String representation for debugging.
    */
   public String toString()
   {

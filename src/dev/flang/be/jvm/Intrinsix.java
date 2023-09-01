@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * Intrinstix provides code for compilation of intrinsics for the JVM backend.
+ * Intrinsix provides code for compilation of intrinsics for the JVM backend.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

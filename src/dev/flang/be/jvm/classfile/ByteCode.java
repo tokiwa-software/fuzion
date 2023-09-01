@@ -470,7 +470,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
           case O_if_acmpne   -> O_if_acmpeq;
           case O_ifnull      -> O_ifnonnull;
           case O_ifnonnull   -> O_ifnull   ;
-          default -> throw new Error("unexpecgted bc "+bc);
+          default -> throw new Error("unexpected bc "+bc);
           };
         res = bc(nbc, pos);
       }

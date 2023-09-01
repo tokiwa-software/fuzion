@@ -153,7 +153,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Once this unresolved type was resolved into a ResolvedParametricType or
-   * ResolvedNormalType, this will be set to the resolution resuilt to avoid
+   * ResolvedNormalType, this will be set to the resolution result to avoid
    * repeated resolution.
    */
   AbstractType _resolved = null;
