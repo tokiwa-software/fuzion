@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 
@@ -36,7 +35,6 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
-import dev.flang.util.Pair;
 
 
 /**

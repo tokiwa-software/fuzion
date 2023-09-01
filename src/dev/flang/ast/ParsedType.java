@@ -26,12 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Set;
 
-import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**

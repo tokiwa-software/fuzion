@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;

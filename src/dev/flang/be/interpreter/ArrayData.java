@@ -30,7 +30,6 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir
 import dev.flang.ast.Types;        // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.util.Errors;
 
-import java.util.Arrays;
 
 
 /**

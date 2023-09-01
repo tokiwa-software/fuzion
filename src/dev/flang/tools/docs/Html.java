@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Visi;
 
 public class Html
 {

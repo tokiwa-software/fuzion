@@ -29,13 +29,10 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.dfa.DFA;
-import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -43,7 +40,6 @@ import dev.flang.util.Pair;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import java.util.TreeMap;
 
 
 /**

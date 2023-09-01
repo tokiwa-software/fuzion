@@ -32,7 +32,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Consts;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;

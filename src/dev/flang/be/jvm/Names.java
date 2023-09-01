@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 

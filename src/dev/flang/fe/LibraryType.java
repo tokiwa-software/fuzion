@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.ResolvedType;

@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
