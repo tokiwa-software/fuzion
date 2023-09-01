@@ -1997,6 +1997,13 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void conditionsMustNotHaveSideEffects(SourcePosition pos, List<Env> s)
+  {
+    error(pos,
+      "Conditions must not use effects.",
+      "Used " + singularOrPlural(s.size(), "effect") + " : " + s.stream().map(p -> p.toString()).collect(Collectors.joining(", ")));
+  }
+
 }
 
 /* end of file */

@@ -1,0 +1,4 @@
+condition_no_effect is
+  a
+  pre time.nano.read
+  is

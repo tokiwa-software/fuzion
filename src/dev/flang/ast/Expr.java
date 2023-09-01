@@ -434,6 +434,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * The effects this expression uses.
+   */
+  public List<Env> usedEffects()
+  {
+    var s = new List<Env>();
+    this.visitExpressions(new ExpressionVisitor() {
+      @Override
+      public void action(Expr e)
+      {
+          if (e instanceof Env env)
+            {
+              s.add(env);
+            }
+          else if (e instanceof AbstractCall c)
+            {
+              c.calledFeature().visitCode(new FeatureVisitor() {
+                @Override
+                public void action (Env env, AbstractFeature outer) { s.add(env); }
+              });
+            }
+      }
+    });
+    return s;
+  }
+
+
+  /**
    * Is this Expr a call to an outer ref?
    */
   public boolean isCallToOuterRef()

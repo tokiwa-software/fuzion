@@ -103,6 +103,7 @@ public class Env extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
+    v.action(this, outer);
     _type = _type.visit(v, outer);
     return this;
   }

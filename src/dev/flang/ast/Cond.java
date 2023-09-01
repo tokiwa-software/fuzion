@@ -116,6 +116,18 @@ public class Cond
     return cond.toString();
   }
 
+
+  public void checkTypes()
+  {
+    // NYI we are abusing checkTypes here a little bit since
+    // this is not actually checking any types...
+    var s = cond.usedEffects();
+    if (!s.isEmpty())
+      {
+        AstErrors.conditionsMustNotHaveSideEffects(cond.pos(), s);
+      }
+  }
+
 }
 
 /* end of file */
