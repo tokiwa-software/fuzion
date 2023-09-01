@@ -30,7 +30,7 @@ jobs:
         shell: powershell
         run: choco install openjdk --version 17.0.0
 
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v2.6.0
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v2.6.0
 
       - name: set PATH
         run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" >> $GITHUB_PATH
