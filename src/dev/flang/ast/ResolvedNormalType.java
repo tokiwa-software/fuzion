@@ -558,7 +558,8 @@ public class ResolvedNormalType extends ResolvedType
     this._generics.freeze();
     if (CHECKS) check
       (Errors.any() || _feature != null);
-    if (_feature != null &&
+    if (result.containsError() ||
+        _feature != null &&
         !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                            pos.pos(),
                                                            "type",
