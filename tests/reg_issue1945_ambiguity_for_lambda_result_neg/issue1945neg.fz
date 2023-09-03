@@ -1,0 +1,88 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue1945neg
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# this tests different variants of field and function declarations and
+# calls using function result types and lambda arguments, including
+# cases that result in syntax errors.
+#
+ambiguous_declaration is
+
+  # ------- declarations -------
+
+  # field declarations
+  a ()->i32 := ()->4711
+  b () -> i32 := () -> 4712
+  c () (() ->         # we (currently) need explicit arg list `()` to help parser
+        i32  ) := () -> 4713
+  d () ->
+    i32 := () -> 4714   # illegal, no LF allowed after -> in function result
+
+  say a.call
+  say b.call
+  say c.call
+
+  # function declarations
+  i ()->i32 is ()->4715
+  j () -> i32 is () -> 4716
+  k () (() ->         # we (currently) need explicit arg list `()` to help parser
+        i32  ) is () -> 4717
+  l () ->
+    i32 is () -> 4718   # illegal, no LF allowed after -> in function result
+
+  say i.call
+  say j.call
+  say k.call
+
+  # ------- calls -------
+
+  # function to be called
+  f(p ()->i32) =>
+    say "in f: {p.call}"
+
+  # calls
+
+  f ()->42
+
+  f (() -> 43)
+
+  f ()->
+    44
+
+  f (() ->
+    45)
+
+  f (() ->
+    v := 46
+    v)
+
+  f ()->
+    {
+      v := 47
+      v
+    }
+
+  f ()->
+    v := 48
+    v

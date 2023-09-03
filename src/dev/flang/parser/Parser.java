@@ -471,14 +471,10 @@ field       : returnType
       {
         return true;
       }
-    var p = this;
-    if (isTypePrefix())
-      {
-        p = fork();
-        p.skipType();
-      }
-    p.skipEffects();
+    var p = fork();
     return
+      (!p.isTypePrefix() || p.skipType(true, true, true)) &&
+      (!p.isOperator("!") || p.skipEffects()) &&
       p.skipInherits() &&
       (p.isContractPrefix  () ||
        p.isImplPrefix      ());
@@ -913,10 +909,12 @@ formArgsOpt : formArgs
   {
     return
       current() != Token.t_lparen ||
-      fork().skipType(false, true);  // result type such as '(i32)->bool' or
-                                     // '(a,b)|(c,d)|()' is parsed as resulttype, but
-                                     // a type in parentheses like '(list i32)', '(a,
-                                     // b i32)' is parsed as an args list.
+      fork().skipType(false,
+                      false,
+                      true);  // result type such as '(i32)->bool' or
+                              // '(a,b)|(c,d)|()' is parsed as resulttype, but
+                              // a type in parentheses like '(list i32)', '(a,
+                              // b i32)' is parsed as an args list.
   }
 
 
@@ -1537,10 +1535,10 @@ typeList    : type ( COMMA typeList
    */
   boolean skipTypeList(boolean allowTypeThatIsNotExpression)
   {
-    boolean result = skipType(true, allowTypeThatIsNotExpression);
+    boolean result = skipType(false, true, allowTypeThatIsNotExpression);
     while (skipComma())
       {
-        result = result && skipType(true, allowTypeThatIsNotExpression);
+        result = result && skipType(false, true, allowTypeThatIsNotExpression);
       }
     return result;
   }
@@ -1746,7 +1744,8 @@ actual   : expr | type
     // 'skipType' with second argument set to false to check if we can parse
     // an expression.
     boolean hasExpr = (!hasType ||
-                       fork().skipType(true,
+                       fork().skipType(false,
+                                       true,
                                        false  /* disallow types that cannot be parsed as expression */));
     AbstractType t;
     Expr e;
@@ -3765,12 +3764,16 @@ boundType   : qualThis
    */
   boolean skipType()
   {
-    return skipType(true, true);
+    return skipType(false, true, true);
   }
 
 
   /**
    * Check if the current position can be parsed as a type and skip it if this is the case.
+   *
+   * @param isFunctionReturnType true if this is a function return type. In this
+   * case, a function type `(a,b)->c` may not be split into a new line after
+   * `->`.
    *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
@@ -3782,18 +3785,26 @@ boundType   : qualThis
    * @return true iff a type was found and skipped, otherwise no type was found
    * and the parser/lexer is at an undefined position.
    */
-  boolean skipType(boolean allowTypeInParentheses, boolean allowTypeThatIsNotExpression)
+  boolean skipType(boolean isFunctionReturnType,
+                   boolean allowTypeInParentheses,
+                   boolean allowTypeThatIsNotExpression)
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
     boolean result = skipQualThis();
     if (!result)
       {
-        var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
-        var res = skipOneType(true, allowTypeThatIsNotExpression);
+        var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(isFunctionReturnType,
+                                                                                           false,
+                                                                                           allowTypeThatIsNotExpression);
+        var res = skipOneType(isFunctionReturnType,
+                              true,
+                              allowTypeThatIsNotExpression);
         while (res && skip('|'))
           {
-            res = skipOneType(true, allowTypeThatIsNotExpression);
+            res = skipOneType(isFunctionReturnType,
+                              true,
+                              allowTypeThatIsNotExpression);
             hasForbiddenParentheses = false;
           }
         result = res && !hasForbiddenParentheses && (!skipColon() || skipType());
@@ -3805,8 +3816,8 @@ boundType   : qualThis
   /**
    * Parse onetype
    *
-onetype     : simpletype "->" simpletype
-            | pTypeList "->" simpletype
+onetype     : simpletype "->" simpletype    // if used as function return type, no line break allowed after `->`
+            | pTypeList  "->" simpletype    // if used as function return type, no line break allowed after `->`
             | pTypeList
             | LPAREN type RPAREN typeTail
             | simpletype
@@ -3860,12 +3871,16 @@ typeOpt     : type
    */
   boolean skipOneType()
   {
-    return skipOneType(true, true);
+    return skipOneType(false, true, true);
   }
 
 
   /**
    * Check if the current position starts a onetype and skip it.
+   *
+   * @param isFunctionReturnType true if this is a function return type. In this
+   * case, a function type `(a,b)->c` may not be split into a new line after
+   * `->`.
    *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
@@ -3877,7 +3892,8 @@ typeOpt     : type
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipOneType(boolean allowTypeInParentheses,
+  boolean skipOneType(boolean isFunctionReturnType,
+                      boolean allowTypeInParentheses,
                       boolean allowTypeThatIsNotExpression)
   {
     boolean result;
@@ -3887,9 +3903,11 @@ typeOpt     : type
       {
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
         var p = tokenPos();
+        var l = line();
         if (skip("->"))
           {
             result =
+              (!isFunctionReturnType || l == line()) &&
               // an lambda-expression would allow only arg names
               // '(x,y)->..', while a lambda-type can have arbitrary types
               // '(list bool, io.file.buffer) -> bool'.
@@ -3906,7 +3924,14 @@ typeOpt     : type
       }
     else
       {
-        result = skipSimpletype() && (!skip("->") || skipSimpletype());
+        result = skipSimpletype();
+        var l = line();
+        if (result && skip("->"))
+          {
+            result =
+              (!isFunctionReturnType || l == line()) &&
+              skipType();
+          }
       }
     return result;
   }
