@@ -1966,11 +1966,14 @@ public class AstErrors extends ANY
 
   public static void freeTypeMustNotMaskExistingType(UnresolvedType t, AbstractFeature f)
   {
-    error(t.pos(),
-          "Free type must not mask existing type.",
-          "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
-          "The existing type was declared at " + f.pos().show() + "\n" +
-          "To solve this, you may use a different name for free type " + s(t) + ".");
+    if (!any() || f != Types.f_ERROR)
+      {
+        error(t.pos(),
+              "Free type must not mask existing type.",
+              "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
+              "The existing type was declared at " + f.pos().show() + "\n" +
+              "To solve this, you may use a different name for free type " + s(t) + ".");
+      }
   }
 
   public static void calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(Feature f, AbstractCall c)
