@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue1943
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# this uses type parameters as outer types.
+#
+test_outer_as_type_parameter is
+
+  # here the test from #1943
+  x is
+    y is
+      redef as_string => "y in {x.this}"
+
+  z : x is
+
+  test(T type : x,
+       v T.y) =>
+    say "T is $T v is $v"
+
+  test x x.y
+  test z z.y
+
+  # here the code in an example from the Fuzion presentation at TyDe'23
+  count(n (M : mutate).new i32,
+        l Sequence T) ! M =>
+    l.for_each x->
+      n <- n.get + 1
+    n
+
+  mm : mutate.
+  mm.use ()->
+    {
+      cnt := mm.env.new 100
+      cnt := count mm i32 cnt [1,2,3]
+      say cnt
+    }
