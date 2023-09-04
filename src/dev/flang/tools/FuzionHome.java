@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 
 import java.nio.file.Path;
 
@@ -42,12 +43,6 @@ public class FuzionHome extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * Names of Java properties accepted by tools that use the FuzionHome class:
-   */
-  static final String FUZION_HOME_PROPERTY = "fuzion.home";
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -55,7 +50,7 @@ public class FuzionHome extends ANY
    * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
    * _fuzionHome.
    */
-  private String _fuzionHomeProperty = System.getProperty(FUZION_HOME_PROPERTY);
+  private String _fuzionHomeProperty = System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY);
 
 
   /**
