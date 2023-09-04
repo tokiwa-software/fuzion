@@ -1,5 +1,5 @@
 
---CURDIR--/condition_no_effect.fz:3:17: error 1: Conditions must not use effects.
+--CURDIR--/condition_no_effect.fz:3:17: error 1: Contracts must not use effects.
   pre time.nano.read
 ----------------^^^^
 Used one effect : time.this.type.nano.env

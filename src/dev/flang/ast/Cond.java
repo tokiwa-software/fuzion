@@ -124,7 +124,7 @@ public class Cond
     var s = cond.usedEffects();
     if (!s.isEmpty())
       {
-        AstErrors.conditionsMustNotHaveSideEffects(cond.pos(), s);
+        AstErrors.conditionsMustNotUseEffects(cond.pos(), s);
       }
   }
 
