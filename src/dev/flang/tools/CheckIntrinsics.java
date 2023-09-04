@@ -31,7 +31,6 @@ import dev.flang.util.ANY;
 import dev.flang.ast.AbstractFeature;
 
 import dev.flang.fe.FrontEnd;
-import dev.flang.fe.Module;
 
 import dev.flang.util.Errors;
 

@@ -35,7 +35,6 @@ import java.nio.file.Path;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.be.c.C;
 import dev.flang.be.c.COptions;
@@ -58,7 +57,6 @@ import dev.flang.me.MiddleEnd;
 
 import dev.flang.opt.Optimizer;
 
-import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;

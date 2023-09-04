@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.util.ANY;
 
 
 /**

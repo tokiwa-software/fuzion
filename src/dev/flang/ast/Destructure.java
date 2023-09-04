@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Collections;
 import java.util.Iterator;
 
-import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;

@@ -28,7 +28,6 @@ package dev.flang.util;
 
 import java.awt.Desktop;
 
-import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileOutputStream;

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
 
 /**
  * A BuiltInType is an unresolved type representing a built-in type that does

@@ -26,12 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.Pair;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -43,8 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Stream;
 
 
 /**

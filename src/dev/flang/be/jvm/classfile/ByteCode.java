@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm.classfile;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-import dev.flang.util.List;
 
 
 /**

@@ -27,9 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
