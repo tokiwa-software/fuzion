@@ -175,7 +175,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Flag to enable (or suppress, if false) and comments in the bytecode, see
+   * Flag to enable (or suppress, if false) comments in the bytecode, see
    * comment(String).
    */
   public static boolean ENABLE_COMMENTS = false;
