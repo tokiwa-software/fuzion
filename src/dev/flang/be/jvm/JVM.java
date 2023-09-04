@@ -478,9 +478,7 @@ should be avoided as much as possible.
       }
       void finish(JVM jvm)
       {
-        var applicationArgs = new ArrayList<>(jvm._options._applicationArgs);
-        applicationArgs.add(0, jvm._fuir.clazzAsString(jvm._fuir.mainClazzId()));
-        jvm._runner.runMain(applicationArgs);
+        jvm._runner.runMain(jvm);
       }
     },
     SAVE {

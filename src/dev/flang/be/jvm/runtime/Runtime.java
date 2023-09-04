@@ -29,6 +29,7 @@ package dev.flang.be.jvm.runtime;
 import dev.flang.be.interpreter.OpenResources; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
@@ -133,6 +134,9 @@ public class Runtime extends ANY
 
 
   public static String[] args = new String[] { "argument list not initialized", "this may indicate a severe bug" };
+
+
+  public static FuzionOptions _options = null;
 
 
   /*-------------------------  static methods  --------------------------*/

@@ -103,8 +103,12 @@ public class Runner extends ClassLoader
    *
    * This executes the main method defined in the universe.
    */
-  public void runMain(ArrayList<String> applicationArgs)
+  public void runMain(JVM jvm)
   {
+    Runtime._options = jvm._options;
+    var applicationArgs = new ArrayList<>(jvm._options._applicationArgs);
+    applicationArgs.add(0, jvm._fuir.clazzAsString(jvm._fuir.mainClazzId()));
+
     Class<?> c = findClass("fzC_universe");
     Method m = null;
     try

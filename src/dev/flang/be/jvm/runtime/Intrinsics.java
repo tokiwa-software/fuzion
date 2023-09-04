@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm.runtime;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -42,9 +43,9 @@ public class Intrinsics extends ANY
   /*-------------------------  static methods  --------------------------*/
 
 
-  public static boolean safety      () { return true; /* NYI: Interpreter._options_.fuzionSafety()     */ }
-  public static boolean debug       () { return true; /* NYI: Interpreter._options_.fuzionDebug()      */ }
-  public static int     debug_level () { return 0;    /* NYI: Interpreter._options_.fuzionDebugLevel() */ }
+  public static boolean safety      () { return Runtime._options != null ? Runtime._options.fuzionSafety() : Boolean.valueOf(System.getProperty(FuzionConstants.FUZION_SAFETY_PROPERTY, "true")); }
+  public static boolean debug       () { return Runtime._options != null ? Runtime._options.fuzionDebug() : ((Integer.getInteger(FuzionConstants.FUZION_DEBUG_LEVEL_PROPERTY, 1)) > 0); }
+  public static int     debug_level () { return Runtime._options != null ? Runtime._options.fuzionDebugLevel() : Integer.getInteger(FuzionConstants.FUZION_DEBUG_LEVEL_PROPERTY, 1); }
 
   public static long    fuzion_sys_stdin_stdin0 () { return Runtime._stdin;  }
   public static long    fuzion_sys_out_stdout   () { return Runtime._stdout; }
