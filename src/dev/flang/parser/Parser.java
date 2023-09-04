@@ -1200,7 +1200,6 @@ returnType  : boundType
   }
 
 
-
   /**
    * Parse effects
    *
@@ -1514,12 +1513,7 @@ typeList    : type ( COMMA typeList
    */
   boolean skipTypeList()
   {
-    boolean result = skipType();
-    while (skipComma())
-      {
-        result = result && skipType();
-      }
-    return result;
+    return skipTypeList(true);
   }
 
 
@@ -3362,8 +3356,7 @@ qualThis    : name ( dot name )* dot "this"
   /**
    * Parse dotEnv
    *
-dotEnv      : simpletype dot "env"
-            | LPAREN type RPAREN dot "env"
+dotEnv      : typeInParens dot "env"
             ;
    */
   Env dotEnv()
@@ -3378,8 +3371,7 @@ dotEnv      : simpletype dot "env"
   /**
    * Parse dotType
    *
-dotType     : simpletype dotTypeSuffx
-            | LPAREN type RPAREN dotTypeSuffx
+dotType     : typeInParens dotTypeSuffx
             ;
    */
   Expr dotType()
