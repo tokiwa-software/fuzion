@@ -72,7 +72,7 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: shoul be LTS version 17, using 5 only to avoid need for stack frame info entries
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: should be LTS version 17, using 5 only to avoid need for stack frame info entries
   // public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
 
   public enum CPoolTag

@@ -315,7 +315,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * Create a SourcePosition or SourceRange that extends form this position's
    * start to end's end.
    *
-   * @param end a second position that must refert to the same source file and
+   * @param end a second position that must refer to the same source file and
    * not be before this.
    */
   public SourcePosition rangeTo(SourcePosition end)

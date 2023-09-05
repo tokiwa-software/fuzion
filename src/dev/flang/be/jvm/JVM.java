@@ -383,7 +383,7 @@ should be avoided as much as possible.
   /**
    * property-controlled flag to enable comments created in bytecode to improve
    * readability when disassembling (using javap or similar).  Comments are put
-   * in the form of String constants that are loaed with O_ldc follwed by O_pop.
+   * in the form of String constants that are loaded with O_ldc followed by O_pop.
    *
    * To enable comments, use fz with
    *

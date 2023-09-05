@@ -175,7 +175,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Flag to enablde (or suppress, if false) and comments in the bytecode, see
+   * Flag to enable (or suppress, if false) comments in the bytecode, see
    * comment(String).
    */
   public static boolean ENABLE_COMMENTS = false;
@@ -537,7 +537,7 @@ public abstract class Expr extends ByteCode
   }
 
   /**
-   * Load a java.lang.String constant given by utf8 encoced bytes
+   * Load a java.lang.String constant given by utf8 encoded bytes
    */
   public static Expr stringconst(byte[] s)
   {
@@ -995,7 +995,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Create a sequence of this Expr, followed by a statment and a value from a
+   * Create a sequence of this Expr, followed by a statement and a value from a
    * Pair<> of value and statement.
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
@@ -1054,7 +1054,7 @@ public abstract class Expr extends ByteCode
    * create code to get a field from the instance calculated by this Expr.
    *
    * This also works for field with type == type_void, in this case the instance
-   * is evaluated and droppped.
+   * is evaluated and dropped.
    *
    * @param cls the class to the get the field form
    *

@@ -288,7 +288,7 @@ public abstract class Module extends ANY
    *
    * @param usedIn
    * @param af
-   * @param ignoreDefinesType leave checking whethere `af` defines a type to the caller
+   * @param ignoreDefinesType leave checking whether `af` defines a type to the caller
    * @return
    */
   protected boolean typeVisible(SourceFile usedIn, AbstractFeature af, boolean ignoreDefinesType)

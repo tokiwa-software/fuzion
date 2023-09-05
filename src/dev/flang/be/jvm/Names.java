@@ -143,7 +143,7 @@ public class Names extends ANY implements ClassFileConstants
   static final String TAG_NAME = "fzTag";
 
   /**
-   * The name of the tag field function in choice clazzes of kind refsAndunits.
+   * The name of the tag field function in choice clazzes of kind refsAndUnits.
    */
   static final String GET_TAG = "fzTag_";
 
@@ -161,8 +161,8 @@ public class Names extends ANY implements ClassFileConstants
   static final String CHOICE_REF_ENTRY_NAME = "fzVref";
 
   /**
-   * For choice of kine refsAndUnits, thre are fields "fzU_1", "fzU_2", etc. for
-   * each tag number for a unit type that contain preallocated refereces.
+   * For choice of kine refsAndUnits, there are fields "fzU_1", "fzU_2", etc. for
+   * each tag number for a unit type that contain preallocated references.
    */
   static final String CHOICE_UNIT_AS_REF_PREFIX = "fzU_";
 

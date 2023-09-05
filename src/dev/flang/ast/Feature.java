@@ -2192,7 +2192,7 @@ public class Feature extends AbstractFeature
     // arg count in feature name. This does not seem to cause problems when
     // looking up features, but we may miss to report errors for duplicate
     // features.  Note that when saved to a module file, this feature's name
-    // will have the actual argument count, so this inconsitency is restricted
+    // will have the actual argument count, so this inconsistency is restricted
     // to the current source module.
     //
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
@@ -2355,7 +2355,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Number of free types amoung the type parameters.
+   * Number of free types among the type parameters.
    */
   public int freeTypesCount()
   {

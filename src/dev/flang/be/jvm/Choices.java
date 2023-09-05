@@ -38,7 +38,7 @@ import dev.flang.util.List;
 
 
 /**
- * Choices provieds methods supporting handling of choice type
+ * Choices provides methods supporting handling of choice type
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -186,7 +186,7 @@ public class Choices extends ANY implements ClassFileConstants
             return _types.resultType(tc);
           }
       }
-    throw new Error("resulType did not find the single ref type in a choice of kind nullable");
+    throw new Error("resultType did not find the single ref type in a choice of kind nullable");
   }
 
 
@@ -430,7 +430,7 @@ public class Choices extends ANY implements ClassFileConstants
    *
    * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
-   * @param sub code to prduce the match subject value
+   * @param sub code to produce the match subject value
    *
    * @return the code for the match, produces unit type result.
    */
@@ -484,7 +484,7 @@ public class Choices extends ANY implements ClassFileConstants
                     case 0: neg = caze; break;
                     case 1: pos = caze; break;
                     case -1: break; //  void type
-                    default: throw new Error("JVM backend match found inexpected tag number " + t + " when compiling " + _fuir.clazzAsString(cl));
+                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.clazzAsString(cl));
                   }
                 }
             }

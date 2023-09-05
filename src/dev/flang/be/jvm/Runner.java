@@ -38,7 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Runnner is a ClassLoader that can be used to immediately execute bytecode created by the
+ * Runner is a ClassLoader that can be used to immediately execute bytecode created by the
  * JVM bytecode backend.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
