@@ -851,7 +851,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new ErrorErrorErrorErrorErrorI");
+              default -> throw new Error("NYI");
             };
         }
       catch(BindException e)
