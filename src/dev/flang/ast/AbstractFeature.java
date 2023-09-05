@@ -1739,7 +1739,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    throw new RuntimeException("not meant to be used...");
+    throw new Error("not meant to be used...");
   }
 
 
