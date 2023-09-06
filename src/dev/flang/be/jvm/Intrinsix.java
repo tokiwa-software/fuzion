@@ -120,6 +120,18 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, Expr.iconst(r ? 1 : 0));
         });
 
+    put("debug",
+        (jvm, cc, tvalue, args) ->
+        {
+          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0));
+        });
+
+    put("debug_level",
+        (jvm, cc, tvalue, args) ->
+        {
+          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
+        });
+
     put("fuzion.std.date_time",
         (jvm, cc, tvalue, args) ->
         {
@@ -285,6 +297,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "(I)Z",
                                        ClassFileConstants.PrimitiveType.type_boolean));
           return new Pair<>(val, Expr.UNIT);
+        });
+
+    put("safety",
+        (jvm, cc, tvalue, args) ->
+        {
+          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
         });
 
     put(new String[]
