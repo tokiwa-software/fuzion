@@ -74,13 +74,6 @@ class Fuzion extends Tool
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * Names of Java properties accepted by fz command:
-   */
-  static final String FUZION_HOME_PROPERTY = "fuzion.home";
-  static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
-
-
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = false;
   static boolean _xdfa_ = true;
@@ -472,13 +465,13 @@ class Fuzion extends Tool
    * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
    * not allowed if run in a web playground.
    */
-  boolean _enableUnsafeIntrinsics = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
+  boolean _enableUnsafeIntrinsics = Boolean.getBoolean(FuzionConstants.FUZION_ENABLE_UNSAFE_INTRINSICS_PROPERTY);
 
 
   /**
    * Default result of debugLevel:
    */
-  int _debugLevel = Integer.getInteger("fuzion.debugLevel", 1);
+  int _debugLevel = Integer.getInteger(FuzionConstants.FUZION_DEBUG_LEVEL_PROPERTY, 1);
 
 
   /**
@@ -508,7 +501,7 @@ class Fuzion extends Tool
   /**
    * Default result of safety:
    */
-  boolean _safety = Boolean.valueOf(System.getProperty(FUZION_SAFETY_PROPERTY, "true"));
+  boolean _safety = Boolean.valueOf(System.getProperty(FuzionConstants.FUZION_SAFETY_PROPERTY, "true"));
 
 
   /**
@@ -864,7 +857,7 @@ class Fuzion extends Tool
       }
     if (_fuzionHome == null)
       {
-        fatal("neither property '" + FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
+        fatal("neither property '" + FuzionConstants.FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
       }
     return () ->
       {
