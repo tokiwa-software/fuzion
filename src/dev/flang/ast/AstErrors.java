@@ -139,7 +139,7 @@ public class AstErrors extends ANY
 
     return code(v.toString());
   }
-  static String ss(String s) // expression or expression
+  static String ss(String s)
   {
     return expr(s);
   }

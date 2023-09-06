@@ -87,7 +87,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for source positions that are not available, e.g., for
    * precompiled modules that do not include source code..
    */
-  public static final SourcePosition notAvailable = new SourcePosition(new SourceFile(Path.of("--not available--"), new byte[0]), 0)
+  public static final SourceRange notAvailable = new SourceRange(new SourceFile(Path.of("--not available--"), new byte[0]), 0, 0)
     {
       public boolean isBuiltIn()
       {

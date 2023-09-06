@@ -62,10 +62,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached results for applyTypePars(t) and applyTypePars(f, List<AbstractType>);
    */
-  private Object _appliedTypeParsCachedFor1;
+  private AbstractType _appliedTypeParsCachedFor1;
   private AbstractType _appliedTypeParsCache;
-  private Object _appliedTypePars2CachedFor1;
-  private Object _appliedTypePars2CachedFor2;
+  private AbstractFeature _appliedTypePars2CachedFor1;
+  private List<AbstractType> _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
 
 
