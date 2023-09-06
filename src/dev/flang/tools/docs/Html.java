@@ -367,7 +367,7 @@ public class Html
               }
             break;
           default:
-            throw new RuntimeException("unexpected match");
+            throw new Error("unexpected match");
           }
       }
     m.appendTail(sb);

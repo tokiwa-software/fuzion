@@ -831,7 +831,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       try
         {
@@ -851,7 +851,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new RuntimeException("NYI");
+              default -> throw new Error("NYI");
             };
         }
       catch(BindException e)
@@ -885,7 +885,7 @@ public class Intrinsics extends ANY
               ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
               return new boolValue(true);
             }
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       catch(IOException e)
         {
@@ -902,7 +902,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       try
         {
@@ -922,7 +922,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new RuntimeException("NYI");
+              default -> throw new Error("NYI");
             };
         }
       catch(IOException e)
@@ -978,7 +978,7 @@ public class Intrinsics extends ANY
             }
           else
             {
-              throw new RuntimeException("NYI");
+              throw new Error("NYI");
             }
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);

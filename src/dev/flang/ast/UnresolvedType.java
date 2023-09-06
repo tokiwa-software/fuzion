@@ -920,7 +920,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   protected void usedFeatures(Set<AbstractFeature> s)
   {
-    throw new RuntimeException("must not be called on unresolved types.");
+    throw new Error("must not be called on unresolved types.");
   }
 
 
