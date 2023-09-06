@@ -42,10 +42,6 @@ public class Intrinsics extends ANY
   /*-------------------------  static methods  --------------------------*/
 
 
-  public static boolean safety      () { return true; /* NYI: Interpreter._options_.fuzionSafety()     */ }
-  public static boolean debug       () { return true; /* NYI: Interpreter._options_.fuzionDebug()      */ }
-  public static int     debug_level () { return 0;    /* NYI: Interpreter._options_.fuzionDebugLevel() */ }
-
   public static long    fuzion_sys_stdin_stdin0 () { return Runtime._stdin;  }
   public static long    fuzion_sys_out_stdout   () { return Runtime._stdout; }
   public static long    fuzion_sys_err_stderr   () { return Runtime._stderr; }
