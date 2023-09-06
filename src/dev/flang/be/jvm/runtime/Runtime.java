@@ -33,8 +33,10 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.StringWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -395,7 +397,9 @@ public class Runtime extends ANY
    */
   public static void contract_fail(String msg)
   {
-    Errors.fatal(new Error("CONTRACT FAILED: " + msg));
+    var stacktrace = new StringWriter();
+    new Throwable().printStackTrace(new PrintWriter(stacktrace));
+    Errors.fatal("CONTRACT FAILED: " + msg, stacktrace.toString());
   }
 
 
