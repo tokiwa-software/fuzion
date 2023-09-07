@@ -30,6 +30,7 @@ import java.util.ListIterator;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -42,12 +43,6 @@ public class Block extends AbstractBlock
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
 
 
   SourcePosition _closingBracePos;
@@ -68,9 +63,6 @@ public class Block extends AbstractBlock
   /**
    * Generic constructor
    *
-   * @param pos the sourcecode position of the start of this block, used for
-   * error messages.
-   *
    * @param closingBracePos the sourcecode position of this block's closing
    * brace. In case this block does not originate in source code, but was added
    * by AST manipulations, this might as well be equal to pos.
@@ -81,13 +73,11 @@ public class Block extends AbstractBlock
    * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
    */
-  private Block(SourcePosition pos,
-                SourcePosition closingBracePos,
+  private Block(SourcePosition closingBracePos,
                 List<Expr> s,
                 boolean newScope)
   {
     super(s);
-    this._pos = pos;
     this._closingBracePos = closingBracePos;
     this._newScope = newScope;
   }
@@ -97,33 +87,26 @@ public class Block extends AbstractBlock
    * Generate a block of expressions that define a new scope. This is generally
    * called from the Parser when the source contains a block.
    *
-   * @param pos the sourcecode position of the start of this block, used for
-   * error messages.
-   *
    * @param closingBracePos the sourcecode position of this block's closing
    * brace. In case this block does not originate in source code, but was added
    * by AST manipulations, this might as well be equal to pos.
    *
    * @param s the list of expressions
    */
-  public Block(SourcePosition pos,
-               SourcePosition closingBracePos,
+  public Block(SourcePosition closingBracePos,
                List<Expr> s)
   {
-    this(pos, closingBracePos, s, true);
+    this(closingBracePos, s, true);
   }
 
 
   /**
    * Generate an empty block of expressions. This is called from the Parser when
    * the body of a routine contains no code but just a `.`.
-   *
-   * @param pos the sourcecode position of the start of this block, used for
-   * error messages.
    */
-  public Block(SourcePosition pos)
+  public Block()
   {
-    this(pos, pos, new List<>());
+    this(SourcePosition.notAvailable, new List<>());
   }
 
 
@@ -131,14 +114,11 @@ public class Block extends AbstractBlock
    * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
-   * @param pos the sourcecode position, used for error messages.
-   *
    * @param s the list of expressions
    */
-  public Block(SourcePosition pos,
-               List<Expr> s)
+  public Block(List<Expr> s)
   {
-    this(pos, pos, s, false);
+    this(SourcePosition.notAvailable, s, false);
   }
 
 
@@ -153,11 +133,10 @@ public class Block extends AbstractBlock
    * @param hasImplicitResult true iff this block produces an implicit result
    * that can be ignored if assigned to unit type.
    */
-  public Block(SourcePosition pos,
-               List<Expr> s,
+  public Block(List<Expr> s,
                boolean hasImplicitResult)
   {
-    this(pos, s);
+    this(s);
     this._hasImplicitResult = hasImplicitResult;
   }
 
@@ -186,7 +165,7 @@ public class Block extends AbstractBlock
       }
     else
       {
-        result = new Block(e.pos(), new List<Expr>(e));
+        result = new Block(new List<Expr>(e));
       }
     return result;
   }
@@ -201,10 +180,10 @@ public class Block extends AbstractBlock
    * @return e if e is a Block, otherwise a new block that is either empty or
    * contains e (if e not null).
    */
-  static Block newIfNull(SourcePosition pos, Expr e)
+  static Block newIfNull(Expr e)
   {
     var b = fromExpr(e);
-    return b == null ? new Block(pos, new List<>()) : b;
+    return b == null ? new Block(new List<>()) : b;
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -215,7 +194,17 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _pos;
+    return _expressions.isEmpty()
+      || _expressions.getFirst().pos().isBuiltIn()
+      || _expressions.getLast().pos().isBuiltIn()
+      ? SourcePosition.notAvailable
+      // NYI hack, positions used for loops are not always in right order.
+      : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
+      ? SourcePosition.notAvailable
+      : new SourceRange(
+          _expressions.getFirst().pos()._sourceFile,
+          _expressions.getFirst().pos().bytePos(),
+          _expressions.getLast().pos().byteEndPos());
   }
 
 
@@ -386,7 +375,7 @@ public class Block extends AbstractBlock
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
         // something else:
-        _expressions.add(new Block(pos(), new List<>()));
+        _expressions.add(new Block(new List<>()));
       }
     Expr resExpr = removeResultExpression();
     if (resExpr != null)

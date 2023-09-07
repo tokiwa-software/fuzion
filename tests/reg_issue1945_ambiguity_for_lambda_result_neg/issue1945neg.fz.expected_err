@@ -10,7 +10,7 @@ While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, b
 --^
 Feature not found: 'd' (one argument)
 Target feature: 'ambiguous_declaration'
-In call: 'd tuple'
+In call: 'd'
 
 
 --CURDIR--/issue1945neg.fz:51:3: error 3: Could not find called feature
@@ -18,6 +18,6 @@ In call: 'd tuple'
 --^
 Feature not found: 'l' (one argument)
 Target feature: 'ambiguous_declaration'
-In call: 'l tuple'
+In call: 'l'
 
 3 errors.

@@ -749,7 +749,7 @@ class LibraryOut extends ANY
           }
         else
           {
-            code(new Block(i.pos(), new List<>()));
+            code(new Block(new List<>()));
           }
       }
     else if (e instanceof Call c)
