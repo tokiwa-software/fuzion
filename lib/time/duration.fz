@@ -32,7 +32,7 @@
 # calendars that may require time spans exceeding several centuries or millenia,
 # nor astrological time spans.
 #
-public duration (
+private:public duration (
 
   # the duration in nano seconds
   #
