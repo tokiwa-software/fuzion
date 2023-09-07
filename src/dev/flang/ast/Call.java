@@ -740,7 +740,7 @@ public class Call extends AbstractCall
             if (!targetVoid && targetFeature != Types.f_ERROR)
               {
                 res.resolveDeclarations(targetFeature);
-                var fos = res._module.lookup(targetFeature, _name, this, _target == null);
+                var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
                 for (var fo : fos)
                   {
                     if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
@@ -788,10 +788,14 @@ public class Call extends AbstractCall
                          (Types.resolved == null ||                // may happen when building bad base.fum
                           targetFeature != Types.resolved.f_void)) // but allow to call anything on void
                   {
-                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature, _target,
+                    AstErrors.calledFeatureNotFound(this,
+                                                    calledName,
+                                                    targetFeature,
+                                                    _target,
                                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                                          (FeatureName fn) -> false,
-                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)));
+                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                    hiddenCandidates(res, thiz, targetFeature, calledName));
                   }
               }
           }
@@ -820,6 +824,28 @@ public class Call extends AbstractCall
        _target         != null);
 
     return !targetVoid;
+  }
+
+
+  /**
+   * @return list of features that would match called name and args but are not visible.
+   */
+  private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature thiz, AbstractFeature targetFeature, FeatureName calledName)
+  {
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    return FeatureAndOuter
+      .findExactOrCandidate(
+        fos,
+        (FeatureName fn) -> fn.equalsExceptId(calledName),
+        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList()
+    );
   }
 
 
@@ -883,7 +909,7 @@ public class Call extends AbstractCall
         _name.startsWith("postfix ")    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(thiz, _name, this, true);
+        var fo = res._module.lookup(thiz, _name, this, true, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
