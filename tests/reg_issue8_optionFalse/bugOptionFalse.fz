@@ -25,7 +25,7 @@
 
 # Regression test for issue #8: https://github.com/tokiwa-software/fuzion/issues/8
 #
-# A simple negative test returing 'false' as 'optio V'
+# A simple negative test returning 'false' as 'option V'
 #
 bugOptionFalse is
 
