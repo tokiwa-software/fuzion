@@ -1100,6 +1100,25 @@ public class AstErrors extends ANY
   }
 
   /**
+   * Suggest to a user that they are trying to call a hidden feature.
+   * Called feature could not be found but there is a feature with the same
+   * name which is not visible at call site.
+   */
+  static String solutionHidden(List<FeatureAndOuter> candidates)
+  {
+    var solution = "";
+
+    if (!candidates.isEmpty())
+      {
+        solution = "To solve this, you might change the visibility of " +
+                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
+                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+      }
+
+    return solution;
+  }
+
+  /**
    * Detect code patterns as follows
    *
    *   f(x some_type_with_a_typo) => x.g
@@ -1138,14 +1157,16 @@ public class AstErrors extends ANY
                                     FeatureName calledName,
                                     AbstractFeature targetFeature,
                                     Expr target,
-                                    List<FeatureAndOuter> candidates)
+                                    List<FeatureAndOuter> candidatesArgCountMismatch,
+                                    List<FeatureAndOuter> candidatesHidden)
   {
     if (!any() || !errorInOuterFeatures(targetFeature))
       {
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                           calledName.argCount());
-        var solution2 = solutionWrongArgumentNumber(candidates);
+        var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
+        var solution4 = solutionHidden(candidatesHidden);
         error(call.pos(),
               "Could not find called feature",
               "Feature not found: " + sbn(calledName) + "\n" +
@@ -1153,7 +1174,8 @@ public class AstErrors extends ANY
               "In call: " + s(call) + "\n" +
               (solution1 != "" ? solution1 :
                solution2 != "" ? solution2 :
-               solution3 != "" ? solution3 : ""));
+               solution3 != "" ? solution3 :
+               solution4 != "" ? solution4 : ""));
       }
   }
 

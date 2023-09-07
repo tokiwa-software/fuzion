@@ -983,7 +983,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
@@ -1038,7 +1038,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var e : fs.entrySet())
           {
             var v = e.getValue();
-            if ((use == null || featureVisible(use.pos()._sourceFile, v)) &&
+            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                 (!v.isField() || !foundFieldInScope))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
@@ -1122,7 +1122,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _res.resolveDeclarations(outer);
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter);
+        var fs = lookup(outer, name, null, traverseOuter, false);
         for (var fo : fs)
           {
             var f = fo._feature;
