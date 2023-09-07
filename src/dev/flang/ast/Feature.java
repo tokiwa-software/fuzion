@@ -1941,8 +1941,7 @@ public class Feature extends AbstractFeature
       (this.outer() == outer,
         Errors.any() ||
         (_impl._kind != Impl.Kind.FieldDef    &&
-         _impl._kind != Impl.Kind.FieldActual &&
-         _impl._kind != Impl.Kind.RoutineDef)
+         _impl._kind != Impl.Kind.FieldActual)
         || _returnType == NoType.INSTANCE);
 
     if (_impl._initialValue != null)
