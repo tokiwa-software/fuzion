@@ -36,7 +36,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Generic extends ANY
+public class Generic extends ANY implements Comparable<Generic>
 {
 
 
@@ -279,6 +279,15 @@ public class Generic extends ANY
   public String toString()
   {
     return name();
+  }
+
+
+  /**
+   * Compare this Generic to other
+   */
+  public int compareTo(Generic other)
+  {
+    return _typeParameter.compareTo(other._typeParameter);
   }
 
 

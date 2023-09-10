@@ -1005,62 +1005,47 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           isGenericArgument() &&  other.isGenericArgument() ?  0 :
           isGenericArgument() && !other.isGenericArgument() ? -1 :
           !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
-        if (!isGenericArgument())
+        if (result == 0 && !isGenericArgument())
           {
-            if (result == 0)
+            if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
-                if (generics().size() != other.generics().size())  // this may happen for open generics lists
+                result = generics().size() < other.generics().size() ? -1 : +1;
+              }
+            else
+              {
+                var tg = generics().iterator();
+                var og = other.generics().iterator();
+                while (tg.hasNext() && result == 0)
                   {
-                    result = generics().size() < other.generics().size() ? -1 : +1;
-                  }
-                else
-                  {
-                    var tg = generics().iterator();
-                    var og = other.generics().iterator();
-                    while (tg.hasNext() && result == 0)
+                    var tgt = tg.next();
+                    var ogt = og.next();
+
+                    if (CHECKS) check
+                      (Errors.any() || tgt != null && ogt != null);
+
+                    if (tgt != null && ogt != null)
                       {
-                        var tgt = tg.next();
-                        var ogt = og.next();
-
-                        if (CHECKS) check
-                          (Errors.any() || tgt != null && ogt != null);
-
-                        if (tgt != null && ogt != null)
-                          {
-                            result = tgt.compareTo(ogt);
-                          }
+                        result = tgt.compareTo(ogt);
                       }
                   }
               }
           }
         if (result == 0)
           {
+            // for artifical built in types
             result = name().compareTo(other.name());
           }
-        if (result == 0)
+        if (result == 0 && isRef() ^ other.isRef())
           {
-            if (isRef() ^ other.isRef())
-              {
-                result = isRef() ? -1 : 1;
-              }
+            result = isRef() ? -1 : 1;
           }
-        if (result == 0)
+        if (result == 0 && isThisType() ^ other.isThisType())
           {
-            if (isThisType() ^ other.isThisType())
-              {
-                result = isThisType() ? -1 : 1;
-              }
+            result = isThisType() ? -1 : 1;
           }
-        if (isGenericArgument())
+        if (result == 0 && isGenericArgument())
           {
-            if (result == 0)
-              {
-                result = genericArgument().feature().compareTo(other.genericArgument().feature());
-                if (result == 0)
-                  {
-                    result = genericArgument().name().compareTo(other.genericArgument().name()); // NYI: compare generic, not generic.name!
-                  }
-              }
+            result = genericArgument().compareTo(other.genericArgument());
           }
       }
     return result;
