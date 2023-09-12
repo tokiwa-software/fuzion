@@ -59,6 +59,7 @@ public class DFA extends ANY
   /**
    * Functional interface to crate intrinsics.
    */
+  @FunctionalInterface
   interface IntrinsicDFA
   {
     Val analyze(Call c);

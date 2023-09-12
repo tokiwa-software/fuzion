@@ -1395,47 +1395,34 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
 
     var args = new List<CExpr>();
-    var result = CStmnt.EMPTY;
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
+        var ai = new CIdent("arg" + i);
         var ac = _fuir.clazzArgClazz(cl, i);
 
-        if (_fuir.clazzBaseName(ac).equals("Any"))
+        switch (_fuir.getSpecialId(ac))
           {
-            args.add((new CIdent("arg" + i)).castTo("void*"));
-          }
-        else if (_fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i8)  ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i16) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i64) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u8)  ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u16) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u64) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f64))
-          {
-            args.add(new CIdent("arg" + i));
-          }
+            case c_u8, c_u16, c_u32, c_u64,
+                 c_i8, c_i16, c_i32, c_i64,
+                 c_f32, c_f64              -> args.add(ai);
+            case c_sys_ptr                 -> args.add(ai.castTo("void*"));
+            default                        -> {}
+          };
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-
-    if (_fuir.clazzBaseName(rc).equals("String"))
+    return switch (_fuir.getSpecialId(rc))
       {
-        var str = new CIdent("str");
-        var res = new CIdent("res");
-        result = CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
-                            constString(str, CExpr.call("strlen", new List<>(str)), res),
-                            res.castTo(_types.clazz(rc)).ret());
-      }
-    else
-      {
-        result = CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
-      }
-
-    return result;
+        case c_Const_String -> {
+          var str = new CIdent("str");
+          var res = new CIdent("res");
+          yield CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
+                           constString(str, CExpr.call("strlen", new List<>(str)), res),
+                           res.castTo(_types.clazz(rc)).ret());
+        }
+        default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+      };
   }
 
 

@@ -243,34 +243,15 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
         var rc = _dfa._fuir.clazzResultClazz(_cc);
-        IntrinsicDFA val = null;
-
-        if (_dfa._fuir.clazzIs(rc, SpecialClazzes.c_i8)  ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_i16) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_i32) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_i64) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_u8)  ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_u16) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_u32) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_u64) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_f32) ||
-            _dfa._fuir.clazzIs(rc, SpecialClazzes.c_f64))
+        result = switch (_dfa._fuir.getSpecialId(rc))
           {
-            val = cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-          }
-        else if (_dfa._fuir.clazzBaseName(rc).equals("String"))
-          {
-            val = cl -> cl._dfa.newConstString(null, cl);
-          }
-
-        if (val != null)
-          {
-            result = val.analyze(this);
-          }
-        else
-          {
-            Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
-          }
+            case c_i8, c_i16, c_i32, c_i64,
+                 c_u8, c_u16, c_u32, c_u64,
+                 c_f32, c_f64              -> new NumericValue(_dfa, rc);
+            case c_Const_String            -> _dfa.newConstString(null, this);
+            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
+                                                yield null; }
+          };
       }
     else if (_returns)
       {
