@@ -270,12 +270,12 @@ public class C extends ANY
     public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, boolean pre, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-      var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
+      var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
-      var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
+      var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
       var ref       = hasTag ? refEntry                   : _names.newTemp();
       var getRef    = hasTag ? CStmnt.EMPTY               : CStmnt.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
-      var tag       = hasTag ? sub.field(_names.TAG_NAME) : ref.castTo("int64_t");
+      var tag       = hasTag ? sub.field(CNames.TAG_NAME) : ref.castTo("int64_t");
       var tcases    = new List<CStmnt>(); // cases depending on tag value or ref cast to int64
       var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
       CStmnt tdefault = null;
@@ -308,7 +308,7 @@ public class C extends ANY
               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
               var f      = field(cl, C.this.current(cl, pre), field);
               var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
+                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
@@ -324,7 +324,7 @@ public class C extends ANY
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
-          var id = refEntry.deref().field(_names.CLAZZ_ID);
+          var id = refEntry.deref().field(CNames.CLAZZ_ID);
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
@@ -338,11 +338,11 @@ public class C extends ANY
     public Pair<CExpr, CStmnt> tag(int cl, int valuecl, CExpr value, int newcl, int tagNum)
     {
       var res     = _names.newTemp();
-      var tag     = res.field(_names.TAG_NAME);
-      var uniyon  = res.field(_names.CHOICE_UNION_NAME);
+      var tag     = res.field(CNames.TAG_NAME);
+      var uniyon  = res.field(CNames.CHOICE_UNION_NAME);
       var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
-                                 _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                      : new CIdent(_names.CHOICE_ENTRY_NAME + tagNum));
+                                 _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CNames.CHOICE_REF_ENTRY_NAME
+                                                                      : new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum));
       if (_fuir.clazzIsUnitType(valuecl) && _fuir.clazzIsChoiceOfOnlyRefs(newcl))
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
@@ -375,8 +375,8 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int ecl)
     {
-      var res = _names.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-      var evi = _names.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
+      var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+      var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
       var o = CStmnt.iff(evi.not(),
                          CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
@@ -391,7 +391,7 @@ public class C extends ANY
      */
     public CStmnt contract(int cl, FUIR.ContractKind ck, CExpr cc)
     {
-      return CStmnt.iff(cc.field(_names.TAG_NAME).not(),
+      return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
                                                        CExpr.string(_fuir.clazzAsString(cl))),
                                    CExpr.exit(1)));
@@ -659,11 +659,11 @@ public class C extends ANY
     cf.println("#include \"" + fzH.toString() + "\"\n");
 
     cf.print
-      (CStmnt.decl("int", _names.GLOBAL_ARGC));
+      (CStmnt.decl("int", CNames.GLOBAL_ARGC));
     cf.print
-      (CStmnt.decl("char **", _names.GLOBAL_ARGV));
+      (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
     cf.print
-      (CStmnt.decl("pthread_mutex_t", _names.GLOBAL_LOCK));
+      (CStmnt.decl("pthread_mutex_t", CNames.GLOBAL_LOCK));
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
@@ -760,8 +760,8 @@ public class C extends ANY
 
     var cl = _fuir.mainClazzId();
 
-    cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
-                        _names.GLOBAL_ARGV.assign(new CIdent("argv")),
+    cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
+                        CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
                         _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
                         CExpr.call(_names.function(cl, false), new List<>())
                         ));
@@ -924,7 +924,7 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
-            var id = tvalue.deref().field(_names.CLAZZ_ID);
+            var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
                                                   id,
@@ -1170,8 +1170,8 @@ public class C extends ANY
    */
   CStmnt tailRecursion(int cl, int c, int i, int tc, List<CExpr> a)
   {
-    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
-                                   : _names.CURRENT.deref();
+    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
+                                   : CNames.CURRENT.deref();
 
     var l = new List<CStmnt>();
     if (_fuir.hasData(tc) && !_tailCall.firstArgIsOuter(cl, c, i))
@@ -1361,8 +1361,8 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
-                                   : _names.CURRENT.deref();
+    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
+                                   : CNames.CURRENT.deref();
     var l = new List<CStmnt>();
     l.add(_ai.process(cl, pre)._v1);
     var res = _fuir.clazzResultClazz(cl);
@@ -1375,8 +1375,8 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), _names.CURRENT));
-      case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, _names.CURRENT));
+      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT));
+      case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
     return CStmnt.seq(allocCurrent,
@@ -1450,7 +1450,7 @@ public class C extends ANY
    */
   CExpr current(int cl, boolean pre)
   {
-    var res1 = _names.CURRENT;
+    var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
     var res3 =  _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal() ? res2.adrOf() : res2;
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
@@ -1470,7 +1470,7 @@ public class C extends ANY
   {
     if (outercl == _fuir.clazzUniverse())
       {
-        outer = _names.UNIVERSE;
+        outer = CNames.UNIVERSE;
       }
     return fields(outer, outercl).field(_names.fieldName(field));
   }
@@ -1488,7 +1488,7 @@ public class C extends ANY
    */
   CExpr fields(CExpr refOrVal, int type)
   {
-    return _fuir.clazzIsRef(type) ? refOrVal.deref().field(_names.FIELDS_IN_REF_CLAZZ)
+    return _fuir.clazzIsRef(type) ? refOrVal.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                   : refOrVal;
   }
 
