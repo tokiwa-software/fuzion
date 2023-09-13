@@ -599,18 +599,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Get value of i32 compile time constant.
-   */
-  int getCompileTimeConstI32()
-  {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
-
-    throw new Error();
-  }
-
-
-  /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
    * whose last expression is not an expression that produces a result.
    */
