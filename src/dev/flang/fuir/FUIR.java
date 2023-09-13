@@ -628,7 +628,7 @@ public class FUIR extends IR
    *
    * @param cl clazz id
    *
-   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
@@ -650,7 +650,7 @@ public class FUIR extends IR
    *
    * @param cl clazz id
    *
-   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
    * @return clazz id of the argument or -1 if no such argument exists (the
    * argument is unused).

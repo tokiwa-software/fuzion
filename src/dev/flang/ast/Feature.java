@@ -1750,7 +1750,7 @@ public class Feature extends AbstractFeature
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);           }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);        }
             public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
