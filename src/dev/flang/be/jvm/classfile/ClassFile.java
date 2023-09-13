@@ -41,6 +41,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.TreeMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 
 /**
@@ -963,6 +965,16 @@ public class ClassFile extends ANY implements ClassFileConstants
         System.out.println(" + " + fp);
       }
     Files.write(fp, bytes());
+  }
+
+
+  /**
+   * Write this class file out to the given JarOutputStream.
+   */
+  public void write(JarOutputStream jos) throws IOException
+  {
+    jos.putNextEntry(new JarEntry(_name + ".class"));
+    jos.write(bytes());
   }
 
 

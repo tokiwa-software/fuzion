@@ -62,6 +62,12 @@ public class JVMOptions extends FuzionOptions
 
 
   /**
+   * Should the generated JVM bytecode be saved as JAR file?
+   */
+  final boolean _saveJAR;
+
+
+  /**
    * List of arguments to pass to the program, if it is run immediately.
    */
   final ArrayList<String> _applicationArgs;
@@ -76,13 +82,15 @@ public class JVMOptions extends FuzionOptions
   public JVMOptions(FuzionOptions fo,
                     boolean Xdfa,
                     boolean run,
-                    boolean saveClasses)
+                    boolean saveClasses,
+                    boolean saveJAR)
   {
     super(fo);
 
     this._Xdfa        = Xdfa;
     this._run         = run;
     this._saveClasses = saveClasses;
+    this._saveJAR     = saveJAR;
     this._applicationArgs = fo.getBackendArgs();
   }
 
