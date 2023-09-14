@@ -89,7 +89,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cc, tvalue, args) ->
         {
           var clname = jvm._fuir.clazzAsString(jvm._fuir.clazzOuterClazz(cc));
-          return jvm.constString("instances["+clname+"]");
+          return jvm.constString("instance["+clname+"]");
         });
 
     put("Type.name",
