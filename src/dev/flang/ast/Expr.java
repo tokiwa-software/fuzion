@@ -110,23 +110,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Mark that this Expr is used as part of a call in the inherits clause of a
-   * feature. In the inherits clause i in a feature declaration
-   *
-   *   g<A,B> {
-   *     f<C,D> : i { e; }
-   *  }
-   *
-   * the generics used in i are resolved against f, while the outer class for i
-   * is g. In contrast, an expression e outside of an inherits clause, generics
-   * are resolved against the outer class f.
-   */
-  void isInheritsCall()
-  {
-  }
-
-
-  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
