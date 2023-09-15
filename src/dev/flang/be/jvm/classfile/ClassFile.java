@@ -616,19 +616,23 @@ public class ClassFile extends ANY implements ClassFileConstants
   {
 
     final float _value;
+    final int _bits;
 
-    CPFloat(float value)
+    CPFloat(float value, int bits)
     {
       _value = value;
+      _bits  = bits;
       add();
     }
+    CPFloat(float value) { this(value, Float.floatToIntBits(value)); }
+    CPFloat(int   value) { this(Float.intBitsToFloat(value), value);  }
 
     CPoolTag tag() { return CPoolTag.tag_float; }
 
     int compareTo2(CPEntry other)
     {
-      var v1 = Float.floatToIntBits(_value);
-      var v2 = Float.floatToIntBits(((CPFloat) other)._value);
+      var v1 = _bits;
+      var v2 = ((CPFloat) other)._bits;
       return
         v1 < v2 ? -1 :
         v1 > v2 ? +1 : 0;
@@ -636,7 +640,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     void write(Kaku o)
     {
-      o.writeI4(Float.floatToIntBits(_value));
+      o.writeI4(_bits);
     }
 
   }
@@ -649,19 +653,23 @@ public class ClassFile extends ANY implements ClassFileConstants
   {
 
     final double _value;
+    final long _bits;
 
-    CPDouble(double value)
+    CPDouble(double value, long bits)
     {
       _value = value;
+      _bits  = bits;
       add();
     }
+    CPDouble(double value) { this(value, Double.doubleToLongBits(value)); }
+    CPDouble(long   value) { this(Double.longBitsToDouble(value), value); }
 
     CPoolTag tag() { return CPoolTag.tag_double; }
 
     int compareTo2(CPEntry other)
     {
-      var v1 = Double.doubleToLongBits(_value);
-      var v2 = Double.doubleToLongBits(((CPDouble) other)._value);
+      var v1 = _bits;
+      var v2 = ((CPDouble) other)._bits;
       return
         v1 < v2 ? -1 :
         v1 > v2 ? +1 : 0;
@@ -669,7 +677,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     void write(Kaku o)
     {
-      o.writeI8(Double.doubleToLongBits(_value));
+      o.writeI8(_bits);
     }
 
   }
@@ -683,7 +691,9 @@ public class ClassFile extends ANY implements ClassFileConstants
   CPInteger         cpInteger        (int    v                  ) { return (CPInteger        ) (new CPInteger        (v)         ).add(); }
   CPLong            cpLong           (long   v                  ) { return (CPLong           ) (new CPLong           (v)         ).add(); }
   CPFloat           cpFloat          (float  v                  ) { return (CPFloat          ) (new CPFloat          (v)         ).add(); }
+  CPFloat           cpFloat          (int    v                  ) { return (CPFloat          ) (new CPFloat          (v)         ).add(); }
   CPDouble          cpDouble         (double v                  ) { return (CPDouble         ) (new CPDouble         (v)         ).add(); }
+  CPDouble          cpDouble         (long   v                  ) { return (CPDouble         ) (new CPDouble         (v)         ).add(); }
   CPString          cpString         (String s                  ) { return (CPString         ) (new CPString         (s)         ).add(); }
   CPString          cpString         (byte[] s                  ) { return (CPString         ) (new CPString         (s)         ).add(); }
   CPNameAndType     cpNameAndType    (CPUtf8 name, CPUtf8 type  ) { return (CPNameAndType    ) (new CPNameAndType    (name, type)).add(); }
