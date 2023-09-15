@@ -295,8 +295,6 @@ public class ResolvedNormalType extends ResolvedType
 
   /**
    * Constructor for artificial built-in types.
-   *
-   * @param n the name
    */
   public ResolvedNormalType()
   {
