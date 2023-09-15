@@ -143,6 +143,8 @@ Check [flang.dev](https://flang.dev) for language and implementation design.
 
 ## Requirements
 
+### Linux
+
 > For Debian based systems this command should install all requirements:
 >
 >     sudo apt-get install make clang libgc1 libgc-dev openjdk-17-jdk
