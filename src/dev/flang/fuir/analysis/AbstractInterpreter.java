@@ -171,11 +171,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> box(VALUE v, int vc, int rc);
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public abstract Pair<VALUE, RESULT> unbox(VALUE v, int vc);
-
-    /**
      * Get the current instance
      *
      * @param cl id of clazz we are interpreting
@@ -625,22 +620,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
               var r = _processor.box(val, vc, rc);
               push(stack, rc, r._v0);
               return r._v1;
-            }
-        }
-      case Unbox:
-        {
-          var orc = _fuir.unboxOuterRefClazz(cl, c, i);
-          var vc = _fuir.unboxResultClazz(cl, c, i);
-          if (_fuir.clazzIsRef(orc) && !_fuir.clazzIsRef(vc))
-            {
-              var refval = pop(stack, orc);
-              var r = _processor.unbox(refval, orc);
-              push(stack, vc, r._v0);
-              return r._v1;
-            }
-          else
-            {
-              return _processor.nop();
             }
         }
       case Call:

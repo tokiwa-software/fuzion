@@ -817,15 +817,6 @@ class CodeGen
 
 
   /**
-   * For a given reference value v create an unboxed value of type vc.
-   */
-  public Pair<Expr, Expr> unbox(Expr val, int orc)
-  {
-    throw new Error("NYI: unbox in the JVM backend");
-  }
-
-
-  /**
    * Get the current instance
    */
   public Pair<Expr, Expr> current(int cl, boolean pre)

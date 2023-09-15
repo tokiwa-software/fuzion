@@ -1429,7 +1429,6 @@ Expression
    | true     | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7
    | hasPos   | 1      | int           | source position: index in this file's SourceFiles section, 0 for builtIn pos
    | k==Add   | 1      | Assign        | assignment
-   | k==Unb   | 1      | Unbox         | unbox expression
    | k==Con   | 1      | Constant      | constant
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match expression
@@ -1449,8 +1448,6 @@ Expression
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Unb | 1      | Unbox         | unbox expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1501,7 +1498,6 @@ Expression
     return switch (k)
       {
       case Assign  -> assignNextPos(eAt);
-      case Unbox   -> unboxNextPos (eAt);
       case Box     -> eAt;
       case Const   -> constNextPos(eAt);
       case Current -> eAt;
@@ -1561,73 +1557,6 @@ Assign
       expressionKindRaw(at-5) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
 
     return assignFieldPos(at) + 4;
-  }
-
-
-  /*
---asciidoc--
-
-Unbox
-^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.2+| true     | 1      | Type          | result type
-              | 1      | bool          | needed flag (NYI: What is this? remove?)
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Unbox                                                                           |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | result type                                   |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int unboxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType unboxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return type(unboxTypePos(at));
-  }
-  int unboxNeededPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return typeNextPos(unboxTypePos(at));
-  }
-  boolean unboxNeeded(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return data().get(unboxNeededPos(at)) != 0;
-  }
-  int unboxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return unboxNeededPos(at) + 1;
   }
 
 

@@ -56,7 +56,6 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 
 import dev.flang.ir.IR;
@@ -648,8 +647,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Unb | 1      | Unbox         | unbox expression                              |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Cal | 1      | Call          | feature call                                  |
@@ -680,24 +677,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         _data.writeOffset(a._assignedField);
-      }
-    else if (e instanceof Unbox u)
-      {
-        lastPos = expressions(u._adr, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, e.pos());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Unbox                                                                           |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | result type                                   |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(u.type());
-        _data.writeByte(u._needed ? 1 : 0);
       }
     else if (e instanceof Box b)
       {

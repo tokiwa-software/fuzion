@@ -196,15 +196,6 @@ public class C extends ANY
 
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public Pair<CExpr, CStmnt> unbox(CExpr val, int orc)
-    {
-      return new Pair<>(fields(val, orc), CStmnt.EMPTY);
-    }
-
-
-    /**
      * Get the current instance
      */
     public Pair<CExpr, CStmnt> current(int cl, boolean pre)

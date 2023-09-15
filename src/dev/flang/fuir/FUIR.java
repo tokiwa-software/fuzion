@@ -50,7 +50,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
-import dev.flang.ast.Unbox; // NYI: remove dependency
 
 import dev.flang.ir.IR;
 
@@ -1367,32 +1366,6 @@ hw25 is
     return id(rc);
   }
 
-  public int unboxOuterRefClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Unbox);
-
-    var outerClazz = clazz(cl);
-    var u = (Unbox) _codeIds.get(c).get(ix);
-    Clazz orc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId);
-    return id(orc);
-  }
-
-  public int unboxResultClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Unbox);
-
-    var outerClazz = clazz(cl);
-    var u = (Unbox) _codeIds.get(c).get(ix);
-    Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
-    return id(vc);
-  }
-
 
   /**
    * Get the code for a comment expression.  This is used for debugging.
@@ -1988,7 +1961,6 @@ hw25 is
       case AdrOf   -> "AdrOf";
       case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
       case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
-      case Unbox   -> "Unbox "     + clazzAsString(unboxOuterRefClazz(cl, c, ix)) + " => " + clazzAsString(unboxResultClazz(cl, c, ix));
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
@@ -2235,7 +2207,6 @@ hw25 is
           yield ix;
         }
       case Box     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Unbox   -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Call    ->
         {
           var tc = accessTargetClazz(cl, c, ix);

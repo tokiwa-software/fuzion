@@ -41,7 +41,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
-import dev.flang.ast.Unbox; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -100,7 +99,6 @@ public class IR extends ANY
     AdrOf,
     Assign,
     Box,
-    Unbox,
     Call,
     Current,
     Comment,
@@ -203,14 +201,6 @@ public class IR extends ANY
         toStack(l, a._value);
         toStack(l, a._target);
         l.add(a);
-      }
-    else if (e instanceof Unbox u)
-      {
-        toStack(l, u._adr, dumpResult);
-        if (!dumpResult && u._needed)
-          {
-            l.add(u);
-          }
       }
     else if (e instanceof Box b)
       {
@@ -373,10 +363,6 @@ public class IR extends ANY
     else if (e instanceof Box)
       {
         result = ExprKind.Box;
-      }
-    else if (e instanceof Unbox)
-      {
-        result = ExprKind.Unbox;
       }
     else if (e instanceof AbstractCall)
       {

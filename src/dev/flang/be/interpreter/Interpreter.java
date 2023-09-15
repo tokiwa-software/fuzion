@@ -64,7 +64,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir 
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 
@@ -497,21 +496,6 @@ public class Interpreter extends ANY
         if (CHECKS) check
           (matches);
 
-      }
-
-    else if (e instanceof Unbox u)
-      {
-        // This is a NOP here since values of reference type and value type are
-        // treated the same way by the interpreter.
-        result = execute(u._adr, staticClazz, cur);
-
-        var id = u._refAndValClazzId;
-        var rc = staticClazz.getRuntimeClazz(id    );
-        var vc = staticClazz.getRuntimeClazz(id + 1);
-        if (rc != vc && rc.isBoxed() && !vc.isRef())
-          {
-            result = ((Boxed) result)._contents;
-          }
       }
 
     else if (e instanceof Universe)

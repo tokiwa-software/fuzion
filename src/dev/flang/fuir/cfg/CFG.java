@@ -550,7 +550,6 @@ public class CFG extends ANY
       case AdrOf : break;
       case Assign: break;
       case Box   : break;
-      case Unbox : break;
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
