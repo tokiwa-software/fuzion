@@ -173,6 +173,9 @@ public abstract class Expr extends ByteCode
 
   public static final Expr ACONST_NULL = new Simple("ACONST_NULL", JAVA_LANG_OBJECT, BC_ACONST_NULL);
 
+  public static final Expr MONITORENTER = new Simple("MONITORENTER", PrimitiveType.type_void, BC_MONITORENTER);
+  public static final Expr MONITOREXIT = new Simple("MONITOREXIT", PrimitiveType.type_void, BC_MONITOREXIT);
+
 
   /**
    * Flag to enable (or suppress, if false) comments in the bytecode, see
