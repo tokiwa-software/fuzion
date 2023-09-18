@@ -685,12 +685,6 @@ public class Interpreter extends ANY
       {
         return null; // in dynamic case, interpreter does not use this, but dynamic lookup only
       }
-    else if (innerClazz == null)
-      {
-        if (CHECKS) check
-          (Errors.any());
-        result = (args) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
-      }
     else
       {
         var f = innerClazz.feature();
