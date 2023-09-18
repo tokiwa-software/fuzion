@@ -535,6 +535,7 @@ public class Impl extends ANY
   AbstractType typeFromRedefinedOrCode(AbstractFeature f)
   {
     AbstractType result;
+    boolean useListEntry = true;
 
     if (PRECONDITIONS) require
       (_kind == Kind.RoutineDef);
@@ -548,7 +549,16 @@ public class Impl extends ANY
               .filter(x -> !x.isThisType())
               .collect(Collectors.toList());
 
-    if (rf.size() == 1)
+    for (var at : rf)
+      {
+        /* If we are inside this loop, there is at least
+         * one element in this list, therefore rf.get(0)
+         * can be used.
+         */
+        useListEntry = useListEntry && (rf.get(0).compareTo(at) == 0);
+      }
+
+    if (rf.size() > 0 && useListEntry)
       {
         result = rf.get(0);
       }
