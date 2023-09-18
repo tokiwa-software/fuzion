@@ -146,10 +146,6 @@ class FixUps extends DataOut
       {
         v = 0;
       }
-    else if (f == null)
-      {
-        v = -1;
-      }
     else
       {
         var o = _offsetsForFeature.get(f);

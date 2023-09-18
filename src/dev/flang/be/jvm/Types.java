@@ -240,8 +240,8 @@ public class Types extends ANY implements ClassFileConstants
             case voidlike, unitlike, boollike, intlike, nullable -> false;
             case refsAndUnits, general                           -> true;
             };
-      case Routine   -> true; // clazzNeedsCode(cl);
-      case Intrinsic -> true || _fuir.hasPrecondition(cl);
+      case Routine   -> true; // NYI clazzNeedsCode(cl);
+      case Intrinsic -> true; // NYI || _fuir.hasPrecondition(cl);
       default        -> false;
       };
   }
