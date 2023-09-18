@@ -525,14 +525,14 @@ public class Impl extends ANY
     return switch (_kind)
       {
       case FieldDef    -> _initialValue.typeIfKnown();
-      case RoutineDef  -> typeFromRedefinedFeatures(f);
+      case RoutineDef  -> typeFromRedefinedOrCode(f);
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> throw new Error("missing case "+_kind);
       };
   }
 
 
-  AbstractType typeFromRedefinedFeatures(AbstractFeature f)
+  AbstractType typeFromRedefinedOrCode(AbstractFeature f)
   {
     AbstractType result;
 
