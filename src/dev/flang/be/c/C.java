@@ -555,6 +555,7 @@ public class C extends ANY
         command.addAll(
           "-Wall",
           "-Werror",
+          "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
           "-Wno-unused-variable",
           "-Wno-unused-label",
@@ -574,7 +575,7 @@ public class C extends ANY
         command.addAll("-lgc");
       }
     // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
+    command.addAll("-fno-trigraphs", "-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
     if (isWindows())
       {
