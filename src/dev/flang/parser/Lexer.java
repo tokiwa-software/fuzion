@@ -2787,7 +2787,7 @@ PIPE        : "|"
             {
             case K_LBRACE:
               _braceCount++;
-              return Token.t_lbrace;
+              return Token.t_undefined;
             case K_RBRACE:
               _braceCount--;
               if (_stringLexer._braceCount > 0)
