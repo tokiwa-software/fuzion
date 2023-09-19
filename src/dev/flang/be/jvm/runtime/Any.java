@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Any extends ANY implements AnyI
+public abstract class Any extends ANY implements AnyI
 {
 
 
