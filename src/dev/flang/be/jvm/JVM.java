@@ -342,8 +342,8 @@ dynamically bound calls in this case.
 Java interface:
 ~~~~~~~~~~~~~~~
 
-The JVM backend should be aware of the Java interfaces create by `fzjava` and
-perform inline calls to the corresponding Java code.  Use of reflection and
+The JVM backend should be aware of the Java interfaces created by `fzjava` and
+perform inline calls to the corresponding Java code.  Use of reflection
 should be avoided as much as possible.
 
 
