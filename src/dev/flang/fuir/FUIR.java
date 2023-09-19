@@ -1763,11 +1763,15 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_f32   ) == 0) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64   ) == 0) { clazz = Clazzes.f64        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.Const_String.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
+    else if (ic instanceof AbstractConstant)
+      {
+        clazz = Clazzes.clazz(t);
+      }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
-    else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
+    else { throw new Error("Unexpected type for ExprKind.Const: " + t + ", expr: " + ic); }
     return id(clazz);
   }
 

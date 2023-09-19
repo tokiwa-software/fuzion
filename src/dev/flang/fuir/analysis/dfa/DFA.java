@@ -474,9 +474,8 @@ public class DFA extends ANY
         case c_Const_String -> newConstString(d, _call);
         default ->
         {
-          Errors.error("Unsupported constant in DFA analysis.",
-                       "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield null;
+          var elementType = _fuir.clazzActualGeneric(constCl, 0);
+          yield new SysArray(DFA.this, new NumericValue(DFA.this, elementType));
         }
         };
       return new Pair<>(r, o);

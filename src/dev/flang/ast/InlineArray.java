@@ -286,6 +286,18 @@ public class InlineArray extends ExprWithPos
 
 
   /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+
+    return NumLiteral.findConstantType(elementType()) != null &&
+      this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());
+  }
+
+
+  /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
    * declaration of corresponding inner features. Add (f,<>) to the list of
    * features to be searched for runtime types to be layouted.
@@ -296,11 +308,31 @@ public class InlineArray extends ExprWithPos
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
-    Expr result = this;
-    if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
+    var exprs = new List<Expr>();
+    var et           = elementType();
+    var eT           = new List<AbstractType>(et);
+    if (isCompileTimeConst())
       {
-        var et           = elementType();
-        var eT           = new List<AbstractType>(et);
+        var args         = new List<Actual>(new Actual(et),
+                                            new Actual(new ArrayConstant(pos(), this._elements, et)),
+                                            new Actual(new NumLiteral(_elements.size())));
+        var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
+        var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
+        var sysArrayCall = new Call(pos(), sys , "internal_array", args).resolveTypes(res, outer);
+        var fuzionT      = new ParsedType(pos(), "fuzion", UnresolvedType.NONE, null);
+        var sysT         = new ParsedType(pos(), "sys"   , UnresolvedType.NONE, fuzionT);
+        var sysArrayT    = new ParsedType(pos(), "internal_array", eT, sysT);
+        var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
+        var sysArrayVar  = new Feature(pos(), Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
+        res._module.findDeclarations(sysArrayVar, outer);
+        res.resolveDeclarations(sysArrayVar);
+        res.resolveTypes();
+        var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
+        exprs.add(sysArrayAssign);
+        exprs.add(arrayCall(res, outer, et, sysArrayName));
+      }
+    else
+      {
         var args         = new List<Actual>(new Actual(et),
                                             new Actual(new NumLiteral(_elements.size())));
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
@@ -315,7 +347,7 @@ public class InlineArray extends ExprWithPos
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
-        var exprs = new List<Expr>(sysArrayAssign);
+        exprs.add(sysArrayAssign);
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
@@ -327,20 +359,34 @@ public class InlineArray extends ExprWithPos
                                            setArgs                                    ).resolveTypes(res, outer);
             exprs.add(setElement);
           }
-        var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
-        var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
-        var unit2           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
-        var unit3           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
-        var sysArrArgs      = new List<Actual>(new Actual(et),
-                                               new Actual(readSysArrayVar),
-                                               new Actual(unit1),
-                                               new Actual(unit2),
-                                               new Actual(unit3));
-        var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
-        exprs.add(arrayCall);
-        result = new Block(pos(), exprs);
+        exprs.add(arrayCall(res, outer, et, sysArrayName));
       }
-    return result;
+    return new Block(pos(), exprs);
+  }
+
+
+  /**
+   * Generate Call to `array`
+   *
+   * @param res
+   * @param outer
+   * @param et the element type
+   * @param sysArrayName the name of internal array
+   * @return
+   */
+  private Call arrayCall(Resolution res, AbstractFeature outer, AbstractType et, String sysArrayName)
+  {
+    var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
+    var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
+    var unit2           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
+    var unit3           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
+    var sysArrArgs      = new List<Actual>(new Actual(et),
+                                           new Actual(readSysArrayVar),
+                                           new Actual(unit1),
+                                           new Actual(unit2),
+                                           new Actual(unit3));
+    var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
+    return arrayCall;
   }
 
 

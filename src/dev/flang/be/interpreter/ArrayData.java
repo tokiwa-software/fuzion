@@ -136,15 +136,17 @@ public class ArrayData extends Value
     AbstractType elementType)
   {
     checkIndex(x);
-    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { ((byte   [])_array)[x] = (byte   ) v.i8Value();   }
-    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { ((short  [])_array)[x] = (short  ) v.i16Value();  }
-    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { ((int    [])_array)[x] =           v.i32Value();  }
-    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { ((long   [])_array)[x] =           v.i64Value();  }
-    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { ((byte   [])_array)[x] = (byte   ) v.u8Value();   }
-    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { ((char   [])_array)[x] = (char   ) v.u16Value();  }
-    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { ((int    [])_array)[x] =           v.u32Value();  }
-    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { ((long   [])_array)[x] =           v.u64Value();  }
-    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])_array)[x] =           v.boolValue(); }
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0 && _array instanceof byte   []) { ((byte   [])_array)[x] = (byte   ) v.i8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0 && _array instanceof short  []) { ((short  [])_array)[x] = (short  ) v.i16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0 && _array instanceof int    []) { ((int    [])_array)[x] =           v.i32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0 && _array instanceof long   []) { ((long   [])_array)[x] =           v.i64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0 && _array instanceof byte   []) { ((byte   [])_array)[x] = (byte   ) v.u8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0 && _array instanceof char   []) { ((char   [])_array)[x] = (char   ) v.u16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0 && _array instanceof int    []) { ((int    [])_array)[x] =           v.u32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0 && _array instanceof long   []) { ((long   [])_array)[x] =           v.u64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_f32 ) == 0 && _array instanceof float  []) { ((float  [])_array)[x] =           v.f32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_f64 ) == 0 && _array instanceof double []) { ((double [])_array)[x] =           v.f64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0 && _array instanceof boolean[]) { ((boolean[])_array)[x] =           v.boolValue(); }
     else                                                        { ((Value  [])_array)[x] =           v;             }
   }
 
@@ -161,15 +163,17 @@ public class ArrayData extends Value
     AbstractType elementType)
   {
     checkIndex(x);
-    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new i8Value  (((byte   [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new i16Value (((short  [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new i32Value (((int    [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new i64Value (((long   [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new u8Value  (((byte   [])_array)[x] & 0xff); }
-    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new u16Value (((char   [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new u32Value (((int    [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new u64Value (((long   [])_array)[x]       ); }
-    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new boolValue(((boolean[])_array)[x]       ); }
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0 && _array instanceof byte   []) { return new i8Value  (((byte   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0 && _array instanceof short  []) { return new i16Value (((short  [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0 && _array instanceof int    []) { return new i32Value (((int    [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0 && _array instanceof long   []) { return new i64Value (((long   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0 && _array instanceof byte   []) { return new u8Value  (((byte   [])_array)[x] & 0xff); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0 && _array instanceof char   []) { return new u16Value (((char   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0 && _array instanceof int    []) { return new u32Value (((int    [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0 && _array instanceof long   []) { return new u64Value (((long   [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_f32 ) == 0 && _array instanceof float  []) { return new f32Value (((float  [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_f64 ) == 0 && _array instanceof double []) { return new f64Value (((double [])_array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0 && _array instanceof boolean[]) { return new boolValue(((boolean[])_array)[x]       ); }
     else                                                        { return              ((Value   [])_array)[x]        ; }
   }
 

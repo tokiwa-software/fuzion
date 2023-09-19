@@ -55,6 +55,7 @@ import dev.flang.ast.AbstractCurrent; // NYI: remove dependency! Use dev.flang.f
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.ArrayConstant;
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -374,7 +375,7 @@ public class Interpreter extends ANY
             else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
             else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
             else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
-            else                                                { result = Value.NO_VALUE; check(false); }
+            else { result = new ArrayData(toArray(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN), t.generics().getFirst())); }
             _cachedConsts_.put(i, result);
           }
       }
@@ -597,6 +598,22 @@ public class Interpreter extends ANY
     return result;
   }
 
+
+  private Object toArray(ByteBuffer bb, AbstractType elementType)
+  {
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return bb.array(); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return bb.array(); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result;  }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result;  }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_f32 ) == 0) { var b = bb.asFloatBuffer(); var result = new float[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_f64 ) == 0) { var b = bb.asDoubleBuffer(); var result = new double[b.remaining()]; b.get(result); return result; }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return bb.array(); }
+    else                                                        { throw new Error("NYI"); }
+  }
 
   /**
    * Execute the code to evaluate the arguments to this call and return the argument values.

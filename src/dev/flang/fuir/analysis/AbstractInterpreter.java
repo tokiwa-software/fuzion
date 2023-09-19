@@ -507,7 +507,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     if (!containsVoid(stack) && stack.size() > 0)
       { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
         // FUIR has the (so far undocumented) invariant that the stack must be
-        // empty at the end of a basic block. There ware some cases
+        // empty at the end of a basic block. There were some cases
         // (tests/reg_issue1294) where this is not the case that need to be
         // fixed, the FUIR code should contain a POP instructions to avoid this
         // special handling here!
