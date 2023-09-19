@@ -559,6 +559,7 @@ public class C extends ANY
           "-Wno-unused-variable",
           "-Wno-unused-label",
           "-Wno-unused-function",
+          "-Wno-trigraphs",
           // allow infinite recursion
           "-Wno-infinite-recursion");
 
