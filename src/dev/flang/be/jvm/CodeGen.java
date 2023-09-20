@@ -251,7 +251,12 @@ class CodeGen
    */
   public Expr assign(int cl, boolean pre, int c, int i, Expr tvalue, Expr avalue)
   {
-    return access(cl, pre, c, i, tvalue, new List<>(avalue))._v1;
+    var p = access(cl, pre, c, i, tvalue, new List<>(avalue));
+
+    if (CHECKS) check
+      (p._v0 == Expr.UNIT);
+
+    return p._v1;
   }
 
 
