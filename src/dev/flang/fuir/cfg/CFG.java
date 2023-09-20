@@ -451,7 +451,6 @@ public class CFG extends ANY
     put("f32.type.tanh"                  , (cfg, cl) -> { } );
     put("f64.type.tanh"                  , (cfg, cl) -> { } );
 
-    put("Any.hash_code"                  , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );

@@ -27,7 +27,6 @@
 #
 public Any ref is
 
-  public hash_code i32 is intrinsic
 
   # create a String from this instance.  Unless redefined, `a.as_string` will
   # create `"instance[T]"` where `T` is the dynamic type of `a`

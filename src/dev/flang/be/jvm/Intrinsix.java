@@ -321,8 +321,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put(new String[]
-      { "Any.hash_code",
-        "concur.atomic.compare_and_set0",
+      { "concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
         "concur.atomic.read0",
         "concur.atomic.write0",
