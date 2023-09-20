@@ -766,14 +766,6 @@ public class Intrinsics extends ANY
     put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.hash_code"        , (c,cl,outer,in) ->
-        {
-          var or = c._fuir.clazzOuterRef(cl);
-          var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
-            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hash_code relies on non-compacting GC
-            : CExpr.int32const(42);  // NYI: This implementation of hash_code is stupid
-          return hc.ret();
-        });
     put("Any.as_string"        , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
