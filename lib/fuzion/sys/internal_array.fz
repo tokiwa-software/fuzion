@@ -55,3 +55,7 @@ module:public internal_array(T type, module data Pointer, public length i32) is
     #array.this[i] == o
   is
     setel T data i o
+
+  # NYI: a terrible hack to help air.Clazzes find fuzion.java.Java_Object
+  #
+  private bad fuzion.java.Java_Object := fuzion.java.Java_Object 0
