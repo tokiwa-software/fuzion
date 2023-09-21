@@ -373,6 +373,16 @@ public class Interpreter extends ANY
             else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
             else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
             else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+            else if (t.compareTo(Types.resolved.t_array_i8 ) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i16) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i64) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u8 ) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u16) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u64) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_f32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_f64) == 0) { result = constArray(d,t); }
             else                                                { result = Value.NO_VALUE; check(false); }
             _cachedConsts_.put(i, result);
           }
@@ -579,6 +589,75 @@ public class Interpreter extends ANY
         throw new Error("Execution of " + e.getClass() + " not implemented");
       }
     return result;
+  }
+
+  /**
+   * Create an array of type t initialized with data d.
+   *
+   * @param d the data
+   * @param t the array type, e.g. `array i32`
+   * @return
+   */
+  private Value constArray(byte[] d, AbstractType t)
+  {
+    var bytes = toArray(d, t);
+    Clazz cl = Clazzes.clazz(t);
+    Instance result = new Instance(cl);
+    var saCl = cl.fields()[0].resultClazz(); /* NYI access via index ugly */
+    Instance sa = new Instance(saCl);
+    setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(d.length / bytesPerField(t)));
+    var arrayData = new ArrayData(bytes);
+    setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
+    setField(Types.resolved.f_array_internal_array, -1, cl, result, sa);
+    return result;
+  }
+
+
+  /**
+   * How many bytes are used per array field by AbstractConstant.data
+   * for given array type.
+   *
+   * @param t
+   * @return
+   */
+  private int bytesPerField(AbstractType t)
+  {
+    if      (t.compareTo(Types.resolved.t_array_i8  ) == 0) { return 1;}
+    else if (t.compareTo(Types.resolved.t_array_i16 ) == 0) { return 2;}
+    else if (t.compareTo(Types.resolved.t_array_i32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_i64 ) == 0) { return 8;}
+    else if (t.compareTo(Types.resolved.t_array_u8  ) == 0) { return 1;}
+    else if (t.compareTo(Types.resolved.t_array_u16 ) == 0) { return 2;}
+    else if (t.compareTo(Types.resolved.t_array_u32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_u64 ) == 0) { return 8;}
+    else if (t.compareTo(Types.resolved.t_array_f32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_f64 ) == 0) { return 8;}
+    else { throw new Error("NYI"); }
+  }
+
+
+  /**
+   * create primitive array of given type
+   * from data of AbstractConstant.data
+   *
+   * @param d
+   * @param t
+   * @return the primite array, e.g. int[], short[], etc.
+   */
+  private Object toArray(byte[] d, AbstractType t)
+  {
+    var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
+    if      (t.compareTo(Types.resolved.t_array_i8  ) == 0) { return bb.array(); }
+    else if (t.compareTo(Types.resolved.t_array_i16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_i32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_i64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_u8  ) == 0) { return bb.array(); }
+    else if (t.compareTo(Types.resolved.t_array_u16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result;  }
+    else if (t.compareTo(Types.resolved.t_array_u32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result;  }
+    else if (t.compareTo(Types.resolved.t_array_u64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_f32 ) == 0) { var b = bb.asFloatBuffer(); var result = new float[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_f64 ) == 0) { var b = bb.asDoubleBuffer(); var result = new double[b.remaining()]; b.get(result); return result; }
+    else                                                    { throw new Error("NYI"); }
   }
 
 

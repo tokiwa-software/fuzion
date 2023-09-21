@@ -236,6 +236,16 @@ public class Call extends ANY implements Comparable<Call>, Context
                   case c_unit                    -> Value.UNIT;
                   case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
                   case c_NOT_FOUND               -> null;
+                  case c_array_i8  -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_i16 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_i32 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_i64 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_u8  -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_u16 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_u32 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_u64 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_f32 -> throw new Error("intrinsics do not return const arrays.");
+                  case c_array_f64 -> throw new Error("intrinsics do not return const arrays.");
                   };
               }
           }

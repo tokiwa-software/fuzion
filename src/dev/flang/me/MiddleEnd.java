@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -278,12 +279,38 @@ public class MiddleEnd extends ANY
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
+        public void action(AbstractConstant c           ) { findUsedFeatures(c); }
         //        public Expr action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
       };
     f.visitCode(fv);
   }
 
+
+  /**
+   * Mark all features used for this abstract constant as used.
+   */
+  void findUsedFeatures(AbstractConstant c)
+  {
+    findUsedFeatures(c.type(), c);
+
+    // NYI this is probably unnecessary?
+    c.type()
+    .featureOfType()
+    // internal_array
+    .valueArguments()
+    .forEach(a -> {
+      var sa = c.type().actualType(a.resultType());
+      findUsedFeatures(sa, c);
+      sa
+        .featureOfType()
+        // data, length
+        .valueArguments()
+        .forEach(x -> {
+          findUsedFeatures(sa.actualType(x.resultType()), c);
+        });
+    });
+  }
 
 
   /**

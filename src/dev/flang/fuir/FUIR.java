@@ -120,6 +120,16 @@ public class FUIR extends IR
     c_Const_String{ Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
     c_sys_ptr     { Clazz getIfCreated() { return Clazzes.fuzionSysPtr;               } },
     c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
+    c_array_i8    { Clazz getIfCreated() { return Clazzes.array_i8   .getIfCreated(); } },
+    c_array_i16   { Clazz getIfCreated() { return Clazzes.array_i16  .getIfCreated(); } },
+    c_array_i32   { Clazz getIfCreated() { return Clazzes.array_i32  .getIfCreated(); } },
+    c_array_i64   { Clazz getIfCreated() { return Clazzes.array_i64  .getIfCreated(); } },
+    c_array_u8    { Clazz getIfCreated() { return Clazzes.array_u8   .getIfCreated(); } },
+    c_array_u16   { Clazz getIfCreated() { return Clazzes.array_u16  .getIfCreated(); } },
+    c_array_u32   { Clazz getIfCreated() { return Clazzes.array_u32  .getIfCreated(); } },
+    c_array_u64   { Clazz getIfCreated() { return Clazzes.array_u64  .getIfCreated(); } },
+    c_array_f32   { Clazz getIfCreated() { return Clazzes.array_f32  .getIfCreated(); } },
+    c_array_f64   { Clazz getIfCreated() { return Clazzes.array_f64  .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
     c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
@@ -1760,11 +1770,15 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_f32   ) == 0) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64   ) == 0) { clazz = Clazzes.f64        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.Const_String.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
+    else if (ic instanceof AbstractConstant)
+      {
+        clazz = Clazzes.clazz(t);
+      }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
-    else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
+    else { throw new Error("Unexpected type for ExprKind.Const: " + t + ", expr: " + ic); }
     return id(clazz);
   }
 
