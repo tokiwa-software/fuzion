@@ -471,6 +471,16 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
+        case c_array_i8   ,
+             c_array_i16  ,
+             c_array_i32  ,
+             c_array_i64  ,
+             c_array_u8   ,
+             c_array_u16  ,
+             c_array_u32  ,
+             c_array_u64  ,
+             c_array_f32  ,
+             c_array_f64  -> constArray(constCl, d, _call);
         case c_Const_String -> newConstString(d, _call);
         default ->
         {
@@ -1737,6 +1747,35 @@ public class DFA extends ANY
                 utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : new NumericValue(this, _fuir.clazzResultClazz(length)));
     a.setField(this, data  , adata);
+    r.setField(this, internalArray, a);
+    return r;
+  }
+
+
+  /**
+   * Create constant array with given bytes.
+   *
+   * @param constCl, e.g. array f32, array u8, etc.
+   *
+   * @param bytes the array contents or null if contents unknown
+   *
+   * @param context for debugging: Reason that causes this array to be
+   * part of the analysis.
+   */
+  Value constArray(int constCl, byte[] bytes, Context context)
+  {
+    var array         = _fuir.clazzAsValue(constCl);
+    var elementType    = _fuir.clazzActualGeneric(array, 0);
+    var internalArray = _fuir.clazzField(array, 0);
+    var sysArray      = _fuir.clazzResultClazz(internalArray);
+    var data          = _fuir.clazzField(sysArray, 0);
+    var length        = _fuir.clazzField(sysArray, 1);
+    var r = newInstance(array, context);
+    var a = newInstance(sysArray, context);
+    var dataArg = new SysArray(this, new NumericValue(this, elementType));
+    var lengthArg = new NumericValue(this, _fuir.clazzResultClazz(length));
+    a.setField(this, data, dataArg);
+    a.setField(this, length, lengthArg);
     r.setField(this, internalArray, a);
     return r;
   }
