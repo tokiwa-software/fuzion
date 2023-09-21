@@ -424,9 +424,17 @@ class CodeGen
           (_fuir.hasData(_fuir.accessTargetClazz(cl, c, i)),  // would be strange if target is unit type
            _fuir.accessIsDynamic(cl, c, i));                  // or call is not dynamic
 
-        res = args(true, tvalue, args, cc0, _fuir.clazzArgCount(cc0))
+        var dynCall = args(true, tvalue, args, cc0, _fuir.clazzArgCount(cc0))
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
           .andThen(addDynamicFunctionAndStubs(cc0, ccs, isCall));
+        if (AbstractInterpreter.clazzHasUniqueValue(_fuir, _fuir.clazzResultClazz(cc0)))
+          {
+            s = dynCall;  // make sure we do not throw away the code even if it is of unit type
+          }
+        else
+          {
+            res = dynCall;
+          }
       }
     else
       {
