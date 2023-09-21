@@ -174,8 +174,8 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public hash u64 is
-    thiz
+  public type.hash_code(a u64.this) u64 is
+    a.thiz
 
 
   # find the highest 1 bit in this integer and return integer with

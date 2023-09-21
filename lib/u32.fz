@@ -160,8 +160,8 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public hash u64 is
-    as_u64.hash
+  public type.hash_code(a u32.this) u64 is
+    hash a.as_u64
 
 
   # find the highest 1 bit in this integer and return integer with
