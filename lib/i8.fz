@@ -122,8 +122,8 @@ public i8(public val i8) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public hash u64 is
-    cast_to_u64.hash
+  public type.hash_code(a i8.this) u64 is
+    hash a.cast_to_u64
 
 
   # find the highest 1 bit in this integer and return integer with

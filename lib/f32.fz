@@ -63,8 +63,8 @@ public f32(public val f32) : float is
 
 
   # create hash code from this number
-  public hash u64 is
-    cast_to_u32.hash
+  public type.hash_code(a f32.this) u64 is
+    hash a.cast_to_u32
 
 
 

@@ -79,8 +79,8 @@ public f64(public val f64) : float is
 
 
   # create hash code from this number
-  public hash u64 is
-    cast_to_u64.hash
+  public type.hash_code(a f64.this) u64 is
+    hash a.cast_to_u64
 
 
   # is the sign bit set?

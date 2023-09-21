@@ -91,12 +91,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # create hash code from a string
   #
-  public hash u64 is
+  public type.hash_code(a String.this) u64 is
     sh_l := u64 13
     sh_r := u64 51
     for
       h u64 := 0, ((h << sh_l) | (h >> sh_r)) ^ b.as_u64;
-      b in utf8
+      b in a.utf8
     while true
     else
       h
