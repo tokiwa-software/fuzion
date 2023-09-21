@@ -104,23 +104,6 @@ public class BoolConst extends Constant
   }
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public BoolConst visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // nothing to be done for a constant
-    return this;
-  }
-
-
   boolean isCompileTimeConst()
   {
     return true;

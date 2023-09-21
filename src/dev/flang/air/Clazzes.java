@@ -95,7 +95,6 @@ public class Clazzes extends ANY
   {
     final TypF _t;
     Clazz _clazz = null;
-    Clazz _dummy = null;
     OnDemandClazz(TypF t) { _t = t; }
     OnDemandClazz() { this(null); }
 
@@ -109,16 +108,9 @@ public class Clazzes extends ANY
         {
           get();
         }
-      else if (_clazz == null)
+      else if (_clazz == null && _clazzesForTypes_.containsKey(_t.get()))
         {
-          if (_dummy == null)
-            {
-              var oldClosed = closed;
-              closed = false;
-              _dummy = new Clazz(_t.get(), -1, universe.get());
-              closed = oldClosed;
-            }
-          _clazz = clazzes.get(_dummy);
+          _clazz = clazz(_t.get());
         }
       return _clazz;
     }
@@ -128,18 +120,17 @@ public class Clazzes extends ANY
         {
           if (_t == null)
             {
-              _clazz = create(Types.resolved.universe.selfType(), null);
+              _clazz = clazz(Types.resolved.universe.selfType());
             }
           else
             {
-              _clazz = create(_t.get(), universe.get());
+              _clazz = clazz(_t.get());
             }
         }
       return _clazz;
     }
     public void clear()
     {
-      _dummy = null;
       _clazz = null;
     }
   }
@@ -423,7 +414,10 @@ public class Clazzes extends ANY
 
     // make sure internally referenced clazzes do exist:
     any.get();
-    create(Types.t_ADDRESS, universe.get());
+    var c_universe = universe.get();
+    c_universe.called(SourcePosition.builtIn);
+    c_universe.instantiated(SourcePosition.builtIn);
+    create(Types.t_ADDRESS, c_universe);
 
     // mark internally referenced clazzes as called or instantiated:
     if (CHECKS) check
@@ -433,18 +427,8 @@ public class Clazzes extends ANY
         main.called(SourcePosition.builtIn);
         main.instantiated(SourcePosition.builtIn);
       }
-    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64, f32, f64 })
-      {
-        c.get().called(SourcePosition.builtIn);
-        c.get().instantiated(SourcePosition.builtIn);
-      }
-    for (var c : new OnDemandClazz[] { Const_String, bool, c_TRUE, c_FALSE, c_unit })
-      {
-        c.get().instantiated(SourcePosition.builtIn);
-      }
     constStringInternalArray = Const_String.get().lookup(Types.resolved.f_array_internal_array, SourcePosition.builtIn);
     fuzionSysArray_u8 = constStringInternalArray.resultClazz();
-    fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
     fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
     fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
