@@ -990,6 +990,7 @@ public class C extends ANY
   public Pair<CExpr, CStmnt> constArray(int constCl, byte[] d, int bytesPerField)
   {
     var tmp              = _names.newTemp();
+    var tmpR             = _names.newTemp();
     var c_internal_array = _fuir.clazzField(constCl, 0);
     if (CHECKS) check
       (_fuir.clazzNumFields(constCl) == 4); // internal_array + 3x unit
@@ -1002,10 +1003,19 @@ public class C extends ANY
     var data             = _names.fieldName(c_data);
     var length           = _names.fieldName(c_length);
     var sysArray         = fields(tmp, constCl).field(internal_array);
-    return new Pair<>(tmp, CStmnt.seq(CStmnt.decl(_names.struct(constCl), tmp),
-      sysArray.field(data)
-        .assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(CExpr.arrayInit(d), CExpr.int32const(d.length)))),
-      sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField))));
+    var type             = _types.clazz(constCl);
+    var typeR            = type + "*";
+    var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
+                           CStmnt.decl(typeR, tmpR),
+                           sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name,
+                                                                  new List<>(CExpr.arrayInit(d),
+                                                                             CExpr.int32const(d.length)))),
+                           sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
+                           tmpR.assign(CExpr.call(CNames.HEAP_CLONE._name,
+                                                  new List<>(tmp.adrOf(),
+                                                             tmp.sizeOfExpr())).castTo(typeR)));
+    return new Pair<>(tmpR.deref(),
+                      stmnts);
   }
 
 
