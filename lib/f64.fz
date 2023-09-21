@@ -153,7 +153,7 @@ public f64(public val f64) : float is
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  module use_scientific_notation bool is
+  public use_scientific_notation bool is
     abs<1E-3 || abs>=1E7
 
 
