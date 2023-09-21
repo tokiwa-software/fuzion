@@ -438,7 +438,9 @@ public class Clazzes extends ANY
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
     fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
     fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
-    fuzionJavaObject = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_bad, SourcePosition.builtIn).resultClazz();
+    var fuzion = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
+    var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
+    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_java_object, SourcePosition.builtIn);
     fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_java_object_ref, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
