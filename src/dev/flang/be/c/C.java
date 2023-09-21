@@ -565,8 +565,14 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
+
+    // disable trigraphs:
+    // "Trigraphs are not popular and many compilers implement them incorrectly. Portable code should not rely on trigraphs being either converted or ignored."
+    // source: https://gcc.gnu.org/onlinedocs/cpp/Initial-processing.html
+    command.add("-fno-trigraphs");
+
     // NYI link libmath, libpthread only when needed
-    command.addAll("-fno-trigraphs", "-lm", "-lpthread", "-std=c11", "-o", name, cname);
+    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
     if (isWindows())
       {
