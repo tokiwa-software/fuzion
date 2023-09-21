@@ -233,34 +233,41 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
-      var o = CStmnt.EMPTY;
-      var r = switch (_fuir.getSpecialId(constCl))
+      return switch (_fuir.getSpecialId(constCl))
         {
-        case c_bool -> d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE;
-        case c_i8   -> CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ());
-        case c_i16  -> CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort());
-        case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-        case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-        case c_u8   -> CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff);
-        case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
-        case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-        case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-        case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
-        case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
-        case c_Const_String ->
-        {
-          var tmp = _names.newTemp();
-          o = constString(d, tmp);
-          yield tmp;
-        }
-        default ->
-        {
-          Errors.error("Unsupported constant in C backend.",
-                       "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield CExpr.dummy(_fuir.clazzAsString(constCl));
-        }
+          case c_bool -> new Pair<>(d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE,CStmnt.EMPTY);
+          case c_i8   -> new Pair<>(CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ()),CStmnt.EMPTY);
+          case c_i16  -> new Pair<>(CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort()),CStmnt.EMPTY);
+          case c_i32  -> new Pair<>(CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()),CStmnt.EMPTY);
+          case c_i64  -> new Pair<>(CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()),CStmnt.EMPTY);
+          case c_u8   -> new Pair<>(CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff),CStmnt.EMPTY);
+          case c_u16  -> new Pair<>(CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ()),CStmnt.EMPTY);
+          case c_u32  -> new Pair<>(CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()),CStmnt.EMPTY);
+          case c_u64  -> new Pair<>(CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()),CStmnt.EMPTY);
+          case c_f32  -> new Pair<>(CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat()),CStmnt.EMPTY);
+          case c_f64  -> new Pair<>(CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()),CStmnt.EMPTY);
+          case c_array_i8  -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 1);
+          case c_array_i16 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 2);
+          case c_array_i32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
+          case c_array_i64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
+          case c_array_u8  -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 1);
+          case c_array_u16 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 2);
+          case c_array_u32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
+          case c_array_u64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
+          case c_array_f32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
+          case c_array_f64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
+          case c_Const_String ->
+          {
+            var tmp = _names.newTemp();
+            yield new Pair<CExpr, CStmnt>(tmp, constString(d, tmp));
+          }
+          default ->
+          {
+            Errors.error("Unsupported constant in C backend.",
+            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+            yield new Pair<>(CExpr.dummy(_fuir.clazzAsString(constCl)), CStmnt.EMPTY);
+          }
         };
-      return new Pair<>(r, o);
     }
 
 
@@ -968,6 +975,37 @@ public class C extends ANY
     return constString(CExpr.string(bytes),
                        CExpr.int32const(bytes.length),
                        tmp);
+  }
+
+
+  /**
+   * produce an expression to create an array
+   * on the heap from the given data
+   *
+   * @param constCl, e.g. array
+   * @param d
+   * @param bytesPerField
+   * @return
+   */
+  public Pair<CExpr, CStmnt> constArray(int constCl, byte[] d, int bytesPerField)
+  {
+    var tmp              = _names.newTemp();
+    var c_internal_array = _fuir.clazzField(constCl, 0);
+    if (CHECKS) check
+      (_fuir.clazzNumFields(constCl) == 4); // internal_array + 3x unit
+    var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
+    if (CHECKS) check
+      (_fuir.clazzNumFields(c_sys_array) == 2); // data, length
+    var c_data           = _fuir.clazzField(c_sys_array, 0);
+    var c_length         = _fuir.clazzField(c_sys_array, 1);
+    var internal_array   = _names.fieldName(c_internal_array);
+    var data             = _names.fieldName(c_data);
+    var length           = _names.fieldName(c_length);
+    var sysArray         = fields(tmp, constCl).field(internal_array);
+    return new Pair<>(tmp, CStmnt.seq(CStmnt.decl(_names.struct(constCl), tmp),
+      sysArray.field(data)
+        .assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(CExpr.arrayInit(d), CExpr.int32const(d.length)))),
+      sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField))));
   }
 
 

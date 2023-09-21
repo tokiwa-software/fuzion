@@ -626,7 +626,7 @@ public class LibraryFeature extends AbstractFeature
                 {
                   public AbstractType type() { return t; }
                   public byte[] data() { return d; }
-                  public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                  public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }
                   public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
                 };

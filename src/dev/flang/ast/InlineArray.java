@@ -286,6 +286,17 @@ public class InlineArray extends ExprWithPos
 
 
   /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+    return NumLiteral.findConstantType(elementType()) != null &&
+      this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());
+  }
+
+
+  /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
    * declaration of corresponding inner features. Add (f,<>) to the list of
    * features to be searched for runtime types to be layouted.
@@ -297,9 +308,13 @@ public class InlineArray extends ExprWithPos
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
-    if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
+    var et = elementType();
+    if (isCompileTimeConst())
       {
-        var et           = elementType();
+        result = new ArrayConstant(pos(), this._elements, et);
+      }
+    else
+      {
         var eT           = new List<AbstractType>(et);
         var args         = new List<Actual>(new Actual(et),
                                             new Actual(new NumLiteral(_elements.size())));
