@@ -154,7 +154,7 @@ public class Types extends ANY implements ClassFileConstants
                 sig = "(" + vt.descriptor() + ")V";
                 cod = rt.load(0)
                   .andThen(vt.load(1))
-                  .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt.descriptor()));
+                  .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt));
               }
             var bc_box = Expr.new0(cn, rt)
               .andThen(Expr.DUP)
@@ -180,7 +180,7 @@ public class Types extends ANY implements ClassFileConstants
             var maincl = _fuir.mainClazzId();
             var bc_main =
               Expr.aload(0, JAVA_LANG_STRING.array())
-              .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array().descriptor()))
+              .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array()))
               .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
               .andThen(invokeStatic(maincl, false)).drop()
               .andThen(Expr.RETURN);

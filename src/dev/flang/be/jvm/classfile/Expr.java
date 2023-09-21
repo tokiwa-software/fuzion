@@ -356,13 +356,13 @@ public abstract class Expr extends ByteCode
   /**
    * create putfield bytecode to write field described by cls, name and type.
    */
-  public static Expr putfield(String cls, String name, String type)
+  public static Expr putfield(String cls, String name, JavaType type)
   {
     if (PRECONDITIONS) require
       (cls != null,
        name != null,
        type != null,
-       !type.equals("V"));
+       type != ClassFileConstants.PrimitiveType.type_void);
 
     return new Expr()
       {
@@ -370,7 +370,7 @@ public abstract class Expr extends ByteCode
         public JavaType type() { return PrimitiveType.type_void;  }
         public byte[] byteCode(ClassFile cf)
         {
-          return bc(O_putfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type)));
+          return bc(O_putfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
@@ -385,7 +385,7 @@ public abstract class Expr extends ByteCode
       (cls != null,
        name != null,
        type != null,
-       !type.equals("V"));
+       type != ClassFileConstants.PrimitiveType.type_void);
 
     return new Expr()
       {
@@ -405,13 +405,13 @@ public abstract class Expr extends ByteCode
   /**
    * create putstatic bytecode to write field described by cls, name and type.
    */
-  public static Expr putstatic(String cls, String name, String type)
+  public static Expr putstatic(String cls, String name, JavaType type)
   {
     if (PRECONDITIONS) require
       (cls != null,
        name != null,
        type != null,
-       !type.equals("V"));
+       type != ClassFileConstants.PrimitiveType.type_void);
 
     return new Expr()
       {
@@ -419,7 +419,7 @@ public abstract class Expr extends ByteCode
         public JavaType type() { return PrimitiveType.type_void;  }
         public byte[] byteCode(ClassFile cf)
         {
-          return bc(O_putstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type)));
+          return bc(O_putstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
