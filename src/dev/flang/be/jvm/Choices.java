@@ -306,7 +306,7 @@ public class Choices extends ANY implements ClassFileConstants
                                                     "(I)V"))
                         .andThen(Expr.putstatic(cf._name,
                                                 u,
-                                                uti.descriptor()));
+                                                uti));
                     }
                 }
 
@@ -316,7 +316,7 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(Expr.iload(1))
                 .andThen(Expr.putfield(cf._name,
                                        Names.TAG_NAME,
-                                       PrimitiveType.type_int.descriptor()))
+                                       PrimitiveType.type_int))
                 .andThen(Expr.RETURN);
               var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
                                                bc_init, new List<>(), new List<>());
@@ -760,7 +760,7 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.iconst(tagNum))
             .andThen(Expr.putfield(_names.javaClass(newcl),
                                    Names.TAG_NAME,
-                                   ClassFileConstants.PrimitiveType.type_int.descriptor()));
+                                   ClassFileConstants.PrimitiveType.type_int));
           var fn = generalValueFieldName(newcl, tagNum);
           var ft = generalValueFieldType(newcl, tagNum);
           if (ft == PrimitiveType.type_void)
@@ -774,7 +774,7 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(value)
                 .andThen(Expr.putfield(_names.javaClass(newcl),
                                        fn,
-                                       ft.descriptor()))
+                                       ft))
                 .is(_types.javaType(newcl));
             }
           break;

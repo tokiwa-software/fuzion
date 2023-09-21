@@ -761,7 +761,7 @@ should be avoided as much as possible.
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
                                                      _names.UNIVERSE_FIELD,
-                                                     _types.UNIVERSE_TYPE.descriptor()))
+                                                     _types.UNIVERSE_TYPE))
                    : Expr.UNIT)
           .andThen(Expr.astore(current_index(cl)));
       }
@@ -1019,7 +1019,7 @@ should be avoided as much as possible.
       Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
       .andThen(Expr.putfield(_names.javaClass(cl),
                              _names.field(field),
-                             _types.resultType(rt).descriptor()));
+                             _types.resultType(rt)));
   }
 
 }
