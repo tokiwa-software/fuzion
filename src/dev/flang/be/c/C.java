@@ -1057,7 +1057,8 @@ public class C extends ANY
     var typeR            = type + "*";
     var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
                            CStmnt.decl(typeR, tmpR),
-                           sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name,
+                           sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name, // NYI cast to void* should suffice but does
+                                                                                           // not work yet for e.g. floats: say [f32 -17.3, f32 1.2]
                                                                   new List<>(arrayInit(d, elementType),
                                                                              CExpr.int32const(d.length)))),
                            sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
