@@ -882,34 +882,96 @@ class CodeGen
    */
   public Pair<Expr, Expr> constData(int constCl, byte[] d)
   {
-    var s = Expr.UNIT;
-    var r = switch (_fuir.getSpecialId(constCl))
+    var c = createConstant(constCl, d);
+    return switch (constantCreationStrategy(constCl))
       {
-      case c_bool -> Expr.iconst(d[0]);
-      case c_i8   -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ());
-      case c_i16  -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort());
-      case c_i32  -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-      case c_i64  -> Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-      case c_u8   -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff);
-      case c_u16  -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff);
-      case c_u32  -> Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-      case c_u64  -> Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-      case c_f32  -> Expr.fconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-      case c_f64  -> Expr.dconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-      case c_Const_String ->
-      {
-        var p = _jvm.constString(d);
-        s = p._v1;
-        yield p._v0;
-      }
-      default ->
-      {
-        Errors.error("Unsupported constant in JVM backend.",
-                     "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-        yield null;
-      }
+      case onEveryUse               -> c;
+      case onUniverseInitialization ->
+        {
+          var ucln = _names.javaClass(_fuir.clazzUniverse());
+          var ucl = _types.classFile(_fuir.clazzUniverse());
+          var f = _names.preallocatedConstantField(constCl, d);
+          var jt = _types.javaType(constCl);
+          if (!ucl.hasField(f))
+            {
+              ucl.field(ACC_STATIC | ACC_PUBLIC,
+                        f,
+                        jt.descriptor(),
+                        new List<>());
+              ucl.addToClInit(c._v1);
+              ucl.addToClInit(c._v0.andThen(Expr.putstatic(ucln, f, jt)));
+            }
+          yield new Pair<Expr, Expr>(Expr.getstatic(ucln, f, jt), Expr.UNIT);
+        }
       };
-    return new Pair<>(r, s);
+  }
+
+
+  /**
+   * For a constant of given type, determine the creation strategy. In
+   * particular, for primitive type constants, do not create them early and
+   * cache them, while for more complex constants, it might be better to create
+   * them early on and reuse the instnace.
+   *
+   * @param constCl the clazz of the type of the constant.
+   *
+   * @return the creation strategy to use.
+   */
+  JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
+  {
+    return switch (_fuir.getSpecialId(constCl))
+      {
+      case c_bool, c_i8 , c_i16, c_i32,
+           c_i64 , c_u8 , c_u16, c_u32,
+           c_u64 , c_f32, c_f64         -> JVMOptions.ConstantCreation.onEveryUse;
+      default                           -> _jvm._options._constantCreationStrategy;
+      };
+  }
+
+
+  /**
+   * Create an instance of a constant value of type constCl with given byte data
+   * d.
+   *
+   * @param constCl the type of the constant
+   *
+   * @param d the constant in serialized form
+   *
+   * @return the value and code to produce the constnat
+   */
+  Pair<Expr, Expr> createConstant(int constCl, byte[] d)
+  {
+    return switch (_fuir.getSpecialId(constCl))
+      {
+      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                 ), Expr.UNIT);
+      case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ()         ), Expr.UNIT);
+      case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort()         ), Expr.UNIT);
+      case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_i64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_u8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () &   0xff), Expr.UNIT);
+      case c_u16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff), Expr.UNIT);
+      case c_u32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_Const_String -> _jvm.constString(d);
+      case c_array_i8     -> _jvm.const_array_8  (constCl, d);
+      case c_array_i16    -> _jvm.const_array_i16(constCl, d);
+      case c_array_i32    -> _jvm.const_array_32 (constCl, d);
+      case c_array_i64    -> _jvm.const_array_64 (constCl, d);
+      case c_array_u8     -> _jvm.const_array_8  (constCl, d);
+      case c_array_u16    -> _jvm.const_array_u16(constCl, d);
+      case c_array_u32    -> _jvm.const_array_32 (constCl, d);
+      case c_array_u64    -> _jvm.const_array_64 (constCl, d);
+      case c_array_f32    -> _jvm.const_array_f32(constCl, d);
+      case c_array_f64    -> _jvm.const_array_f64(constCl, d);
+      default             ->
+        {
+          Errors.error("Unsupported constant in JVM backend.",
+                       "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+          yield null;
+        }
+      };
   }
 
 

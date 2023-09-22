@@ -156,9 +156,166 @@ public class Runtime extends ANY
   }
 
 
+  /**
+   * Create the internal (Java) array for a `Const_String` from data in the
+   * chars of a Java String.
+   *
+   * @param str the Java string as unicodes.
+   *
+   * @return the resulting array using utf_8 encoded bytes
+   */
   public static byte[] internalArrayForConstString(String str)
   {
     return str.getBytes(StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array i8` or `array u8` from data
+   * in the chars of a Java String.
+   *
+   * @param str the Java string, lower byte is the first, upper the second byte.
+   *
+   * @param len the length of the resulting byte[]
+   *
+   * @return the resulting array.
+   */
+  public static byte[] constArray8FromString(String str, int len)
+  {
+    var result = new byte[len];
+    for (var i = 0; i < result.length; i++)
+      {
+        var c = str.charAt(i/2);
+        result[i] = (byte) (i % 2 == 0 ? c : c >> 8);
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array i16` from data in the chars
+   * of a Java String.
+   *
+   * @param str the Java string, each char is one i16.
+   *
+   * @return the resulting array.
+   */
+  public static short[] constArrayI16FromString(String str)
+  {
+    var result = new short[str.length()];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] = (short) str.charAt(i);
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array u16` from data in the chars
+   * of a Java String.
+   *
+   * @param str the Java string, each char is one u16.
+   *
+   * @return the resulting array.
+   */
+  public static char[] constArrayU16FromString(String str)
+  {
+    var result = new char[str.length()];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] = str.charAt(i);
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array i32` or `array u32` from
+   * data in the chars of a Java String.
+   *
+   * @param str the Java string, two char form one i32 or u32 in little endian order.
+   *
+   * @return the resulting array.
+   */
+  public static int[] constArray32FromString(String str)
+  {
+    var result = new int[str.length() / 2];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] =
+          ((str.charAt(2*i + 0) & 0xffff)      ) |
+          ((str.charAt(2*i + 1) & 0xffff) << 16) ;
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array i64` or `array u64` from
+   * data in the chars of a Java String.
+   *
+   * @param str the Java string, four char form one i64 or u64 in little endian
+   * order.
+   *
+   * @return the resulting array.
+   */
+  public static long[] constArray64FromString(String str)
+  {
+    var result = new long[str.length() / 4];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] =
+          ((str.charAt(4*i + 0) & 0xffffL)      ) |
+          ((str.charAt(4*i + 1) & 0xffffL) << 16) |
+          ((str.charAt(4*i + 2) & 0xffffL) << 32) |
+          ((str.charAt(4*i + 3) & 0xffffL) << 48) ;
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array f32` from data in the chars
+   * of a Java String.
+   *
+   * @param str the Java string, two chars form the bits of one f32 in little
+   * endian order.
+   *
+   * @return the resulting array.
+   */
+  public static float[] constArrayF32FromString(String str)
+  {
+    var result = new float[str.length() / 2];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] = Float.intBitsToFloat(((str.charAt(2*i + 0) & 0xffff)      ) |
+                                         ((str.charAt(2*i + 1) & 0xffff) << 16) );
+      }
+    return result;
+  }
+
+
+  /**
+   * Create the internal (Java) array for an `array f64` from data in the chars
+   * of a Java String.
+   *
+   * @param str the Java string, four chars form the bits of one f64 in little
+   * endian order.
+   *
+   * @return the resulting array.
+   */
+  public static double[] constArrayF64FromString(String str)
+  {
+    var result = new double[str.length() / 4];
+    for (var i = 0; i < result.length; i++)
+      {
+        result[i] = Double.longBitsToDouble(((str.charAt(4*i + 0) & 0xffffL)      ) |
+                                            ((str.charAt(4*i + 1) & 0xffffL) << 16) |
+                                            ((str.charAt(4*i + 2) & 0xffffL) << 32) |
+                                            ((str.charAt(4*i + 3) & 0xffffL) << 48) );
+      }
+    return result;
   }
 
 

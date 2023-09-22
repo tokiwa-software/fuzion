@@ -1,7 +1,7 @@
 
 error 1: CONTRACT FAILED: pre-condition on call to 'issue270'
 java.lang.Throwable
-	at dev.flang.be.jvm.runtime.Runtime.contract_fail(Runtime.java:404)
+	at dev.flang.be.jvm.runtime.Runtime.contract_fail(Runtime.java:561)
 	at fzC_issue270.fzPrecondition(Unknown Source)
 	at fzC_universe.main(Unknown Source)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)

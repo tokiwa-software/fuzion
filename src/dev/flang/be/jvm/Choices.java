@@ -331,12 +331,7 @@ public class Choices extends ANY implements ClassFileConstants
                                               bc_tag, new List<>(), new List<>());
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
-              bc_clinit = bc_clinit
-                .andThen(Expr.RETURN);
-              var code_clinit = cf.codeAttribute("<clinit> in class for " + _fuir.clazzAsString(cl),
-                                                 bc_clinit, new List<>(), new List<>());
-              cf.method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
-
+              cf.addToClInit(bc_clinit);
               break;
             }
           case general:

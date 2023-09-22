@@ -905,6 +905,15 @@ public class ClassFile extends ANY implements ClassFileConstants
   final List<Method> _methods = new List<>();
   final List<Attribute> _attributes = new List<>();
 
+  /**
+   * True if this class was finished by a call to finish().
+   */
+  boolean _finished = false;
+
+  /**
+   * static initializer code or null if none. Modified via calls to addToClInit.
+   */
+  Expr _clinitCode = null;
 
   /*---------------------------  constructors  ---------------------------*/
 
@@ -971,6 +980,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   public byte[] bytes()
   {
+    finish();
     var o = new Kaku();
     o.write(MAGIC);
     o.write(_version);
@@ -1118,6 +1128,46 @@ public class ClassFile extends ANY implements ClassFileConstants
   public ClassType classType()
   {
     return _type;
+  }
+
+
+  /**
+   * Add given code to the static initializer of this clazz.
+   *
+   * @param code the code to add.
+   */
+  public void addToClInit(Expr code)
+  {
+    if (PRECONDITIONS) require
+      (!_finished);
+
+    if (code != Expr.UNIT)
+      {
+        _clinitCode = _clinitCode == null ? code
+                                          : _clinitCode.andThen(code);
+      }
+  }
+
+
+  /**
+   * Finish this clazz and prepare it for writing. This will add a static
+   * initializer if code was added via addToClInit.
+   */
+  private void finish()
+  {
+    if (PRECONDITIONS) require
+      (!_finished);
+
+    _finished = true;
+    var bc_clinit = _clinitCode;
+    if (bc_clinit != null)
+      {
+        bc_clinit = bc_clinit
+          .andThen(Expr.RETURN);
+        var code_clinit = codeAttribute("<clinit> in class for " + _name,
+                                        bc_clinit, new List<>(), new List<>());
+        method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
+      }
   }
 
 
