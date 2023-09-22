@@ -327,14 +327,14 @@ public class Runtime extends ANY
     Method r = null;
     for (var m : call.getDeclaredMethods())
       {
-        if (m.getName().equals("fzRoutine"))
+        if (m.getName().equals(ROUTINE_NAME))
           {
             r = m;
           }
       }
     if (r == null)
       {
-        Errors.fatal("in effect.abortable, missing `fzRoutine` in class `" + call + "`");
+        Errors.fatal("in effect.abortable, missing `" + ROUTINE_NAME + "` in class `" + call + "`");
       }
     else
       {
