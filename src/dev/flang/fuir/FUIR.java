@@ -1961,13 +1961,12 @@ hw25 is
    * 'abortable' that has to create code to call 'call'.
    *
    * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @return the index of the requested `Functionl.call` method's clazz.
    */
   public int lookupCall(int cl)
   {
-    var cc = clazz(cl);
-    var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call);
-    return id(ic);
+    return lookup(cl, Types.resolved.f_function_call);
   }
 
 
@@ -1975,12 +1974,69 @@ hw25 is
    * For a clazz of concur.atomic, lookup the inner clazz of the value field.
    *
    * @param cl index of a clazz representing cl's value field
+   *
+   * @return the index of the requested `concur.atomic.value` field's clazz.
    */
   public int lookupAtomicValue(int cl)
   {
+    return lookup(cl, Types.resolved.f_concur_atomic_v);
+  }
+
+
+  /**
+   * For a clazz of array, lookup the inner clazz of the internal_array field.
+   *
+   * @param cl index of a clazz `array T` for some type parameter `T`
+   *
+   * @return the index of the requested `array.internal_array` field's clazz.
+   */
+  public int lookup_array_internal_array(int cl)
+  {
+    return lookup(cl, Types.resolved.f_array_internal_array);
+  }
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * data field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
+   */
+  public int lookup_fuzion_sys_internal_array_data(int cl)
+  {
+    return lookup(cl, Types.resolved.f_fuzion_sys_array_data);
+  }
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * length field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
+   */
+  public int lookup_fuzion_sys_internal_array_length(int cl)
+  {
+    return lookup(cl, Types.resolved.f_fuzion_sys_array_length);
+  }
+
+
+  /**
+   * Internal helper for lookup_* methods.
+   *
+   * @param cl index of the outer clazz for the lookup
+   *
+   * @param f the feature we look for
+   *
+   * @return the index of the requested inner clazz.
+   */
+  private int lookup(int cl, AbstractFeature f)
+  {
     var cc = clazz(cl);
-    var v = Types.resolved.f_concur_atomic_v;
-    var ic = cc.lookup(v);
+    var ic = cc.lookup(f);
     return id(ic);
   }
 

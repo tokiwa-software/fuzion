@@ -1766,10 +1766,10 @@ public class DFA extends ANY
   Value constArray(int arrayCl, byte[] bytes, Context context)
   {
     var elementType   = _fuir.clazzActualGeneric(arrayCl, 0);
-    var internalArray = _fuir.clazzField(arrayCl, 0);
+    var internalArray = _fuir.lookup_array_internal_array(arrayCl);
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var data          = _fuir.clazzField(sysArray, 0);
-    var length        = _fuir.clazzField(sysArray, 1);
+    var data          = _fuir.lookup_fuzion_sys_internal_array_data  (sysArray);
+    var length        = _fuir.lookup_fuzion_sys_internal_array_length(sysArray);
     var r = newInstance(arrayCl, context);
     var a = newInstance(sysArray, context);
     var dataArg = new SysArray(this, bytes, elementType);
