@@ -918,33 +918,6 @@ abstract class CExpr extends CStmnt
   }
 
 
-  /**
-   * create an array with the given bytes as input.
-   *
-   * @param d the data of the array
-   */
-  public static CExpr arrayInit(byte[] d)
-  {
-    return new CExpr() {
-      int precedence()
-        {
-          return 0;
-        }
-      void code(CString sb)
-      {
-        sb.append("(uint8_t[]){");
-        for (int i = 0; i < d.length; i++) {
-          sb.append(d[i]);
-          if(i+1 != d.length)
-          {
-            sb.append(", ");
-          }
-        }
-        sb.append("}");
-      }
-    };
-  }
-
 }
 
 /* end of file */

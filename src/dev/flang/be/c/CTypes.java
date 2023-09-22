@@ -170,7 +170,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(FUIR.SpecialClazzes sc)
   {
     return switch (sc)
       {

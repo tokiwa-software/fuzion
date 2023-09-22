@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
@@ -226,27 +226,27 @@ public class C extends ANY
     {
       return switch (_fuir.getSpecialId(constCl))
         {
-          case c_bool -> new Pair<>(d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE,CStmnt.EMPTY);
-          case c_i8   -> new Pair<>(CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ()),CStmnt.EMPTY);
-          case c_i16  -> new Pair<>(CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort()),CStmnt.EMPTY);
-          case c_i32  -> new Pair<>(CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()),CStmnt.EMPTY);
-          case c_i64  -> new Pair<>(CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()),CStmnt.EMPTY);
-          case c_u8   -> new Pair<>(CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff),CStmnt.EMPTY);
-          case c_u16  -> new Pair<>(CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ()),CStmnt.EMPTY);
-          case c_u32  -> new Pair<>(CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()),CStmnt.EMPTY);
-          case c_u64  -> new Pair<>(CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()),CStmnt.EMPTY);
-          case c_f32  -> new Pair<>(CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat()),CStmnt.EMPTY);
-          case c_f64  -> new Pair<>(CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()),CStmnt.EMPTY);
-          case c_array_i8  -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 1);
-          case c_array_i16 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 2);
-          case c_array_i32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
-          case c_array_i64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
-          case c_array_u8  -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 1);
-          case c_array_u16 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 2);
-          case c_array_u32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
-          case c_array_u64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
-          case c_array_f32 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 4);
-          case c_array_f64 -> constArray(constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).array(), 8);
+          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_u8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_array_i8  -> constArray(constCl, SpecialClazzes.c_i8 , d);
+          case c_array_i16 -> constArray(constCl, SpecialClazzes.c_i16, d);
+          case c_array_i32 -> constArray(constCl, SpecialClazzes.c_i32, d);
+          case c_array_i64 -> constArray(constCl, SpecialClazzes.c_i64, d);
+          case c_array_u8  -> constArray(constCl, SpecialClazzes.c_u8 , d);
+          case c_array_u16 -> constArray(constCl, SpecialClazzes.c_u16, d);
+          case c_array_u32 -> constArray(constCl, SpecialClazzes.c_u32, d);
+          case c_array_u64 -> constArray(constCl, SpecialClazzes.c_u64, d);
+          case c_array_f32 -> constArray(constCl, SpecialClazzes.c_f32, d);
+          case c_array_f64 -> constArray(constCl, SpecialClazzes.c_f64, d);
           case c_Const_String ->
           {
             var tmp = _names.newTemp();
@@ -977,6 +977,59 @@ public class C extends ANY
 
 
   /**
+   * produce CExpr for given special clazz sc and byte buffer bbLE.
+   *
+   * @param sc the spezial clazz we we are generating the CExpr for.
+   * @param bbLE byte buffer (little endian)
+   * @return
+   */
+  public CExpr primitiveExpression(SpecialClazzes sc, ByteBuffer bbLE)
+  {
+    return switch (sc)
+      {
+      case c_bool -> bbLE.get(0) == 1 ? _names.FZ_TRUE: _names.FZ_FALSE;
+      case c_u8 -> CExpr.uint8const(bbLE.get() & 0xff);
+      case c_u16 -> CExpr.uint16const(bbLE.getChar());
+      case c_u32 -> CExpr.uint32const(bbLE.getInt());
+      case c_u64 -> CExpr.uint64const(bbLE.getLong());
+      case c_i8 -> CExpr.int8const(bbLE.get());
+      case c_i16 -> CExpr.int16const(bbLE.getShort());
+      case c_i32 -> CExpr.int32const(bbLE.getInt());
+      case c_i64 -> CExpr.int64const(bbLE.getLong());
+      case c_f32 -> CExpr.f32const(bbLE.getFloat());
+      case c_f64 -> CExpr.f64const(bbLE.getDouble());
+      default -> throw new Error(sc.name() + " is not a supported primitive.");
+      };
+  }
+
+
+  /**
+   * How many bytes are needed to encode specialClazz sc?
+   *
+   * @param sc
+   * @return 1, 2, 4 or 8 => meaning 8bits, 16bits, 32bits, 64bits
+   */
+  public int bytesOfConst(SpecialClazzes sc)
+  {
+    return switch (sc)
+      {
+      case c_bool -> 1;
+      case c_u8 -> 1;
+      case c_u16 -> 2;
+      case c_u32 -> 4;
+      case c_u64 -> 8;
+      case c_i8 -> 1;
+      case c_i16 -> 2;
+      case c_i32 -> 4;
+      case c_i64 -> 8;
+      case c_f32 -> 4;
+      case c_f64 -> 8;
+      default -> throw new Error(sc.name() + " is not a supported primitive.");
+      };
+  }
+
+
+  /**
    * produce an expression to create an array
    * on the heap from the given data
    *
@@ -985,18 +1038,15 @@ public class C extends ANY
    * @param bytesPerField
    * @return
    */
-  public Pair<CExpr, CStmnt> constArray(int constCl, byte[] d, int bytesPerField)
+  public Pair<CExpr, CStmnt> constArray(int constCl, SpecialClazzes elementType, byte[] d)
   {
+    var bytesPerField = bytesOfConst(elementType);
     var tmp              = _names.newTemp();
     var tmpR             = _names.newTemp();
-    var c_internal_array = _fuir.clazzField(constCl, 0);
-    if (CHECKS) check
-      (_fuir.clazzNumFields(constCl) == 4); // internal_array + 3x unit
+    var c_internal_array = _fuir.lookup_array_internal_array(constCl);
     var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
-    if (CHECKS) check
-      (_fuir.clazzNumFields(c_sys_array) == 2); // data, length
-    var c_data           = _fuir.clazzField(c_sys_array, 0);
-    var c_length         = _fuir.clazzField(c_sys_array, 1);
+    var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
+    var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
     var internal_array   = _names.fieldName(c_internal_array);
     var data             = _names.fieldName(c_data);
     var length           = _names.fieldName(c_length);
@@ -1006,7 +1056,7 @@ public class C extends ANY
     var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
                            CStmnt.decl(typeR, tmpR),
                            sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name,
-                                                                  new List<>(CExpr.arrayInit(d),
+                                                                  new List<>(arrayInit(d, elementType),
                                                                              CExpr.int32const(d.length)))),
                            sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
                            tmpR.assign(CExpr.call(CNames.HEAP_CLONE._name,
@@ -1014,6 +1064,40 @@ public class C extends ANY
                                                              tmp.sizeOfExpr())).castTo(typeR)));
     return new Pair<>(tmpR.deref(),
                       stmnts);
+  }
+
+
+  /**
+   * create an array with the given bytes as input.
+   *
+   * @param d the data of the array
+   *
+   * @param elementType i8, f32, etc.
+   */
+  public CExpr arrayInit(byte[] d, SpecialClazzes elementType)
+  {
+    var bytesPerField = bytesOfConst(elementType);
+    return new CExpr() {
+      int precedence()
+      {
+        return 0;
+      }
+
+      void code(CString sb)
+      {
+        sb.append("(" + CTypes.scalar(elementType) + "[]){");
+        for(int i = 0; i < d.length; i = i + bytesPerField)
+          {
+            primitiveExpression(elementType, ByteBuffer.wrap(d, i, bytesPerField).order(ByteOrder.LITTLE_ENDIAN))
+              .code(sb);
+            if (i + bytesPerField != d.length)
+              {
+                sb.append(", ");
+              }
+          }
+        sb.append("}");
+      }
+    };
   }
 
 
