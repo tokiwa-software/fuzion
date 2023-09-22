@@ -1758,24 +1758,21 @@ public class DFA extends ANY
   /**
    * Create constant array with given bytes.
    *
-   * @param constCl, e.g. array f32, array u8, etc.
+   * @param arrayCl, e.g. array f32, array u8, etc.
    *
    * @param bytes the array contents or null if contents unknown
    *
    * @param context for debugging: Reason that causes this array to be
    * part of the analysis.
    */
-  Value constArray(int constCl, byte[] bytes, Context context)
+  Value constArray(int arrayCl, byte[] bytes, Context context)
   {
-    var array         = _fuir.clazzAsValue(constCl);
-    check
-      (array == constCl);
-    var elementType    = _fuir.clazzActualGeneric(array, 0);
-    var internalArray = _fuir.clazzField(array, 0);
+    var elementType   = _fuir.clazzActualGeneric(arrayCl, 0);
+    var internalArray = _fuir.clazzField(arrayCl, 0);
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var data          = _fuir.clazzField(sysArray, 0);
     var length        = _fuir.clazzField(sysArray, 1);
-    var r = newInstance(array, context);
+    var r = newInstance(arrayCl, context);
     var a = newInstance(sysArray, context);
     var dataArg = new SysArray(this, bytes, elementType);
     var lengthArg = new NumericValue(this, _fuir.clazzResultClazz(length)); // NYI: set actual length to bytes.length / sizeof(elementType)
