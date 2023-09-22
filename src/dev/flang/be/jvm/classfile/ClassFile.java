@@ -779,7 +779,8 @@ public class ClassFile extends ANY implements ClassFileConstants
       super(access_flags, name, descriptor, attributes);
 
       if (PRECONDITIONS) require
-        ((access_flags & ~METHOD_ACCESS_FLAGS) == 0);
+        ((access_flags & ~METHOD_ACCESS_FLAGS) == 0,
+         ClassFileConstants.argTypesFromDescriptor(descriptor).noneMatch(x-> x == ClassFileConstants.PrimitiveType.type_void));
     }
   }
 
