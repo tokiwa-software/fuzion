@@ -40,7 +40,14 @@ import java.io.StringWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Calendar;
@@ -79,6 +86,22 @@ public class Runtime extends ANY
 
   }
 
+  /**
+   * Contains possible error numbers emitted by intrinsics when an error happens
+   * on the system side. This attempts to match C's errno.h names and numbers.
+   */
+  enum SystemErrNo
+  {
+    UNSPECIFIED(0), EIO(5), EACCES(13), ENOTSUP(95), EADDRINUSE(98), ECONNREFUSED(111);
+
+    final int errno;
+
+    private SystemErrNo(final int errno)
+    {
+      this.errno = errno;
+    }
+  }
+
 
   /*----------------------------  constants  ----------------------------*/
 
@@ -92,6 +115,20 @@ public class Runtime extends ANY
 
 
   /*--------------------------  static fields  --------------------------*/
+
+
+  /**
+   * Create a Java string from 0-terminated given byte array.
+   */
+  private static String utf8ByteArrayDataToString(byte[] ba)
+  {
+    var l = 0;
+    while (l < ba.length && ba[l] != 0)
+      {
+        l++;
+      }
+    return new String(ba, 0, l, StandardCharsets.UTF_8);
+  }
 
 
   /**
@@ -447,6 +484,215 @@ public class Runtime extends ANY
       }
   }
 
+
+  public static int fuzion_sys_net_bind0(int family, int socketType, int protocol, byte[] host0, byte[] port0, long[] result)
+  {
+    var host = utf8ByteArrayDataToString(host0);
+    var port = utf8ByteArrayDataToString(port0);
+
+    if (family != 2 && family != 10)
+      {
+        throw new RuntimeException("NYI");
+      }
+    try
+      {
+        return switch (protocol)
+          {
+            case 6 ->
+              {
+                var ss = ServerSocketChannel.open();
+                ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            case 17 ->
+              {
+                var ss = DatagramChannel.open();
+                ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            default -> throw new RuntimeException("NYI");
+          };
+      }
+    catch(BindException e)
+      {
+        result[0] = SystemErrNo.EADDRINUSE.errno;
+        return -1;
+      }
+    catch(IOException e)
+      {
+        result[0] = -1;
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_listen()
+  {
+    return 0;
+  }
+
+  public static boolean fuzion_sys_net_accept(long sockfd, long[] result)
+  {
+    try
+      {
+        var asc = Runtime._openStreams_.get(sockfd);
+        if(asc instanceof ServerSocketChannel ssc)
+          {
+            var socket = ssc.accept();
+            result[0] = Runtime._openStreams_.add(socket);
+            return true;
+          }
+        else if(asc instanceof DatagramChannel dc)
+          {
+            result[0] = sockfd;
+            return true;
+          }
+        throw new RuntimeException("NYI");
+      }
+    catch(IOException e)
+      {
+        return false;
+      }
+  }
+
+  public static int fuzion_sys_net_connect0(int family, int socketType, int protocol, byte[] host0, byte[] port0, long[] result)
+  {
+    var host = utf8ByteArrayDataToString(host0);
+    var port = utf8ByteArrayDataToString(port0);
+    if (family != 2 && family != 10)
+      {
+        throw new RuntimeException("NYI");
+      }
+    try
+      {
+        return switch (protocol)
+          {
+            case 6 ->
+              {
+                var socket = SocketChannel.open();
+                socket.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(socket);
+                yield 0;
+              }
+            case 17 ->
+              {
+                var ss = DatagramChannel.open();
+                ss.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            default -> throw new RuntimeException("NYI");
+          };
+      }
+    catch(IOException e)
+      {
+        result[0] = SystemErrNo.ECONNREFUSED.errno;
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_get_peer_address(long sockfd, byte[] data)
+  {
+    try
+      {
+        if (Runtime._openStreams_.get(sockfd) instanceof SocketChannel sc)
+          {
+            byte[] address = ((InetSocketAddress)sc.getRemoteAddress()).getAddress().getAddress();
+            System.arraycopy(address, 0, data, 0, address.length);
+            return address.length;
+          }
+        return -1;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static short fuzion_sys_net_get_peer_port(long sockfd)
+  {
+    try
+      {
+        if (Runtime._openStreams_.get(sockfd) instanceof SocketChannel sc)
+          {
+            return (short) ((InetSocketAddress)sc.getRemoteAddress()).getPort();
+          }
+        return 0;
+      }
+    catch (IOException e)
+      {
+        return 0;
+      }
+  }
+
+  public static boolean fuzion_sys_net_read(long sockfd, byte[] buff, int length, long[] result)
+  {
+    try
+      {
+        var desc = Runtime._openStreams_.get(sockfd);
+        // NYI blocking / none blocking read
+        long bytesRead;
+        if (desc instanceof DatagramChannel dc)
+          {
+            bytesRead = dc.receive(ByteBuffer.wrap(buff)) == null
+              ? 0
+              // NYI how to determine datagram length?
+              : buff.length;
+          }
+        else if (desc instanceof ByteChannel sc)
+          {
+            bytesRead = sc.read(ByteBuffer.wrap(buff));
+          }
+        else
+          {
+            throw new RuntimeException("NYI");
+          }
+        result[0] = bytesRead;
+        return bytesRead != -1;
+      }
+    catch(IOException e) //SocketTimeoutException and others
+      {
+        // unspecified error
+        result[0] = -1;
+        return false;
+      }
+  }
+
+  public static int fuzion_sys_net_write(long sockfd, byte[] fileContent)
+  {
+    try
+      {
+        var sc = (ByteChannel)Runtime._openStreams_.get(sockfd);
+        sc.write(ByteBuffer.wrap(fileContent));
+        return 0;
+      }
+    catch(IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_close0(long sockfd)
+  {
+    return Runtime._openStreams_.remove(sockfd)
+      ? 0
+      : -1;
+  }
+
+  public static int fuzion_sys_net_set_blocking0(long sockfd, int blocking)
+  {
+    var asc = (AbstractSelectableChannel)Runtime._openStreams_.get(sockfd);
+    try
+      {
+        asc.configureBlocking(blocking == 1);
+        return 0;
+      }
+    catch(IOException e)
+      {
+        return -1;
+      }
+  }
 
   static long unique_id()
   {
