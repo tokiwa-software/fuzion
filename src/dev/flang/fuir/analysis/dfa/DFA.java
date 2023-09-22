@@ -1268,7 +1268,7 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.lstats"       , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.sys.fileio.seek"         , cl -> Value.UNIT ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.sys.fileio.file_position", cl -> Value.UNIT ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
-    put("fuzion.sys.fileio.mmap"         , cl -> new SysArray(cl._dfa, new byte[0])); // NYI: length wrong, get from arg
+    put("fuzion.sys.fileio.mmap"         , cl -> new SysArray(cl._dfa, new NumericValue(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8)))); // NYI: length wrong, get from arg
     put("fuzion.sys.fileio.munmap"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.flush"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.stdin.stdin0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1478,7 +1478,7 @@ public class DFA extends ANY
     put("f64.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.sys.internal_array_init.alloc", cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
+    put("fuzion.sys.internal_array_init.alloc", cl -> new SysArray(cl._dfa, new byte[0], -1)); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
           var array = cl._args.get(0).value();
@@ -1741,7 +1741,7 @@ public class DFA extends ANY
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var adata = utf8Bytes != null ? new SysArray(this, utf8Bytes)
+    var adata = utf8Bytes != null ? new SysArray(this, utf8Bytes, _fuir.clazz(FUIR.SpecialClazzes.c_u8))
                                   : new SysArray(this, new NumericValue(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
@@ -1768,6 +1768,8 @@ public class DFA extends ANY
   Value constArray(int constCl, byte[] bytes, Context context)
   {
     var array         = _fuir.clazzAsValue(constCl);
+    check
+      (array == constCl);
     var elementType    = _fuir.clazzActualGeneric(array, 0);
     var internalArray = _fuir.clazzField(array, 0);
     var sysArray      = _fuir.clazzResultClazz(internalArray);
@@ -1775,8 +1777,8 @@ public class DFA extends ANY
     var length        = _fuir.clazzField(sysArray, 1);
     var r = newInstance(array, context);
     var a = newInstance(sysArray, context);
-    var dataArg = new SysArray(this, new NumericValue(this, elementType));
-    var lengthArg = new NumericValue(this, _fuir.clazzResultClazz(length));
+    var dataArg = new SysArray(this, bytes, elementType);
+    var lengthArg = new NumericValue(this, _fuir.clazzResultClazz(length)); // NYI: set actual length to bytes.length / sizeof(elementType)
     a.setField(this, data, dataArg);
     a.setField(this, length, lengthArg);
     r.setField(this, internalArray, a);
