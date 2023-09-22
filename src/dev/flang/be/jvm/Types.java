@@ -533,7 +533,11 @@ public class Types extends ANY implements ClassFileConstants
       {
         var or = _fuir.clazzOuterRef(cl);
         var ot = _fuir.clazzResultClazz(or);
-        as.append(resultType(ot).descriptor());
+        var at = resultType(ot);
+        if (at != PrimitiveType.type_void)
+          {
+            as.append(at.descriptor());
+          }
       }
     for (var ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
       {
