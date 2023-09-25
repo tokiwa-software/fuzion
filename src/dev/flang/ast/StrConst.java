@@ -39,13 +39,10 @@ import dev.flang.util.SourcePosition;
 public class StrConst extends Constant
 {
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   *
-   */
-  public String _str;
+  private final String _str;
 
 
   /*--------------------------  constructors  ---------------------------*/
