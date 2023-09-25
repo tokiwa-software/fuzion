@@ -30,7 +30,7 @@
 #
 private:public Const_String ref : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
 
-  redef utf8 Sequence u8 is Const_String.this
+  public redef utf8 Sequence u8 is Const_String.this
 
   # Resolve repeated inheritance of as_string, is_empty from string and from array.
   #
@@ -38,4 +38,4 @@ private:public Const_String ref : String, array u8 (fuzion.sys.internal_array_in
   # array.as_string
   #
   public redef as_string String is Const_String.this
-  redef is_empty => length = 0
+  public redef is_empty => length = 0
