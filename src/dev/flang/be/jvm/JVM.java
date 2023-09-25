@@ -1165,8 +1165,10 @@ should be avoided as much as possible.
     StringBuilder sb = new StringBuilder();
     for (var i = 0; i < bytes.length; i+=2)
       {
-        sb.append((char) ((bytes[i  ] & 0xff)      |
-                          (bytes[i+1] & 0xff) << 8   ));
+        var b0 = bytes[i];
+        var b1 = i+1 < bytes.length ? bytes[i+1] : (byte) 0;
+        sb.append((char) ((b0 & 0xff)      |
+                          (b1 & 0xff) << 8   ));
       }
     return Expr.stringconst(sb.toString());
   }
