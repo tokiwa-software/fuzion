@@ -27,6 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm.classfile;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
+
+import java.util.stream.Stream;
 
 
 /**
@@ -126,6 +129,7 @@ public interface ClassFileConstants
     String descriptor2();
     String className();
   }
+
 
   public enum PrimitiveType implements JavaType
   {
@@ -634,6 +638,90 @@ public interface ClassFileConstants
           throw new Error("Unexpected type string `" + s +"`");
         }
       };
+  }
+
+
+  /**
+   * Get the JavaType from a descriptor, e.g.,
+   *
+   *   typeFromDescriptor("(IJLjava/lang/String;)V",3)
+   *
+   * will return the type java.lang.String.
+   *
+   * @param s a descriptor string
+   *
+   * @param at a position in a descriptor string.
+   *
+   * @return the type starting as a JavaType instance.
+   */
+  static JavaType typeFromDescriptor(String s, int at)
+  {
+    var c = s.charAt(at);
+    return switch (c)
+      {
+      case 'V', 'B', 'S', 'C', 'I', 'J', 'F', 'D', 'Z' -> primitiveType("" + c);
+      case '[' -> typeFromDescriptor(s, at+1).array();
+      case 'L' -> new ClassType(s.substring(at + 1, s.indexOf(";", at)));
+      default -> throw new Error("Unexpected Java type starting with '" + c + "'");
+      };
+  }
+
+  /**
+   * Skip a type in a descriptor and get the index of the first char after the
+   * descriptor, e.g.,
+   *
+   *   skipTypeInDescriptor("(IJLjava/lang/String;)V",3)
+   *
+   * will return the index of ")".
+   *
+   * @param s a descriptor string
+   *
+   * @param at a position in a descriptor string.
+   *
+   * @return the index in s after the type.
+   */
+  static int skipTypeInDescriptor(String s, int at)
+  {
+    var c = s.charAt(at);
+    return switch (c)
+      {
+      case 'V', 'B', 'S', 'C', 'I', 'J', 'F', 'D', 'Z' -> at + 1;
+      case '[' -> skipTypeInDescriptor(s, at+1);
+      case 'L' -> s.indexOf(";", at) + 1;
+      default -> throw new Error("Unexpected Java type starting with '" + c + "'");
+      };
+  }
+
+
+  /**
+   * Get the argument types used in a method signature descriptor as a stream, e.g.,
+   *
+   *   argTypesFromDescriptor("(IJLjava/lang/String;)V",3)
+   *
+   * Will produce
+   *
+   *   PrimitiveType.type_int
+   *   PrimitiveType.type_long
+   *   ClassType("java/lang/String")
+   *
+   * @param descriptor a method signature descriptor
+   *
+   * @return a stream of all the argument types
+   */
+  static Stream<JavaType> argTypesFromDescriptor(String descriptor)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (descriptor.charAt(0) == '(',
+       descriptor.indexOf(")") > 0);
+
+    var l = new List<JavaType>();
+    var i = 1;
+    while (descriptor.charAt(i) != ')')
+      {
+        l.add(typeFromDescriptor(descriptor, i));
+        i = skipTypeInDescriptor(descriptor, i);
+      }
+    return l.stream();
   }
 
 
