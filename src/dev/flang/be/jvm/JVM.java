@@ -922,7 +922,7 @@ should be avoided as much as possible.
         else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
           {
             code = Expr.RETURN;
-            name = "fzRoutine";
+            name = Names.ROUTINE_NAME;
           }
 
         check
