@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class CNames
+ * Source of class Names
  *
  *---------------------------------------------------------------------*/
 
@@ -88,7 +88,20 @@ public class Names extends ANY implements ClassFileConstants
    */
   static final String RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING     = "internalArrayForConstString";
   static final String RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG = "(Ljava/lang/String;)[B";
-
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8          = "constArray8FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG      = "(Ljava/lang/String;I)[B";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16        = "constArrayI16FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16_SIG    = "(Ljava/lang/String;)[S";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16        = "constArrayU16FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16_SIG    = "(Ljava/lang/String;)[C";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32         = "constArray32FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32_SIG     = "(Ljava/lang/String;)[I";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64         = "constArray64FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64_SIG     = "(Ljava/lang/String;)[J";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32        = "constArrayF32FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32_SIG    = "(Ljava/lang/String;)[F";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64        = "constArrayF64FromString";
+  static final String RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64_SIG    = "(Ljava/lang/String;)[D";
 
   /**
    * Name and signature of Runtime.effect_get()
@@ -165,6 +178,12 @@ public class Names extends ANY implements ClassFileConstants
    * each tag number for a unit type that contain preallocated references.
    */
   static final String CHOICE_UNIT_AS_REF_PREFIX = "fzU_";
+
+
+  /**
+   * Prefix for static fields in universe to hold pre-allocated constants
+   */
+  static final String PREALLOCATED_CONSTANT_PREFIX = "fzK_";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -353,6 +372,13 @@ public class Names extends ANY implements ClassFileConstants
    * Unique mapping from base names to mangled base names.
    */
   TreeMap<String,String> _simpleBaseNames = new TreeMap<>();
+
+
+  /**
+   * Map from PreallocatedConstants to field names if static field in
+   * fzC_univers that hold these constant values.
+   */
+  TreeMap<PreallocatedConstant, String> _preallocatedConstantFieldNames = new TreeMap<>();
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -577,6 +603,30 @@ public class Names extends ANY implements ClassFileConstants
     var tc = _fuir.clazzChoice(cc, tagNum);
     return _fuir.clazzIsRef(tc) ? CHOICE_REF_ENTRY_NAME
                                 : CHOICE_ENTRY_NAME + tagNum;
+  }
+
+
+  /**
+   * Get the field name for a static field in fzC_universo to hold a constant
+   * with given type and data.
+   *
+   * @param constCl the clazz of the type of the constant.
+   *
+   * @param data the constant value in serialized form
+   *
+   * @return the name of the (new or existing) static field to be declared to
+   * hold this constant.
+   */
+  String preallocatedConstantField(int constCl, byte[] data)
+  {
+    var c = new PreallocatedConstant(constCl, data);
+    var result = _preallocatedConstantFieldNames.get(c);
+    if (result == null)
+      {
+        result = PREALLOCATED_CONSTANT_PREFIX + _preallocatedConstantFieldNames.size() + "_" + _classNames.get(constCl);
+        _preallocatedConstantFieldNames.put(c, result);
+      }
+    return result;
   }
 
 }
