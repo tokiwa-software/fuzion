@@ -147,6 +147,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
         });
 
+    put("fuzion.java.Java_Object.is_null",
+        (jvm, cc, tvalue, args) ->
+        {
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = tvalue
+            .andThen(jvm.getfield(jref))
+            .andThen(Expr.branch(O_ifnull,
+                                 Expr.iconst(1),
+                                 Expr.iconst(0)))
+            ;
+          return new Pair<>(res, Expr.UNIT);
+        });
+
     put("fuzion.java.i8_to_java_object",
         (jvm, cc, tvalue, args) ->
         {
@@ -437,7 +450,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         "concur.atomic.read0",
         "concur.atomic.write0",
-        "fuzion.java.Java_Object.is_null",
         "fuzion.java.array_get",
         "fuzion.java.array_length",
         "fuzion.java.array_to_java_object0",
