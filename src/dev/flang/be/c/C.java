@@ -980,24 +980,26 @@ public class C extends ANY
    * produce CExpr for given special clazz sc and byte buffer bbLE.
    *
    * @param sc the spezial clazz we we are generating the CExpr for.
+   *
    * @param bbLE byte buffer (little endian)
-   * @return
+   *
+   * @return C expression that creates corresponging constant value.
    */
   public CExpr primitiveExpression(SpecialClazzes sc, ByteBuffer bbLE)
   {
     return switch (sc)
       {
       case c_bool -> bbLE.get(0) == 1 ? _names.FZ_TRUE: _names.FZ_FALSE;
-      case c_u8 -> CExpr.uint8const(bbLE.get() & 0xff);
-      case c_u16 -> CExpr.uint16const(bbLE.getChar());
-      case c_u32 -> CExpr.uint32const(bbLE.getInt());
-      case c_u64 -> CExpr.uint64const(bbLE.getLong());
-      case c_i8 -> CExpr.int8const(bbLE.get());
-      case c_i16 -> CExpr.int16const(bbLE.getShort());
-      case c_i32 -> CExpr.int32const(bbLE.getInt());
-      case c_i64 -> CExpr.int64const(bbLE.getLong());
-      case c_f32 -> CExpr.f32const(bbLE.getFloat());
-      case c_f64 -> CExpr.f64const(bbLE.getDouble());
+      case c_u8   -> CExpr.uint8const (bbLE.get() & 0xff);
+      case c_u16  -> CExpr.uint16const(bbLE.getChar());
+      case c_u32  -> CExpr.uint32const(bbLE.getInt());
+      case c_u64  -> CExpr.uint64const(bbLE.getLong());
+      case c_i8   -> CExpr.int8const  (bbLE.get());
+      case c_i16  -> CExpr.int16const (bbLE.getShort());
+      case c_i32  -> CExpr.int32const (bbLE.getInt());
+      case c_i64  -> CExpr.int64const (bbLE.getLong());
+      case c_f32  -> CExpr.f32const   (bbLE.getFloat());
+      case c_f64  -> CExpr.f64const   (bbLE.getDouble());
       default -> throw new Error(sc.name() + " is not a supported primitive.");
       };
   }
@@ -1006,7 +1008,8 @@ public class C extends ANY
   /**
    * How many bytes are needed to encode specialClazz sc?
    *
-   * @param sc
+   * @param sc a special clazz id.
+   *
    * @return 1, 2, 4 or 8 => meaning 8bits, 16bits, 32bits, 64bits
    */
   public int bytesOfConst(SpecialClazzes sc)
@@ -1014,16 +1017,16 @@ public class C extends ANY
     return switch (sc)
       {
       case c_bool -> 1;
-      case c_u8 -> 1;
-      case c_u16 -> 2;
-      case c_u32 -> 4;
-      case c_u64 -> 8;
-      case c_i8 -> 1;
-      case c_i16 -> 2;
-      case c_i32 -> 4;
-      case c_i64 -> 8;
-      case c_f32 -> 4;
-      case c_f64 -> 8;
+      case c_u8   -> 1;
+      case c_u16  -> 2;
+      case c_u32  -> 4;
+      case c_u64  -> 8;
+      case c_i8   -> 1;
+      case c_i16  -> 2;
+      case c_i32  -> 4;
+      case c_i64  -> 8;
+      case c_f32  -> 4;
+      case c_f64  -> 8;
       default -> throw new Error(sc.name() + " is not a supported primitive.");
       };
   }
@@ -1040,7 +1043,7 @@ public class C extends ANY
    */
   public Pair<CExpr, CStmnt> constArray(int constCl, SpecialClazzes elementType, byte[] d)
   {
-    var bytesPerField = bytesOfConst(elementType);
+    var bytesPerField    = bytesOfConst(elementType);
     var tmp              = _names.newTemp();
     var tmpR             = _names.newTemp();
     var c_internal_array = _fuir.lookup_array_internal_array(constCl);

@@ -187,22 +187,8 @@ public class SysArray extends Value implements Comparable<SysArray>
       }
     if (r == 0)
       {
-        if (_elements != null || other._elements != null)
-          {
-            if (_elements == null)
-              {
-                r = -1;
-              }
-            else if (other._elements == null)
-              {
-                r = +1;
-              }
-            else
-              {
-                return Value.compare(_elements, other._elements);
-              }
-          }
-        r = (_elements == null && other._elements != null) ? -1 :
+        r = (_elements == null && other._elements == null) ?  0 :
+            (_elements == null && other._elements != null) ? -1 :
             (_elements != null && other._elements == null) ? +1
                                                            : Value.compare(_elements, other._elements);
       }

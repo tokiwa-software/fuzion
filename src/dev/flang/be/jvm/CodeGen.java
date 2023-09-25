@@ -885,10 +885,9 @@ class CodeGen
     var c = createConstant(constCl, d);
     return switch (constantCreationStrategy(constCl))
       {
-      case onEveryUse               -> c;
-      case onUniverseInitialization ->
+      case onEveryUse               -> c;  // create constant inline
+      case onUniverseInitialization ->     // or create constant in universe' static initializer:
         {
-          var ucln = _names.javaClass(_fuir.clazzUniverse());
           var ucl = _types.classFile(_fuir.clazzUniverse());
           var f = _names.preallocatedConstantField(constCl, d);
           var jt = _types.javaType(constCl);
@@ -899,9 +898,9 @@ class CodeGen
                         jt.descriptor(),
                         new List<>());
               ucl.addToClInit(c._v1);
-              ucl.addToClInit(c._v0.andThen(Expr.putstatic(ucln, f, jt)));
+              ucl.addToClInit(c._v0.andThen(Expr.putstatic(ucl._name, f, jt)));
             }
-          yield new Pair<Expr, Expr>(Expr.getstatic(ucln, f, jt), Expr.UNIT);
+          yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
         }
       };
   }

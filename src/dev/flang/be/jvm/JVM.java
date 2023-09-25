@@ -1157,8 +1157,13 @@ should be avoided as much as possible.
 
 
   /**
-   * Create a constant Java String that contains the given bytes.  This string
+   * Create a constant Java String that contains the given bytes.  This String
    * will be used to create a constant array at runtime.
+   *
+   * @param bytes the bytes of a serialized constant.
+   *
+   * @return expression that results in a Java string with the bytes from bytes
+   * in its characters in little endian order.
    */
   Expr bytesArrayAsString(byte[] bytes)
   {
@@ -1324,6 +1329,23 @@ should be avoided as much as possible.
   }
 
 
+  /**
+   * Does given field exist as a Java field? This is the case for fields that
+   *
+   *  - contain data (are not unit types),
+   *
+   *  - whose outer type is not a primitive (scalar) type (i.e., i32.val does
+   *    not exist!),
+   *
+   *  - that needs code
+   *
+   *  - whose Java type is not 'void ' (which might happen for choice types that
+   *    are effectively unit types).
+   *
+   * @param field the clazz id of a field in _fuir.
+   *
+   * @return true if a Java field exists for the given field.
+   */
   boolean fieldExists(int field)
   {
     var occ   = _fuir.clazzOuterClazz(field);
@@ -1354,6 +1376,8 @@ should be avoided as much as possible.
   /**
    * Create bytecode for a putfield instruction. In case !fieldExists(field),
    * pop the value and the target instance ref from the stack.
+   *
+   * @param field the clazz id of a field in _fuir.
    */
   Expr putfield(int field)
   {

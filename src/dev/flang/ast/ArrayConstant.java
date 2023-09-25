@@ -33,27 +33,54 @@ import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 /**
- * ArrayConstant
+ * ArrayConstant represents a constant array the source code such as '[3.14,
+ * 2.71]', '[1,2,3]'.
  */
 public class ArrayConstant extends Constant
 {
 
-  private final AbstractType _type;
-  private final List<Expr> _elements;
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   * @param pos
-   * @param elements
+   * The type of the array constant
+   */
+  private final AbstractType _type;
+
+
+  /**
+   * The elements of the array constant
+   */
+  private final List<Expr> _elements;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Constructor for ArrayConstante at the given source code position, with the
+   * given elements and element type.
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param elements the element values
+   *
    * @param et the elements type, e.g. u64, i32 etc.
    */
   public ArrayConstant(SourcePosition pos, List<Expr> elements, AbstractType et)
   {
     super(pos);
+
     this._elements = elements;
-    this._type = new ResolvedNormalType(Types.resolved.f_array.selfType(), new List<>(et),
-      new List<>(), Types.resolved.universe.selfType());
+    this._type = new ResolvedNormalType(Types.resolved.f_array.selfType(),
+                                        new List<>(et),
+                                        new List<>(),
+                                        Types.resolved.universe.selfType());
   }
+
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
@@ -92,3 +119,5 @@ public class ArrayConstant extends Constant
   }
 
 }
+
+/* end of file */
