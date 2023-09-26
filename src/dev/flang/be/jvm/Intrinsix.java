@@ -269,7 +269,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_std_date_time",
                                        "([I)V",
                                        PrimitiveType.type_void));
-            ;
           return new Pair<>(Expr.UNIT, res);
         });
 

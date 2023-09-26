@@ -1595,7 +1595,7 @@ public class DFA extends ANY
     put("fuzion.java.array_get"             , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.array_length"          , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.array_to_java_object0" , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.java.bool_to_java_object"   , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), null) );
     put("fuzion.java.call_c0"               , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.call_s0"               , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.call_v0"               , cl -> NYIintrinsicMissing(cl) );
