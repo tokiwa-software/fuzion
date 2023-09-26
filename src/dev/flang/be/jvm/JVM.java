@@ -40,6 +40,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -47,6 +48,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
 
@@ -483,7 +488,7 @@ should be avoided as much as possible.
         jvm._runner.runMain(applicationArgs);
       }
     },
-    SAVE {
+    SAVE_CLASSES {
       boolean condition(JVM jvm)
       {
         return jvm._options._saveClasses;
@@ -530,6 +535,101 @@ should be avoided as much as possible.
                 Errors.error("JVM backend I/O error",
                              "While creating class '" + ci.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
               }
+          }
+      }
+    },
+    SAVE_JAR {
+      boolean condition(JVM jvm)
+      {
+        return jvm._options._saveJAR;
+      }
+      void prepare(JVM jvm)
+      {
+        try
+          {
+            var m = new Manifest();
+            m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            m.getMainAttributes().put(Attributes.Name.MAIN_CLASS, "fzC_universe");
+
+            jvm._jos = new JarOutputStream(new FileOutputStream(jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar"), m);
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While creating JAR output stream, received I/O error '" + io + "'");
+          }
+
+        try
+          {
+            String[] dependencies = {
+              "dev/flang/be/interpreter/OpenResources.class",
+              "dev/flang/be/jvm/runtime/Any.class",
+              "dev/flang/be/jvm/runtime/AnyI.class",
+              "dev/flang/be/jvm/runtime/Intrinsics.class",
+              "dev/flang/be/jvm/runtime/Runtime.class",
+              "dev/flang/be/jvm/runtime/Runtime$1.class",
+              "dev/flang/be/jvm/runtime/Runtime$2.class",
+              "dev/flang/be/jvm/runtime/Runtime$Abort.class",
+              "dev/flang/util/ANY.class",
+              "dev/flang/util/List.class",
+            };
+
+            for (var d : dependencies)
+              {
+                jvm._jos.putNextEntry(new JarEntry(d));
+                jvm._jos.write(Files.readAllBytes(jvm._options.fuzionHome()
+                                                              .resolve("classes")
+                                                              .resolve(d)
+                                                              .normalize()
+                                                              .toAbsolutePath()));
+              }
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While bundling JAR dependencies in, received I/O error '" + io + "'");
+          }
+      }
+      void compile(JVM jvm, int cl)
+      {
+        var cf = jvm._types.classFile(cl);
+        if (cf != null)
+          {
+            try
+              {
+                cf.write(jvm._jos);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + cf.classFile() + "' in JAR, received I/O error '" + io + "'");
+              }
+          }
+        if (jvm._types.hasInterfaceFile(cl))
+          {
+            var ci = jvm._types.interfaceFile(cl);
+            try
+              {
+                ci.write(jvm._jos);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + ci.classFile() + "' in JAR, received I/O error '" + io + "'");
+              }
+          }
+      }
+      void finish(JVM jvm)
+      {
+        try
+          {
+            jvm._jos.close();
+            jvm._options.verbosePrintln(" + " + jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar");
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While writing JAR file, received I/O error '" + io + "'");
           }
       }
     };
@@ -599,6 +699,12 @@ should be avoided as much as possible.
 
 
   Runner _runner;
+
+  /**
+   * The output stream used by the SAVE_JAR phase for saving the
+   * JAR file to disk.
+   */
+  JarOutputStream _jos;
 
   Expr LOAD_UNIVERSE;
 
