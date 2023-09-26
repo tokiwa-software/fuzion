@@ -926,24 +926,24 @@ public class Clazzes extends ANY
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
 
-    clazz(c, outerClazz).instantiated(c.pos());
-
-    c.type()
-      .featureOfType()
-      // internal_array
-      .valueArguments()
-      .forEach(a -> {
-        var sa = c.type().actualType(a.resultType());
-        clazz(sa).called(c.pos());
-        clazz(sa).instantiated(c.pos());
-        sa
-          .featureOfType()
-          // data, length
-          .valueArguments()
-          .forEach(x -> {
-            clazz(sa.actualType(x.resultType())).instantiated(c.pos());
-          });
-      });
+    var p = c.pos();
+    var const_clazz = clazz(c, outerClazz);
+    if (const_clazz.feature() == Types.resolved.f_array)
+      { // add clazzes touched by constant creation:
+        //
+        //   array.internal_array
+        //   fuzion.sys.internal_array
+        //   fuzion.sys.internal_array.data
+        //   fuzion.sys.Pointer
+        //
+        var array          = const_clazz;
+        var internal_array = array.lookup(Types.resolved.f_array_internal_array);
+        var sys_array      = internal_array.resultClazz();
+        var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
+        array.instantiated(p);
+        sys_array.instantiated(p);
+        data.resultClazz().instantiated(p);
+      }
   }
 
 
