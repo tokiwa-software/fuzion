@@ -293,23 +293,6 @@ public class MiddleEnd extends ANY
   void findUsedFeatures(AbstractConstant c)
   {
     findUsedFeatures(c.type(), c);
-
-    // NYI this is probably unnecessary?
-    c.type()
-    .featureOfType()
-    // internal_array
-    .valueArguments()
-    .forEach(a -> {
-      var sa = c.type().actualType(a.resultType());
-      findUsedFeatures(sa, c);
-      sa
-        .featureOfType()
-        // data, length
-        .valueArguments()
-        .forEach(x -> {
-          findUsedFeatures(sa.actualType(x.resultType()), c);
-        });
-    });
   }
 
 
