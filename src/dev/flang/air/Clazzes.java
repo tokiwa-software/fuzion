@@ -186,6 +186,8 @@ public class Clazzes extends ANY
       }
     };
   public static Clazz constStringInternalArray;  // field Const_String.internal_array
+  public static Clazz fuzionJavaObject;          // clazz representing a Java Object in Fuzion
+  public static Clazz fuzionJavaObject_Ref;      // field fuzion.java.Java_Object.Java_Ref
   public static Clazz fuzionSysPtr;              // internal pointer type
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
@@ -436,6 +438,10 @@ public class Clazzes extends ANY
     fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
     fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
     fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
+    var fuzion = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
+    var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
+    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_java_object, SourcePosition.builtIn);
+    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_java_object_ref, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -1352,6 +1358,8 @@ public class Clazzes extends ANY
     fuzionSysArray_u8 = null;
     fuzionSysArray_u8_data = null;
     fuzionSysArray_u8_length = null;
+    fuzionJavaObject = null;
+    fuzionJavaObject_Ref = null;
     closed = false;
     _whenCalledDynamically_.clear();
     _whenCalled_.clear();

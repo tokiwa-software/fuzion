@@ -149,6 +149,131 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
         });
 
+    put("fuzion.java.Java_Object.is_null",
+        (jvm, cc, tvalue, args) ->
+        {
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = tvalue
+            .andThen(jvm.getfield(jref))
+            .andThen(Expr.branch(O_ifnull,
+                                 Expr.iconst(1),
+                                 Expr.iconst(0)))
+            ;
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.i8_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.i16_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.i32_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.i64_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.u16_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.f32_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.f64_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
+    put("fuzion.java.bool_to_java_object",
+        (jvm, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazz_fuzionJavaObject();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic("java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(jvm._types.javaType(rc));
+          return new Pair<>(res, Expr.UNIT);
+        });
+
     put("fuzion.std.date_time",
         (jvm, cc, tvalue, args) ->
         {
@@ -159,7 +284,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_std_date_time",
                                        "([I)V",
                                        PrimitiveType.type_void));
-            ;
           return new Pair<>(Expr.UNIT, res);
         });
 
@@ -696,25 +820,25 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         "concur.atomic.read0",
         "concur.atomic.write0",
-        "fuzion.java.Java_Object.is_null",
         "fuzion.java.array_get",
         "fuzion.java.array_length",
         "fuzion.java.array_to_java_object0",
-        "fuzion.java.bool_to_java_object",
         "fuzion.java.call_c0",
         "fuzion.java.call_s0",
         "fuzion.java.call_v0",
-        "fuzion.java.f32_to_java_object",
-        "fuzion.java.f64_to_java_object",
         "fuzion.java.get_field0",
         "fuzion.java.get_static_field0",
-        "fuzion.java.i16_to_java_object",
-        "fuzion.java.i32_to_java_object",
-        "fuzion.java.i64_to_java_object",
-        "fuzion.java.i8_to_java_object",
         "fuzion.java.java_string_to_string",
         "fuzion.java.string_to_java_object0",
         "fuzion.java.u16_to_java_object"
+        "fuzion.std.nano_sleep",
+        "fuzion.std.nano_time",
+        "fuzion.sys.env_vars.get0",
+        "fuzion.sys.env_vars.has0",
+        "fuzion.sys.env_vars.set0",
+        "fuzion.sys.env_vars.unset0",
+        "fuzion.sys.thread.join0",
+        "fuzion.sys.thread.spawn0"
       },
         (jvm, cc, tvalue, args) ->
         {

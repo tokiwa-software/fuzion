@@ -160,6 +160,9 @@ public class Types extends ANY
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_fuzion;
+    public final AbstractFeature f_fuzion_java;
+    public final AbstractFeature f_fuzion_java_object;
+    public final AbstractFeature f_fuzion_java_object_ref;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
@@ -213,6 +216,9 @@ public class Types extends ANY
       f_array         = universe.get(mod, "array", 5);
       f_array_internal_array = f_array.get(mod, "internal_array");
       f_fuzion                     = universe.get(mod, "fuzion");
+      f_fuzion_java                = f_fuzion.get(mod, "java");
+      f_fuzion_java_object         = f_fuzion_java.get(mod, "Java_Object");
+      f_fuzion_java_object_ref     = f_fuzion_java_object.get(mod, "Java_Ref");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");

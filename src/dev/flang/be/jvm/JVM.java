@@ -40,6 +40,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -47,6 +48,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
 
@@ -483,7 +488,7 @@ should be avoided as much as possible.
         jvm._runner.runMain(applicationArgs);
       }
     },
-    SAVE {
+    SAVE_CLASSES {
       boolean condition(JVM jvm)
       {
         return jvm._options._saveClasses;
@@ -530,6 +535,101 @@ should be avoided as much as possible.
                 Errors.error("JVM backend I/O error",
                              "While creating class '" + ci.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
               }
+          }
+      }
+    },
+    SAVE_JAR {
+      boolean condition(JVM jvm)
+      {
+        return jvm._options._saveJAR;
+      }
+      void prepare(JVM jvm)
+      {
+        try
+          {
+            var m = new Manifest();
+            m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            m.getMainAttributes().put(Attributes.Name.MAIN_CLASS, "fzC_universe");
+
+            jvm._jos = new JarOutputStream(new FileOutputStream(jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar"), m);
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While creating JAR output stream, received I/O error '" + io + "'");
+          }
+
+        try
+          {
+            String[] dependencies = {
+              "dev/flang/be/interpreter/OpenResources.class",
+              "dev/flang/be/jvm/runtime/Any.class",
+              "dev/flang/be/jvm/runtime/AnyI.class",
+              "dev/flang/be/jvm/runtime/Intrinsics.class",
+              "dev/flang/be/jvm/runtime/Runtime.class",
+              "dev/flang/be/jvm/runtime/Runtime$1.class",
+              "dev/flang/be/jvm/runtime/Runtime$2.class",
+              "dev/flang/be/jvm/runtime/Runtime$Abort.class",
+              "dev/flang/util/ANY.class",
+              "dev/flang/util/List.class",
+            };
+
+            for (var d : dependencies)
+              {
+                jvm._jos.putNextEntry(new JarEntry(d));
+                jvm._jos.write(Files.readAllBytes(jvm._options.fuzionHome()
+                                                              .resolve("classes")
+                                                              .resolve(d)
+                                                              .normalize()
+                                                              .toAbsolutePath()));
+              }
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While bundling JAR dependencies in, received I/O error '" + io + "'");
+          }
+      }
+      void compile(JVM jvm, int cl)
+      {
+        var cf = jvm._types.classFile(cl);
+        if (cf != null)
+          {
+            try
+              {
+                cf.write(jvm._jos);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + cf.classFile() + "' in JAR, received I/O error '" + io + "'");
+              }
+          }
+        if (jvm._types.hasInterfaceFile(cl))
+          {
+            var ci = jvm._types.interfaceFile(cl);
+            try
+              {
+                ci.write(jvm._jos);
+              }
+            catch (IOException io)
+              {
+                Errors.error("JVM backend I/O error",
+                             "While creating class '" + ci.classFile() + "' in JAR, received I/O error '" + io + "'");
+              }
+          }
+      }
+      void finish(JVM jvm)
+      {
+        try
+          {
+            jvm._jos.close();
+            jvm._options.verbosePrintln(" + " + jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar");
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While writing JAR file, received I/O error '" + io + "'");
           }
       }
     };
@@ -595,10 +695,20 @@ should be avoided as much as possible.
   final Types _types;
 
 
-  final int[][] _numLocals;
+  /**
+   * For each routine and precondition with clazz id cl, this holds the number
+   * of local var slots for the created method at index _fuir.clazzId2num(cl).
+   */
+  final int[] _numLocalsForCode, _numLocalsForPrecondition;
 
 
   Runner _runner;
+
+  /**
+   * The output stream used by the SAVE_JAR phase for saving the
+   * JAR file to disk.
+   */
+  JarOutputStream _jos;
 
   Expr LOAD_UNIVERSE;
 
@@ -623,7 +733,8 @@ should be avoided as much as possible.
     _types = new Types(fuir, _names);
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
-    _numLocals = new int[2][_fuir.clazzId2num(_fuir.lastClazz())+1];
+    _numLocalsForCode         = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
+    _numLocalsForPrecondition = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
 
     Errors.showAndExit();
   }
@@ -879,10 +990,57 @@ should be avoided as much as possible.
       .andThen(Expr.endless_loop());
   }
 
+
+  /**
+   * Get the number of local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @return the number of slotes used for local vars
+   */
+  int numLocals(int cl, boolean pre)
+  {
+    return (pre ? _numLocalsForPrecondition
+                : _numLocalsForCode        )[_fuir.clazzId2num(cl)];
+  }
+
+
+  /**
+   * Set the number of local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @param n the number of slots needed for local vars
+   */
+  void setNumLocals(int cl, boolean pre, int n)
+  {
+    (pre ? _numLocalsForPrecondition
+         : _numLocalsForCode        )[_fuir.clazzId2num(cl)] = n;
+  }
+
+
+  /**
+   * Alloc local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @param numSlots the number of slots to be alloced
+   *
+   * @return the local var index of the allocated slots
+   */
   int allocLocal(int cl, boolean pre, int numSlots)
   {
-    var res = _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)];
-    _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = res + numSlots;
+    var res = numLocals(cl, pre);
+    setNumLocals(cl, pre, res + numSlots);
     return res;
   }
 
@@ -914,7 +1072,7 @@ should be avoided as much as possible.
       {
         if (pre || _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
           {
-            _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots());
+            setNumLocals(cl, pre, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
             prolog = prolog(cl, pre);
             code = _ai.process(cl, pre)._v1;
             epilog = epilog(cl, pre);
@@ -922,7 +1080,7 @@ should be avoided as much as possible.
         else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
           {
             code = Expr.RETURN;
-            name = "fzRoutine";
+            name = Names.ROUTINE_NAME;
           }
 
         check
@@ -933,8 +1091,9 @@ should be avoided as much as possible.
           .andThen(epilog);
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
                                        bc_cl.max_stack(),
-                                       //(cl == _fuir.clazzUniverse() ? 1 : 0) +
-                                       _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)], bc_cl, new List<>(), new List<>());
+                                       numLocals(cl, pre),
+                                       bc_cl,
+                                       new List<>(), new List<>());
 
         cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
       }
@@ -1005,6 +1164,21 @@ should be avoided as much as possible.
       !_types.isScalar(occ)        &&
       _types.clazzNeedsCode(field) &&
       _types.resultType(rt) != PrimitiveType.type_void;
+  }
+
+
+  Expr getfield(int field)
+  {
+    if (PRECONDITIONS) require
+      (fieldExists(field));
+
+    var cl = _fuir.clazzOuterClazz(field);
+    var rt = _fuir.clazzResultClazz(field);
+    return
+      Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+      .andThen(Expr.getfield(_names.javaClass(cl),
+                             _names.field(field),
+                             _types.resultType(rt)));
   }
 
 
