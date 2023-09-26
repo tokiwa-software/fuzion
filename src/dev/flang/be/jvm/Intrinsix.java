@@ -585,6 +585,163 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
     });
 
+
+    put("fuzion.sys.fileio.close", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_close",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_close"),
+            PrimitiveType.type_int));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.create_dir", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_create_dir",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_create_dir"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.delete", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_delete",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_delete"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.file_position", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_file_position",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_file_position"),
+            PrimitiveType.type_void));
+      return new Pair<>(Expr.UNIT, res);
+    });
+    put("fuzion.sys.fileio.flush", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_flush",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_flush"),
+            PrimitiveType.type_int));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.lstats", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_lstats",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_lstats"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.stats", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_stats",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_stats"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.mmap", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(args.get(1))
+          .andThen(args.get(2))
+          .andThen(args.get(3))
+          .andThen(Expr.checkcast(PrimitiveType.type_int.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_mmap",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_mmap"),
+            PrimitiveType.type_byte.array()));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.move", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_move",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_move"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.munmap", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_munmap",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_munmap"),
+            PrimitiveType.type_int));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.open", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+          .andThen(args.get(2))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_open",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_open"),
+            PrimitiveType.type_void));
+      return new Pair<>(Expr.UNIT, res);
+    });
+    put("fuzion.sys.fileio.read", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(args.get(1))
+          .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_read",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_read"),
+            PrimitiveType.type_int));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.fileio.seek", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(args.get(1))
+          .andThen(args.get(2))
+          .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_fileio_seek",
+            methodDescriptor(Runtime.class, "fuzion_sys_fileio_seek"),
+            PrimitiveType.type_void));
+      return new Pair<>(Expr.UNIT, res);
+    });
+
     put(new String[]
       { "concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
@@ -606,19 +763,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.sys.env_vars.has0",
         "fuzion.sys.env_vars.set0",
         "fuzion.sys.env_vars.unset0",
-        "fuzion.sys.fileio.close",
-        "fuzion.sys.fileio.create_dir",
-        "fuzion.sys.fileio.delete",
-        "fuzion.sys.fileio.file_position",
-        "fuzion.sys.fileio.flush",
-        "fuzion.sys.fileio.lstats",
-        "fuzion.sys.fileio.mmap",
-        "fuzion.sys.fileio.move",
-        "fuzion.sys.fileio.munmap",
-        "fuzion.sys.fileio.open",
-        "fuzion.sys.fileio.read",
-        "fuzion.sys.fileio.seek",
-        "fuzion.sys.fileio.stats",
         "fuzion.sys.thread.join0",
         "fuzion.sys.thread.spawn0"
       },

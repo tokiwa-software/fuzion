@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
+import java.io.PrintStream;
+import java.io.InputStream;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,8 +49,13 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.concurrent.TimeUnit;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -693,6 +700,266 @@ public class Runtime extends ANY
         return -1;
       }
   }
+
+  public static int fuzion_sys_fileio_flush(long fd)
+  {
+    var s = _openStreams_.get(fd);
+    if (s instanceof PrintStream ps)
+      {
+        ps.flush();
+      }
+    return 0;
+  }
+
+  public static int fuzion_sys_fileio_read(long fd, byte[] byteArr)
+  {
+    try
+      {
+        var s = _openStreams_.get(fd);
+        int bytesRead = 0;
+        if (s instanceof RandomAccessFile raf)
+          {
+            bytesRead = raf.read(byteArr);
+          }
+        else
+          {
+            bytesRead = ((InputStream) s).read(byteArr);
+          }
+
+        return bytesRead;
+      }
+    catch (Exception e)
+      {
+        return -2;
+      }
+  }
+
+  public static int fuzion_sys_fileio_write(long fd, byte[] fileContent)
+  {
+    try
+      {
+        var s = _openStreams_.get(fd);
+        if (s instanceof RandomAccessFile raf)
+          {
+            raf.write(fileContent);
+          }
+        else
+          {
+            ((OutputStream) s).write(fileContent);
+          }
+        return 0;
+      }
+    catch (Exception e)
+      {
+        return -1;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_delete(byte[] file)
+  {
+    Path path = Path.of(utf8ByteArrayDataToString(file));
+    try
+      {
+        return Files.deleteIfExists(path);
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_move(byte[] o, byte[] n)
+  {
+    Path oldPath = Path.of(utf8ByteArrayDataToString(o));
+    Path newPath = Path.of(utf8ByteArrayDataToString(n));
+    try
+      {
+        Files.move(oldPath, newPath);
+        return true;
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_create_dir(byte[] d)
+  {
+    Path path = Path.of(utf8ByteArrayDataToString(d));
+    try
+      {
+        Files.createDirectory(path);
+        return true;
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static void fuzion_sys_fileio_open(byte[] path, long[] open_results, short mode)
+  {
+    try
+      {
+        switch (mode)
+          {
+          case 0 :
+            RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(path), "r");
+            open_results[0] = _openStreams_.add(fis);
+            break;
+          case 1 :
+            RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(path), "rw");
+            open_results[0] = _openStreams_.add(fos);
+            break;
+          case 2 :
+            RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(path), "rw");
+            fas.seek(fas.length());
+            open_results[0] = _openStreams_.add(fas);
+            break;
+          default:
+            open_results[1] = -1;
+            System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
+            System.exit(1);
+          }
+      }
+    catch (Exception e)
+      {
+        open_results[1] = -1;
+      }
+    return;
+  }
+
+  public static int fuzion_sys_fileio_close(long fd)
+  {
+    return _openStreams_.remove(fd)
+                                    ? 0
+                                    : -1;
+  }
+
+  public static boolean fuzion_sys_fileio_lstats(byte[] d, long[] stats) // NYI : should be altered in the future to not resolve symbolic links
+  {
+    return fuzion_sys_fileio_stats(d, stats);
+  }
+  public static boolean fuzion_sys_fileio_stats(byte[] d, long[] stats)
+  {
+    Path path = Path.of(utf8ByteArrayDataToString(d));
+    var err = SystemErrNo.UNSPECIFIED;
+    try
+      {
+        BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
+        stats[0] = metadata.size();
+        stats[1] = metadata.lastModifiedTime().to(TimeUnit.SECONDS);
+        stats[2] = metadata.isRegularFile() ? 1: 0;
+        stats[3] = metadata.isDirectory() ? 1: 0;
+        return true;
+      }
+    catch (UnsupportedOperationException e)
+      {
+        err = SystemErrNo.ENOTSUP;
+      }
+    catch (IOException e)
+      {
+        err = SystemErrNo.EIO;
+      }
+    catch (SecurityException e)
+      {
+        err = SystemErrNo.EACCES;
+      }
+
+    stats[0] = err.errno;
+    stats[1] = 0;
+    stats[2] = 0;
+    stats[3] = 0;
+    return false;
+  }
+
+  public static void fuzion_sys_fileio_seek(long fd, short s, long[] seekResults)
+  {
+    try
+      {
+        var raf = (RandomAccessFile) _openStreams_.get(fd);
+        raf.seek(s);
+        seekResults[0] = raf.getFilePointer();
+        return;
+      }
+    catch (Exception e)
+      {
+        seekResults[1] = -1;
+        return;
+      }
+  }
+
+  public static void fuzion_sys_fileio_file_position(long fd, long[] arr)
+  {
+    try
+      {
+        arr[0] = ((RandomAccessFile) _openStreams_.get(fd)).getFilePointer();
+        return;
+      }
+    catch (Exception e)
+      {
+        arr[1] = -1;
+        return;
+      }
+  }
+
+  public static byte[] fuzion_sys_fileio_mmap(long fd, long offset, long size, int[] result)
+  {
+    try
+      {
+        var raf = (RandomAccessFile) _openStreams_.get(fd);
+
+        // offset+size must not exceed file size, to match semantics of
+        // c-backend.
+        if (raf.length() < (offset + size))
+          {
+            result[0] = -1;
+            return new byte[0];
+          }
+
+        var mmap = raf.getChannel().map(MapMode.READ_WRITE, offset, size);
+
+        // success
+        result[0] = 0;
+        return new byte[0];
+        /* NYI
+                  @Override
+                  void set(
+                    int x,
+                    Value v,
+                    AbstractType elementType)
+                  {
+                    checkIndex(x);
+                    mmap.put(x, (byte)v.u8Value());
+                  }
+
+                  @Override
+                  Value get(
+                    int x,
+                    AbstractType elementType)
+                  {
+                    checkIndex(x);
+                    return new u8Value(mmap.get(x));
+                  }
+
+                  @Override
+                  int length(){
+                    return (int)size;
+                  }
+        */
+      }
+    catch (IOException e)
+      {
+        result[0] = -1;
+        return new byte[0];
+      }
+  }
+
+  public static int fuzion_sys_fileio_munmap()
+  {
+    return 0;
+  }
+
 
   static long unique_id()
   {
