@@ -1185,7 +1185,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_8(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArray8(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1203,7 +1203,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_i16(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArrayI16(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1220,7 +1220,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_u16(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArrayU16(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1237,7 +1237,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_32(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArray32(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1254,7 +1254,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_64(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArray64(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1271,7 +1271,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_f32(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArrayF32(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1288,7 +1288,7 @@ should be avoided as much as possible.
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
    */
-  Pair<Expr, Expr> const_array_f64(int arrayCl, byte[] bytes)
+  Pair<Expr, Expr> constArrayF64(int arrayCl, byte[] bytes)
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
@@ -1300,7 +1300,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant array i64.
+   * Create code to create a constant array.
    *
    * @param arrayCl the clazz of the array to be created
    *

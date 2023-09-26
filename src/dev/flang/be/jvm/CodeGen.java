@@ -954,16 +954,16 @@ class CodeGen
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
       case c_Const_String -> _jvm.constString(d);
-      case c_array_i8     -> _jvm.const_array_8  (constCl, d);
-      case c_array_i16    -> _jvm.const_array_i16(constCl, d);
-      case c_array_i32    -> _jvm.const_array_32 (constCl, d);
-      case c_array_i64    -> _jvm.const_array_64 (constCl, d);
-      case c_array_u8     -> _jvm.const_array_8  (constCl, d);
-      case c_array_u16    -> _jvm.const_array_u16(constCl, d);
-      case c_array_u32    -> _jvm.const_array_32 (constCl, d);
-      case c_array_u64    -> _jvm.const_array_64 (constCl, d);
-      case c_array_f32    -> _jvm.const_array_f32(constCl, d);
-      case c_array_f64    -> _jvm.const_array_f64(constCl, d);
+      case c_array_i8     -> _jvm.constArray8  (constCl, d);
+      case c_array_i16    -> _jvm.constArrayI16(constCl, d);
+      case c_array_i32    -> _jvm.constArray32 (constCl, d);
+      case c_array_i64    -> _jvm.constArray64 (constCl, d);
+      case c_array_u8     -> _jvm.constArray8  (constCl, d);
+      case c_array_u16    -> _jvm.constArrayU16(constCl, d);
+      case c_array_u32    -> _jvm.constArray32 (constCl, d);
+      case c_array_u64    -> _jvm.constArray64 (constCl, d);
+      case c_array_f32    -> _jvm.constArrayF32(constCl, d);
+      case c_array_f64    -> _jvm.constArrayF64(constCl, d);
       default             ->
         {
           Errors.error("Unsupported constant in JVM backend.",
