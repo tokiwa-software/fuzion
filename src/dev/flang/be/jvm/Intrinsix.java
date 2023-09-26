@@ -836,8 +836,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var name = jvm._names.function(cc, false);
           var in = jvm._fuir.clazzIntrinsicName(cc);
           var msg = "NYI: missing implementation of JVM backend intrinsic '" +
-            in + "', need '" + Intrinsics.class + "." + name + "' or inline code in " +
-            Intrinsics.class + ".";
+            in + "', need '" + Intrinsics.class.getName() + "." + name + "' or inline code in " +
+            Intrinsix.class.getName() + ".";
           return new Pair<>(null,
                             jvm.reportErrorInCode(msg));
         });
