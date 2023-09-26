@@ -480,7 +480,7 @@ public class DFA extends ANY
              c_array_u32  ,
              c_array_u64  ,
              c_array_f32  ,
-             c_array_f64  -> constArray(constCl, d, _call);
+             c_array_f64  -> newConstArray(constCl, d, _call);
         case c_Const_String -> newConstString(d, _call);
         default ->
         {
@@ -1765,7 +1765,7 @@ public class DFA extends ANY
    * @param context for debugging: Reason that causes this array to be
    * part of the analysis.
    */
-  Value constArray(int arrayCl, byte[] bytes, Context context)
+  Value newConstArray(int arrayCl, byte[] bytes, Context context)
   {
     var elementType   = _fuir.clazzActualGeneric(arrayCl, 0);
     var internalArray = _fuir.lookup_array_internal_array(arrayCl);
