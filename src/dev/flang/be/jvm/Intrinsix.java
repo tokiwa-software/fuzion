@@ -742,6 +742,79 @@ public class Intrinsix extends ANY implements ClassFileConstants
       return new Pair<>(Expr.UNIT, res);
     });
 
+    put("fuzion.std.nano_sleep", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_std_nano_sleep",
+            methodDescriptor(Runtime.class, "fuzion_std_nano_sleep"),
+            PrimitiveType.type_void));
+      return new Pair<>(Expr.UNIT, res);
+    });
+    put("fuzion.std.nano_time", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(Expr.invokeStatic(System.class.getName().replace(".", "/"),
+            "nanoTime",
+            methodDescriptor(System.class, "nanoTime"),
+            PrimitiveType.type_long));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.env_vars.get0", (jvm, cc, tvalue, args) -> {
+      return jvm.constString(
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_env_vars_get0",
+            methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
+            JAVA_LANG_STRING)));
+    });
+    put("fuzion.sys.env_vars.has0", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_env_vars_has0",
+            methodDescriptor(Runtime.class, "fuzion_sys_env_vars_has0"),
+            PrimitiveType.type_boolean));
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.env_vars.set0", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(Expr.iconst(0)); // false
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.env_vars.unset0", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(Expr.iconst(0)); // false
+      return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.thread.join0", (jvm, cc, tvalue, args) -> {
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_thread_join0",
+            methodDescriptor(Runtime.class, "fuzion_sys_thread_join0"),
+            PrimitiveType.type_void));
+      return new Pair<>(Expr.UNIT, res);
+    });
+    put("fuzion.sys.thread.spawn0", (jvm, cc, tvalue, args) -> {
+      // NYI
+      var res =
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_thread_spawn0",
+            methodDescriptor(Runtime.class, "fuzion_sys_thread_spawn0"),
+            PrimitiveType.type_long));
+      return new Pair<>(res, Expr.UNIT);
+    });
+
+
     put(new String[]
       { "concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
@@ -757,6 +830,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.java.get_static_field0",
         "fuzion.java.java_string_to_string",
         "fuzion.java.string_to_java_object0",
+        "fuzion.java.u16_to_java_object"
         "fuzion.std.nano_sleep",
         "fuzion.std.nano_time",
         "fuzion.sys.env_vars.get0",

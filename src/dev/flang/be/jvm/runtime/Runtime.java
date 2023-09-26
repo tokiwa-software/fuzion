@@ -170,6 +170,18 @@ public class Runtime extends ANY
   static long _stderr = _openStreams_.add(System.err);
 
 
+  /**
+   * This contains all started threads.
+   */
+  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
+    @Override
+    protected boolean close(Thread f)
+    {
+      return true;
+    };
+  };
+
+
   static long _next_unique_id = 0xf0015feedbadf00dL;
 
   static final long UNIQUE_ID_INCREMENT = 1000000000000223L; // large prime generated using https://www.browserling.com/tools/prime-numbers
@@ -959,6 +971,59 @@ public class Runtime extends ANY
   {
     return 0;
   }
+
+  public static void fuzion_std_nano_sleep(long d)
+  {
+    try
+      {
+        TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE: d);
+      }
+    catch (InterruptedException ie)
+      {
+        throw new Error("unexpected interrupt", ie);
+      }
+  };
+
+  public static boolean fuzion_sys_env_vars_has0(byte[] b)
+  {
+    return System.getenv(utf8ByteArrayDataToString(b)) != null;
+  }
+
+  public static String fuzion_sys_env_vars_get0(byte[] d)
+  {
+    return System.getenv(utf8ByteArrayDataToString(d));
+  }
+
+  public static long fuzion_sys_thread_spawn0(/*args missing*/)
+  {
+    throw new RuntimeException("NYI");
+    /* NYI
+    var call = Types.resolved.f_function_call;
+    var oc = innerClazz.argumentFields()[0].resultClazz();
+    var ic = oc.lookup(call);
+    var al = new ArrayList<Value>();
+    al.add(args.get(1));
+    var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
+    t.setDaemon(true);
+    t.start();
+    return _startedThreads_.add(t);
+     */
+  };
+
+  public static void fuzion_sys_thread_join0(long threadId)
+  {
+    try
+      {
+        _startedThreads_.get(threadId).join();
+        _startedThreads_.remove(threadId);
+      }
+    catch (InterruptedException e)
+      {
+        // NYI handle this exception
+        System.err.println("Joining of threads was interrupted: " + e);
+        System.exit(1);
+      }
+  };
 
 
   static long unique_id()
