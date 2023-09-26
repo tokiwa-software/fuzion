@@ -1234,6 +1234,30 @@ hw25 is
 
 
   /**
+   * Get the id of clazz fuzion.java.Java_Object
+   *
+   * @return the id of fuzion.java.Java_Object or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionJavaObject()
+  {
+    var cc = Clazzes.fuzionJavaObject;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.java.Java_Object.Java_Ref
+   *
+   * @return the id of fuzion.java.Java_Object.Java_Ref or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionJavaObject_Ref()
+  {
+    var cc = Clazzes.fuzionJavaObject_Ref;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
    * Get the id of the given special clazz.
    *
    * @param the id of clazz c or -1 if that clazz was not created.
