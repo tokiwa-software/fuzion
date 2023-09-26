@@ -55,7 +55,7 @@ public class Choices extends ANY implements ClassFileConstants
      */
     voidlike,
 
-    /* a single value `choice X` is equivalent to `X`. This include the case of
+    /* a single value `choice X` is equivalent to `X`. This includes the case of
      * a single unit type `choice nil`, but not `choice void`
      */
     unitlike,
@@ -129,7 +129,6 @@ public class Choices extends ANY implements ClassFileConstants
     int units = 0;
     int refs = 0;
     boolean overlappingRefs = false;
-    var nc = _fuir.clazzNumChoices(cl);
     for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
       {
         var tc = _fuir.clazzChoice(cl, i);

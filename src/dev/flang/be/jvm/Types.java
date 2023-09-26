@@ -528,7 +528,6 @@ public class Types extends ANY implements ClassFileConstants
    */
   String descriptor(boolean explicitOuter, int cl, boolean pre)
   {
-    var resultType = _fuir.clazzResultClazz(cl);
     var as = new StringBuilder();
     as.append("(");
     if (explicitOuter && hasOuterRef(cl))

@@ -30,6 +30,7 @@ import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 
 import dev.flang.be.jvm.runtime.Intrinsics;
+import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.fuir.FUIR;
 
@@ -38,6 +39,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -444,6 +446,145 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
         });
 
+
+    put("fuzion.sys.net.accept",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_accept",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_accept"),
+                                       PrimitiveType.type_boolean));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.bind0",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(args.get(2))
+            .andThen(args.get(3))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(args.get(4))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(args.get(5))
+            .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_bind0",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_bind0"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.close0",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_close0",
+                                        methodDescriptor(Runtime.class, "fuzion_sys_net_close0"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.connect0",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(args.get(2))
+            .andThen(args.get(3))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(args.get(4))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(args.get(5))
+            .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_connect0",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_connect0"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.get_peer_address",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_get_peer_address",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_get_peer_address"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.get_peer_port",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_get_peer_port",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_get_peer_port"),
+                                       PrimitiveType.type_short));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.listen",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_listen",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_listen"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.read",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(args.get(2))
+            .andThen(args.get(3))
+            .andThen(Expr.checkcast(PrimitiveType.type_long.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_read",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_read"),
+                                       PrimitiveType.type_boolean));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.set_blocking0",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_set_blocking0",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_set_blocking0"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+    put("fuzion.sys.net.write",(jvm, cc, tvalue, args) ->
+    {
+          var res =
+            tvalue.drop()
+            .andThen(args.get(0))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_sys_net_write",
+                                       methodDescriptor(Runtime.class, "fuzion_sys_net_write"),
+                                       PrimitiveType.type_int));
+          return new Pair<>(res, Expr.UNIT);
+    });
+
     put(new String[]
       { "concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
@@ -478,16 +619,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.sys.fileio.read",
         "fuzion.sys.fileio.seek",
         "fuzion.sys.fileio.stats",
-        "fuzion.sys.net.accept",
-        "fuzion.sys.net.bind0",
-        "fuzion.sys.net.close0",
-        "fuzion.sys.net.connect0",
-        "fuzion.sys.net.get_peer_address",
-        "fuzion.sys.net.get_peer_port",
-        "fuzion.sys.net.listen",
-        "fuzion.sys.net.read",
-        "fuzion.sys.net.set_blocking0",
-        "fuzion.sys.net.write",
         "fuzion.sys.thread.join0",
         "fuzion.sys.thread.spawn0"
       },
@@ -624,6 +755,62 @@ public class Intrinsix extends ANY implements ClassFileConstants
   static boolean inRuntime(JVM jvm, int cc)
   {
     return _availableIntrinsics.contains( jvm._names.function(cc, false));
+  }
+
+
+  /**
+   * @param c
+   * @return a descriptor for the class, e.g. String => Ljava.lang.String;
+   */
+  private static String descriptor(Class c)
+  {
+    if(c==byte.class)
+        return "B";
+    if(c==char.class)
+        return "C";
+    if(c==double.class)
+        return "D";
+    if(c==float.class)
+        return "F";
+    if(c==int.class)
+        return "I";
+    if(c==long.class)
+        return "J";
+    if(c==short.class)
+        return "S";
+    if(c==boolean.class)
+        return "Z";
+    if(c==void.class)
+        return "V";
+
+    var n = c.getName().replace('.', '/');
+    return c.isArray()
+      ? n
+      : ('L' + n + ';');
+  }
+
+
+  /**
+   * get the the method descriptor for a method in class c.
+   * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
+   *      and `int fuzion_sys_net_listen(){}`
+   *      it returns: ()I
+   */
+  private static String methodDescriptor(Class c, String m)
+  {
+    return Arrays
+      .stream(c.getMethods())
+      .filter(x -> x.getName().equals(m))
+      .findAny()
+      .map(x ->
+        {
+          return "("
+                  + Arrays.stream(x.getParameterTypes()).map(pt -> descriptor(pt)).collect(Collectors.joining())
+                + ")"
+            + descriptor(x.getReturnType());
+        }
+      )
+      .get();
   }
 
 
