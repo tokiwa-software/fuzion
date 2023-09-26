@@ -695,7 +695,11 @@ should be avoided as much as possible.
   final Types _types;
 
 
-  final int[][] _numLocals;
+  /**
+   * For each routine and precondition with clazz id cl, this holds the number
+   * of local var slots for the created method at index _fuir.clazzId2num(cl).
+   */
+  final int[] _numLocalsForCode, _numLocalsForPrecondition;
 
 
   Runner _runner;
@@ -729,7 +733,8 @@ should be avoided as much as possible.
     _types = new Types(fuir, _names);
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
-    _numLocals = new int[2][_fuir.clazzId2num(_fuir.lastClazz())+1];
+    _numLocalsForCode         = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
+    _numLocalsForPrecondition = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
 
     Errors.showAndExit();
   }
@@ -985,10 +990,57 @@ should be avoided as much as possible.
       .andThen(Expr.endless_loop());
   }
 
+
+  /**
+   * Get the number of local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @return the number of slotes used for local vars
+   */
+  int numLocals(int cl, boolean pre)
+  {
+    return (pre ? _numLocalsForPrecondition
+                : _numLocalsForCode        )[_fuir.clazzId2num(cl)];
+  }
+
+
+  /**
+   * Set the number of local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @param n the number of slots needed for local vars
+   */
+  void setNumLocals(int cl, boolean pre, int n)
+  {
+    (pre ? _numLocalsForPrecondition
+         : _numLocalsForCode        )[_fuir.clazzId2num(cl)] = n;
+  }
+
+
+  /**
+   * Alloc local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @param numSlots the number of slots to be alloced
+   *
+   * @return the local var index of the allocated slots
+   */
   int allocLocal(int cl, boolean pre, int numSlots)
   {
-    var res = _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)];
-    _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = res + numSlots;
+    var res = numLocals(cl, pre);
+    setNumLocals(cl, pre, res + numSlots);
     return res;
   }
 
@@ -1020,7 +1072,7 @@ should be avoided as much as possible.
       {
         if (pre || _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
           {
-            _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)] = current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots());
+            setNumLocals(cl, pre, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
             prolog = prolog(cl, pre);
             code = _ai.process(cl, pre)._v1;
             epilog = epilog(cl, pre);
@@ -1039,8 +1091,9 @@ should be avoided as much as possible.
           .andThen(epilog);
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
                                        bc_cl.max_stack(),
-                                       //(cl == _fuir.clazzUniverse() ? 1 : 0) +
-                                       _numLocals[pre ? 1 : 0][_fuir.clazzId2num(cl)], bc_cl, new List<>(), new List<>());
+                                       numLocals(cl, pre),
+                                       bc_cl,
+                                       new List<>(), new List<>());
 
         cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
       }
