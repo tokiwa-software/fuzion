@@ -828,7 +828,10 @@ public class DFA extends ANY
             {
             case Routine, Intrinsic,
                  Native             -> called.contains(cl);
-            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) || _readFields.contains(cl);
+            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) ||
+                                       _readFields.contains(cl) ||
+                                       // main result field
+                                       _fuir.clazzResultField(_fuir.mainClazzId()) == cl;
             case Abstract           -> true;
             case Choice             -> true;
             };
