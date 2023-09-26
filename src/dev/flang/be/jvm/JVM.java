@@ -1008,6 +1008,21 @@ should be avoided as much as possible.
   }
 
 
+  Expr getfield(int field)
+  {
+    if (PRECONDITIONS) require
+      (fieldExists(field));
+
+    var cl = _fuir.clazzOuterClazz(field);
+    var rt = _fuir.clazzResultClazz(field);
+    return
+      Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+      .andThen(Expr.getfield(_names.javaClass(cl),
+                             _names.field(field),
+                             _types.resultType(rt)));
+  }
+
+
   Expr putfield(int field)
   {
     if (PRECONDITIONS) require
