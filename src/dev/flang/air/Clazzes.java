@@ -928,6 +928,7 @@ public class Clazzes extends ANY
 
     var p = c.pos();
     var const_clazz = clazz(c, outerClazz);
+    const_clazz.instantiated(p);
     if (const_clazz.feature() == Types.resolved.f_array)
       { // add clazzes touched by constant creation:
         //
