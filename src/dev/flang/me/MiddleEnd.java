@@ -151,6 +151,8 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "Const_String").get(m, "as_string")  , SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_fuzion_sys_array_data               , SourcePosition.builtIn);
     markUsed(Types.resolved.f_fuzion_sys_array_length             , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_java_object                  , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_java_object_ref              , SourcePosition.builtIn);
     markUsed(universe.get(m, FuzionConstants.UNIT_NAME)           , SourcePosition.builtIn);
     markUsed(universe.get(m, "void")                              , SourcePosition.builtIn);
   }
