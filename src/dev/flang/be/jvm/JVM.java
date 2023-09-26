@@ -1358,18 +1358,35 @@ should be avoided as much as possible.
   }
 
 
+  /**
+   * Create bytecode for a getfield instruction. In case !fieldExists(field),
+   * do nothing and return Expr.UNIT.
+   *
+   * @param field the clazz id of a field in _fuir.
+   *
+   * @return bytecode to get the value of the given field.
+   */
   Expr getfield(int field)
   {
     if (PRECONDITIONS) require
-      (fieldExists(field));
+      (fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void);
 
     var cl = _fuir.clazzOuterClazz(field);
     var rt = _fuir.clazzResultClazz(field);
-    return
-      Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-      .andThen(Expr.getfield(_names.javaClass(cl),
-                             _names.field(field),
-                             _types.resultType(rt)));
+    if (fieldExists(field))
+      {
+        return
+          Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(Expr.getfield(_names.javaClass(cl),
+                                 _names.field(field),
+                                 _types.resultType(rt)));
+      }
+    else
+      {
+        return
+          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(Expr.POP);
+      }
   }
 
 
