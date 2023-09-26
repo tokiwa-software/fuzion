@@ -829,16 +829,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.java.get_field0",
         "fuzion.java.get_static_field0",
         "fuzion.java.java_string_to_string",
-        "fuzion.java.string_to_java_object0",
-        "fuzion.java.u16_to_java_object"
-        "fuzion.std.nano_sleep",
-        "fuzion.std.nano_time",
-        "fuzion.sys.env_vars.get0",
-        "fuzion.sys.env_vars.has0",
-        "fuzion.sys.env_vars.set0",
-        "fuzion.sys.env_vars.unset0",
-        "fuzion.sys.thread.join0",
-        "fuzion.sys.thread.spawn0"
+        "fuzion.java.string_to_java_object0"
       },
         (jvm, cc, tvalue, args) ->
         {
