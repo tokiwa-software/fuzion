@@ -68,9 +68,7 @@ else
         experr=$2.expected_err_int
     fi
     # show diff in stdout unless an unexpected output occured to stderr:
-    if [ ! -s tmp_err.txt  ] && [ -s "$experr" ]; then
-        diff "$expout" tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
-    fi
+    diff "$experr" tmp_err.txt && (diff "$expout" tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2"))
     diff "$experr" tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")
     diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
     RC=$?
