@@ -1374,7 +1374,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
          + ((this._outer == Clazzes.universe.get())
             ? ""
             : this._outer.toStringWrapped() + ".")
-         + (this.isRef()
+         + (this.isBoxed()
             ? "ref "
             : ""
             )
