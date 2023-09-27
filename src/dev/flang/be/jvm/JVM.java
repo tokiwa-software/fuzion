@@ -843,32 +843,25 @@ should be avoided as much as possible.
       .andThen(Expr.invokeSpecial(n,"<init>","()V"));
   }
 
+
+  /**
+   * Create prolog for code of given routine or precondition.  The prolog
+   * creates a new instance of cl and stores a reference to that instance into
+   * local var at slot current_index().
+   *
+   * @param cl is of clazz to compile
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @return the prolog code.
+   */
   Expr prolog(int cl, boolean pre)
   {
-    if (false && pre)
+    var result = Expr.UNIT;
+    if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
-        return Expr.UNIT;
-      }
-    else if (_types.isScalar(cl))
-      {
-        // arg 0 is current
-        return Expr.UNIT;
-      }
-    else
-      {
-        var x = Expr.UNIT;
-        if (_fuir.clazzOuterRef(cl) != -1 && !_fuir.hasData(_fuir.clazzResultClazz
-                                                                    (_fuir.clazzOuterRef(cl))))
-          {
-            x = Expr.aload(0, JAVA_LANG_OBJECT)
-              .andThen(Expr.branch(O_ifnull,
-                                   reportErrorInCode("outer in "+_fuir.clazzAsString(cl)+" "+pre+" of type " +
-                                                     _fuir.clazzAsString
-                                                     (_fuir.clazzResultClazz
-                                                      (_fuir.clazzOuterRef(cl)))+" is null"),
-                                   Expr.UNIT));
-          }
-        return x.andThen(new0(cl))
+        result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
                                                      _names.UNIVERSE_FIELD,
@@ -876,6 +869,7 @@ should be avoided as much as possible.
                    : Expr.UNIT)
           .andThen(Expr.astore(current_index(cl)));
       }
+    return result;
   }
 
 
