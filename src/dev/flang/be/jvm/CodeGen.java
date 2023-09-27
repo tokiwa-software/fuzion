@@ -538,10 +538,9 @@ class CodeGen
             na.add(t.load(1));
           }
         var p = staticAccess(-1, false, tt, cc, tv, na, isCall);
-        var code = p._v0 == null
-          ? p._v1
-          : (p._v1.andThen(p._v0)
-                  .andThen(retoern));
+        var code = p._v1
+          .andThen(p._v0 == null ? Expr.UNIT : p._v0)
+          .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
                                   code, new List<>(), new List<>());
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
