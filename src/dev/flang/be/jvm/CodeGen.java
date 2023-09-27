@@ -403,18 +403,18 @@ class CodeGen
     if (ccs.length == 0)
       {
         var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
-        if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
+        s = s.andThen(tvalue.drop());
+        for (var a : args)
+          {
+            s = s.andThen(a.drop());
+          }
+        if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
           {
             s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.clazzAsString(cl)));
             res = null;
           }
-        else
+        else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
           {
-            s = s.andThen(tvalue.drop());
-            for (var a : args)
-              {
-                s = s.andThen(a.drop());
-              }
             s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(cl, c, i) + " eliminated"));
           }
       }
