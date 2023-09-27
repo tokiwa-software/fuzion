@@ -53,26 +53,27 @@ public abstract class FeatureVisitor extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public void         action      (AbstractAssign a, AbstractFeature outer) { }
-  public void         actionBefore(Block          b, AbstractFeature outer) { }
-  public void         actionAfter (Block          b, AbstractFeature outer) { }
-  public void         action      (AbstractCall   c                       ) { }
-  public Expr         action      (Call           c, AbstractFeature outer) { return c; }
-  public Expr         action      (DotType        d, AbstractFeature outer) { return d; }
-  public void         actionBefore(AbstractCase   c                       ) { }
-  public void         actionAfter (AbstractCase   c                       ) { }
-  public void         action      (Cond           c, AbstractFeature outer) { }
-  public Expr         action      (Destructure    d, AbstractFeature outer) { return d; }
-  public Expr         action      (Feature        f, AbstractFeature outer) { return f; }
-  public Expr         action      (Function       f, AbstractFeature outer) { return f; }
-  public void         action      (If             i, AbstractFeature outer) { }
-  public void         action      (Impl           i, AbstractFeature outer) { }
-  public Expr         action      (InlineArray    i, AbstractFeature outer) { return i; }
-  public void         action      (AbstractMatch  m                      )  { }
-  public void         action      (Match          m, AbstractFeature outer) { }
-  public void         action      (Tag            b, AbstractFeature outer) { }
-  public Expr         action      (This           t, AbstractFeature outer) { return t; }
-  public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t; }
+  public void         action      (AbstractAssign   a, AbstractFeature outer) { }
+  public void         actionBefore(Block            b, AbstractFeature outer) { }
+  public void         actionAfter (Block            b, AbstractFeature outer) { }
+  public void         action      (AbstractCall     c                       ) { }
+  public void         action      (AbstractConstant c                       ) { }
+  public Expr         action      (Call             c, AbstractFeature outer) { return c; }
+  public Expr         action      (DotType          d, AbstractFeature outer) { return d; }
+  public void         actionBefore(AbstractCase     c                       ) { }
+  public void         actionAfter (AbstractCase     c                       ) { }
+  public void         action      (Cond             c, AbstractFeature outer) { }
+  public Expr         action      (Destructure      d, AbstractFeature outer) { return d; }
+  public Expr         action      (Feature          f, AbstractFeature outer) { return f; }
+  public Expr         action      (Function         f, AbstractFeature outer) { return f; }
+  public void         action      (If               i, AbstractFeature outer) { }
+  public void         action      (Impl             i, AbstractFeature outer) { }
+  public Expr         action      (InlineArray      i, AbstractFeature outer) { return i; }
+  public void         action      (AbstractMatch    m                       ) { }
+  public void         action      (Match            m, AbstractFeature outer) { }
+  public void         action      (Tag              b, AbstractFeature outer) { }
+  public Expr         action      (This             t, AbstractFeature outer) { return t; }
+  public AbstractType action      (AbstractType     t, AbstractFeature outer) { return t; }
 
   /**
    * Visitors that want a different treatment for visiting actual arguments of a

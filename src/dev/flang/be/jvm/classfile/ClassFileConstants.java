@@ -626,9 +626,10 @@ public interface ClassFileConstants
     return switch (s)
       {
         case "V" -> PrimitiveType.type_void;
-        case "I" -> PrimitiveType.type_int;
         case "B" -> PrimitiveType.type_byte;
         case "S" -> PrimitiveType.type_short;
+        case "C" -> PrimitiveType.type_char;
+        case "I" -> PrimitiveType.type_int;
         case "J" -> PrimitiveType.type_long;
         case "F" -> PrimitiveType.type_float;
         case "D" -> PrimitiveType.type_double;

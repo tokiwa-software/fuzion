@@ -779,6 +779,16 @@ public class NumLiteral extends Constant
 
 
   /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+    return true;
+  }
+
+
+  /**
    * toString
    *
    * @return

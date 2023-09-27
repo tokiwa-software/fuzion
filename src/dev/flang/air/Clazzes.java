@@ -176,6 +176,16 @@ public class Clazzes extends ANY
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
+  public static final OnDemandClazz array_i8    = new OnDemandClazz(() -> Types.resolved.t_array_i8         );
+  public static final OnDemandClazz array_i16   = new OnDemandClazz(() -> Types.resolved.t_array_i16        );
+  public static final OnDemandClazz array_i32   = new OnDemandClazz(() -> Types.resolved.t_array_i32        );
+  public static final OnDemandClazz array_i64   = new OnDemandClazz(() -> Types.resolved.t_array_i64        );
+  public static final OnDemandClazz array_u8    = new OnDemandClazz(() -> Types.resolved.t_array_u8         );
+  public static final OnDemandClazz array_u16   = new OnDemandClazz(() -> Types.resolved.t_array_u16        );
+  public static final OnDemandClazz array_u32   = new OnDemandClazz(() -> Types.resolved.t_array_u32        );
+  public static final OnDemandClazz array_u64   = new OnDemandClazz(() -> Types.resolved.t_array_u64        );
+  public static final OnDemandClazz array_f32   = new OnDemandClazz(() -> Types.resolved.t_array_f32        );
+  public static final OnDemandClazz array_f64   = new OnDemandClazz(() -> Types.resolved.t_array_f64        );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
       public Clazz get()
@@ -916,7 +926,25 @@ public class Clazzes extends ANY
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
 
-    clazz(c, outerClazz).instantiated(c.pos());
+    var p = c.pos();
+    var const_clazz = clazz(c, outerClazz);
+    const_clazz.instantiated(p);
+    if (const_clazz.feature() == Types.resolved.f_array)
+      { // add clazzes touched by constant creation:
+        //
+        //   array.internal_array
+        //   fuzion.sys.internal_array
+        //   fuzion.sys.internal_array.data
+        //   fuzion.sys.Pointer
+        //
+        var array          = const_clazz;
+        var internal_array = array.lookup(Types.resolved.f_array_internal_array);
+        var sys_array      = internal_array.resultClazz();
+        var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
+        array.instantiated(p);
+        sys_array.instantiated(p);
+        data.resultClazz().instantiated(p);
+      }
   }
 
 

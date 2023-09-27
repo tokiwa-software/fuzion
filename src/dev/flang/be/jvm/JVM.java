@@ -1144,6 +1144,7 @@ should be avoided as much as possible.
     return new Pair<>(res, Expr.UNIT);
   }
 
+
   /**
    * Create code to create a constant string.
    *
@@ -1155,6 +1156,196 @@ should be avoided as much as possible.
   }
 
 
+  /**
+   * Create a constant Java String that contains the given bytes.  This String
+   * will be used to create a constant array at runtime.
+   *
+   * @param bytes the bytes of a serialized constant.
+   *
+   * @return expression that results in a Java string with the bytes from bytes
+   * in its characters in little endian order.
+   */
+  Expr bytesArrayAsString(byte[] bytes)
+  {
+    StringBuilder sb = new StringBuilder();
+    for (var i = 0; i < bytes.length; i+=2)
+      {
+        var b0 = bytes[i];
+        var b1 = i+1 < bytes.length ? bytes[i+1] : (byte) 0;
+        sb.append((char) ((b0 & 0xff)      |
+                          (b1 & 0xff) << 8   ));
+      }
+    return Expr.stringconst(sb.toString());
+  }
+
+
+  /**
+   * Create code to create a constant `array i8` and `array u8`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArray8(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.iconst(bytes.length))
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constant `array i16`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArrayI16(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constant `array u16`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArrayU16(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constants `array i32` and `array u32`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArray32(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constant `array i64` and `array u64`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArray64(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constants `array f32`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArrayF32(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constant `array f64`.
+   *
+   * @param bytes the byte data of the array contents in Fuzions serialized from
+   * (little endian).
+   */
+  Pair<Expr, Expr> constArrayF64(int arrayCl, byte[] bytes)
+  {
+    return const_array(arrayCl,
+                       bytesArrayAsString(bytes)
+                       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64,
+                                                  Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64_SIG,
+                                                  PrimitiveType.type_byte.array())));
+  }
+
+
+  /**
+   * Create code to create a constant array.
+   *
+   * @param arrayCl the clazz of the array to be created
+   *
+   * @param bytes the bytes of the array as a Java string.
+   */
+  Pair<Expr, Expr> const_array(int arrayCl, Expr bytes)
+  {
+    var internalArray  = _fuir.lookup_array_internal_array(arrayCl);
+    var fuzionSysArray = _fuir.clazzResultClazz(internalArray);
+    var data           = _fuir.lookup_fuzion_sys_internal_array_data  (fuzionSysArray);
+    var length         = _fuir.lookup_fuzion_sys_internal_array_length(fuzionSysArray);
+    var res = new0(arrayCl)                           // stack: cs
+      .andThen(Expr.DUP)                              //        cs, cs
+      .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
+      .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
+      .andThen(bytes)                                 //        cs, cs, fsa, fsa, byt
+      .andThen(Expr.DUP_X2)                           //        cs, cs, byt, fsa, fsa, byt
+      .andThen(putfield(data))                        //        cs, cs, byt, fsa
+      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, byt, fsa
+      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, byt
+      .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, fsa, fsa, len
+      .andThen(putfield(length))                      //        cs, cs, fsa
+      .andThen(putfield(internalArray))               //        cs
+      .is(_types.javaType(arrayCl));                  //        -
+    return new Pair<>(res, Expr.UNIT);
+  }
+
+
+  /**
+   * Does given field exist as a Java field? This is the case for fields that
+   *
+   *  - contain data (are not unit types),
+   *
+   *  - whose outer type is not a primitive (scalar) type (i.e., i32.val does
+   *    not exist!),
+   *
+   *  - that needs code
+   *
+   *  - whose Java type is not 'void ' (which might happen for choice types that
+   *    are effectively unit types).
+   *
+   * @param field the clazz id of a field in _fuir.
+   *
+   * @return true if a Java field exists for the given field.
+   */
   boolean fieldExists(int field)
   {
     var occ   = _fuir.clazzOuterClazz(field);
@@ -1167,33 +1358,65 @@ should be avoided as much as possible.
   }
 
 
+  /**
+   * Create bytecode for a getfield instruction. In case !fieldExists(field),
+   * do nothing and return Expr.UNIT.
+   *
+   * @param field the clazz id of a field in _fuir.
+   *
+   * @return bytecode to get the value of the given field.
+   */
   Expr getfield(int field)
   {
     if (PRECONDITIONS) require
-      (fieldExists(field));
+      (fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void);
 
     var cl = _fuir.clazzOuterClazz(field);
     var rt = _fuir.clazzResultClazz(field);
-    return
-      Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-      .andThen(Expr.getfield(_names.javaClass(cl),
-                             _names.field(field),
-                             _types.resultType(rt)));
+    if (fieldExists(field))
+      {
+        return
+          Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(Expr.getfield(_names.javaClass(cl),
+                                 _names.field(field),
+                                 _types.resultType(rt)));
+      }
+    else
+      {
+        return
+          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(Expr.POP);
+      }
   }
 
 
+  /**
+   * Create bytecode for a putfield instruction. In case !fieldExists(field),
+   * pop the value and the target instance ref from the stack.
+   *
+   * @param field the clazz id of a field in _fuir.
+   */
   Expr putfield(int field)
   {
-    if (PRECONDITIONS) require
-      (fieldExists(field));
-
     var cl = _fuir.clazzOuterClazz(field);
     var rt = _fuir.clazzResultClazz(field);
-    return
-      Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-      .andThen(Expr.putfield(_names.javaClass(cl),
-                             _names.field(field),
-                             _types.resultType(rt)));
+    if (fieldExists(field))
+      {
+        return
+          Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(Expr.putfield(_names.javaClass(cl),
+                                 _names.field(field),
+                                 _types.resultType(rt)));
+      }
+    else
+      {
+        var popv = _types.javaType(rt).pop();
+        return
+          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          .andThen(popv)
+          .andThen(Expr.POP);
+
+      }
   }
 
 }
