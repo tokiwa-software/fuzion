@@ -118,6 +118,12 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
+   * Name of Runtime.LOCK_FOR_ATOMIC
+   */
+  static final String RUNTIME_LOCK_FOR_ATOMIC   = "LOCK_FOR_ATOMIC";
+
+
+  /**
    * Prefix for Java class names created for Fuzion routines or intrinsics
    */
   private static final String CLASS_PREFIX = "fzC_";

@@ -707,7 +707,7 @@ class CodeGen
             }
           else if (!(preCalled || Intrinsix.inRuntime(_jvm, cc)))
             {
-              return Intrinsix.inlineCode(_jvm, cc, tvalue, args);
+              return Intrinsix.inlineCode(_jvm, cl, pre, cc, tvalue, args);
             }
           // fall through!
         }

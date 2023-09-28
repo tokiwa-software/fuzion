@@ -500,7 +500,7 @@ public interface ClassFileConstants
   }
 
   /* a class or array */
-  static abstract class AType implements JavaType
+  public static abstract class AType implements JavaType
   {
     final String _descriptor;
     AType(String descriptor)
