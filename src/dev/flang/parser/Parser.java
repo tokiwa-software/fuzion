@@ -293,7 +293,7 @@ field       : returnType
     var a = formArgsOpt();
     var r = returnType();
     var eff = effects();
-    var hasType = r != NoType.INSTANCE;
+    var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
     Contract c = contract(true);
     Impl p =
