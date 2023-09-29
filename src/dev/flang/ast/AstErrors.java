@@ -97,7 +97,8 @@ public class AstErrors extends ANY
   }
   static String s(ReturnType rt)
   {
-    return st(rt.toString());
+    return st(rt instanceof RefType ? "ref" // since RefType is the default, toString() is ""
+                                    : rt.toString());
   }
   static String st(String t)
   {
