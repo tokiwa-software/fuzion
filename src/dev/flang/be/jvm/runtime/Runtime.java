@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Intrinsics
+ * Source of class Runtime
  *
  *---------------------------------------------------------------------*/
 
@@ -125,6 +125,22 @@ public class Runtime extends ANY
 
 
   /**
+   * The main thread. This is used by currentThread() to return
+   * _nyi_remove_main_FuzionThread_ in case of the main thread.
+   *
+   * NYI: On startup, the main code should better be run in a newly started
+   * instance of FuzionThread.  Then this special handling would not be needed.
+   */
+  static Thread _nyi_remove_mainthread_ = Thread.currentThread();
+
+
+  /**
+   * Thread instance for main thread. See @_nyi_remove_mainthread_.
+   */
+  static FuzionThread _nyi_remove_main_FuzionThread_ = new FuzionThread();
+
+
+  /**
    * Create a Java string from 0-terminated given byte array.
    */
   private static String utf8ByteArrayDataToString(byte[] ba)
@@ -136,14 +152,6 @@ public class Runtime extends ANY
       }
     return new String(ba, 0, l, StandardCharsets.UTF_8);
   }
-
-
-  /**
-   * Currently installed effects.
-   *
-   * NYI: this should be thread local
-   */
-  static List<Any> _installedEffects_ = new List<>();
 
 
   /**
@@ -197,6 +205,32 @@ public class Runtime extends ANY
 
 
   /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Get the current FuzionThread instance. In case the current thread is not a
+   * thread attached to the Fuzion runtime, create a fatal error.
+   *
+   * @return the current thread, never null.
+   */
+  public static FuzionThread currentThread()
+  {
+    FuzionThread result = null;
+    var ct = Thread.currentThread();
+    if (ct == _nyi_remove_mainthread_)
+      {
+        ct = _nyi_remove_main_FuzionThread_;
+      }
+    if (ct instanceof FuzionThread ft)
+      {
+        result = ft;
+      }
+    else
+      {
+        Errors.fatal("Fuzion Runtime used from detached thread " + ct);
+      }
+    return result;
+  }
 
 
   /**
@@ -386,61 +420,14 @@ public class Runtime extends ANY
     System.out.println(msg);
   }
 
-  static Thread _nyi_remove_single_thread = Thread.currentThread();
-
-
-  /**
-   * Make sure _installedEffects_ is large enough to hold effect with given id.
-   *
-   * @param id an effect id.
-   */
-  private static void ensure_effect_capacity(int id)
-  {
-    while (_installedEffects_.size() < id+1)
-      {
-        _installedEffects_.add(null);
-      }
-  }
-
-
-  /**
-   * Internal helper to load an effect instance from the given id.
-   *
-   * @param id an effect id.
-   */
-  private static Any effect_load(int id)
-  {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
-
-    ensure_effect_capacity(id);
-    return _installedEffects_.get(id);
-  }
-
-  /**
-   * Internal helper to store an effect instance for the given id.
-   *
-   * @param id an effect id.
-   */
-  private static void effect_store(int id, Any instance)
-  {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
-
-    ensure_effect_capacity(id);
-    _installedEffects_.set(id, instance);
-  }
-
 
   public static void effect_default(int id, Any instance)
   {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
-
-    _installedEffects_.ensureCapacity(id + 1);
-    if (effect_load(id) == null)
+    var t = currentThread();
+    t.ensure_effect_capacity(id);
+    if (t.effect_load(id) == null)
       {
-        effect_store(id, instance);
+        t.effect_store(id, instance);
       }
   }
 
@@ -454,10 +441,9 @@ public class Runtime extends ANY
    */
   public static boolean effect_is_installed(int id)
   {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
+    var t = currentThread();
 
-    return effect_load(id) != null;
+    return t.effect_load(id) != null;
   }
 
 
@@ -470,10 +456,9 @@ public class Runtime extends ANY
    */
   public static void effect_replace(int id, Any instance)
   {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
+    var t = currentThread();
 
-    effect_store(id, instance);
+    t.effect_store(id, instance);
   }
 
 
@@ -532,11 +517,10 @@ public class Runtime extends ANY
    */
   public static void effect_abortable(int id, Any instance, Any code, Class call)
   {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
+    var t = currentThread();
 
-    var old = effect_load(id);
-    effect_store(id, instance);
+    var old = t.effect_load(id);
+    t.effect_store(id, instance);
     Method r = null;
     for (var m : call.getDeclaredMethods())
       {
@@ -575,7 +559,7 @@ public class Runtime extends ANY
           }
         finally
           {
-            effect_store(id, old);
+            t.effect_store(id, old);
           }
       }
   }
@@ -592,10 +576,9 @@ public class Runtime extends ANY
    */
   public static Any effect_get(int id)
   {
-    if (CHECKS) check
-      (_nyi_remove_single_thread == Thread.currentThread());
+    var t = currentThread();
 
-    var result = effect_load(id);
+    var result = t.effect_load(id);
     if (result == null)
       {
         throw new Error("No effect of "+id+" installed");
@@ -1151,21 +1134,39 @@ public class Runtime extends ANY
     return System.getenv(utf8ByteArrayDataToString(d));
   }
 
-  public static long fuzion_sys_thread_spawn0(/*args missing*/)
+
+  /**
+   * @param instance the effect instance that is installed
+   *
+   * @param code the Unary instance to be executed
+   *
+   * @param call the Java clazz of the Unary instance to be executed.
+   */
+  public static long thread_spawn(Any code, Class call)
   {
-    throw new RuntimeException("NYI");
-    /* NYI
-    var call = Types.resolved.f_function_call;
-    var oc = innerClazz.argumentFields()[0].resultClazz();
-    var ic = oc.lookup(call);
-    var al = new ArrayList<Value>();
-    al.add(args.get(1));
-    var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
-    t.setDaemon(true);
-    t.start();
-    return _startedThreads_.add(t);
-     */
-  };
+    long result = 0;
+    Method r = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals(ROUTINE_NAME))
+          {
+            r = m;
+          }
+      }
+    if (r == null)
+      {
+        Errors.fatal("in " + Runtime.class.getName() + ".thread_spawn: missing `" + ROUTINE_NAME + "` in class `" + call + "`");
+      }
+    else
+      {
+        var t = new FuzionThread(r, code, call);
+        t.start();
+        result = t.getId();
+        // result = t.threadId(); // NYI: use for Java >=19
+      }
+    return result;
+  }
+
 
   public static void fuzion_sys_thread_join0(long threadId)
   {
