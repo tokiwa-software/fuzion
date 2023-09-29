@@ -1159,8 +1159,7 @@ public class Runtime extends ANY
       }
     else
       {
-        var t = new FuzionThread(r, code, call);
-        t.start();
+        var t = new FuzionThread(r, code);
         result = t.getId();
         // result = t.threadId(); // NYI: use for Java >=19
       }
