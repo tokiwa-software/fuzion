@@ -984,6 +984,13 @@ public interface ClassFileConstants
    */
   public static final int MAX_BYTECODE_LENGTH = 0xffff;
 
+
+  /**
+   * min / max offset in a branching bytecode instrution such as `ifeq`.
+   */
+  public static final int MIN_BRANCH_OFFSET = -0x8000;
+  public static final int MAX_BRANCH_OFFSET =  0x7fff;
+
 }
 
 /* end of file */

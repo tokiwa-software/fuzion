@@ -444,7 +444,6 @@ public class Choices extends ANY implements ClassFileConstants
           code = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              var caze = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
                 {
@@ -453,7 +452,7 @@ public class Choices extends ANY implements ClassFileConstants
                     {
                       if (CHECKS) check
                         (code == null);  // if there are several non-voids, we would have at least boollike kind
-                      code = caze;
+                      code = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
                     }
                 }
             }
@@ -468,15 +467,14 @@ public class Choices extends ANY implements ClassFileConstants
 
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              var caze = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
                 {
                   var t = intValueForTagNum(subjClazz, tagNum);
                   switch (t)
                     {
-                    case 0: neg = caze; break;
-                    case 1: pos = caze; break;
+                    case 0: neg = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))); break;
+                    case 1: pos = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))); break;
                     case -1: break; //  void type
                     default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.clazzAsString(cl));
                   }
@@ -493,7 +491,6 @@ public class Choices extends ANY implements ClassFileConstants
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var caze = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -506,7 +503,7 @@ public class Choices extends ANY implements ClassFileConstants
                       code = code.andThen(Expr.DUP)                                 //          tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          tag
-                                             Expr.UNIT.andThen(caze),
+                                             Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))),
                                              Expr.UNIT));
                     }
                 }
@@ -522,7 +519,6 @@ public class Choices extends ANY implements ClassFileConstants
 
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              var caze = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -540,12 +536,12 @@ public class Choices extends ANY implements ClassFileConstants
                         {                                                       //          sub
                           pos = Expr.POP;                                       //          -
                         }
-                      pos = pos.andThen(caze);
+                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
                     }
                   else if (_fuir.clazzIsUnitType(tc))
                     {
                       neg = Expr.POP                                            //          -
-                        .andThen(caze);
+                        .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
                     }
                 }
             }
@@ -570,7 +566,6 @@ public class Choices extends ANY implements ClassFileConstants
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var caze = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -596,7 +591,7 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           pos = Expr.UNIT;                                      //          sub, tag
                         }
-                      pos = pos.andThen(caze);
+                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
                       code = code.andThen(Expr.DUP)                             //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                           //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,    //          sub, tag
@@ -619,7 +614,6 @@ public class Choices extends ANY implements ClassFileConstants
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var caze = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -650,7 +644,7 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           pos = Expr.UNIT;                                          //          sub, tag
                         }
-                      pos = pos.andThen(caze);
+                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
                       code = code.andThen(Expr.DUP)                                 //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          sub, tag

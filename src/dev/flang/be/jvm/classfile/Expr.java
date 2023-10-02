@@ -53,7 +53,7 @@ public abstract class Expr extends ByteCode
   {
     public String toString() { return "UNIT"; }
     public JavaType type() { return PrimitiveType.type_void; }
-    public byte[] byteCode(ClassFile cf) { return BC_EMPTY; }
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf) { ba.write(BC_EMPTY); }
   }
 
 
@@ -64,9 +64,9 @@ public abstract class Expr extends ByteCode
   static abstract class LoadConst extends Expr
   {
     abstract ClassFile.CPEntry cpEntry(ClassFile cf);
-    public byte[] byteCode(ClassFile cf)
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
-      return bc(O_ldc, cpEntry(cf));
+      code(ba, O_ldc, cpEntry(cf));
     }
   }
 
@@ -87,7 +87,10 @@ public abstract class Expr extends ByteCode
     }
     public String   toString()             { return _str;  }
     public JavaType type()                 { return _type; }
-    public byte[]   byteCode(ClassFile cf) { return _bc;   }
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+    {
+      ba.write(_bc);
+    }
   }
 
 
@@ -220,7 +223,7 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "invokeStatic " + cls + "." + name; }
         public JavaType type() { return rt;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           var c   = cf.cpUtf8(cls);
           var n   = cf.cpUtf8(name);
@@ -228,8 +231,8 @@ public abstract class Expr extends ByteCode
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpMethod(cl, nat);
-          return bc(O_invokestatic, m);
-        };
+          code(ba, O_invokestatic, m);
+        }
     };
   }
 
@@ -244,7 +247,7 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "invokeSpecial " + cls + "." + name; }
         public JavaType type() { return PrimitiveType.type_void; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           var c   = cf.cpUtf8(cls);
           var n   = cf.cpUtf8(name);
@@ -252,8 +255,8 @@ public abstract class Expr extends ByteCode
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpMethod(cl, nat);
-          return bc(O_invokespecial, m);
-        };
+          code(ba, O_invokespecial, m);
+        }
     };
   }
 
@@ -268,14 +271,14 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "invokeSpecial " + cl + "." + name; }
         public JavaType type() { return PrimitiveType.type_void;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           var n   = cf.cpUtf8(name);
           var d   = cf.cpUtf8(descr);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpMethod(cl, nat);
-          return bc(O_invokespecial, m);
-        };
+          code(ba, O_invokespecial, m);
+        }
     };
   }
 
@@ -290,7 +293,7 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "invokeVirtual " + cls + "." + name; }
         public JavaType type() { return rt;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           var c   = cf.cpUtf8(cls);
           var n   = cf.cpUtf8(name);
@@ -298,8 +301,8 @@ public abstract class Expr extends ByteCode
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpMethod(cl, nat);
-          return bc(O_invokevirtual, m);
-        };
+          code(ba, O_invokevirtual, m);
+        }
     };
   }
 
@@ -316,7 +319,7 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "invokeInterface " + cls + "." + name; }
         public JavaType type() { return rt;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           var c   = cf.cpUtf8(cls);
           var n   = cf.cpUtf8(name);
@@ -324,8 +327,8 @@ public abstract class Expr extends ByteCode
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpInterfaceMethod(cl, nat);
-          return bc(O_invokeinterface, m, (byte) count, (byte) 0);
-        };
+          code(ba, O_invokeinterface, m, (byte) count, (byte) 0);
+        }
     };
   }
 
@@ -345,9 +348,9 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_getfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+          code(ba, O_getfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
@@ -368,9 +371,9 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "putfield " + cls + "." + name; }
         public JavaType type() { return PrimitiveType.type_void;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_putfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+          code(ba, O_putfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
@@ -394,9 +397,9 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_getstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+          code(ba, O_getstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
@@ -417,9 +420,9 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return "putstatic " + cls + "." + name; }
         public JavaType type() { return PrimitiveType.type_void;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_putstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+          code(ba, O_putstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
     };
   }
@@ -438,18 +441,18 @@ public abstract class Expr extends ByteCode
           return PrimitiveType.type_int;
         }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpInteger(c); }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (c)
+          switch (c)
             {
-            case -1 -> BC_ICONST_M1;
-            case 0 -> BC_ICONST_0;
-            case 1 -> BC_ICONST_1;
-            case 2 -> BC_ICONST_2;
-            case 3 -> BC_ICONST_3;
-            case 4 -> BC_ICONST_4;
-            case 5 -> BC_ICONST_5;
-            default -> super.byteCode(cf);
+            case -1 -> ba.write(BC_ICONST_M1);
+            case  0 -> ba.write(BC_ICONST_0);
+            case  1 -> ba.write(BC_ICONST_1);
+            case  2 -> ba.write(BC_ICONST_2);
+            case  3 -> ba.write(BC_ICONST_3);
+            case  4 -> ba.write(BC_ICONST_4);
+            case  5 -> ba.write(BC_ICONST_5);
+            default -> super.code(ba, cf);
             };
         }
     };
@@ -469,11 +472,11 @@ public abstract class Expr extends ByteCode
           return PrimitiveType.type_long;
         }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpLong(c); }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return
-            c == 0L ? BC_LCONST_0 :
-            c == 1L ? BC_LCONST_1 : super.byteCode(cf);
+          if      (c == 0L) { ba.write(BC_LCONST_0); }
+          else if (c == 1L) { ba.write(BC_LCONST_1); }
+          else              { super.code(ba, cf);    }
         }
     };
   }
@@ -492,12 +495,12 @@ public abstract class Expr extends ByteCode
           return PrimitiveType.type_float;
         }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpFloat(c); }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return
-            Float.intBitsToFloat(c) == 0F ? BC_FCONST_0 :
-            Float.intBitsToFloat(c) == 1F ? BC_FCONST_1 :
-            Float.intBitsToFloat(c) == 2F ? BC_FCONST_2 : super.byteCode(cf);
+          if      (Float.intBitsToFloat(c) == 0F) { ba.write(BC_FCONST_0); }
+          else if (Float.intBitsToFloat(c) == 1F) { ba.write(BC_FCONST_1); }
+          else if (Float.intBitsToFloat(c) == 2F) { ba.write(BC_FCONST_2); }
+          else                                    { super.code(ba, cf);    }
         }
     };
   }
@@ -516,11 +519,11 @@ public abstract class Expr extends ByteCode
           return PrimitiveType.type_double;
         }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpDouble(c); }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return
-            Double.longBitsToDouble(c) == 0F ? BC_DCONST_0 :
-            Double.longBitsToDouble(c) == 1F ? BC_DCONST_1 : super.byteCode(cf);
+          if      (Double.longBitsToDouble(c) == 0F) { ba.write(BC_DCONST_0); }
+          else if (Double.longBitsToDouble(c) == 1F) { ba.write(BC_DCONST_1); }
+          else                                       { super.code(ba, cf);    }
         }
     };
   }
@@ -578,15 +581,15 @@ public abstract class Expr extends ByteCode
         {
           return PrimitiveType.type_int;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_ILOAD_0;
-            case 1 -> BC_ILOAD_1;
-            case 2 -> BC_ILOAD_2;
-            case 3 -> BC_ILOAD_3;
-            default -> bc(O_iload, index);
+            case 0 -> ba.write(BC_ILOAD_0);
+            case 1 -> ba.write(BC_ILOAD_1);
+            case 2 -> ba.write(BC_ILOAD_2);
+            case 3 -> ba.write(BC_ILOAD_3);
+            default -> code(ba, O_iload, index);
             };
         }
     };
@@ -600,15 +603,15 @@ public abstract class Expr extends ByteCode
     return new Store()
       {
         public String toString() { return "istore"; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_ISTORE_0;
-            case 1 -> BC_ISTORE_1;
-            case 2 -> BC_ISTORE_2;
-            case 3 -> BC_ISTORE_3;
-            default -> bc(O_istore, index);
+            case 0 -> ba.write(BC_ISTORE_0);
+            case 1 -> ba.write(BC_ISTORE_1);
+            case 2 -> ba.write(BC_ISTORE_2);
+            case 3 -> ba.write(BC_ISTORE_3);
+            default -> code(ba, O_istore, index);
             };
         }
     };
@@ -627,15 +630,15 @@ public abstract class Expr extends ByteCode
         {
           return PrimitiveType.type_long;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_LLOAD_0;
-            case 1 -> BC_LLOAD_1;
-            case 2 -> BC_LLOAD_2;
-            case 3 -> BC_LLOAD_3;
-            default -> bc(O_lload, index);
+            case 0 -> ba.write(BC_LLOAD_0);
+            case 1 -> ba.write(BC_LLOAD_1);
+            case 2 -> ba.write(BC_LLOAD_2);
+            case 3 -> ba.write(BC_LLOAD_3);
+            default -> code(ba, O_lload, index);
             };
         }
     };
@@ -650,15 +653,15 @@ public abstract class Expr extends ByteCode
     return new Store()
       {
         public String toString() { return "lstore"; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_LSTORE_0;
-            case 1 -> BC_LSTORE_1;
-            case 2 -> BC_LSTORE_2;
-            case 3 -> BC_LSTORE_3;
-            default -> bc(O_lstore, index);
+            case 0 -> ba.write(BC_LSTORE_0);
+            case 1 -> ba.write(BC_LSTORE_1);
+            case 2 -> ba.write(BC_LSTORE_2);
+            case 3 -> ba.write(BC_LSTORE_3);
+            default -> code(ba, O_lstore, index);
             };
         }
     };
@@ -677,15 +680,15 @@ public abstract class Expr extends ByteCode
         {
           return PrimitiveType.type_float;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_FLOAD_0;
-            case 1 -> BC_FLOAD_1;
-            case 2 -> BC_FLOAD_2;
-            case 3 -> BC_FLOAD_3;
-            default -> bc(O_fload, index);
+            case 0 -> ba.write(BC_FLOAD_0);
+            case 1 -> ba.write(BC_FLOAD_1);
+            case 2 -> ba.write(BC_FLOAD_2);
+            case 3 -> ba.write(BC_FLOAD_3);
+            default -> code(ba, O_fload, index);
             };
         }
     };
@@ -700,15 +703,15 @@ public abstract class Expr extends ByteCode
     return new Store()
       {
         public String toString() { return "fstore"; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_FSTORE_0;
-            case 1 -> BC_FSTORE_1;
-            case 2 -> BC_FSTORE_2;
-            case 3 -> BC_FSTORE_3;
-            default -> bc(O_fstore, index);
+            case 0 -> ba.write(BC_FSTORE_0);
+            case 1 -> ba.write(BC_FSTORE_1);
+            case 2 -> ba.write(BC_FSTORE_2);
+            case 3 -> ba.write(BC_FSTORE_3);
+            default -> code(ba, O_fstore, index);
             };
         }
     };
@@ -727,15 +730,15 @@ public abstract class Expr extends ByteCode
         {
           return PrimitiveType.type_double;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_DLOAD_0;
-            case 1 -> BC_DLOAD_1;
-            case 2 -> BC_DLOAD_2;
-            case 3 -> BC_DLOAD_3;
-            default -> bc(O_dload, index);
+            case 0 -> ba.write(BC_DLOAD_0);
+            case 1 -> ba.write(BC_DLOAD_1);
+            case 2 -> ba.write(BC_DLOAD_2);
+            case 3 -> ba.write(BC_DLOAD_3);
+            default -> code(ba, O_dload, index);
             };
         }
     };
@@ -750,15 +753,15 @@ public abstract class Expr extends ByteCode
     return new Store()
       {
         public String toString() { return "dstore"; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (index)
+          switch (index)
             {
-            case 0 -> BC_DSTORE_0;
-            case 1 -> BC_DSTORE_1;
-            case 2 -> BC_DSTORE_2;
-            case 3 -> BC_DSTORE_3;
-            default -> bc(O_dstore, index);
+            case 0 -> ba.write(BC_DSTORE_0);
+            case 1 -> ba.write(BC_DSTORE_1);
+            case 2 -> ba.write(BC_DSTORE_2);
+            case 3 -> ba.write(BC_DSTORE_3);
+            default -> code(ba, O_dstore, index);
             };
         }
     };
@@ -777,15 +780,15 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (n)
+          switch (n)
             {
-            case 0 -> BC_ALOAD_0;
-            case 1 -> BC_ALOAD_1;
-            case 2 -> BC_ALOAD_2;
-            case 3 -> BC_ALOAD_3;
-            default -> bc(O_aload, n);
+            case 0 -> ba.write(BC_ALOAD_0);
+            case 1 -> ba.write(BC_ALOAD_1);
+            case 2 -> ba.write(BC_ALOAD_2);
+            case 3 -> ba.write(BC_ALOAD_3);
+            default -> code(ba, O_aload, n);
             };
         }
     };
@@ -800,15 +803,15 @@ public abstract class Expr extends ByteCode
     return new Store()
       {
         public String toString() { return "astore"; }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return switch (n)
+          switch (n)
             {
-            case 0 -> BC_ASTORE_0;
-            case 1 -> BC_ASTORE_1;
-            case 2 -> BC_ASTORE_2;
-            case 3 -> BC_ASTORE_3;
-            default -> bc(O_astore, n);
+            case 0 -> ba.write(BC_ASTORE_0);
+            case 1 -> ba.write(BC_ASTORE_1);
+            case 2 -> ba.write(BC_ASTORE_2);
+            case 3 -> ba.write(BC_ASTORE_3);
+            default -> code(ba, O_astore, n);
             };
         }
     };
@@ -827,9 +830,9 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return BC_AALOAD;
+          ba.write(BC_AALOAD);
         }
     };
   }
@@ -849,9 +852,9 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_new, cf.cpClass(className));
+          code(ba, O_new, cf.cpClass(className));
         }
     };
   }
@@ -873,9 +876,9 @@ public abstract class Expr extends ByteCode
         {
           return type.array();
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_anewarray, cf.cpClass(type.descriptor2()));
+          code(ba, O_anewarray, cf.cpClass(type.descriptor2()));
         }
     };
   }
@@ -901,20 +904,69 @@ public abstract class Expr extends ByteCode
        bc == ClassFileConstants.O_ifnull    ||
        bc == ClassFileConstants.O_ifnonnull   );
 
-    return new Expr()
+    Label lStart = new Label();
+    Label lEnd   = new Label();
+    Label lPos   = new Label();
+
+    if (pos != UNIT && neg != UNIT)
       {
-        public String toString() { return "branch"; }
-        public JavaType type()
+        neg = neg.andThen(gotoLabel(lEnd));
+        pos = lPos.andThen(pos);
+      }
+
+    // effectively final vars for use in inner class:
+    var fpos = pos;
+    var fneg = neg;
+
+    return lStart.andThen
+      (new Expr()
         {
-          return PrimitiveType.type_void;
-        }
-        public byte[] byteCode(ClassFile cf)
-        {
-          var pb = pos.byteCode(cf);
-          var nb = neg.byteCode(cf);
-          return bc(bc, pb, nb);
-        }
-    };
+          public String toString() { return "branch"; }
+          public JavaType type()
+          {
+            return PrimitiveType.type_void;
+          }
+          public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+          {
+            if (fpos == UNIT)
+              {
+                code(ba, bc, lStart, lEnd);
+                fneg.code(ba, cf);
+              }
+            else if (fneg == UNIT)
+              {
+                var nbc = switch (bc)
+                  {
+                  case O_ifeq        -> O_ifne     ;
+                  case O_ifne        -> O_ifeq     ;
+                  case O_iflt        -> O_ifge     ;
+                  case O_ifge        -> O_iflt     ;
+                  case O_ifgt        -> O_ifle     ;
+                  case O_ifle        -> O_ifgt     ;
+                  case O_if_icmpeq   -> O_if_icmpne;
+                  case O_if_icmpne   -> O_if_icmpeq;
+                  case O_if_icmplt   -> O_if_icmpge;
+                  case O_if_icmpge   -> O_if_icmplt;
+                  case O_if_icmpgt   -> O_if_icmple;
+                  case O_if_icmple   -> O_if_icmpgt;
+                  case O_if_acmpeq   -> O_if_acmpne;
+                  case O_if_acmpne   -> O_if_acmpeq;
+                  case O_ifnull      -> O_ifnonnull;
+                  case O_ifnonnull   -> O_ifnull   ;
+                  default -> throw new Error("unexpected bc "+bc);
+                  };
+                code(ba, nbc, lStart, lEnd);
+                fpos.code(ba, cf);
+              }
+            else
+              {
+                code(ba, bc, lStart, lPos);
+                fneg.code(ba, cf);
+                fpos.code(ba, cf);
+              }
+          }
+        })
+      .andThen(lEnd);
   }
 
 
@@ -927,9 +979,9 @@ public abstract class Expr extends ByteCode
         {
           return type;
         }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return bc(O_checkcast, cf.cpClass(type.descriptor2()));
+          code(ba, O_checkcast, cf.cpClass(type.descriptor2()));
         }
     };
   }
@@ -942,20 +994,30 @@ public abstract class Expr extends ByteCode
    */
   public static Expr endless_loop()
   {
-    return new Expr()
-      {
-        public String toString() { return "endless_loop"; }
-        public JavaType type()
-        {
-          return ClassFileConstants.PrimitiveType.type_void;
-        }
-        public byte[] byteCode(ClassFile cf)
-        {
-          return bcsigned(O_goto, 0);
-        }
-    };
+    Label l = new Label();
+    return l.andThen(gotoLabel(l));
   }
 
+
+  /**
+   */
+  public static Expr gotoLabel(Label to)
+  {
+    Label from = new Label();
+    return from.andThen
+      (new Expr()
+        {
+          public String toString() { return "goto " + to; }
+          public JavaType type()
+          {
+            return ClassFileConstants.PrimitiveType.type_void;
+          }
+          public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+          {
+            code(ba, O_goto, from, to);
+          }
+        });
+  }
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -988,10 +1050,11 @@ public abstract class Expr extends ByteCode
           {
             public String toString() { return "...andThen" + s; }
             public JavaType type() { return s.type();  }
-            public byte[] byteCode(ClassFile cf)
+            public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
             {
-              return bc(Expr.this.byteCode(cf), s.byteCode(cf));
-            };
+              Expr.this.code(ba, cf);
+              s.code(ba, cf);
+            }
           };
       }
   }
@@ -1035,10 +1098,10 @@ public abstract class Expr extends ByteCode
       {
         public String toString() { return Expr.this.toString() + "[" + t + "]"; }
         public JavaType type() { return t;  }
-        public byte[] byteCode(ClassFile cf)
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          return Expr.this.byteCode(cf);
-        };
+          Expr.this.code(ba, cf);
+        }
       };
   }
 

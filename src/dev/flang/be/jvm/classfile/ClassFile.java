@@ -56,6 +56,298 @@ public class ClassFile extends ANY implements ClassFileConstants
 
   /*-----------------------------  classes  -----------------------------*/
 
+
+  /**
+   * Helper to create the UTF bytes of a given Java string.
+   *
+   * @param s a Java string
+   *
+   * @return the corresponding UTF encoded bytes.
+   */
+  static byte[] toUTF(String s)
+  {
+    try
+      {
+        var ba = new ByteArrayOutputStream();
+        var da = new DataOutputStream(ba);
+        da.writeUTF(s);
+        return ba.toByteArray();
+      }
+    catch (IOException o)
+      {
+        throw new Error(o);
+      }
+  }
+
+
+  /**
+   * Abstract writer for bytecode instructions. Different implementations are
+   * used to collect information on bytecodes and to finally generate code.
+   */
+  static abstract class ByteCodeWriter
+  {
+    /**
+     * what are we compiling, used for error messages
+     */
+    final String _where;
+
+    /**
+     * Constructor
+     *
+     * @param where string describing what we are compiling, for error messages.
+     */
+    ByteCodeWriter(String where)
+    {
+      _where = where;
+    }
+
+
+    /**
+     * Write unsigned or signed integers or byte arrays:
+     */
+    abstract void writeU4(int v);
+    abstract void writeI4(int v);
+    abstract void writeI8(long v);
+    abstract void writeU2(int v);
+    abstract void writeU1(int v);
+    abstract void write(byte v);
+    abstract void write(byte[] v);
+
+
+    void writeUTF(String s) // NYI: better use toUTF at the caller and cache the result there
+    {
+      write(toUTF(s));
+    }
+
+
+    /**
+     * Set the given label to the current position.
+     */
+    abstract void setLabel(Label l);
+
+    /**
+     * Determine the offset for a branch instruction at from to label at to.
+     */
+    abstract int offset(Label from, Label to);
+
+    /**
+     * Check if the given offset fits in a signed 16-bit value used in
+     * bytecode. Produce fatal error if this is not the case.
+     */
+    void checkBranchOffset(int offset)
+    {
+      if (offset < MIN_BRANCH_OFFSET || offset >= MAX_BRANCH_OFFSET)
+        {
+          Errors.fatal("Offset in branch within bytecode created "+(_where == null ? "" : "for `" + _where) + "` is " +
+                       offset + ", the maximum allowed offset is in the range of " + MIN_BRANCH_OFFSET + " .. " + MAX_BRANCH_OFFSET + ".\n" +
+                       "To solve this, you might simplify the code or split up that feature into several smaller features.");
+        }
+    }
+
+  }
+
+
+  /**
+   * ByteCodeWriter that produces an upper bound estimate of the bytecode size.
+   */
+  static class ByteCodeSizeEstimate extends ByteCodeWriter
+  {
+    /**
+     * The current size estimate.
+     */
+    int _size = 0;
+
+
+    /**
+     * Constructor
+     *
+     * @param where string describing what we are compiling, for error messages.
+     */
+    ByteCodeSizeEstimate(String where)
+    {
+      super(where);
+    }
+
+
+    /**
+     * Get the current size.  Produce an error in case this exceeds
+     * MAX_BYTECODE_LENGTH.
+     */
+    int size()
+    {
+      if (_size > MAX_BYTECODE_LENGTH)
+        {
+          Errors.fatal("Code size of bytecode created " + (_where == null ? "" : "for `" + _where) + "` is " +
+                       _size + ", the maximum allowed length is " + MAX_BYTECODE_LENGTH + ".\n" +
+                       "To solve this, you might simplify the code or split up that feature into several smaller features.");
+        }
+      return _size;
+    }
+
+
+    /**
+     * Write unsigned or signed integers or byte arrays: These only increment the size.
+     */
+    void writeU4 (int    v) { _size += 4; }
+    void writeI4 (int    v) { _size += 4; }
+    void writeI8 (long   v) { _size += 8; }
+    void writeU2 (int    v) { _size += 2; }
+    void writeU1 (int    v) { _size += 1; }
+    void write   (byte   v) { _size += 1; }
+    void write   (byte[] v) { _size += v.length; }
+
+
+    /**
+     * Set the label's position estimate to the current position.
+     */
+    void setLabel(Label l)
+    {
+      if (PRECONDITIONS) require
+        (l._posEstimate == -1 || l._posEstimate == _size,
+         l._posFinal    == -1);
+
+      l._posEstimate = _size;
+    }
+
+    /**
+     * Get an estimate of the offset for a branch. This is MAX_BRANCH_OFFSET
+     * during the estimate phase, wide branches are not yet supported.
+     */
+    int offset(Label from, Label to)
+    {
+      setLabel(from);
+      return MAX_BRANCH_OFFSET;
+    }
+
+  }
+
+
+  /**
+   * ByteCodeWriter that fixes code size and positions.
+   */
+  static class ByteCodeFixLabels extends ByteCodeSizeEstimate
+  {
+
+    /**
+     * Constructor
+     *
+     * @param where string describing what we are compiling, for error messages.
+     */
+    ByteCodeFixLabels(String where)
+    {
+      super(where);
+    }
+
+
+    /**
+     * Set the label's final position to the current position.
+     */
+    void setLabel(Label l)
+    {
+      if (PRECONDITIONS) require
+        (l._posEstimate != -1,
+         l._posFinal    == -1 || l._posFinal == _size);
+
+      l._posFinal = _size;
+
+      if (CHECKS) check
+        (l._posFinal <= l._posEstimate);
+    }
+
+
+    /**
+     * Get an estimate of the offset for a branch based on the estimated
+     * position determined in the previous phase.
+     */
+    int offset(Label from, Label to)
+    {
+      if (PRECONDITIONS) require
+        (from._posEstimate != -1,
+         to._posEstimate != -1);
+
+      setLabel(from);
+      int offset = to._posEstimate - from._posEstimate;
+      checkBranchOffset(offset);
+      return offset;
+    }
+
+  }
+
+
+  /**
+   * ByteCodeWriter that writes the bytecode to an instance of Kaku.
+   */
+  static class ByteCodeWrite extends ByteCodeWriter
+  {
+    /**
+     * The target to write to.
+     */
+    private final Kaku _kaku;
+
+    /**
+     * The initializ size of _kaku.
+     */
+    private final int _initialSize;
+
+
+    /**
+     * Constructor
+     *
+     * @param where string describing what we are compiling, for error messages.
+     *
+     * @param kaku target to write bytecodes to, may already contain code.
+     */
+    ByteCodeWrite(String where, Kaku kaku)
+    {
+      super(where);
+      this._kaku = kaku;
+      this._initialSize = _kaku.size();
+    }
+
+
+    /**
+     * Write unsigned or signed integers or byte arrays:
+     */
+    void writeU4 (int    v) { _kaku.writeU4(v); }
+    void writeI4 (int    v) { _kaku.writeI4(v); }
+    void writeI8 (long   v) { _kaku.writeI8(v); }
+    void writeU2 (int    v) { _kaku.writeU2(v); }
+    void writeU1 (int    v) { _kaku.writeU1(v); }
+    void write   (byte   v) { _kaku.write  (v); }
+    void write   (byte[] v) { _kaku.write  (v); }
+
+
+    /**
+     * Check that the final position of the label is equal to the actual position.
+     */
+    void setLabel(Label l)
+    {
+      if (PRECONDITIONS) require
+        (l._posEstimate != -1,
+         l._posFinal    != -1);
+
+      if (CHECKS) check
+        (l._posFinal == _kaku.size() - _initialSize);
+    }
+
+
+    /**
+     * Get the offset for a branch from from to label to using the final positions.
+     */
+    int offset(Label from, Label to)
+    {
+      if (PRECONDITIONS) require
+        (from._posFinal != -1,
+         to  ._posFinal != -1);
+
+      setLabel(from);
+      var offset = to._posFinal - from._posFinal;
+      return offset;
+    }
+
+  }
+
+
   /**
    * Kaku is japanese for writing, this is our writer. Maybe Sakka (作家) would
    * be better?
@@ -68,21 +360,26 @@ public class ClassFile extends ANY implements ClassFileConstants
     ByteArrayOutputStream _b = new ByteArrayOutputStream();
     DataOutputStream _o = new DataOutputStream(_b);
 
-    private void writeU4(int v)
+    int size()
+    {
+      return _b.size();
+    }
+
+    void writeU4(int v)
     {
       write((byte) (v >> 24));
       write((byte) (v >> 16));
       write((byte) (v >>  8));
       write((byte)  v       );
     }
-    private void writeI4(int v)
+    void writeI4(int v)
     {
       write((byte) (v >> 24));
       write((byte) (v >> 16));
       write((byte) (v >>  8));
       write((byte)  v       );
     }
-    private void writeI8(long v)
+    void writeI8(long v)
     {
       write((byte) (v >> 56));
       write((byte) (v >> 48));
@@ -94,7 +391,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       write((byte)  v       );
     }
 
-    private void writeU2(int v)
+    void writeU2(int v)
     {
       if (PRECONDITIONS) require
         (0 <= v,
@@ -104,7 +401,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       write((byte)  v      );
     }
 
-    private void writeU1(int v)
+    void writeU1(int v)
     {
       if (PRECONDITIONS) require
         (0 <= v,
@@ -113,12 +410,12 @@ public class ClassFile extends ANY implements ClassFileConstants
       write((byte) v);
     }
 
-    private void write(byte v)
+    void write(byte v)
     {
       _b.write(v);
     }
 
-    private void write(byte[] v)
+    void write(byte[] v)
     {
       try
         {
@@ -130,7 +427,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         }
     }
 
-    private void writeUTF(String s)
+    void writeUTF(String s)
     {
       try
         {
@@ -816,32 +1113,37 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   class CodeAttribute extends Attribute
   {
-    final int _max_stack;
-    final int _max_locals;
-    final byte[] _code;
+    final String _where;
+    final int _num_locals;
+    final ByteCode _code;
     final List<ExceptionTableEntry> _exception_table;
     final List<Attribute> _attributes;
-    CodeAttribute(int max_stack,
-                  int max_locals,
-                  byte[] code,
+    int _size;
+    CodeAttribute(String where,
+                  int num_locals,
+                  ByteCode code,
                   List<ExceptionTableEntry> exception_table,
                   List<Attribute> attributes)
     {
       super("Code");
-      this._max_stack = max_stack;
-      this._max_locals = max_locals;
+      this._where = where;
+      this._num_locals = num_locals;
       this._code = code;
       this._exception_table = exception_table;
       this._attributes = attributes;
+      var be = new ByteCodeSizeEstimate(_where   ); _code.code(be, ClassFile.this);
+      var bf = new ByteCodeFixLabels   (_where   ); _code.code(bf, ClassFile.this);
+      _size = bf.size();
     }
 
     byte[] data()
     {
       var o = new Kaku();
-      o.writeU2(_max_stack);
-      o.writeU2(_max_locals);
-      o.writeU4(_code.length);
-      o.write(_code);
+      o.writeU2(_code.max_stack());
+      o.writeU2(true /* NYI, remove */ ? _num_locals :_code.max_locals());
+      o.writeU4(_size);
+      var ba = new ByteCodeWrite(_where, o);
+      _code.code(ba, ClassFile.this);
       o.writeU2(_exception_table.size());
       for (var e : _exception_table)
         {
@@ -1089,12 +1391,11 @@ public class ClassFile extends ANY implements ClassFileConstants
                                      List<ExceptionTableEntry> exception_table,
                                      List<Attribute> attributes)
   {
-    return codeAttribute(where,
-                         code.max_stack(),
-                         code.max_locals(),
-                         code,
-                         exception_table,
-                         attributes);
+    return new CodeAttribute(where,
+                             10, /* NYI: code.max_locals() */
+                             code,
+                             exception_table,
+                             attributes);
   }
 
 
@@ -1102,22 +1403,14 @@ public class ClassFile extends ANY implements ClassFileConstants
    * create a code attribute to be used in this class file.
    */
   public CodeAttribute codeAttribute(String where,
-                                     int max_stack,
-                                     int max_locals,
+                                     int num_locals,
                                      ByteCode code,
                                      List<ExceptionTableEntry> exception_table,
                                      List<Attribute> attributes)
   {
-    var bc = code.byteCode(this);
-    if (bc.length > MAX_BYTECODE_LENGTH)
-      {
-        Errors.fatal("Code size of bytecode created "+(where == null ? "" : "for `" + where) + "` is " +
-                     bc.length+", the maximum allowed length is " + MAX_BYTECODE_LENGTH + ".\n" +
-                     "To solve this, you might simplify the code or split up that feature into several smaller features.");
-      }
-    return new CodeAttribute(max_stack,
-                             max_locals,
-                             code.byteCode(this),
+    return new CodeAttribute(where,
+                             num_locals,
+                             code,
                              exception_table,
                              attributes);
   }

@@ -1082,7 +1082,6 @@ should be avoided as much as possible.
           .andThen(code)
           .andThen(epilog);
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
-                                       bc_cl.max_stack(),
                                        numLocals(cl, pre),
                                        bc_cl,
                                        new List<>(), new List<>());
