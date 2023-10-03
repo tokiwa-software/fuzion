@@ -331,7 +331,7 @@ class CodeGen
             nargs.add(pa._v0);
           }
         args = nargs;
-        s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true));
+        s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
       }
     var res = Expr.UNIT;
     if (_fuir.callPreconditionOnly(cl, c, i))
@@ -445,7 +445,7 @@ class CodeGen
           {
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
-        var calpair = staticAccess(cl, pre, tt, cc, tvalue, args, isCall);
+        var calpair = staticAccess(cl, pre, tt, cc, tvalue, args, isCall, c, i);
         s = s.andThen(calpair._v1);
         res = calpair._v0;
         if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc)))
@@ -537,7 +537,7 @@ class CodeGen
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
             na.add(t.load(1));
           }
-        var p = staticAccess(-1, false, tt, cc, tv, na, isCall);
+        var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
         var code = p._v1
           .andThen(p._v0 == null ? Expr.UNIT : p._v0)
           .andThen(retoern);
@@ -573,7 +573,7 @@ class CodeGen
    *
    * @return the result and code to perform the access.
    */
-  Pair<Expr, Expr> staticAccess(int cl, boolean pre, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
+  Pair<Expr, Expr> staticAccess(int cl, boolean pre, int tt, int cc, Expr tv, List<Expr> args, boolean isCall, int c, int i)
   {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
@@ -588,7 +588,7 @@ class CodeGen
                                      _types.javaType(cco)));
       }
 
-    return isCall ? staticCall(cl, pre, tv, args, cc, false)
+    return isCall ? staticCall(cl, pre, tv, args, cc, false, c, i)
                   : new Pair<>(Expr.UNIT,
                                assignField(tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
@@ -688,7 +688,7 @@ class CodeGen
    *
    * @return the code to perform the call
    */
-  Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled)
+  Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int c, int i)
   {
     var tc = _fuir.clazzOuterClazz(cc);
     Expr code = Expr.UNIT;
@@ -716,16 +716,33 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              if (!preCalled                                             &&  // not calling pre-condition
-                  cc == cl                                               &&  // calling myself
-                  false && // NYI: _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
-                  _fuir.lifeTime(cl, pre).ordinal() <=
-                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
-                )
+              if (!preCalled                                                             // not calling pre-condition
+                  && cc == cl                                                            // calling myself
+                  && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
+
+                  // NYI: ignore life time for now. This needs to be revisted when code that is generated
+                  // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
+                  //
+                  // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
+                  )
                 { // then we can do tail recursion optimization!
-                  throw new Error("NYI: tailcall");
-                  // code = tailRecursion(cl, c, i, tc, a);
-                  // val = null;
+                  // if present, store target to local #0
+                  var o = _fuir.clazzOuterRef(cl);
+                  var ot = o == -1 ? -1 : _fuir.clazzResultClazz(o);
+                  code = (ot == -1) ? code.andThen(tvalue.drop())
+                                    : tvalue
+                                        .andThen(_types.javaType(ot).store(0));
+
+                  // store arguments to local vars
+                  for (int ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
+                    {
+                      code = code.andThen(setArg(cl, ai, args.get(ai)));
+                    }
+
+                  // perform tail call by goto startLabel
+                  code = code.andThen(Expr.gotoLabel(_jvm.startLabel(cl)));
+
+                  val = null; // result is void, we do not return from this path.
                 }
               else
                 {
@@ -858,10 +875,24 @@ class CodeGen
 
 
   /**
-   * Get the argument #i
+   * Get the slot of the local var for argument #i.
+   *
+   * The Java method cl receives its target and argument in the first local var
+   * slots on the Java stack.  This helper determines the slot number of a given
+   * argument.
+   *
+   * @param cl the clazz we are compiling.
+   *
+   * @param i the local variable index whose slot we are looking for.
+   *
+   * @return the slot that contains arg #i on a call to the Java code for `cl`.
    */
-  public Expr arg(int cl, int i)
+  public int argSlot(int cl, int i)
   {
+    if (PRECONDITIONS) require
+      (0 <= i,
+       i < _fuir.clazzArgCount(cl));
+
     var o = _fuir.clazzOuterRef(cl);
     var ot = o == -1 ? -1 : _fuir.clazzResultClazz(o);
     var l = ot == -1 ? 0 : _types.javaType(ot).stackSlots();
@@ -870,9 +901,57 @@ class CodeGen
         var t = _fuir.clazzArgClazz(cl, j);
         l = l + _types.javaType(t).stackSlots();
       }
+    return l;
+  }
+
+
+  /**
+   * Get the value argument #i from the slot that contains the argument at the
+   * beginning of a call to the Java code of cl.
+   *
+   * @param cl the clazz we are compiling.
+   *
+   * @param i index the local variable we want to get
+   *
+   * @return code to read arg #i from its slot.
+   */
+  public Expr arg(int cl, int i)
+  {
+    if (PRECONDITIONS) require
+      (0 <= i,
+       i < _fuir.clazzArgCount(cl));
+
+    var l = argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.javaType(t);
     return jt.load(l);
+  }
+
+
+  /**
+   * Set the argument #i to the given value.
+   *
+   * This is used for tail-call optimization to store a new value for an
+   * argument in the local variable slot(s) for that argument.
+   *
+   * @param cl the clazz we are compiling
+   *
+   * @param i the number of the argument
+   *
+   * @param val the value of the argument.
+   *
+   * @return code that stores `val` into the slot of arg #i.
+   */
+  Expr setArg(int cl, int i, Expr val)
+  {
+    if (PRECONDITIONS) require
+      (0 <= i,
+       i < _fuir.clazzArgCount(cl));
+
+    var l = argSlot(cl, i);
+    var t = _fuir.clazzArgClazz(cl, i);
+    var jt = _types.javaType(t);
+    return val.andThen(jt.store(l));
   }
 
 

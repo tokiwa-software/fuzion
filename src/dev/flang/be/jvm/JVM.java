@@ -34,6 +34,7 @@ import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.Label;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -706,6 +707,13 @@ should be avoided as much as possible.
   final int[] _numLocalsForCode, _numLocalsForPrecondition;
 
 
+  /**
+   * For each tail recursive routine, this will be the label of the tail
+   * recursive call turned into goto.
+   */
+  final Label[] _startLabels;
+
+
   Runner _runner;
 
   /**
@@ -737,8 +745,10 @@ should be avoided as much as possible.
     _types = new Types(fuir, _names);
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
-    _numLocalsForCode         = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
-    _numLocalsForPrecondition = new int[_fuir.clazzId2num(_fuir.lastClazz())+1];
+    var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
+    _numLocalsForCode         = new int[cnt];
+    _numLocalsForPrecondition = new int[cnt];
+    _startLabels              = new Label[cnt];
 
     Errors.showAndExit();
   }
@@ -1022,6 +1032,29 @@ should be avoided as much as possible.
 
 
   /**
+   * Set the number of local var slots for the given routine or precondition.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
+   *
+   * @param n the number of slots needed for local vars
+   */
+  Label startLabel(int cl)
+  {
+    int ix = _fuir.clazzId2num(cl);
+    var res = _startLabels[ix];
+    if (res == null)
+      {
+        res = new Label();
+        _startLabels[ix] = res;
+      }
+    return res;
+  }
+
+
+  /**
    * Alloc local var slots for the given routine or precondition.
    *
    * @param cl id of clazz to generate code for
@@ -1082,7 +1115,9 @@ should be avoided as much as possible.
         check
           (cf != null);
 
+        var sl = pre ? null : _startLabels[_fuir.clazzId2num(cl)];
         var bc_cl = prolog
+          .andThen(sl != null ? sl : Expr.UNIT)
           .andThen(code)
           .andThen(epilog);
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),

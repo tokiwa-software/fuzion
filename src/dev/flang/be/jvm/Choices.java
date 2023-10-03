@@ -30,6 +30,7 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.Label;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -488,6 +489,7 @@ public class Choices extends ANY implements ClassFileConstants
         {
           code = sub;  // == tag!
 
+          var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
@@ -503,13 +505,16 @@ public class Choices extends ANY implements ClassFileConstants
                       code = code.andThen(Expr.DUP)                                 //          tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          tag
-                                             Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))),
+                                             Expr.POP                               //          -
+                                               .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                                               .andThen(Expr.gotoLabel(lEnd)),
                                              Expr.UNIT));
                     }
                 }
             }
           code = code                                                               //          tag
-            .andThen(Expr.POP);                                                     //          -
+            .andThen(Expr.POP)                                                      //          -
+            .andThen(lEnd);
           break;
         }
       case nullable:
@@ -563,6 +568,7 @@ public class Choices extends ANY implements ClassFileConstants
                                           PrimitiveType.type_int,
                                           1 /* num arg slots: only one, Expr.value */));
 
+          var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
@@ -578,20 +584,21 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           var rt = _types.resultType(_fuir.clazzResultClazz(field));
                           pos =                                                 // stack is sub, tag
-                            Expr.SWAP                                           //          tag, sub
-                            .andThen(Expr.DUP)                                  //          tag, sub, sub
-                            .andThen(Expr.aload(jvm.current_index(cl),          //          tag, sub, sub, cur
+                            Expr.POP                                            //          sub
+                            .andThen(Expr.aload(jvm.current_index(cl),          //          sub, cur
                                                 _types.javaType(cl)))
-                            .andThen(Expr.SWAP)                                 //          tag, sub, cur, sub
-                            .andThen(Expr.checkcast(rt))                        //          tag, sub, cur, val
-                            .andThen(jvm.putfield(field))                       //          tag, sub,
-                            .andThen(Expr.SWAP);                                //          sub, tag
+                            .andThen(Expr.SWAP)                                 //          cur, sub
+                            .andThen(Expr.checkcast(rt))                        //          cur, val
+                            .andThen(jvm.putfield(field));                      //          -
                         }
                       else
                         {
-                          pos = Expr.UNIT;                                      //          sub, tag
+                          pos = Expr.UNIT                                       //          sub, tag
+                            .andThen(Expr.POP)                                  //          sub
+                            .andThen(Expr.POP);                                 //          -
                         }
-                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                        .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                             //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                           //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,    //          sub, tag
@@ -601,7 +608,8 @@ public class Choices extends ANY implements ClassFileConstants
             }
           code = code                                                           //          sub, tag
             .andThen(Expr.POP)                                                  //          sub
-            .andThen(Expr.POP);                                                 //          -
+            .andThen(Expr.POP)                                                  //          -
+            .andThen(lEnd);
           break;
         }
       case general:
@@ -611,6 +619,7 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.getfield(_names.javaClass(subjClazz),                 //          sub, tag
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int));
+          var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
@@ -627,24 +636,26 @@ public class Choices extends ANY implements ClassFileConstants
                           var rc = _fuir.clazzResultClazz(field);
                           var rt = _types.resultType(rc);
                           pos =                                                     // stack is sub, tag
-                            Expr.SWAP                                               //          tag, sub
-                            .andThen(Expr.DUP)                                      //          tag, sub, sub
-                            .andThen(Expr.aload(jvm.current_index(cl),             //          tag, sub, sub, cur
+                            Expr.POP                                                //          sub
+                            .andThen(Expr.aload(jvm.current_index(cl),              //          sub, cur
                                                 _types.javaType(cl)))
-                            .andThen(Expr.SWAP)                                     //          tag, sub, cur, sub
-                            .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          tag, sub, cur, val
+                            .andThen(Expr.SWAP)                                     //          cur, sub
+                            .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          cur, val
                                                    generalValueFieldName(subjClazz, tagNum),
                                                    generalValueFieldType(subjClazz, tagNum)))
-                            .andThen(_fuir.clazzIsRef(rc) ? Expr.checkcast(rt)
+                            .andThen(_fuir.clazzIsRef(rc) ? Expr.checkcast(rt)      //          cur, val
                                                           : Expr.UNIT)
-                            .andThen(jvm.putfield(field))                           //          tag, sub,
-                            .andThen(Expr.SWAP);                                    //          sub, tag
+                            .andThen(jvm.putfield(field));                          //          -
                         }
                       else
                         {
-                          pos = Expr.UNIT;                                          //          sub, tag
+                          pos = Expr.UNIT                                           //          sub, tag
+                            .andThen(Expr.POP)                                      //          sub
+                            .andThen(Expr.POP);                                     //          -
                         }
-                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+                      pos = pos
+                        .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                        .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                                 //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          sub, tag
@@ -652,9 +663,10 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
-          code = code                                                           //          sub, tag
-            .andThen(Expr.POP)                                                  //          sub
-            .andThen(Expr.POP);                                                 //          -
+          code = code                                                               //          sub, tag
+            .andThen(Expr.POP)                                                      //          sub
+            .andThen(Expr.POP)                                                      //          -
+            .andThen(lEnd);
           break;
         }
       default: throw new Error("Unexpected choice kind in match of JVM backend: " + kind(subjClazz));
