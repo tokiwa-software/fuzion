@@ -179,8 +179,10 @@ abstract class ByteCode extends ANY implements ClassFileConstants
 
 
   /**
-   * Create byte[] for bytecode instruction followed by 2 unsigned bytes giving
-   * the index of the given CPool entry.
+   * Write bytecode instruction bc followed by 2 unsigned bytes giving the index
+   * of the given CPool entry.
+   *
+   * @param bw target to write bytecodes to.
    *
    * @param bc a bytecode operation that expects an unsigned index
    *
@@ -188,7 +190,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * @return new byte[] { bx, hi-index, ho-index }
    */
-  byte[] bc(byte bc, ClassFile.CPEntry e)
+  void code(ClassFile.ByteCodeWriter ba, byte bc, ClassFile.CPEntry e)
   {
     if (PRECONDITIONS) require
       (e != null,
@@ -218,25 +220,28 @@ abstract class ByteCode extends ANY implements ClassFileConstants
         bc = O_ldc2_w;
       }
 
-    return bc(bc, e.index());
+    code(ba, bc, e.index());
   }
 
 
   /**
-   * Create byte[] for bytecode instruction followed by a 1 or 2 bytes long
+   * Write bytecode instruction bc followed by a 1 or 2 bytes long
    * unsigned integer index.
+   *
+   * Depending on bc and the value of index, the data written is
+   *
+   *           new byte[] { bc, index }                          -- or --
+   *           new byte[] { O_wide, bc, hi-index, ho-index }     -- or --
+   *           new byte[] { bc, hi-index, ho-index }
+   *
+   * @param bw target to write bytecodes to.
    *
    * @param bc a bytecode operation that expects an unsigned integer index
    *
    * @param index the unsigned integer
    *
-   * @return depending on bc and the value of index, either
-   *
-   *           new byte[] { bc, index }                          -- or --
-   *           new byte[] { O_wide, bc, hi-index, ho-index }
-   *           new byte[] { bc, hi-index, ho-index }
    */
-  byte[] bc(byte bc, int index)
+  void code(ClassFile.ByteCodeWriter ba, byte bc, int index)
   {
     if (PRECONDITIONS) require
       (index >= 0 && index < 0x10000,
@@ -264,25 +269,40 @@ abstract class ByteCode extends ANY implements ClassFileConstants
          default           -> false;
          });
 
-    return switch (bc)
+    switch (bc)
       {
       case
         O_iload, O_istore,
         O_lload, O_lstore,
         O_fload, O_fstore,
         O_dload, O_dstore,
-        O_aload, O_astore -> index <= 0xff ? new byte[] { bc, (byte) index }
-                                           : new byte[] { O_wide,
-                                                          bc,
-                                                          (byte) (index >> 8),
-                                                          (byte) index
-                                                        };
+        O_aload, O_astore -> {
+                               if (index <= 0xff)
+                                 {
+                                   ba.write(bc);
+                                   ba.writeU1(index);
+                                 }
+                               else
+                                 {
+                                   ba.write(O_wide);
+                                   ba.write(bc);
+                                   ba.writeU2(index);
+                                 }
+                              }
+
       case
-        O_ldc             -> index <= 0xff ? new byte[] { O_ldc, (byte) index }
-                                           : new byte[] { O_ldc_w,
-                                                          (byte) (index >> 8),
-                                                          (byte) index
-                                                        };
+        O_ldc             -> {
+                               if (index <= 0xff)
+                                 {
+                                   ba.write(O_ldc);
+                                   ba.writeU1(index);
+                                 }
+                               else
+                                 {
+                                   ba.write(O_ldc_w);
+                                   ba.writeU2(index);
+                                 }
+                              }
       case
         O_invokespecial,
         O_invokestatic,
@@ -295,18 +315,20 @@ abstract class ByteCode extends ANY implements ClassFileConstants
         O_anewarray,
         O_checkcast,
         O_instanceof,
-        O_ldc2_w          -> new byte[] { bc,
-                                          (byte) (index >> 8),
-                                          (byte)  index
-                                        };
-      default             -> throw new Error("bc(bc,index) unexpected bytecode "+Integer.toHexString(bc));
+        O_ldc2_w           -> {
+                                ba.write(bc);
+                                ba.writeU2(index);
+                              }
+      default              -> throw new Error("bc(bc,index) unexpected bytecode "+Integer.toHexString(bc));
       };
   }
 
 
   /**
-   * Create byte[] for bytecode instruction followed by a 2 bytes long
+   * Write bytecode instruction bc followed by a 2 bytes long
    * signed integer offset.
+   *
+   * @param bw target to write bytecodes to.
    *
    * @param bc a bytecode operation that expects an unsigned integer index
    *
@@ -314,11 +336,10 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * @return new byte[] { bc, hi-offset, ho-offset }
    */
-  byte[] bcsigned(byte bc, int offset)
+  void code(ClassFile.ByteCodeWriter bw, byte bc, Label from, Label to)
   {
     if (PRECONDITIONS) require
-      (offset >= -0x8000 && offset < 0x8000,
-       switch (bc)
+      (switch (bc)
          { case
              O_ifeq        ,
              O_ifne        ,
@@ -340,16 +361,18 @@ abstract class ByteCode extends ANY implements ClassFileConstants
          default           -> false;
          });
 
-    return new byte[]
-      { bc,
-        (byte) (offset >> 8),
-        (byte)  offset
-      };
+    // NYI: Support for goto_w
+    int offset = bw.offset(from, to);
+    bw.write(bc);
+    bw.write((byte) (offset >> 8));
+    bw.write((byte)  offset      );
   }
 
 
   /**
    * Create byte[] of O_invokeinterface
+   *
+   * @param bw target to write bytecodes to.
    *
    * @param bc O_invokeinterface.
    *
@@ -359,18 +382,20 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * @param b2 0
    */
-  byte[] bc(byte bc, ClassFile.CPEntry e, byte b1, byte b2)
+  void code(ClassFile.ByteCodeWriter bw, byte bc, ClassFile.CPEntry e, byte b1, byte b2)
   {
     if (PRECONDITIONS) require
       (bc == O_invokeinterface,
        (0xff & b1) > 0,
        b2 == 0);
 
-    return bc(bc, e.index(), b1, b2);
+    code(bw, bc, e.index(), b1, b2);
   }
 
   /**
    * Create byte[] of O_invokeinterface
+   *
+   * @param bw target to write bytecodes to.
    *
    * @param bc O_invokeinterface.
    *
@@ -380,166 +405,29 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * @param b2 0
    */
-  byte[] bc(byte bc, int index, byte b1, byte b2)
+  void code(ClassFile.ByteCodeWriter bw, byte bc, int index, byte b1, byte b2)
   {
-    if (PRECONDITIONS) require
-      (bc == O_invokeinterface,
-       index >= 0 && index < 0x10000,
-       (0xff & b1) > 0,
-       b2 == 0);
-
-    return new byte[]
-      { bc,
-        (byte) (index >> 8),
-        (byte)  index,
-                b1,
-                b2
-      };
+    bw.write(bc);
+    bw.writeU2(index);
+    bw.write(b1);
+    bw.write(b2);
   }
 
 
   /**
-   * Create a new bc array by appending b to a.
+   * Create the byte code for this ByteCode.
    *
-   * @param a a bytecode array
+   * This will run several passes with different instances of ByteCodeWrite
+   * where first an ByteCodeSizeEstimate is used to get an upper bound for the
+   * bytecode size, then ByteCodeFixlabals is used to find all branch targets
+   * and fix the layout, and finally ByteCodeWrite is used to write the
+   * bytecodes to a file.
    *
-   * @param b another bytecode array
+   * @param bw the writer to write the bytecode to.
    *
-   * @return a new bytecode array
+   * @param cf the class file we are generating, used for cpool indices.
    */
-  byte[] bc(byte[] a, byte[] b)
-  {
-    var res = new byte[a.length + b.length];
-    System.arraycopy(a, 0, res, 0,        a.length);
-    System.arraycopy(b, 0, res, a.length, b.length);
-
-    return res;
-  }
-
-
-  /**
-   * Create bytecode array for code `if (cc) pos else neg`.
-   *
-   * @param bc a conditional branch bytecode.
-   *
-   * @param pos bytecode to execute in case bc's condition is true
-   *
-   * @param neg bytecode to execute in case bc's condition is false
-   */
-  byte[] bc(byte bc, byte[] pos, byte[] neg)
-  {
-    if (PRECONDITIONS) require
-      (switch (bc)
-         { case
-             O_ifeq        ,
-             O_ifne        ,
-             O_iflt        ,
-             O_ifge        ,
-             O_ifgt        ,
-             O_ifle        ,
-             O_if_icmpeq   ,
-             O_if_icmpne   ,
-             O_if_icmplt   ,
-             O_if_icmpge   ,
-             O_if_icmpgt   ,
-             O_if_icmple   ,
-             O_if_acmpeq   ,
-             O_if_acmpne   ,
-             O_ifnull      ,
-             O_ifnonnull   -> true;
-         default           -> false;
-         });
-
-    byte[] res;
-    if (pos.length == 0)
-      {
-        res = bc(bc, neg);
-      }
-    else if (neg.length == 0)
-      {
-        var nbc = switch (bc)
-          {
-          case O_ifeq        -> O_ifne     ;
-          case O_ifne        -> O_ifeq     ;
-          case O_iflt        -> O_ifge     ;
-          case O_ifge        -> O_iflt     ;
-          case O_ifgt        -> O_ifle     ;
-          case O_ifle        -> O_ifgt     ;
-          case O_if_icmpeq   -> O_if_icmpne;
-          case O_if_icmpne   -> O_if_icmpeq;
-          case O_if_icmplt   -> O_if_icmpge;
-          case O_if_icmpge   -> O_if_icmplt;
-          case O_if_icmpgt   -> O_if_icmple;
-          case O_if_icmple   -> O_if_icmpgt;
-          case O_if_acmpeq   -> O_if_acmpne;
-          case O_if_acmpne   -> O_if_acmpeq;
-          case O_ifnull      -> O_ifnonnull;
-          case O_ifnonnull   -> O_ifnull   ;
-          default -> throw new Error("unexpected bc "+bc);
-          };
-        res = bc(nbc, pos);
-      }
-    else
-      {
-        res = new byte[6 + neg.length + pos.length];
-        var cc = bcsigned(bc    , 6 + neg.length);
-        var gt = bcsigned(O_goto, 3 + pos.length);
-        System.arraycopy(cc  , 0, res, 0             , 3);
-        System.arraycopy(neg , 0, res, 3             , neg.length);
-        System.arraycopy(gt  , 0, res, 3 + neg.length, 3);
-        System.arraycopy(pos , 0, res, 6 + neg.length, pos.length);
-      }
-    return res;
-  }
-
-
-  /**
-   * Create bytecode array for code `if (!cc) neg`.
-   *
-   * @param bc a conditional branch bytecode.
-   *
-   * @param neg bytecode to execute in case bc's condition is false
-   */
-  byte[] bc(byte bc, byte[] neg)
-  {
-    if (PRECONDITIONS) require
-      (switch (bc)
-         { case
-             O_ifeq        ,
-             O_ifne        ,
-             O_iflt        ,
-             O_ifge        ,
-             O_ifgt        ,
-             O_ifle        ,
-             O_if_icmpeq   ,
-             O_if_icmpne   ,
-             O_if_icmplt   ,
-             O_if_icmpge   ,
-             O_if_icmpgt   ,
-             O_if_icmple   ,
-             O_if_acmpeq   ,
-             O_if_acmpne   ,
-             O_ifnull      ,
-             O_ifnonnull   -> true;
-         default           -> false;
-         });
-
-    var res = new byte[3 + neg.length];
-    var cc = bcsigned(bc    , 3 + neg.length);
-    System.arraycopy(cc  , 0, res, 0             , 3);
-    System.arraycopy(neg , 0, res, 3             , neg.length);
-
-    return res;
-  }
-
-
-  /**
-   * The byte code for this ByteCode.
-   *
-   * NYI: This should better be a byteCodeCollector with an argument of type
-   * Kaku to avoid exponential runtime when copying nested conditionals
-   */
-  public abstract byte[] byteCode(ClassFile cf);
+  public abstract void code(ClassFile.ByteCodeWriter bw, ClassFile cf);
 
 
   /**
