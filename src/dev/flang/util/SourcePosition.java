@@ -49,7 +49,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   /**
    * The byte position in the source file that this refers to.
    */
-  private final int _bytePos;
+  protected final int _bytePos;
 
 
   /**
@@ -69,7 +69,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for built-in types and features that do not have a
    * source code position.
    */
-  public static final SourcePosition builtIn = new SourcePosition(new SourceFile(Path.of("--builtin--"), new byte[0]), 0)
+  public static final SourceRange builtIn = new SourceRange(new SourceFile(Path.of("--builtin--"), new byte[0]), 0, 0)
     {
       public boolean isBuiltIn()
       {
@@ -87,7 +87,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for source positions that are not available, e.g., for
    * precompiled modules that do not include source code..
    */
-  public static final SourcePosition notAvailable = new SourcePosition(new SourceFile(Path.of("--not available--"), new byte[0]), 0)
+  public static final SourceRange notAvailable = new SourceRange(new SourceFile(Path.of("--not available--"), new byte[0]), 0, 0)
     {
       public boolean isBuiltIn()
       {
@@ -174,27 +174,41 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
-   * Convert this into a two line string that shows the referenced source code
+   * Convert this into a two or more line string that shows the referenced source code
    * line followed by a line with caret (^) at the relevant position.  The
-   * second line is not terminated by LF.
+   * last line is not terminated by LF.
    */
   public String showInSource()
   {
     StringBuilder sb = new StringBuilder();
-    sb.append(Terminal.BLUE);
-    sb.append(_sourceFile.line(line()));
-
-    // add LF in case this is the last line of a file that does not end in a line break
-    if (sb.length() > 0 && sb.charAt(sb.length()-1) != '\n')
+    for(int p = _bytePos, l = line()-1;
+        p == _bytePos || p < byteEndPos();
+        p++)
       {
-        sb.append("\n");
+        while (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
+          {
+            l = l + 1;
+            sb.append(Terminal.BLUE)
+              .append(_sourceFile.line(l));
+            if (sb.length() != 0 && sb.charAt(sb.length()-1) != '\n')
+              { // add LF in case this is the last line of a file that does not end in a line break
+                sb.append("\n");
+              }
+            sb.append(Terminal.YELLOW);
+            for (int j=0; l == line() && j < column()-1; j++)
+              {
+                sb.append('-');
+              }
+          }
+        if (p < _sourceFile.lineEndPos(l) || p == byteEndPos()) // suppress '^' at LFs except for LF at end position
+          {
+            sb.append('^');
+            if (p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
+              {
+                sb.append("\n");
+              }
+          }
       }
-    sb.append(Terminal.YELLOW);
-    for (int j=0; j < column()-1; j++)
-      {
-        sb.append('-');
-      }
-    sb.append('^');
     sb.append(Terminal.RESET);
     return sb.toString();
   }
@@ -267,6 +281,16 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * End position within _sourceFile.  This is equal to bytePos() for a plain
+   * SourcePosition and may be larger than bytePos for a SourceRange.
+   */
+  public int byteEndPos()
+  {
+    return _bytePos;
+  }
+
+
+  /**
    * Convert this position to a string of the form
    * "<filename>:<line>:<column>:".
    */
@@ -284,6 +308,54 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         result = _bytePos - o._bytePos;
       }
     return result;
+  }
+
+
+  /**
+   * Create a SourcePosition or SourceRange that extends form this position's
+   * start to end's end.
+   *
+   * @param end a second position that must refer to the same source file and
+   * not be before this.
+   */
+  public SourcePosition rangeTo(SourcePosition end)
+  {
+    if (PRECONDITIONS) require
+      (_sourceFile == end._sourceFile,
+       bytePos() <= end.byteEndPos());
+
+    if (this == end)
+      {
+        return this;
+      }
+    else
+      {
+        var p = bytePos();
+        var e = byteEndPos();
+        if (p == e)
+          {
+            return this;
+          }
+        else
+          {
+            return new SourceRange(_sourceFile, p, e);
+          }
+      }
+  }
+
+
+  /**
+   * Create a SourcePosition or SourceRange that extends form the first element's
+   * start to the last element's end.
+   *
+   * @param list list of elements.
+   */
+  public static <T extends HasSourcePosition> SourcePosition range(List<T> list)
+  {
+    if (PRECONDITIONS) require
+      (list.size() > 0);
+
+    return list.getFirst().pos().rangeTo(list.getLast().pos());
   }
 
 }

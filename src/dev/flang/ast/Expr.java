@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -40,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends ANY implements Stmnt
+public abstract class Expr extends ANY implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -53,14 +54,14 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Dummy Expr value. Used in 'Actual' to represent non-existing value version
+   * Dummy Expr value. Used e.g. in 'Actual' to represent non-existing value version
    * of the actual.
    */
   public static Call NO_VALUE;
 
 
   /**
-   * Dummy Expr value. Used in to represent error values.
+   * Dummy Expr value. Used to represent error values.
    */
   public static final Expr ERROR_VALUE = new Expr()
     {
@@ -87,7 +88,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * quick-and-dirty way to make unique names for statement result vars
+   * quick-and-dirty way to make unique names for expression result vars
    */
   static private long _id_ = 0;
 
@@ -106,23 +107,6 @@ public abstract class Expr extends ANY implements Stmnt
   }
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Mark that this Expr is used as part of a call in the inherits clause of a
-   * feature. In the inherits clause i in a feature declaration
-   *
-   *   g<A,B> {
-   *     f<C,D> : i { e; }
-   *  }
-   *
-   * the generics used in i are resolved against f, while the outer class for i
-   * is g. In contrast, an expression e outside of an inherits clause, generics
-   * are resolved against the outer class f.
-   */
-  void isInheritsCall()
-  {
-  }
 
 
   /**
@@ -199,16 +183,11 @@ public abstract class Expr extends ANY implements Stmnt
    */
   void loadCalledFeature(Resolution res, AbstractFeature outer)
   {
-    if (Errors.count() == 0)
-      {
-        // NYI: is this an error?
-        // throw new UnsupportedOperationException(""+getClass()+".loadCalledFeature() at " + pos);
-      }
   }
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -222,10 +201,22 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
+   * visit all the expressions within this Expr.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited expressions
+   */
+  public void visitExpressions(ExpressionVisitor v)
+  {
+    v.action(this);
+  }
+
+
+  /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statement with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
+   * this is a expression with several branches such as an "if" or a "match"
+   * expression, add corresponding assignments in each branch and convert this
+   * into a expression that does not produce a value.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -234,10 +225,10 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @param r the field this should be assigned to.
    *
-   * @return the Stmnt this Expr is to be replaced with, typically an Assign
+   * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Stmnt assignToField(Resolution res, AbstractFeature outer, Feature r)
+  Expr assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     return new Assign(res, pos(), r, this, outer);
   }
@@ -263,37 +254,85 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Before propagateExpectedType: if type inference up until now has figured
+   * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param  outer the feature that contains this expression
+   *
+   * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazyAndThenPropagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
 
-    result = result.propagateExpectedType(res, outer, t);
     result = t.isLazyType() ? result.originalLazyValue() : result;
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        var fn = new Function(pos(),
-                              new List<String>(),
-                              new List<>(),
-                              Contract.EMPTY_CONTRACT,
-                              result);
-
-        result = fn.propagateExpectedType(res, outer, t);
-        fn.resolveTypes(res, outer);
+        var declarationsInLazy = new List<Feature>();
         visit(new FeatureVisitor()
           {
-            public Expr action(Call c, AbstractFeature outer)
+            public Expr action (Feature f, AbstractFeature outer)
             {
-              return c.updateTarget(res, outer);
+              declarationsInLazy.add(f);
+              return f;
             }
           },
-          fn._feature);
-      }
+          outer);
 
+        if (!declarationsInLazy.isEmpty())
+          {
+            /*
+             * NYI: Instead of producing an error here, we could instead remove what
+             * was done during SourceModule.findDeclarations() performed in this
+             * expression, or, alternatively, create a new parse tree for this
+             * expression and use that instead.
+             *
+             * Examples that cause this problem are
+             *
+             *     l(t Lazy i32) is
+             *     _ := l ({
+             *               x is
+             *               y => 4711
+             *               c := 0815
+             *               c+y
+             *             })
+             *
+             * or using implicit declarations created for a loop:
+             *
+             *     l(t Lazy l) is
+             *       n => t
+             *
+             *     f l is l (do)
+             *     _ := f.n
+             */
+            AstErrors.declarationsInLazy(this, declarationsInLazy);
+            result = ERROR_VALUE;
+          }
+        else
+          {
+            var fn = new Function(pos(),
+                                  new List<>(),
+                                  new List<>(),
+                                  Contract.EMPTY_CONTRACT,
+                                  result);
+
+            result = fn.propagateExpectedType(res, outer, t);
+            fn.resolveTypes(res, outer);
+            visit(new FeatureVisitor()
+              {
+                public Expr action(Call c, AbstractFeature outer)
+                {
+                  return c.updateTarget(res, outer);
+                }
+              },
+              fn._feature);
+          }
+      }
     return result;
   }
 
@@ -313,7 +352,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -354,9 +393,9 @@ public abstract class Expr extends ANY implements Stmnt
         var pos = pos();
         Feature r = new Feature(res,
                                 pos,
-                                Visi.INVISIBLE,
+                                Visi.PRIV,
                                 t,
-                                FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
@@ -368,7 +407,7 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -412,8 +451,18 @@ public abstract class Expr extends ANY implements Stmnt
         if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
             result = tag(frmlT, result);
+            if (CHECKS) check
+              (!result.needsBoxing(frmlT));
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.count() > 0
+        || t.compareTo(Types.resolved.t_void) == 0
+        || frmlT.isGenericArgument()
+        || frmlT.isThisType()
+        || !result.needsBoxing(frmlT));
+
     return result;
   }
 
@@ -461,6 +510,9 @@ public abstract class Expr extends ANY implements Stmnt
           {
             AstErrors.ambiguousAssignmentToChoice(frmlT, value);
           }
+
+        if (CHECKS) check
+          (Errors.any() || cgs.size() == 1);
 
         return tag(frmlT, tag(cgs.get(0), value));
       }
@@ -530,22 +582,10 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Get value of i32 compile time constant.
-   */
-  int getCompileTimeConstI32()
-  {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
-
-    throw new Error();
-  }
-
-
-  /**
    * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last statement is not an expression that produces a result.
+   * whose last expression is not an expression that produces a result.
    */
-  boolean producesResult()
+  public boolean producesResult()
   {
     return true;
   }
@@ -556,9 +596,14 @@ public abstract class Expr extends ANY implements Stmnt
    */
   public static void reset()
   {
-    NO_VALUE = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
+    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
       { _type = Types.t_ERROR; }
+      @Override
+      Expr box(AbstractType frmlT)
+      {
+        return this;
+      }
     };
   }
 

@@ -25,10 +25,10 @@
 
 # random -- effect that provides random numbers
 #
-random (
+public random (
 
-  # the provider this effect uses to create random numbers
-  p Random_Provider,
+  # the handler this effect uses to create random numbers
+  p Random_Handler,
 
   redef r effect_mode.val
   ) : effect r
@@ -44,32 +44,32 @@ is
 
   # return next random number of type i32 in the range 0..max-1
   #
-  next_i32(max i32)
+  public next_i32(max i32)
   pre max ≥ 0
-   => (next.get max.as_u64).as_i32
+  => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
-  next_i64(max i64)
+  public next_i64(max i64)
   pre max ≥ i64 0
-   => (next.get max.as_u64).as_i64
+  => (next.get max.as_u64).as_i64
 
 
   # return next random number of type u32 in the range 0..max-1
   #
-  next_u32(max u32) => (next.get max.as_u64).as_u32
+  public next_u32(max u32) => (next.get max.as_u64).as_u32
 
 
   # return next random number of type u64 in the range 0..max-1
   #
-  next_u64(max u64) =>  next.get max
+  public next_u64(max u64) =>  next.get max
 
 
   # return next random number of type f32 in the range [0..1),
   # result will never be equal to f32 1
   #
-  next_f32 =>
+  public next_f32 =>
     max := u64 1 << f32.type.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
@@ -77,66 +77,66 @@ is
   # return next random number of type f64 in the range [0..1),
   # result will never be equal to f64 1
   #
-  next_f64 =>
+  public next_f64 =>
     max := u64 1 << f64.type.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 
   # return next random number as a bool
   #
-  next_bool =>
+  public next_bool =>
     (next.get 2) %% 2
 
 
   # get the current random number in the range 0..max-1
   #
-  get (max u64)
-   =>
-     p.get % max  # NYI: This implementation is bad if max is big
+  public get (max u64)
+  =>
+    p.get % max  # NYI: This implementation is bad if max is big
 
 
   # install default instance of random
   #
   type.install_default is
     if !effect.type.is_installed random
-      _ := random simple_random_provider.type.default effect_mode.default
+      _ := random simple_random_handler.type.default effect_mode.default
 
 
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
-random =>
+public random =>
   random.type.install_default
   random.env
 
-simple_random(seed u64, rr ()->unit) =>
-  _ := random (simple_random_provider seed seed) (effect_mode.inst rr)
+public simple_random(seed u64, rr ()->unit) =>
+  _ := random (simple_random_handler seed seed) (effect_mode.inst rr)
 
-time_seeded_random(rr ()->unit) =>
-  _ := random simple_random_provider.type.time_seeded (effect_mode.inst rr)
+public time_seeded_random(rr ()->unit) =>
+  _ := random simple_random_handler.type.time_seeded (effect_mode.inst rr)
 
 
-# Random_Provider -- abstract source of random numbers
+# Random_Handler -- abstract source of random numbers
 #
 # This provides the random number input to be used by the 'random' effect.
 # Implementation may be dumb sequences of pseudo-random numbers or high-qualiity
 # cryptographic random number generators
 #
-# A Random_Provider contains an immutable state, repeated calls to 'get' result
+# A Random_Handler contains an immutable state, repeated calls to 'get' result
 # in the same value.  To produce a sequence of different random numbers, 'next'
-# must be used to create a new instance of 'Random_Provider' before 'get' can be
+# must be used to create a new instance of 'Random_Handler' before 'get' can be
 # used to obtain the new random number.
 #
-Random_Provider ref is
+private:public Random_Handler ref is
 
-  # create a new instance of Random_Provider containing a new state. Depending
+  # create a new instance of Random_Handler containing a new state. Depending
   # on the qualifity of this random number generator, this might be a simple
-  # function of the original Random_Provider or it might use an external source
+  # function of the original Random_Handler or it might use an external source
   # of entropy to create a new instance.
   #
-  next Random_Provider is abstract
+  next Random_Handler is abstract
 
-  # Return the random number stored in this instance of Random_Provider, in the
+  # Return the random number stored in this instance of Random_Handler, in the
   # range 0..u64.max
   #
   # NOTE: this feature is pure, i.e., repeated calls on the same target result
@@ -146,22 +146,22 @@ Random_Provider ref is
 
 
 
-# simple random number provider for pseudo random numbers that are not safe
+# simple random number handler for pseudo random numbers that are not safe
 # for security and that do not meet typical requirements for a good
 # random number generator.
 #
-simple_random_provider(seed1 u64, seed2 u64) : Random_Provider is
+simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get next instance by shuffling bits in seeds around
   #
-  next Random_Provider is
+  next Random_Handler is
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
     rot1 := s2 & 0x3f
     rot2 := s1 & 0x3f
-    (simple_random_provider ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
-                            ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
+    (simple_random_handler ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
+                           ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
 
   # get current random number
   #
@@ -178,27 +178,27 @@ simple_random_provider(seed1 u64, seed2 u64) : Random_Provider is
   #
   type.random_seed_env_var => "FUZION_RANDOM_SEED"
 
-  # create the default random provider depending on the environment settings
+  # create the default random handler depending on the environment settings
   #
   type.default =>
     match envir.vars.get random_seed_env_var
      s String =>
        match s.parse_u64
-         seed u64 => simple_random_provider seed 98765432109876543
+         seed u64 => simple_random_handler seed 98765432109876543
          e error  => panic "Failed to parse value in env var '$random_seed_env_var': $e"
      nil      => time_seeded
 
 
-  # create a time-seeded simple provider for pseudo random numbers that are not safe
+  # create a time-seeded simple handler for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  type.time_seeded Random_Provider is
+  type.time_seeded Random_Handler is
     # initialize with large numbers XORed with nano time
     #
-    simple_random_provider (u64 77777777777777 ^ time.nano.read) 98765432109876543
+    simple_random_handler (u64 77777777777777 ^ time.nano.read) 98765432109876543
 
-  # create a time-seed sprovider for pseudo random numbers that are not safe
+  # create a time-seeded handler for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #

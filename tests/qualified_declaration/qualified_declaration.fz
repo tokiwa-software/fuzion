@@ -30,7 +30,7 @@ qualified_declaration is
       z is
         f1(i i32) => i+i
 
-  public x.y.z.f2(i i32) i32 is set result := i*i
+  x.y.z.f2(i i32) i32 is set result := i*i
   x.y.z.f3(i i32) i32 is set result := i*i
   x.y.z.f4(i i32) i32 is i*i
   x.y.z.f5(i i32) => i*i

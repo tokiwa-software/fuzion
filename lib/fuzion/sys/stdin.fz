@@ -27,11 +27,5 @@
 # NYI name in does not work right now since in is reserved keyword
 public stdin is
 
-  # read next byte from stdin
-  #
-  # returns:
-  # 0 or greater on success
-  # -1 at end of file
-  # -2 for any other error
-  #
-  private next_byte i32 is intrinsic
+  module stdin0 i64 is intrinsic
+

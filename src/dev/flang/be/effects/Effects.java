@@ -30,6 +30,7 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.cfg.CFG;
 
+import dev.flang.util.Errors;
 import dev.flang.util.Graph;
 
 
@@ -85,6 +86,19 @@ public class Effects extends CFG
     _effects.successors(cl)
       .stream()
       .forEach(x -> System.out.println(_fuir.clazzAsString(x)));
+  }
+
+
+  /**
+   * Check that used effects are instantiated somewhere
+   */
+  public void check()
+  {
+    var cl = _fuir.mainClazzId();
+    _effects.successors(cl)
+      .stream()
+      .filter(x -> !_fuir.clazzNeedsCode(x))
+      .forEach(x -> Errors.usedEffectNeverInstantiated(_fuir.clazzAsString(x)));
   }
 
 

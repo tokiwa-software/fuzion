@@ -1,8 +1,15 @@
 
-[32m--CURDIR--/issue350.fz:26:1:[39m [1;31merror 1[0m[1m: Illegal '[35mref[39m' in feature definition using '[36m=>[39m'[0m
-[34mx ref =>
-[33m^[0m
-For function definition using '[36m=>[39m', the type is determined automatically, it must not be given explicitly.
-Feature declared: '[35mx[39m'
+--CURDIR--/issue350.fz:26:1: error 1: Illegal 'ref' in feature definition using '=>'
+x ref =>
+^
+For function definition using '=>', the type is determined automatically, it must not be given explicitly.
+Feature declared: 'x'
 
-one error.
+
+--CURDIR--/issue350.fz:31:3: error 2: Illegal result type 'ref' in field definition using ':='
+  f1 ref := 42
+--^^
+For field definition using ':=', the type is determined automatically, it must not be given explicitly.
+Field declared: 'test.f1'
+
+2 errors.

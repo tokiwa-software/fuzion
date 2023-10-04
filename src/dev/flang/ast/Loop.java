@@ -185,7 +185,7 @@ public class Loop extends ANY
    * initial values. May be null if none.
    */
   private final Block _prolog;
-  private List<Stmnt> _prologSuccessBlock;
+  private List<Expr> _prologSuccessBlock;
 
 
   /**
@@ -193,7 +193,7 @@ public class Loop extends ANY
    * to be false.
    */
   private Expr _nextIteration = null;
-  private List<Stmnt> _nextItSuccessBlock = null;
+  private List<Expr> _nextItSuccessBlock = null;
 
 
   /**
@@ -307,7 +307,7 @@ public class Loop extends ANY
         addIterators();
       }
 
-    var formalArguments = new List<Feature>();
+    var formalArguments = new List<AbstractFeature>();
     var initialActuals = new List<Actual>();
     var nextActuals = new List<Actual>();
     initialArguments(formalArguments, initialActuals, nextActuals);
@@ -329,14 +329,14 @@ public class Loop extends ANY
                                 Block.newIfNull(succPos, _successBlock),
                                 _nextIteration);
       }
-    block._statements.add(_nextIteration);
+    block._expressions.add(_nextIteration);
     if (whileCond != null)
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
       }
     var p = block.pos();
     Feature loop = new Feature(p,
-                               Visi.INVISIBLE,
+                               Visi.PRIV,
                                0,
                                NoType.INSTANCE,
                                new List<String>(loopName),
@@ -407,8 +407,7 @@ public class Loop extends ANY
       /* loop can fail: */     (iterates() || whileCond != null) &&
       /* loop can succeed: */  (untilCond != null) &&
       /* success and else block do not end in expression: */
-      (_successBlock == null || !_successBlock.producesResult() ||
-       _elseBlock0 == null   || !_elseBlock0  .producesResult());
+      (_successBlock == null || _elseBlock0 == null);
   }
 
 
@@ -444,7 +443,7 @@ public class Loop extends ANY
     else if (booleanAsImplicitResult(whileCond, untilCond))
       { /* add implicit TRUE / FALSE results to success and else blocks: */
         _successBlock = Block.newIfNull(succPos, _successBlock);
-        _successBlock._statements.add(BoolConst.TRUE );
+        _successBlock._expressions.add(BoolConst.TRUE );
         if (_elseBlock0 == null)
           {
             _elseBlock0 = BoolConst.FALSE;
@@ -454,8 +453,8 @@ public class Loop extends ANY
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
-            e0._statements.add(BoolConst.FALSE);
-            e1._statements.add(BoolConst.FALSE);
+            e0._expressions.add(BoolConst.FALSE);
+            e1._expressions.add(BoolConst.FALSE);
             _elseBlock0 = e0;
             _elseBlock1 = e1;
           }
@@ -475,7 +474,7 @@ public class Loop extends ANY
       {
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
-                                    Visi.INVISIBLE,
+                                    Visi.PRIV,
                                     0,
                                     NoType.INSTANCE,
                                     new List<String>(name),
@@ -517,7 +516,7 @@ public class Loop extends ANY
    *
    * @param nextActuals will receive the actual arguments after nextIteration
    */
-  private void initialArguments(List<Feature> formalArguments,
+  private void initialArguments(List<AbstractFeature> formalArguments,
                                 List<Actual> initialActuals,
                                 List<Actual> nextActuals)
   {
@@ -538,11 +537,11 @@ public class Loop extends ANY
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
-                              Visi.INVISIBLE,
+                              Visi.PRIV,
                               type,
                               f.featureName().baseName(),
-                              type == null ? ia : null,
-                              null /* NYI outer */);
+                              type != null ? Impl.FIELD
+                                           : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
         initialActuals .add(new Actual(ia));
@@ -578,11 +577,11 @@ public class Loop extends ANY
             var p = f.pos();
             Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
-                                         Visi.INVISIBLE,
+                                         Visi.PRIV,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
                                          /* name */        new List<>(streamName),
-                                         /* args */        new List<Feature>(),
+                                         /* args */        new List<>(),
                                          /* inherits */    new List<>(),
                                          /* contract */    null,
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
@@ -592,8 +591,8 @@ public class Loop extends ANY
             Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
             Call next1    = new Call(p, new Call(p, streamName), "next");
             Call next2    = new Call(p, new Call(p, streamName), "next");
-            List<Stmnt> prolog2 = new List<>();
-            List<Stmnt> nextIt2 = new List<>();
+            List<Expr> prolog2 = new List<>();
+            List<Expr> nextIt2 = new List<>();
             If ifHasNext1 = new If(p, hasNext1, new Block(p, prolog2));
             If ifHasNext2 = new If(p, hasNext2, new Block(p, nextIt2));
             if (_loopElse != null)

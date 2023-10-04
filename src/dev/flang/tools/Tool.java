@@ -26,29 +26,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Path;
 
 import java.util.TreeSet;
 import java.util.Set;
 
-import dev.flang.be.c.C;
-import dev.flang.be.c.COptions;
 
-import dev.flang.be.interpreter.Intrinsics;
-import dev.flang.be.interpreter.Interpreter;
 
-import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
 
-import dev.flang.me.MiddleEnd;
 
-import dev.flang.opt.Optimizer;
+
+import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FatalError;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
 
@@ -278,6 +269,10 @@ public abstract class Tool extends ANY
     else if (a.matches("-verbose(=\\d+|)"))
       {
         _verbose = parsePositiveIntArg(a, 1);
+      }
+    else if (a.equals("-XenableSetKeyword"))
+      {
+        Parser.ENABLE_SET_KEYWORD = true;
       }
     else
       {

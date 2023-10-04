@@ -29,7 +29,7 @@ package dev.flang.ast;
 import java.util.Iterator;
 
 import dev.flang.util.ANY;
-import dev.flang.util.HasSourcePosition;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -139,6 +139,9 @@ public class FormalGenerics extends ANY
                                                String detail1,
                                                String detail2)
   {
+    if (PRECONDITIONS) require
+      (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
+
     boolean result = true;
     if (!sizeMatches(actualGenerics))
       {
@@ -221,7 +224,7 @@ public class FormalGenerics extends ANY
       // placeholder for the actual generics.
       for (Generic g : list)
         {
-          add(new Type((HasSourcePosition) g.typeParameter(), g));
+          add(g.type());
         }
       freeze();
     }
@@ -269,7 +272,7 @@ public class FormalGenerics extends ANY
       {
         if (this == FormalGenerics.NONE)
           {
-            result = Type.NONE;
+            result = UnresolvedType.NONE;
           }
         else
           {
@@ -281,6 +284,30 @@ public class FormalGenerics extends ANY
     if (POSTCONDITIONS) ensure
       (sizeMatches(result));
 
+    return result;
+  }
+
+
+  /**
+   * Add type parameter g to this list of formal generics.
+   *
+   * @param g the new type parameter
+   */
+  FormalGenerics addTypeParameter(Generic g)
+  {
+    var result = this;
+    if (this == FormalGenerics.NONE)
+      {
+        result = new FormalGenerics(new List<>(g));
+      }
+    else
+      {
+        list.add(g);
+        if (_asActuals != null)
+          {
+            _asActuals.add(g.type());
+          }
+      }
     return result;
   }
 

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 
@@ -35,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Nop extends ANY implements Stmnt
+public class Nop extends Expr
 {
 
 
@@ -64,7 +63,7 @@ public class Nop extends ANY implements Stmnt
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -73,7 +72,7 @@ public class Nop extends ANY implements Stmnt
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -89,12 +88,22 @@ public class Nop extends ANY implements Stmnt
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
   {
     return true;
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
   }
 
 

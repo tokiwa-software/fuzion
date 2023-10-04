@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = looptest_negative
+FUZION_OPTIONS = -XenableSetKeyword
 include ../negative.mk

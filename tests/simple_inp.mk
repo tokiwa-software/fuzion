@@ -43,8 +43,14 @@ int:
 c:
 	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
+jvm:
+	cat $(STDIN) | ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
 record:
 	cat $(STDIN) | ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
 
 record_c:
 	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+
+record_jvm:
+	cat $(STDIN) | ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)

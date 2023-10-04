@@ -81,7 +81,7 @@
 # type, so these are very efficient as well.
 #
 #
-unit is
+public unit is
 
 # NYI: possible alternative definitions based on tuple types
 #
@@ -91,7 +91,7 @@ unit is
 #
 
   # human readable string
-  redef as_string => "unit"
+  public redef as_string => "unit"
 
   # Monoid that can be used whenever a monoid of the unit type is expected.
   # This is the case for example in some calls to `fold`-like features.

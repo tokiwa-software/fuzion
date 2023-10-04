@@ -63,7 +63,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Interface that defines the operations of the actual interpreter
    * that processes this code.
    */
-  public static abstract class ProcessStatement<VALUE, RESULT>
+  public static abstract class ProcessStatement<VALUE, RESULT> extends ANY
   {
     /**
      * Join a List of RESULT from subsequent statements into a compound
@@ -95,6 +95,26 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract RESULT nop();
 
     /**
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * For backends that do not perform any side-effects in RESULT, this does
+     * not need to be redefined, the default implementation is nop() which is
+     * fine in this case.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
+     */
+    public RESULT drop(VALUE v, int type)
+    {
+      return nop(); // NYI, should be implemented by BEs.
+    }
+
+    /**
      * Determine the address of a given value.  This is used on a call to an
      * inner feature to pass a reference to the outer value type instance.
      */
@@ -121,17 +141,29 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      */
-    public abstract RESULT              assign(int cl, int c, int i, VALUE tvalue, VALUE avalue);
+    public abstract RESULT              assign(int cl, boolean pre, int c, int i, VALUE tvalue, VALUE avalue);
 
     /**
      * Perform a call of a feature with target instance tvalue with given
-     * arguments.. The type of tvalue might be dynamic (a reference). See
+     * arguments.  The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
      * Result._v0 may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of call in current code block
+     *
+     * @param tvalue target value the call is performed on
+     *
+     * @param args argument values passed to the call
      */
-    public abstract Pair<VALUE, RESULT> call  (int cl, int c, int i, VALUE tvalue, List<VALUE> args);
+    public abstract Pair<VALUE, RESULT> call  (int cl, boolean pre, int c, int i, VALUE tvalue, List<VALUE> args);
 
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
@@ -139,22 +171,27 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> box(VALUE v, int vc, int rc);
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public abstract Pair<VALUE, RESULT> unbox(VALUE v, int vc);
-
-    /**
      * Get the current instance
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
      */
-    public abstract Pair<VALUE, RESULT> current(int cl);
+    public abstract Pair<VALUE, RESULT> current(int cl, boolean pre);
 
     /**
      * Get the outer instance
+     *
+     * @param cl id of clazz we are interpreting
      */
     public abstract Pair<VALUE, RESULT> outer(int cl);
 
     /**
      * Get the argument #i
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param i index of value argument of cl
      */
     public abstract VALUE arg(int cl, int i);
 
@@ -165,8 +202,20 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * Perform a match on value subv.
+     *
+     * @param ai current abstract interpreter instance
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of match in current code block
+     *
+     * @param subv value of subject of this match that is being tested.
      */
-    public abstract Pair<VALUE, RESULT> match(AbstractInterpreter<VALUE, RESULT> ai, int cl, int c, int i, VALUE subv);
+    public abstract Pair<VALUE, RESULT> match(AbstractInterpreter<VALUE, RESULT> ai, int cl, boolean pre, int c, int i, VALUE subv);
 
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
@@ -361,27 +410,26 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl the clazz we are interpreting.
    */
-  void assignOuterAndArgFields(List<RESULT> l, int cl)
+  void assignOuterAndArgFields(List<RESULT> l, int cl, boolean pre)
   {
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
         var rt = _fuir.clazzResultClazz(or);
-        var cur = _processor.current(cl);
+        var cur = _processor.current(cl, pre);
         l.add(cur._v1);
         var out = _processor.outer(cl);
         l.add(out._v1);
         l.add(_processor.assignStatic(cl, or, rt, cur._v0, out._v0));
       }
 
-    var vcl = _fuir.clazzAsValue(cl);
-    var ac = _fuir.clazzArgCount(vcl);
+    var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
-        var cur = _processor.current(cl);
+        var cur = _processor.current(cl, pre);
         l.add(cur._v1);
-        var af = _fuir.clazzArg(vcl, i);
-        var at = _fuir.clazzArgClazz(vcl, i);
+        var af = _fuir.clazzArg(cl, i);
+        var at = _fuir.clazzArgClazz(cl, i);
         var ai = _processor.arg(cl, i);
         if (ai != null)
           {
@@ -406,10 +454,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   public Pair<VALUE,RESULT> process(int cl, boolean pre)
   {
     var l = new List<RESULT>();
-    assignOuterAndArgFields(l, cl);
+    assignOuterAndArgFields(l, cl, pre);
     var p = pre
       ? processContract(cl, FUIR.ContractKind.Pre)
-      : process(cl, _fuir.clazzCode(cl));
+      : process(cl, pre, _fuir.clazzCode(cl));
     l.add(p._v1);
     var res = p._v0;
     if (!pre)
@@ -436,16 +484,42 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * _processor().unitValue() or null (in case cl diverges) and the result of
    * the abstract interpretation, e.g., the generated code.
    */
-  public Pair<VALUE,RESULT> process(int cl, int c)
+  public Pair<VALUE,RESULT> process(int cl, boolean pre, int c)
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
+    int last_i = -1;
     for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         l.add(_processor.statementHeader(cl, c, i));
-        l.add(process(cl, stack, c, i));
+        l.add(process(cl, pre, stack, c, i));
+        last_i = i;
       }
-    var v = containsVoid(stack) ? null : _processor.unitValue();
+
+    var v = containsVoid(stack) ? null
+                                : _processor.unitValue();
+
+    if (!containsVoid(stack) && stack.size() > 0)
+      { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
+        // FUIR has the (so far undocumented) invariant that the stack must be
+        // empty at the end of a basic block. There were some cases
+        // (tests/reg_issue1294) where this is not the case that need to be
+        // fixed, the FUIR code should contain a POP instructions to avoid this
+        // special handling here!
+        //
+        var s = _fuir.codeAt(c, last_i);
+        switch (s)
+          {
+          case Call:
+            var cc0 = _fuir.accessedClazz  (cl, c, last_i);
+            var rt = _fuir.clazzResultClazz(cc0);
+            l.add(_processor.drop(stack.pop(), rt));
+            break;
+          default:
+            break; // NYI: ignore this case for now, this occurs infrequently, one example is tests/reg_issue1294.
+          }
+      }
+
     return new Pair<>(v, _processor.sequence(l));
   }
 
@@ -472,7 +546,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
           {
             l.add(_processor.statementHeader(cl, c, i));
-            l.add(process(cl, stack, c, i));
+            l.add(process(cl, ck == FUIR.ContractKind.Pre, stack, c, i));
           }
         if (!containsVoid(stack))
           {
@@ -497,7 +571,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * @return the result of the abstract interpretation, e.g., the generated
    * code.
    */
-  public RESULT process(int cl, Stack<VALUE> stack, int c, int i)
+  public RESULT process(int cl, boolean pre, Stack<VALUE> stack, int c, int i)
   {
     if (DEBUG)
       {
@@ -516,18 +590,19 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Assign:
         {
           // NYI: pop the stack values even in case field is unused.
-          if (_fuir.accessedClazz(cl, c, i) != -1)  // field we are assigning to may be unused, i.e., -1
+          var ft = _fuir.assignedType(cl, c, i);
+          var tc = _fuir.accessTargetClazz(cl, c, i);
+          var tvalue = pop(stack, tc);
+          var avalue = pop(stack, ft);
+          var f = _fuir.accessedClazz  (cl, c, i);
+          if (f != -1)  // field we are assigning to may be unused, i.e., -1
             {
-              var f = _fuir.accessedClazz  (cl, c, i);
-              var ft = _fuir.clazzResultClazz(f);
-              var tc = _fuir.accessTargetClazz(cl, c, i);
-              var tvalue = pop(stack, tc);
-              var avalue = pop(stack, ft);
-              return _processor.assign(cl, c, i, tvalue, avalue);
+              return _processor.assign(cl, pre, c, i, tvalue, avalue);
             }
           else
             {
-              return _processor.nop();
+              return _processor.sequence(new List<>(_processor.drop(tvalue, tc),
+                                                    _processor.drop(avalue, ft)));
             }
         }
       case Box:
@@ -547,29 +622,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
               return r._v1;
             }
         }
-      case Unbox:
-        {
-          var orc = _fuir.unboxOuterRefClazz(cl, c, i);
-          var vc = _fuir.unboxResultClazz(cl, c, i);
-          if (_fuir.clazzIsRef(orc) && !_fuir.clazzIsRef(vc))
-            {
-              var refval = pop(stack, orc);
-              var r = _processor.unbox(refval, orc);
-              push(stack, vc, r._v0);
-              return r._v1;
-            }
-          else
-            {
-              return _processor.nop();
-            }
-        }
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(cl, c, i);
           var tvalue = pop(stack, tc);
-          var r = _processor.call(cl, c, i, tvalue, args);
+          var r = _processor.call(cl, pre, c, i, tvalue, args);
           if (r._v0 == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);
@@ -587,7 +646,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         }
       case Current:
         {
-          var r = _processor.current(cl);
+          var r = _processor.current(cl, pre);
           push(stack, cl, r._v0);
           return r._v1;
         }
@@ -605,23 +664,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var subv      = pop(stack, subjClazz);
           RESULT code = _processor.nop();
 
-          // Unbox in case subject is a ref.
-          //
-          // NYI: it might be better to unbox the subject of a match using an
-          // explicit command in the IR instead of this implicit handling:
-          //
-          if (_fuir.clazzIsRef(subjClazz))
-            {
-              var ub = _processor.unbox(subv, subjClazz);
-              subv = ub._v0;
-              code = ub._v1;
-            }
-
-          var r = _processor.match(this, cl, c, i, subv);
+          var r = _processor.match(this, cl, pre, c, i, subv);
           if (r._v0 == null)
             {
               stack.push(null);
             }
+          if (CHECKS) check
+            (r._v0 == null || r._v0 == _processor.unitValue());
           return _processor.sequence(new List<>(code, r._v1));
         }
       case Tag:
@@ -629,6 +678,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
           var value   = pop(stack, valuecl);            // value that will be tagged
           var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of result
+          if (CHECKS) check
+            (!_fuir.clazzIsVoidType(valuecl));
           int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
           var r = _processor.tag(cl, valuecl, value, newcl, tagNum);
           push(stack, newcl, r._v0);
@@ -641,16 +692,18 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           push(stack, ecl, r._v0);
           return r._v1;
         }
-      case Dup:
-        {
-          var v = stack.pop();
-          stack.push(v);
-          stack.push(v);
-          return _processor.nop();
-        }
       case Pop:
-        { // NYI: pop should not be a NOP.
-          return _processor.nop();
+        {
+          // Pop can only follow a Call, we need the call to determine the type
+          // of the popped value, which might be a unit type value.
+          //
+          if (CHECKS) check
+            (_fuir.codeAt(c, i-1) == FUIR.ExprKind.Call);
+
+          var cc = _fuir.accessedClazz(cl, c, i-1);
+          var rt = _fuir.clazzResultClazz(cc);
+          var v = pop(stack, rt);
+          return _processor.drop(v, rt);
         }
       default:
         {

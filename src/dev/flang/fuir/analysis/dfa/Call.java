@@ -29,6 +29,9 @@ package dev.flang.fuir.analysis.dfa;
 import java.nio.charset.StandardCharsets;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.SpecialClazzes;
+
+import dev.flang.fuir.analysis.dfa.DFA.IntrinsicDFA;
 
 import dev.flang.ir.IR;
 
@@ -82,7 +85,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Arguments passed to the call.
    */
-  List<Value> _args;
+  List<Val> _args;
 
 
   /**
@@ -110,6 +113,12 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
+  /**
+   * True if this instance escapes this call.
+   */
+  boolean _escapes = false;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -129,7 +138,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Value> args, Env env, Context context)
+  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
@@ -157,7 +166,8 @@ public class Call extends ANY implements Comparable<Call>, Context
       !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
-        r = Value.compare(_args.get(i), other._args.get(i));
+        r = Value.compare(      _args.get(i).value(),
+                          other._args.get(i).value());
       }
     if (r == 0)
       {
@@ -188,9 +198,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Return the result value returned by this call.  null in case this call
    * never returns.
    */
-  public Value result()
+  public Val result()
   {
-    Value result = null;
+    Val result = null;
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
         var name = _dfa._fuir.clazzIntrinsicName(_cc);
@@ -214,8 +224,39 @@ public class Call extends ANY implements Comparable<Call>, Context
               {
                 var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
                 Errors.warning(msg);
+                var rc = _dfa._fuir.clazzResultClazz(_cc);
+                result = switch (_dfa._fuir.getSpecialId(rc))
+                  {
+                  case c_i8, c_i16, c_i32, c_i64,
+                       c_u8, c_u16, c_u32, c_u64,
+                       c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                  case c_bool                    -> _dfa._bool;
+                  case c_TRUE, c_FALSE           -> Value.UNIT;
+                  case c_Const_String            -> _dfa.newConstString(null, this);
+                  case c_unit                    -> Value.UNIT;
+                  case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
+                  case c_NOT_FOUND               -> null;
+                  case c_array_i8 , c_array_i16,
+                       c_array_i32, c_array_i64,
+                       c_array_u8 , c_array_u16,
+                       c_array_u32, c_array_u64,
+                       c_array_f32, c_array_f64 -> throw new Error("intrinsics do not return const arrays.");
+                  };
               }
           }
+      }
+    else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
+      {
+        var rc = _dfa._fuir.clazzResultClazz(_cc);
+        result = switch (_dfa._fuir.getSpecialId(rc))
+          {
+            case c_i8, c_i16, c_i32, c_i64,
+                 c_u8, c_u16, c_u32, c_u64,
+                 c_f32, c_f64              -> new NumericValue(_dfa, rc);
+            case c_Const_String            -> _dfa.newConstString(null, this);
+            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
+                                                yield null; }
+          };
       }
     else if (_returns)
       {
@@ -324,6 +365,20 @@ public class Call extends ANY implements Comparable<Call>, Context
     else
       {
         _dfa.replaceDefaultEffect(ecl, e);
+      }
+  }
+
+
+  /**
+   * Record that the instance of this call escapes, i.e., it might be accessed
+   * after the call returned and cannot be allocated on the stack.
+   */
+  void escapes()
+  {
+    if (!_escapes)
+      {
+        _escapes = true;
+        _dfa.escapes(_cc, _pre);
       }
   }
 

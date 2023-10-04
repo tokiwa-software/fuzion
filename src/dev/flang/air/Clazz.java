@@ -48,15 +48,12 @@ import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
+import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
-import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
-import dev.flang.ast.Stmnt; // NYI: remove dependency!
+import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
-import dev.flang.ast.Unbox; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -262,15 +259,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * If this clazz is a choice clazz that requires a tag, this is the tag.  null
-   * otherwise.
-   *
-   * This is initialized after Clazz creation by dependencies().
-   */
-  Clazz _choiceTag;
-
-
-  /**
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
@@ -327,10 +315,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.count() > 0 || !actualType.dependsOnGenerics(),
-       Errors.count() > 0 || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
-       Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
-       Errors.count() > 0 || (actualType != Types.t_ERROR     &&
+       Errors.any() || !actualType.dependsOnGenerics(),
+       Errors.any() || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
+       Errors.any() || actualType.featureOfType().outer() != null || outer == null,
+       Errors.any() || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
        outer == null || outer._type != Types.t_ADDRESS,
        !actualType.containsThisType());
@@ -341,7 +329,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (Errors.count() > 0 || actualType != Types.t_ERROR);
+      (Errors.any() || actualType != Types.t_ERROR);
 
     this._select = select;
     /* There are two basic cases for outer clazzes:
@@ -363,12 +351,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
     this._type = (actualType != Types.t_ERROR && this._outer != null)
-      ? Types.intern(Type.newType(actualType, this._outer._type))
+      ? Types.intern(ResolvedNormalType.newType(actualType, this._outer._type))
       : actualType;
     this._dynamicBinding = null;
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || !hasCycles());
+      (Errors.any() || !hasCycles());
   }
 
 
@@ -418,7 +406,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     _resultField    = isBoxed() ? null : determineResultField();
     _resultClazz    = isBoxed() ? null : determineResultClazz();
     _outerRef       = isBoxed() ? null : determineOuterRef();
-    _choiceTag      = isBoxed() ? null : determineChoiceTag();
     _asValue        = determineAsValue();
   }
 
@@ -544,7 +531,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
-   * This set is initialially empty, it will be filled by `registerAsHeir()`
+   * This set is initially empty, it will be filled by `registerAsHeir()`
    * which is called for every new Clazz created via Clazzes.create().
    *
    * @return the heirs including this.
@@ -571,7 +558,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var pc = actualClazz(isRef() && pt != Types.resolved.t_void ? pt.asRef() : pt.asValue());
         if (CHECKS) check
-          (Errors.count() > 0 || pc.isVoidType() || isRef() == pc.isRef());
+          (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);
       }
     return result;
@@ -620,7 +607,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       Errors.count() > 0 || !t.isOpenGeneric());
+       Errors.any() || !t.isOpenGeneric());
 
     return actualType(t, -1);
   }
@@ -639,13 +626,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       Errors.count() > 0 || ((select >= 0) == t.isOpenGeneric()));
+       Errors.any() || ((select >= 0) == t.isOpenGeneric()));
 
     if (t.isOpenGeneric())
       {
         var types = replaceOpen(t, feature());
         if (CHECKS) check
-          (Errors.count() > 0 || select >= 0 && select < types.size());
+          (Errors.any() || select >= 0 && select < types.size());
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
       }
 
@@ -669,7 +656,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       Errors.count() > 0 || !t.isOpenGeneric());
+       Errors.any() || !t.isOpenGeneric());
 
     t = t.applyToGenericsAndOuter(x -> actualType(x));
     t = replaceThisType(t);
@@ -730,7 +717,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForTypeFeature(o);
           }
-        t = Types.intern(new Type(t, g, o, true));
+        t = Types.intern(new ResolvedNormalType(t, g, g, o, true));
       }
     return t;
   }
@@ -804,23 +791,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
     // Object layout will later report an error for this case.
     _isUnitType = YesNo.no;
 
-    if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
+    if (isRef() || feature().isBuiltInPrimitive() || isVoidType() || isChoice())
       {
         return false;
-      }
-    if (isChoice())
-      {
-        if (choiceTag() != null)
-          {
-            return false;
-          }
-        for (var cg : choiceGenerics())
-          {
-            if (!cg.isUnitType())
-              {
-                return false;
-              }
-          }
       }
     else
       {
@@ -863,7 +836,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.pos2BeRemoved();
+        var tp = _type.declarationPos();
         for (SourcePosition p : cycle)
           {
             if (!p.equals(tp))
@@ -1015,7 +988,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var chain = tf.findInheritanceChain(f.outer());
         if (CHECKS) check
-          (chain != null || Errors.count() > 0);
+          (chain != null || Errors.any());
         if (chain != null)
           {
             for (var p: chain)
@@ -1158,7 +1131,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (select < 0)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz);
+          (Errors.any() || iCs == null || iCs instanceof Clazz);
 
         innerClazz =
           iCs == null              ? null :
@@ -1168,7 +1141,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         if (CHECKS) check
-          (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
+          (Errors.any() || iCs == null || iCs instanceof Clazz[]);
         if (iCs == null || !(iCs instanceof Clazz[] iCA))
           {
             innerClazzes = new Clazz[replaceOpenCount(fa._f)];
@@ -1179,7 +1152,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             innerClazzes = iCA;
           }
         if (CHECKS) check
-          (Errors.count() > 0 || select < innerClazzes.length);
+          (Errors.any() || select < innerClazzes.length);
         innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
       }
     if (innerClazz == null)
@@ -1187,7 +1160,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var f = fa._f;
         AbstractFeature af = findRedefinition(f);
         if (CHECKS) check
-          (Errors.count() > 0 || af != null || isEffectivelyAbstract(f));
+          (Errors.any() || af != null || isEffectivelyAbstract(f));
 
         if (f == Types.f_ERROR || af == null && !isEffectivelyAbstract(f))
           {
@@ -1331,7 +1304,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
+      (Errors.any() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
        innerClazz != null);
 
     return innerClazz;
@@ -1366,8 +1339,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public Clazz clazzForFieldX(AbstractFeature field, int select)
   {
     if (CHECKS) check
-      (Errors.count() > 0 || field.isField(),
-       Errors.count() > 0 || feature().inheritsFrom(field.outer()));
+      (Errors.any() || field.isField(),
+       Errors.any() || feature().inheritsFrom(field.outer()));
 
     var result = _clazzForField.get(field);
     if (result == null)
@@ -1401,7 +1374,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
          + ((this._outer == Clazzes.universe.get())
             ? ""
             : this._outer.toStringWrapped() + ".")
-         + (this.isRef()
+         + (this.isBoxed()
             ? "ref "
             : ""
             )
@@ -1517,20 +1490,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * visit all the code in f, including inherited features, by fc.
    */
-  private void inspectCode(StatementVisitor fc, AbstractFeature f)
+  private void inspectCode(ExpressionVisitor fc, AbstractFeature f)
   {
-    f.visitStatements(fc);
+    f.visitExpressions(fc);
     for (var c: f.inherits())
       {
         AbstractFeature cf = c.calledFeature();
         var n = c.actuals().size();
         for (var i = 0; i < n; i++)
           {
-            var a = c.actuals().get(i);
             if (i >= cf.valueArguments().size())
               {
                 if (CHECKS) check
-                  (Errors.count() > 0);
+                  (Errors.any());
               }
             else
               {
@@ -1545,7 +1517,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
 
         if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
+          (Errors.any() || cf != null);
 
         if (cf != null)
           {
@@ -1563,19 +1535,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (this._type != Types.t_ADDRESS)
       {
         var f = feature();
-        inspectCode(new StatementVisitor()
+        inspectCode(new ExpressionVisitor()
           {
-            public void action (Stmnt s)
+            public void action (Expr e)
             {
-              if      (s instanceof Unbox            u) { Clazzes.findClazzes(u, Clazz.this); }
-              else if (s instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
-              else if (s instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (s instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (s instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (s instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
-              else if (s instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
-              else if (s instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
+              if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
+              else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
+              else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
+              else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
             }
             public void action(AbstractCase c)
             {
@@ -1832,7 +1803,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void called(HasSourcePosition at)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !isChoice());
+      (Errors.any() || !isChoice());
 
     if (at != null &&
         (_outer == null || !_outer.isVoidType()) &&
@@ -2126,7 +2097,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private int depth(AbstractFeature f)
   {
     if (CHECKS) check
-      (Errors.count() > 0 || f.isUniverse() || f.outer() != null);
+      (Errors.any() || f.isUniverse() || f.outer() != null);
 
     return f.isUniverse() || (f.outer() == null)
       ? 0
@@ -2218,7 +2189,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (Errors.count() > 0 || i == o);
+      (Errors.any() || i == o);
 
     return i == null ? Clazzes.error.get() : res;
   }
@@ -2352,7 +2323,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 // underlying type to avoid problems creating clazzes form
                 // this.types.
                 if (CHECKS) check
-                  (Errors.count() > 0 || feature() == Types.resolved.f_Types_get);
+                  (Errors.any() || feature() == Types.resolved.f_Types_get);
 
                 gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
               }
@@ -2400,35 +2371,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * If this clazz is a choice clazz that requires a tag, this will return the
-   * tag.  null otherwise.
-   */
-  public Clazz choiceTag()
-  {
-    return _choiceTag;
-  }
-
-
-  /**
-   * If this is a choice clazz that requires a tag, determine the clazz of this
-   * tag field.
-   *
-   * @return the tag field, or null if this is not a choice or this is a choice
-   * that does not need a tag.
-   */
-  private Clazz determineChoiceTag()
-  {
-    Clazz result = null;
-    if (isChoice() && !isChoiceOfOnlyRefs())
-      {
-        var f = feature();
-        result = lookup(f.choiceTag(), f);
-      }
-    return result;
-  }
-
-
-  /**
    * For an open generic type ft find the actual type parameters within this
    * clazz.  The resulting list could be empty.
    *
@@ -2440,7 +2382,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || ft.isOpenGeneric());
+      (Errors.any() || ft.isOpenGeneric());
 
     List<AbstractType> types;
     var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
@@ -2466,7 +2408,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         if (CHECKS) check
-          (Errors.count() > 0);
+          (Errors.any());
         types = new List<>();
       }
     return types;
@@ -2482,7 +2424,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public int replaceOpenCount(AbstractFeature a)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || a != Types.f_ERROR || a.resultType().isOpenGeneric());
+      (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
 
     return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
   }

@@ -247,8 +247,8 @@ public class LValue extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     container.storeNonRef(slot, size, offset);
   }
@@ -310,6 +310,22 @@ public class LValue extends ValueWithClazz
   ArrayData arrayData()
   {
     return (ArrayData) container.refs[offset];
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = container.nonrefs[offset];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
   }
 
 

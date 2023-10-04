@@ -62,10 +62,8 @@ import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 
@@ -218,7 +216,7 @@ public class Interpreter extends ANY
           }
       }
 
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         ArrayList<Value> mainargs = new ArrayList<>();
         mainargs.add(Instance.universe); // outer instance
@@ -241,12 +239,12 @@ public class Interpreter extends ANY
             throw e;
           }
         if (CHECKS) check
-          (Errors.count() == 0);
+          (!Errors.any());
       }
   }
 
 
-  /*----------------  methods to execute statements  ----------------*/
+  /*----------------  methods to execute expressions  ----------------*/
 
 
   /**
@@ -285,10 +283,10 @@ public class Interpreter extends ANY
    * binding and it uses way too much stack since recursion keeps this giant
    * stack frame alive.
    */
-  public Value execute(Stmnt s, Clazz staticClazz, Value cur)
+  public Value execute(Expr e, Clazz staticClazz, Value cur)
   {
     Value result;
-    if (s instanceof AbstractCall c)
+    if (e instanceof AbstractCall c)
       {
         if (PRECONDITIONS) require
           (!c.isInheritanceCall(),  // inheritance calls are handled in Feature.callOnInstance
@@ -333,12 +331,12 @@ public class Interpreter extends ANY
         FuzionThread.current()._callStack.pop();
       }
 
-    else if (s instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent)
       {
         result = cur;
       }
 
-    else if (s instanceof AbstractAssign a)
+    else if (e instanceof AbstractAssign a)
       {
         Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);
@@ -356,7 +354,7 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof AbstractConstant i)
+    else if (e instanceof AbstractConstant i)
       {
         result = _cachedConsts_.get(i);
         if (result == null)
@@ -375,21 +373,31 @@ public class Interpreter extends ANY
             else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
             else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
             else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+            else if (t.compareTo(Types.resolved.t_array_i8 ) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i16) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_i64) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u8 ) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u16) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_u64) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_f32) == 0) { result = constArray(d,t); }
+            else if (t.compareTo(Types.resolved.t_array_f64) == 0) { result = constArray(d,t); }
             else                                                { result = Value.NO_VALUE; check(false); }
             _cachedConsts_.put(i, result);
           }
       }
 
-    else if (s instanceof AbstractBlock b)
+    else if (e instanceof AbstractBlock b)
       {
         result = Value.NO_VALUE;
-        for (Stmnt stmnt : b._statements)
+        for (Expr expr : b._expressions)
           {
-            result = execute(stmnt, staticClazz, cur);
+            result = execute(expr, staticClazz, cur);
           }
       }
 
-    else if (s instanceof If i)
+    else if (e instanceof If i)
       {
         Value c = execute(i.cond, staticClazz, cur);
         if (c.boolValue())
@@ -410,7 +418,7 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof AbstractMatch m)
+    else if (e instanceof AbstractMatch m)
       {
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m._runtimeClazzId);
@@ -419,6 +427,8 @@ public class Interpreter extends ANY
                                                             */
         Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
+        if (CHECKS) check
+          (sf.isChoice());
         int tag;
         Value refVal = null;
         if (staticSubjectClazz.isChoiceOfOnlyRefs())
@@ -432,7 +442,7 @@ public class Interpreter extends ANY
           }
         else
           {
-            tag = getField(sf.choiceTag(), staticSubjectClazz, sub, false).i32Value();
+            tag = sub.tag();
           }
         Clazz subjectClazz = tag < 0
           ? ((ValueWithClazz) refVal).clazz()
@@ -498,27 +508,12 @@ public class Interpreter extends ANY
 
       }
 
-    else if (s instanceof Unbox u)
-      {
-        // This is a NOP here since values of reference type and value type are
-        // treated the same way by the interpreter.
-        result = execute(u._adr, staticClazz, cur);
-
-        var id = u._refAndValClazzId;
-        var rc = staticClazz.getRuntimeClazz(id    );
-        var vc = staticClazz.getRuntimeClazz(id + 1);
-        if (rc != vc && rc.isBoxed() && !vc.isRef())
-          {
-            result = ((Boxed) result)._contents;
-          }
-      }
-
-    else if (s instanceof Universe)
+    else if (e instanceof Universe)
      {
        result = Instance.universe;
      }
 
-    else if (s instanceof Box b)
+    else if (e instanceof Box b)
       {
         Value val = execute(b._value, staticClazz, cur);
         var id = b._valAndRefClazzId;
@@ -538,7 +533,7 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Tag t)
+    else if (e instanceof Tag t)
       {
         Value v      = execute(t._value, staticClazz, cur);
         Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
@@ -546,7 +541,7 @@ public class Interpreter extends ANY
         result = tag(tClazz, vClazz, v);
       }
 
-    else if (s instanceof Check c)
+    else if (e instanceof Check c)
       {
         // NYI: check not supported yet
         // System.err.println("NYI: "+c);
@@ -554,12 +549,12 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof Nop)
+    else if (e instanceof Nop)
       {
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof InlineArray i)
+    else if (e instanceof InlineArray i)
       {
         Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
@@ -571,13 +566,13 @@ public class Interpreter extends ANY
         for (int x = 0; x < l; x++)
           {
             var v = execute(i._elements.get(x), staticClazz, cur);
-            Intrinsics.fuzionSysArraySetEl(arrayData, x, v, sac);
+            arrayData.set(x, v, Intrinsics.elementType(sac));
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internal_array, -1, ac, result, sa);
       }
 
-    else if (s instanceof Env v)
+    else if (e instanceof Env v)
       {
         Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
         result = FuzionThread.current()._effects.get(vClazz);
@@ -591,9 +586,78 @@ public class Interpreter extends ANY
 
     else
       {
-        throw new Error("Execution of " + s.getClass() + " not implemented");
+        throw new Error("Execution of " + e.getClass() + " not implemented");
       }
     return result;
+  }
+
+  /**
+   * Create an array of type t initialized with data d.
+   *
+   * @param d the data
+   * @param t the array type, e.g. `array i32`
+   * @return
+   */
+  private Value constArray(byte[] d, AbstractType t)
+  {
+    var bytes = toArray(d, t);
+    Clazz cl = Clazzes.clazz(t);
+    Instance result = new Instance(cl);
+    var saCl = cl.fields()[0].resultClazz(); /* NYI access via index ugly */
+    Instance sa = new Instance(saCl);
+    setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(d.length / bytesPerField(t)));
+    var arrayData = new ArrayData(bytes);
+    setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
+    setField(Types.resolved.f_array_internal_array, -1, cl, result, sa);
+    return result;
+  }
+
+
+  /**
+   * How many bytes are used per array field by AbstractConstant.data
+   * for given array type.
+   *
+   * @param t
+   * @return
+   */
+  private int bytesPerField(AbstractType t)
+  {
+    if      (t.compareTo(Types.resolved.t_array_i8  ) == 0) { return 1;}
+    else if (t.compareTo(Types.resolved.t_array_i16 ) == 0) { return 2;}
+    else if (t.compareTo(Types.resolved.t_array_i32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_i64 ) == 0) { return 8;}
+    else if (t.compareTo(Types.resolved.t_array_u8  ) == 0) { return 1;}
+    else if (t.compareTo(Types.resolved.t_array_u16 ) == 0) { return 2;}
+    else if (t.compareTo(Types.resolved.t_array_u32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_u64 ) == 0) { return 8;}
+    else if (t.compareTo(Types.resolved.t_array_f32 ) == 0) { return 4;}
+    else if (t.compareTo(Types.resolved.t_array_f64 ) == 0) { return 8;}
+    else { throw new Error("NYI"); }
+  }
+
+
+  /**
+   * create primitive array of given type
+   * from data of AbstractConstant.data
+   *
+   * @param d
+   * @param t
+   * @return the primite array, e.g. int[], short[], etc.
+   */
+  private Object toArray(byte[] d, AbstractType t)
+  {
+    var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
+    if      (t.compareTo(Types.resolved.t_array_i8  ) == 0) { return bb.array(); }
+    else if (t.compareTo(Types.resolved.t_array_i16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_i32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_i64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_u8  ) == 0) { return bb.array(); }
+    else if (t.compareTo(Types.resolved.t_array_u16 ) == 0) { var b = bb.asCharBuffer(); var result = new char[b.remaining()]; b.get(result); return result;  }
+    else if (t.compareTo(Types.resolved.t_array_u32 ) == 0) { var b = bb.asIntBuffer(); var result = new int[b.remaining()]; b.get(result); return result;  }
+    else if (t.compareTo(Types.resolved.t_array_u64 ) == 0) { var b = bb.asLongBuffer(); var result = new long[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_f32 ) == 0) { var b = bb.asFloatBuffer(); var result = new float[b.remaining()]; b.get(result); return result; }
+    else if (t.compareTo(Types.resolved.t_array_f64 ) == 0) { var b = bb.asDoubleBuffer(); var result = new double[b.remaining()]; b.get(result); return result; }
+    else                                                    { throw new Error("NYI"); }
   }
 
 
@@ -684,12 +748,6 @@ public class Interpreter extends ANY
       {
         return null; // in dynamic case, interpreter does not use this, but dynamic lookup only
       }
-    else if (innerClazz == null)
-      {
-        if (CHECKS) check
-          (Errors.count() > 0);
-        result = (args) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
-      }
     else
       {
         var f = innerClazz.feature();
@@ -702,7 +760,7 @@ public class Interpreter extends ANY
             {
               // result = (args) -> getField(f, outerClazz, args.get(0));
               //
-              // specialize for i32.val and bool.tag
+              // specialize for i32.val
               var ocv = outerClazz.asValue();
               if (builtInVal || ocv == Clazzes.bool.getIfCreated())
                 {
@@ -716,8 +774,7 @@ public class Interpreter extends ANY
                      ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
                      ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
                      ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
-                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
-                     ocv != Clazzes.bool.getIfCreated() || f == Types.resolved.f_bool.choiceTag());
+                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"));
                   result = (args) -> args.get(0);
                 }
               else
@@ -767,6 +824,8 @@ public class Interpreter extends ANY
           case Intrinsic:
             result = Intrinsics.call(this, innerClazz);
             break;
+          case Native:
+            throw new Error("Java backend does not support native features");
           case Choice: // NYI: why choice here?
           case Routine:
             if (innerClazz == Clazzes.universe.get())
@@ -970,11 +1029,15 @@ public class Interpreter extends ANY
       }
     else
       { // store tag and value separately
-        setField(thiz.choiceTag(), -1, choiceClazz, choice, new i32Value(tag));
+        LValue slot   = choice.at(vclazz, 0);
+        (new i32Value(tag)).storeNonRef(slot, 1);
       }
     if (CHECKS) check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
     setFieldSlot(thiz, vclazz, valSlot, v);
+
+    if (POSTCONDITIONS) ensure
+      (choiceClazz.isChoiceOfOnlyRefs() || choice.container.nonrefs[0] >= 0);
   }
 
 
@@ -1303,7 +1366,7 @@ public class Interpreter extends ANY
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
       {
         if (CHECKS) check
-          (thiz == Types.resolved.f_bool.choiceTag());
+          (false);
         result = curValue;
       }
     else

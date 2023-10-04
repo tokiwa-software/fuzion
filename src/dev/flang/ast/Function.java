@@ -44,7 +44,7 @@ public class Function extends ExprWithPos
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<Feature> NO_FEATURES = new List<Feature>();
+  static final List<AbstractFeature> NO_FEATURES = new List<>();
   static final List<AbstractCall> NO_CALLS = new List<>();
 
 
@@ -60,8 +60,6 @@ public class Function extends ExprWithPos
 
 
   /**
-   * For function declaration of the kind "fun a.b.f", this is the call to f
-   *
    * For a function that declares a new anonymous feature, this will be the
    * resulting call that creates an instance of a subclass for Function/Routine
    * whose call() function implements the function.
@@ -108,7 +106,7 @@ public class Function extends ExprWithPos
    *
    * In this case, _wrapper and _call will be created during propagateExpectedType().
    */
-  List<String> _names;  // names of the arguments: "x", "y"
+  List<ParsedName> _names;  // names of the arguments: "x", "y"
   List<AbstractCall> _inherits; // inherits calls, currently always empty
   Contract _contract;   // contract of the lambda
   Expr _expr;           // the right hand side of the '->'
@@ -133,7 +131,7 @@ public class Function extends ExprWithPos
    * @param e the code on the right hand side of '->'.
    */
   public Function(SourcePosition pos,
-                  List<String> names,
+                  List<ParsedName> names,
                   List<AbstractCall> i,
                   Contract c,
                   Expr e)
@@ -152,36 +150,6 @@ public class Function extends ExprWithPos
 
 
   /**
-   * Load all features that are called by this expression.
-   *
-   * @param res the resolution instance.
-   *
-   * @param thiz the class that contains this expression.
-   */
-  void loadCalledFeature(Resolution res, AbstractFeature thiz)
-  {
-    if (this._call != null)
-      {
-        this._call.loadCalledFeature(res, thiz);
-        if (this._feature == null)
-          {
-            var f = this._call.calledFeature();
-            if (CHECKS) check
-              (Errors.count() > 0 || f != null);
-
-            if (f != null)
-              {
-                if (f.isConstructor())
-                  {
-                    Errors.fatal("NYI: fun for constructor type not allowed");
-                  }
-              }
-          }
-      }
-  }
-
-
-  /**
    * During type inference: Inform this expression that it is used in an
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
@@ -196,7 +164,7 @@ public class Function extends ExprWithPos
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -255,16 +223,16 @@ public class Function extends ExprWithPos
          *         --Fun<id>--()
          * [..]
          */
-        List<Feature> a = new List<>();
+        var a = new List<AbstractFeature>();
         var gs = t.generics();
         int i = 1;
         for (var n : _names)
           {
-            var arg = new Feature(pos() /* better n.pos() */,
-                                  Visi.LOCAL,
+            var arg = new Feature(n._pos,
+                                  Visi.PRIV,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                  n,
+                                  n._name,
                                   Contract.EMPTY_CONTRACT);
             a.add(arg);
             i++;
@@ -294,17 +262,17 @@ public class Function extends ExprWithPos
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Stmnt> statements = new List<Stmnt>(f);
+            List<Expr> expressions = new List<Expr>(f);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
-                                   Visi.INVISIBLE,
+                                   Visi.PRIV,
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
-                                   new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
+                                   new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
@@ -322,7 +290,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -345,36 +313,12 @@ public class Function extends ExprWithPos
   }
 
 
-  /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void findGenerics(FeatureVisitor v, AbstractFeature outer)
-  {
-    if (this._feature != null)
-      { /* NYI: Needed? The following comment seems wrong: */
-        // directly process generics in _feature's arguments and return type,
-        // while visit() skips the _feature.
-        var f = this._feature;
-        for (var a : f.arguments())
-          {
-            var rt = ((Feature)a).returnType(); // NYI: Cast!
-            rt.visit(v, outer);
-          }
-        var rt = ((Feature)f).returnType(); // NYI: Cast!
-        rt.visit(v, outer);
-      }
-  }
-
-
   private AbstractFeature functionOrRoutine()
   {
     var f = this._feature == null ? this._call.calledFeature()
                                   : this._feature;
     if (CHECKS) check
-      (Errors.count() > 0 || f != null);
+      (Errors.any() || f != null);
 
     if (f != null)
       {
@@ -409,13 +353,13 @@ public class Function extends ExprWithPos
     var f = this._feature == null ? this._call.calledFeature()
                                   : this._feature;
     if (CHECKS) check
-      (Errors.count() > 0 || f != null);
+      (Errors.any() || f != null);
 
     if (f != null)
       {
         generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                     ? ff.resultTypeForTypeInference(pos(), res, Type.NONE)
-                     : new Type(FuzionConstants.UNIT_NAME));
+                     ? ff.resultTypeForTypeInference(pos(), res, UnresolvedType.NONE)
+                     : new BuiltInType(FuzionConstants.UNIT_NAME));
         for (var a : f.arguments())
           {
             res.resolveTypes(a);
@@ -431,7 +375,7 @@ public class Function extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -443,8 +387,9 @@ public class Function extends ExprWithPos
     else if (this._feature == null)
       {
         var fr = functionOrRoutine();
-        var generics = FormalGenerics.resolve(res, generics(res), outer);
-        _type = fr != null ? new Type(pos(), fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
+        var ug = generics(res);
+        var generics = FormalGenerics.resolve(res, ug, outer);
+        _type = fr != null ? new ResolvedNormalType(generics, ug, null, fr, UnresolvedType.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else
@@ -501,13 +446,13 @@ public class Function extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (Errors.count() == 0)  // avoid null pointer handling in case calledFeature not found etc.
+    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
       {
         if (this._feature == null)
           { /* We have an expression of the form
@@ -539,17 +484,17 @@ public class Function extends ExprWithPos
              *  - calling a feature in a different module
              */
             var actual_args = new List<Actual>();
-            var formal_args = new List<Feature>();
+            var formal_args = new List<AbstractFeature>();
             int argnum = 1;
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
                 actual_args.add(new Actual(new Call(pos(), null, name)));
-                formal_args.add(new Feature(pos(), Visi.LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
+                formal_args.add(new Feature(pos(), Visi.PRIV, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
-            Feature fcall = new Feature(pos(), Visi.PUBLIC,
+            Feature fcall = new Feature(pos(), Visi.PUB,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
@@ -567,18 +512,18 @@ public class Function extends ExprWithPos
               }
             List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
 
-            List<Stmnt> statements = new List<Stmnt>(fcall);
+            List<Expr> expressions = new List<Expr>(fcall);
 
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
-                                           Visi.INVISIBLE,
+                                           Visi.PRIV,
                                            0,
                                            RefType.INSTANCE,
                                            new List<String>(wrapperName),
                                            NO_FEATURES,
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
-                                           new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
+                                           new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
                               call.target(),

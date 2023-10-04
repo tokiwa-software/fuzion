@@ -25,45 +25,59 @@
 
 # thread -- effect that provides concurrent thread
 #
-thread (
-  # the provider this effect uses to spawn threads
-  p Thread_Provider
+public thread (
+  # the handler this effect uses to spawn threads
+  p Thread_Handler
   ) : simple_effect
 is
+
+  # type for a spawned thread
+  #
+  private:public spawned(private id i64) is
+
+    # wait for this thread to finish execution
+    #
+    # NYI it should be made impossible to call this more than once
+    #
+    public join =>
+      fuzion.sys.thread.join0 id
+      _ := thread p
+
 
 
   # spawn a new thread
   #
-  spawn(code ()->unit) =>
-    p.spawn code
+  public spawn(code ()->unit) =>
+    st := p.spawn code
     _ := thread p
+    st
 
 
   type.install_default =>
     (concur.thread default_thread).default
 
 
-  # default concurrency provider
+  # default thread handler
   #
-  type.default_thread : concur.Thread_Provider is
+  type.default_thread : concur.Thread_Handler is
 
     # spawn a new thread using given code
     #
-    spawn(code ()->unit) => fuzion.sys.thread.spawn code
+    spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
 
 
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-thread =>
+public thread =>
   thread.type.install_default
   thread.env
 
 
 # Thread_Provider -- abstract source of concurrency
 #
-Thread_Provider ref is
+private:public Thread_Handler ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) unit is abstract
+  spawn(code ()->unit) concur.thread.spawned is abstract

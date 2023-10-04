@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -293,6 +292,15 @@ public abstract class Value extends ANY
   ArrayData arrayData()
   {
     throw new Error("value "+ this + " of class " + getClass() + " is not an ArrayData");
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
   }
 
 

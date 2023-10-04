@@ -25,13 +25,13 @@
 # effect for manipulating open files
 # T is used to distinguish several open files
 #
-private open(T type, private fd i64, public file_name String) : simple_effect is
+module:public open(T type, private fd i64, public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
   # this might overwrite parts or all of an existing file.
   #
-  write(content Sequence u8) ! io.file.write =>
+  public write(content Sequence u8) ! io.file.write =>
     io.file.write.write fd content.as_array
 
 
@@ -39,8 +39,51 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  read outcome (array u8) ! io.file.read is
+  public read outcome (array u8) ! io.file.read is
     io.file.read.read_file fd
+
+
+  # mmap effect
+  private mmap(data marray u8) : simple_effect is
+
+
+  # shorthand to get the memory mapped file as an array
+  public mmap marray u8
+  pre effect.type.is_installed (io.file.open T).mmap
+  is
+    (io.file.open T).mmap.env.data
+
+
+  # install mmap effect an run code
+  #
+  # note: the offset must be a multiple of the pagesize which usually is 4096, windows 65536?
+  # note: offset+size must not exceed size of file
+  #
+  # example usage:
+  # _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #   io.file.open.mmap (i64 0) (i64 100) ()->
+  #     io.file.open.mmap[99] := 42
+  #
+  public mmap(R type, offset i64, size i64, code ()->R) outcome R
+  pre offset % 4096 = 0 # NYI get real page size instead of 4096.
+  is
+
+    res := array i32 1 (i->0)
+
+    allocated_memory := fuzion.sys.fileio.mmap fd offset size res.internal_array.data
+
+    if res[0] = -1
+      error "mmap failed"
+    else
+      marr := marray u8 size.as_i32 (fuzion.sys.internal_array u8 allocated_memory size.as_i32) unit
+
+      r := mmap marr
+        .go code
+
+      if fuzion.sys.fileio.munmap marr.data.data size = 0
+        r
+      else
+        error "error closing the memory mapped file"
 
 
 
@@ -49,7 +92,7 @@ private open(T type, private fd i64, public file_name String) : simple_effect is
 # for type T from the environment.
 # see `use` on how to use this.
 #
-open(T type) =>
+public open(T type) =>
   (open T).env
 
 
@@ -57,7 +100,7 @@ open(T type) =>
 # unit type used internally by open- and use-
 # short hands which can be used when one does not need
 # to distinguish between several open files.
-private open_unique_type is
+private:public open_unique_type is
 
 
 
@@ -66,6 +109,6 @@ private open_unique_type is
 # from the environment.
 # see `use` on how to use this.
 #
-open =>
+public open =>
   (open open_unique_type).env
 

@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
-import dev.flang.util.Errors;
 
 
 /**
@@ -377,8 +376,8 @@ public class Instance extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     storeNonRef(slot, size, 0);
   }
@@ -417,8 +416,8 @@ public class Instance extends ValueWithClazz
    */
   boolean equalsBitWise(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     return equalsBitWise(slot, size, 0);
   }
@@ -457,6 +456,22 @@ public class Instance extends ValueWithClazz
   Instance instance()
   {
     return this;
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = nonrefs[0];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
   }
 
 

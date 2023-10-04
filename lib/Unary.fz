@@ -28,16 +28,16 @@
 # For unary functions, function composition is possible if the result type of
 # the first function matches the argument type of the second function.
 #
-Unary(T, U type) ref : Function T U is
+public Unary(T, U type) ref : Function T U is
 
 
   # function composition
   #
-  compose(V type, other Unary U V) Unary T V is
+  public compose(V type, other Unary U V) Unary T V is
     v -> Unary.this.call (other v)
 
 
   # function composition (Unicode alias)
   #
-  infix ∘ (V type, other Unary U V) Unary T V is
+  public infix ∘ (V type, other Unary U V) Unary T V is
     compose V other

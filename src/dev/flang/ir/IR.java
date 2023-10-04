@@ -32,21 +32,15 @@ import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
-import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
-import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
-import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
-import dev.flang.ast.Types; // NYI: remove dependency
-import dev.flang.ast.Unbox; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -95,7 +89,8 @@ public class IR extends ANY
     Field,
     Intrinsic,
     Abstract,
-    Choice
+    Choice,
+    Native
   }
 
 
@@ -104,12 +99,10 @@ public class IR extends ANY
     AdrOf,
     Assign,
     Box,
-    Unbox,
     Call,
     Current,
     Comment,
     Const,
-    Dup,
     Match,
     Tag,
     Env,
@@ -158,88 +151,89 @@ public class IR extends ANY
 
 
   /**
-   * Create list of ExprKind from the given statement (and its nested
-   * statements).
+   * Create list of ExprKind from the given expression (and its nested
+   * expressions).
    *
-   * @param s a statement.
+   * @param e a expression.
    *
    * @return list of ExprKind created from s.
    */
-  private List<Object> toStack(Stmnt s)
+  private List<Object> toStack(Expr e)
   {
     List<Object> result = new List<>();
-    toStack(result, s);
+    toStack(result, e);
     return result;
   }
 
 
   /**
-   * Add entries of type ExprKind created from the given statement (and its
-   * nested statements) to list l.
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l.
    *
-   * @param l list of ExprKind that should be extended by s's statements
+   * @param l list of ExprKind that should be extended by s's expressions
    *
-   * @param s a statement.
+   * @param e a expression.
    */
-  protected void toStack(List<Object> l, Stmnt s)
+  protected void toStack(List<Object> l, Expr e)
   {
-    toStack(l, s, false);
+    toStack(l, e, false);
   }
 
 
   /**
-   * Add entries of type ExprKind created from the given statement (and its
-   * nested statements) to list l.  pop the result in case dumpResult==true.
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l.  pop the result in case dumpResult==true.
    *
-   * @param l list of ExprKind that should be extended by s's statements
+   * @param l list of ExprKind that should be extended by s's expressions
    *
-   * @param s a statement.
+   * @param e a expression.
    *
    * @param dumpResult flag indicating that we are not interested in the result.
    */
-  private void toStack(List<Object> l, Stmnt s, boolean dumpResult)
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
     if (PRECONDITIONS) require
       (l != null,
-       s != null);
+       e != null);
 
-    if (s instanceof AbstractAssign a)
+    if (e instanceof AbstractAssign a)
       {
         toStack(l, a._value);
         toStack(l, a._target);
         l.add(a);
       }
-    else if (s instanceof Unbox u)
+    else if (e instanceof Box b)
       {
-        toStack(l, u._adr);
-        if (u._needed)
+        toStack(l, b._value, dumpResult);
+        if (!dumpResult)
           {
-            l.add(u);
+            l.add(b);
           }
       }
-    else if (s instanceof Box b)
+    else if (e instanceof AbstractBlock b)
       {
-        toStack(l, b._value);
-        l.add(b);
-      }
-    else if (s instanceof AbstractBlock b)
-      {
-        // for (var st : b.statements_)  -- not possible since we need index i
-        for (int i=0; i<b._statements.size(); i++)
+        // for (var expr : b.expressions_)  -- not possible since we need index i
+        for (int i=0; i<b._expressions.size(); i++)
           {
-            var st = b._statements.get(i);
-            toStack(l, st, dumpResult || i < b._statements.size()-1);
+            var expr = b._expressions.get(i);
+            toStack(l, expr, dumpResult || i < b._expressions.size()-1);
           }
       }
-    else if (s instanceof AbstractConstant)
+    else if (e instanceof AbstractConstant)
       {
-        l.add(s);
+        if (!dumpResult)
+          {
+            l.add(e);
+          }
       }
-    else if (s instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent)
       {
-        l.add(ExprKind.Current);
+        if (!dumpResult)
+          {
+            l.add(ExprKind.Current);
+          }
       }
-    else if (s instanceof If i)
+    else if (e instanceof If i)
       {
         // if is converted to If, blockId, elseBlockId
         toStack(l, i.cond);
@@ -247,7 +241,7 @@ public class IR extends ANY
         l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
         l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
       }
-    else if (s instanceof AbstractCall c)
+    else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
         for (var a : c.actuals())
@@ -260,7 +254,7 @@ public class IR extends ANY
             l.add(ExprKind.Pop);
           }
       }
-    else if (s instanceof AbstractMatch m)
+    else if (e instanceof AbstractMatch m)
       {
         toStack(l, m.subject());
         l.add(m);
@@ -270,27 +264,29 @@ public class IR extends ANY
             l.add(new NumLiteral(_codeIds.add(caseCode)));
           }
       }
-    else if (s instanceof Tag t)
+    else if (e instanceof Tag t)
       {
-        toStack(l, t._value);
-        l.add(t);
+        toStack(l, t._value, dumpResult);
+        if (!dumpResult)
+          {
+            l.add(t);
+          }
       }
-    else if (s instanceof Env v)
+    else if (e instanceof Env v)
       {
-        l.add(v);
+        if (!dumpResult)
+          {
+            l.add(v);
+          }
       }
-    else if (s instanceof Nop)
+    else if (e instanceof Nop)
       {
       }
-    else if (s instanceof Universe)
+    else if (e instanceof Universe)
       {
-        var un = (Universe) s;
+        var un = (Universe) e;
       }
-    else if (s instanceof InlineArray)
-      {
-        l.add(s);
-      }
-    else if (s instanceof Check c)
+    else if (e instanceof Check c)
       {
         // NYI: Check not supported yet
         //
@@ -298,7 +294,7 @@ public class IR extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+s.getClass()+" in FUIR.toStack");
+        System.err.println("Missing handling of "+e.getClass()+" in FUIR.toStack");
       }
   }
 
@@ -368,10 +364,6 @@ public class IR extends ANY
       {
         result = ExprKind.Box;
       }
-    else if (e instanceof Unbox)
-      {
-        result = ExprKind.Unbox;
-      }
     else if (e instanceof AbstractCall)
       {
         result = ExprKind.Call;
@@ -403,13 +395,13 @@ public class IR extends ANY
 
 
   /**
-   * Get the source code position of statement #ix in given code block.
+   * Get the source code position of expression #ix in given code block.
    *
    * @param c code block index
    *
-   * @param ix index of statement within c
+   * @param ix index of expression within c
    *
-   * @return the source code position of statement #ix in block c.
+   * @return the source code position of expression #ix in block c.
    */
   public SourcePosition codeAtPos(int c, int ix)
   {
@@ -433,7 +425,7 @@ public class IR extends ANY
 
 
   /**
-   * For a match statement, get the number of cases
+   * For a match expression, get the number of cases
    *
    * @param c code block containing the match
    *
@@ -455,6 +447,24 @@ public class IR extends ANY
         result = m.cases().size();
       }
     return result;
+  }
+
+
+  /**
+   * Get the code for a comment expression.  This is used for debugging.
+   *
+   * @param c code block containing the comment
+   *
+   * @param ix index of the comment
+   */
+  public String comment(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Comment);
+
+    return (String) _codeIds.get(c).get(ix);
   }
 
 }

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -46,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractCase extends ANY
+public abstract class AbstractCase extends ANY implements HasSourcePosition
 {
 
 
@@ -56,11 +57,11 @@ public abstract class AbstractCase extends ANY
   /**
    * The sourcecode position of this case, used for error messages.
    */
-  final SourcePosition _pos;
+  protected final SourcePosition _pos;
 
 
   /**
-   * Counter for a unique id for this case statement. This is used to store data
+   * Counter for a unique id for this case expression. This is used to store data
    * in the runtime clazz for this case.
    */
   public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
@@ -112,7 +113,7 @@ public abstract class AbstractCase extends ANY
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -142,14 +143,14 @@ public abstract class AbstractCase extends ANY
 
 
   /**
-   * visit all the statements within this Case.
+   * visit all the expressions within this Case.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    code().visitStatements(v);
+    code().visitExpressions(v);
     v.action(this);
   }
 

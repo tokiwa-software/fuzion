@@ -28,7 +28,6 @@ package dev.flang.util;
 
 import java.awt.Desktop;
 
-import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,7 +62,7 @@ public class Profiler extends ANY
 
 
   /**
-   * Command to be exucuted to create flame graph
+   * Command to be excecuted to create flame graph
    */
   private static String FLAMEGRAPH_PL = "flamegraph.pl";
 
@@ -99,7 +98,7 @@ public class Profiler extends ANY
 
 
   /**
-   * In case we collectFrameGraphData(), this collects the unique lines in
+   * In case we collectFlameGraphData(), this collects the unique lines in
    * temporal order
    *
    * The lines consist of a ";"-separated string of "class.method" strings
@@ -109,7 +108,7 @@ public class Profiler extends ANY
 
 
   /**
-   * In case we collectFrameGraphData(), this collects the counts for each line
+   * In case we collectFlameGraphData(), this collects the counts for each line
    * in unique order.
    *
    * The lines consist of a ";"-separated string of "class.method" strings
@@ -119,8 +118,8 @@ public class Profiler extends ANY
 
 
   /**
-   * Desktop instance to display framegraph results.  Since the flame graph is
-   * created in the shutdown hook and desktop itself cannto be created during
+   * Desktop instance to display flamegraph results.  Since the flame graph is
+   * created in the shutdown hook and desktop itself can not be created during
    * shutdown, we create this early.
    */
   static Desktop _desktop;
@@ -135,13 +134,13 @@ public class Profiler extends ANY
    *
    *   main;abc;def 1345
    *
-   * to be preocessed by flame graph.pl, or classic profile output showing a
-   * single line for each source code that occured during a sample sorted by
+   * to be processed by flame graph.pl, or classic profile output showing a
+   * single line for each source code that occurred during a sample sorted by
    * frequency.
    *
-   * @return ture to collect frame graph data, false to collect classic data.
+   * @return true to collect flame graph data, false to collect classic data.
    */
-  static boolean collectFrameGraphData()
+  static boolean collectFlameGraphData()
   {
     return _file == null || !_file.endsWith(".prof");
   }
@@ -171,7 +170,7 @@ public class Profiler extends ANY
             t.getState() == Thread.State.RUNNABLE)
           {
             var st = t.getStackTrace();
-            if (!collectFrameGraphData())
+            if (!collectFlameGraphData())
               {
                 var duplicates = new HashSet<StackTraceElement>();
                 for (var s : st)
@@ -260,7 +259,7 @@ public class Profiler extends ANY
             {
               _running_ = false;
             }
-          if (!collectFrameGraphData())
+          if (!collectFlameGraphData())
             {
               StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
               var c = new Comparator<>()

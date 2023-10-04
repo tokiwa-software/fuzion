@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
-import java.nio.file.Path;
 
 import dev.flang.parser.Lexer;
 

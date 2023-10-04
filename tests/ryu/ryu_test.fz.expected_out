@@ -1,3 +1,4 @@
+ryū test f64
 scientific, rounding mode conservative: 0.0
 scientific, rounding mode even: 0.0
 full, rounding mode conservative: 0.0
@@ -127,4 +128,95 @@ scientific, rounding mode conservative: 9.409340012568248E18
 scientific, rounding mode even: 9.409340012568248E18
 full, rounding mode conservative: 9409340012568248000.0
 full, rounding mode even: 9409340012568248000.0
+--
+ryū test f32
+scientific, rounding mode conservative: 0.0
+scientific, rounding mode even: 0.0
+full, rounding mode conservative: 0.0
+full, rounding mode even: 0.0
+--
+scientific, rounding mode conservative: -0.0
+scientific, rounding mode even: -0.0
+full, rounding mode conservative: -0.0
+full, rounding mode even: -0.0
+--
+scientific, rounding mode conservative: Infinity
+scientific, rounding mode even: Infinity
+full, rounding mode conservative: Infinity
+full, rounding mode even: Infinity
+--
+scientific, rounding mode conservative: -Infinity
+scientific, rounding mode even: -Infinity
+full, rounding mode conservative: -Infinity
+full, rounding mode even: -Infinity
+--
+scientific, rounding mode conservative: NaN
+scientific, rounding mode even: NaN
+full, rounding mode conservative: NaN
+full, rounding mode even: NaN
+--
+scientific, rounding mode conservative: 3.0E-1
+scientific, rounding mode even: 3.0E-1
+full, rounding mode conservative: 0.3
+full, rounding mode even: 0.3
+--
+scientific, rounding mode conservative: 1.0E0
+scientific, rounding mode even: 1.0E0
+full, rounding mode conservative: 1.0
+full, rounding mode even: 1.0
+--
+scientific, rounding mode conservative: 1.5E0
+scientific, rounding mode even: 1.5E0
+full, rounding mode conservative: 1.5
+full, rounding mode even: 1.5
+--
+scientific, rounding mode conservative: 3.1415927E0
+scientific, rounding mode even: 3.1415927E0
+full, rounding mode conservative: 3.1415927
+full, rounding mode even: 3.1415927
+--
+scientific, rounding mode conservative: 1.8531502E21
+scientific, rounding mode even: 1.8531502E21
+full, rounding mode conservative: 1853150200000000000000.0
+full, rounding mode even: 1853150200000000000000.0
+--
+scientific, rounding mode conservative: -3.3477275E33
+scientific, rounding mode even: -3.3477275E33
+full, rounding mode conservative: -3347727500000000000000000000000000.0
+full, rounding mode even: -3347727500000000000000000000000000.0
+--
+scientific, rounding mode conservative: 1.9430376E16
+scientific, rounding mode even: 1.9430376E16
+full, rounding mode conservative: 19430376000000000.0
+full, rounding mode even: 19430376000000000.0
+--
+scientific, rounding mode conservative: -6.9741825E19
+scientific, rounding mode even: -6.9741825E19
+full, rounding mode conservative: -69741825000000000000.0
+full, rounding mode even: -69741825000000000000.0
+--
+scientific, rounding mode conservative: 4.381605E18
+scientific, rounding mode even: 4.381605E18
+full, rounding mode conservative: 4381605000000000000.0
+full, rounding mode even: 4381605000000000000.0
+--
+scientific, rounding mode conservative: -2.1098088E16
+scientific, rounding mode even: -2.1098088E16
+full, rounding mode conservative: -21098088000000000.0
+full, rounding mode even: -21098088000000000.0
+--
+scientific, rounding mode conservative: 9.060802E15
+scientific, rounding mode even: 9.060802E15
+full, rounding mode conservative: 9060802000000000.0
+full, rounding mode even: 9060802000000000.0
+--
+scientific, rounding mode conservative: 4.708356E18
+scientific, rounding mode even: 4.708356E18
+full, rounding mode conservative: 4708356000000000000.0
+full, rounding mode even: 4708356000000000000.0
+--
+scientific, rounding mode conservative: 9.40934E18
+scientific, rounding mode even: 9.40934E18
+full, rounding mode conservative: 9409340000000000000.0
+full, rounding mode even: 9409340000000000000.0
 --

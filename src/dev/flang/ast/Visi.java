@@ -29,43 +29,53 @@ package dev.flang.ast;
 import dev.flang.util.ANY;
 
 /**
- * Visi store the visibility of a Feature
+ * Visi store the visibility of a Feature and the type it is defining
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public enum Visi
 {
 
-  /**
-   * visibility for anonymous features
+  /*
+   * visibility not explicitly stated
    */
-  INVISIBLE("invisible"),
+  UNSPECIFIED("unspecified"),
 
 
-  /**
-   * default visibility: visible to all inner classes of outer class
-   * of declaring class
+  /*
+   * visible only in the current file
    */
-  LOCAL("local"),
+  PRIV("private"),
 
 
-  /**
-   * private visibility: visible to declaring class and all its inner
-   * classes
+  /*
+   * callable only in the current file, type visible in module
    */
-  PRIVATE("private"),
+  PRIVMOD("private:module"),
 
 
-  /**
-   * protected visibility: visible to all heirs of declaring class
+  /*
+   * callable only in the current file, type publicly visible
    */
-  CHILDREN("children"),
+  PRIVPUB("private:public"),
 
 
-  /**
-   * public visibility: visible to all classes
+  /*
+   * callable only in the module, type visible in module
    */
-  PUBLIC("public");
+  MOD("module"),
+
+
+  /*
+   * callable only within the module, type publicly visible
+   */
+  MODPUB("module:public"),
+
+
+  /*
+   * visible everywhere
+   */
+  PUB("public");
 
 
 
@@ -89,12 +99,55 @@ public enum Visi
   {
     if (ANY.PRECONDITIONS) ANY.require
       (0 <= ordinal,
-        ordinal < values().length);
+        ordinal < values().length,
+        ordinal != UNSPECIFIED.ordinal());
 
     if (ANY.CHECKS) ANY.check
       (values()[ordinal].ordinal() == ordinal);
 
     return values()[ordinal];
+  }
+
+  /**
+   * @return The visibility for features/calls encoded in this.
+   */
+  public Visi featureVisibility()
+  {
+    if (this.ordinal() <= PRIVPUB.ordinal())
+      {
+        return PRIV;
+      }
+    else if (this.ordinal() <= MODPUB.ordinal())
+      {
+        return MOD;
+      }
+    return PUB;
+  }
+
+
+  /**
+   * @return The visibility for types encoded in this.
+   * PRIV => PRIV, PRIVMOD => MOD, PRIVPUB => PUB, etc.
+   */
+  public Visi typeVisibility()
+  {
+    return switch (this)
+      {
+        case UNSPECIFIED, PRIV    -> Visi.PRIV;
+        case MOD, PRIVMOD         -> Visi.MOD;
+        case PRIVPUB, MODPUB, PUB -> Visi.PUB;
+        default -> throw new Error("unhandled case in Visi.typeVisibility");
+      };
+  }
+
+
+  /**
+   * Does this visibility explicitly specify a different visibility for the type?
+   * @return
+   */
+  public boolean definesTypeVisibility()
+  {
+    return this == Visi.PRIVMOD || this == Visi.PRIVPUB || this == Visi.MODPUB;
   }
 
 }

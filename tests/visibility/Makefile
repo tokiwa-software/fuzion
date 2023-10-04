@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = visibility
+FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk

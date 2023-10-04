@@ -231,8 +231,6 @@ public class CFG extends ANY
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
-    put("fuzion.sys.out.write"           , (cfg, cl) -> { } );
-    put("fuzion.sys.err.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.delete"       , (cfg, cl) -> { } );
@@ -244,9 +242,13 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.close"        , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.seek"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
-    put("fuzion.sys.out.flush"           , (cfg, cl) -> { } );
-    put("fuzion.sys.err.flush"           , (cfg, cl) -> { } );
-    put("fuzion.sys.stdin.next_byte"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.flush"        , (cfg, cl) -> { } );
+    put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
+    put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
+    put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
+
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
     put("i32.prefix -°"                  , (cfg, cl) -> { } );
@@ -396,17 +398,21 @@ public class CFG extends ANY
     put("f64.infix %"                    , (cfg, cl) -> { } );
     put("f32.infix **"                   , (cfg, cl) -> { } );
     put("f64.infix **"                   , (cfg, cl) -> { } );
-    put("f32.type.equality"              , (cfg, cl) -> { } );
-    put("f64.type.equality"              , (cfg, cl) -> { } );
-    put("f32.type.lteq"                  , (cfg, cl) -> { } );
-    put("f64.type.lteq"                  , (cfg, cl) -> { } );
+    put("f32.infix ="                    , (cfg, cl) -> { } );
+    put("f64.infix ="                    , (cfg, cl) -> { } );
+    put("f32.infix <="                   , (cfg, cl) -> { } );
+    put("f64.infix <="                   , (cfg, cl) -> { } );
+    put("f32.infix >="                   , (cfg, cl) -> { } );
+    put("f64.infix >="                   , (cfg, cl) -> { } );
+    put("f32.infix <"                    , (cfg, cl) -> { } );
+    put("f64.infix <"                    , (cfg, cl) -> { } );
+    put("f32.infix >"                    , (cfg, cl) -> { } );
+    put("f64.infix >"                    , (cfg, cl) -> { } );
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
     put("f32.cast_to_u32"                , (cfg, cl) -> { } );
     put("f64.cast_to_u64"                , (cfg, cl) -> { } );
-    put("f32.as_string"                  , (cfg, cl) -> { } );
-    put("f64.as_string"                  , (cfg, cl) -> { } );
 
     put("f32.type.min_exp"               , (cfg, cl) -> { } );
     put("f32.type.max_exp"               , (cfg, cl) -> { } );
@@ -438,8 +444,6 @@ public class CFG extends ANY
     put("f64.type.acos"                  , (cfg, cl) -> { } );
     put("f32.type.atan"                  , (cfg, cl) -> { } );
     put("f64.type.atan"                  , (cfg, cl) -> { } );
-    put("f32.type.atan2"                 , (cfg, cl) -> { } );
-    put("f64.type.atan2"                 , (cfg, cl) -> { } );
     put("f32.type.sinh"                  , (cfg, cl) -> { } );
     put("f64.type.sinh"                  , (cfg, cl) -> { } );
     put("f32.type.cosh"                  , (cfg, cl) -> { } );
@@ -447,7 +451,6 @@ public class CFG extends ANY
     put("f32.type.tanh"                  , (cfg, cl) -> { } );
     put("f64.type.tanh"                  , (cfg, cl) -> { } );
 
-    put("Any.hash_code"                  , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
@@ -458,11 +461,14 @@ public class CFG extends ANY
     put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.misc.unique_id"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
     put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
+    put("fuzion.sys.net.get_peer_address", (cfg, cl) -> { } );
+    put("fuzion.sys.net.get_peer_port"   , (cfg, cl) -> { } );
     put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
     put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
@@ -519,7 +525,7 @@ public class CFG extends ANY
     for (int i = 0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
-        createCallGraphForStmnt(cl, c, i, s);
+        createCallGraphForExpr(cl, c, i, s);
       }
   }
 
@@ -536,14 +542,13 @@ public class CFG extends ANY
    *
    * @param s the FUIR.ExprKind of the statement to analyze
    */
-  void createCallGraphForStmnt(int cl, int c, int i, FUIR.ExprKind s)
+  void createCallGraphForExpr(int cl, int c, int i, FUIR.ExprKind s)
   {
     switch (s)
       {
       case AdrOf : break;
       case Assign: break;
       case Box   : break;
-      case Unbox : break;
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
@@ -575,7 +580,6 @@ public class CFG extends ANY
           addEffect(cl, ecl);
           break;
         }
-      case Dup: break;
       case Pop: break;
       default:
         {

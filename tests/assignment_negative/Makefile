@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = illegal_assignment
+FUZION_OPTIONS = -XenableSetKeyword
 include ../negative.mk

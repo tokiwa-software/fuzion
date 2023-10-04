@@ -36,6 +36,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.UnicodeData;
 
 
@@ -176,6 +177,7 @@ public class Lexer extends SourceFile
     t_abstract("abstract"),
     t_intrinsic("intrinsic"),
     t_intrinsic_constructor("intrinsic_constructor"),
+    t_native("native"),
     t_for("for"),
     t_in("in"),
     t_do("do"),
@@ -201,9 +203,8 @@ public class Lexer extends SourceFile
     t_ternary("ternary"),
     t_index("index"),
     t_set("set"),
-    t_export("export"),
     t_private("private"),
-    t_protected("protected"),
+    t_module("module"),
     t_public("public"),
     t_of("of"),
     t_type("type"),
@@ -461,9 +462,9 @@ public class Lexer extends SourceFile
 
   /**
    * Token at this pos will be returned by current() even if its indentaion is
-   * at <= _minIndent. If set to the first token of a statement that sets
+   * at <= _minIndent. If set to the first token of a expression that sets
    * _minIndent, this ensures that we can still parse the first token of this
-   * statement.
+   * expression.
    */
   private int _minIndentStartPos = -1;
 
@@ -803,13 +804,12 @@ public class Lexer extends SourceFile
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
-    var startsIndent = tokenPos() == _minIndentStartPos;
     var result = skip(false, start) && relaxLineAndSpaceLimit(c);
     if (result)
       {
         var nl = line();
         result = relaxLineAndSpaceLimit(() -> {
-            return skip(startsIndent , end);
+            return skip(true , end);
           });
         var sl = sameLine(-1);
         if (sl == ol)
@@ -945,9 +945,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * The start and end position of the current token as a SourceRange instance
+   */
+  SourceRange tokenSourceRange()
+  {
+    return sourceRange(tokenPos(), tokenEndPos());
+  }
+
+
+  /**
    * Position of the first byte in source file after the current token.
    */
-  private int tokenEndPos()
+  int tokenEndPos()
   {
     return bytePos();
   }
@@ -2128,8 +2137,24 @@ PIPE        : "|"
    */
   boolean isOperator(int codePoint)
   {
+    return isOperator(false, codePoint);
+  }
+
+
+  /**
+   * Check if the current token is the given single-code point operator, i.e,
+   * check that current() is Token.t_op and the operator is op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator we want to see
+   *
+   * @return true iff the current token is the given operator.
+   */
+  boolean isOperator(boolean atMinIndent, int codePoint)
+  {
     return
-      current() == Token.t_op &&
+      current(atMinIndent) == Token.t_op &&
       codePointAt(_tokenPos) == codePoint &&
       tokenEndPos() - tokenPos() == 1;
   }
@@ -2145,9 +2170,25 @@ PIPE        : "|"
    */
   boolean isOperator(String op)
   {
+    return isOperator(false, op);
+  }
+
+
+  /**
+   * Check if the current token is the given operator, i.e, check that current()
+   * is Token.t_op and the operator is op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator we want to see
+   *
+   * @return true iff the current token is the given operator.
+   */
+  boolean isOperator(boolean atMinIndent, String op)
+  {
     return
-      current() == Token.t_op &&
-      operator().equals(op);
+      current(atMinIndent) == Token.t_op &&
+      operator(atMinIndent).equals(op);
   }
 
 
@@ -2182,8 +2223,19 @@ PIPE        : "|"
    */
   String operator()
   {
+    return operator(false);
+  }
+
+
+  /**
+   * @param atMinIndent
+   *
+   * Return the actual operator of the current t_op token as a string.
+   */
+  String operator(boolean atMinIndent)
+  {
     if (PRECONDITIONS) require
-      (current() == Token.t_op);
+      (current(atMinIndent) == Token.t_op);
 
     return tokenAsString();
   }
@@ -2735,7 +2787,7 @@ PIPE        : "|"
             {
             case K_LBRACE:
               _braceCount++;
-              return Token.t_lbrace;
+              return Token.t_undefined;
             case K_RBRACE:
               _braceCount--;
               if (_stringLexer._braceCount > 0)
@@ -3040,8 +3092,23 @@ QUESTION    : "?"
    */
   boolean skip(String op)
   {
+    return skip(false, op);
+  }
+
+
+  /**
+   * Parse specific t_op.
+   *
+   * @param atMinIndent
+   *
+   * @param op the operator
+   *
+   * @return true iff an t_op op was found and skipped.
+   */
+  boolean skip(boolean atMinIndent, String op)
+  {
     boolean result = false;
-    if (isOperator(op))
+    if (isOperator(atMinIndent, op))
       {
         next();
         result = true;

@@ -44,11 +44,17 @@ ENV = \
 int:
 	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
+jvm:
+	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
 c:
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+
+record_jvm:
+	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
 
 record_c:
 	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)

@@ -29,11 +29,10 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
-import dev.flang.ast.Types; // NYI: remove dependency!
+// NYI: remove dependency!
+// NYI: remove dependency!
 
 import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
 import dev.flang.air.FeatureAndActuals;
 
 import dev.flang.util.ANY;

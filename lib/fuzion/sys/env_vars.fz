@@ -25,7 +25,7 @@
 
 # fuzion.sys.env_vars -- low-level feature to access environment variables
 #
-private env_vars is
+module env_vars is
 
 
   # intrinsic to check if env var with given name exists
@@ -51,13 +51,13 @@ private env_vars is
 
   # check if env var with given name exists
   #
-  has(s String) bool is
+  module has(s String) bool is
     has0 (c_string s)
 
 
   # intrinsic to get env var with given name
   #
-  get(s String) option String is
+  module get(s String) option String is
     a := c_string s
     if has0 a then
       get0 a
@@ -67,7 +67,7 @@ private env_vars is
   # set the value of the env var with given name to the given new value
   # will overwrite the current value, if it is set
   # NYI: #627: rename to set once set keyword is removed
-  set1(name String, val String) outcome unit is
+  module set1(name String, val String) outcome unit is
     k := c_string name
     v := c_string val
 
@@ -78,7 +78,7 @@ private env_vars is
 
   # unset the env var with the given name
   # note this returns success (unit) if the given env var did not exist
-  unset(name String) outcome unit is
+  module unset(name String) outcome unit is
     k := c_string name
 
     if unset0 k

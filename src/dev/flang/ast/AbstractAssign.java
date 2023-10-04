@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 
@@ -36,7 +35,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractAssign extends ANY implements Stmnt
+public abstract class AbstractAssign extends Expr
 {
 
 
@@ -50,7 +49,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
 
 
   /**
-   * Field that is assigned by this assign statement. initialized
+   * Field that is assigned by this assign expression. initialized
    * during init() phase.
    */
   public AbstractFeature _assignedField;
@@ -107,7 +106,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -129,16 +128,16 @@ public abstract class AbstractAssign extends ANY implements Stmnt
 
 
   /**
-   * visit all the statements within this Assign.
+   * visit all the expressions within this Assign.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    _value.visitStatements(v);
-    _target.visitStatements(v);
-    Stmnt.super.visitStatements(v);
+    _value.visitExpressions(v);
+    _target.visitExpressions(v);
+    super.visitExpressions(v);
   }
 
 
@@ -147,7 +146,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
@@ -160,10 +159,10 @@ public abstract class AbstractAssign extends ANY implements Stmnt
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure statement.
+   * replace a Destructure, this refers to the Destructure expression.
    */
   void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {
@@ -186,9 +185,9 @@ public abstract class AbstractAssign extends ANY implements Stmnt
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
-    if (resultTypeKnown())
+    if (resultTypeKnown(res))
       {
         _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
       }
@@ -196,13 +195,34 @@ public abstract class AbstractAssign extends ANY implements Stmnt
 
 
   /**
+   * During type inference: Wrap value that is assigned to lazy type variable
+   * into Functions.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void wrapValueInLazy(Resolution res, AbstractFeature outer)
+  {
+    if (CHECKS) check
+      (_assignedField != Types.f_ERROR || Errors.any());
+
+    if (resultTypeKnown(res))
+      {
+        _value = _value.wrapInLazy(res, outer, _assignedField.resultType());
+      }
+  }
+
+
+  /**
    * @return Is the result type of this field already known?
    */
-  private boolean resultTypeKnown()
+  private boolean resultTypeKnown(Resolution res)
   {
     return  _assignedField != Types.f_ERROR
          && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES)
-         && _assignedField.resultTypeRaw() != null;
+         && _assignedField.resultTypeRaw(res) != null;
   }
 
 
@@ -215,7 +235,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
   public void box(AbstractFeature outer)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
@@ -227,12 +247,12 @@ public abstract class AbstractAssign extends ANY implements Stmnt
   /**
    * check the types in this assignment
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes(Resolution res)
   {
     if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
+      (_assignedField != Types.f_ERROR || Errors.any());
 
     var f = _assignedField;
     if (f != Types.f_ERROR)
@@ -240,7 +260,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt
         var frmlT = f.resultType();
 
         if (CHECKS) check
-          (Errors.count() > 0 || frmlT != Types.t_ERROR);
+          (Errors.any() || frmlT != Types.t_ERROR);
 
         if (!frmlT.isAssignableFrom(_value.type()))
           {
@@ -248,13 +268,13 @@ public abstract class AbstractAssign extends ANY implements Stmnt
           }
 
         if (CHECKS) check
-          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.count() > 0);
+          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.any());
       }
   }
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
@@ -262,6 +282,15 @@ public abstract class AbstractAssign extends ANY implements Stmnt
     return false;
   }
 
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
 
   /**
    * toString

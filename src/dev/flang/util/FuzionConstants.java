@@ -42,6 +42,20 @@ public class FuzionConstants extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * String used in the dummy Expr Expr.NO_VALUE.
+   */
+  public static final String NO_VALUE_STRING = "**no value**";
+
+  /**
+   * Names of Java properties accepted by fz command:
+   */
+  public static final String FUZION_DEBUG_LEVEL_PROPERTY = "fuzion.debugLevel";
+  public static final String FUZION_ENABLE_UNSAFE_INTRINSICS_PROPERTY = "fuzion.enableUnsafeIntrinsics";
+  public static final String FUZION_HOME_PROPERTY = "fuzion.home";
+  public static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
+
+
   /*----------------------  special feature names  ----------------------*/
 
 
@@ -108,16 +122,9 @@ public class FuzionConstants extends ANY
 
   /**
    * Artificial name of implicitly declared result field in case the assignment
-   * to result is implicitly from the last statement's value.
+   * to result is implicitly from the last expression's value.
    */
   public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_PREFIX + "result";
-
-
-  /**
-   * Artificial field added to instances of choice.fz if needed to
-   * disambiguate different (value) types.
-   */
-  public static final String CHOICE_TAG_NAME = INTERNAL_NAME_PREFIX + "tag";
 
 
   /**
@@ -152,12 +159,12 @@ public class FuzionConstants extends ANY
    * converted to
    *
    *   if a then
-   *     #stmtResult123 := 0
+   *     #exprResult123 := 0
    *   else
-   *     #stmtResult123 := 1
-   *   x := #stmtResult123
+   *     #exprResult123 := 1
+   *   x := #exprResult123
    */
-  public static final String STATEMENT_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "stmtResult";
+  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
 
 
   /**
@@ -232,8 +239,8 @@ public class FuzionConstants extends ANY
   /**
    * feature kind value for constructor routines
    */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 7;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 8;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 8;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 9;
 
   /**
    * The bits of feature kind that encode the kind.

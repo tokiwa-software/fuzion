@@ -402,3 +402,44 @@ test_issue1610 =>
     say "case 4mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
 
   case4mut_ref_field_field
+
+
+  case_inh1 =>
+
+    # f defines a heir `h` of `a.g` such that the outer ref refers to `a`, and instance
+    # o f `h` is returned
+
+    f =>
+      h : a.g is
+      h
+
+    a is
+      e := 1234567890
+      g is
+        v => e
+
+    say "case inh1: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case_inh1
+
+/* NYI: #1642 this case commented out since target in inheritance call currently cannot be a field:
+
+  case_inh2_field =>
+
+    # f defines a heir `h` of `a.g` such that the outer ref refers to `a`, and instance
+    # o f `h` is returned.  The value of `a` is passed via a field.
+
+    f =>
+      x := a 1234567890
+      h : x.g is
+      h
+
+    a(e i32) is
+      g is
+        v => e
+
+    say "case inh2_field: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+
+  case_inh2_field
+
+*/

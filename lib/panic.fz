@@ -25,9 +25,9 @@
 
 # panic -- effect that terminates a computation in panic
 #
-panic (
-  # the provider this effect uses to panic
-  p Panic_Provider,
+public panic (
+  # the handler this effect uses to panic
+  p Panic_Handler,
   _ unit
   ) : simple_effect
 is
@@ -40,12 +40,12 @@ is
 
 
   type.install_default =>
-    (panic default_panic_provider unit).default
+    (panic default_panic_handler unit).default
 
 
-  # default panic provider using io.err and exit with return code 1
+  # default panic handler using io.err and exit with return code 1
   #
-  type.default_panic_provider : Panic_Provider is
+  type.default_panic_handler : Panic_Handler is
 
     # panic with the given message and exit with return code 1
     #
@@ -55,9 +55,9 @@ is
 
 
 # panic with no argument returns panic.env, the currently installed
-# panic provider.
+# panic handler.
 #
-panic =>
+public panic =>
   panic.type.install_default
   panic.env
 
@@ -65,12 +65,12 @@ panic =>
 # panic with a msg argument calls panic.panic msg, i.e., it uses the
 # current panic effect to panic with the given message.
 #
-panic(msg String) => panic.panic msg
+public panic(msg String) => panic.panic msg
 
 
-# Panic_Provider -- abstract panic
+# Panic_Handler -- abstract panic
 #
-Panic_Provider ref is
+public Panic_Handler ref is
 
   # panic with the given message
   #
@@ -82,10 +82,10 @@ Panic_Provider ref is
   #
   do_panic(msg String) unit is abstract
 
-  # Install this panic provider using a new instance of panic an run
+  # Install this panic handler using a new instance of panic and run
   # `code` on it. In case of an abort, return `def()` (NYI: def should be
   # removed and the result of do_panic should be returned instead).
   #
-  use(R type, code, def ()->R) =>
-    p := panic Panic_Provider.this unit
+  public use(R type, code, def ()->R) =>
+    p := panic Panic_Handler.this unit
     p.run code unit->def()

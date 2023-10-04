@@ -68,7 +68,22 @@ public class Assign extends AbstractAssign
    *
    * @param v the value assigned to field with name n
    */
-  public Assign(SourcePosition pos, String n, Expr v)
+  public Assign(SourcePosition pos, ParsedName n, Expr v)
+  {
+    this(pos, n._name, v);
+  }
+
+
+  /**
+   * Constructor used be the parser
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param n the name of the assigned field
+   *
+   * @param v the value assigned to field with name n
+   */
+  Assign(SourcePosition pos, String n, Expr v)
   {
     super(v);
 
@@ -93,14 +108,14 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Assign(SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
     super(f, new This(pos, outer, f.outer()), v);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        outer.state().atLeast(Feature.State.RESOLVED_TYPES),
        f != null);
 
@@ -122,14 +137,14 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
     super(f, This.thiz(res, pos, outer, f.outer()), v);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        outer.state() == Feature.State.RESOLVING_TYPES   ||
        outer.state() == Feature.State.RESOLVED_TYPES    ||
        outer.state() == Feature.State.TYPES_INFERENCING ||
@@ -149,7 +164,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -162,10 +177,10 @@ public class Assign extends AbstractAssign
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure statement.
+   * replace a Destructure, this refers to the Destructure expression.
    */
   void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {
@@ -175,7 +190,8 @@ public class Assign extends AbstractAssign
         var fo = FeatureAndOuter.filter(res._module.lookup(outer,
                                                            _name,
                                                            destructure == null ? this : destructure,
-                                                           true),
+                                                           true,
+                                                           false),
                                         pos(), FeatureAndOuter.Operation.ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
@@ -185,13 +201,13 @@ public class Assign extends AbstractAssign
         else
           {
             AstErrors.assignmentTargetNotFound(this, outer);
-            _target = Expr.NO_VALUE;
+            _target = AbstractCall.ERROR_VALUE;
             f = Types.f_ERROR;
           }
         _assignedField = f;
       }
     if      (f == Types.f_ERROR          ) { if (CHECKS) check
-                                               (Errors.count() > 0);
+                                               (Errors.any());
                                              /* ignore */
                                            }
     else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }

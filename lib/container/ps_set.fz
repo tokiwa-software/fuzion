@@ -31,12 +31,12 @@
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
 # instance of ps_set is performance critical. If the resulting set's size n is a
-# power of 2, this will trigger the worst-case addition time resutling in
+# power of 2, this will trigger the worst-case addition time resulting in
 # O(m*n log² n) for adding an element m times.
 #
-ps_set
-  (K type : has_total_order,
-   psm ref ps_map K unit,  # NYI: #167: 'ref' due to lack of 'like this'
+private:public ps_set
+  (K type : property.orderable,
+   psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
   : Set K
@@ -45,12 +45,12 @@ is
 
   # number of elements in this set
   #
-  size => psm.size
+  public size => psm.size
 
 
   # list representation of values in this set
   #
-  redef as_list => psm.keys.as_list
+  public redef as_list => psm.keys.as_list
 
 
   # print contents of this set
@@ -60,11 +60,21 @@ is
 
   # add new element k to this set.
   #
-  add (k K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
+  # NYI: Resolve duality of `add0` (that results in `ps_set`) and `add` (that
+  #      results in `Set`). Maybe `Set.add` should result in `Set.this.type`,
+  #      so we do not need `add0`?
+  #
+  fixed add0 (k K) ps_set K is
     if has k
       ps_set.this
     else
       ps_set K (psm.add k unit) unit
+
+
+  # add new element k to this set.
+  #
+  public add (k K) Set K is
+    add0 k
 
 
   # create a sorted array from the elements of this set
@@ -74,46 +84,45 @@ is
 
   # check if an element equal to given element k is part of this set
   #
-  has (k K) => psm.has k
+  public has (k K) => psm.has k
 
 
   # get the lowest element in this set
   #
-  min => psm.min
+  public min => psm.min
 
 
   # get the highest element in this set
   #
-  max => psm.max
+  public max => psm.max
 
 
   # union of two ps_sets
   #
-  infix ∪ (other ref ps_set K) => ps_set K (psm ∪ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
+  public infix ∪ (other ps_set.this) => ps_set K (psm ∪ other.psm) unit
 
 
   # intersection of two ps_sets
-  infix ∩ (other ref ps_set K) =>
+  public infix ∩ (other ps_set.this) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
-    (ps_sets K).empty.add_all s
+    (ps_set K).type.empty.add_all s
 
 
   # add all elements of the given Sequence to this set
   #
-  add_all (s Sequence K) ref ps_set K is  # NYI: #167: 'ref' due to lack of 'like this'
-    this_ref ref ps_set K := ps_set.this
-    s.reduce this_ref ((r,k) -> r.add k)
+  public fixed add_all (s Sequence K) ps_set K is
+    s.reduce (ps_set K) ps_set.this ((r,k) -> r.add0 k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  redef size_option option i32 is size
+  public redef size_option option i32 is size
 
 
   # does this set contain the given value?
   #
-  contains (e K) bool is has e
+  public contains (e K) bool is has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
@@ -121,38 +130,26 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty ps_set
   #
-  empty => (ps_sets K).empty
+  public fixed type.empty container.ps_set K is
+    container.ps_set K (container.ps_map K unit).type.empty unit
 
 
   # monoid of ps_set with infix ∪ operation.
   #
-  union : Monoid (ps_set K) is
-    redef infix ∙ (a, b ps_set K) => a ∪ b
-    redef e => empty
+  public type.union : Monoid (container.ps_set K) is
+    redef infix ∙ (a, b container.ps_set K) => a ∪ b
+    redef e => (container.ps_set K).type.empty
 
 
   # equality
   #
-  fixed type.equality(a, b container.ps_set K) bool is
+  public fixed type.equality(a, b container.ps_set K) bool is
     # NYI: a bit expensive
     (a ∪ b).size = a.size
 
 
-# ps_sets -- unit type feature declaring features related to ps_set
-#
-# NYI: move to ps_set.type
-#
-ps_sets(K type : has_total_order) is
-
-  # ps_set -- a partially sorted set based on ps_map
+  # initialize a partially sorted set from one Sequence
   #
-  # This feature creates an empty instance of ps_set.
+  # This feature creates a pre-initialized instance of ps_set.
   #
-  empty => ps_set K (ps_maps K unit).empty unit
-
-
-# ps_set -- routine to initialize a partially sorted set from one Sequence
-#
-# This feature creates a pre-initialized instance of ps_set.
-#
-ps_set(K type : has_total_order, vs Sequence K) => (ps_sets K).empty.add_all vs
+  public type.from_sequence(vs Sequence K) => (container.ps_set K).type.empty.add_all vs

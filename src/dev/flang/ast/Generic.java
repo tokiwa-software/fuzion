@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -37,7 +36,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Generic extends ANY
+public class Generic extends ANY implements Comparable<Generic>
 {
 
 
@@ -48,6 +47,12 @@ public class Generic extends ANY
    * The type parameter this generic corresponds to
    */
   private AbstractFeature _typeParameter;
+
+
+  /**
+   * Cached result of type().
+   */
+  private ResolvedParametricType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -103,23 +108,40 @@ public class Generic extends ANY
 
 
   /**
-   * constraint
+   * constraint returns the constraint type of this generic, ANY if no
+   * constraint.
    *
-   * @return
+   * @return the constraint.
    */
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (_typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES));
 
-    AbstractType result = _typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES)
-      ? _typeParameter.resultType()
-      : ((Feature) _typeParameter).returnType().functionReturnType();
+    var result = _typeParameter.resultType();
 
     if (POSTCONDITIONS) ensure
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * constraint resolves the types of the type parameter and then returns the
+   * resolved constraint using constraint():
+   *
+   * @param res the resolution instance.
+   *
+   * @return the resolved constraint.
+   */
+  public AbstractType constraint(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    res.resolveTypes(_typeParameter);
+    return constraint();
   }
 
 
@@ -140,7 +162,7 @@ public class Generic extends ANY
    */
   boolean isThisTypeInTypeFeature()
   {
-    return typeParameter().outer().isTypeFeature() && index() == 0;
+    return typeParameter().state().atLeast(Feature.State.FINDING_DECLARATIONS) && typeParameter().outer().isTypeFeature() && index() == 0;
   }
 
 
@@ -189,12 +211,12 @@ public class Generic extends ANY
   public AbstractType replace(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
-      (!isOpen(),
-       Errors.count() > 0 || formalGenerics().sizeMatches(actuals));
+      (Errors.any() || !isOpen(),
+       Errors.any() || formalGenerics().sizeMatches(actuals));
 
     int i = index();
     if (CHECKS) check
-      (Errors.count() > 0 || actuals.size() > i);
+      (Errors.any() || actuals.size() > i);
     return actuals.size() > i ? actuals.get(i) : Types.t_ERROR;
   }
 
@@ -216,7 +238,7 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (isOpen(),
-      Errors.count() >= 0 || formalGenerics().sizeMatches(actuals));
+      formalGenerics().sizeMatches(actuals));
 
     if (CHECKS) check
       (formalGenerics().list.getLast() == this);
@@ -237,6 +259,19 @@ public class Generic extends ANY
 
 
   /**
+   * Create a type from this Generic.
+   */
+  public ResolvedParametricType type()
+  {
+    if (_type == null)
+      {
+        _type = new ResolvedParametricType(this);
+      }
+    return _type;
+  }
+
+
+  /**
    * toString
    *
    * @return
@@ -244,6 +279,15 @@ public class Generic extends ANY
   public String toString()
   {
     return name();
+  }
+
+
+  /**
+   * Compare this Generic to other
+   */
+  public int compareTo(Generic other)
+  {
+    return _typeParameter.compareTo(other._typeParameter);
   }
 
 

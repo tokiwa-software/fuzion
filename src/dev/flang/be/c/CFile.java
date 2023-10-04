@@ -200,9 +200,8 @@ public class CFile extends ANY
    */
   public void unindent()
   {
-    if (PRECONDITIONS)
-      require
-        (_c_indentation > 0);
+    if (PRECONDITIONS) require
+      (_c_indentation > 0);
 
     _c_indentation --;
   }

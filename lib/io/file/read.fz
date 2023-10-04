@@ -25,7 +25,7 @@
 
 # read -- effect providing byte reading operations from files
 #
-private read(ro Read_Operation) : simple_effect is
+public read(ro Read_Handler) : simple_effect is
 
 
   # how much of a file do we read at a time, in bytes
@@ -37,7 +37,7 @@ private read(ro Read_Operation) : simple_effect is
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  read_file(fd i64) outcome (array u8) is
+  public read_file(fd i64) outcome (array u8) is
     empty array u8 := []
     content := read_file fd empty
 
@@ -70,24 +70,24 @@ private read(ro Read_Operation) : simple_effect is
 
   # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
   #
-  type.default_read_operation : io.file.Read_Operation is
+  type.default_read_handler : io.file.Read_Handler is
     read(fd i64, n u64) =>
       fuzion.sys.fileio.read fd n
 
 
   # install default effect io.file.read
   type.install_default =>
-    (io.file.read default_read_operation).default
+    (io.file.read default_read_handler).default
 
 
 # short-hand for accessing read effect in current environment
 #
-read =>
+public read =>
   read.type.install_default
   read.env
 
 
 # reference to the reading operations that could take place
 #
-Read_Operation ref is
+private:public Read_Handler ref is
   read(fd i64, n u64) outcome (array u8) is abstract

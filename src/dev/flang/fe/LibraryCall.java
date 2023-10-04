@@ -126,7 +126,7 @@ public abstract class LibraryCall extends AbstractCall
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -137,11 +137,6 @@ public abstract class LibraryCall extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    var i = actualTypeParameters().listIterator();
-    while (i.hasNext())
-      {
-        i.set(i.next().visit(v, outer));
-      }
     var j = actuals().listIterator();
     while (j.hasNext())
       {

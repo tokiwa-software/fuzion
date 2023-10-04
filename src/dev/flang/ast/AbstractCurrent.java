@@ -79,7 +79,7 @@ public abstract class AbstractCurrent extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -90,7 +90,7 @@ public abstract class AbstractCurrent extends Expr
    */
   public AbstractCurrent visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _type = _type instanceof Type tt ? tt.visit(v, outer) : _type;
+    _type = _type.visit(v, outer);
     return this;
   }
 

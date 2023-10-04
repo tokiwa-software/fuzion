@@ -27,7 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import dev.flang.util.ANY;
-import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -42,7 +42,7 @@ public class Operator extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  public final SourcePosition pos;
+  public final SourceRange pos;
 
   public final String text;
 
@@ -65,7 +65,7 @@ public class Operator extends ANY
    * @param whiteSpaceAfter is there any white space, comments, etc. between
    * this operator and the next symbol?
    */
-  public Operator(SourcePosition pos,
+  public Operator(SourceRange pos,
                   String text,
                   boolean whiteSpaceBefore,
                   boolean whiteSpaceAfter)

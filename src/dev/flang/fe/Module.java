@@ -31,18 +31,17 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Consts;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourceFile;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 
@@ -82,14 +81,6 @@ public abstract class Module extends ANY
      * is collected during RESOLVING_DECLARATIONS.
      */
     Set<AbstractFeature> _heirs = new TreeSet<>();
-
-
-    /**
-     * All features that have been found to directly redefine this feature. This
-     * does not include redefinitions of redefinitions.  This set is collected
-     * during RESOLVING_DECLARATIONS.
-     */
-    Set<AbstractFeature> _redefinitions = null;
 
     /**
      * Cached result of SourceModule.allInnerAndInheritedFeatures().
@@ -201,7 +192,7 @@ public abstract class Module extends ANY
       {
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
+          (Errors.any() || cf != null);
 
         if (cf != null && (cf.isConstructor() || cf.isChoice()))
           {
@@ -278,6 +269,77 @@ public abstract class Module extends ANY
 
 
   /**
+   * Is type defined by feature `af` visible in file `usedIn`?
+   * If `af` does not define a type, result is false.
+   *
+   * @param usedIn
+   * @param af
+   * @return
+   */
+  protected boolean typeVisible(SourceFile usedIn, AbstractFeature af)
+  {
+    return typeVisible(usedIn, af, false);
+  }
+
+
+  /**
+   * Is type defined by feature `af` visible in file `usedIn`?
+   * If `af` does not define a type, result is false.
+   *
+   * @param usedIn
+   * @param af
+   * @param ignoreDefinesType leave checking whether `af` defines a type to the caller
+   * @return
+   */
+  protected boolean typeVisible(SourceFile usedIn, AbstractFeature af, boolean ignoreDefinesType)
+  {
+    var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
+    var definedIn = af.pos()._sourceFile;
+    var v = af.visibility();
+    var definesType = af.definesType() || ignoreDefinesType;
+
+    return definesType && (usedIn.sameAs(definedIn)
+      || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
+      || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
+  }
+
+
+  /**
+   * Is feature `af` visible in file `usedIn`?
+   * @param usedIn
+   * @param af
+   * @return
+   */
+  protected boolean featureVisible(SourceFile usedIn, AbstractFeature af)
+  {
+    var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
+    var definedIn = af.pos()._sourceFile;
+    var v = af.visibility();
+
+          // in same file
+    return ((usedIn.sameAs(definedIn)
+          // at least module visible and in same module
+          || v.ordinal() >= Visi.MOD.ordinal() && this == m
+          // publicly visible
+          || v == Visi.PUB));
+  }
+
+
+  /**
+   * Is `a` visible for feature `b`?
+   *
+   * @param a
+   * @param b
+   * @return
+   */
+  protected boolean visibleFor(AbstractFeature a, AbstractFeature b)
+  {
+    var usedIn = b.pos()._sourceFile;
+    return featureVisible(usedIn, a) || typeVisible(usedIn, a);
+  }
+
+
+  /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
    *
@@ -321,7 +383,7 @@ public abstract class Module extends ANY
                     // * same as previous, but there is some syntax for 'D' to
                     //   chose 'a.[B].f' or 'a.[C].f'.
                     //
-                    if (existing != null)
+                    if (existing != null && f != existing)
                       {
                         AstErrors.duplicateFeatureDeclaration(f.pos(), outer, s.get(fn));
                       }

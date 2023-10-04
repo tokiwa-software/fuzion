@@ -59,7 +59,7 @@ public fuzion.java is
   #
   public Java_Object(private Java_Ref Any) ref
   is
-    is_null bool is intrinsic
+    public is_null bool is intrinsic
 
     # dummy feature to make sure Java_Object.type exists. This is required since
     # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
@@ -100,7 +100,7 @@ public fuzion.java is
   #
   public Java_String(private redef Java_Ref Any) ref : String, Java_Object Java_Ref
   is
-    utf8 => (java_string_to_string Java_String.this).utf8
+    public utf8 => (java_string_to_string Java_String.this).utf8
 
 
   # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').

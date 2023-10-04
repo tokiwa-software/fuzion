@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
-import dev.flang.ast.Visi;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
@@ -231,8 +230,7 @@ public class Docs
     return af.resultType().equals(Types.t_ADDRESS)
       || af.featureName().isInternal()
       || af.featureName().isNameless()
-      || (!ignoreVisibility && af.visibility() == Visi.INVISIBLE)
-      || (!ignoreVisibility && af.visibility() == Visi.PRIVATE)
+      || !(ignoreVisibility || Util.isVisible(af))
       || af.isTypeFeature()
       || Util.isArgument(af)
       || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)

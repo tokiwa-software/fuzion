@@ -24,15 +24,17 @@
 # -----------------------------------------------------------------------
 
 # effect for getting the current date_time
-private now (p () -> time.date_time) : simple_effect is
+public now (p () -> time.date_time) : simple_effect is
 
-  get =>
+  # get current date_time
+  #
+  public get =>
     res := p()
     replace
     res
 
 
-  # default provider for now effect.
+  # default handler for now effect.
   # returns the current date_time
   # the system is giving us.
   #
@@ -48,8 +50,8 @@ private now (p () -> time.date_time) : simple_effect is
 
 # get the current date_time.
 # Uses currently installed time.now effect
-# or installs the default_now provider
+# or installs the default_now handler
 #
-now =>
+public now =>
   now.type.install_default
   now.env

@@ -25,7 +25,7 @@
 
 # fuzion.sys.misc -- miscellaneous system intrinsics
 #
-private misc is
+module misc is
 
 
   # intrinsic to get a unique id > 0
@@ -37,4 +37,4 @@ private misc is
   # would take more than 500 years before we run out of values
   # (2^64/10^9/3600/24/365.25).
   #
-  private unique_id u64 is intrinsic
+  module unique_id u64 is intrinsic

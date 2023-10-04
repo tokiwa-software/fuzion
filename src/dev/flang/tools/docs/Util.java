@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Visi;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
@@ -114,6 +115,18 @@ public class Util
         System.exit(1);
         return "";
       }
+  }
+
+
+  /**
+   * Is the feature or the type it is defining visible outside of its module?
+   * @param af
+   */
+  public static boolean isVisible(AbstractFeature af)
+  {
+    return af.visibility() == Visi.PRIVPUB
+        || af.visibility() == Visi.MODPUB
+        || af.visibility() == Visi.PUB;
   }
 
 }

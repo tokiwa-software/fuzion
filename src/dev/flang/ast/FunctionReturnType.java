@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.SourcePosition;
 
 /**
  * FunctionReturnType represents the type of the value returned by a function.
@@ -42,8 +43,14 @@ public class FunctionReturnType extends ReturnType
   /**
    * The parsed type.
    */
-  AbstractType type;
+  private AbstractType type;
 
+
+  /**
+   * When available, the source code position of the unresolved return
+   * type. SourcePosition.builtIn if not available.
+   */
+  private SourcePosition _pos;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -56,6 +63,7 @@ public class FunctionReturnType extends ReturnType
   public FunctionReturnType(AbstractType t)
   {
     type = t;
+    _pos = t instanceof UnresolvedType ut ? ut.pos() : SourcePosition.builtIn;
   }
 
 
@@ -86,7 +94,21 @@ public class FunctionReturnType extends ReturnType
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * For a function, the source code position of the return type.
+   *
+   * @return the function return type source position.
+   */
+  public SourcePosition functionReturnTypePos()
+  {
+    if (PRECONDITIONS) require
+      (!isConstructorType());
+
+    return _pos;
+  }
+
+
+  /**
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -97,6 +119,28 @@ public class FunctionReturnType extends ReturnType
   {
     type = type.visit(v, outer);
   }
+
+
+  /**
+   * Resolve the type this function returns. This is needed to resolve free
+   * types used in an argument type, which change the number of type parameters
+   * in a call.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the outer feature, which is the argument this is the result
+   * type of.
+   */
+  void resolveArgumentType(Resolution res, Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.isArgument(),
+       this == outer.returnType());
+
+    res.resolveDeclarations(outer);
+    type = type.resolve(res, outer);
+  }
+
 
   /**
    * toString

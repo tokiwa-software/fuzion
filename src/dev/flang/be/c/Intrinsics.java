@@ -120,23 +120,21 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
-                  eq = CExpr.eq(tmp, expected);
+                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
+                                    CExpr.call("__atomic_compare_exchange", new List<>(f.adrOf(), tmp.adrOf(), new_value.adrOf(), new CIdent("false"), new CIdent("__ATOMIC_SEQ_CST"), new CIdent("__ATOMIC_SEQ_CST"))),
+                                    tmp.ret());
                 }
               else
                 {
                   eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
+                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                      CStmnt.iff(eq,
+                                                                 f.assign(new_value)))),
+                                    tmp.ret());
                 }
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
-              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
-                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                  CStmnt.iff(eq,
-                                                             f.assign(new_value)))),
-                                tmp.ret());
             }
           return code;
         });
@@ -163,27 +161,42 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 )    )
+                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
-                  eq = CExpr.eq(tmp, expected);
+                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
+                                    CStmnt.iff(CExpr.call("__atomic_compare_exchange",
+                                                          new List<>(
+                                                            f.adrOf(),
+                                                            tmp.adrOf(),
+                                                            new_value.adrOf(),
+                                                            new CIdent("false"),
+                                                            new CIdent("__ATOMIC_SEQ_CST"),
+                                                            new CIdent("__ATOMIC_SEQ_CST"))),
+                                      c._names.FZ_TRUE.ret()),
+                                    c._names.FZ_FALSE.ret());
                 }
               else
                 {
-                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
+                      c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                    {
+                      eq = CExpr.eq(tmp, expected);
+                    }
+                  else
+                    {
+                      eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                    }
+
+                  code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
+                                    locked(CNames.GLOBAL_LOCK,
+                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                                      CStmnt.iff(eq,
+                                                                 CStmnt.seq(
+                                                                  f.assign(new_value),
+                                                                  res.assign(new CIdent("true"))
+                                                                  )))),
+                                    CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
                 }
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
-              code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
-                                locked(CNames.GLOBAL_LOCK,
-                                       CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                  CStmnt.iff(eq,
-                                                             CStmnt.seq(
-                                                              f.assign(new_value),
-                                                              res.assign(new CIdent("true"))
-                                                              )))),
-                                CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
             }
           return code;
         });
@@ -217,15 +230,30 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           CStmnt code;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
-            { // A unit-type read should be at least a load/store fence. For now, we enter the lock
-              code = locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+            {
+              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+            }
+          else if (c._fuir.clazzIsRef(rc) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(
+                CExpr.decl(c._types.clazz(rc), tmp),
+                CExpr.call("__atomic_load", new List<>(f.adrOf(), tmp.adrOf(), new CIdent("__ATOMIC_SEQ_CST"))),
+                tmp.ret());
             }
           else
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
                                 locked(CNames.GLOBAL_LOCK, tmp.assign(f)),
                                 tmp.ret());
             }
@@ -238,30 +266,41 @@ public class Intrinsics extends ANY
           var v = c._fuir.lookupAtomicValue(ac);
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
-          var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
-            { // A unit-type write should at least be a load/store fence. For new, we enter the lock:
-              code = CStmnt.seq(locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY));
+            {
+              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+            }
+          else if (c._fuir.clazzIsRef(rc) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CExpr.call("__atomic_store", new List<>(f.adrOf(), new_value.adrOf(), new CIdent("__ATOMIC_SEQ_CST")));
             }
           else
             {
               var f = c.accessField(outer, ac, v);
-              // NYI: Use __sync_val_compare_and_swap() or similar primitive
-              // where available and avoid using locked() in these cases.
               code = locked(CNames.GLOBAL_LOCK, f.assign(new_value));
             }
           return code;
         });
 
     put("concur.util.loadFence", (c,cl,outer,in) ->
-        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
-          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        {
+          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
         });
 
     put("concur.util.storeFence", (c,cl,outer,in) ->
-        { // NYI: This is overkill, we use global lock to enforce memory fence, should use more efficient fence!
-          return locked(CNames.GLOBAL_LOCK, CStmnt.EMPTY);
+        {
+          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
         });
 
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
@@ -277,56 +316,33 @@ public class Intrinsics extends ANY
                             tmp.castTo(c._types.clazz(rc)).ret());
         });
     put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
-    put("fuzion.sys.out.write" ,
-        "fuzion.sys.err.write" , (c,cl,outer,in) ->
-        {
-          // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
-          return CExpr.call("fwrite",
-                              new List<>(
-                                A0.castTo("void *"),
-                                CExpr.sizeOfType("char"),
-                                A1,
-                                outOrErr(in)
-                              ));
-        });
     put("fuzion.sys.fileio.read"         , (c,cl,outer,in) ->
         {
-          var readingIdent = new CIdent("reading");
-          var resultIdent = new CIdent("result");
+          var result = new CIdent("result");
           var zero = new CIdent("0");
           return CStmnt.seq(
-            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
-            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("fzT_1i64", resultIdent, readingIdent.castTo("fzT_1i64")),
-            CExpr.iff(
-              CExpr.notEq(readingIdent, A2.castTo("size_t")),
-              CStmnt.seq(
-                CExpr.iff(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(readingIdent.castTo("fzT_1i64"))),
-                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(CExpr.int64const(-1))),
-                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
-            resultIdent.ret());
+            CExpr.decl("int", result, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
+            CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
+              CExpr.int32const(-2).ret()),
+            CExpr.iff(result.eq(zero).and(CExpr.notEq(CExpr.call("feof", new List<>(A0.castTo("FILE *"))), zero)),
+              CExpr.int32const(-1).ret()),
+            result.castTo("fzT_1i32").ret()
+          );
         });
     put("fuzion.sys.fileio.write"        , (c,cl,outer,in) ->
         {
-          var writingIdent = new CIdent("writing");
-          var flushingIdent = new CIdent("flushing");
-          var resultIdent = new CIdent("result");
-          var zero = new CIdent("0");
           return CStmnt.seq(
-            CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))),
-            CExpr.decl("size_t", writingIdent, CExpr.call("fwrite", new List<>(A1, CExpr.int8const(1), A2, A0.castTo("FILE *")))),
-            CExpr.decl("fzT_1i8", resultIdent, CExpr.int8const(0)),
-            CExpr.iff(
-              CExpr.notEq(writingIdent, A2.castTo("size_t")),
-              CStmnt.seq(
-                CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), zero),
-                  resultIdent.assign(CExpr.int8const(-1))),
-                CExpr.call("clearerr", new List<>(A0.castTo("FILE *"))))),
-            CExpr.decl("bool", flushingIdent, CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).eq(CExpr.int8const(0))),
-            CExpr.iff(flushingIdent.not(), resultIdent.assign(errno.castTo("fzT_1i8"))),
-            resultIdent.ret());
+            CExpr.call("fwrite",
+                            new List<>(
+                              A1.castTo("void *"),      // the data
+                              CExpr.sizeOfType("char"), //
+                              A2,                       // how many bytes to write
+                              A0.castTo("FILE *")       // the file descriptor
+                            )),
+            CExpr.iff(CExpr.notEq(CExpr.call("ferror", new List<>(A0.castTo("FILE *"))), new CIdent("0")),
+              CExpr.int32const(-1).ret()),
+            CExpr.int32const(0).ret()
+          );
         });
     put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
         {
@@ -433,6 +449,7 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(0)),
                   CStmnt.seq(
+                    // open file for reading, binary mode
                     filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
@@ -442,7 +459,10 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(1)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("wb")))),
+                    // open file read-, write-, binary-mode. creates new file if not exists.
+                    // if file is not empty, any writes will overwrite the contents in the file.
+                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
+                    CExpr.call("fseek", new List<>(filePointer, CExpr.int32const(0), new CIdent("SEEK_SET"))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -451,7 +471,9 @@ public class Intrinsics extends ANY
                 CStmnt.caze(
                   new List<>(CExpr.int8const(2)),
                   CStmnt.seq(
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("ab")))),
+                    // open file read-, write-, binary-mode. creates new file if not exists.
+                    // writes happen at end of file.
+                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
                     CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
                       CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
                     CStmnt.BREAK
@@ -499,24 +521,26 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.sys.out.flush"      ,
-        "fuzion.sys.err.flush"      , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
-    put("fuzion.sys.stdin.next_byte", (c,cl,outer,in) ->
-        {
-          var cIdent = new CIdent("c");
-          return CStmnt.seq(
-            CExpr.decl("int", cIdent, CExpr.call("getchar", new List<>())),
-            CExpr.iff(cIdent.eq(new CIdent("EOF")),
-              CStmnt.seq(
-                // -1 EOF
-                CExpr.iff(CExpr.call("feof", new List<>(CExpr.ident("stdin"))), CExpr.int32const(-1).ret()),
-                // -2 some other error
-                CExpr.int32const(-2).ret()
-              )
-            ),
-            cIdent.castTo("fzT_1i32").ret()
-          );
-        });
+
+    put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
+      A0.castTo("FILE * "),   // file
+      A1.castTo("off_t"),     // offset
+      A2.castTo("size_t"),    // size
+      A3.castTo("int *")      // int[1] contains success=0 or error=-1
+    )).ret());
+    put("fuzion.sys.fileio.munmap", (c,cl,outer,in) -> CExpr.call("fzE_munmap", new List<CExpr>(
+      A0.castTo("void *"),    // address
+      A1.castTo("size_t")     // size
+    )).ret());
+
+    put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
+      CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
+    put("fuzion.sys.stdin.stdin0"      , (c,cl,outer,in) ->
+      new CIdent("stdin").castTo("fzT_1i64").ret());
+    put("fuzion.sys.out.stdout"      , (c,cl,outer,in) ->
+      new CIdent("stdout").castTo("fzT_1i64").ret());
+    put("fuzion.sys.err.stderr"      , (c,cl,outer,in) ->
+      new CIdent("stderr").castTo("fzT_1i64").ret());
 
         /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
@@ -670,10 +694,16 @@ public class Intrinsics extends ANY
         "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
     put("f32.infix **"         ,
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
-    put("f32.type.equality"    ,
-        "f64.type.equality"    , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.type.lteq"        ,
-        "f64.type.lteq"        , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix ="          ,
+        "f64.infix ="          , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix <="         ,
+        "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >="         ,
+        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix <"          ,
+        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.infix >"          ,
+        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->
@@ -689,14 +719,6 @@ public class Intrinsics extends ANY
         });
     put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
     put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
-    put("f32.as_string"        ,
-        "f64.as_string"        , (c,cl,outer,in) ->
-        {
-          var res = new CIdent("res");
-          var rc = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(c.floatToConstString(outer, res),
-                            res.castTo(c._types.clazz(rc)).ret());
-        });
 
     /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
      * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
@@ -737,8 +759,6 @@ public class Intrinsics extends ANY
     put("f64.type.acos"        , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
     put("f32.type.atan"        , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
     put("f64.type.atan"        , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
-    put("f32.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2f", new List<>(A0, A1)).ret());
-    put("f64.type.atan2"       , (c,cl,outer,in) -> CExpr.call("atan2",  new List<>(A0, A1)).ret());
     put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
     put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
     put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
@@ -746,14 +766,6 @@ public class Intrinsics extends ANY
     put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.hash_code"        , (c,cl,outer,in) ->
-        {
-          var or = c._fuir.clazzOuterRef(cl);
-          var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
-            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hash_code relies on non-compacting GC
-            : CExpr.int32const(42);  // NYI: This implementation of hash_code is stupid
-          return hc.ret();
-        });
     put("Any.as_string"        , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
@@ -818,15 +830,14 @@ public class Intrinsics extends ANY
                             c._names.FZ_FALSE.ret());
         });
      put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
-         {
-           var last_id= new CIdent("last_id");
-           return CStmnt.seq(CStmnt.decl("static",
-                                         c._types.scalar(FUIR.SpecialClazzes.c_u64),
-                                         last_id,
-                                         CExpr.uint64const(0)),
-                             last_id.assign(last_id.add(CExpr.uint64const(1))),
-                             last_id.ret());
-         });
+        {
+          var last_id = new CIdent("last_id");
+          return CStmnt.seq(CStmnt.decl("static",
+                                        CTypes.scalar(FUIR.SpecialClazzes.c_u64),
+                                        last_id,
+                                        CExpr.uint64const(0)),
+                            CExpr.call("__atomic_add_fetch", new List<>(last_id.adrOf(), CExpr.uint64const(1), new CIdent("__ATOMIC_SEQ_CST"))).ret());
+        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -859,7 +870,8 @@ public class Intrinsics extends ANY
                                                                                    arg))),
                                 CExpr.iff(res.ne(CExpr.int32const(0)),
                                           CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+                                pt.castTo("int64_t").ret());
               // NYI: free(pt)!
             }
           else
@@ -867,6 +879,12 @@ public class Intrinsics extends ANY
               return CStmnt.EMPTY;
             }
         });
+    put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
+    {
+      return CStmnt.seq(
+        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */))
+      );
+    });
     put("fuzion.std.nano_time", (c,cl,outer,in) ->
         {
           var result = new CIdent("result");
@@ -941,7 +959,15 @@ public class Intrinsics extends ANY
       A3.castTo("char *"),    // host
       A4.castTo("char *"),    // port
       A5.castTo("int64_t *")  // result (err or descriptor)
-  )).ret());
+    )).ret());
+
+    put("fuzion.sys.net.get_peer_address", (c,cl,outer,in) ->
+      CExpr.call("fzE_get_peer_address", new List<>(A0.castTo("int"), A1.castTo("void *"))).castTo("fzT_1i32").ret()
+    );
+
+    put("fuzion.sys.net.get_peer_port", (c,cl,outer,in) ->
+      CExpr.call("fzE_get_peer_port", new List<>(A0.castTo("int"))).castTo("fzT_1u16").ret()
+    );
 
     put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
       A0.castTo("int"),    // socket descriptor
@@ -1096,22 +1122,6 @@ public class Intrinsics extends ANY
 
 
   /**
-   * Get the proper output file handle 'stdout' or 'stderr' depending on the
-   * prefix of the intrinsic feature name in.
-   *
-   * @param in name of an intrinsic feature in fuzion.sys.out or fuzion.sys.err.
-   *
-   * @return CIdent of 'stdout' or 'stderr'
-   */
-  private static CIdent outOrErr(String in)
-  {
-    if      (in.startsWith("fuzion.sys.out.")) { return new CIdent("stdout"); }
-    else if (in.startsWith("fuzion.sys.err.")) { return new CIdent("stderr"); }
-    else                                       { throw new Error("outOrErr called on "+in); }
-  }
-
-
-  /**
    * Create code for intrinsic feature
    *
    * @param c the C backend
@@ -1129,9 +1139,10 @@ public class Intrinsics extends ANY
 
     var in = c._fuir.clazzIntrinsicName(cl);
     var cg = _intrinsics_.get(in);
+    var result = CStmnt.EMPTY;
     if (cg != null)
       {
-        return cg.get(c, cl, outer, in);
+        result = cg.get(c, cl, outer, in);
       }
     else
       {
@@ -1139,19 +1150,21 @@ public class Intrinsics extends ANY
         if (at >= 0)
           {
             // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            return CStmnt.EMPTY;
+            result = CStmnt.EMPTY;
           }
         else
           {
             var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
             Errors.warning(msg);
-            return CStmnt.seq(CExpr.call("fprintf",
-                                         new List<>(new CIdent("stderr"),
-                                                    CExpr.string("*** error: NYI: %s\n"),
-                                                    CExpr.string(msg))),
-                              CExpr.call("exit", new List<>(CExpr.int32const(1))));
+            result = CStmnt.seq(CExpr.call("fprintf",
+                                           new List<>(new CIdent("stderr"),
+                                                      CExpr.string("*** error: NYI: %s\n"),
+                                                      CExpr.string(msg))),
+                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
           }
       }
+
+    return result;
   }
 
 
@@ -1176,8 +1189,8 @@ public class Intrinsics extends ANY
   static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, FUIR.SpecialClazzes unsigned, FUIR.SpecialClazzes signed)
   {
     // C type
-    var ut = c._types.scalar(unsigned);
-    var st = c._types.scalar(signed  );
+    var ut = CTypes.scalar(unsigned);
+    var st = CTypes.scalar(signed  );
 
     // unsigned versions of a and b
     var au = a.castTo(ut);

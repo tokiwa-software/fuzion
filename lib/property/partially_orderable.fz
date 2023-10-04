@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature partially_orderable
+#
+# -----------------------------------------------------------------------
+
+# partially_orderable -- feature for immutable values that have an infix <=
+# predicate that defines a partial order
+#
+# features inheriting from partially_orderable define a partial order of their
+# values
+#
+# NYI: the compiler should check that features inheriting from this are
+# actually immutable.
+#
+public partially_orderable : property.equatable
+
+/* NYI: quantor intrinsics not supported yet:
+
+  inv
+    analysis: quantor.for_all  T     fun(a       T) => (a <= b),                # reflexivity
+    analysis: quantor.for_all3 T T   fun(a, b    T) => (a <= b <= a) : (a = b)  # antisymmetry
+    analysis: quantor.for_all3 T T T fun(a, b, c T) => (a <= b <= c) : (a <= c) # transitivity
+*/
+
+is
+
+
+  # does a come before b or is equal to b?
+  #
+  public type.lteq(a, b partially_orderable.this) bool is abstract
+
+  # equality check for immutable values
+  #
+  public fixed type.equality(a, b partially_orderable.this) bool is
+    (a ≤ b) && (b ≤ a)

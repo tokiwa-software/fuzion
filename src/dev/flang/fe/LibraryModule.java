@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
-import dev.flang.ast.Type;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.ir.IR;
@@ -441,14 +441,14 @@ public class LibraryModule extends Module
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
+            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
           }
         else
           {
             if (CHECKS) check
               (k >= 0);
             var feature = libraryFeature(typeFeature(at));
-            var generics = Type.NONE;
+            var generics = UnresolvedType.NONE;
             if (k > 0)
               {
                 var i = typeActualGenericsPos(at);
@@ -462,7 +462,7 @@ public class LibraryModule extends Module
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, DUMMY_POS, feature,
+            result = new NormalType(this, at, feature,
                                     typeValRefOrThis(at),
                                     generics, outer);
           }
@@ -1429,10 +1429,9 @@ Expression
    | true     | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7
    | hasPos   | 1      | int           | source position: index in this file's SourceFiles section, 0 for builtIn pos
    | k==Add   | 1      | Assign        | assignment
-   | k==Unb   | 1      | Unbox         | unbox expression
    | k==Con   | 1      | Constant      | constant
    | k==Cal   | 1      | Call          | feature call
-   | k==Mat   | 1      | Match         | match statement
+   | k==Mat   | 1      | Match         | match expression
    | k==Tag   | 1      | Tag           | tag expression
    | k==Env   | 1      | Env           | env expression
 |====
@@ -1450,13 +1449,11 @@ Expression
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Unb | 1      | Unbox         | unbox expression                              |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Cal | 1      | Call          | feature call                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Mat | 1      | Match         | match statement                               |
+   *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1501,7 +1498,6 @@ Expression
     return switch (k)
       {
       case Assign  -> assignNextPos(eAt);
-      case Unbox   -> unboxNextPos (eAt);
       case Box     -> eAt;
       case Const   -> constNextPos(eAt);
       case Current -> eAt;
@@ -1561,73 +1557,6 @@ Assign
       expressionKindRaw(at-5) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
 
     return assignFieldPos(at) + 4;
-  }
-
-
-  /*
---asciidoc--
-
-Unbox
-^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.2+| true     | 1      | Type          | result type
-              | 1      | bool          | needed flag (NYI: What is this? remove?)
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Unbox                                                                           |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | result type                                   |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int unboxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType unboxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return type(unboxTypePos(at));
-  }
-  int unboxNeededPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return typeNextPos(unboxTypePos(at));
-  }
-  boolean unboxNeeded(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return data().get(unboxNeededPos(at)) != 0;
-  }
-  int unboxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  IR.ExprKind.Unbox.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Unbox.ordinal() | 0x80)     );
-
-    return unboxNeededPos(at) + 1;
   }
 
 

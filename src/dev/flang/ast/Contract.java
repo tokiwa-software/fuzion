@@ -90,7 +90,7 @@ public class Contract
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -108,17 +108,17 @@ public class Contract
 
 
   /**
-   * visit all the statements within this Contract.
+   * visit all the expressions within this Contract.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     if (this != EMPTY_CONTRACT)
       {
-        for (Cond c: req) { c.visitStatements(v); }
-        for (Cond c: ens) { c.visitStatements(v); }
+        for (Cond c: req) { c.visitExpressions(v); }
+        for (Cond c: ens) { c.visitExpressions(v); }
       }
   }
 

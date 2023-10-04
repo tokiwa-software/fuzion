@@ -1,1 +1,1 @@
-bla => "String.bla"
+module bla => "String.bla"
