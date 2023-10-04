@@ -67,7 +67,7 @@ import dev.flang.util.FuzionOptions;
  * 4. after inheritance resolution for a feature f, add it to the set of
  *    features to be type resolved.
  *
- * 5. As long as there are features to be inheritance resolved, got to step
+ * 5. As long as there are features to be inheritance resolved, go to step
  *    2. Otherwise, take the first feature of the list of features to be
  *    resolved for declarations.
  *
@@ -76,11 +76,11 @@ import dev.flang.util.FuzionOptions;
  *    features to the set of features to be resolved for inheritance. Schedule f
  *    for type resolution.
  *
- * 7. As long as there are features to be declaration resolved, got to step
+ * 7. As long as there are features to be declaration resolved, go to step
  *    6. Otherwise, take the first feature of the list of features to be
  *    resolved for types.
  *
- * 8. Type resolution for a feature f: For all expressions and statements in f's
+ * 8. Type resolution for a feature f: For all expressions and expressions in f's
  *    inheritance clause, contract, and implementation, determine the static
  *    type of the expression. Were needed, perform type inference. Schedule f
  *    for syntactic sugar resolution.
@@ -90,7 +90,7 @@ import dev.flang.util.FuzionOptions;
  *    features to be syntactic sugar resolved.
  *
  * 10. Syntactic sugar resolution of a feature f: For all expressions and
- *     statements in f's inheritance clause, contract, and implementation,
+ *     expressions in f's inheritance clause, contract, and implementation,
  *     resolve syntactic sugar, e.g., by replacing anonymous inner functions by
  *     declaration of corresponding inner features. Add (f,<>) to the list of
  *     features to be searched for runtime types to be layouted.
@@ -101,7 +101,7 @@ import dev.flang.util.FuzionOptions;
  *     for runtime types to be layouted.
  *
  * 10. Searching for runtime types for a feature f with actual generics G: For
- *     all expressions and statements in f's inheritance clause, contract, and
+ *     all expressions and expressions in f's inheritance clause, contract, and
  *     implementation, find declarations and calls to features f1 with actual
  *     generic arguments G1. Add all found (f1,G1) to the set of runtime types
  *     to be layouted.
@@ -404,7 +404,7 @@ public class Resolution extends ANY
         Feature f = forCheckTypes2.removeFirst();
         f.checkTypes1and2(this);
       }
-    else if (false && Errors.count() > 0)  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
+    else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
       {
         // The following phases should not reveal any new errors and will assume
         // correct input.  So if there were any errors, let's give up at this
@@ -462,39 +462,23 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || af.state().atLeast(Feature.State.RESOLVED_TYPES));
-  }
-
-
-  /**
-   * Resolve the type of statement s within outer
-   *
-   * @param s a statement
-   *
-   * @param outer the outer feature that contains s
-   *
-   * @return s or a new statement that replaces s after type resolution.
-   */
-  Stmnt resolveType(Stmnt s, AbstractFeature outer)
-  {
-    var rt = new Feature.ResolveTypes(this);
-    return s.visit(rt, outer);
+      (Errors.any() || af.state().atLeast(Feature.State.RESOLVED_TYPES));
   }
 
 
   /**
    * Resolve the type of expression s within outer
    *
-   * @param s an expression
+   * @param e an expression
    *
    * @param outer the outer feature that contains s
    *
    * @return s or a new expression that replaces s after type resolution.
    */
-  Expr resolveType(Expr s, AbstractFeature outer)
+  Expr resolveType(Expr e, AbstractFeature outer)
   {
     var rt = new Feature.ResolveTypes(this);
-    return s.visit(rt, outer);
+    return e.visit(rt, outer);
   }
 
 }

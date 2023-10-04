@@ -144,13 +144,14 @@ public class Instance extends Value implements Comparable<Instance>
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field)
   {
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
     dfa._readFields.add(field);
     var v = _fields.get(field);
+    Val res = v;
     if (v == null)
       {
         if (dfa._reportResults)
@@ -169,7 +170,12 @@ public class Instance extends Value implements Comparable<Instance>
               }
           }
       }
-    return v;
+    else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
+      {
+        res = new EmbeddedValue(this, v);
+      }
+
+    return res;
   }
 
 

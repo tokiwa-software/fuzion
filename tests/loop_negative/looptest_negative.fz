@@ -34,7 +34,7 @@ looptest_negative is
       say "FAILED: $msg"
       exit_code <- 1
 
-  a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
+  a := array i32 100 (i -> if (i % 23 = 0) (-2)*i else i*i)
 
   say "testLoop_neg1: loop return 3333 on success and 4444 in else branch"
   testLoop_neg1(data array i32, isWhatWeWant i32 -> bool) =>

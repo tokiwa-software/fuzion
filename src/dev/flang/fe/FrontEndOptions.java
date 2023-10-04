@@ -29,7 +29,6 @@ package dev.flang.fe;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;

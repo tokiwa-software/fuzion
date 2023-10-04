@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -43,7 +41,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Consts;
@@ -54,13 +51,8 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.Generic;
-import dev.flang.ast.Impl;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
-import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
@@ -177,6 +169,15 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _kind = lib.featureKindEnum(index);
+
+    var tf = existingTypeFeature();
+    if (tf != null)
+      {
+        // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
+        // in the fum file would contain a reference to the origin such that we
+        // do not need to patch this into the type feature's field.
+        tf._typeFeatureOrigin = this;
+      }
   }
 
 
@@ -357,29 +358,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * For choice feature (i.e., isChoice() holds): The tag field that holds in
-   * i32 that identifies the index of the actual generic argument to choice that
-   * is represented.
-   *
-   * @return the choice tag or null if this !isChoice().
-   */
-  public AbstractFeature choiceTag()
-  {
-    AbstractFeature result = null;
-    if (isChoice())
-      {
-        var i = innerFeatures();
-        result = i.get(arguments().size());  // first entry after arguments is the choice tag
-      }
-
-    if (CHECKS) check
-      (isChoice() == (result != null));
-
-    return result;
-  }
-
-
-  /**
    * If we have an existing type feature (store in a .fum library file), return that
    * type feature. return null otherwise.
    */
@@ -437,16 +415,16 @@ public class LibraryFeature extends AbstractFeature
 
     var o = outer();
     var ot = o == null ? null : o.selfType();
-    AbstractType result = new NormalType(_libModule, -1, this, this,
+    AbstractType result = new NormalType(_libModule, -1, this,
                                          isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                                      : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        result == Types.intern(result)
        );
@@ -599,7 +577,7 @@ public class LibraryFeature extends AbstractFeature
    */
   AbstractBlock code(int at, Stack<Expr> s, int pos)
   {
-    var l = new List<Stmnt>();
+    var l = new List<Expr>();
     var sz = _libModule.codeSize(at);
     var eat = _libModule.codeExpressionsPos(at);
     var e = eat;
@@ -609,8 +587,7 @@ public class LibraryFeature extends AbstractFeature
         var iat = _libModule.expressionExprPos(e);
         pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
         var fpos = pos;
-        Expr ex = null;
-        Stmnt c = null;
+        Expr c = null;
         Expr x = null;
         switch (k)
           {
@@ -622,14 +599,6 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
-              break;
-            }
-          case Unbox:
-            {
-              var fx = s.pop();
-              x = new Unbox(fx, _libModule.unboxType(iat))
-                { public SourcePosition pos() { return fx.pos(); } };
-              ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
               break;
             }
           case Box:
@@ -646,7 +615,7 @@ public class LibraryFeature extends AbstractFeature
                 {
                   public AbstractType type() { return t; }
                   public byte[] data() { return d; }
-                  public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                  public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }
                   public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
                 };

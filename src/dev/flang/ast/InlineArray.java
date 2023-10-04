@@ -119,16 +119,15 @@ public class InlineArray extends ExprWithPos
                                               _elements.iterator());
             _type = Types.t_ERROR;
           }
-        if (_type == null)
+        else
           {
             _type =
               t == null ? null :
-              Types.intern(new Type(pos(),
-                                  "array",
-                                  new List<>(t),
-                                  null,
-                                  Types.resolved.f_array,
-                                  Type.RefOrVal.LikeUnderlyingFeature));
+              Types.intern(new ResolvedNormalType(new List<>(t),
+                                                  new List<>(t),
+                                                  null,
+                                                  Types.resolved.f_array,
+                                                  UnresolvedType.RefOrVal.LikeUnderlyingFeature));
           }
       }
     return _type;
@@ -150,7 +149,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
@@ -163,7 +162,7 @@ public class InlineArray extends ExprWithPos
               {
                 e.propagateExpectedType(res, outer, elementType);
               }
-            _type = t;
+            _type = Types.resolved.f_array.resultTypeIfPresent(res, new List<>(elementType));
           }
       }
     return this;
@@ -182,7 +181,8 @@ public class InlineArray extends ExprWithPos
     if (PRECONDITIONS) require
       (t != null);
 
-    if (t.featureOfType() == Types.resolved.f_array &&
+    // NYI see issue: #1817
+    if (Types.resolved.f_array.inheritsFrom(t.featureOfType()) &&
         t.generics().size() == 1)
       {
         return t.generics().get(0);
@@ -206,7 +206,7 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -228,17 +228,17 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the statements within this InlineArray.
+   * visit all the expressions within this InlineArray.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    super.visitStatements(v);
+    super.visitExpressions(v);
     for (var e : _elements)
       {
-        e.visitStatements(v);
+        e.visitExpressions(v);
       }
   }
 
@@ -263,25 +263,36 @@ public class InlineArray extends ExprWithPos
   /**
    * check the types in this assignment
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _type != null);
+      (Errors.any() || _type != null);
 
     var elementType = elementType();
 
     if (CHECKS) check
-      (Errors.count() > 0 || elementType != Types.t_ERROR);
+      (Errors.any() || elementType != Types.t_ERROR);
 
     for (var e : _elements)
       {
-        if (!elementType.isAssignableFrom(e.type()))
+        if (!elementType.isDirectlyAssignableFrom(e.type()))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }
       }
+  }
+
+
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+    return NumLiteral.findConstantType(elementType()) != null &&
+      this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());
   }
 
 
@@ -292,30 +303,34 @@ public class InlineArray extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
-    if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
+    var et = elementType();
+    if (isCompileTimeConst())
       {
-        var et           = elementType();
+        result = new ArrayConstant(pos(), this._elements, et);
+      }
+    else
+      {
         var eT           = new List<AbstractType>(et);
         var args         = new List<Actual>(new Actual(et),
                                             new Actual(new NumLiteral(_elements.size())));
         var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
         var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "internal_array_init", args).resolveTypes(res, outer);
-        var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
-        var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
-        var sysArrayT    = new Type(pos(), "internal_array", eT, sysT);
+        var fuzionT      = new ParsedType(pos(), "fuzion", UnresolvedType.NONE, null);
+        var sysT         = new ParsedType(pos(), "sys"   , UnresolvedType.NONE, fuzionT);
+        var sysArrayT    = new ParsedType(pos(), "internal_array", eT, sysT);
         var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
-        var sysArrayVar  = new Feature(pos(), Visi.LOCAL, sysArrayT, sysArrayName, null, outer);
+        var sysArrayVar  = new Feature(pos(), Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
         res._module.findDeclarations(sysArrayVar, outer);
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
-        var stmnts = new List<Stmnt>(sysArrayAssign);
+        var exprs = new List<Expr>(sysArrayAssign);
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
@@ -325,7 +340,7 @@ public class InlineArray extends ExprWithPos
             var setElement      = new Call(e.pos(), readSysArrayVar,
                                            FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
                                            setArgs                                    ).resolveTypes(res, outer);
-            stmnts.add(setElement);
+            exprs.add(setElement);
           }
         var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
         var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
@@ -337,8 +352,8 @@ public class InlineArray extends ExprWithPos
                                                new Actual(unit2),
                                                new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
-        stmnts.add(arrayCall);
-        result = new Block(pos(), stmnts);
+        exprs.add(arrayCall);
+        result = new Block(pos(), exprs);
       }
     return result;
   }

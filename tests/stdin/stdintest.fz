@@ -29,10 +29,10 @@ stdintest =>
   read_line => io.stdin.read_line
 
   a := read 1
-  # read 0 should not lead to next_byte beeing called
+  # read 0 should not lead to next_byte being called
   read 0
   b := read 1
-  # read 0 should not lead to next_byte beeing called
+  # read 0 should not lead to next_byte being called
   read 0
   # read 1 utf8
   smiley := read 1

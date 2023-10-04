@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Arrays;
 import java.util.Set;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -44,7 +43,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>, HasSourcePosition
+public abstract class AbstractFeature extends Expr implements Comparable<AbstractFeature>
 {
 
 
@@ -62,7 +61,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     OpenTypeParameter,
     Intrinsic,
     Abstract,
-    Choice;
+    Choice,
+    Native;
 
     /**
      * get the Kind that corresponds to the given ordinal number.
@@ -185,13 +185,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * cached result of typeArguments();
    */
-  private List<AbstractFeature> _typeArguments = null;
+  List<AbstractFeature> _typeArguments = null;
 
 
   /**
    * The formal generic arguments of this feature, cached result of generics()
    */
-  private FormalGenerics _generics;
+  FormalGenerics _generics;
 
 
   /**
@@ -340,7 +340,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
-          (Errors.count() > 0 || argCount >= 0);
+          (Errors.any() || argCount >= 0);
         if (argCount < 0)
           {
             argCount = 0;
@@ -419,7 +419,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         for (var p: inherits())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || p.calledFeature() != null);
+              (Errors.any() || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -456,11 +456,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     AbstractType t;
                     if (a instanceof Feature af)
                       {
+                        af.visit(Feature.findGenerics);
                         t = af.returnType().functionReturnType();
-                        if (!t.checkedForGeneric())
-                          {
-                            af.visit(Feature.findGenerics);
-                          }
                       }
                     else
                       {
@@ -523,9 +520,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
        );
@@ -537,7 +534,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * Create '.this.type' for this feature.
    */
-  AbstractType thisType()
+  public AbstractType thisType()
   {
     return thisType(false);
   }
@@ -550,7 +547,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * is created is fixed.  In this case. the type is exactly selfType(), and not
    * a placeholder for any possible child's type.
    */
-  AbstractType thisType(boolean innerFixed)
+  public AbstractType thisType(boolean innerFixed)
   {
     AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
 
@@ -560,7 +557,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var of = outer();
         if (!isUniverse() && of != null && !of.isUniverse())
           {
-            result = Type.newType(result, of.thisType());
+            result = ResolvedNormalType.newType(result, of.thisType());
           }
         result = Types.intern(result);
         if (innerFixed)
@@ -654,7 +651,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         if (!first)
           {
-            tl.add(new Type(pos(), new Generic(ta)));
+            tl.add(new Generic(ta).type());
           }
         first = false;
       }
@@ -674,17 +671,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
-    if (t.checkedForGeneric())
+    var tl = new List<AbstractType>();
+    for (var ta0 : typeArguments())
       {
-        var tl = new List<AbstractType>();
-        for (var ta0 : typeArguments())
-          {
-            var ta = new Type(pos(), ta0.featureName().baseName(), Type.NONE, null);
-            tl.add(ta);
-          }
-        t = t.applyTypePars(this, tl);
+        var ta = new ParsedType(pos(), ta0.featureName().baseName(), UnresolvedType.NONE, null);
+        tl.add(ta);
       }
-    t = t instanceof Type tt ? tt.clone(this) : t;
+    t = t.applyTypePars(this, tl);
+    t = t.clone(this);
     return t;
   }
 
@@ -705,7 +699,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (state().atLeast(Feature.State.FINDING_DECLARATIONS),
        res != null,
-       Errors.count() > 0 || !isUniverse(),
+       Errors.any() || !isUniverse(),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -717,7 +711,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         else if (isUniverse())
           {
             if (CHECKS) check
-              (Errors.count() > 0);
+              (Errors.any());
             _typeFeature = Types.f_ERROR;
           }
         else
@@ -732,20 +726,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             var p = pos();
             var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
-                                      visibility(),
+                                      visibility().typeVisibility(),
                                       inh.isEmpty() ? 0 : Consts.MODIFIER_REDEFINE,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.TYPE_PARAMETER);
-            var typeArgs = new List<>(typeArg);
+            var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : typeArguments())
               {
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
                                                 : Impl.TYPE_PARAMETER;
                 var constraint0 = t instanceof Feature tf ? tf._returnType.functionReturnType() : t.resultType();
                 var constraint = rebaseTypeForTypeFeature(constraint0);
-                var ta = new Feature(p, visibility(), t.modifiers() & Consts.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                var ta = new Feature(p, t.visibility(), t.modifiers() & Consts.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,
                                      i);
                 typeArgs.add(ta);
@@ -776,10 +770,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         if (pc.calledFeature() != Types.f_ERROR)
           {
             var iif = inh.size();
-            var selfType = new Type(pos(),
-                                    FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                    new List<>(),
-                                    null);
+            var selfType = new ParsedType(pos(),
+                                          FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                          new List<>(),
+                                          null);
             var tp = new List<AbstractType>(selfType);
             if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
               {
@@ -822,7 +816,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param inh the inheritance clause of the new type feature.
    */
-  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<Feature> typeArgs, List<AbstractCall> inh)
+  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (!isUniverse());
@@ -833,7 +827,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (result == null)
       {
         var p = pos();
-        var typeFeature = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
+        var typeFeature = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
                                       inh,
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
@@ -849,7 +843,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  AbstractFeature _typeFeatureOrigin;
+  public AbstractFeature _typeFeatureOrigin;
 
 
   /**
@@ -923,13 +917,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       (state().atLeast(Feature.State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
-    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), o, this, Type.RefOrVal.LikeUnderlyingFeature);
+    var g = generics().asActuals();
+    var result = new ResolvedNormalType(g, g, o, this, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
        );
@@ -946,7 +941,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw()
+  AbstractType resultTypeRaw(Resolution res)
   {
     return resultType();
   }
@@ -963,12 +958,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * case the type is currently unknown (in particular, in case of a type
    * inference to a field declared later).
    */
-  AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
+  AbstractType resultTypeRaw(Resolution res, List<AbstractType> actualGenerics)
   {
     if (CHECKS) check
       (state().atLeast(Feature.State.RESOLVING_TYPES));
 
-    var result = resultTypeRaw();
+    var result = resultTypeRaw(res);
     if (result != null)
       {
         result = result.applyTypePars(this, actualGenerics);
@@ -997,8 +992,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         res.resolveTypes(this);
       }
-    var result = resultTypeRaw(generics);
-    if (result != null && result instanceof Type rt)
+    var result = resultTypeRaw(res, generics);
+    if (result instanceof UnresolvedType rt)
       {
         result = rt.visit(Feature.findGenerics,outer());
       }
@@ -1018,7 +1013,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param generics the actual generic arguments to be applied to the type
    *
-   * @return the result type, Types.resulved.t_unit if none and
+   * @return the result type, Types.resolved.t_unit if none and
    * Types.t_ERROR in case the type could not be inferenced and error
    * was reported.
    */
@@ -1240,7 +1235,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         var inh = heir.findInheritanceChain(outer());
         if (CHECKS) check
-          (Errors.count() >= 0 || inh != null);
+          (inh != null);
 
         if (inh != null)
           {
@@ -1302,7 +1297,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var a = handDown(res, new AbstractType[] { t }, heir);
 
     if (CHECKS) check
-      (Errors.count() > 0 || a.length == 1);
+      (Errors.any() || a.length == 1);
 
     return a.length == 1 ? a[0] : Types.t_ERROR;
   }
@@ -1368,7 +1363,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     List<AbstractCall> result = tryFindInheritanceChain(ancestor);
 
     if (POSTCONDITIONS) ensure
-      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
+      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.any() || result != null);
 
     return result;
   }
@@ -1447,20 +1442,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Call v.action(s) on all statements s within this feature.
+   * Call v.action(s) on all expressions s within this feature.
    *
-   * @param v the action to be performed on the statements.
+   * @param v the action to be performed on the expressions.
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     for (var c: inherits())
       {
-        c.visitStatements(v);
+        c.visitExpressions(v);
       }
-    contract().visitStatements(v);
+    contract().visitExpressions(v);
     if (isRoutine())
       {
-        code().visitStatements(v);
+        code().visitExpressions(v);
       }
   }
 
@@ -1477,7 +1472,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     for (var frml : arguments())
       {
         if (CHECKS) check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
         if (CHECKS) check
@@ -1563,7 +1558,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     else if (set.isEmpty())
       {
         check
-          (this != Types.f_ERROR || Errors.count() > 0);
+          (this != Types.f_ERROR || Errors.any());
         if (this != Types.f_ERROR)
           {
             AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
@@ -1578,9 +1573,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return result;
   }
 
-
-  // following are used in IR/Clazzes middle end or later only:
-  public abstract AbstractFeature choiceTag();
 
   // following used in MIR or later
   public abstract Expr code();
@@ -1612,6 +1604,23 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this feature an argument of its outer feature, but not a type argument?
+   */
+  boolean isValueArgument()
+  {
+    var result = false;
+    var o = outer();
+    if (o != null)
+      {
+        for (var va : o.valueArguments())
+          {
+            result = result || va == this;
+          }
+      }
+    return result;
+  }
+
+  /**
    * List of arguments that are types, i.e., not type parameters or effects.
    */
   public List<AbstractFeature> typeArguments()
@@ -1638,6 +1647,25 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * During type resolution, add a type parameter created for a free type like
+   * `T` in `f(x T) is ...`.
+   *
+   * @param res the resolution instance.
+   *
+   * @param ta the newly created type parameter feature.
+   *
+   * @return the generic instance for ta
+   */
+  Generic addTypeParameter(Resolution res, Feature ta)
+  {
+    if (PRECONDITIONS) require
+      (ta.isFreeType());
+
+    throw new Error("addTypeArgument only possible for Feature, not for "+getClass());
+  }
+
+
+  /**
    * The formal generic arguments of this feature
    */
   public FormalGenerics generics()
@@ -1653,11 +1681,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         else
           {
             var l = new List<Generic>();
-            var open = false;
             for (var a0 : typeArguments())
               {
                 l.add(new Generic(a0));
-                open = open || a0.isOpenTypeParameter();
               }
             _generics = new FormalGenerics(l);
           }
@@ -1689,6 +1715,32 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
   }
 
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
+
+
+  /**
+   * visit all the expressions within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this or an alternative Expr if the action performed during the
+   * visit replaces this by the alternative.
+   */
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    throw new Error("not meant to be used...");
+  }
 
 
   /**

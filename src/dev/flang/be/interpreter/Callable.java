@@ -28,8 +28,6 @@ package dev.flang.be.interpreter;
 
 import java.util.ArrayList;
 
-import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 
 /**
  * Callable represents a call to a feature.

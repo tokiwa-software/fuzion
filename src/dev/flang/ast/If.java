@@ -131,7 +131,7 @@ public class If extends ExprWithPos
       (elseBlock == null,
        elseIf == null);
 
-    if (b._statements.size() == 1 && b._statements.get(0) instanceof If i)
+    if (b._expressions.size() == 1 && b._expressions.get(0) instanceof If i)
       {
         elseIf = i;
       }
@@ -144,7 +144,7 @@ public class If extends ExprWithPos
 
 
   /**
-   * Create an Iterator over all branches in this if statement, including all
+   * Create an Iterator over all branches in this if expression, including all
    * else-if branches.
    */
   Iterator<Expr> branches()
@@ -170,7 +170,7 @@ public class If extends ExprWithPos
 
   /**
    * Helper routine for typeIfKnown to determine the
-   * type of this if statement on demand, i.e., as late as possible.
+   * type of this if expression on demand, i.e., as late as possible.
    */
   private AbstractType typeFromIfOrElse()
   {
@@ -189,7 +189,7 @@ public class If extends ExprWithPos
       if (result==Types.t_UNDEFINED)
         {
           new IncompatibleResultsOnBranches(pos(),
-                                            "Incompatible types in branches of if statement",
+                                            "Incompatible types in branches of if expression",
                                             branches());
           result = Types.t_ERROR;
         }
@@ -221,7 +221,7 @@ public class If extends ExprWithPos
    * check the types in this if, in particular, check that the condition is of
    * type bool.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
   public void checkTypes()
   {
@@ -229,7 +229,7 @@ public class If extends ExprWithPos
       (elseBlock != null || elseIf != null);
 
     var t = cond.type();
-    if (!Types.resolved.t_bool.isAssignableFrom(t))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
       {
         AstErrors.ifConditionMustBeBool(cond.pos(), t);
       }
@@ -237,7 +237,7 @@ public class If extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -265,35 +265,35 @@ public class If extends ExprWithPos
 
 
   /**
-   * visit all the statements within this If.
+   * visit all the expressions within this If.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
     if (PRECONDITIONS) require
       (elseBlock != null || elseIf != null);
 
-    super.visitStatements(v);
-    cond.visitStatements(v);
-    block.visitStatements(v);
+    super.visitExpressions(v);
+    cond.visitExpressions(v);
+    block.visitExpressions(v);
     if (elseBlock != null)
       {
-        elseBlock.visitStatements(v);
+        elseBlock.visitExpressions(v);
       }
     if (elseIf != null)
       {
-        elseIf.visitStatements(v);
+        elseIf.visitExpressions(v);
       }
   }
 
 
   /**
    * Convert this Expression into an assignment to the given field.  In case
-   * this is a statement with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
+   * this is a expression with several branches such as an "if" or a "match"
+   * expression, add corresponding assignments in each branch and convert this
+   * into a expression that does not produce a value.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -302,7 +302,7 @@ public class If extends ExprWithPos
    *
    * @param r the field this should be assigned to.
    *
-   * @return the Stmnt this Expr is to be replaced with, typically an Assign
+   * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
   If assignToField(Resolution res, AbstractFeature outer, Feature r)
@@ -363,7 +363,7 @@ public class If extends ExprWithPos
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
+   * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {

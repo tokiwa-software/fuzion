@@ -1,0 +1,113 @@
+
+--CURDIR--/test_free_types_negative.fz:49:3: error 1: Incompatible types found during type inference for type parameters
+  c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
+--^^
+Types inferred for first type parameter 'T':
+'String' found at --CURDIR--/test_free_types_negative.fz:49:11:
+  c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
+----------^
+'f64' found at --CURDIR--/test_free_types_negative.fz:49:6:
+  c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
+-----^
+
+
+--CURDIR--/test_free_types_negative.fz:52:3: error 2: Incompatible types found during type inference for type parameters
+  c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
+--^^
+Types inferred for first type parameter 'T':
+'String' found at --CURDIR--/test_free_types_negative.fz:52:11:
+  c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
+----------^
+'f64' found at --CURDIR--/test_free_types_negative.fz:52:6:
+  c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
+-----^
+
+
+--CURDIR--/test_free_types_negative.fz:61:3: error 3: Incompatible types found during type inference for type parameters
+  d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
+--^
+Types inferred for first type parameter '#_0':
+'String' found at --CURDIR--/test_free_types_negative.fz:61:10:
+  d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
+---------^
+'f64' found at --CURDIR--/test_free_types_negative.fz:61:5:
+  d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
+----^
+
+
+--CURDIR--/test_free_types_negative.fz:115:17: error 4: Could not find called feature
+  neg(x i33) => -x   # 8. should flag an error that is not too confusing
+----------------^
+Feature not found: 'prefix -' (no arguments)
+Target feature: 'Any'
+In call: 'neg.this.x.prefix -'
+To solve this, you might replace the free type 'test_free_type_negative.neg.i33' by a different type.  Is the type name spelled correctly?  The free type is declared at --CURDIR--/test_free_types_negative.fz:115:9:
+  neg(x i33) => -x   # 8. should flag an error that is not too confusing
+--------^^^
+
+
+--CURDIR--/test_free_types_negative.fz:142:9: error 5: Failed to infer actual type parameters
+  say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
+--------^^^^^^
+In call to 'test_free_type_negative.apply2', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
+
+
+--CURDIR--/test_free_types_negative.fz:150:9: error 6: Failed to infer actual type parameters
+  say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
+--------^^^^^^^
+In call to 'test_free_type_negative.apply3a', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
+
+
+--CURDIR--/test_free_types_negative.fz:121:7: error 7: Free type must not mask existing type.
+  y(a EXISTING_TYPE : numeric) =>             # 9. should flag an error, free type must not mask existing type
+------^^^^^^^^^^^^^
+The free type 'EXISTING_TYPE' masks an existing type defined by 'test_free_type_negative.EXISTING_TYPE'.
+The existing type was declared at --CURDIR--/test_free_types_negative.fz:120:3:
+  EXISTING_TYPE is
+--^^^^^^^^^^^^^
+To solve this, you may use a different name for free type 'EXISTING_TYPE'.
+
+
+--CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
+  a2 "fourty two"    # 1. should flag an error: type constraint not respected
+--^^
+formal type parameter 'T' with constraint 'numeric'
+actual type parameter 'String'
+
+
+--CURDIR--/test_free_types_negative.fz:91:3: error 9: Incompatible type parameter
+  g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
+--^
+formal type parameter 'B' with constraint 'numeric'
+actual type parameter 'String'
+
+
+--CURDIR--/test_free_types_negative.fz:74:5: error 10: Type inference from actual arguments failed due to incompatible types of actual arguments
+  f(v,w) => say "f: $v $w"
+----^
+For the formal argument 'test_free_type_negative.f.v' the following incompatible actual arguments where found for type inference:
+actual is value of type 'String' at --CURDIR--/test_free_types_negative.fz:75:5:
+  f "[1,3,5]" Any    # 5.a should flag an error since two calls with incompatible actual argument types
+----^
+actual is value of type 'f64' at --CURDIR--/test_free_types_negative.fz:76:5:
+  f 3.14 "e"         # 5.b should flag an error since two calls with incompatible actual argument types
+----^
+
+
+--CURDIR--/test_free_types_negative.fz:105:35: error 11: Incompatible types when passing argument in a call
+  x2(s Sequence T, v U) => [v] ++ s ++ [v]    # 7. should flag an error since types are incompatible due to different free types
+----------------------------------^
+Actual type for argument #1 's' does not match expected type.
+In call to          : 'Sequence.infix ++'
+expected formal type: 'Sequence test_free_type_negative.x2.U'
+actual type found   : 'Sequence test_free_type_negative.x2.T'
+assignable to       : 'Any',
+                      'Sequence test_free_type_negative.x2.T'
+for value assigned  : 'x2.this.s'
+To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.
+
+11 errors.

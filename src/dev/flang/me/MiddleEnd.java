@@ -34,15 +34,12 @@ import java.util.TreeSet;
 import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
-import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
-import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
@@ -139,24 +136,25 @@ public class MiddleEnd extends ANY
   void markInternallyUsed() {
     var universe = _mir.universe();
     var m = Clazz._module;
-    markUsed(universe.get(m, "i8" ,1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "i16",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "i32",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "i64",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "u8" ,1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "u16",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "u32",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "u64",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
-    markUsed(universe.get(m, "Const_String")                    , SourcePosition.builtIn);
-    markUsed(universe.get(m, "Const_String").get(m, "is_empty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(universe.get(m, "Const_String").get(m, "as_string"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(Types.resolved.f_fuzion_sys_array_data            , SourcePosition.builtIn);
-    markUsed(Types.resolved.f_fuzion_sys_array_length          , SourcePosition.builtIn);
-    markUsed(universe.get(m, FuzionConstants.UNIT_NAME), SourcePosition.builtIn);
-    markUsed(universe.get(m, "void")          , SourcePosition.builtIn);
+    markUsed(universe.get(m, "i8" ,1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "i16",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "i32",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "i64",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "u8" ,1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "u16",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "u32",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "u64",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "f32",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "f64",1).get(m, "val")               , SourcePosition.builtIn);
+    markUsed(universe.get(m, "Const_String")                      , SourcePosition.builtIn);
+    markUsed(universe.get(m, "Const_String").get(m, "is_empty" )  , SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "Const_String").get(m, "as_string")  , SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(Types.resolved.f_fuzion_sys_array_data               , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_sys_array_length             , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_java_object                  , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_java_object_ref              , SourcePosition.builtIn);
+    markUsed(universe.get(m, FuzionConstants.UNIT_NAME)           , SourcePosition.builtIn);
+    markUsed(universe.get(m, "void")                              , SourcePosition.builtIn);
   }
 
 
@@ -278,22 +276,26 @@ public class MiddleEnd extends ANY
         markUsed(p.calledFeature(), p);
       }
     findUsedFeatures(f.resultType(), f);
-    if (f.choiceTag() != null)
-      {
-        markUsed(f.choiceTag(), f);
-      }
 
     var fv = new FeatureVisitor() {
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
-        //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-        public void action(AbstractMatch m              ) { findUsedFeatures(m);           }
+        public void action(AbstractConstant c           ) { findUsedFeatures(c); }
+        //        public Expr action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
       };
     f.visitCode(fv);
   }
 
+
+  /**
+   * Mark all features used for this abstract constant as used.
+   */
+  void findUsedFeatures(AbstractConstant c)
+  {
+    findUsedFeatures(c.type(), c);
+  }
 
 
   /**
@@ -318,7 +320,7 @@ public class MiddleEnd extends ANY
   void findUsedFeatures(AbstractCall c)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature() != null);
+      (Errors.any() || c.calledFeature() != null);
 
     var cf = c.calledFeature();
     if (cf != null)
@@ -331,7 +333,7 @@ public class MiddleEnd extends ANY
                 AbstractFeature f = t.featureOfType();
                 markUsed(f, c);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
                 if (CHECKS) check
-                  (Errors.count() > 0 || f.hasTypeFeature());
+                  (Errors.any() || f.hasTypeFeature());
 
                 if (f.hasTypeFeature())
                   {
@@ -341,25 +343,6 @@ public class MiddleEnd extends ANY
           }
       }
   }
-
-
-  /**
-   * Find used features, i.e., mark all features that are found to be the target of a call as used.
-   */
-  void findUsedFeatures(AbstractMatch m)
-  {
-    AbstractFeature sf = m.subject().type().featureOfType();
-    AbstractFeature ct = sf.choiceTag();
-
-    if (CHECKS) check
-      (Errors.count() > 0 || ct != null);
-
-    if (ct != null)
-      {
-        markUsed(ct, m);
-      }
-  }
-
 
 }
 

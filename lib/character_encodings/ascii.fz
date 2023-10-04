@@ -23,78 +23,78 @@
 #
 # -----------------------------------------------------------------------
 
-ascii is
+public ascii is
 
   ##
   # byte values of control code defined in ASCII
   ##
 
   # Null
-  nul => u8 0
+  public nul => u8 0
   # Start of Heading
-  soh => u8 1
+  public soh => u8 1
   # Start of Text
-  stx => u8 2
+  public stx => u8 2
   # End of Text
-  etx => u8 3
+  public etx => u8 3
   # End of Transmission
-  eot => u8 4
+  public eot => u8 4
   # Enquiry
-  enq => u8 5
+  public enq => u8 5
   # Acknowledgement
-  ack => u8 6
+  public ack => u8 6
   # Bell
-  bel => u8 7
+  public bel => u8 7
   # Backspace
-  bs  => u8 8
+  public bs  => u8 8
   # Horizontal Tab
-  ht  => u8 9
+  public ht  => u8 9
   # Line Feed
-  lf  => u8 10
+  public lf  => u8 10
   # Vertical Tab
-  vt  => u8 11
+  public vt  => u8 11
   # Form Feed
-  ff  => u8 12
+  public ff  => u8 12
   # Carriage Return
-  cr  => u8 13
+  public cr  => u8 13
   # Shift Out
-  so  => u8 14
+  public so  => u8 14
   # Shift In
-  si  => u8 15
+  public si  => u8 15
   # Data Link Escape
-  dle => u8 16
+  public dle => u8 16
   # Device Control 1 (often XON)
-  dc1 => u8 17
+  public dc1 => u8 17
   # Device Control 2
-  dc2 => u8 18
+  public dc2 => u8 18
   # Device Control 3 (often XOFF)
-  dc3 => u8 19
+  public dc3 => u8 19
   # Device Control 4
-  dc4 => u8 20
+  public dc4 => u8 20
   # Negative Acknowledgement
-  nak => u8 21
+  public nak => u8 21
   # Synchronous Idle
-  syn => u8 22
+  public syn => u8 22
   # End of Transmission Block
-  etb => u8 23
+  public etb => u8 23
   # Cancel
-  can => u8 24
+  public can => u8 24
   # End of Medium
-  em  => u8 25
+  public em  => u8 25
   # SUB  Substitute
-  ss  => u8 26
+  public ss  => u8 26
   # Escape
-  esc => u8 27
+  public esc => u8 27
   # File Separator
-  fs  => u8 28
+  public fs  => u8 28
   # Group Separator
-  gs  => u8 29
+  public gs  => u8 29
   # Record Separator
-  rs  => u8 30
+  public rs  => u8 30
   # Unit Separator
-  us  => u8 31
+  public us  => u8 31
   # Delete
-  del => u8 127
+  public del => u8 127
 
 
   ##
@@ -102,68 +102,68 @@ ascii is
   ##
 
   # Null
-  nul_str => String.type.from_bytes [nul]
+  public nul_str => String.type.from_bytes [nul]
   # Start of Heading
-  soh_str => String.type.from_bytes [soh]
+  public soh_str => String.type.from_bytes [soh]
   # Start of Text
-  stx_str => String.type.from_bytes [stx]
+  public stx_str => String.type.from_bytes [stx]
   # End of Text
-  etx_str => String.type.from_bytes [etx]
+  public etx_str => String.type.from_bytes [etx]
   # End of Transmission
-  eot_str => String.type.from_bytes [eot]
+  public eot_str => String.type.from_bytes [eot]
   # Enquiry
-  enq_str => String.type.from_bytes [enq]
+  public enq_str => String.type.from_bytes [enq]
   # Acknowledgement
-  ack_str => String.type.from_bytes [ack]
+  public ack_str => String.type.from_bytes [ack]
   # Bell
-  bel_str => String.type.from_bytes [bel]
+  public bel_str => String.type.from_bytes [bel]
   # Backspace
-  bs_str  => String.type.from_bytes [bs]
+  public bs_str  => String.type.from_bytes [bs]
   # Horizontal Tab
-  ht_str  => String.type.from_bytes [ht]
+  public ht_str  => String.type.from_bytes [ht]
   # Line Feed
-  lf_str  => String.type.from_bytes [lf]
+  public lf_str  => String.type.from_bytes [lf]
   # Vertical Tab
-  vt_str  => String.type.from_bytes [vt]
+  public vt_str  => String.type.from_bytes [vt]
   # Form Feed
-  ff_str  => String.type.from_bytes [ff]
+  public ff_str  => String.type.from_bytes [ff]
   # Carriage Return
-  cr_str  => String.type.from_bytes [cr]
+  public cr_str  => String.type.from_bytes [cr]
   # Shift Out
-  so_str  => String.type.from_bytes [so]
+  public so_str  => String.type.from_bytes [so]
   # Shift In
-  si_str  => String.type.from_bytes [si]
+  public si_str  => String.type.from_bytes [si]
   # Data Link Escape
-  dle_str => String.type.from_bytes [dle]
+  public dle_str => String.type.from_bytes [dle]
   # Device Control 1 (often XON)
-  dc1_str => String.type.from_bytes [dc1]
+  public dc1_str => String.type.from_bytes [dc1]
   # Device Control 2
-  dc2_str => String.type.from_bytes [dc2]
+  public dc2_str => String.type.from_bytes [dc2]
   # Device Control 3 (often XOFF)
-  dc3_str => String.type.from_bytes [dc3]
+  public dc3_str => String.type.from_bytes [dc3]
   # Device Control 4
-  dc4_str => String.type.from_bytes [dc4]
+  public dc4_str => String.type.from_bytes [dc4]
   # Negative Acknowledgement
-  nak_str => String.type.from_bytes [nak]
+  public nak_str => String.type.from_bytes [nak]
   # Synchronous Idle
-  syn_str => String.type.from_bytes [syn]
+  public syn_str => String.type.from_bytes [syn]
   # End of Transmission Block
-  etb_str => String.type.from_bytes [etb]
+  public etb_str => String.type.from_bytes [etb]
   # Cancel
-  can_str => String.type.from_bytes [can]
+  public can_str => String.type.from_bytes [can]
   # End of Medium
-  em_str  => String.type.from_bytes [em]
+  public em_str  => String.type.from_bytes [em]
   # SUB  Substitute
-  ss_str  => String.type.from_bytes [ss]
+  public ss_str  => String.type.from_bytes [ss]
   # Escape
-  esc_str => String.type.from_bytes [esc]
+  public esc_str => String.type.from_bytes [esc]
   # File Separator
-  fs_str  => String.type.from_bytes [fs]
+  public fs_str  => String.type.from_bytes [fs]
   # Group Separator
-  gs_str  => String.type.from_bytes [gs]
+  public gs_str  => String.type.from_bytes [gs]
   # Record Separator
-  rs_str  => String.type.from_bytes [rs]
+  public rs_str  => String.type.from_bytes [rs]
   # Unit Separator
-  us_str  => String.type.from_bytes [us]
+  public us_str  => String.type.from_bytes [us]
   # Delete
-  del_str => String.type.from_bytes [del]
+  public del_str => String.type.from_bytes [del]

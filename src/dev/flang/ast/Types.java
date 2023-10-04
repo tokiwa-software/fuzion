@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 
 /*---------------------------------------------------------------------*/
 
@@ -51,7 +52,7 @@ public class Types extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static Map<Type, Type> types;
+  private static Map<ResolvedNormalType, ResolvedNormalType> types;
 
   /**
    * Name of abstract features for function types:
@@ -103,14 +104,14 @@ public class Types extends ANY
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static Type t_ADDRESS;
+  public static AbstractType t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
-  public static Type t_UNDEFINED;
+  public static AbstractType t_UNDEFINED;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static Type t_ERROR;
+  public static AbstractType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
   public static Feature f_ERROR = new Feature(true);
@@ -128,16 +129,6 @@ public class Types extends ANY
     public final AbstractType t_u64 ;
     public final AbstractType t_f32 ;
     public final AbstractType t_f64 ;
-    public final AbstractType t_ref_i8  ;
-    public final AbstractType t_ref_i16 ;
-    public final AbstractType t_ref_i32 ;
-    public final AbstractType t_ref_i64 ;
-    public final AbstractType t_ref_u8  ;
-    public final AbstractType t_ref_u16 ;
-    public final AbstractType t_ref_u32 ;
-    public final AbstractType t_ref_u64 ;
-    public final AbstractType t_ref_f32 ;
-    public final AbstractType t_ref_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_any;
     private final AbstractType t_fuzion;
@@ -153,6 +144,16 @@ public class Types extends ANY
      * since the union of void  with any other type is the other type.
      */
     public final AbstractType t_void;
+    public final AbstractType t_array_i8;
+    public final AbstractType t_array_i16;
+    public final AbstractType t_array_i32;
+    public final AbstractType t_array_i64;
+    public final AbstractType t_array_u8;
+    public final AbstractType t_array_u16;
+    public final AbstractType t_array_u32;
+    public final AbstractType t_array_u64;
+    public final AbstractType t_array_f32;
+    public final AbstractType t_array_f64;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
     public final AbstractFeature f_TRUE;
@@ -170,10 +171,16 @@ public class Types extends ANY
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_fuzion;
+    public final AbstractFeature f_fuzion_java;
+    public final AbstractFeature f_fuzion_java_object;
+    public final AbstractFeature f_fuzion_java_object_ref;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_concur;
+    public final AbstractFeature f_concur_atomic;
+    public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
@@ -181,38 +188,28 @@ public class Types extends ANY
     public final AbstractFeature f_Unary;
     public static interface CreateType
     {
-      AbstractType type(String name, boolean isRef);
+      AbstractType type(String name);
     }
     public Resolved(SrcModule mod, CreateType ct, AbstractFeature universe)
     {
       this.universe = universe;
-      t_i8            = ct.type("i8"          , false);
-      t_i16           = ct.type("i16"         , false);
-      t_i32           = ct.type("i32"         , false);
-      t_i64           = ct.type("i64"         , false);
-      t_u8            = ct.type("u8"          , false);
-      t_u16           = ct.type("u16"         , false);
-      t_u32           = ct.type("u32"         , false);
-      t_u64           = ct.type("u64"         , false);
-      t_f32           = ct.type("f32"         , false);
-      t_f64           = ct.type("f64"         , false);
-      t_ref_i8        = ct.type("i8"          , true );
-      t_ref_i16       = ct.type("i16"         , true );
-      t_ref_i32       = ct.type("i32"         , true );
-      t_ref_i64       = ct.type("i64"         , true );
-      t_ref_u8        = ct.type("u8"          , true );
-      t_ref_u16       = ct.type("u16"         , true );
-      t_ref_u32       = ct.type("u32"         , true );
-      t_ref_u64       = ct.type("u64"         , true );
-      t_ref_f32       = ct.type("f32"         , true );
-      t_ref_f64       = ct.type("f64"         , true );
-      t_bool          = ct.type("bool"        , false);
-      t_fuzion        = ct.type("fuzion"      , false);
-      t_string        = ct.type(FuzionConstants.STRING_NAME, false);
-      t_Const_String  = ct.type("Const_String" , false);
-      t_any           = ct.type(FuzionConstants.ANY_NAME, false);
-      t_unit          = ct.type(FuzionConstants.UNIT_NAME, false);
-      t_void          = ct.type("void"        , false);
+      t_i8            = ct.type("i8");
+      t_i16           = ct.type("i16");
+      t_i32           = ct.type("i32");
+      t_i64           = ct.type("i64");
+      t_u8            = ct.type("u8");
+      t_u16           = ct.type("u16");
+      t_u32           = ct.type("u32");
+      t_u64           = ct.type("u64");
+      t_f32           = ct.type("f32");
+      t_f64           = ct.type("f64");
+      t_bool          = ct.type("bool");
+      t_fuzion        = ct.type("fuzion");
+      t_string        = ct.type(FuzionConstants.STRING_NAME);
+      t_Const_String  = ct.type("Const_String");
+      t_any           = ct.type(FuzionConstants.ANY_NAME);
+      t_unit          = ct.type(FuzionConstants.UNIT_NAME);
+      t_void          = ct.type("void");
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
       f_TRUE          = universe.get(mod, "TRUE");
@@ -230,23 +227,39 @@ public class Types extends ANY
       f_array         = universe.get(mod, "array", 5);
       f_array_internal_array = f_array.get(mod, "internal_array");
       f_fuzion                     = universe.get(mod, "fuzion");
+      f_fuzion_java                = f_fuzion.get(mod, "java");
+      f_fuzion_java_object         = f_fuzion_java.get(mod, "Java_Object");
+      f_fuzion_java_object_ref     = f_fuzion_java_object.get(mod, "Java_Ref");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
+      f_concur                     = universe.get(mod, "concur");
+      f_concur_atomic              = f_concur.get(mod, "atomic");
+      f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
       f_Type                       = universe.get(mod, "Type");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
+      t_array_i8                   = new ResolvedNormalType(f_array.selfType(), new List<>(t_i8 ), new List<>(), universe.selfType());
+      t_array_i16                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_i16), new List<>(), universe.selfType());
+      t_array_i32                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_i32), new List<>(), universe.selfType());
+      t_array_i64                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_i64), new List<>(), universe.selfType());
+      t_array_u8                   = new ResolvedNormalType(f_array.selfType(), new List<>(t_u8 ), new List<>(), universe.selfType());
+      t_array_u16                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_u16), new List<>(), universe.selfType());
+      t_array_u32                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_u32), new List<>(), universe.selfType());
+      t_array_u64                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_u64), new List<>(), universe.selfType());
+      t_array_f32                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_f32), new List<>(), universe.selfType());
+      t_array_f64                  = new ResolvedNormalType(f_array.selfType(), new List<>(t_f64), new List<>(), universe.selfType());
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
-      t_UNDEFINED.resolveArtificialType(universe);
-      t_ERROR    .resolveArtificialType(f_ERROR);
+      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
+      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
+      ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }
     Resolved(Resolution res, AbstractFeature universe)
     {
-      this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
+      this(res._module, (name) -> UnresolvedType.type(res, false, name, universe), universe);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,
@@ -265,7 +278,18 @@ public class Types extends ANY
         t_Const_String,
         t_any        ,
         t_unit       ,
-        t_void       };
+        t_void       ,
+        t_array_i8   ,
+        t_array_i16  ,
+        t_array_i32  ,
+        t_array_i64  ,
+        t_array_u8   ,
+        t_array_u16  ,
+        t_array_u32  ,
+        t_array_u64  ,
+        t_array_f32  ,
+        t_array_f64
+      };
 
       for (var t : internalTypes)
         {
@@ -287,9 +311,9 @@ public class Types extends ANY
   {
     types = new TreeMap<>();
     resolved = null;
-    t_ADDRESS   = new Type(ADDRESS_NAME  );
-    t_UNDEFINED = new Type(UNDEFINED_NAME);
-    t_ERROR     = new Type(ERROR_NAME    );
+    t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
+    t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
+    t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
   }
 
@@ -300,11 +324,11 @@ public class Types extends ANY
   public static AbstractType intern(AbstractType at)
   {
     if (PRECONDITIONS) require
-      ((!(at instanceof Type t)) || t.isGenericArgument() || t.feature != null || Errors.count() > 0);
+      (!(at instanceof UnresolvedType t) || Errors.any());
 
-    if (at instanceof Type t)
+    if (at instanceof ResolvedNormalType t)
       {
-        Type existing = t._interned;
+        var existing = t._interned;
         if (existing == null)
           {
             if (!t.isGenericArgument())
@@ -315,7 +339,7 @@ public class Types extends ANY
                 var g1 = g0.map(tt -> intern(tt));
                 if (o1 != o0 || g1 != g0)
                   {
-                    t = new Type(t.pos, t.name, g1, o1, t.feature, t._refOrVal, false);
+                    t = new ResolvedNormalType(g1, t.unresolvedGenerics(), o1, t._feature, t._refOrVal, false);
                   }
               }
             existing = types.get(t);

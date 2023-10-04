@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Collections;
 import java.util.Iterator;
 
-import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -48,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Destructure extends ANY implements Stmnt
+public class Destructure extends Expr
 {
 
 
@@ -74,14 +73,14 @@ public class Destructure extends ANY implements Stmnt
    * The field names of the fields we are destructuring into. May not be empty.
    * null if _fields != null.
    */
-  final List<String> _names;
+  final List<ParsedName> _names;
 
 
   /**
    * The fields created by this destructuring.  May be empty. null if _names !=
    * null.
    */
-  final List<Feature> _fields;
+  final List<AbstractFeature> _fields;
 
 
   final boolean _isDefinition;
@@ -106,7 +105,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param v
    */
-  private Destructure(SourcePosition pos, List<String> n, List<Feature> fs, boolean def, Expr v)
+  private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -125,7 +124,7 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -134,17 +133,20 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * Helper routine for create to expand this into a block of statements.
+   * Helper routine for create to expand this into a block of expressions.
    */
-  private Stmnt expand()
+  private Expr expand()
   {
-    List<Stmnt> stmnts = new List<Stmnt>();
+    List<Expr> exprs = new List<Expr>();
     if (_fields != null)
       {
-        stmnts.addAll(_fields);
+        for (var f : _fields)
+          {
+            exprs.add((Feature) f);
+          }
       }
-    stmnts.add(this);
-    return new Block(_pos,stmnts);
+    exprs.add(this);
+    return new Block(_pos,exprs);
   }
 
 
@@ -154,7 +156,7 @@ public class Destructure extends ANY implements Stmnt
    * @param pos the source code position
    *
    * @param fields the fields we are destructuring into in case they are declared
-   * within the destructure statement
+   * within the destructure expression
    *
    * @param names the names of the variables to store the destructured values if
    * we are not destructuring to new fields.
@@ -163,9 +165,9 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param v the value that is destructured.
    *
-   * @return a statement that implements the destructuring.
+   * @return a expression that implements the destructuring.
    */
-  public static Stmnt create(SourcePosition pos, List<Feature> fields, List<String> names, boolean def, Expr v)
+  public static Expr create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       ((fields == null) != (names == null),
@@ -175,15 +177,15 @@ public class Destructure extends ANY implements Stmnt
       {
         if (def)
           {
-            fields = new List<Feature>();
-            for (String name : names)
+            fields = new List<AbstractFeature>();
+            for (var name : names)
               {
-                fields.add(new Feature(pos,
-                                       Visi.LOCAL,
+                fields.add(new Feature(name._pos,
+                                       Visi.PRIV,
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
-                                       new List<String>(name),
-                                       new List<Feature>(),
+                                       new List<String>(name._name),
+                                       new List<>(),
                                        new List<>(),
                                        Contract.EMPTY_CONTRACT,
                                        Impl.FIELD));
@@ -194,10 +196,10 @@ public class Destructure extends ANY implements Stmnt
       {
         if (CHECKS) check
           (!def);
-        names = new List<String>();
-        for (Feature f : fields)
+        names = new List<>();
+        for (var f : fields)
           {
-            names.add(f.featureName().baseName());
+            names.add(new ParsedName(f.pos(), f.featureName().baseName()));
           }
       }
     return new Destructure(pos, names, fields, def, v).expand();
@@ -205,7 +207,7 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -214,7 +216,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return this
    */
-  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     return v.action(this, outer);
@@ -228,12 +230,12 @@ public class Destructure extends ANY implements Stmnt
    */
   private void addAssign(Resolution res,
                          AbstractFeature outer,
-                         List<Stmnt> stmnts,
+                         List<Expr> exprs,
                          Feature tmp,
                          AbstractFeature f,
-                         Iterator<String> names,
+                         Iterator<ParsedName> names,
                          int select,
-                         Iterator<Feature> fields,
+                         Iterator<AbstractFeature> fields,
                          AbstractType t)
   {
     Expr thiz     = This.thiz(res, _pos, outer, outer);
@@ -242,7 +244,7 @@ public class Destructure extends ANY implements Stmnt
     Assign assign = null;
     if (fields != null && fields.hasNext())
       {
-        Feature newF = fields.next();
+        var newF = (Feature) fields.next();
         if (_isDefinition)
           {
             newF._returnType = new FunctionReturnType(t);
@@ -251,16 +253,17 @@ public class Destructure extends ANY implements Stmnt
       }
     else if (fields == null && names.hasNext())
       {
-        String name = names.next();
+        var pn = names.next();
+        var name = pn._name;
         if (!name.equals("_"))
           {
-            assign = new Assign(_pos, name, call_f);
+            assign = new Assign(pn._pos, name, call_f);
           }
       }
     if (assign != null)
       {
         assign.resolveTypes(res, outer, this);
-        stmnts.add(assign);
+        exprs.add(assign);
       }
   }
 
@@ -270,11 +273,11 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    */
-  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    List<Stmnt> stmnts = new List<>();
+    List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the decomposition code later, after resolveTypes is done.
     var t = _value.type();
@@ -286,27 +289,28 @@ public class Destructure extends ANY implements Stmnt
       {
         _names
           .stream()
+          .map(n -> n._name)
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
           .forEach(n -> AstErrors.destructuringRepeatedEntry(_pos, n, Collections.frequency(_names, n)));
         Feature tmp = new Feature(res,
                                   _pos,
-                                  Visi.PRIVATE,
+                                  Visi.PRIV,
                                   t,
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);
         tmp.scheduleForResolution(res);
-        stmnts.add(tmp.resolveTypes(res, outer));
+        exprs.add(tmp.resolveTypes(res, outer));
         Assign atmp = new Assign(res, _pos, tmp, _value, outer);
         atmp.resolveTypes(res, outer);
-        stmnts.add(atmp);
-        Iterator<String> names = _names.iterator();
-        Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
+        exprs.add(atmp);
+        var names = _names.iterator();
+        var fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
         for (var f : t.featureOfType().valueArguments())
           {
             // NYI: check if f is visible
-            var tf = f.resultTypeIfPresent(res, Type.NONE);
+            var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE);
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();
@@ -315,14 +319,14 @@ public class Destructure extends ANY implements Stmnt
                 for (var tfs : g.replaceOpen(t.generics()))
                   {
                     fieldNames.add(f.featureName().baseName() + "." + select);
-                    addAssign(res, outer,stmnts, tmp, f, names, select, fields, tfs);
+                    addAssign(res, outer,exprs, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
                 fieldNames.add(f.featureName().baseName());
-                addAssign(res, outer, stmnts, tmp, f, names, -1, fields, tf);
+                addAssign(res, outer, exprs, tmp, f, names, -1, fields, tf);
               }
           }
         if (fieldNames.size() != _names.size())
@@ -335,15 +339,15 @@ public class Destructure extends ANY implements Stmnt
         // to avoid subsequent errors:
         for (var f : _fields)
           {
-            f._returnType = new FunctionReturnType(Types.t_ERROR);
+            ((Feature) f)._returnType = new FunctionReturnType(Types.t_ERROR);
           }
       }
-    return new Block(_pos, stmnts);
+    return new Block(_pos, exprs);
   }
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()

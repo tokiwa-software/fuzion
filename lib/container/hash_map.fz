@@ -25,7 +25,7 @@
 
 # hash_map -- an immutable hash map from keys HK to values V
 #
-hash_map(HK type : has_hash,
+public hash_map(HK type : property.hashable,
         redef V type,
         ks array HK,
         vs array V) : Map HK V
@@ -42,13 +42,12 @@ is
 
   # size of allocated contents array, allows for some empty slots
   #
-  /* NYI: local */
   allocated_size => size * 2
 
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => (k.hash.low32bits.cast_to_i32 & 0.max) % allocated_size
+  at (k HK) => ((hash k).low32bits.cast_to_i32 & 0.max) % allocated_size
 
 
   # in case of a collision at given position,
@@ -60,7 +59,6 @@ is
 
   # the contents
   #
-  /* NYI: local */
   contents :=
     for
       mi := mutate.type.install_default
@@ -97,7 +95,7 @@ is
 
   # get the value k is mapped to
   #
-  index [] (k HK) option V is
+  public index [] (k HK) option V is
 
     retrieve (at i32) option V is
       match contents[at]
@@ -114,7 +112,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  items Sequence (tuple HK V) is
+  public items Sequence (tuple HK V) is
     contents
       .filter      (o -> o??)
       .map_sequence (o -> match o
@@ -125,7 +123,7 @@ is
   # this hash map as a human readable string
   # example: [(0,a),(1,b),(2,c),(3,d)]
   #
-  redef as_string =>
+  public redef as_string =>
     items
       .map_sequence (t -> "({t.values.0},{t.values.1})")
       .as_string
@@ -133,5 +131,5 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  type.empty => container.hash_map HK V [] []
+  public type.empty => container.hash_map HK V [] []
 

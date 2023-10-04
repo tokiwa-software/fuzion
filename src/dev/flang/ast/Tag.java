@@ -82,7 +82,7 @@ public class Tag extends Expr
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
-       Errors.count() > 0
+       Errors.any()
         || taggedType
             .choiceGenerics()
             .stream()
@@ -123,7 +123,7 @@ public class Tag extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -134,22 +134,25 @@ public class Tag extends Expr
    */
   public Tag visit(FeatureVisitor v, AbstractFeature outer)
   {
+    var o = _value;
     _value = _value.visit(v, outer);
+    if (CHECKS) check
+      (o.type().compareTo(_value.type()) == 0);
     v.action(this, outer);
     return this;
   }
 
 
   /**
-   * visit all the statements within this Tag.
+   * visit all the expressions within this Tag.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    super.visitStatements(v);
-    _value.visitStatements(v);
+    super.visitExpressions(v);
+    _value.visitExpressions(v);
   }
 
 

@@ -31,6 +31,10 @@ BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
 FUZION_BIN_SH = /bin/sh
 
+ifeq ($(FUZION_DEBUG_SYMBOLS),true)
+	JAVAC += -g
+endif
+
 JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
 JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
 
@@ -52,6 +56,8 @@ JAVA_FILES_BE_INTERPRETER    = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java
 JAVA_FILES_BE_C              = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
 JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
 JAVA_FILES_BE_JVM            = $(wildcard $(SRC)/dev/flang/be/jvm/*.java        )
+JAVA_FILES_BE_JVM_CLASSFILE  = $(wildcard $(SRC)/dev/flang/be/jvm/classfile/*.java)
+JAVA_FILES_BE_JVM_RUNTIME    = $(wildcard $(SRC)/dev/flang/be/jvm/runtime/*.java)
 JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
 JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
@@ -75,6 +81,8 @@ CLASS_FILES_BE_INTERPRETER    = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker
 CLASS_FILES_BE_C              = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
 CLASS_FILES_BE_EFFECTS        = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
 CLASS_FILES_BE_JVM            = $(CLASSES_DIR)/dev/flang/be/jvm/__marker_for_make__
+CLASS_FILES_BE_JVM_CLASSFILE  = $(CLASSES_DIR)/dev/flang/be/jvm/classfile/__marker_for_make__
+CLASS_FILES_BE_JVM_RUNTIME    = $(CLASSES_DIR)/dev/flang/be/jvm/runtime/__marker_for_make__
 CLASS_FILES_TOOLS             = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA      = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_TOOLS_DOCS        = $(CLASSES_DIR)/dev/flang/tools/docs/__marker_for_make__
@@ -85,8 +93,12 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_LIB = $(FZ_SRC)/lib
-FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
+FZ_SRC_LIB           = $(FZ_SRC)/lib
+FUZION_FILES_LIB     = $(shell find $(FZ_SRC_LIB) -name "*.fz")
+FZ_SRC_TESTS         = $(FZ_SRC)/tests
+FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
+FZ_SRC_INCLUDE       = $(FZ_SRC)/include
+FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -476,12 +488,22 @@ $(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
-$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
+$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_BE_JVM_CLASSFILE): $(JAVA_FILES_BE_JVM_CLASSFILE) $(CLASS_FILES_UTIL)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
+	touch $@
+
+$(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL) $(CLASS_FILES_BE_INTERPRETER)  # NYI: remove dependency on be/interpreter!
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
+	touch $@
+
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -539,7 +561,7 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 
 $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fz -sourceDirs=$(BUILD_DIR)/lib -XloadBaseLib=off -saveLib=$@
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(BUILD_DIR)/lib -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
 	$(BUILD_DIR)/bin/fz -XXcheckIntrinsics
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:
@@ -972,16 +994,16 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveLib=$@
 
-$(BUILD_DIR)/tests: $(FZ_SRC)/tests
-	mkdir -p $(@D)
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
 	rm -rf $@
-	cp -rf $^ $@
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC_TESTS) $@
 	chmod +x $@/*.sh
 
-$(BUILD_DIR)/include: $(FZ_SRC)/include
-	mkdir -p $(@D)
+$(BUILD_DIR)/include: $(FUZION_FILES_INCLUDE)
 	rm -rf $@
-	cp -rf $^ $@
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC_INCLUDE) $@
 
 $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	mkdir -p $(@D)
@@ -1026,7 +1048,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
 	cp $(BUILD_DIR)/UnicodeData.java $(SRC)/dev/flang/util/UnicodeData.java
-	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/unicode/data.fz
+	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/character_encodings/unicode/data.fz
 
 # generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
 $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
@@ -1040,7 +1062,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_int run_tests_c
+run_tests: run_tests_int run_tests_c run_tests_jvm
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
@@ -1054,9 +1076,15 @@ run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
+# phony target to run Fuzion tests using c backend and report number of failures
+.PHONY .SILENT: run_tests_jvm
+run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+	echo -n "testing JVM backend: "; \
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm || echo "*** NYI: ignoring failed JVM backend tests ***"
+
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
-run_tests_parallel: run_tests_int_parallel run_tests_c_parallel
+run_tests_parallel: run_tests_int_parallel run_tests_c_parallel run_tests_jvm_parallel
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
@@ -1069,6 +1097,12 @@ run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/
 run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
+
+# phony target to run Fuzion tests using jvm backend and report number of failures
+.PHONY .SILENT: run_tests_jvm_parallel
+run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+	echo -n "testing JVM backend: "; \
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm || echo "*** NYI: ignoring failed JVM backend tests ***"
 
 .PHONY: clean
 clean:

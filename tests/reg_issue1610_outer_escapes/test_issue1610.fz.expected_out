@@ -1,0 +1,17 @@
+case 1: PASS
+case 2: PASS
+case 3: PASS
+case 4: PASS
+case 1ref: PASS
+case 2ref: PASS
+case 3ref: PASS
+case 4ref: PASS
+case 1mut: PASS
+case 2mut: PASS
+case 3mut: PASS
+case 4mut: PASS
+case 1mut_ref: PASS
+case 2mut_ref: PASS
+case 3mut_ref: PASS
+case 4mut_ref: PASS
+case inh1: PASS

@@ -1,46 +1,94 @@
 ryu_test =>
 
-  min_subnormal := 4.9406564584124654E-324
-  max_subnormal := 2.2250738585072009E-308
-  min_positive  := 2.2250738585072014E-308
-  max_positive  := 1.7976931348623157E308
+  f64_test is
 
-  numbers := [ 0.0,
-              -f64.type.zero,
-              f64.type.positive_infinity,
-              f64.type.negative_infinity,
-              f64.type.quiet_NaN,
-              0.3,
-              1.0,
-              1.5,
-              f64.type.π,
-              min_subnormal,
-              max_subnormal,
-              min_positive,
-              max_positive,
+    say "ryū test f64"
 
-              # these numbers are taken from test cases in
-              # https://github.com/ulfjack/ryu
+    min_subnormal := 4.9406564584124654E-324
+    max_subnormal := 2.2250738585072009E-308
+    min_positive  := 2.2250738585072014E-308
+    max_positive  := 1.7976931348623157E308
+    zero          := 0.0
 
-              1.8531501765868567E21,
-              -3.347727380279489E33,
-              1.9430376160308388E16,
-              -6.9741824662760956E19,
-              4.3816050601147837E18,
-              -2.1098088986959632E16,
-              -2.109808898695963E16,
-              4.940656E-318,
-              1.18575755E-316,
-              2.989102097996E-312,
-              9.0608011534336E15,
-              4.708356024711512E18,
-              9.409340012568248E18,
-              ]
+    numbers := [ zero,
+                -zero,
+                f64.type.positive_infinity,
+                f64.type.negative_infinity,
+                f64.type.quiet_NaN,
+                0.3,
+                1.0,
+                1.5,
+                f64.type.π,
+                min_subnormal,
+                max_subnormal,
+                min_positive,
+                max_positive,
 
-  for num0 in numbers
-  do
-    for is_scientific in [true, false] do
-      for rounding_mode in [("conservative", ryū.rounding_conservative), ("even", ryū.rounding_even)] do
-        (rm_name, rm) := rounding_mode
-        say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {ryū.as_string num0 is_scientific rm}"
-    say "--"
+                # these numbers are taken from test cases in
+                # https://github.com/ulfjack/ryu
+
+                1.8531501765868567E21,
+                -3.347727380279489E33,
+                1.9430376160308388E16,
+                -6.9741824662760956E19,
+                4.3816050601147837E18,
+                -2.1098088986959632E16,
+                -2.109808898695963E16,
+                4.940656E-318,
+                1.18575755E-316,
+                2.989102097996E-312,
+                9.0608011534336E15,
+                4.708356024711512E18,
+                9.409340012568248E18,
+                ]
+
+    for num0 in numbers
+    do
+      r := num.ryū f64
+      for is_scientific in [true, false] do
+        for rounding_mode in [("conservative", r.rounding_conservative), ("even", r.rounding_even)] do
+          (rm_name, rm) := rounding_mode
+          say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {r.as_string num0 is_scientific rm}"
+      say "--"
+
+
+  f32_test is
+
+    say "ryū test f32"
+
+    numbers array f32 := [ f32.type.zero,
+                -f32.type.zero,
+                f32.type.positive_infinity,
+                f32.type.negative_infinity,
+                f32.type.quiet_NaN,
+                0.3,
+                1.0,
+                1.5,
+                f32.type.π,
+
+                # these numbers are taken from test cases in
+                # https://github.com/ulfjack/ryu
+
+                1.8531501765868567E21,
+                -3.347727380279489E33,
+                1.943037616030838E16,
+                -6.9741824662760956E19,
+                4.3816050601147837E18,
+                -2.109808898695963E16,
+                9.0608011534336E15,
+                4.708356024711512E18,
+                9.409340012568248E18,
+                ]
+
+    for num0 in numbers
+    do
+      r := num.ryū f32
+      for is_scientific in [true, false] do
+        for rounding_mode in [("conservative", r.rounding_conservative), ("even", r.rounding_even)] do
+          (rm_name, rm) := rounding_mode
+          say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {r.as_string num0 is_scientific rm}"
+      say "--"
+
+
+  f64_test
+  f32_test

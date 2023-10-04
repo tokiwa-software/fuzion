@@ -453,6 +453,41 @@ public class List<T>
     return g;
   }
 
+
+  /**
+   * Create a mapping of this list by applying f to all elements
+   *
+   * @return A new list of the same length, containing the result of f applied to each element.
+   */
+  public <V> List<V> map2(Function<T,V> f)
+  {
+    var result = new List<V>();
+    for (var i = 0; i < size(); i++)
+      {
+        result.add(f.apply(get(i)));
+      }
+    return result;
+  }
+
+
+  /**
+   * Create a String by applying f to all elements and concatenating the result
+   * in order.
+   *
+   * @param f function that maps an element to a string
+   *
+   * @return "" + f.apply(get(0)) +  f.apply(get(1)) + ... + f.apply(get(size()-1))
+   */
+  public String toString(Function<T,String> f)
+  {
+    var result = new StringBuilder();
+    for (var e : this)
+      {
+        result.append(f.apply(e));
+      }
+    return result.toString();
+  }
+
 }
 
 /* end of file */

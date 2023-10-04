@@ -35,7 +35,6 @@ import java.nio.file.Path;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.be.c.C;
 import dev.flang.be.c.COptions;
@@ -58,7 +57,6 @@ import dev.flang.me.MiddleEnd;
 
 import dev.flang.opt.Optimizer;
 
-import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -74,13 +72,6 @@ class Fuzion extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
-
-
-  /**
-   * Names of Java properties accepted by fz command:
-   */
-  static final String FUZION_HOME_PROPERTY = "fuzion.home";
-  static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
 
 
   static String  _binaryName_ = null;
@@ -169,11 +160,57 @@ class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_), fuir).compile();
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false), fuir).compile();
+      }
+      boolean takesApplicationArgs()
+      {
+        return true;
       }
     },
 
-    classes    ("-classes"),
+    classes    ("-classes")
+    {
+      String usage()
+      {
+        return "[-Xdfa=(on|off)] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
+            result = true;
+          }
+        return result;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ true, /* save JAR */ false), fuir).compile();
+      }
+    },
+
+    jar        ("-jar")
+    {
+      String usage()
+      {
+        return "[-Xdfa=(on|off)] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
+            result = true;
+          }
+        return result;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ false, /* save JAR */ true), fuir).compile();
+      }
+    },
 
     llvm       ("-llvm"),
 
@@ -262,7 +299,7 @@ class Fuzion extends Tool
         /*
          * Save _module to a module file
          */
-        if (Errors.count() == 0)
+        if (!Errors.any())
           {
             var p = f._saveLib;
             var n = p.getFileName().toString();
@@ -403,6 +440,7 @@ class Fuzion extends Tool
       var mir = fe.createMIR();                                                       f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
+      new Effects(fuir).check();                                                      f.timer("effectsCheck");
       process(fe._options, fuir);
     }
 
@@ -442,20 +480,20 @@ class Fuzion extends Tool
   /**
    * When saving a library, should we erase internal names?
    */
-  boolean _eraseInternalNamesInLib = true;
+  boolean _eraseInternalNamesInLib = false;
 
 
   /**
    * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
    * not allowed if run in a web playground.
    */
-  boolean _enableUnsafeIntrinsics = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
+  boolean _enableUnsafeIntrinsics = Boolean.getBoolean(FuzionConstants.FUZION_ENABLE_UNSAFE_INTRINSICS_PROPERTY);
 
 
   /**
    * Default result of debugLevel:
    */
-  int _debugLevel = Integer.getInteger("fuzion.debugLevel", 1);
+  int _debugLevel = Integer.getInteger(FuzionConstants.FUZION_DEBUG_LEVEL_PROPERTY, 1);
 
 
   /**
@@ -485,7 +523,7 @@ class Fuzion extends Tool
   /**
    * Default result of safety:
    */
-  boolean _safety = Boolean.valueOf(System.getProperty(FUZION_SAFETY_PROPERTY, "true"));
+  boolean _safety = Boolean.valueOf(System.getProperty(FuzionConstants.FUZION_SAFETY_PROPERTY, "true"));
 
 
   /**
@@ -841,7 +879,7 @@ class Fuzion extends Tool
       }
     if (_fuzionHome == null)
       {
-        fatal("neither property '" + FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
+        fatal("neither property '" + FuzionConstants.FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
       }
     return () ->
       {

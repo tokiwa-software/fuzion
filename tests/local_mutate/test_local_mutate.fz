@@ -88,7 +88,7 @@ test_local_mutate is
 
       # handler for negative tests that cause panic:
       #
-      my_panic : Panic_Provider is
+      my_panic : Panic_Handler is
         do_panic(msg String) =>
           say "*** got '$msg' ***"
 
@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: has_total_order, data Sequence T) array T is
+    quicksort(T type: property.orderable, data Sequence T) array T is
       c := data.count
       if c = 0
         []
@@ -165,8 +165,8 @@ test_local_mutate is
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
-      say (quicksort 0..i)
-      say (quicksort (i..0 : -1))
+      say (quicksort i32 0..i)
+      say (quicksort i32 (i..0 : -1))
 
   test_quicksort
 
@@ -186,9 +186,9 @@ test_local_mutate is
       prev => p.get
 
     ring(T type, from Sequence T)
-      pre
-        !from.is_empty
-     =>
+    pre
+      !from.is_empty
+    =>
       m : mutate is
 
       ring2(from list T) Cell T m is   # NYI '=>' causes error cyclic type inference
@@ -340,9 +340,9 @@ test_local_mutate is
     # create a ring from the elements of a sequence
     #
     create_ring(T type, from Sequence T)
-      pre
-        !from.is_empty
-     =>
+    pre
+      !from.is_empty
+    =>
       # define mutate context to be used
       m : mutate is
 

@@ -35,16 +35,16 @@ chainedBool is
   test(a, b, c, d, e, f, g, h i32) =>
     say ("$a <= $b <  $c <= $d <  $e <= $f <  $g <= $h = " + (a ≤ b <  c ≤ d <  e ≤ f <  g ≤ h))
     if ((a ≤ b <  c ≤ d <  e ≤ f <  g ≤ h) ^ ((a ≤ b) && (b <  c) && (c ≤ d) && (d <  e) && (e ≤ f) && (f <  g) && (g ≤ h)))
-      fuzion.std.panic "*** FAILED!"
+      panic "*** FAILED!"
     say ("$a >= $b >  $c >= $d >  $e >= $f >  $g >= $h = " + (a ≥ b >  c ≥ d >  e ≥ f >  g ≥ h))
     if ((a ≥ b >  c ≥ d >  e ≥ f >  g ≥ h) ^ ((a ≥ b) && (b >  c) && (c ≥ d) && (d >  e) && (e ≥ f) && (f >  g) && (g ≥ h)))
-      fuzion.std.panic "*** FAILED!"
+      panic "*** FAILED!"
     say ("$a <  $b <  $c <= $d >  $e >  $f >  $g >  $h = " + (a <  b <  c ≤ d >  e >  f >  g >  h))
     if ((a <  b <  c ≤ d >  e >  f >  g >  h) ^ ((a <  b) && (b <  c) && (c ≤ d) && (d >  e) && (e >  f) && (f >  g) && (g >  h)))
-      fuzion.std.panic "*** FAILED!"
+      panic "*** FAILED!"
     say ("$a <= $b <= $c <= $d >= $e >= $f >= $g >= $h = " + (a ≤ b ≤ c ≤ d ≥ e ≥ f ≥ g ≥ h))
     if ((a ≤ b ≤ c ≤ d ≥ e ≥ f ≥ g ≥ h) ^ ((a ≤ b) && (b ≤ c) && (c ≤ d) && (d ≥ e) && (e ≥ f) && (f ≥ g) && (g ≥ h)))
-      fuzion.std.panic "*** FAILED!"
+      panic "*** FAILED!"
 
   test 1 2 3 4 5 6 7 8
   test -1 -2 -3 -4 -5 -6 -7 -8

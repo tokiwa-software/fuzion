@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Check implements Stmnt
+public class Check extends Expr
 {
 
 
@@ -73,7 +73,7 @@ public class Check implements Stmnt
 
 
   /**
-   * The sourcecode position of this statement, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
@@ -82,7 +82,7 @@ public class Check implements Stmnt
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -99,26 +99,36 @@ public class Check implements Stmnt
 
 
   /**
-   * visit all the statements within this Check.
+   * visit all the expressions within this Check.
    *
    * @param v the visitor instance that defines an action to be performed on
-   * visited statements
+   * visited expressions
    */
-  public void visitStatements(StatementVisitor v)
+  public void visitExpressions(ExpressionVisitor v)
   {
-    Stmnt.super.visitStatements(v);
-    cond.visitStatements(v);
+    super.visitExpressions(v);
+    cond.visitExpressions(v);
   }
 
 
   /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
+   * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
   public boolean containsOnlyDeclarations()
   {
     return false;
   };
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return false;
+  }
 
 
   /**

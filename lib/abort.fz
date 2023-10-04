@@ -28,4 +28,4 @@
 # contains the final value of a computation.
 # used e.g. in Sequence.reduce
 #
-abort(T type, val T) is
+public abort(T type, public val T) is

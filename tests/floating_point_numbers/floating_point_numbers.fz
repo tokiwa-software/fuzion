@@ -38,16 +38,14 @@ floating_point_numbers is
 
 
   # shared tests for f32/f64
-  generic_tests(T type: float T) is
+  generic_tests(T type: float) is
     zero := T.zero
     one := T.one
     two := one + one
     three := one + one + one
 
     # serialize floating point numbers
-    # NYI serialization will be done in fuzion and then we won't have
-    # different results for interpreter- / c- backend
-    chck ("{T.quiet_NaN}" =  "nan" || "{T.quiet_NaN}" =  "NaN")            "{T.name}: quiet nan serializes correctly"
+    chck ("{T.quiet_NaN}" =  "NaN")                                        "{T.name}: quiet nan serializes correctly"
     chck ("{T.negative_infinity}"
       .replace("I", "i")
       .substring(0, 4) =  "-inf")                                          "{T.name}: neg inf serializes correctly"
@@ -164,7 +162,6 @@ floating_point_numbers is
 
   # run generic test for f64
   generic_tests f64
-
 
 
   # cast_to_f32, 0, -∞, ∞

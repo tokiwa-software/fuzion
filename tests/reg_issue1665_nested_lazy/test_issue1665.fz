@@ -1,0 +1,78 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_issue1665.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_issue1665 creates three layers of nested lazy expressions and conditionally
+# executes them up to levels 0, 1, 2, and 3
+#
+test_issue1665 is
+
+  h(z Lazy String) is
+    show(n i32) =>
+      if n > 2
+        say "h received '$z'"
+      else
+        say "h called, but not using z"
+
+  g(y Lazy h) is
+    show(n i32) =>
+      if n > 1
+        y.show n
+      else
+        say "g called, but not using y"
+
+  f(n i32, x Lazy g) is
+    if n > 0
+      x.show n
+    else
+      say "f called, but not using x"
+
+  create_z =>
+    say "creating z"
+    "zzz"
+
+  say "------ testing calls: ------"
+
+  for i in 0..3 do
+    say "case $i:"
+    _ := f i ({say "using x"; g ({say "using y"; h ({say "using z"; create_z})})})
+
+
+  say "------ testing assignments: ------"
+
+  l1 Lazy i32 := ({say "*** using lazy l1 ***"; 4711})
+  say "created l1"
+  say "used l1: $l1"
+
+  l2 Lazy String := ({say "*** using lazy l2 ***"; create_z})
+  say "created l2"
+  say "used l2: $l2"
+
+  l3 Lazy i32 := ({say "*** using lazy l3 ***"; 32168})
+  say "created l3"
+  l3a Lazy i32 := l3
+  say "assigned to l3a"
+  l3b := l3
+  say "used l3 and assigned result to l3b"
+  say "using l3b: $l3b {type_of l3b}"

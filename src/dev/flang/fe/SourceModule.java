@@ -41,21 +41,22 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractBlock;
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
 import dev.flang.ast.Consts;
+import dev.flang.ast.Current;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
-import dev.flang.ast.Stmnt;
-import dev.flang.ast.Type;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
@@ -167,14 +168,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var p = _inputFile;
     if (p != null)
       {
-        var stmnts = parseFile(p);
-        ((AbstractBlock) _universe.code())._statements.addAll(stmnts);
-        for (var s : stmnts)
+        var expr = parseFile(p);
+        ((AbstractBlock) _universe.code())._expressions.addAll(expr);
+        for (var s : expr)
           {
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1 && !f.isField())
+                if (expr.size() == 1 && !f.isField())
                   {
                     res = f.featureName().baseName();
                   }
@@ -192,7 +193,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return the features found in source file p, may be empty, never null.
    */
-  List<Stmnt> parseFile(Path p)
+  List<Expr> parseFile(Path p)
   {
     _options.verbosePrintln(2, " - " + p);
     return new Parser(p).unit();
@@ -208,17 +209,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var stmnts = parseFile(p);
+    var exprs = parseFile(p);
     var result = new List<Feature>();
-    for (var s : stmnts)
+    for (var s : exprs)
       {
         if (s instanceof Feature f)
           {
             result.add(f);
           }
-        else if (Errors.count() == 0)
+        else if (!Errors.any())
           {
-            AstErrors.statementNotAllowedOutsideOfFeatureDeclaration(s);
+            AstErrors.expressionNotAllowedOutsideOfFeatureDeclaration(s);
           }
       }
     return result;
@@ -239,15 +240,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _universe.setState(Feature.State.RESOLVED);
         var stdlib = _dependsOn[0];
         new Types.Resolved(this,
-                           (name, ref) ->
+                           (name) ->
                              {
                                var f = lookupType(SourcePosition.builtIn, _universe, name, false)._feature;
                                return new NormalType(stdlib,
                                                      -1,
-                                                     SourcePosition.builtIn,
                                                      f,
-                                                     ref || f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
-                                                     Type.NONE,
+                                                     f.isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                                     UnresolvedType.NONE,
                                                      _universe.selfType());
                              },
                            _universe);
@@ -285,7 +285,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   MIR createMIR(AbstractFeature main)
   {
-    if (main != null && Errors.count() == 0)
+    if (main != null && !Errors.any())
       {
         if (main.valueArguments().size() != 0)
           {
@@ -305,7 +305,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     var result = new MIR(_universe, main, this);
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         new DFA(result).check();
       }
@@ -466,7 +466,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     if (inner.isField())
       {
-        AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+        // NYI inner.isTypeFeature() does not work currently
+        if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
+          {
+            AstErrors.typeFeaturesMustNotBeFields(inner);
+          }
+        else
+          {
+            AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+          }
       }
 
     setOuterAndAddInnerForQualifiedRec(inner, 0, outer);
@@ -567,7 +575,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
-                (Errors.count() > 0  || c.calledFeature() != null);
+                (Errors.any()  || c.calledFeature() != null);
 
               if (c.calledFeature() instanceof Feature cf
                   // fixes issue #1358
@@ -582,7 +590,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       });
 
     if (inner.impl().initialValue() != null &&
-        outer.pos()._sourceFile != inner.pos()._sourceFile &&
+        !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
                                           *
@@ -590,7 +598,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                           */
         )
       { // declaring field with initial value in different file than outer
-        // feature.  We would have to add this to the statements of the outer
+        // feature.  We would have to add this to the expressions of the outer
         // feature.  But if there are several such fields, in what order?
         AstErrors.initialValueNotAllowed(inner);
       }
@@ -640,6 +648,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
   {
+    if (PRECONDITIONS)
+      require(outer.isConstructor(), inner.isTypeFeature());
+
     var d = data(outer);
     var fn = inner.featureName();
     if (!inherited && d._declaredFeatures != null)
@@ -778,9 +789,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if (Errors.count() == 0 || !f.isTypeFeature())
+        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
           {
-            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+            AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
       }
     else
@@ -913,7 +924,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             var cf = p.calledFeature();
             if (CHECKS) check
-              (Errors.count() > 0 || cf != null);
+              (Errors.any() || cf != null);
 
             if (cf != null)
               {
@@ -972,7 +983,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Stmnt use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
@@ -1003,7 +1014,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
             if (!fields.isEmpty())
               {
-                var f = curOuter instanceof Feature of /* NYI: AND cutOuter loaded by this module */
+                var f = curOuter instanceof Feature of
                   ? of.findFieldDefInScope(name, use, inner)
                   : null;
                 fs = new TreeMap<>(fs);
@@ -1027,7 +1038,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var e : fs.entrySet())
           {
             var v = e.getValue();
-            if (!v.isField() || !foundFieldInScope)
+            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
+                (!v.isField() || !foundFieldInScope))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
                 foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
@@ -1061,28 +1073,67 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param traverseOuter true to collect all the features found in outer and
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
+   *
+   * @return FeatureAndOuter tuple of the found type's declaring feature,
+   * FeatureAndOuter.ERROR in case of an error.
    */
   public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
   {
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 || outer != Types.f_ERROR);
+    return lookupType(pos, outer, name, traverseOuter, false);
+  }
 
-    FeatureAndOuter result = null;
+
+  /**
+   * Lookup the feature that is referenced in a non-generic type.  There might
+   * be several features with the given name and different argument counts.
+   * Then, only the feature that is a constructor defines the type.
+   *
+   * If there are several such constructors, the type is ambiguous and an error
+   * will be produced.
+   *
+   * Also, if there is no such type, an error will be produced.
+   *
+   * @param pos the position of the type.
+   *
+   * @param outer the outer feature of the type
+   *
+   * @param name the name of the type
+   *
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
+   *
+   * @return FeatureAndOuter tuple of the found type's declaring feature,
+   * FeatureAndOuter.ERROR in case of an error, null in case no type was found
+   * and ignoreNotFound is true.
+   */
+  public FeatureAndOuter lookupType(SourcePosition pos,
+                                    AbstractFeature outer,
+                                    String name,
+                                    boolean traverseOuter,
+                                    boolean ignoreNotFound)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || outer != Types.f_ERROR);
+
+    FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
         _res.resolveDeclarations(outer);
-        var curOuter = outer;
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter);
+        var fs = lookup(outer, name, null, traverseOuter, false);
         for (var fo : fs)
           {
             var f = fo._feature;
-            (f.definesType() ? type_fs
-                             : nontype_fs).add(f);
-            if (f.definesType() && type_fs.size() == 1)
+            if (typeVisible(pos._sourceFile, f, true))
               {
-                result = fo;
+                (f.definesType() ? type_fs
+                                 : nontype_fs).add(f);
+                if (f.definesType())
+                  {
+                    result = fo;
+                  }
               }
           }
         if (type_fs.size() > 1)
@@ -1091,13 +1142,20 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         else if (type_fs.size() < 1)
           {
-            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+            if (ignoreNotFound)
+              {
+                result = null;
+              }
+            else
+              {
+                AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+              }
           }
       }
-    if (result == null)
-      {
-        result = FeatureAndOuter.ERROR;
-      }
+
+    if (POSTCONDITIONS) ensure
+      (ignoreNotFound || result != null);
+
     return result;
   }
 
@@ -1125,49 +1183,80 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param redefinition the heir feature.
    *
-   * @param to original argument type in 'original'.
+   * @param to original argument type in `original`.
    *
-   * @param tr new argument type in 'redefinition'.
+   * @param tr new argument type in `redefinition`.
    *
-   * @return true if 'to' may be replaced with 'tr'.
+   * @param fixed true to perform the test as if `redefinition` is `fixed`. This
+   * is used in two ways: first, to check if `redefinition` is fixed, and then,
+   * when an error is reported, to suggest adding `fixed` if that would solve
+   * the error.
+   *
+   * @return true if `to` may be replaced with `tr` or if `to` or `tr` contain
+   * an error.
    */
   boolean isLegalCovariantThisType(AbstractFeature original,
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr,
-                                   boolean ignoreFixedModifier)
+                                   boolean fixed)
   {
     return
-      /* to is original    .this.type  and
-       * tr is redefinition.this.type
+      /* to contains original    .this.type and
+       * tr contains redefinition.this.type
        */
-      ((to.isThisType()                                        ) &&
-       (tr.isThisType()                                        ) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
+      to.replace_this_type(original.outer(), redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
 
-      /* to is original.this.type  and
-       * redefinition is fixed and tr is redefinition.selfType.
-       */
-      ((to.isThisType()                                        ) &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0) &&
-       (to.featureOfType() == original    .outer()             ) &&
-       (tr.featureOfType() == redefinition.outer()             )   ) ||
-
-      /* original and redefinition are inner features of type features, to is
-       * THIS_TYPE and tr is the underlying non-type features selfType.
+      /* to depends on original.this.type, redefinition is fixed and tr is
+       * equals the actual type of to as seen by redefinition.outer.
        *
-       * E.g., i32.type.equality(a, b i32) redefines numeric.type.equality(a, b
-       * numeric.this.type)
+       * Ex.
+       *
+       *   p is
+       *     maybe option p.this.type
+       *     is abstract
+       *
+       *   h : p is
+       *     fixed redef maybe option h
+       *     is
+       *       if random.next_bool then
+       *         nil
+       *       else
+       *         h
+       *
+       * here, the result type of inherited `p.maybe` is `option p.this.type`,
+       * which gets turned into `option h.this.type` when inherited. However,
+       * since `h.maybe` is fixed, we can use the actual type in the outer
+       * feature `h`, i.e., `option h`, which is equal to the result type of the
+       * redefinition `h.maybe`.
        */
-      (original    .outer().isTypeFeature()                                                                                            &&
-       redefinition.outer().isTypeFeature()                                                                                            &&
-       to.isGenericArgument()                                                                                                          &&
-       to.genericArgument()                   .typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       original.outer().generics().list.get(0).typeParameter().featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE) &&  /* NYI: ugly string comparison */
-       !tr.isGenericArgument()                                                                                                         &&
-       ((redefinition.modifiers() & Consts.MODIFIER_FIXED) != 0 || ignoreFixedModifier)                                                &&
-       tr.compareTo(redefinition.outer().typeFeatureOrigin().selfTypeInTypeFeature()) == 0                                               );
+      fixed &&
+      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
+
+      /* original and redefinition are inner features of type features, `to` is
+       * `this.type` and `tr` is the underlying non-type feature's selfType.
+       *
+       * E.g.,
+       *
+       *   fixed i32.type.equality(a, b i32) bool is ...
+       *
+       * redefines
+       *
+       *   equatable.type.equality(a, b equatable.this.type) bool is abstract
+       *
+       * so we allow `equatable.this.type` to become `i32`.
+       */
+      fixed                                &&
+      original    .outer().isTypeFeature() &&
+      redefinition.outer().isTypeFeature() &&
+      to.replace_this_type_in_type_feature(redefinition.outer())
+        .compareTo(tr) == 0                                                       ||
+
+      /* avoid reporting errors in case of previous errors
+       */
+      to.containsError() ||
+      tr.containsError();
   }
 
 
@@ -1180,8 +1269,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public void checkTypes(Feature f)
   {
+    f.impl().checkTypes(f);
     var args = f.arguments();
     int ean = args.size();
+    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());
@@ -1196,13 +1287,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1.compareTo(t2) != 0 &&
-                    !isLegalCovariantThisType(o, f, t1, t2, false) &&
-                    !t1.containsError() && !t2.containsError())
+                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
-                      (Errors.count() > 0 ||
+                      (Errors.any() ||
                        i < args.size() ||
                        args.get(args.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(args.size() - 1, i);
@@ -1229,7 +1318,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
                   : !t1.isAssignableFrom(t2)) &&
                  t2 != Types.resolved.t_void &&
-                 !isLegalCovariantThisType(o, f, t1, t2, false))
+                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }
@@ -1251,6 +1340,91 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
+      }
+    checkLegalTypeVisibility(f);
+    checkResultTypeVisibility(f);
+    checkArgTypesVisibility(f);
+    checkPreconditionVisibility(f);
+  }
+
+
+  /**
+   * Are all used features in precondition at least as visible as feature?
+   * @param f
+   */
+  private void checkPreconditionVisibility(Feature f)
+  {
+    f
+      .contract()
+      .req
+      .forEach(r -> r.visit(new FeatureVisitor() {
+        @Override
+        public void action(AbstractCall c)
+        {
+          super.action(c);
+          if (// visibility of arg is allowed to be more restrictive
+              // since it is always known by caller
+              !f.arguments().contains(c.calledFeature())
+              // do not check exprResult generated by label
+              && !(c.target() instanceof Current)
+              // type param is known by caller
+              && !c.calledFeature().isTypeParameter()
+              // the called feature must be at least as visible as the feature.
+              && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
+            {
+              AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
+            }
+        }
+      }, f));
+  }
+
+
+  /**
+   * Check that `f` defines type if type visibility is explicitly specified.
+   *
+   * @param f
+   */
+  private void checkLegalTypeVisibility(Feature f)
+  {
+    if (!f.definesType() && f.visibility().definesTypeVisibility())
+      {
+        AstErrors.illegalVisibilityModifier(f);
+      }
+  }
+
+
+  /**
+   * Check that the types of the arguments are at least as visible as `f`.
+   *
+   * @param f
+   */
+  private void checkArgTypesVisibility(Feature f)
+  {
+    for (AbstractFeature arg : f.arguments())
+      {
+        if (!arg.isTypeFeaturesThisType())
+          {
+            var s = arg.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+            if (!s.isEmpty())
+              {
+                AstErrors.argTypeMoreRestrictiveVisbility(f, arg, s);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Check that result type is at least as visible as feature `f`.
+   *
+   * @param f
+   */
+  private void checkResultTypeVisibility(Feature f)
+  {
+    var s = f.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+    if (!s.isEmpty())
+      {
+        AstErrors.resultTypeMoreRestrictiveVisibility(f, s);
       }
   }
 

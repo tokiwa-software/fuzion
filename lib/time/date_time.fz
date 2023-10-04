@@ -26,7 +26,7 @@
 #
 # Represents a coordinated universal date and time (UTC) in the gregorian calendar.
 #
-date_time(year, day_in_year, hour, minute, second, nano_second i32) : has_total_order
+public date_time(public year, day_in_year, hour, minute, second, nano_second i32) : property.orderable
 pre
   day_in_year ≥ 1  & day_in_year  ≤ days_in_year year,  # leap years have 366 days
   hour        ≥ 0  & hour         ≤ 23,
@@ -36,20 +36,20 @@ pre
 is
 
   # how many days does february have in the given year?
-  private days_in_february =>
+  days_in_february =>
     if is_leap_year year then 29 else 28
 
 
   # the days in the months of the year
   # starting at january, february, ..., december
-  private days_in_months =>
+  days_in_months =>
     [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
   # the month of the year
-  month
+  public month
   post result ≥ 1 & result ≤ 12
-    =>
+  =>
     # Increase the month and add the days in month to
     # the accumulated days. We found our month once
     # the sum of accumulated days and the days in the
@@ -63,45 +63,52 @@ is
 
 
   # the day of the month
-  day_of_month
+  public day_of_month
   post result ≥ 1 & result ≤ 31
-    =>
+  =>
     days_in_months
       .reduce day_in_year (d, md -> if d-md ≤ 0 then abort d else d-md)
 
 
 
   # the millisecond of this datetime.
-  milli_second
+  public milli_second
   post result ≥ 0 & result ≤ 999
-    =>
+  =>
     nano_second / 1E3
 
 
 
   # returns ISO 8601 UTC string, precision millisecond
   # example: 2018-09-14T23:59:59.079Z
-  redef as_string String is
+  public redef as_string String is
     "{year.as_string 2 10}-{month.as_string 2 10}-{day_of_month.as_string 2 10}" +
       "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}Z"
 
 
 
   # # NYI
-  # infix + (other date_time) time.duration is
+  # infix + (other time.duration) date_time is
 
   # infix - (other date_time) time.duration is
+  # infix - (other time.duration) date_time is
 
   # as_string(f date_time_format, local/time_zone) String is
 
   # is_before(other date_time) bool is
   # is_after(other date_time) bool is
-  # is_same(other date_time) bool is
   # is_between(o1, o2 date_time) bool is
   # ...
 
-  # day_of_week i32 is
-  # ...
+  # 0 = Sunday, 1 = Monday, etc.
+  #
+  # source: https://c-faq.com/misc/zeller.html
+  # original code by: Tomohiko Sakamoto
+  #
+  public day_of_week i32 is
+    t := [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+    y := year - (if month < 3 then 1 else 0)
+    (y + y/4 - y/100 + y/400 + t[month-1] + day_of_month) % 7
 
   # type.parse(s String, locale/timezone) date_time is
 
@@ -109,7 +116,7 @@ is
 
   # defines equality for date time
   # this is normally used via infix operator =
-  type.equality(a, b date_time.this.type) bool is
+  public type.equality(a, b date_time.this) bool is
     a.nano_second = b.nano_second &
      a.year = b.year &
      a.day_in_year = b.day_in_year &
@@ -121,7 +128,7 @@ is
 
   # defines partial order for date time
   # this is normally used via infix operators <, >, <= etc.
-  type.lteq(a, b date_time.this.type) bool is
+  public type.lteq(a, b date_time.this) bool is
     [(a.year, b.year),
      (a.day_in_year, b.day_in_year),
      (a.hour, b.hour),
@@ -136,12 +143,12 @@ is
 
 
 # how many days does the given year have?
-private days_in_year(year i32) =>
+public days_in_year(year i32) =>
   if is_leap_year year then 366 else 365
 
 
 
 # is the given year a leap year?
-private is_leap_year(year i32) =>
+is_leap_year(year i32) =>
   (year % 4 = 0 & year % 100 != 0) |
     ((year % 100 = 0) & (year % 400 = 0))

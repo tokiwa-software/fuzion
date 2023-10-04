@@ -328,11 +328,11 @@ class ForClass extends ANY
     var rf  = sc != null ? "redef " : "";
     var base = _class == String.class ? "fuzion.java.Java_String" : "fuzion.java.Java_Object";
     StringBuilder data_dynamic = new StringBuilder(header(fzj, "Fuzion interface to instance members of Java instance class '" + cn + "'") +
-                                                   jtn + "(" + rf + "forbidden void) ref : " + inh + base + "(forbidden) is\n");
+                                                   "public " + jtn + "(" + rf + "forbidden void) ref : " + inh + base + "(forbidden) is\n");
     StringBuilder data_static  = new StringBuilder(header(fzj, "Fuzion interface to static members of Java class '" + cn + "'") +
-                                                   jtn + STATIC_SUFFIX + " is\n");
+                                                   "public " + jtn + STATIC_SUFFIX + " is\n");
     StringBuilder data_unit    = new StringBuilder(header(fzj, "Fuzion unit feature to call static members of Java class '" + cn + "'") +
-                                                   jtn + " => " + jtn + STATIC_SUFFIX + "\n");
+                                                   "public " + jtn + " => " + jtn + STATIC_SUFFIX + "\n");
     for (var me : _generateM.values())
       {
         var pa = me.getParameters();
@@ -473,7 +473,7 @@ class ForClass extends ANY
         data_dynamic.append("\n" +
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
-                            "  " + fn + fp + " " + fr + " is\n" +
+                            "  public " + fn + fp + " " + fr + " is\n" +
                             "    " + ("fuzion.java.call_virtual (" + fr + ") " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
@@ -487,7 +487,7 @@ class ForClass extends ANY
         data_static.append("\n" +
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
-                            "  " + fn + fp + " " + fr + " is\n" +
+                            "  public " + fn + fp + " " + fr + " is\n" +
                             "    " + ("fuzion.java.call_static (" + fr + ") " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
@@ -518,7 +518,7 @@ class ForClass extends ANY
     data_static.append("\n" +
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  " + fn + fp + " " + fr + " is\n" +
+                       "  public " + fn + fp + " " + fr + " is\n" +
                        "    " + ("fuzion.java.call_constructor (" + fr + ") " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
@@ -550,7 +550,7 @@ class ForClass extends ANY
     data.append("\n" +
                 "  # short-hand to call Java method '" + me + "':\n" +
                 "  #\n" +
-                "  " + fn0 + fp + " (" + fr + ") is\n" +
+                "  public " + fn0 + fp + " (" + fr + ") is\n" +
                 "    " + fn + parametersList(pa) + "\n");
   }
 
@@ -577,7 +577,7 @@ class ForClass extends ANY
     data_static.append("\n" +
                        "  # short-hand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  " + fn0 + fp + " (" + fr + ") is\n" +
+                       "  public " + fn0 + fp + " (" + fr + ") is\n" +
                        "    " + fn + parametersList(pa) + "\n");
   }
 
@@ -996,7 +996,7 @@ class ForClass extends ANY
             data_static.append("\n" +
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
-                               "  " + fn + " " + rt + " is\n" +
+                               "  public " + fn + " " + rt + " is\n" +
                                "    " + ("fuzion.java.get_static_field (" + rt + ") " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + "\n"));
@@ -1006,7 +1006,7 @@ class ForClass extends ANY
             data_dynamic.append("\n" +
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
-                                "  " + fn + " " + rt + " is\n" +
+                                "  public " + fn + " " + rt + " is\n" +
                                 "    " + ("fuzion.java.get_field (" + rt + ") " +
                                           fcn + ".this " +
                                           fuzionString(jn) + "\n"

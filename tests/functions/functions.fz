@@ -25,6 +25,14 @@
 
 functions is
 
+    # this test uses Any.hash_code, which no longer exists. So we provide it here:
+    Any.hash_code =>
+      for
+        r := 4711, r *° 257 +° c.as_i32
+        c in Any.this.as_string.utf8
+      else
+        r
+
     y(f ()->i32){}
     x0(f0 Function i32 Any i32) is
       say "here 1x0---------------"
@@ -58,7 +66,7 @@ functions is
 //    x (fun (o, i) -> o.hash_code + i)
 //    x (fun (o, i) { set result := o.hash_code + i})
     x ((o, i) -> { set result := o.hash_code + i })
-    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last statement
+    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last expression
 
     say "here 1c---------------"
     x (ref : Function i32 Any i32 {

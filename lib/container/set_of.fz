@@ -27,37 +27,37 @@
 #
 # This feature creates an instance of a Set.
 #
-set_of_ordered(K type : has_total_order, vs Sequence K) Set K is ps_set vs
+public set_of_ordered(K type : property.orderable, vs Sequence K) container.Set K is (container.ps_set K).type.from_sequence vs
 
 
 # set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
 #
 # This feature creates an instance of a Set.
 #
-set_of_hashable(K type : has_hash, vs (container.C_Trie K unit) | (Sequence K)) Set K is
+public set_of_hashable(K type : property.hashable, vs (container.ctrie K unit) | (Sequence K)) Set K is
 
-  private map container.C_Trie K unit :=
+  private map container.ctrie K unit :=
     match vs
-      vss (Sequence K) => (container.C_Trie K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
-      vsc (container.C_Trie K unit) => vsc
+      vss (Sequence K) => (container.ctrie K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
+      vsc (container.ctrie K unit) => vsc
 
   ref : Set K
 
     # does this set contain the given value?
     #
-    contains (k K) bool is
+    public contains (k K) bool is
       map[k].exists
 
 
     # list representation of values in this set
     #
-    as_list list K is
+    public redef as_list list K is
       map.keys.as_list
 
 
     # add new element k to this set.
     #
-    add (k K) Set K is
+    public add (k K) Set K is
       ss := map.snapshot false
       ss.add k unit
       set_of_hashable ss
@@ -66,7 +66,7 @@ set_of_hashable(K type : has_hash, vs (container.C_Trie K unit) | (Sequence K)) 
     # remove an element k from the set if it exists.
     # return the same set if it does not exist.
     #
-    remove (k K) Set K is
+    public remove (k K) Set K is
       ss := map.snapshot false
       ss.remove k
       set_of_hashable ss

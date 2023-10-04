@@ -28,17 +28,22 @@
 #  NAME -- the name of the main feature to be tested
 #  FUZION -- the fz command
 
-FUZION = ../../bin/fz -XmaxErrors=1000000
-EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
+FUZION_OPTIONS ?=
+FUZION = ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
+EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '`
 
 int:
 	$(FUZION) $(NAME) 2>err.txt || echo -n
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
+
+jvm:
+	$(FUZION) -jvm $(NAME) 2>err.txt || echo -n
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 c:
 	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || echo -n
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 show:
-	echo -n "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l
+	echo -n "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq

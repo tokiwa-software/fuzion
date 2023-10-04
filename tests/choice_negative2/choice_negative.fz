@@ -37,11 +37,12 @@ choice_negative is
   cyclic7.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic8 is
-    A is
-      x ref A | i32 | String := "Hello"
+    rA ref is
+    A : rA is
+      x rA | i32 | String := "Hello"
       s is
         match x
-          a ref A  => say "A.x is A"
+          a rA     => say "A.x is A"
           i i32    => say "A.x is i32"
           s String => say "A.x is String"
 
@@ -59,11 +60,12 @@ choice_negative is
   cyclic9.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic10 is
-    A is
-      x i32 | ref A | String := "Hello"
+    rA ref is
+    A : rA is
+      x i32 | rA | String := "Hello"
       s is
         match x
-          a ref A  => say "A.x is A"
+          a rA     => say "A.x is A"
           i i32    => say "A.x is i32"
           s String => say "A.x is String"
 
@@ -81,11 +83,12 @@ choice_negative is
   cyclic11.A.s // NYI: would be nice if this was detected w/o a call to x
 
   cyclic12 is
-    A is
-      x i32 | String | ref A := "Hello"
+    rA ref is
+    A : rA is
+      x i32 | String | rA := "Hello"
       s is
         match x
-          a ref A  => say "A.x is A"
+          a rA  => say "A.x is A"
           i i32    => say "A.x is i32"
           s String => say "A.x is String"
 

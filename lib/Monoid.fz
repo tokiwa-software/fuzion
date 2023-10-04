@@ -30,16 +30,16 @@
 # (string/concat/""), etc.
 #
 #
-Monoid(T type /* : equatable */) ref
+public Monoid(T type /* : property.equatable */) ref
 
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.for_all3<T,T,T>(
+    analysis: quantor.for_all3<T,T,T>(
 # NYI: infix notation for 2-argument feature
 #               fun(x, y, z T) => (x ∙ y) ∙ z == x ∙ (y ∙ z)),   # associativity
                 fun(x, y, z T) => eq((op(op(x, y), z)), (op(x, op(y, z))))),   # associativity
-    analysis: quantors.for_all<T>(
+    analysis: quantor.for_all<T>(
 # NYI: infix notation for 2-argument feature
 #                fun(x T) => (x ∙ e) == (e ∙ x) == x)   # identity element
                  fun(x T) => (eq(op(x, e), op(e, x)) &
@@ -50,11 +50,11 @@ is
 
   # associative operation
   #
-  infix ∙ (a, b T) T is abstract
+  public infix ∙ (a, b T) T is abstract
 
   # identity element
   #
-  e T is abstract
+  public e T is abstract
 
   # alternative names for infix operators
-  op(a, b T) => infix ∙  a b
+  public op(a, b T) => infix ∙  a b

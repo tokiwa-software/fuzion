@@ -26,8 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -48,7 +50,7 @@ public class This extends ExprWithPos
   /**
    * the qualified name of the this that is to be accessed.
    */
-  final List<String> _qual;
+  public final List<ParsedName> _qual;
 
 
   /**
@@ -76,9 +78,9 @@ public class This extends ExprWithPos
    *
    * @param a
    */
-  public This(SourcePosition pos, List<String> qual)
+  public This(List<ParsedName> qual)
   {
-    super(pos);
+    super(SourcePosition.range(qual));
 
     if (PRECONDITIONS) require
       (!qual.isEmpty());
@@ -166,7 +168,7 @@ public class This extends ExprWithPos
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -183,25 +185,12 @@ public class This extends ExprWithPos
 
 
   /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void findGenerics(AbstractFeature outer)
-  {
-    // NYI: Check if qual starts with the name of a formal generic in outer or
-    // outer.outer..., flag an error if this is the case.
-  }
-
-
-  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the root feature that contains this expression.
    *
    * @return a call to the outer references to access the value represented by
    * this.
@@ -210,22 +199,7 @@ public class This extends ExprWithPos
   {
     if (_qual != null)
       {
-        int d = getThisDepth(outer);
-        if (d < 0)
-          {
-            if (CHECKS) check
-              (Errors.count() > 0);
-            this._feature = Types.f_ERROR;
-          }
-        else
-          {
-            var f = outer;
-            for (int i=0; i<d; i++)
-              {
-                f = f.outer();
-              }
-            this._feature = f;
-          }
+        this._feature = getThisFeature(pos(), this, _qual, outer);
       }
     else
       {
@@ -235,9 +209,13 @@ public class This extends ExprWithPos
           }
       }
 
-    Expr getOuter = null;
+    Expr getOuter;
     var f = this._feature;
-    if (f.isUniverse())
+    if (f == Types.f_ERROR)
+      {
+        getOuter = Expr.ERROR_VALUE;
+      }
+    else if (f.isUniverse())
       {
         getOuter = new Universe();
       }
@@ -253,16 +231,20 @@ public class This extends ExprWithPos
           {
             var or = cur.outerRef();
             if (CHECKS) check
-              (Errors.count() > 0 || (or != null));
+              (Errors.any() || (or != null));
             if (or != null)
               {
-                Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
-                if (cur.isOuterRefAdrOfValue())
+                var t = cur.outer().thisType(cur.isFixed());
+                var isAdr = cur.isOuterRefAdrOfValue();
+                Expr c = new Call(pos(), getOuter, or, -1)
                   {
-                    var t = cur.outer().thisType(cur.isFixed());
-                    c = new Unbox(c, t, cur.outer())
-                      { public SourcePosition pos() { return This.this.pos(); } };
-                  }
+                    @Override
+                    AbstractType typeIfKnown()
+                    {
+                      return isAdr ? t : _type;
+                    }
+                  }.resolveTypes(res, outer);
+
                 getOuter = c;
               }
             cur = cur.outer();
@@ -303,65 +285,95 @@ public class This extends ExprWithPos
 
 
   /**
-   * getThisDepth
+   * getThisFeature find the outer feature `x.y.z.a.b.c` for a given qualified name 'a.b.c' as
+   * seen for a feature within outer `x.y.z.a.b.c.d.e.f.`.
    *
-   * @param feat
+   * @param thisOrType instance of `This` or `Type` depending on whether this is a lookup for `this` as a value or as a type.
    *
-   * @return
+   * @param qual the qualified name
+   *
+   * @param outer the outer feature that contains the 'this' expression.
+   *
+   * @return the feature that was found or Types.f_ERROR in case of an error.
    */
-  private int getThisDepth(AbstractFeature feat)
+  static AbstractFeature getThisFeature(SourcePosition pos, ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
   {
-    Iterator<String> it = _qual.iterator();
-    int d = getDepth(0, feat, it.next(), it);
-    if (d < 0)
+    // The comments on the right hand side will give an example to illustrate how this works: Note
+    // that indices in outer start from the right, innermost name:
+    //
+    //                                               outer       is w.x.y.z.a.b.c.d.e
+    //                                               qual        is a.b.c
+    //                                               qual.size() is 3
+    var all = new TreeMap<String, Integer>();     // all.get(b)  is 8,7,6,5,4,3,2,1,0 == positions in outer
+    var ambig = new TreeSet<String>();
+    var o = outer;
+    var d = 0;                                    // d           is 9
+    while (o.outer() != null)
       {
-        var qname = new StringBuilder();
-        for (var name : _qual)
+        var b = o.featureName().baseName();
+        if (all.containsKey(b))
           {
-            qname.append(qname.length() > 0 ? "." : "")
-              .append(name);
+            ambig.add(b);
           }
-        var list = new List<String>();
-        var o = feat;
-        while (o.outer() != null) // exclude universe
-          {
-            list.add(o.qualifiedName());
-            o = o.outer();
-          }
-        AstErrors.outerFeatureNotFoundInThis(this, feat, qname.toString(), list);
+        all.put(b, d);
+        d++;
+        o = o.outer();
       }
-
-    return d;
-  }
-
-
-  /**
-   * recursive helper function for getThisDepth()
-   */
-  private int getDepth(int d, AbstractFeature feat, String name, Iterator<String> it)
-  {
-    if (feat.featureName().baseName().equals(name))
+    var s = qual.getFirst()._name;                // s           is 'a'
+    AbstractFeature result = Types.f_ERROR;
+    var isAmbiguous = ambig.contains(s);
+    var p = isAmbiguous ? -1 : all.getOrDefault(s, -1);
+    if (p >= 0)                                   // p           is 4
       {
-        return d;
-      }
-    else
-      {
-        var outer = feat.outer();
-        if (outer == null)
+        var q = p - qual.size() + 1;              // q           is 2, the index of 'c' in outer
+        if (q >= 0)
           {
-            d = -1;
-          }
-        else
-          {
-            d = getDepth(d + 1, outer, name, it);
-            if ((d >= 0) && it.hasNext())
+            // we found qual at positions p..q in outer, no check that all these
+            // positions contain the correct name:
+            var o2 = outer;
+            var d2 = 0;
+            while (p >= 0 && o2.outer() != null)
               {
-                d = it.next().equals(feat.featureName().baseName()) ? d - 1
-                                                                    : -1;
+                var b = o2.featureName().baseName();
+                if (d2 == q)
+                  {
+                    result = o2;
+                  }
+                if (p >= d2 && d2 >= q && !b.equals(qual.get(qual.size()-(d2-q)-1)._name))
+                  {
+                    p = -1;
+                    result =  Types.f_ERROR;
+                  }
+                o2 = o2.outer();
+                d2++;
               }
           }
       }
-    return d;
+    if (result == Types.f_ERROR)
+      { // find all available names to create error:
+        var ol   = new List<String>();  // all qualified names starting with o2 found so far
+        var list = new List<String>();  // all unambiguous names starting with o2 or later found so far
+        var o2 = outer;                  // go backwards from outer to fill ol and list.
+        while (o2.outer() != null)
+          {
+            var b = o2.featureName().baseName();
+            ol.add("this");
+            ol = ol.map(n -> b + "." + n);   // prefix all entries with o2's base name
+            if (!ambig.contains(b))
+              {
+                list.addAll(ol);             // unless ambiguous, add to list
+              }
+            o2 = o2.outer();
+          }
+        AstErrors.outerFeatureNotFoundInThis(pos,
+                                             thisOrType,
+                                             outer,
+                                             qual.map2(x -> x._name).toString("", ".", ""),
+                                             list,
+                                             isAmbiguous);
+      }
+
+    return result;
   }
 
 
@@ -374,7 +386,7 @@ public class This extends ExprWithPos
   {
     if (_qual != null)
       {
-        return _qual+".this";
+        return _qual.map2(n -> n._name)+".this";
       }
     else if (_feature != null)
       {

@@ -247,10 +247,25 @@ public class LValue extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     container.storeNonRef(slot, size, offset);
+  }
+
+
+  /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    return container.equalsBitWise(slot, size, offset);
   }
 
 
@@ -295,6 +310,22 @@ public class LValue extends ValueWithClazz
   ArrayData arrayData()
   {
     return (ArrayData) container.refs[offset];
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = container.nonrefs[offset];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
   }
 
 

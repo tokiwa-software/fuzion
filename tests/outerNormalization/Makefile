@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = outerNormalization
+FUZION_OPTIONS = -XenableSetKeyword
 include ../simple.mk

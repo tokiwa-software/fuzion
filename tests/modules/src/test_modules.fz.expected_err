@@ -1,25 +1,25 @@
 
-[32m--CURDIR--/src/test_modules.fz:15:7:[39m [1;31merror 1[0m[1m: Could not find called feature[0m
-[34m  say a.x
-[33m------^[0m
-Feature not found: '[35ma[39m' (no arguments)
-Target feature: '[35mtest_modules[39m'
-In call: '[36ma[39m'
+--CURDIR--/src/test_modules.fz:15:7: error 1: Could not find called feature
+  say a.x
+------^
+Feature not found: 'a' (no arguments)
+Target feature: 'test_modules'
+In call: 'a'
 
 
-[32m--CURDIR--/src/test_modules.fz:16:7:[39m [1;31merror 2[0m[1m: Could not find called feature[0m
-[34m  say a.y
-[33m------^[0m
-Feature not found: '[35ma[39m' (no arguments)
-Target feature: '[35mtest_modules[39m'
-In call: '[36ma[39m'
+--CURDIR--/src/test_modules.fz:16:7: error 2: Could not find called feature
+  say a.y
+------^
+Feature not found: 'a' (no arguments)
+Target feature: 'test_modules'
+In call: 'a'
 
 
-[32m--CURDIR--/src/test_modules.fz:17:7:[39m [1;31merror 3[0m[1m: Could not find called feature[0m
-[34m  say a.z
-[33m------^[0m
-Feature not found: '[35ma[39m' (no arguments)
-Target feature: '[35mtest_modules[39m'
-In call: '[36ma[39m'
+--CURDIR--/src/test_modules.fz:17:7: error 3: Could not find called feature
+  say a.z
+------^
+Feature not found: 'a' (no arguments)
+Target feature: 'test_modules'
+In call: 'a'
 
 3 errors.

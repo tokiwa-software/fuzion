@@ -25,93 +25,93 @@
 
 # int -- signed integer values of arbitrary size
 #
-int (s sign, n uint) : has_interval int
+module:public int (public s num.sign, public n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
-  ns := if n = uint.type.zero then plus else s
+  ns := if n = uint.type.zero then num.plus else s
 
-  max int is
+  fixed max int is
     panic "invalid, there is no max int."
 
 
-  redef thiz => int ns n
+  public thiz => int ns n
 
   name String is
     "int"
 
-  fixed type.zero int is
-    int plus uint.type.zero
+  public fixed type.zero int is
+    int num.plus uint.type.zero
 
-  fixed type.one int is
-    int plus uint.type.one
+  public fixed type.one int is
+    int num.plus uint.type.one
 
 
-  redef prefix - int is
+  fixed redef prefix - int is
     match ns
-      plus => int minus n
-      minus => int plus n
+      num.plus => int num.minus n
+      num.minus => int num.plus n
 
 
   # add this int to other
-  infix +  (other int) int is
+  public fixed infix +  (other int) int is
     if ns = other.ns
       int ns n+other.n
     else
       match ns
-        plus => thiz - (-other)
-        minus => other - (-thiz)
+        num.plus => thiz - (-other)
+        num.minus => other - (-thiz)
 
 
   # subtract other from this int
-  infix - (other int) int is
+  public fixed infix - (other int) int is
     match other.ns
-      plus =>
+      num.plus =>
         match ns
-          plus =>
+          num.plus =>
             if n ≥ other.n
-              int plus (n - other.n)
+              int num.plus (n - other.n)
             else
-              int minus (other.n - n)
-          minus => -(-int.this + other)
+              int num.minus (other.n - n)
+          num.minus => -(-int.this + other)
       # minus, minus => plus
-      minus => int.this + -other
+      num.minus => int.this + -other
 
 
   # the sign of the result of the
   # multiplication or division of thiz and other
-  private result_sign_mul_div(other int) sign is
-    if ns = other.ns then plus else minus
+  private result_sign_mul_div(other int) num.sign is
+    if ns = other.ns then num.plus else num.minus
 
 
   # multiply this int by other
-  infix *  (other int) int is
+  public fixed infix *  (other int) int is
     int (result_sign_mul_div other) n*other.n
 
 
   # divide this int by other
-  infix /  (other int) int
+  public fixed infix /  (other int) int
   pre other != int.type.zero
   is
-    s sign := result_sign_mul_div other
+    s num.sign := result_sign_mul_div other
     int s n/other.n
 
 
   # modulo, returns the remainder of the
   # division of this int by other
-  infix %  (other int) int is
+  public fixed infix %  (other int) int is
     int ns n%other.n
 
 
   # exponentation operator:
   # this int to the power of other
-  infix ** (other int) int
+  public fixed infix ** (other int) int
   pre other ≥ int.type.zero
   is
     match s
-      plus => int plus (n ** other.n)
-      minus =>
-        s sign := if other %% (int 2) then plus else minus
+      num.plus => int num.plus (n ** other.n)
+      num.minus =>
+        s num.sign := if other %% (int 2) then num.plus else num.minus
         int s (n ** other.n)
 
 
@@ -119,26 +119,26 @@ is
   # except for division where we need to
   # check for division by zero
 
-  prefix -! bool is true
-  infix +! (other int) bool is true
-  infix -! (other int) bool is true
-  infix *! (other int) bool is true
-  infix /! (other int) bool is
+  public fixed prefix -! bool is true
+  public fixed infix +! (other int) bool is true
+  public fixed infix -! (other int) bool is true
+  public fixed infix *! (other int) bool is true
+  public fixed infix /! (other int) bool is
     other != int.type.zero
-  infix %! (other int) bool is true
+  public fixed infix %! (other int) bool is true
 
-  infix **!(other int) bool is
+  public fixed infix **!(other int) bool is
     other ≥ int.type.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  infix **?(other int) num_option int is
+  public fixed infix **?(other int) num_option int is
     match other.ns
-      plus => thiz ** other
-      minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
+      num.plus => thiz ** other
+      num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  infix **^(other int) int is
+  public fixed infix **^(other int) int is
     match other.ns
-      plus => thiz ** other
-      minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+      num.plus => thiz ** other
+      num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # equality: are these two ints equal?
   #
@@ -149,60 +149,60 @@ is
   #
   fixed type.lteq(a, b int) bool is
     match a.ns
-      plus =>
+      num.plus =>
         match b.ns
-          plus => a.n ≤ b.n
-          minus => false
-      minus =>
+          num.plus => a.n ≤ b.n
+          num.minus => false
+      num.minus =>
         match b.ns
-          plus => true
-          minus => b.n ≤ a.n
+          num.plus => true
+          num.minus => b.n ≤ a.n
 
-  redef as_string String is
+  public redef as_string String is
     s.as_string + n.as_string
 
 
   # this int as an i32
-  as_i32 i32 is
+  public as_i32 i32 is
     n.as_i32
 
 
   # this int as an i64
-  as_i64 i64 is
+  public as_i64 i64 is
     n.as_i64
 
 
   # this int as an u8
-  as_u8 u8
-  pre s.is_plus
+  public as_u8 u8
+  # NYI pre int.this >= 0
   is
       n.as_u8
 
 
   # this int as an u32
-  as_u32 u32
-  pre s.is_plus
+  public as_u32 u32
+  # NYI pre int.this >= 0
   is
       n.as_u32
 
 
   # this int as an u64
-  as_u64 u64
-  pre s.is_plus
+  public as_u64 u64
+  # NYI pre int.this >= 0
   is
     n.as_u64
 
 
   # this int as an uint
-  as_uint uint
-  pre s.is_plus
+  public as_uint uint
+  # NYI pre int.this >= 0
   is
     n
 
 
   # helper feature to init int via an i64
   type.from_i64(val i64) int is
-    s sign := if val < (i64 0) then minus else plus
+    s num.sign := if val < (i64 0) then num.minus else num.plus
     n u64 := if val = i64.type.min
                i64.type.max.as_u64 + 1
              else if val < (i64 0)
@@ -212,61 +212,16 @@ is
 
 
   # helper feature to init int via a u64
-  type.from_u64(val u64) int is
-    int plus (uint val)
+  public type.from_u64(val u64) int is
+    int num.plus (uint val)
 
 
   # helper feature to init int via an i32
-  type.from_i32(val i32) int is
+  public type.from_i32(val i32) int is
     from_i64 val.as_i64
 
 
 
 # shorthand to create an int via an i64
-int (val i64) int is
+public int (val i64) int is
   int.type.from_i64 val
-
-
-
-# positive sign of a number
-#
-# note that this value is of unit type plus, not of type sign
-#
-plus is
-
-
-# negative sign of a number
-#
-# note that this value is of unit type minus, not of type sign
-#
-minus is
-
-
-# the sign of a number
-#
-# this can be plus or minus
-#
-sign : choice plus minus, equatable is
-
-  is_plus =>
-    match sign.this
-      plus => true
-      minus => false
-
-  # equality: are these signs equal?
-  #
-  fixed type.equality(a, b sign) bool is
-    match a
-      plus =>
-        match b
-          plus => true
-          minus => false
-      minus =>
-        match b
-          plus => false
-          minus => true
-
-  redef as_string String is
-    match sign.this
-      plus => ""
-      minus => "-"

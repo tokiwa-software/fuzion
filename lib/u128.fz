@@ -25,10 +25,9 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
+public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
-  #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
-  redef thiz => u128 hi lo
+  public thiz => u128 hi lo
 
   # overflow checking
 
@@ -36,22 +35,22 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  redef overflow_on_add (other u128) => max -° thiz < other
-  redef underflow_on_add(other u128) => false
+  public fixed overflow_on_add (other u128) => max -° thiz < other
+  public fixed underflow_on_add(other u128) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflow_on_sub (other u128) => false
-  redef underflow_on_sub(other u128) => thiz < other
+  public fixed overflow_on_sub (other u128) => false
+  public fixed underflow_on_sub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflow_on_mul (other u128) => if (other = u128.type.zero) false else (thiz *° other / other) != thiz
-  redef underflow_on_mul(other u128) => false
+  public fixed overflow_on_mul (other u128) => if (other = u128.type.zero) false else (thiz *° other / other) != thiz
+  public fixed underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -°             u128 is carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
-  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
-  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
-  redef infix *° (other u128) u128 is
+  public fixed prefix -°             u128 is carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  public fixed infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
+  public fixed infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
+  public fixed infix *° (other u128) u128 is
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
     a2 := hi & 0x_ffff_ffff
@@ -82,14 +81,14 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  redef infix / (other u128)
-    pre
-      safety: other != u128.type.zero
-   => div other
-  redef infix %  (other u128)
-    pre
-      safety: other != u128.type.zero
-   => mod other
+  public fixed infix / (other u128)
+  pre
+    safety: other != u128.type.zero
+  => div other
+  public fixed infix %  (other u128)
+  pre
+    safety: other != u128.type.zero
+  => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
@@ -113,12 +112,12 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
     thiz - div(other) *° other
 
   # bitwise and, or and xor operations
-  redef infix &  (other u128) u128 is u128 (hi & other.hi) (lo & other.lo)
-  redef infix |  (other u128) u128 is u128 (hi | other.hi) (lo | other.lo)
-  redef infix ^  (other u128) u128 is u128 (hi ^ other.hi) (lo ^ other.lo)
+  public fixed infix &  (other u128) u128 is u128 (hi & other.hi) (lo & other.lo)
+  public fixed infix |  (other u128) u128 is u128 (hi | other.hi) (lo | other.lo)
+  public fixed infix ^  (other u128) u128 is u128 (hi ^ other.hi) (lo ^ other.lo)
 
   # shift operations (unsigned)
-  redef infix >> (other u128) u128 is
+  public fixed infix >> (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -129,7 +128,7 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
     else
       thiz
 
-  redef infix << (other u128) u128 is
+  public fixed infix << (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -150,50 +149,50 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
   fixed type.lteq(a, b u128) =>
     a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
 
-  as_i8 i8
+  public as_i8 i8
     pre
       thiz ≤ i8.type.max.as_u128
     is
       lo.as_i8
-  as_i16 i16
+  public as_i16 i16
     pre
       thiz ≤ i16.type.max.as_u128
     is
       lo.as_i16
-  as_i32 i32
+  public as_i32 i32
     pre
       thiz ≤ i32.type.max.as_u128
     is
       lo.as_i32
-  as_i64 i64
+  public as_i64 i64
     pre
       thiz ≤ i64.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
     is
       lo.as_i64
-  as_u8 u8
+  public as_u8 u8
     pre
       thiz ≤ u8.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
     is
       lo.as_u8
-  as_u16 u16
+  public as_u16 u16
     pre
       thiz ≤ u16.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
     is
       lo.as_u16
-  as_u32 u32
+  public as_u32 u32
     pre
       thiz ≤ u32.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
     is
       lo.as_u32
-  as_u64 u64
+  public as_u64 u64
     pre
       thiz ≤ u64.type.max.as_u128
     post
@@ -201,25 +200,25 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
     is
       lo
 
-  low8bits  u8  is lo.low8bits
-  low16bits u16 is lo.low16bits
-  low32bits u32 is lo.low32bits
-  low64bits u64 is lo
+  public low8bits  u8  is lo.low8bits
+  public low16bits u16 is lo.low16bits
+  public low32bits u32 is lo.low32bits
+  public low64bits u64 is lo
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
-  redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  fixed redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # create hash code from this number
-  hash u64 is
-    hi ^ lo
+  public type.hash_code(a u128.this) u64 is
+    a.hi ^ a.lo
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  highest_one_bit u128 is
+  public highest_one_bit u128 is
     if hi = u64 0
       u128 0 lo.highest_one_bit
     else
@@ -228,7 +227,7 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
 
   # count the number of trailing zeros in this integer.
   #
-  trailing_zeros i32 is
+  public trailing_zeros i32 is
     if lo = u64 0
       64 + hi.trailing_zeros
     else
@@ -238,29 +237,29 @@ u128(hi, lo u64) : wrapping_integer u128, has_interval u128 is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  ones_count i32 is
+  public ones_count i32 is
     hi.ones_count + lo.ones_count
 
 
   # returns the number in whose bit representation all bits are ones
-  redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
   #
-  fixed type.min => u128 0 0
+  public fixed type.min => u128 0 0
 
 
   # maximum
   #
-  fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # identity element for 'infix +'
   #
-  fixed type.zero => u128 0 0
+  public fixed type.zero => u128 0 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one => u128 0 1
+  public fixed type.one => u128 0 1

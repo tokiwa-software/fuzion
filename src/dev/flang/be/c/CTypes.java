@@ -53,7 +53,7 @@ public class CTypes extends ANY
 
 
   /**
-   * The C backend
+   * The C names that are defined for structs, functions, etc.
    */
   private final CNames _names;
 
@@ -91,10 +91,7 @@ public class CTypes extends ANY
    */
   String clazzField(int cf)
   {
-    var rc = _fuir.clazzResultClazz(cf);
-    return (_fuir.clazzIsVoidType(rc)
-            ? "struct { }"
-            : clazz(rc)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
+    return clazz(_fuir.clazzResultClazz(cf)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
   }
 
 
@@ -173,7 +170,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(FUIR.SpecialClazzes sc)
   {
     return switch (sc)
       {
@@ -247,10 +244,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                if (cc != -1)
-                  {
-                    findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
-                  }
+                findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
               }
             if (_fuir.clazzIsRef(cl))
               {
@@ -283,16 +277,15 @@ public class CTypes extends ANY
           }
         else if (_fuir.clazzIsChoice(cl))
           {
-            var ct = _fuir.clazzChoiceTag(cl);
-            if (ct != -1)
+            if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
+                els.add(CStmnt.decl("int32_t", _names.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                if (cc != -1 && !_fuir.clazzIsRef(cc))
+                if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
                   {
                     uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
                   }
@@ -308,7 +301,12 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
-                els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+                var t = _fuir.clazzResultClazz(f);
+                if (!_fuir.clazzIsUnitType(t) &&
+                    !_fuir.clazzIsVoidType(t))
+                  {
+                    els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+                  }
               }
           }
         l.add(CStmnt.struct(_names.struct(cl), els));

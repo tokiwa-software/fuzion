@@ -17,10 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test HelloWorld
+#  Source code of Fuzion test issue #350
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
 x ref =>
+y =>
+
+test is
+
+  f1 ref := 42
+  f2 := 42

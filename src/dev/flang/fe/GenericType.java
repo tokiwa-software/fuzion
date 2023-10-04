@@ -26,19 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
-import dev.flang.ast.Type;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-
-import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -64,36 +62,40 @@ public class GenericType extends LibraryType
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  Type.RefOrVal _refOrVal;
+  UnresolvedType.RefOrVal _refOrVal;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor for a plain Type from a given feature that does not have any
-   * actual generics.
+   * Constructor for a generic type that might be boxed.
    */
-  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic, Type.RefOrVal rov)
+  GenericType(LibraryModule mod, int at, Generic generic, UnresolvedType.RefOrVal rov)
   {
-    super(mod, at, pos);
+    super(mod, at);
 
     this._generic = generic;
-    this._refOrVal = Type.RefOrVal.LikeUnderlyingFeature;
     this._refOrVal = rov;
   }
 
 
   /**
-   * Constructor for a plain Type from a given feature that does not have any
-   * actual generics.
+   * Constructor for a plain generic type.
    */
-  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic)
+  GenericType(LibraryModule mod, int at, Generic generic)
   {
-    this(mod, at, pos, generic, Type.RefOrVal.LikeUnderlyingFeature);
+    this(mod, at, generic, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
   }
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  public SourcePosition declarationPos() { return _generic.typeParameter().pos(); }
 
 
   /**
@@ -108,10 +110,17 @@ public class GenericType extends LibraryType
   }
 
 
+  /**
+   * For a resolved normal type, return the underlying feature.
+   *
+   * @return the underlying feature.
+   *
+   * @throws Error if this is not resolved or isGenericArgument().
+   */
   public AbstractFeature featureOfType()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
     return Types.f_ERROR;
   }
@@ -121,12 +130,16 @@ public class GenericType extends LibraryType
     return true;
   }
 
+
+  /**
+   * For a normal type, this is the list of actual type parameters given to the type.
+   */
   public List<AbstractType> generics()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
-    return Type.NONE;
+    return UnresolvedType.NONE;
   }
 
 
@@ -161,7 +174,7 @@ public class GenericType extends LibraryType
    */
   public boolean isThisType()
   {
-    if (this._refOrVal == Type.RefOrVal.ThisType)
+    if (this._refOrVal == UnresolvedType.RefOrVal.ThisType)
       {
         throw new Error("Unexpected ThisType in GenericType");
       }
@@ -171,7 +184,7 @@ public class GenericType extends LibraryType
   public AbstractType outer()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
     return null;
   }
 
@@ -180,7 +193,7 @@ public class GenericType extends LibraryType
     return switch (_refOrVal)
       {
       case Boxed -> this;
-      default    -> new GenericType(_libModule, _at, _pos, _generic, Type.RefOrVal.Boxed);
+      default    -> new GenericType(_libModule, _at, _generic, UnresolvedType.RefOrVal.Boxed);
       };
   }
   public AbstractType asValue()

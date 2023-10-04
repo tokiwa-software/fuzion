@@ -28,9 +28,8 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 
-
 /**
- * This is used to perform some action on a feature and all the statements,
+ * This is used to perform some action on a feature and all the expressions,
  * expressions, types, etc. within this feature
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
@@ -54,35 +53,46 @@ public abstract class FeatureVisitor extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public void         action      (Unbox          u, AbstractFeature outer) { }
-  public void         action      (AbstractAssign a, AbstractFeature outer) { }
-  public void         actionBefore(Block          b, AbstractFeature outer) { }
-  public void         actionAfter (Block          b, AbstractFeature outer) { }
-  public void         action      (AbstractCall   c                       ) { }
-  public Expr         action      (Call           c, AbstractFeature outer) { return c; }
-  public Expr         action      (DotType        d, AbstractFeature outer) { return d; }
-  public void         actionBefore(AbstractCase   c                       ) { }
-  public void         actionAfter (AbstractCase   c                       ) { }
-  public void         action      (Cond           c, AbstractFeature outer) { }
-  public Stmnt        action      (Destructure    d, AbstractFeature outer) { return d; }
-  public Stmnt        action      (Feature        f, AbstractFeature outer) { return f; }
-  public Expr         action      (Function       f, AbstractFeature outer) { return f; }
-  public void         action      (If             i, AbstractFeature outer) { }
-  public void         action      (Impl           i, AbstractFeature outer) { }
-  public Expr         action      (InlineArray    i, AbstractFeature outer) { return i; }
-  public void         action      (AbstractMatch  m                      ) { }
-  public void         action      (Match          m, AbstractFeature outer) { }
-  public void         action      (Tag            b, AbstractFeature outer) { }
-  public Expr         action      (This           t, AbstractFeature outer) { return t; }
-  public Type         actionBefore(Type           t, AbstractFeature outer) { return t; }
-  public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t; }
+  public void         action      (AbstractAssign   a, AbstractFeature outer) { }
+  public void         actionBefore(Block            b, AbstractFeature outer) { }
+  public void         actionAfter (Block            b, AbstractFeature outer) { }
+  public void         action      (AbstractCall     c                       ) { }
+  public void         action      (AbstractConstant c                       ) { }
+  public Expr         action      (Call             c, AbstractFeature outer) { return c; }
+  public Expr         action      (DotType          d, AbstractFeature outer) { return d; }
+  public void         actionBefore(AbstractCase     c                       ) { }
+  public void         actionAfter (AbstractCase     c                       ) { }
+  public void         action      (Cond             c, AbstractFeature outer) { }
+  public Expr         action      (Destructure      d, AbstractFeature outer) { return d; }
+  public Expr         action      (Feature          f, AbstractFeature outer) { return f; }
+  public Expr         action      (Function         f, AbstractFeature outer) { return f; }
+  public void         action      (If               i, AbstractFeature outer) { }
+  public void         action      (Impl             i, AbstractFeature outer) { }
+  public Expr         action      (InlineArray      i, AbstractFeature outer) { return i; }
+  public void         action      (AbstractMatch    m                       ) { }
+  public void         action      (Match            m, AbstractFeature outer) { }
+  public void         action      (Tag              b, AbstractFeature outer) { }
+  public Expr         action      (This             t, AbstractFeature outer) { return t; }
+  public AbstractType action      (AbstractType     t, AbstractFeature outer) { return t; }
 
   /**
    * Visitors that want a different treatment for visiting actual arguments of a
    * call can redefine this method to return false when visiting actuals is not
    * desired, but, e.g., done later manually.
    */
-  public boolean doVisitActuals() { return true; }
+  public boolean doVisitActuals() { return !visitActualsLate(); }
+
+  /**
+   * When visiting a Call, the actuals value arguments are visited before the
+   * target and before the call itself.
+   *
+   * If this is redefined to return true, the order will be changed to target,
+   * call itself and actuals.  The reason is that nested lazy values must be
+   * processed from outside to the inside to ensure that the outer feature of
+   * the inner actual is set correctly (i.e., set to the Lazy instance created
+   * for the outer lazy value).
+   */
+  public boolean visitActualsLate() { return false; }
 
   /**
    * This can be redefined to suppress visiting Assigns that were created for

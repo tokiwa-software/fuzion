@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import dev.flang.util.Errors;
+
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -72,8 +74,10 @@ public class SysArray extends Value implements Comparable<SysArray>
    * @param dfa the DFA analysis
    *
    * @param data the data stored in this array (in case this is a compile time constant).
+   *
+   * @param elementClazz clazz of the array elements, may be -1 if data[] is empty
    */
-  public SysArray(DFA dfa, byte[] data)
+  public SysArray(DFA dfa, byte[] data, int elementClazz)
   {
     super(dfa._fuir.clazzObject());
 
@@ -86,11 +90,25 @@ public class SysArray extends Value implements Comparable<SysArray>
       {
         if (data.length > 0)
           {
-            _elements = new NumericValue(dfa, dfa._fuir.clazz_u8());
+            _elements = switch (dfa._fuir.getSpecialId(elementClazz))
+              {
+              case
+                c_i8   , c_i16  ,
+                c_i32  , c_i64  ,
+                c_u8   , c_u16  ,
+                c_u32  , c_u64  ,
+                c_f32  , c_f64  -> new NumericValue(dfa, elementClazz); // NYI: any value, even if we could know the exact values from data
+              default           -> {
+                                     Errors.fatal("Constant array of element type "+dfa._fuir.clazzAsString(elementClazz)+" not supported yet");
+                                     yield null;
+                                   }
+              };
           }
       }
     else
-      { // NYI: accurate sys array element tracking does not work yet:
+      { // NYI: accurate sys array element tracking does not work yet.  This
+        // needs to be specialized for elementClazz, the following code is just
+        // for u8 and probably does not work:
         for (var i = 0; i < data.length; i++)
           {
             setel(null, new NumericValue(dfa, dfa._fuir.clazz_u8(), data[i] & 0xff));
@@ -166,6 +184,13 @@ public class SysArray extends Value implements Comparable<SysArray>
         r =
           _data[i] < other._data[i] ? -1 :
           _data[i] > other._data[i] ? +1 : 0;
+      }
+    if (r == 0)
+      {
+        r = (_elements == null && other._elements == null) ?  0 :
+            (_elements == null && other._elements != null) ? -1 :
+            (_elements != null && other._elements == null) ? +1
+                                                           : Value.compare(_elements, other._elements);
       }
     return r;
   }

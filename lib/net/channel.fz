@@ -35,10 +35,10 @@
 # 2) writing to a channel installed by `server.accept` will result in an error.
 # 3) reading from a channel installed by `client ...` will block indefinitely.
 #
-private channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
+module:public channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
 is
 
-  # get the last error that occured
+  # get the last error that occurred
   last_error => desc.bind unit (_ -> unit)
 
 
@@ -87,7 +87,7 @@ is
 
 
   # close the channel
-  close is
+  public close is
     if auto_close
       match desc
         d i64 =>
@@ -101,16 +101,30 @@ is
     unit
 
 
+  # get the peer's ip address (tcp)
+  public get_peer_address outcome (list u8) is
+    match desc
+      sockfd i64 => fuzion.sys.net.get_peer_address sockfd
+      e error => e
+
+
+  # get the peer's port (tcp)
+  public get_peer_port outcome u16 is
+    match desc
+      sockfd i64 => fuzion.sys.net.get_peer_port sockfd
+      e error => e
+
+
 
 # short hand to install a new channel of type T
-channel(T type, desc outcome i64, auto_close bool) =>
+module channel(T type, desc outcome i64, auto_close bool) =>
   (channel T).close
   channel T desc auto_close effect_mode.repl
 
 
 
 # short hand to get the currently installed channel of type T
-channel(T type) =>
+public channel(T type) =>
   if !effect.type.is_installed (channel T)
     channel T (error "not initialized") false effect_mode.default
   (channel T).env

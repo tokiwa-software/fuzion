@@ -1,7 +1,7 @@
 
-[32m--CURDIR--/issue952.fz:27:13:[39m [1;31merror 1[0m[1m: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found right parenthesis ')'[0m
-[34m  a(b u64, f) is
-[33m------------^[0m
-While parsing: name, parse stack: name (2 times), simpletype, onetype, type, formArgs, formArgsOpt, routOrField, feature, stmnt, stmnts, block, implRout, implFldOrRout, routOrField, feature, stmnt, stmnts, unit
+--CURDIR--/issue952.fz:27:12: error 1: Type inference from actual arguments failed since no actual call was found
+  a(b u64, f) is
+-----------^
+For the formal argument 'issue952.a.f' the type can only be derived if there is a call to 'issue952.a'.
 
 one error.

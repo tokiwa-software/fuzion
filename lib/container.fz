@@ -24,4 +24,4 @@
 # container -- unit feature to group features that provide some kind of
 # data structure to store and retrieve values
 #
-container is
+public container is

@@ -196,6 +196,12 @@ public class CNames extends ANY
 
 
   /**
+   * global C variable to hold global lock
+   */
+  static final CIdent GLOBAL_LOCK = new CIdent("fzG_lock");
+
+
+  /**
    * Prefix for thread related things
    */
   private static final String THRD_PREFIX = "fzThrd_";
@@ -447,11 +453,14 @@ public class CNames extends ANY
 
 
   /**
-   * NYI: Documentation, just discard the sign?
+   * Convert a clazz id into a number 0, 1, 2, 3, ...
+   *
+   * The clazz id is intentionally large to detect accidental usage of a clazz
+   * id in a wrong context.
    */
   private int clazzId2num(int cl)
   {
-    return cl & 0xFFFffff; // NYI: give a name to this constant
+    return _fuir.clazzId2num(cl);
   }
 
 

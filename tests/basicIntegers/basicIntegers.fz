@@ -29,7 +29,7 @@
 #
 basicIntegers =>
 
-  test(T type : wrapping_integer T, a, b T) unit is
+  test(T type : num.wrap_around, a, b T) unit is
     say "{T.name}: $a +° $b = {a +° b}"
     say "{T.name}: $a -° $b = {a -° b}"
     say "{T.name}: $a *° $b = {a *° b}"

@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
-import dev.flang.util.ANY;
 
 
 /**
@@ -103,8 +102,8 @@ public class i8Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == 1);
+    if (PRECONDITIONS) require
+      (size == 1);
 
     slot.container.nonrefs[slot.offset] = _val;
     if (slot.container.nonrefs[slot.offset] == 210)

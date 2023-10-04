@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -248,6 +247,21 @@ public abstract class Value extends ANY
 
 
   /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    throw new Error("value "+ this + " not allowed for equalsBitWise");
+  }
+
+
+  /**
    * Debugging only: Check that this value is valid as the current instance for
    * a feature with given static clazz.
    *
@@ -278,6 +292,15 @@ public abstract class Value extends ANY
   ArrayData arrayData()
   {
     throw new Error("value "+ this + " of class " + getClass() + " is not an ArrayData");
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
   }
 
 

@@ -1,70 +1,70 @@
 
-[32m--CURDIR--/ex_nested_lazy.fz:49:14:[39m [1;31merror 1[0m[1m: Incompatible types when passing argument in a call[0m
-[34m  say (lazy1 x1)
-[33m-------------^[0m
-Actual type for argument #1 '[35mf[39m' does not match expected type.
-In call to          : '[35mex_nested_lazy.lazy1[39m'
-expected formal type: '[33mFunction (Lazy i32)[39m'
-actual type found   : '[33mref i32[39m'
-assignable to       : '[33mAny[39m',
-                      '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
-                      '[33mref has_partial_order[39m',
-                      '[33mref has_total_order[39m',
-                      '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
-for value assigned  : '[36mbox(ex_nested_lazy.this.x1.call)[39m'
-To solve this, you could change the type of the target '[36mf[39m' to '[33mref i32[39m' or convert the type of the assigned value to '[33mFunction (Lazy i32)[39m'.
+--CURDIR--/ex_nested_lazy.fz:49:14: error 1: Incompatible types when passing argument in a call
+  say (lazy1 x1)
+-------------^^
+Actual type for argument #1 'f' does not match expected type.
+In call to          : 'ex_nested_lazy.lazy1'
+expected formal type: 'Function (Lazy i32)'
+actual type found   : 'ref i32'
+assignable to       : 'Any',
+                      'num.ref wrap_around',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
+                      'ref has_interval',
+                      'ref i32',
+                      'ref integer',
+                      'ref numeric'
+for value assigned  : 'box(ex_nested_lazy.this.x1.call)'
+To solve this, you could change the type of the target 'f' to 'ref i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
 
 
-[32m--CURDIR--/ex_nested_lazy.fz:39:18:[39m [1;31merror 2[0m[1m: Incompatible types in assignment[0m
-[34m  say (lazy0 ()->42)
-[33m-----------------^[0m
-assignment to field : '[35mex_nested_lazy.#fun5.call.result[39m'
-expected formal type: '[33mFunction i32[39m'
-actual type found   : '[33mref i32[39m'
-assignable to       : '[33mAny[39m',
-                      '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
-                      '[33mref has_partial_order[39m',
-                      '[33mref has_total_order[39m',
-                      '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
+--CURDIR--/ex_nested_lazy.fz:39:18: error 2: Incompatible types in assignment
+  say (lazy0 ()->42)
+-----------------^
+assignment to field : 'ex_nested_lazy.#fun1.call.result'
+expected formal type: 'Function i32'
+actual type found   : 'ref i32'
+assignable to       : 'Any',
+                      'num.ref wrap_around',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
+                      'ref has_interval',
+                      'ref i32',
+                      'ref integer',
+                      'ref numeric'
 for value assigned  : 
-[36m{
+{
   box(42)
-}[39m
+}
 
-To solve this, you could change the type of the target '[36mex_nested_lazy.#fun5.call.result[39m' to '[33mref i32[39m' or convert the type of the assigned value to '[33mFunction i32[39m'.
+To solve this, you could change the type of the target 'ex_nested_lazy.#fun1.call.result' to 'ref i32' or convert the type of the assigned value to 'Function i32'.
 
 
-[32m--CURDIR--/ex_nested_lazy.fz:47:18:[39m [1;31merror 3[0m[1m: Incompatible types in assignment[0m
-[34m  say (lazy1 ()->42)
-[33m-----------------^[0m
-assignment to field : '[35mex_nested_lazy.#fun8.call.result[39m'
-expected formal type: '[33mLazy i32[39m'
-actual type found   : '[33mref i32[39m'
-assignable to       : '[33mAny[39m',
-                      '[33mref equatable[39m',
-                      '[33mref has_hash[39m',
-                      '[33mref has_interval i32[39m',
-                      '[33mref has_partial_order[39m',
-                      '[33mref has_total_order[39m',
-                      '[33mref i32[39m',
-                      '[33mref integer i32[39m',
-                      '[33mref numeric i32[39m',
-                      '[33mref wrapping_integer i32[39m'
+--CURDIR--/ex_nested_lazy.fz:47:18: error 3: Incompatible types in assignment
+  say (lazy1 ()->42)
+-----------------^
+assignment to field : 'ex_nested_lazy.#fun3.call.result'
+expected formal type: 'Lazy i32'
+actual type found   : 'ref i32'
+assignable to       : 'Any',
+                      'num.ref wrap_around',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable',
+                      'ref has_interval',
+                      'ref i32',
+                      'ref integer',
+                      'ref numeric'
 for value assigned  : 
-[36m{
+{
   box(42)
-}[39m
+}
 
-To solve this, you could change the type of the target '[36mex_nested_lazy.#fun8.call.result[39m' to '[33mref i32[39m' or convert the type of the assigned value to '[33mLazy i32[39m'.
+To solve this, you could change the type of the target 'ex_nested_lazy.#fun3.call.result' to 'ref i32' or convert the type of the assigned value to 'Lazy i32'.
 
 3 errors.

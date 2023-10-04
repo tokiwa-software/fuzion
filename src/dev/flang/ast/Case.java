@@ -79,7 +79,7 @@ public class Case extends AbstractCase
 
 
   /**
-   * Counter for a unique id for this case statement. This is used to store data
+   * Counter for a unique id for this case expression. This is used to store data
    * in the runtime clazz for this case.
    */
   public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
@@ -105,7 +105,7 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Visi.PRIVATE, t, n), null, c);
+    this(pos, new Feature(pos, Visi.PRIV, t, n), null, c);
   }
 
 
@@ -174,7 +174,7 @@ public class Case extends AbstractCase
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -207,7 +207,7 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match statement
+   * @param outer the outer feature that contains this match expression
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error
@@ -275,7 +275,7 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match statement
+   * @param outer the outer feature that contains this match expression
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error
@@ -286,7 +286,7 @@ public class Case extends AbstractCase
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
-    t.resolveFeature(res, outer);
+    t = t.resolveFeature(res, outer);
     var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
     if (!inferGenerics)
       {
@@ -294,11 +294,11 @@ public class Case extends AbstractCase
       }
     var hasErrors = t.containsError();
     check
-      (!hasErrors || Errors.count() > 0);
+      (!hasErrors || Errors.any());
     for (var cg : cgs)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || cg != null);
+          (Errors.any() || cg != null);
         if (cg != null &&
             (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
@@ -306,7 +306,7 @@ public class Case extends AbstractCase
             t = cg;
             hasErrors = hasErrors || t.containsError();
             check
-              (!hasErrors || Errors.count() > 0);
+              (!hasErrors || Errors.any());
             matches.add(cg);
             if (matched[i] != null && !hasErrors)
               {

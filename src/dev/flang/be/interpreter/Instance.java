@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
-import dev.flang.util.Errors;
 
 
 /**
@@ -377,8 +376,8 @@ public class Instance extends ValueWithClazz
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (PRECONDITIONS)
-      require(size == Layout.get(_clazz).size());
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
 
     storeNonRef(slot, size, 0);
   }
@@ -407,12 +406,72 @@ public class Instance extends ValueWithClazz
 
 
   /**
+   * Does this value equal the value in slot of given size on a low-level
+   * bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   */
+  boolean equalsBitWise(LValue slot, int size)
+  {
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
+
+    return equalsBitWise(slot, size, 0);
+  }
+
+
+  /**
+   * Does a value of given size stored at voffset in this instance equal the
+   * value in slot on a low-level bit-wise comparison?
+   *
+   * @param slot the slot that addresses the field this should be compared
+   * against.
+   *
+   * @param size the size of the data to be compared.
+   *
+   * @param voffset the offset of the value in this instance.
+   */
+  boolean equalsBitWise(LValue slot, int size, int voffset)
+  {
+    var result = true;
+    Instance cur    = slot.container;
+    int      offset = slot.offset;
+
+    for (int i=0; result && i < size; i++)
+      {
+        result = cur.refs   [offset + i] == refs   [voffset + i] &&
+                 cur.nonrefs[offset + i] == nonrefs[voffset + i];
+      }
+    return result;
+  }
+
+
+  /**
    * Return the instance this value contains.  If this is an Instance, return
    * this, if this is an LValue containing an instance, get that instance.
    */
   Instance instance()
   {
     return this;
+  }
+
+
+  /**
+   * Return the tag of this choice.
+   */
+  public int tag()
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = nonrefs[0];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
   }
 
 

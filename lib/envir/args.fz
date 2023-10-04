@@ -25,7 +25,7 @@
 
 # envir.args -- effect providing access to command line args
 #
-args (all array String) : container.searchable_sequence String all.as_list, simple_effect is
+public args (all array String) : container.searchable_sequence String all.as_list, simple_effect is
 
   # install default effect args using fuzion.sys.args
   #
@@ -35,6 +35,6 @@ args (all array String) : container.searchable_sequence String all.as_list, simp
 
 # short-hand for accessing envir.args effect in current environment
 #
-args =>
+public args =>
   args.type.install_default
   envir.args.env

@@ -72,7 +72,7 @@ public class NoType extends ReturnType
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -81,6 +81,26 @@ public class NoType extends ReturnType
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
+  }
+
+
+  /**
+   * Resolve the type this function returns. This is needed to resolve free
+   * types used in an argument type, which change the number of type parameters
+   * in a call.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the outer feature, which is the argument this is the result
+   * type of.
+   */
+  void resolveArgumentType(Resolution res, Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.isArgument(),
+       this == outer.returnType());
+
+    // result type will be inferred from actual arg, nothing to be done here.
   }
 
 

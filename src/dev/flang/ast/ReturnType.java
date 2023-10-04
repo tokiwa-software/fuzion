@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -78,7 +79,21 @@ public abstract class ReturnType extends ANY
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * For a function, the source code position of the return type.
+   *
+   * @return the function return type source position.
+   */
+  public SourcePosition functionReturnTypePos()
+  {
+    if (PRECONDITIONS) require
+      (!isConstructorType());
+
+    throw new Error(); // this is redefined for FunctionReturnType
+  }
+
+
+  /**
+   * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -86,6 +101,28 @@ public abstract class ReturnType extends ANY
    * @param outer the feature surrounding this expression.
    */
   public abstract void visit(FeatureVisitor v, AbstractFeature outer);
+
+
+  /**
+   * Resolve the type this function returns. This is needed to resolve free
+   * types used in an argument type, which change the number of type parameters
+   * in a call.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the outer feature, which is the argument this is the result
+   * type of.
+   */
+  void resolveArgumentType(Resolution res, Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.isArgument(),
+       this == outer.returnType());
+
+    // this will be redefined in FunctionReturnType, which is the return type of
+    // arguments.
+    throw new Error("Unexpected ReturnType of argument " + getClass());
+  }
 
 
 }

@@ -90,7 +90,7 @@ scenario3 is
 
   fs f64
 
-  fs(F type : float F) =>
+  fs(F type : float) =>
     _ := F.sum.e
 
 scenario3
@@ -256,3 +256,86 @@ run_scenario7 =>
   x := scenario7.w2.a; say (type_of x)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
 
 run_scenario7
+
+
+# ------  eigth scenario  ------
+#
+# taken from issue #1590. The problematic code is at the bottom:
+# `arr2.fold T.sum` which creates an instance of `sum` with an outer
+# type defined by a type paraemter.
+
+scenario8 is
+
+  # a simple, numeric type providing special elements zero and one and operations
+  # lessThan, plus, minus and to_u32
+  #
+  num0 is
+
+    # special values
+    #
+    type.zero num0.this is abstract
+    type.one  num0.this is abstract
+
+    # if num0.this less than other?
+    #
+    lessThan(other num0.this) bool is abstract
+
+    plus (other num0.this) num0.this is plus_intrinsic other
+    plus_intrinsic (other num0.this) num0.this is abstract
+    minus(other num0.this) num0.this is minus_intrinsic other
+    minus_intrinsic (other num0.this) num0.this is abstract
+
+    to_u32_loop =>
+      for
+        x := num0.this, x.minus num0.this.type.one
+        u := u32 0, u+1
+      while num0.this.type.zero.lessThan x
+      else
+        u
+
+    # convert this to corresponding values as an 'u32'
+    #
+    to_u32 u32 is
+      t := num0.this.type
+      if t.zero.lessThan num0.this
+        (minus t.one).to_u32 + 1
+      else
+        0
+
+    # create string representation consisting of type, to_u32
+    # and valueString
+    #
+    redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+
+    # string representation of this value, to be implemented by
+    # children.
+    #
+    valueString String is abstract
+
+    type.sum : Monoid num0.this is
+      redef infix ∙ (a, b num0.this) => a.plus b
+      redef e => zero
+
+
+  # integer mod 2 implementation of num0
+  #
+  intM2(is_zero bool) : num0 is
+    fixed z => intM2 true
+    fixed o => intM2 false
+    fixed type.zero => scenario8.intM2 true
+    fixed type.one => scenario8.intM2 false
+    fixed lessThan(other intM2) => is_zero && !other.is_zero
+    fixed plus_intrinsic(other intM2) => if is_zero then other else intM2 !other.is_zero
+    fixed minus_intrinsic(other intM2) => plus other
+    redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
+
+run_scenario8 =>
+
+  s8 => scenario8
+
+  arr array scenario8.intM2 := [ s8.intM2 true, s8.intM2 false ]
+  x (T type : scenario8.num0, arr2 array T) is
+     say (arr2.fold T.sum)
+  _ := x arr
+
+run_scenario8

@@ -1,0 +1,51 @@
+
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_issue1724.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_issue1724 tests calling different non-existing features on a void type.
+#
+# Since void can never be produced, we are sure that we can use it for anything
+# we like, it fits everywere
+#
+test_issue1274 =>
+
+  x1(a void) => a.this_feature_does_not_exist
+  x2(a void) => a.this_feature_does_not_exist and_this_args_also_does_not
+  x3(a i32, b void) => b !!!!!         # non-existing postfix operator
+  x4(a i32, b void) => ----- b         # non-existing prefix operator
+  x5(a i32, b void) => b +++++ b       # non-existing infix operator
+  x6(a i32, b void) => 1235 + b        # use as i32
+  x7(b void) => ["hi", "there" ] ++ b  # use as Sequence String
+
+  for a in envir.args do
+    if a = "x1" x1    (panic "hi 1")
+    if a = "x2" x2    (panic "hi 2")
+    if a = "x3" x3 42 (panic "hi 3")
+    if a = "x4" x4 42 (panic "hi 4")
+    if a = "x5" x5 42 (panic "hi 5")
+    if a = "x6" x6 42 (panic "hi 6")
+    if a = "x7" x7    (panic "hi 7")
+  else
+    say "done."

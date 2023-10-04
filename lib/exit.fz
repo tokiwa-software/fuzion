@@ -25,7 +25,7 @@
 
 # exit -- effect that terminates a computation in exit
 #
-exit (
+private:public exit (
 
   # the handler this effect uses to exit
   p Exit_Handler,
@@ -49,9 +49,9 @@ is
   # set the stored exit code, which, by default, is zero
   #
   set_exit_code(code i32)
-    pre
-      0 ≤ code ≤ 127
-    => p.set_exit_code code
+  pre
+    0 ≤ code ≤ 127
+  => p.set_exit_code code
 
 
   # install default instance of exit
@@ -111,19 +111,19 @@ exit0 =>
 
 
 # exit with a code argument calls exit.exit code, i.e., it uses the
-# current exit efffect to exit with the given message.
+# current exit effect to exit with the given message.
 #
-exit(code i32) => exit0.exit code
+public exit(code i32) => exit0.exit code
 
 
 # exit with the currently stored exit code
 #
-exit => exit0.exit
+public exit => exit0.exit
 
 
 # change the currently stored exit code
 #
-set_exit_code(code i32)
+public set_exit_code(code i32)
   pre
     0 ≤ code ≤ 127
   => exit0.set_exit_code code
@@ -131,13 +131,13 @@ set_exit_code(code i32)
 
 # install given exit handler and run code with it.
 #
-exit(handler Exit_Handler, code ()->unit) =>
+public exit(handler Exit_Handler, code ()->unit) =>
   exit handler (effect_mode.inst code) unit
 
 
 # Exit_Handler -- abstract exit
 #
-Exit_Handler ref is
+public Exit_Handler ref is
 
   # exit with the given code
   #

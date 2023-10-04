@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = functions
+FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk
