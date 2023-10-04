@@ -930,18 +930,32 @@ public class Intrinsix extends ANY implements ClassFileConstants
       return new Pair<>(Expr.UNIT, res);
     });
 
-    put("fuzion.sys.thread.spawn0", (jvm, cl, pre, cc, tvalue, args) -> {
-      // NYI
-      var res =
-        tvalue.drop()
-          .andThen(args.get(0))
-          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-            "fuzion_sys_thread_spawn0",
-            methodDescriptor(Runtime.class, "fuzion_sys_thread_spawn0"),
-            PrimitiveType.type_long));
-      return new Pair<>(res, Expr.UNIT);
-    });
-
+    put("fuzion.sys.thread.spawn0",
+        (jvm, cl, pre, cc, tvalue, args) ->
+        {
+          var oc = jvm._fuir.clazzActualGeneric(cc, 0);
+          var call = jvm._fuir.lookupCall(oc);
+          var call_t = jvm._types.javaType(call);
+          if (call_t instanceof ClassType call_ct)
+            {
+              var result =
+                tvalue
+                .andThen(args.get(0))
+                .andThen(Expr.classconst(call_ct))
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                           "thread_spawn",
+                                           "(" + (// Names.ANY_DESCR +
+                                                  Names.ANY_DESCR +
+                                                  JAVA_LANG_CLASS.descriptor()) +
+                                           ")J",
+                                           ClassFileConstants.PrimitiveType.type_long));
+              return new Pair<>(result, Expr.UNIT);
+            }
+          else
+            { // unreachable, call type cannot be primitive type
+              throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
+            }
+        });
 
     put(new String[]
       { "fuzion.java.array_get",

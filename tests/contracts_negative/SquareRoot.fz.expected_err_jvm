@@ -1,7 +1,7 @@
 
 error 1: CONTRACT FAILED: pre-condition on call to 'SquareRoot.sqrt'
 java.lang.Throwable
-	at dev.flang.be.jvm.runtime.Runtime.contract_fail(Runtime.java:617)
+	at dev.flang.be.jvm.runtime.Runtime.contract_fail(Runtime.java:600)
 	at fzC_SquareRoot__1sqrt.fzPrecondition(Unknown Source)
 	at fzC_SquareRoot.fzRoutine(Unknown Source)
 	at fzC_universe.main(Unknown Source)
