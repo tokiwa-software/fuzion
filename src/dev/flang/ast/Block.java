@@ -115,6 +115,19 @@ public class Block extends AbstractBlock
 
 
   /**
+   * Generate an empty block of expressions. This is called from the Parser when
+   * the body of a routine contains no code but just a `.`.
+   *
+   * @param pos the sourcecode position of the start of this block, used for
+   * error messages.
+   */
+  public Block(SourcePosition pos)
+  {
+    this(pos, pos, new List<>());
+  }
+
+
+  /**
    * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *

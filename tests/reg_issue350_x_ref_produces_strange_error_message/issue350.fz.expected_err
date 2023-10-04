@@ -5,4 +5,11 @@ x ref =>
 For function definition using '=>', the type is determined automatically, it must not be given explicitly.
 Feature declared: 'x'
 
-one error.
+
+--CURDIR--/issue350.fz:31:3: error 2: Illegal result type 'ref' in field definition using ':='
+  f1 ref := 42
+--^^
+For field definition using ':=', the type is determined automatically, it must not be given explicitly.
+Field declared: 'test.f1'
+
+2 errors.

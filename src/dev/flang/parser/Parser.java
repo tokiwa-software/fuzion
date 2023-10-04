@@ -293,14 +293,14 @@ field       : returnType
     var a = formArgsOpt();
     var r = returnType();
     var eff = effects();
-    var hasType = r != NoType.INSTANCE;
+    var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
     Contract c = contract(true);
     Impl p =
       a  .isEmpty()    &&
       eff == UnresolvedType.NONE &&
       inh.isEmpty()       ? implFldOrRout(hasType)
-                          : implRout();
+                          : implRout(hasType);
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
     l.add(new Feature(v,m,r,name,a,inh,c,p));
     return p2 == null
@@ -3576,19 +3576,22 @@ implRout    : block
             | fullStop
             ;
    */
-  Impl implRout()
+  Impl implRout(boolean hasType)
   {
     SourcePosition pos = tokenSourcePos();
     Impl result;
-    var startRoutine = (currentAtMinIndent() == Token.t_lbrace || skip(true, Token.t_is));
-    if      (startRoutine    ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
-                                          skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
-                                          skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
-                                          skip(Token.t_native               ) ? Impl.NATIVE                :
-                                          new Impl(pos, block()      , Impl.Kind.Routine   ); }
-    else if (skip(true, "=>")      ) { result = new Impl(pos, block()      , Impl.Kind.RoutineDef); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()      , Impl.Kind.Of        ); }
-    else if (skipFullStop()  ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
+    var routine =
+      currentAtMinIndent() == Token.t_lbrace ||
+      skip(true, Token.t_is)                 ||
+      hasType && skip(true, "=>");
+    if      (routine               ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+                                                skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
+                                                skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
+                                                skip(Token.t_native               ) ? Impl.NATIVE                :
+                                                new Impl(pos, block()       , Impl.Kind.Routine   ); }
+    else if (skip(true, "=>"      )) { result = new Impl(pos, block()       , Impl.Kind.RoutineDef); }
+    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()       , Impl.Kind.Of        ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, new Block(pos), Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
@@ -3614,7 +3617,7 @@ implFldOrRout   : implRout
         isOperator(true, "=>")                 ||
         isFullStop()                              )
       {
-        return implRout();
+        return implRout(hasType);
       }
     else if (isOperator(true, ":="))
       {
