@@ -607,7 +607,8 @@ public class Runtime extends ANY
         var m = s.getMethodName();
         var r = switch (m)
           {
-          case ROUTINE_NAME      -> "";
+          case "main",
+               ROUTINE_NAME      -> "";
           case PRECONDITION_NAME -> "precondition of ";
           default -> null;
           };

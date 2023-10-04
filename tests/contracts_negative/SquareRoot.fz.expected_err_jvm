@@ -3,5 +3,6 @@ error 1: CONTRACT FAILED: pre-condition on call to 'SquareRoot.sqrt'
 Call stack:
 precondition of SquareRoot__1sqrt
 SquareRoot
+universe
 
 *** fatal errors encountered, stopping.
