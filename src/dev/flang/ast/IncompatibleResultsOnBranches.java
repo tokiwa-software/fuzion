@@ -82,7 +82,7 @@ public class IncompatibleResultsOnBranches extends ANY
         add(it.next());
       }
     if (CHECKS) check
-      (Errors.count() > 0 || _types.size() > 1);
+      (Errors.any() || _types.size() > 1);
 
     AstErrors.incompatibleResultsOnBranches(pos, msg, _types, _positions);
   }

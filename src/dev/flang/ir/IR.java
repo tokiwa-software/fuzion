@@ -41,7 +41,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
-import dev.flang.ast.Unbox; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -100,12 +99,10 @@ public class IR extends ANY
     AdrOf,
     Assign,
     Box,
-    Unbox,
     Call,
     Current,
     Comment,
     Const,
-    Dup,
     Match,
     Tag,
     Env,
@@ -193,7 +190,7 @@ public class IR extends ANY
    *
    * @param dumpResult flag indicating that we are not interested in the result.
    */
-  private void toStack(List<Object> l, Expr e, boolean dumpResult)
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -205,35 +202,36 @@ public class IR extends ANY
         toStack(l, a._target);
         l.add(a);
       }
-    else if (e instanceof Unbox u)
-      {
-        toStack(l, u._adr);
-        if (u._needed)
-          {
-            l.add(u);
-          }
-      }
     else if (e instanceof Box b)
       {
-        toStack(l, b._value);
-        l.add(b);
+        toStack(l, b._value, dumpResult);
+        if (!dumpResult)
+          {
+            l.add(b);
+          }
       }
     else if (e instanceof AbstractBlock b)
       {
-        // for (var st : b.expressions_)  -- not possible since we need index i
+        // for (var expr : b.expressions_)  -- not possible since we need index i
         for (int i=0; i<b._expressions.size(); i++)
           {
-            var st = b._expressions.get(i);
-            toStack(l, st, dumpResult || i < b._expressions.size()-1);
+            var expr = b._expressions.get(i);
+            toStack(l, expr, dumpResult || i < b._expressions.size()-1);
           }
       }
     else if (e instanceof AbstractConstant)
       {
-        l.add(e);
+        if (!dumpResult)
+          {
+            l.add(e);
+          }
       }
     else if (e instanceof AbstractCurrent)
       {
-        l.add(ExprKind.Current);
+        if (!dumpResult)
+          {
+            l.add(ExprKind.Current);
+          }
       }
     else if (e instanceof If i)
       {
@@ -268,12 +266,18 @@ public class IR extends ANY
       }
     else if (e instanceof Tag t)
       {
-        toStack(l, t._value);
-        l.add(t);
+        toStack(l, t._value, dumpResult);
+        if (!dumpResult)
+          {
+            l.add(t);
+          }
       }
     else if (e instanceof Env v)
       {
-        l.add(v);
+        if (!dumpResult)
+          {
+            l.add(v);
+          }
       }
     else if (e instanceof Nop)
       {
@@ -281,10 +285,6 @@ public class IR extends ANY
     else if (e instanceof Universe)
       {
         var un = (Universe) e;
-      }
-    else if (e instanceof InlineArray)
-      {
-        l.add(e);
       }
     else if (e instanceof Check c)
       {
@@ -363,10 +363,6 @@ public class IR extends ANY
     else if (e instanceof Box)
       {
         result = ExprKind.Box;
-      }
-    else if (e instanceof Unbox)
-      {
-        result = ExprKind.Unbox;
       }
     else if (e instanceof AbstractCall)
       {

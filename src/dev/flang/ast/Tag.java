@@ -82,7 +82,7 @@ public class Tag extends Expr
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
-       Errors.count() > 0
+       Errors.any()
         || taggedType
             .choiceGenerics()
             .stream()
@@ -134,7 +134,10 @@ public class Tag extends Expr
    */
   public Tag visit(FeatureVisitor v, AbstractFeature outer)
   {
+    var o = _value;
     _value = _value.visit(v, outer);
+    if (CHECKS) check
+      (o.type().compareTo(_value.type()) == 0);
     v.action(this, outer);
     return this;
   }

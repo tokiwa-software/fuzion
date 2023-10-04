@@ -122,30 +122,30 @@ public float : numeric is
 
   # the biased exponent of this float
   #
-  module exponent_biased i32 is abstract
+  public exponent_biased i32 is abstract
 
 
   # the normalized exponent of this float
   #
-  module exponent i32 is abstract
+  public exponent i32 is abstract
 
 
   # the normalized mantissa of this float
-  module mantissa u64 is abstract
+  public mantissa u64 is abstract
 
 
   # is the bit denoting the sign of the number set?
   # this is different from smaller than zero since
   # there is +0, -0, NaN, etc. in floating point numbers.
   #
-  module is_sign_bit_set bool is abstract
+  public is_sign_bit_set bool is abstract
 
 
   # true when the absolute value
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  module use_scientific_notation bool is abstract
+  public use_scientific_notation bool is abstract
 
 
   # number of bytes required to store this value

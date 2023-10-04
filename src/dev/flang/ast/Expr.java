@@ -110,23 +110,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Mark that this Expr is used as part of a call in the inherits clause of a
-   * feature. In the inherits clause i in a feature declaration
-   *
-   *   g<A,B> {
-   *     f<C,D> : i { e; }
-   *  }
-   *
-   * the generics used in i are resolved against f, while the outer class for i
-   * is g. In contrast, an expression e outside of an inherits clause, generics
-   * are resolved against the outer class f.
-   */
-  void isInheritsCall()
-  {
-  }
-
-
-  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
@@ -412,7 +395,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                 pos,
                                 Visi.PRIV,
                                 t,
-                                FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
@@ -468,8 +451,18 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
           {
             result = tag(frmlT, result);
+            if (CHECKS) check
+              (!result.needsBoxing(frmlT));
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.count() > 0
+        || t.compareTo(Types.resolved.t_void) == 0
+        || frmlT.isGenericArgument()
+        || frmlT.isThisType()
+        || !result.needsBoxing(frmlT));
+
     return result;
   }
 
@@ -519,7 +512,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
           }
 
         if (CHECKS) check
-          (Errors.count() > 0 || cgs.size() == 1);
+          (Errors.any() || cgs.size() == 1);
 
         return tag(frmlT, tag(cgs.get(0), value));
       }
@@ -583,18 +576,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   {
     if (PRECONDITIONS) require
       (isCompileTimeConst() && type().compareTo(Types.resolved.t_bool) == 0);
-
-    throw new Error();
-  }
-
-
-  /**
-   * Get value of i32 compile time constant.
-   */
-  int getCompileTimeConstI32()
-  {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
 
     throw new Error();
   }

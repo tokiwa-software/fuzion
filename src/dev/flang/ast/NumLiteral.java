@@ -130,11 +130,11 @@ public class NumLiteral extends Constant
     }
 
     /**
-     * # of bits occupied by this type
+     * # of bytes occupied by this type
      */
-    int bits()
+    int bytes()
     {
-      return _bytes*8;
+      return _bytes;
     }
 
     /**
@@ -404,7 +404,6 @@ public class NumLiteral extends Constant
    */
   private BigInteger intValue(ConstantType ct)
   {
-    var max = ct.bits();
     var v = _mantissa;
     var e2 = _exponent2;
     var e5 = _exponent5;
@@ -681,9 +680,9 @@ public class NumLiteral extends Constant
    *
    * @param t an interned type
    *
-   * @return the corresponding ConstantType or nul if none.
+   * @return the corresponding ConstantType or null if none.
    */
-  ConstantType findConstantType(AbstractType t)
+  public static ConstantType findConstantType(AbstractType t)
   {
     if      (t.compareTo(Types.resolved.t_i8 ) == 0) { return ConstantType.ct_i8 ; }
     else if (t.compareTo(Types.resolved.t_i16) == 0) { return ConstantType.ct_i16; }
@@ -776,6 +775,16 @@ public class NumLiteral extends Constant
           }
         return result;
       }
+  }
+
+
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+    return true;
   }
 
 

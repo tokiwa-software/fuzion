@@ -28,9 +28,7 @@ package dev.flang.fe;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -147,10 +145,6 @@ class FixUps extends DataOut
     if (f.isUniverse())
       {
         v = 0;
-      }
-    else if (f == null)
-      {
-        v = -1;
       }
     else
       {

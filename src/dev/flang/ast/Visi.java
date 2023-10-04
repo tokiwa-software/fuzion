@@ -136,7 +136,7 @@ public enum Visi
         case UNSPECIFIED, PRIV    -> Visi.PRIV;
         case MOD, PRIVMOD         -> Visi.MOD;
         case PRIVPUB, MODPUB, PUB -> Visi.PUB;
-        default -> throw new RuntimeException("undhandled case in Visi.typeVisibility");
+        default -> throw new Error("unhandled case in Visi.typeVisibility");
       };
   }
 

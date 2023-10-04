@@ -140,7 +140,7 @@ public class FormalGenerics extends ANY
                                                String detail2)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !actualGenerics.contains(Types.t_ERROR));
+      (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
 
     boolean result = true;
     if (!sizeMatches(actualGenerics))

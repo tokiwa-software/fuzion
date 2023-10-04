@@ -26,17 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 
 import dev.flang.util.List;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 

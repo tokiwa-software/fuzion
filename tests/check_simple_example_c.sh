@@ -76,19 +76,12 @@ else
         experr=$2.expected_err_c
     fi
     head -n 100 "$expout" >tmp_exp_out.txt
-    if diff tmp_exp_out.txt tmp_out.txt; then
-        if diff "$experr" tmp_err.txt >/dev/null; then
-            echo -ne "\033[32;1mPASSED\033[0m."
-        else
-            diff "$experr" tmp_err.txt
-            echo -e "\033[31;1m*** FAILED\033[0m err on $2"
-            RC=1
-        fi
-    else
-        diff "$experr" tmp_err.txt
-        echo -e "\033[31;1m*** FAILED\033[0m out on $2"
-        RC=1
-    fi
+    expout=tmp_exp_out.txt
+
+    # show diff in stdout unless an unexpected output occured to stderr
+    (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
+    diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
+    RC=$?
     if [ -f testbin ]; then
         echo " (binary)"
     else

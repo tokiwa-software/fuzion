@@ -168,14 +168,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var p = _inputFile;
     if (p != null)
       {
-        var stmnts = parseFile(p);
-        ((AbstractBlock) _universe.code())._expressions.addAll(stmnts);
-        for (var s : stmnts)
+        var expr = parseFile(p);
+        ((AbstractBlock) _universe.code())._expressions.addAll(expr);
+        for (var s : expr)
           {
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (stmnts.size() == 1 && !f.isField())
+                if (expr.size() == 1 && !f.isField())
                   {
                     res = f.featureName().baseName();
                   }
@@ -209,15 +209,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var stmnts = parseFile(p);
+    var exprs = parseFile(p);
     var result = new List<Feature>();
-    for (var s : stmnts)
+    for (var s : exprs)
       {
         if (s instanceof Feature f)
           {
             result.add(f);
           }
-        else if (Errors.count() == 0)
+        else if (!Errors.any())
           {
             AstErrors.expressionNotAllowedOutsideOfFeatureDeclaration(s);
           }
@@ -285,7 +285,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   MIR createMIR(AbstractFeature main)
   {
-    if (main != null && Errors.count() == 0)
+    if (main != null && !Errors.any())
       {
         if (main.valueArguments().size() != 0)
           {
@@ -305,7 +305,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     var result = new MIR(_universe, main, this);
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         new DFA(result).check();
       }
@@ -466,7 +466,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     if (inner.isField())
       {
-        AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+        // NYI inner.isTypeFeature() does not work currently
+        if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
+          {
+            AstErrors.typeFeaturesMustNotBeFields(inner);
+          }
+        else
+          {
+            AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+          }
       }
 
     setOuterAndAddInnerForQualifiedRec(inner, 0, outer);
@@ -567,7 +575,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
-                (Errors.count() > 0  || c.calledFeature() != null);
+                (Errors.any()  || c.calledFeature() != null);
 
               if (c.calledFeature() instanceof Feature cf
                   // fixes issue #1358
@@ -781,7 +789,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          * type features, so suppress them in this case. See flang.dev's
          * design/examples/typ_const2.fz as an example.
          */
-        if ((Errors.count() == 0 || !f.isTypeFeature()) && visibleFor(existing, f))
+        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
           {
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
@@ -916,7 +924,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             var cf = p.calledFeature();
             if (CHECKS) check
-              (Errors.count() > 0 || cf != null);
+              (Errors.any() || cf != null);
 
             if (cf != null)
               {
@@ -975,7 +983,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
       (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
@@ -1030,7 +1038,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var e : fs.entrySet())
           {
             var v = e.getValue();
-            if ((use == null || featureVisible(use.pos()._sourceFile, v)) &&
+            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                 (!v.isField() || !foundFieldInScope))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
@@ -1106,7 +1114,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                     boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || outer != Types.f_ERROR);
+      (Errors.any() || outer != Types.f_ERROR);
 
     FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
@@ -1114,7 +1122,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         _res.resolveDeclarations(outer);
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter);
+        var fs = lookup(outer, name, null, traverseOuter, false);
         for (var fo : fs)
           {
             var f = fo._feature;
@@ -1283,7 +1291,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
-                      (Errors.count() > 0 ||
+                      (Errors.any() ||
                        i < args.size() ||
                        args.get(args.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(args.size() - 1, i);
@@ -1357,7 +1365,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           if (// visibility of arg is allowed to be more restrictive
               // since it is always known by caller
               !f.arguments().contains(c.calledFeature())
-              // do not check stmntResult generated by label
+              // do not check exprResult generated by label
               && !(c.target() instanceof Current)
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()

@@ -229,7 +229,7 @@ public class If extends ExprWithPos
       (elseBlock != null || elseIf != null);
 
     var t = cond.type();
-    if (!Types.resolved.t_bool.isAssignableFrom(t))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
       {
         AstErrors.ifConditionMustBeBool(cond.pos(), t);
       }

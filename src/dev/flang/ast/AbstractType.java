@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -63,10 +62,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached results for applyTypePars(t) and applyTypePars(f, List<AbstractType>);
    */
-  private Object _appliedTypeParsCachedFor1;
+  private AbstractType _appliedTypeParsCachedFor1;
   private AbstractType _appliedTypeParsCache;
-  private Object _appliedTypePars2CachedFor1;
-  private Object _appliedTypePars2CachedFor2;
+  private AbstractFeature _appliedTypePars2CachedFor1;
+  private List<AbstractType> _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
 
 
@@ -271,13 +270,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var t: generics())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || t != null);
+              (Errors.any() || t != null);
             result = result || t == null || t.containsError();
           }
       }
 
     if (POSTCONDITIONS) ensure
-      (!result || Errors.count() > 0);
+      (!result || Errors.any());
 
     return result;
   }
@@ -302,7 +301,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var t: generics())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || t != null);
+              (Errors.any() || t != null);
             result = result || !exceptFirst && t != null && t.containsUndefined(false);
             exceptFirst = false;
           }
@@ -370,9 +369,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
-      (this  .isGenericArgument() || this  .featureOfType() != null || Errors.count() > 0,
-       actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
-       Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
+      (this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
+       actual.isGenericArgument() || actual.featureOfType() != null || Errors.any(),
+       Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     if (assignableTo != null)
       {
@@ -394,7 +393,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         else
           {
             if (CHECKS) check
-              (actual_type.featureOfType() != null || Errors.count() > 0);
+              (actual_type.featureOfType() != null || Errors.any());
             if (actual_type.featureOfType() != null)
               {
                 for (var p: actual_type.featureOfType().inherits())
@@ -430,7 +429,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private boolean isChoiceMatch(AbstractType actual)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument() && featureOfType() != null || Errors.count() > 0);
+      (!isGenericArgument() && featureOfType() != null || Errors.any());
 
     boolean result = false;
     if (!isGenericArgument() && !isRef() && featureOfType().isChoice())
@@ -438,7 +437,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         for (var t : choiceGenerics())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || t != null);
+              (Errors.any() || t != null);
             result = result || t != null && Types.intern(t).isAssignableFrom(actual);
           }
       }
@@ -457,9 +456,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
        Types.intern(actual) == actual,
-       this  .isGenericArgument() || this  .featureOfType() != null || Errors.count() > 0,
-       actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
-       Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
+       this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
+       actual.isGenericArgument() || actual.featureOfType() != null || Errors.any(),
+       Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     var result = containsError()                   ||
       actual.containsError()                       ||
@@ -474,7 +473,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         else
           {
             if (CHECKS) check
-              (actual.featureOfType() != null || Errors.count() > 0);
+              (actual.featureOfType() != null || Errors.any());
             if (actual.featureOfType() != null)
               {
                 if (actual.featureOfType() == featureOfType())
@@ -531,7 +530,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private static List<AbstractType> applyTypePars(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        f.generics().sizeMatches(actualGenerics));
 
     List<AbstractType> result;
@@ -559,7 +558,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        featureOfType().generics().sizeMatches(generics()));
 
     return applyTypePars(featureOfType(), genericsToReplace, generics());
@@ -591,7 +590,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 for (var t: generics())
                   {
                     if (CHECKS) check
-                      (Errors.count() > 0 || t != null);
+                      (Errors.any() || t != null);
                     if (t != null &&
                         t.dependsOnGenerics())
                       {
@@ -625,8 +624,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (checkedForGeneric(),
        target != null,
        target.checkedForGeneric(),
-       Errors.count() > 0 || !isOpenGeneric(),
-       Errors.count() > 0 || target.isGenericArgument() || target.featureOfType().generics().sizeMatches(target.generics()));
+       Errors.any() || !isOpenGeneric(),
+       Errors.any() || target.isGenericArgument() || target.featureOfType().generics().sizeMatches(target.generics()));
 
     AbstractType result;
     if (_appliedTypeParsCachedFor1 == target)
@@ -700,9 +699,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (checkedForGeneric(),
-       Errors.count() > 0 ||
+       Errors.any() ||
        f.generics().sizeMatches(actualGenerics),
-       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
+       Errors.any() || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
     AbstractType result;
     if (_appliedTypePars2CachedFor1 == f &&
@@ -1006,62 +1005,47 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           isGenericArgument() &&  other.isGenericArgument() ?  0 :
           isGenericArgument() && !other.isGenericArgument() ? -1 :
           !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
-        if (!isGenericArgument())
+        if (result == 0 && !isGenericArgument())
           {
-            if (result == 0)
+            if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
-                if (generics().size() != other.generics().size())  // this may happen for open generics lists
+                result = generics().size() < other.generics().size() ? -1 : +1;
+              }
+            else
+              {
+                var tg = generics().iterator();
+                var og = other.generics().iterator();
+                while (tg.hasNext() && result == 0)
                   {
-                    result = generics().size() < other.generics().size() ? -1 : +1;
-                  }
-                else
-                  {
-                    var tg = generics().iterator();
-                    var og = other.generics().iterator();
-                    while (tg.hasNext() && result == 0)
+                    var tgt = tg.next();
+                    var ogt = og.next();
+
+                    if (CHECKS) check
+                      (Errors.any() || tgt != null && ogt != null);
+
+                    if (tgt != null && ogt != null)
                       {
-                        var tgt = tg.next();
-                        var ogt = og.next();
-
-                        if (CHECKS) check
-                          (Errors.count() > 0 || tgt != null && ogt != null);
-
-                        if (tgt != null && ogt != null)
-                          {
-                            result = tgt.compareTo(ogt);
-                          }
+                        result = tgt.compareTo(ogt);
                       }
                   }
               }
           }
         if (result == 0)
           {
+            // for artifical built in types
             result = name().compareTo(other.name());
           }
-        if (result == 0)
+        if (result == 0 && isRef() ^ other.isRef())
           {
-            if (isRef() ^ other.isRef())
-              {
-                result = isRef() ? -1 : 1;
-              }
+            result = isRef() ? -1 : 1;
           }
-        if (result == 0)
+        if (result == 0 && isThisType() ^ other.isThisType())
           {
-            if (isThisType() ^ other.isThisType())
-              {
-                result = isThisType() ? -1 : 1;
-              }
+            result = isThisType() ? -1 : 1;
           }
-        if (isGenericArgument())
+        if (result == 0 && isGenericArgument())
           {
-            if (result == 0)
-              {
-                result = genericArgument().feature().compareTo(other.genericArgument().feature());
-                if (result == 0)
-                  {
-                    result = genericArgument().name().compareTo(other.genericArgument().name()); // NYI: compare generic, not generic.name!
-                  }
-              }
+            result = genericArgument().compareTo(other.genericArgument());
           }
       }
     return result;
@@ -1651,7 +1635,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var u = ui.hasNext() ? ui.next() : null;
         var c = Types.intern(f.constraint());
         if (CHECKS) check
-          (Errors.count() > 0 || f != null && a != null);
+          (Errors.any() || f != null && a != null);
 
         if (f != null && a != null &&
             !c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
@@ -1660,11 +1644,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
-                                                    callPos != null                ? callPos
-                                                                                   : called.pos(),
-                                                    f,
-                                                    a);
+                if (f.constraint().isChoice())
+                  {
+                    AstErrors.constraintMustNotBeChoice(f);
+                  }
+                else
+                  {
+                    AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
+                                                        callPos != null                ? callPos
+                                                                                       : called.pos(),
+                                                        f,
+                                                        a);
+                  }
+
                 result = false;
               }
           }

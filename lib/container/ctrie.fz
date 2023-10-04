@@ -265,7 +265,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
 private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), property.equatable
-pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
+pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
   redef as_list => from.as_list
 
@@ -477,7 +477,7 @@ is
 
 
   # convert u64 hash to u32 hash
-  private hash(h u64) u32 is
+  private hash0(h u64) u32 is
     (h >> 32).low32bits ^ h.low32bits
 
 
@@ -563,8 +563,8 @@ is
     d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) :=
       # NYI why 35??
       if lev < 35
-        xidx := ((hash x.k.hash) >> lev) & 0x1f
-        yidx := ((hash y.k.hash) >> lev) & 0x1f
+        xidx := ((hash0 (hash x.k)) >> lev) & 0x1f
+        yidx := ((hash0 (hash y.k)) >> lev) & 0x1f
         bmp := (u32 1 << xidx) | (u32 1 << yidx)
         if xidx = yidx
           sub_node := indirection_node (dual x y (lev + width) gen) gen
@@ -601,7 +601,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           not_found
         else
@@ -637,7 +637,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           ncn := (if cn.gen = i.gen then cn else renew cn i.gen).add (singleton_node k v) pos flag i.gen
           gcas i m ncn
@@ -680,7 +680,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           not_found
         else
@@ -702,7 +702,7 @@ is
           match res
             v CTV =>
               match (gcas_read i).data
-                t tomb_node => clean_parent parent i (hash k.hash) lev gen
+                t tomb_node => clean_parent parent i (hash0 (hash k)) lev gen
                 * =>
             * =>
           res

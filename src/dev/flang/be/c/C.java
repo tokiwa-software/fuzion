@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
@@ -196,15 +196,6 @@ public class C extends ANY
 
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public Pair<CExpr, CStmnt> unbox(CExpr val, int orc)
-    {
-      return new Pair<>(fields(val, orc), CStmnt.EMPTY);
-    }
-
-
-    /**
      * Get the current instance
      */
     public Pair<CExpr, CStmnt> current(int cl, boolean pre)
@@ -233,34 +224,41 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
-      var o = CStmnt.EMPTY;
-      var r = switch (_fuir.getSpecialId(constCl))
+      return switch (_fuir.getSpecialId(constCl))
         {
-        case c_bool -> d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE;
-        case c_i8   -> CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ());
-        case c_i16  -> CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort());
-        case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-        case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-        case c_u8   -> CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff);
-        case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
-        case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
-        case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
-        case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
-        case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
-        case c_Const_String ->
-        {
-          var tmp = _names.newTemp();
-          o = constString(d, tmp);
-          yield tmp;
-        }
-        default ->
-        {
-          Errors.error("Unsupported constant in C backend.",
-                       "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield CExpr.dummy(_fuir.clazzAsString(constCl));
-        }
+          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_u8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_array_i8  -> constArray(constCl, SpecialClazzes.c_i8 , d);
+          case c_array_i16 -> constArray(constCl, SpecialClazzes.c_i16, d);
+          case c_array_i32 -> constArray(constCl, SpecialClazzes.c_i32, d);
+          case c_array_i64 -> constArray(constCl, SpecialClazzes.c_i64, d);
+          case c_array_u8  -> constArray(constCl, SpecialClazzes.c_u8 , d);
+          case c_array_u16 -> constArray(constCl, SpecialClazzes.c_u16, d);
+          case c_array_u32 -> constArray(constCl, SpecialClazzes.c_u32, d);
+          case c_array_u64 -> constArray(constCl, SpecialClazzes.c_u64, d);
+          case c_array_f32 -> constArray(constCl, SpecialClazzes.c_f32, d);
+          case c_array_f64 -> constArray(constCl, SpecialClazzes.c_f64, d);
+          case c_Const_String ->
+          {
+            var tmp = _names.newTemp();
+            yield new Pair<CExpr, CStmnt>(tmp, constString(d, tmp));
+          }
+          default ->
+          {
+            Errors.error("Unsupported constant in C backend.",
+            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+            yield new Pair<>(CExpr.dummy(_fuir.clazzAsString(constCl)), CStmnt.EMPTY);
+          }
         };
-      return new Pair<>(r, o);
     }
 
 
@@ -270,12 +268,12 @@ public class C extends ANY
     public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, boolean pre, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-      var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
+      var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
-      var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
+      var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
       var ref       = hasTag ? refEntry                   : _names.newTemp();
       var getRef    = hasTag ? CStmnt.EMPTY               : CStmnt.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
-      var tag       = hasTag ? sub.field(_names.TAG_NAME) : ref.castTo("int64_t");
+      var tag       = hasTag ? sub.field(CNames.TAG_NAME) : ref.castTo("int64_t");
       var tcases    = new List<CStmnt>(); // cases depending on tag value or ref cast to int64
       var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
       CStmnt tdefault = null;
@@ -287,21 +285,18 @@ public class C extends ANY
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (tc != -1)
+              if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
                 {
-                  if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
+                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
-                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                        {
-                          rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
-                        }
+                      rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
                     }
-                  else
-                    {
-                      ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
-                      if (CHECKS) check
-                        (hasTag || !_fuir.hasData(tc));
-                    }
+                }
+              else if (!_fuir.clazzIsVoidType(tc))
+                {
+                  ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
+                  if (CHECKS) check
+                    (hasTag || !_fuir.hasData(tc));
                 }
             }
           var sl = new List<CStmnt>();
@@ -311,7 +306,7 @@ public class C extends ANY
               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
               var f      = field(cl, C.this.current(cl, pre), field);
               var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
+                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
@@ -327,7 +322,7 @@ public class C extends ANY
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
-          var id = refEntry.deref().field(_names.CLAZZ_ID);
+          var id = refEntry.deref().field(CNames.CLAZZ_ID);
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
@@ -341,11 +336,11 @@ public class C extends ANY
     public Pair<CExpr, CStmnt> tag(int cl, int valuecl, CExpr value, int newcl, int tagNum)
     {
       var res     = _names.newTemp();
-      var tag     = res.field(_names.TAG_NAME);
-      var uniyon  = res.field(_names.CHOICE_UNION_NAME);
+      var tag     = res.field(CNames.TAG_NAME);
+      var uniyon  = res.field(CNames.CHOICE_UNION_NAME);
       var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
-                                 _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                      : new CIdent(_names.CHOICE_ENTRY_NAME + tagNum));
+                                 _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CNames.CHOICE_REF_ENTRY_NAME
+                                                                      : new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum));
       if (_fuir.clazzIsUnitType(valuecl) && _fuir.clazzIsChoiceOfOnlyRefs(newcl))
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
@@ -378,8 +373,8 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int ecl)
     {
-      var res = _names.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-      var evi = _names.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
+      var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+      var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
       var o = CStmnt.iff(evi.not(),
                          CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
@@ -394,7 +389,7 @@ public class C extends ANY
      */
     public CStmnt contract(int cl, FUIR.ContractKind ck, CExpr cc)
     {
-      return CStmnt.iff(cc.field(_names.TAG_NAME).not(),
+      return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
                                                        CExpr.string(_fuir.clazzAsString(cl))),
                                    CExpr.exit(1)));
@@ -558,6 +553,7 @@ public class C extends ANY
         command.addAll(
           "-Wall",
           "-Werror",
+          "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
           "-Wno-unused-variable",
           "-Wno-unused-label",
@@ -576,8 +572,14 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
+
+    // disable trigraphs:
+    // "Trigraphs are not popular and many compilers implement them incorrectly. Portable code should not rely on trigraphs being either converted or ignored."
+    // source: https://gcc.gnu.org/onlinedocs/cpp/Initial-processing.html
+    command.add("-fno-trigraphs");
+
     // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-o", name, cname);
+    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
     if (isWindows())
       {
@@ -640,6 +642,7 @@ public class C extends ANY
   {
     cf.print
       ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
+       "#define _POSIX_C_SOURCE 200809L\n" +
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -661,11 +664,11 @@ public class C extends ANY
     cf.println("#include \"" + fzH.toString() + "\"\n");
 
     cf.print
-      (CStmnt.decl("int", _names.GLOBAL_ARGC));
+      (CStmnt.decl("int", CNames.GLOBAL_ARGC));
     cf.print
-      (CStmnt.decl("char **", _names.GLOBAL_ARGV));
+      (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
     cf.print
-      (CStmnt.decl("pthread_mutex_t", _names.GLOBAL_LOCK));
+      (CStmnt.decl("pthread_mutex_t", CNames.GLOBAL_LOCK));
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
@@ -762,8 +765,8 @@ public class C extends ANY
 
     var cl = _fuir.mainClazzId();
 
-    cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
-                        _names.GLOBAL_ARGV.assign(new CIdent("argv")),
+    cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
+                        CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
                         _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
                         CExpr.call(_names.function(cl, false), new List<>())
                         ));
@@ -926,7 +929,7 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
-            var id = tvalue.deref().field(_names.CLAZZ_ID);
+            var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
                                                   id,
@@ -970,6 +973,135 @@ public class C extends ANY
     return constString(CExpr.string(bytes),
                        CExpr.int32const(bytes.length),
                        tmp);
+  }
+
+
+  /**
+   * produce CExpr for given special clazz sc and byte buffer bbLE.
+   *
+   * @param sc the spezial clazz we we are generating the CExpr for.
+   *
+   * @param bbLE byte buffer (little endian)
+   *
+   * @return C expression that creates corresponging constant value.
+   */
+  public CExpr primitiveExpression(SpecialClazzes sc, ByteBuffer bbLE)
+  {
+    return switch (sc)
+      {
+      case c_bool -> bbLE.get(0) == 1 ? _names.FZ_TRUE: _names.FZ_FALSE;
+      case c_u8   -> CExpr.uint8const (bbLE.get() & 0xff);
+      case c_u16  -> CExpr.uint16const(bbLE.getChar());
+      case c_u32  -> CExpr.uint32const(bbLE.getInt());
+      case c_u64  -> CExpr.uint64const(bbLE.getLong());
+      case c_i8   -> CExpr.int8const  (bbLE.get());
+      case c_i16  -> CExpr.int16const (bbLE.getShort());
+      case c_i32  -> CExpr.int32const (bbLE.getInt());
+      case c_i64  -> CExpr.int64const (bbLE.getLong());
+      case c_f32  -> CExpr.f32const   (bbLE.getFloat());
+      case c_f64  -> CExpr.f64const   (bbLE.getDouble());
+      default -> throw new Error(sc.name() + " is not a supported primitive.");
+      };
+  }
+
+
+  /**
+   * How many bytes are needed to encode specialClazz sc?
+   *
+   * @param sc a special clazz id.
+   *
+   * @return 1, 2, 4 or 8 => meaning 8bits, 16bits, 32bits, 64bits
+   */
+  public int bytesOfConst(SpecialClazzes sc)
+  {
+    return switch (sc)
+      {
+      case c_bool -> 1;
+      case c_u8   -> 1;
+      case c_u16  -> 2;
+      case c_u32  -> 4;
+      case c_u64  -> 8;
+      case c_i8   -> 1;
+      case c_i16  -> 2;
+      case c_i32  -> 4;
+      case c_i64  -> 8;
+      case c_f32  -> 4;
+      case c_f64  -> 8;
+      default -> throw new Error(sc.name() + " is not a supported primitive.");
+      };
+  }
+
+
+  /**
+   * produce an expression to create an array
+   * on the heap from the given data
+   *
+   * @param constCl, e.g. array
+   * @param d
+   * @param bytesPerField
+   * @return
+   */
+  public Pair<CExpr, CStmnt> constArray(int constCl, SpecialClazzes elementType, byte[] d)
+  {
+    var bytesPerField    = bytesOfConst(elementType);
+    var tmp              = _names.newTemp();
+    var tmpR             = _names.newTemp();
+    var c_internal_array = _fuir.lookup_array_internal_array(constCl);
+    var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
+    var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
+    var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
+    var internal_array   = _names.fieldName(c_internal_array);
+    var data             = _names.fieldName(c_data);
+    var length           = _names.fieldName(c_length);
+    var sysArray         = fields(tmp, constCl).field(internal_array);
+    var type             = _types.clazz(constCl);
+    var typeR            = type + "*";
+    var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
+                           CStmnt.decl(typeR, tmpR),
+                           sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name, // NYI cast to void* should suffice but does
+                                                                                           // not work yet for e.g. floats: say [f32 -17.3, f32 1.2]
+                                                                  new List<>(arrayInit(d, elementType),
+                                                                             CExpr.int32const(d.length)))),
+                           sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
+                           tmpR.assign(CExpr.call(CNames.HEAP_CLONE._name,
+                                                  new List<>(tmp.adrOf(),
+                                                             tmp.sizeOfExpr())).castTo(typeR)));
+    return new Pair<>(tmpR.deref(),
+                      stmnts);
+  }
+
+
+  /**
+   * create an array with the given bytes as input.
+   *
+   * @param d the data of the array
+   *
+   * @param elementType i8, f32, etc.
+   */
+  public CExpr arrayInit(byte[] d, SpecialClazzes elementType)
+  {
+    var bytesPerField = bytesOfConst(elementType);
+    return new CExpr() {
+      int precedence()
+      {
+        return 0;
+      }
+
+      void code(CString sb)
+      {
+        sb.append("(" + CTypes.scalar(elementType) + "[]){");
+        for(int i = 0; i < d.length; i = i + bytesPerField)
+          {
+            primitiveExpression(elementType, ByteBuffer.wrap(d, i, bytesPerField).order(ByteOrder.LITTLE_ENDIAN))
+              .code(sb);
+            if (i + bytesPerField != d.length)
+              {
+                sb.append(", ");
+              }
+          }
+        sb.append("}");
+      }
+    };
   }
 
 
@@ -1054,13 +1186,9 @@ public class C extends ANY
       (t != null || !_fuir.hasData(rt) || tc == _fuir.clazzUniverse());
     var occ   = _fuir.clazzOuterClazz(f);
     var vocc  = _fuir.clazzAsValue(occ);
-    if (occ != tc && _fuir.clazzIsRef(occ))
-      {
-        t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
-      }
     return (_types.isScalar(vocc)     ? fields(t, tc)         :
             _fuir.clazzIsVoidType(rt) ? null :
-            _fuir.hasData(rt)        ? field(tc, t, f) : CExpr.UNIT);
+            _fuir.hasData(rt)         ? field(tc, t, f) : CExpr.UNIT);
   }
 
 
@@ -1176,8 +1304,8 @@ public class C extends ANY
    */
   CStmnt tailRecursion(int cl, int c, int i, int tc, List<CExpr> a)
   {
-    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
-                                   : _names.CURRENT.deref();
+    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
+                                   : CNames.CURRENT.deref();
 
     var l = new List<CStmnt>();
     if (_fuir.hasData(tc) && !_tailCall.firstArgIsOuter(cl, c, i))
@@ -1234,12 +1362,12 @@ public class C extends ANY
       }
     else
       {
-        var ac = _fuir.clazzOuterClazz(cc);
+        var oc = _fuir.clazzOuterClazz(cc);
         var or = _fuir.clazzOuterRef(cc);
         result = new List<>();
-        if (or != -1 && _fuir.hasData(ac))
+        if (or != -1 && _fuir.hasData(oc))
           {
-            result.add(_fuir.clazzIsRef(ac)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
+            result.add(_fuir.clazzIsRef(oc)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
                        /* NYI: special handling in backend should be
                         * replaced by AdrOf in FUIR code: */
                        _fuir.clazzFieldIsAdrOfValue(or) ? tvalue.adrOf().castTo(_types.clazzField(_fuir.clazzOuterRef(cc)))
@@ -1367,8 +1495,8 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
-                                   : _names.CURRENT.deref();
+    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
+                                   : CNames.CURRENT.deref();
     var l = new List<CStmnt>();
     l.add(_ai.process(cl, pre)._v1);
     var res = _fuir.clazzResultClazz(cl);
@@ -1381,8 +1509,8 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), _names.CURRENT));
-      case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, _names.CURRENT));
+      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT));
+      case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
     return CStmnt.seq(allocCurrent,
@@ -1401,47 +1529,34 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
 
     var args = new List<CExpr>();
-    var result = CStmnt.EMPTY;
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
+        var ai = new CIdent("arg" + i);
         var ac = _fuir.clazzArgClazz(cl, i);
 
-        if (_fuir.clazzBaseName(ac).equals("Any"))
+        switch (_fuir.getSpecialId(ac))
           {
-            args.add((new CIdent("arg" + i)).castTo("void*"));
-          }
-        else if (_fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i8)  ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i16) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_i64) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u8)  ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u16) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_u64) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f32) ||
-                 _fuir.clazzIs(ac, FUIR.SpecialClazzes.c_f64))
-          {
-            args.add(new CIdent("arg" + i));
-          }
+            case c_u8, c_u16, c_u32, c_u64,
+                 c_i8, c_i16, c_i32, c_i64,
+                 c_f32, c_f64              -> args.add(ai);
+            case c_sys_ptr                 -> args.add(ai.castTo("void*"));
+            default                        -> {}
+          };
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-
-    if (_fuir.clazzBaseName(rc).equals("String"))
+    return switch (_fuir.getSpecialId(rc))
       {
-        var str = new CIdent("str");
-        var res = new CIdent("res");
-        result = CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
-                            constString(str, CExpr.call("strlen", new List<>(str)), res),
-                            res.castTo(_types.clazz(rc)).ret());
-      }
-    else
-      {
-        result = CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
-      }
-
-    return result;
+        case c_Const_String -> {
+          var str = new CIdent("str");
+          var res = new CIdent("res");
+          yield CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
+                           constString(str, CExpr.call("strlen", new List<>(str)), res),
+                           res.castTo(_types.clazz(rc)).ret());
+        }
+        default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+      };
   }
 
 
@@ -1456,7 +1571,7 @@ public class C extends ANY
    */
   CExpr current(int cl, boolean pre)
   {
-    var res1 = _names.CURRENT;
+    var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
     var res3 =  _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal() ? res2.adrOf() : res2;
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
@@ -1476,7 +1591,7 @@ public class C extends ANY
   {
     if (outercl == _fuir.clazzUniverse())
       {
-        outer = _names.UNIVERSE;
+        outer = CNames.UNIVERSE;
       }
     return fields(outer, outercl).field(_names.fieldName(field));
   }
@@ -1494,7 +1609,7 @@ public class C extends ANY
    */
   CExpr fields(CExpr refOrVal, int type)
   {
-    return _fuir.clazzIsRef(type) ? refOrVal.deref().field(_names.FIELDS_IN_REF_CLAZZ)
+    return _fuir.clazzIsRef(type) ? refOrVal.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                   : refOrVal;
   }
 

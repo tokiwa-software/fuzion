@@ -27,9 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -199,7 +196,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param o
    *
    * @param f if this type corresponds to a feature, then this is the
-   * feature, else null.
+   * feature, otherwise null.
    *
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
@@ -213,7 +210,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.count() > 0 || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g));
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g));
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
@@ -298,8 +295,6 @@ public class ResolvedNormalType extends ResolvedType
 
   /**
    * Constructor for artificial built-in types.
-   *
-   * @param n the name
    */
   public ResolvedNormalType()
   {
@@ -556,7 +551,11 @@ public class ResolvedNormalType extends ResolvedType
       }
     this._generics = FormalGenerics.resolve(res, _generics, outerfeat);
     this._generics.freeze();
-    if (!_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+    if (CHECKS) check
+      (Errors.any() || _feature != null);
+    if (result.containsError() ||
+        _feature != null &&
+        !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
                                                            pos.pos(),
                                                            "type",
                                                            "Type: " + toString() + "\n"))
@@ -577,7 +576,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _feature != null);
+      (Errors.any() || _feature != null);
 
     return _feature != null
       ? _feature

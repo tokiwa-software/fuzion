@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
-import dev.flang.util.ANY;
 import dev.flang.util.List;
 
 import java.nio.charset.StandardCharsets;
@@ -917,6 +916,7 @@ abstract class CExpr extends CStmnt
   {
     return "C-Expression '" + code() + "'";
   }
+
 
 }
 

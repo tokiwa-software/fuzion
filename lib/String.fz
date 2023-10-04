@@ -55,10 +55,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public infix * (n i32) ref : String
   pre
     n ≥ 0
+    # NYI String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
     redef utf8 Sequence u8 is
       bytes := String.this.utf8
-      bytes.cycle.take (bytes.count * n)  # NYI: this does not work for infinite Strings.
+      bytes.cycle.take (bytes.count * n)
 
 
   # equality: compare two strings byte-by-byte
@@ -90,12 +91,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # create hash code from a string
   #
-  public hash u64 is
+  public type.hash_code(a String.this) u64 is
     sh_l := u64 13
     sh_r := u64 51
     for
       h u64 := 0, ((h << sh_l) | (h >> sh_r)) ^ b.as_u64;
-      b in utf8
+      b in a.utf8
     while true
     else
       h
@@ -383,7 +384,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   is
     codepoint_array
       .slice from to
-      .map String (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
+      .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
       .fold String.type.concat
 
 

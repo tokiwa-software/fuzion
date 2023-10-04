@@ -728,19 +728,19 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || _name != Errors.ERROR_STRING);
+          (Errors.any() || _name != Errors.ERROR_STRING);
 
         var actualsResolved = false;
         if (_name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
-              (Errors.count() > 0 || targetFeature != null && targetFeature != Types.f_ERROR);
+              (Errors.any() || targetFeature != null && targetFeature != Types.f_ERROR);
             targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != thiz;
             if (!targetVoid && targetFeature != Types.f_ERROR)
               {
                 res.resolveDeclarations(targetFeature);
-                var fos = res._module.lookup(targetFeature, _name, this, _target == null);
+                var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
                 for (var fo : fos)
                   {
                     if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
@@ -788,10 +788,14 @@ public class Call extends AbstractCall
                          (Types.resolved == null ||                // may happen when building bad base.fum
                           targetFeature != Types.resolved.f_void)) // but allow to call anything on void
                   {
-                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature, _target,
+                    AstErrors.calledFeatureNotFound(this,
+                                                    calledName,
+                                                    targetFeature,
+                                                    _target,
                                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                                          (FeatureName fn) -> false,
-                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)));
+                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                    hiddenCandidates(res, thiz, targetFeature, calledName));
                   }
               }
           }
@@ -814,12 +818,34 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || calledFeature() != Types.f_ERROR || targetVoid,
-       Errors.count() > 0 || _target         != Expr.ERROR_VALUE,
+      (Errors.any() || calledFeature() != Types.f_ERROR || targetVoid,
+       Errors.any() || _target         != Expr.ERROR_VALUE,
        calledFeature() != null,
        _target         != null);
 
     return !targetVoid;
+  }
+
+
+  /**
+   * @return list of features that would match called name and args but are not visible.
+   */
+  private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature thiz, AbstractFeature targetFeature, FeatureName calledName)
+  {
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    return FeatureAndOuter
+      .findExactOrCandidate(
+        fos,
+        (FeatureName fn) -> fn.equalsExceptId(calledName),
+        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList()
+    );
   }
 
 
@@ -883,7 +909,7 @@ public class Call extends AbstractCall
         _name.startsWith("postfix ")    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(thiz, _name, this, true);
+        var fo = res._module.lookup(thiz, _name, this, true, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
@@ -1037,7 +1063,7 @@ public class Call extends AbstractCall
   public AbstractFeature calledFeature()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || calledFeatureKnown());
+      (Errors.any() || calledFeatureKnown());
 
     AbstractFeature result = _calledFeature != null ? _calledFeature : Types.f_ERROR;
 
@@ -1249,7 +1275,7 @@ public class Call extends AbstractCall
             // _resolvedFormalArgumentTypes array would invalidate
             // argnum for following arguments.
             if (CHECKS) check
-              (Errors.count() > 0 || argnum == _resolvedFormalArgumentTypes.length - 1);
+              (Errors.any() || argnum == _resolvedFormalArgumentTypes.length - 1);
             if (argnum != _resolvedFormalArgumentTypes.length -1)
               {
                 a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
@@ -1267,7 +1293,7 @@ public class Call extends AbstractCall
     for (int i = 0; i < cnt; i++)
       {
         if (CHECKS) check
-          (Errors.count() > 0 || argnum + i <= _resolvedFormalArgumentTypes.length);
+          (Errors.any() || argnum + i <= _resolvedFormalArgumentTypes.length);
 
         if (argnum + i < _resolvedFormalArgumentTypes.length)
           {
@@ -1395,11 +1421,11 @@ public class Call extends AbstractCall
    *
    * In particular, this replaces formal generic types by actual generics
    * provided to this call and it replaces select calls to fields of open
-   * genenric type by calls to the actual fields.
+   * generic type by calls to the actual fields.
    *
    * @param res the resolution instance.
    *
-   * @param frmlT the result type of the called feature, might be open genenric.
+   * @param frmlT the result type of the called feature, might be open generic.
    */
   private void setActualResultType(Resolution res, AbstractType frmlT)
   {
@@ -1426,7 +1452,7 @@ public class Call extends AbstractCall
    * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
-   * @param t the result type of the called feature, might be open genenric.
+   * @param t the result type of the called feature, might be open generic.
    *
    * @param tt target type or constraint.
    *
@@ -1671,7 +1697,7 @@ public class Call extends AbstractCall
           {
             missing.add(g);
             if (CHECKS) check
-              (Errors.count() > 0 || g.isOpen() || i < _generics.size());
+              (Errors.any() || g.isOpen() || i < _generics.size());
             if (i < _generics.size())
               {
                 _generics = _generics.setOrClone(i, Types.t_ERROR);
@@ -1687,7 +1713,7 @@ public class Call extends AbstractCall
     // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
     if (!missing.isEmpty() &&
-        (Errors.count() == 0 ||
+        (!Errors.any() ||
          !_actuals.stream().anyMatch(x -> x.typeIfKnown() == Types.t_ERROR)))
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
@@ -1728,7 +1754,7 @@ public class Call extends AbstractCall
         for (var frml : va)
           {
             if (CHECKS) check
-                          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+                          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
             if (!checked[vai])
               {
@@ -2215,7 +2241,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || result.typeIfKnown() != Types.t_ERROR);
+      (Errors.any() || result.typeIfKnown() != Types.t_ERROR);
 
     return result.typeIfKnown() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
@@ -2429,7 +2455,7 @@ public class Call extends AbstractCall
   {
     Expr result = this;
     //    if (true) return result;
-    if (Errors.count() == 0)
+    if (!Errors.any())
       {
         // convert
         //   a && b into if a b     else false
@@ -2441,6 +2467,19 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)); }
         else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ); }
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ); }
+
+        // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
+        else if (cf == Types.resolved.t_i8 .featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i8 ); }
+        else if (cf == Types.resolved.t_i16.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i16); }
+        else if (cf == Types.resolved.t_i32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i32); }
+        else if (cf == Types.resolved.t_i64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i64); }
+        else if (cf == Types.resolved.t_u8 .featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u8 ); }
+        else if (cf == Types.resolved.t_u16.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u16); }
+        else if (cf == Types.resolved.t_u32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u32); }
+        else if (cf == Types.resolved.t_u64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
+        else if (cf == Types.resolved.t_f32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
+        else if (cf == Types.resolved.t_f64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
+
       }
     return result;
   }

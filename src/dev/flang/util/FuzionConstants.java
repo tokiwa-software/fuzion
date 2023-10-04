@@ -47,6 +47,14 @@ public class FuzionConstants extends ANY
    */
   public static final String NO_VALUE_STRING = "**no value**";
 
+  /**
+   * Names of Java properties accepted by fz command:
+   */
+  public static final String FUZION_DEBUG_LEVEL_PROPERTY = "fuzion.debugLevel";
+  public static final String FUZION_ENABLE_UNSAFE_INTRINSICS_PROPERTY = "fuzion.enableUnsafeIntrinsics";
+  public static final String FUZION_HOME_PROPERTY = "fuzion.home";
+  public static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
+
 
   /*----------------------  special feature names  ----------------------*/
 
@@ -151,12 +159,12 @@ public class FuzionConstants extends ANY
    * converted to
    *
    *   if a then
-   *     #stmtResult123 := 0
+   *     #exprResult123 := 0
    *   else
-   *     #stmtResult123 := 1
-   *   x := #stmtResult123
+   *     #exprResult123 := 1
+   *   x := #exprResult123
    */
-  public static final String STATEMENT_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "stmtResult";
+  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
 
 
   /**

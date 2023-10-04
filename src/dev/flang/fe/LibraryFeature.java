@@ -53,7 +53,6 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
@@ -423,9 +422,9 @@ public class LibraryFeature extends AbstractFeature
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
+       Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        result == Types.intern(result)
        );
@@ -602,14 +601,6 @@ public class LibraryFeature extends AbstractFeature
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
-          case Unbox:
-            {
-              var fx = s.pop();
-              x = new Unbox(fx, _libModule.unboxType(iat))
-                { public SourcePosition pos() { return fx.pos(); } };
-              ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
-              break;
-            }
           case Box:
             {
               x = new Box(s.pop())
@@ -624,7 +615,7 @@ public class LibraryFeature extends AbstractFeature
                 {
                   public AbstractType type() { return t; }
                   public byte[] data() { return d; }
-                  public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                  public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }
                   public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
                 };

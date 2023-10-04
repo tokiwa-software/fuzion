@@ -268,20 +268,31 @@ public class InlineArray extends ExprWithPos
   public void checkTypes()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _type != null);
+      (Errors.any() || _type != null);
 
     var elementType = elementType();
 
     if (CHECKS) check
-      (Errors.count() > 0 || elementType != Types.t_ERROR);
+      (Errors.any() || elementType != Types.t_ERROR);
 
     for (var e : _elements)
       {
-        if (!elementType.isAssignableFrom(e.type()))
+        if (!elementType.isDirectlyAssignableFrom(e.type()))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }
       }
+  }
+
+
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  boolean isCompileTimeConst()
+  {
+    return NumLiteral.findConstantType(elementType()) != null &&
+      this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());
   }
 
 
@@ -297,9 +308,13 @@ public class InlineArray extends ExprWithPos
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
-    if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
+    var et = elementType();
+    if (isCompileTimeConst())
       {
-        var et           = elementType();
+        result = new ArrayConstant(pos(), this._elements, et);
+      }
+    else
+      {
         var eT           = new List<AbstractType>(et);
         var args         = new List<Actual>(new Actual(et),
                                             new Actual(new NumLiteral(_elements.size())));
@@ -315,7 +330,7 @@ public class InlineArray extends ExprWithPos
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
-        var stmnts = new List<Expr>(sysArrayAssign);
+        var exprs = new List<Expr>(sysArrayAssign);
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
@@ -325,7 +340,7 @@ public class InlineArray extends ExprWithPos
             var setElement      = new Call(e.pos(), readSysArrayVar,
                                            FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
                                            setArgs                                    ).resolveTypes(res, outer);
-            stmnts.add(setElement);
+            exprs.add(setElement);
           }
         var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
         var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
@@ -337,8 +352,8 @@ public class InlineArray extends ExprWithPos
                                                new Actual(unit2),
                                                new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
-        stmnts.add(arrayCall);
-        result = new Block(pos(), stmnts);
+        exprs.add(arrayCall);
+        result = new Block(pos(), exprs);
       }
     return result;
   }

@@ -27,9 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -129,7 +126,7 @@ public class ResolvedParametricType extends ResolvedType
   public AbstractFeature featureOfType()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
     return Types.f_ERROR;
   }
@@ -146,7 +143,7 @@ public class ResolvedParametricType extends ResolvedType
   public List<AbstractType> generics()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
     return UnresolvedType.NONE;
   }
@@ -183,7 +180,7 @@ public class ResolvedParametricType extends ResolvedType
   public AbstractType outer()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
     return null;
   }
 

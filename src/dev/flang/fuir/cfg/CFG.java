@@ -451,7 +451,6 @@ public class CFG extends ANY
     put("f32.type.tanh"                  , (cfg, cl) -> { } );
     put("f64.type.tanh"                  , (cfg, cl) -> { } );
 
-    put("Any.hash_code"                  , (cfg, cl) -> { } );
     put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
@@ -526,7 +525,7 @@ public class CFG extends ANY
     for (int i = 0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
-        createCallGraphForStmnt(cl, c, i, s);
+        createCallGraphForExpr(cl, c, i, s);
       }
   }
 
@@ -543,14 +542,13 @@ public class CFG extends ANY
    *
    * @param s the FUIR.ExprKind of the statement to analyze
    */
-  void createCallGraphForStmnt(int cl, int c, int i, FUIR.ExprKind s)
+  void createCallGraphForExpr(int cl, int c, int i, FUIR.ExprKind s)
   {
     switch (s)
       {
       case AdrOf : break;
       case Assign: break;
       case Box   : break;
-      case Unbox : break;
       case Call:
         {
           var cc0 = _fuir.accessedClazz  (cl, c, i);
@@ -582,7 +580,6 @@ public class CFG extends ANY
           addEffect(cl, ecl);
           break;
         }
-      case Dup: break;
       case Pop: break;
       default:
         {

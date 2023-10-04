@@ -766,14 +766,6 @@ public class Intrinsics extends ANY
     put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.hash_code"        , (c,cl,outer,in) ->
-        {
-          var or = c._fuir.clazzOuterRef(cl);
-          var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
-            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hash_code relies on non-compacting GC
-            : CExpr.int32const(42);  // NYI: This implementation of hash_code is stupid
-          return hc.ret();
-        });
     put("Any.as_string"        , (c,cl,outer,in) ->
         {
           var res = new CIdent("res");
@@ -841,7 +833,7 @@ public class Intrinsics extends ANY
         {
           var last_id = new CIdent("last_id");
           return CStmnt.seq(CStmnt.decl("static",
-                                        c._types.scalar(FUIR.SpecialClazzes.c_u64),
+                                        CTypes.scalar(FUIR.SpecialClazzes.c_u64),
                                         last_id,
                                         CExpr.uint64const(0)),
                             CExpr.call("__atomic_add_fetch", new List<>(last_id.adrOf(), CExpr.uint64const(1), new CIdent("__ATOMIC_SEQ_CST"))).ret());
@@ -1197,8 +1189,8 @@ public class Intrinsics extends ANY
   static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, FUIR.SpecialClazzes unsigned, FUIR.SpecialClazzes signed)
   {
     // C type
-    var ut = c._types.scalar(unsigned);
-    var st = c._types.scalar(signed  );
+    var ut = CTypes.scalar(unsigned);
+    var st = CTypes.scalar(signed  );
 
     // unsigned versions of a and b
     var au = a.castTo(ut);

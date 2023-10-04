@@ -115,6 +115,19 @@ public class Block extends AbstractBlock
 
 
   /**
+   * Generate an empty block of expressions. This is called from the Parser when
+   * the body of a routine contains no code but just a `.`.
+   *
+   * @param pos the sourcecode position of the start of this block, used for
+   * error messages.
+   */
+  public Block(SourcePosition pos)
+  {
+    this(pos, pos, new List<>());
+  }
+
+
+  /**
    * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
@@ -290,7 +303,7 @@ public class Block extends AbstractBlock
 
   /**
    * removeResultExpression removes and returns the last non-NOP expression of
-   * this block if it is an expression.  Does nothing an returns null if the
+   * this block if it is an expression.  Does nothing and returns null if the
    * block is empty or the last non-NOP expression is not an Expr.
    *
    * @return the Expr that produces this Block's result
@@ -299,7 +312,7 @@ public class Block extends AbstractBlock
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) _expressions.remove(i)
+      ? _expressions.remove(i)
       : null;
   }
 

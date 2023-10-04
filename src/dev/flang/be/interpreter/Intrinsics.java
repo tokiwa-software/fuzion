@@ -272,10 +272,8 @@ public class Intrinsics extends ANY
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
               if (interpreter.compareField(f, -1, a, thiz, expected))
                 {
-                  res = expected;   // NYI: HACK: workaround since res was not cloned
                   interpreter.setField(f, -1, a, thiz, new_value);
                   return new boolValue(true);
                 }
@@ -657,7 +655,6 @@ public class Intrinsics extends ANY
         {
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
           var virtual     = in.equals("fuzion.java.call_v0");
-          var statique    = in.equals("fuzion.java.call_s0");
           var constructor = in.equals("fuzion.java.call_c0");
           var actualGenerics = innerClazz._type.generics();
           Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
@@ -833,7 +830,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       try
         {
@@ -853,7 +850,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new RuntimeException("NYI");
+              default -> throw new Error("NYI");
             };
         }
       catch(BindException e)
@@ -887,7 +884,7 @@ public class Intrinsics extends ANY
               ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
               return new boolValue(true);
             }
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       catch(IOException e)
         {
@@ -904,7 +901,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new RuntimeException("NYI");
+          throw new Error("NYI");
         }
       try
         {
@@ -924,7 +921,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new RuntimeException("NYI");
+              default -> throw new Error("NYI");
             };
         }
       catch(IOException e)
@@ -980,7 +977,7 @@ public class Intrinsics extends ANY
             }
           else
             {
-              throw new RuntimeException("NYI");
+              throw new Error("NYI");
             }
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);
@@ -1208,7 +1205,7 @@ public class Intrinsics extends ANY
     put("f32.type.sinh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
     put("f32.type.square_root"  , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
     put("f32.type.tan"          , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
-    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
+    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(1).f32Value())));
     put("f64.type.acos"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
     put("f64.type.asin"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
     put("f64.type.atan"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
@@ -1225,8 +1222,7 @@ public class Intrinsics extends ANY
     put("f64.type.sinh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
     put("f64.type.square_root"  , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64.type.tan"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("Any.hash_code"         , (interpreter, innerClazz) -> args -> new i32Value (args.get(0).toString().hashCode()));
+    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
     put("Any.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
     put("fuzion.std.nano_time"  , (interpreter, innerClazz) -> args -> new u64Value (System.nanoTime()));
     put("fuzion.std.nano_sleep" , (interpreter, innerClazz) -> args ->

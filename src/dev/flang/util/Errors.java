@@ -180,6 +180,15 @@ public class Errors extends ANY
 
 
   /**
+   * Where any errors encountered so far?
+   */
+  public static boolean any()
+  {
+    return !_errors_.isEmpty();
+  }
+
+
+  /**
    * Total number of warnings encountered so far
    */
   public static int warningCount()
@@ -473,7 +482,7 @@ public class Errors extends ANY
    */
   public static void showAndExit(boolean warningStatistics)
   {
-    if (count() > 0)
+    if (any())
       {
         println(singularOrPlural(count(), "error") +
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
@@ -708,6 +717,11 @@ public class Errors extends ANY
     syntaxError(sourcePos,
                 "Illegal trailing whitespace in multiline string.",
                 "To solve this, remove this whitespace or replace it by escape codes.");
+  }
+
+  public static void usedEffectNeverInstantiated(String e)
+  {
+    error(null, "Used effect `"  + e + "` never instantiated.", "");
   }
 
 

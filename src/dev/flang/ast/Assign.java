@@ -115,7 +115,7 @@ public class Assign extends AbstractAssign
     super(f, new This(pos, outer, f.outer()), v);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        outer.state().atLeast(Feature.State.RESOLVED_TYPES),
        f != null);
 
@@ -144,7 +144,7 @@ public class Assign extends AbstractAssign
     super(f, This.thiz(res, pos, outer, f.outer()), v);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
+      (Errors.any() ||
        outer.state() == Feature.State.RESOLVING_TYPES   ||
        outer.state() == Feature.State.RESOLVED_TYPES    ||
        outer.state() == Feature.State.TYPES_INFERENCING ||
@@ -190,7 +190,8 @@ public class Assign extends AbstractAssign
         var fo = FeatureAndOuter.filter(res._module.lookup(outer,
                                                            _name,
                                                            destructure == null ? this : destructure,
-                                                           true),
+                                                           true,
+                                                           false),
                                         pos(), FeatureAndOuter.Operation.ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
@@ -206,7 +207,7 @@ public class Assign extends AbstractAssign
         _assignedField = f;
       }
     if      (f == Types.f_ERROR          ) { if (CHECKS) check
-                                               (Errors.count() > 0);
+                                               (Errors.any());
                                              /* ignore */
                                            }
     else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }

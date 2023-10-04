@@ -26,16 +26,13 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-public hashable : property.equatable
+public hashable : property.equatable is
 
-/* NYI: quantor intrinsics not supported yet:
-
-  inv
-    analysis: quantor.for_all2 HE HE (fun(a, b HE) => (a = b) : (a.hash = b.hash)),
-    analysis: quantor.for_all2 HE HE (fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b)) /* implied by previous condition */
-*/
-
-is
 
   # create hash code for this instance
-  public hash u64 is abstract
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  public type.hash_code(a hashable.this) u64 is abstract

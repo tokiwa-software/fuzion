@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -36,7 +35,6 @@ import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -122,7 +120,7 @@ public class GenericType extends LibraryType
   public AbstractFeature featureOfType()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
     return Types.f_ERROR;
   }
@@ -139,7 +137,7 @@ public class GenericType extends LibraryType
   public List<AbstractType> generics()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
 
     return UnresolvedType.NONE;
   }
@@ -186,7 +184,7 @@ public class GenericType extends LibraryType
   public AbstractType outer()
   {
     if (CHECKS) check
-      (Errors.count() > 0);
+      (Errors.any());
     return null;
   }
 

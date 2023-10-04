@@ -29,8 +29,6 @@ package dev.flang.be.interpreter;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
-import dev.flang.util.Errors;
-
 
 /**
  * Boxed represents a value type instance that was boxed to create a ref type.

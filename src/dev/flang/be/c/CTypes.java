@@ -170,7 +170,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(FUIR.SpecialClazzes sc)
   {
     return switch (sc)
       {
@@ -244,10 +244,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                if (cc != -1)
-                  {
-                    findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
-                  }
+                findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
               }
             if (_fuir.clazzIsRef(cl))
               {
@@ -288,7 +285,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                if (cc != -1 && !_fuir.clazzIsRef(cc))
+                if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
                   {
                     uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
                   }

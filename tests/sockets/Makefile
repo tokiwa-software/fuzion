@@ -58,6 +58,19 @@ int:
 	kill $(IPv6_UDP_PID) 2> /dev/null || true
 
 
+jvm: IPv4_TCP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv4 tcp > /dev/null & echo $$!)
+jvm: IPv4_UDP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv4 udp > /dev/null & echo $$!)
+jvm: IPv6_TCP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv6 tcp > /dev/null & echo $$!)
+jvm: IPv6_UDP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv6 udp > /dev/null & echo $$!)
+jvm:
+	sleep 10
+	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	kill $(IPv4_TCP_PID) 2> /dev/null || true
+	kill $(IPv4_UDP_PID) 2> /dev/null || true
+	kill $(IPv6_TCP_PID) 2> /dev/null || true
+	kill $(IPv6_UDP_PID) 2> /dev/null || true
+
+
 c: compile_server_c
 c: IPv4_TCP_PID = $(shell ./server ipv4 tcp > /dev/null & echo $$!)
 c: IPv4_UDP_PID = $(shell ./server ipv4 udp > /dev/null & echo $$!)
@@ -79,6 +92,19 @@ record: IPv6_UDP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv6 udp > /
 record:
 	sleep 10
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	kill $(IPv4_TCP_PID) 2> /dev/null || true
+	kill $(IPv4_UDP_PID) 2> /dev/null || true
+	kill $(IPv6_TCP_PID) 2> /dev/null || true
+	kill $(IPv6_UDP_PID) 2> /dev/null || true
+
+
+record_jvm: IPv4_TCP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv4 tcp > /dev/null & echo $$!)
+record_jvm: IPv4_UDP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv4 udp > /dev/null & echo $$!)
+record_jvm: IPv6_TCP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv6 tcp > /dev/null & echo $$!)
+record_jvm: IPv6_UDP_PID = $(shell $(FUZION_RUN) -jvm sockets_test_server.fz ipv6 udp > /dev/null & echo $$!)
+record_jvm:
+	sleep 10
+	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
 	kill $(IPv4_TCP_PID) 2> /dev/null || true
 	kill $(IPv4_UDP_PID) 2> /dev/null || true
 	kill $(IPv6_TCP_PID) 2> /dev/null || true

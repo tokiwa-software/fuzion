@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
@@ -55,7 +56,6 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 
 import dev.flang.ir.IR;
@@ -429,6 +429,9 @@ class LibraryOut extends ANY
    */
   void feature(Feature f)
   {
+    if (PRECONDITIONS) require
+      (f.state().atLeast(State.RESOLVED));
+
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
     k = k | (!f.isConstructor() ? f.kind().ordinal() :
@@ -436,7 +439,7 @@ class LibraryOut extends ANY
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
     if (f.isIntrinsicConstructor())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
@@ -644,8 +647,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Unb | 1      | Unbox         | unbox expression                              |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Cal | 1      | Call          | feature call                                  |
@@ -677,24 +678,6 @@ class LibraryOut extends ANY
    */
         _data.writeOffset(a._assignedField);
       }
-    else if (e instanceof Unbox u)
-      {
-        lastPos = expressions(u._adr, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, e.pos());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Unbox                                                                           |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | result type                                   |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(u.type());
-        _data.writeByte(u._needed ? 1 : 0);
-      }
     else if (e instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
@@ -703,17 +686,17 @@ class LibraryOut extends ANY
     else if (e instanceof AbstractBlock b)
       {
         int i = 0;
-        for (var st : b._expressions)
+        for (var expr : b._expressions)
           {
             i++;
             if (i < b._expressions.size())
               {
-                lastPos = expressions(st, true, lastPos);
+                lastPos = expressions(expr, true, lastPos);
               }
             else
               {
-                lastPos = expressions(st, dumpResult, lastPos);
-                dumpResult = dumpResult || st instanceof AbstractBlock || st.producesResult();
+                lastPos = expressions(expr, dumpResult, lastPos);
+                dumpResult = dumpResult || expr instanceof AbstractBlock || expr.producesResult();
               }
           }
         if (!dumpResult)

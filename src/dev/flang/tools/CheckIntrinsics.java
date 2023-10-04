@@ -31,7 +31,6 @@ import dev.flang.util.ANY;
 import dev.flang.ast.AbstractFeature;
 
 import dev.flang.fe.FrontEnd;
-import dev.flang.fe.Module;
 
 import dev.flang.util.Errors;
 
@@ -47,19 +46,28 @@ import java.util.Set;
 class CheckIntrinsics extends ANY
 {
 
+
+  static interface Mangle
+  {
+    String doit(String s);
+  }
+
+
   CheckIntrinsics(FrontEnd fe)
   {
     var all = new TreeSet<String>();
     getAll(all, fe, fe._universe);
 
     var i = dev.flang.be.interpreter.Intrinsics.supportedIntrinsics();
-    checkIntrinsics(all, i, "Interpreter backend");
+    checkIntrinsics(all, i, "Interpreter backend", x->x);
     var c = dev.flang.be.c.Intrinsics.supportedIntrinsics();
-    checkIntrinsics(all, c, "C backend");
+    checkIntrinsics(all, c, "C backend", x->x);
+    var jvm = dev.flang.be.jvm.Intrinsix.supportedIntrinsics();
+    checkIntrinsics(all, jvm, "JVM backend", x->dev.flang.be.jvm.Intrinsix.backendName(x));
     var dfa = dev.flang.fuir.analysis.dfa.DFA.supportedIntrinsics();
-    checkIntrinsics(all, dfa, "DFA");
+    checkIntrinsics(all, dfa, "DFA", x->x);
     var cfg = dev.flang.fuir.cfg.CFG.supportedIntrinsics();
-    checkIntrinsics(all, cfg, "CFG");
+    checkIntrinsics(all, cfg, "CFG", x->x);
   }
 
 
@@ -89,20 +97,26 @@ class CheckIntrinsics extends ANY
    *
    * @param where module that provides implemented intrinsics, e.g., "C backend".
    */
-  void checkIntrinsics(Set<String> all, Set<String> implemented, String where)
+  void checkIntrinsics(Set<String> all, Set<String> implemented, String where, Mangle m)
   {
+    var used = new TreeSet<String>();
     for (var a : all)
       {
-        if (!implemented.contains(a))
+        var ma = m.doit(a);
+        if (!implemented.contains(ma))
           {
             Errors.warning(where + " does not implement intrinsic '" + a + "'.");
+          }
+        else
+          {
+            used.add(ma);
           }
       }
     for (var a : implemented)
       {
-        if (!all.contains(a))
+        if (!used.contains(a))
           {
-            Errors.warning(where + " implement intrinsic '" + a + "', even though this is never used.");
+            Errors.warning(where + " implements intrinsic '" + a + "', even though this is never used.");
           }
       }
   }

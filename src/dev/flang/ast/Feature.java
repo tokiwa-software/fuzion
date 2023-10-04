@@ -255,7 +255,7 @@ public class Feature extends AbstractFeature
    * Field containing reference to outer feature, set after
    * RESOLVED_DECLARATIONS.
    */
-  public Feature _outerRef = null;
+  private Feature _outerRef = null;
 
 
   /**
@@ -720,17 +720,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-   */
-  public void resetState()
-  {
-    if (PRECONDITIONS) require
-      (isUniverse());
-    _state = Feature.State.LOADING;
-  }
-
-
-  /**
    * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
@@ -804,7 +793,7 @@ public class Feature extends AbstractFeature
     return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
           !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
       ? Kind.Choice
-      : switch (_impl._kind) {
+      : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
           case TypeParameter                                      -> Kind.TypeParameter;
           case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
@@ -949,7 +938,7 @@ public class Feature extends AbstractFeature
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVING_TYPES),
-       Errors.count() > 0);
+       Errors.any());
 
     if (this == Types.resolved.f_choice)
       { // if this == choice, there are only formal generics, so nothing to erase
@@ -959,7 +948,7 @@ public class Feature extends AbstractFeature
         for (var p: _inherits)
           {
             if (CHECKS) check
-              (Errors.count() > 0 || p.calledFeature() != null);
+              (Errors.any() || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -989,7 +978,7 @@ public class Feature extends AbstractFeature
             for (var p: inherits())
               {
                 if (CHECKS) check
-                  (Errors.count() > 0 || p.calledFeature() != null);
+                  (Errors.any() || p.calledFeature() != null);
 
                 var pf = p.calledFeature();
                 if (pf != null && pf.isBaseChoice())
@@ -1045,7 +1034,7 @@ public class Feature extends AbstractFeature
       {
         Expr nc = c.visit(v, this);
         if (CHECKS) check
-          (Errors.count() > 0 || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
+          (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
@@ -1184,7 +1173,7 @@ public class Feature extends AbstractFeature
               }
             var parent = p.calledFeature();
             if (CHECKS) check
-              (Errors.count() > 0 || parent != null);
+              (Errors.any() || parent != null);
             if (parent instanceof Feature fp)
               {
                 fp.resolveInheritance(res);
@@ -1571,7 +1560,7 @@ public class Feature extends AbstractFeature
     for (var t : choiceGenerics())
       {
         if (CHECKS) check
-          (Errors.count() > 0 || t != null);
+          (Errors.any() || t != null);
         if (t != null && !t.isRef())
           {
             if (t.compareTo(thisType()) == 0)
@@ -1620,7 +1609,7 @@ public class Feature extends AbstractFeature
         // choice type is leaf
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
+          (Errors.any() || cf != null);
 
         if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
@@ -1761,7 +1750,7 @@ public class Feature extends AbstractFeature
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);           }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);        }
             public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
@@ -1842,7 +1831,7 @@ public class Feature extends AbstractFeature
     Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || hasResultField() == (result != null));
+      (Errors.any() || hasResultField() == (result != null));
     return result;
   }
 
@@ -1950,10 +1939,9 @@ public class Feature extends AbstractFeature
 
     if (CHECKS) check
       (this.outer() == outer,
-        Errors.count() > 0 ||
+        Errors.any() ||
         (_impl._kind != Impl.Kind.FieldDef    &&
-         _impl._kind != Impl.Kind.FieldActual &&
-         _impl._kind != Impl.Kind.RoutineDef)
+         _impl._kind != Impl.Kind.FieldActual)
         || _returnType == NoType.INSTANCE);
 
     if (_impl._initialValue != null)
@@ -2203,7 +2191,7 @@ public class Feature extends AbstractFeature
     // arg count in feature name. This does not seem to cause problems when
     // looking up features, but we may miss to report errors for duplicate
     // features.  Note that when saved to a module file, this feature's name
-    // will have the actual argument count, so this inconsitency is restricted
+    // will have the actual argument count, so this inconsistency is restricted
     // to the current source module.
     //
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
@@ -2235,9 +2223,9 @@ public class Feature extends AbstractFeature
         var b = _outer.code();
         if (b instanceof Block)
           {
-            for (var s : ((Block)b)._expressions)
+            for (var e : ((Block)b)._expressions)
               {
-                if (s == this)
+                if (e == this)
                   {
                     return true;
                   }
@@ -2320,13 +2308,13 @@ public class Feature extends AbstractFeature
   public AbstractType resultType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
     var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw(null) : null;
     if (result == null)
       {
         if (CHECKS) check
-          (Errors.count() > 0);
+          (Errors.any());
 
         result = Types.t_ERROR;
       }
@@ -2366,7 +2354,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Number of free types amoung the type parameters.
+   * Number of free types among the type parameters.
    */
   public int freeTypesCount()
   {

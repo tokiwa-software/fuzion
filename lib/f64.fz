@@ -79,8 +79,22 @@ public f64(public val f64) : float is
 
 
   # create hash code from this number
-  public hash u64 is
-    cast_to_u64.hash
+  #
+  # special handling for floats:
+  # although -0.0 and 0.0 are different in bit representation,
+  # they are considered equal by both type.equality and IEEE
+  # standard, hence they should have the same hash.
+  # all NaNs are considered equal by type.equality (but not
+  # the IEEE standard), so the hash of any NaN is the hash of
+  # the "canonical" NaN.
+  #
+  public type.hash_code(a f64.this) u64 is
+    if is_NaN a.val
+      hash NaN.cast_to_u64
+    else if a = zero
+      hash zero.cast_to_u64
+    else
+      hash a.cast_to_u64
 
 
   # is the sign bit set?
@@ -153,7 +167,7 @@ public f64(public val f64) : float is
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  module use_scientific_notation bool is
+  public use_scientific_notation bool is
     abs<1E-3 || abs>=1E7
 
 

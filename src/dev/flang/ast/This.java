@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -232,16 +231,20 @@ public class This extends ExprWithPos
           {
             var or = cur.outerRef();
             if (CHECKS) check
-              (Errors.count() > 0 || (or != null));
+              (Errors.any() || (or != null));
             if (or != null)
               {
-                Expr c = new Call(pos(), getOuter, or, -1).resolveTypes(res, outer);
-                if (cur.isOuterRefAdrOfValue())
+                var t = cur.outer().thisType(cur.isFixed());
+                var isAdr = cur.isOuterRefAdrOfValue();
+                Expr c = new Call(pos(), getOuter, or, -1)
                   {
-                    var t = cur.outer().thisType(cur.isFixed());
-                    c = new Unbox(c, t, cur.outer())
-                      { public SourcePosition pos() { return This.this.pos(); } };
-                  }
+                    @Override
+                    AbstractType typeIfKnown()
+                    {
+                      return isAdr ? t : _type;
+                    }
+                  }.resolveTypes(res, outer);
+
                 getOuter = c;
               }
             cur = cur.outer();

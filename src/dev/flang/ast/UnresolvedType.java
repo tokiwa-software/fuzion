@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -153,7 +152,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Once this unresolved type was resolved into a ResolvedParametricType or
-   * ResolvedNormalType, this will be set to the resolution resuilt to avoid
+   * ResolvedNormalType, this will be set to the resolution result to avoid
    * repeated resolution.
    */
   AbstractType _resolved = null;
@@ -192,8 +191,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     this(t.pos(), t._name, g, o, t._refOrVal, false);
 
     if (PRECONDITIONS) require
-      (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       Errors.count() > 0 || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
+      (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+       Errors.any() || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
   }
 
@@ -722,7 +721,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (o != null && !isThisType() && !o.isThisType())
           {
             o = o.resolve(res, of);
-            var ot = o.isGenericArgument() ? o.genericArgument().constraint() : o;  // NYI: check: do we really want the constraint here?
+            var ot = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
+                                           : o;
             of = ot.featureOfType();
           }
         AbstractFeature f = Types.f_ERROR;
@@ -920,7 +920,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   protected void usedFeatures(Set<AbstractFeature> s)
   {
-    throw new RuntimeException("must not be called on unresolved types.");
+    throw new Error("must not be called on unresolved types.");
   }
 
 

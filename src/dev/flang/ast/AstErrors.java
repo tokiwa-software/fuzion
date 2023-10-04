@@ -97,7 +97,8 @@ public class AstErrors extends ANY
   }
   static String s(ReturnType rt)
   {
-    return st(rt.toString());
+    return st(rt instanceof RefType ? "ref" // since RefType is the default, toString() is ""
+                                    : rt.toString());
   }
   static String st(String t)
   {
@@ -139,7 +140,7 @@ public class AstErrors extends ANY
 
     return code(v.toString());
   }
-  static String ss(String s) // expression or expression
+  static String ss(String s)
   {
     return expr(s);
   }
@@ -239,8 +240,8 @@ public class AstErrors extends ANY
   public static void expressionNotAllowedOutsideOfFeatureDeclaration(Expr e)
   {
     error(e.pos(),
-          "Statements other than feature declarations not allowed here",
-          "Statements require a surrounding feature declaration.  The expressions " +
+          "Expressions other than feature declarations not allowed here",
+          "Expressions require a surrounding feature declaration.  The expressions " +
           "are executed when that surrounding feature is called.  Without a surrounding " +
           "feature, is it not clear when and in which order expressions should be executed. " +
           "The only exception to this is the main source file given as an argument directly " +
@@ -696,7 +697,7 @@ public class AstErrors extends ANY
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
-    if (count() == 0 || (originalType                  != Types.t_ERROR &&
+    if (!any() || (originalType                  != Types.t_ERROR &&
                          redefinedFeature.resultType() != Types.t_ERROR    ))
       {
         error(redefinedFeature.pos(),
@@ -739,7 +740,7 @@ public class AstErrors extends ANY
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -754,7 +755,7 @@ public class AstErrors extends ANY
   static void untilConditionMustBeBool(SourcePosition pos, Type type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -768,7 +769,7 @@ public class AstErrors extends ANY
   static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
   {
     if (CHECKS) check
-      (count() > 0 || type != Types.t_ERROR);
+      (any() || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -957,7 +958,7 @@ public class AstErrors extends ANY
   {
     // suppress error message if errors were reported already and any feature
     // involved is f_ERROR
-    if (count() == 0 || (f                != Types.f_ERROR &&
+    if (!any() || (f                != Types.f_ERROR &&
                          f       .outer() != Types.f_ERROR &&
                          existing         != Types.f_ERROR &&
                          existing.outer() != Types.f_ERROR    ))
@@ -989,6 +990,13 @@ public class AstErrors extends ANY
           "Field declared: " + sqn(q) + "\n" +
           "To solve this, you could move the declaration into the implementation of feature " + sqn(o) +
           ".  Alternatively, you can declare a routine instead.");
+  }
+
+  public static void typeFeaturesMustNotBeFields(Feature f)
+  {
+    error(f.pos(),
+          "Type features must not be fields.",
+          "To solve this, you could declare a routine instead.");
   }
 
   static void cannotRedefine(SourcePosition pos, AbstractFeature f, AbstractFeature existing, String msg, String solution)
@@ -1093,6 +1101,25 @@ public class AstErrors extends ANY
   }
 
   /**
+   * Suggest to a user that they are trying to call a hidden feature.
+   * Called feature could not be found but there is a feature with the same
+   * name which is not visible at call site.
+   */
+  static String solutionHidden(List<FeatureAndOuter> candidates)
+  {
+    var solution = "";
+
+    if (!candidates.isEmpty())
+      {
+        solution = "To solve this, you might change the visibility of " +
+                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
+                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+      }
+
+    return solution;
+  }
+
+  /**
    * Detect code patterns as follows
    *
    *   f(x some_type_with_a_typo) => x.g
@@ -1106,6 +1133,7 @@ public class AstErrors extends ANY
 
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
+        cf.state().atLeast(AbstractFeature.State.RESOLVED_TYPES)                &&
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
         tp.isFreeType()                                                         &&
@@ -1130,14 +1158,16 @@ public class AstErrors extends ANY
                                     FeatureName calledName,
                                     AbstractFeature targetFeature,
                                     Expr target,
-                                    List<FeatureAndOuter> candidates)
+                                    List<FeatureAndOuter> candidatesArgCountMismatch,
+                                    List<FeatureAndOuter> candidatesHidden)
   {
-    if (count() == 0 || !errorInOuterFeatures(targetFeature))
+    if (!any() || !errorInOuterFeatures(targetFeature))
       {
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                           calledName.argCount());
-        var solution2 = solutionWrongArgumentNumber(candidates);
+        var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
+        var solution4 = solutionHidden(candidatesHidden);
         error(call.pos(),
               "Could not find called feature",
               "Feature not found: " + sbn(calledName) + "\n" +
@@ -1145,7 +1175,8 @@ public class AstErrors extends ANY
               "In call: " + s(call) + "\n" +
               (solution1 != "" ? solution1 :
                solution2 != "" ? solution2 :
-               solution3 != "" ? solution3 : ""));
+               solution3 != "" ? solution3 :
+               solution4 != "" ? solution4 : ""));
       }
   }
 
@@ -1227,7 +1258,7 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
+      (any() || !f.featureName().baseName().equals(ERROR_STRING));
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
@@ -1267,7 +1298,7 @@ public class AstErrors extends ANY
   static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
     if (CHECKS) check
-      (count() > 0  || expectedType != Types.t_ERROR);
+      (any()  || expectedType != Types.t_ERROR);
 
     if (expectedType != Types.t_ERROR)
       {
@@ -1285,6 +1316,14 @@ public class AstErrors extends ANY
           "Affected type parameter: " + s(tp) + "\n" +
           "_constraint: " + s(tp.resultType()) + "\n" +
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
+  }
+
+  static void constraintMustNotBeChoice(Generic g)
+  {
+    error(g.typeParameter().pos(),
+          "Constraint for type parameter must not be a choice type",
+          "Affected type parameter: " + s(g) + "\n" +
+          "constraint: " + s(g.constraint()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1555,7 +1594,7 @@ public class AstErrors extends ANY
 
   static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
   {
-    if (count() == 0 || t != Types.t_ERROR)
+    if (!any() || t != Types.t_ERROR)
       {
         error(pos,
               "Use of selector requires call to feature whose type is an open type parameter",
@@ -1616,7 +1655,7 @@ public class AstErrors extends ANY
 
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
-    if (g != Types.t_UNDEFINED || count() == 0)
+    if (g != Types.t_UNDEFINED || !any())
       {
         error(pos,
               "Incompatible type parameter",
@@ -1677,15 +1716,6 @@ public class AstErrors extends ANY
     error(f.pos(),
           "Illegal result type " + s(rt) + " in field declaration using " + ss(":= ?"),
           "Field declared: " + s(f));
-  }
-
-  static void illegalResultTypeRoutineDef(AbstractFeature f, ReturnType rt)
-  {
-    error(f.pos(),
-          "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
-          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
-          "it must not be given explicitly.\n" +
-          "Feature declared: " + s(f));
   }
 
   static void illegalResultTypeRefTypeRoutineDef(Feature f)
@@ -1959,11 +1989,14 @@ public class AstErrors extends ANY
 
   public static void freeTypeMustNotMaskExistingType(UnresolvedType t, AbstractFeature f)
   {
-    error(t.pos(),
-          "Free type must not mask existing type.",
-          "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
-          "The existing type was declared at " + f.pos().show() + "\n" +
-          "To solve this, you may use a different name for free type " + s(t) + ".");
+    if (!any() || f != Types.f_ERROR)
+      {
+        error(t.pos(),
+              "Free type must not mask existing type.",
+              "The free type " + s(t) + " masks an existing type defined by " + s(f) + ".\n" +
+              "The existing type was declared at " + f.pos().show() + "\n" +
+              "To solve this, you may use a different name for free type " + s(t) + ".");
+      }
   }
 
   public static void calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(Feature f, AbstractCall c)

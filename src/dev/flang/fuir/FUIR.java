@@ -50,7 +50,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
-import dev.flang.ast.Unbox; // NYI: remove dependency
 
 import dev.flang.ir.IR;
 
@@ -121,6 +120,16 @@ public class FUIR extends IR
     c_Const_String{ Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
     c_sys_ptr     { Clazz getIfCreated() { return Clazzes.fuzionSysPtr;               } },
     c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
+    c_array_i8    { Clazz getIfCreated() { return Clazzes.array_i8   .getIfCreated(); } },
+    c_array_i16   { Clazz getIfCreated() { return Clazzes.array_i16  .getIfCreated(); } },
+    c_array_i32   { Clazz getIfCreated() { return Clazzes.array_i32  .getIfCreated(); } },
+    c_array_i64   { Clazz getIfCreated() { return Clazzes.array_i64  .getIfCreated(); } },
+    c_array_u8    { Clazz getIfCreated() { return Clazzes.array_u8   .getIfCreated(); } },
+    c_array_u16   { Clazz getIfCreated() { return Clazzes.array_u16  .getIfCreated(); } },
+    c_array_u32   { Clazz getIfCreated() { return Clazzes.array_u32  .getIfCreated(); } },
+    c_array_u64   { Clazz getIfCreated() { return Clazzes.array_u64  .getIfCreated(); } },
+    c_array_f32   { Clazz getIfCreated() { return Clazzes.array_f32  .getIfCreated(); } },
+    c_array_f64   { Clazz getIfCreated() { return Clazzes.array_f64  .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
     c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
@@ -266,14 +275,14 @@ public class FUIR extends IR
         for (var cl : Clazzes.all())
           {
             if (CHECKS) check
-              (Errors.count() > 0 || cl._type != Types.t_ERROR);
+              (Errors.any() || cl._type != Types.t_ERROR);
 
             if (cl._type == Types.t_ERROR)
               {
                 if (CHECKS) check
-                  (Errors.count() > 0);
+                  (Errors.any());
 
-                if (Errors.count() == 0)
+                if (!Errors.any())
                   {
                     Errors.error("Found error clazz in set of clazzes in the IR even though no earlier errors " +
                                  "were reported.  This can only be the result of a severe bug.");
@@ -376,12 +385,8 @@ public class FUIR extends IR
    *
    * @param i the choice number
    *
-   * @return the clazz id of the choice type, or -1 if the clazz is never
-   * instantiated and hence does not need to be taken care for.
-   *
-   * NYI: Instead of returning -1 for non-instantiated value clazzes, it would
-   * be much nicer if those clazzes would be removed completely from the IR or
-   * replaced by something obvious like 'void'.
+   * @return the clazz id of the choice type, or void clazz if the clazz is
+   * never instantiated and hence does not need to be taken care for.
    */
   public int clazzChoice(int cl, int i)
   {
@@ -390,7 +395,10 @@ public class FUIR extends IR
 
     var cc = clazz(cl);
     var cg = cc.choiceGenerics().get(i);
-    return cg.isRef() || cg.isInstantiated() ? id(cg) : -1;
+    var res = cg.isRef()          ||
+              cg.isInstantiated()    ? cg
+                                     : Clazzes.c_void.get();
+    return id(res);
   }
 
 
@@ -600,7 +608,7 @@ public class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return clazz id  of corresponding value clazz.
+   * @return clazz id of corresponding value clazz.
    */
   public int clazzAsValue(int cl)
   {
@@ -629,7 +637,7 @@ public class FUIR extends IR
    *
    * @param cl clazz id
    *
-   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
@@ -651,7 +659,7 @@ public class FUIR extends IR
    *
    * @param cl clazz id
    *
-   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
    * @return clazz id of the argument or -1 if no such argument exists (the
    * argument is unused).
@@ -687,6 +695,9 @@ public class FUIR extends IR
    */
   public int clazzChoiceTag(int cl, int valuecl)
   {
+    if (PRECONDITIONS) require
+      (!clazzIsVoidType(valuecl));
+
     var cc = clazz(cl);
     var vc = clazz(valuecl);
     return cc.getChoiceTag(vc._type);
@@ -824,8 +835,10 @@ public class FUIR extends IR
 
 
   /**
-   * Are values of this clazz all the same, so they are essentially C/Java void
-   * values?
+   * Is there just one single value of this class, so this type is essentially a
+   * C/Java `void` type?
+   *
+   * NOTE: This is false for Fuzion's `void` type!
    */
   public boolean clazzIsUnitType(int cl)
   {
@@ -914,14 +927,14 @@ hw25 is
         var pf = p.calledFeature();
         var of = pf.outerRef();
         var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
-        toStack(code, p.target());
-        if (or != null && !or.resultClazz().isUnitType())
+        var needsOuterRef = (or != null && !or.resultClazz().isUnitType());
+        toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
+        if (needsOuterRef)
           {
             if (clazzFieldIsAdrOfValue(or))
               {
                 code.add(ExprKind.AdrOf);
               }
-            code.add(ExprKind.Dup);
             code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
           }
@@ -1195,6 +1208,18 @@ hw25 is
 
 
   /**
+   * Get the id of clazz fuzion.sys.array<u8>
+   *
+   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionSysArray_u8()
+  {
+    var cc = Clazzes.fuzionSysArray_u8;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
    * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
@@ -1214,6 +1239,30 @@ hw25 is
   public int clazz_fuzionSysArray_u8_length()
   {
     var cc = Clazzes.fuzionSysArray_u8_length;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.java.Java_Object
+   *
+   * @return the id of fuzion.java.Java_Object or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionJavaObject()
+  {
+    var cc = Clazzes.fuzionJavaObject;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.java.Java_Object.Java_Ref
+   *
+   * @return the id of fuzion.java.Java_Object.Java_Ref or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionJavaObject_Ref()
+  {
+    var cc = Clazzes.fuzionJavaObject_Ref;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1351,32 +1400,6 @@ hw25 is
     return id(rc);
   }
 
-  public int unboxOuterRefClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Unbox);
-
-    var outerClazz = clazz(cl);
-    var u = (Unbox) _codeIds.get(c).get(ix);
-    Clazz orc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId);
-    return id(orc);
-  }
-
-  public int unboxResultClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Unbox);
-
-    var outerClazz = clazz(cl);
-    var u = (Unbox) _codeIds.get(c).get(ix);
-    Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
-    return id(vc);
-  }
-
 
   /**
    * Get the code for a comment expression.  This is used for debugging.
@@ -1472,6 +1495,36 @@ hw25 is
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     return innerClazz == null ? -1 : id(innerClazz);
+  }
+
+
+  /**
+   * Get the type of an assigned value. This returns the type even if the
+   * assigned field has been removed and accessedClazz() returns -1.
+   *
+   * @param cl index of clazz containing the assignment
+   *
+   * @param c code block containing the assignment
+   *
+   * @param ix index of the assignment
+   *
+   * @return the type of the assigned value.
+   */
+  public int assignedType(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign    );
+
+    var outerClazz = clazz(cl);
+    var s = _codeIds.get(c).get(ix);
+    var t =
+      (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 2) :
+      (s instanceof Clazz          fld ) ? fld.resultClazz() :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr."); } } /* Java is ugly... */;
+
+    return id(t);
   }
 
 
@@ -1581,7 +1634,6 @@ hw25 is
     else
       {
         var innerClazz = accessedClazz(cl, c, ix);
-        var iC = clazz(innerClazz);
         var tt = clazzOuterClazz(innerClazz);
         result = clazzNeedsCode(innerClazz) ? new int[] { tt, innerClazz }
                                             : new int[0];
@@ -1614,7 +1666,7 @@ hw25 is
     var s = _codeIds.get(c).get(ix);
     var res =
       (s instanceof AbstractAssign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass._tid)).isRef() : // NYI: This should be the same as assignedField._outer
-      (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
+      (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
       (s instanceof AbstractCall   call) ? ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef()  :
       new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr."); } } == null /* Java is ugly... */;
@@ -1718,11 +1770,15 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_f32   ) == 0) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64   ) == 0) { clazz = Clazzes.f64        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.Const_String.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
+    else if (ic instanceof AbstractConstant)
+      {
+        clazz = Clazzes.clazz(t);
+      }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
-    else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
+    else { throw new Error("Unexpected type for ExprKind.Const: " + t + ", expr: " + ic); }
     return id(clazz);
   }
 
@@ -1902,13 +1958,12 @@ hw25 is
    * 'abortable' that has to create code to call 'call'.
    *
    * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @return the index of the requested `Functionl.call` method's clazz.
    */
   public int lookupCall(int cl)
   {
-    var cc = clazz(cl);
-    var call = Types.resolved.f_function_call;
-    var ic = cc.lookup(call);
-    return id(ic);
+    return lookup(cl, Types.resolved.f_function_call);
   }
 
 
@@ -1916,12 +1971,69 @@ hw25 is
    * For a clazz of concur.atomic, lookup the inner clazz of the value field.
    *
    * @param cl index of a clazz representing cl's value field
+   *
+   * @return the index of the requested `concur.atomic.value` field's clazz.
    */
   public int lookupAtomicValue(int cl)
   {
+    return lookup(cl, Types.resolved.f_concur_atomic_v);
+  }
+
+
+  /**
+   * For a clazz of array, lookup the inner clazz of the internal_array field.
+   *
+   * @param cl index of a clazz `array T` for some type parameter `T`
+   *
+   * @return the index of the requested `array.internal_array` field's clazz.
+   */
+  public int lookup_array_internal_array(int cl)
+  {
+    return lookup(cl, Types.resolved.f_array_internal_array);
+  }
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * data field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
+   */
+  public int lookup_fuzion_sys_internal_array_data(int cl)
+  {
+    return lookup(cl, Types.resolved.f_fuzion_sys_array_data);
+  }
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * length field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
+   */
+  public int lookup_fuzion_sys_internal_array_length(int cl)
+  {
+    return lookup(cl, Types.resolved.f_fuzion_sys_array_length);
+  }
+
+
+  /**
+   * Internal helper for lookup_* methods.
+   *
+   * @param cl index of the outer clazz for the lookup
+   *
+   * @param f the feature we look for
+   *
+   * @return the index of the requested inner clazz.
+   */
+  private int lookup(int cl, AbstractFeature f)
+  {
     var cc = clazz(cl);
-    var v = Types.resolved.f_concur_atomic_v;
-    var ic = cc.lookup(v);
+    var ic = cc.lookup(f);
     return id(ic);
   }
 
@@ -1943,12 +2055,10 @@ hw25 is
       case AdrOf   -> "AdrOf";
       case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
       case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
-      case Unbox   -> "Unbox "     + clazzAsString(unboxOuterRefClazz(cl, c, ix)) + " => " + clazzAsString(unboxResultClazz(cl, c, ix));
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
       case Const   -> "Const";
-      case Dup     -> "Dup";
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
@@ -2191,7 +2301,6 @@ hw25 is
           yield ix;
         }
       case Box     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Unbox   -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Call    ->
         {
           var tc = accessTargetClazz(cl, c, ix);
@@ -2215,7 +2324,6 @@ hw25 is
       case Current -> codeIndex(c, ix, -1);
       case Comment -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Const   -> codeIndex(c, ix, -1);
-      case Dup     -> codeIndex(c, ix, -1);
       case Match   ->
         {
           ix = codeIndex(c, ix, -1);

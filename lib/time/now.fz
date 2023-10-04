@@ -26,7 +26,9 @@
 # effect for getting the current date_time
 public now (p () -> time.date_time) : simple_effect is
 
-  get =>
+  # get current date_time
+  #
+  public get =>
     res := p()
     replace
     res
@@ -50,6 +52,6 @@ public now (p () -> time.date_time) : simple_effect is
 # Uses currently installed time.now effect
 # or installs the default_now handler
 #
-now =>
+public now =>
   now.type.install_default
   now.env

@@ -107,7 +107,7 @@ public class Check extends Expr
   public void visitExpressions(ExpressionVisitor v)
   {
     super.visitExpressions(v);
-    cond.visitStatements(v);
+    cond.visitExpressions(v);
   }
 
 
