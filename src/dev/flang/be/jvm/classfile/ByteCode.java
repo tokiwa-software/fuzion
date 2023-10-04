@@ -120,6 +120,8 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   static byte[] BC_DUP_X1      = new byte[] { O_dup_x1              };
   static byte[] BC_DUP_X2      = new byte[] { O_dup_x2              };
   static byte[] BC_SWAP        = new byte[] { O_swap                };
+  static byte[] BC_DUP2_X1     = new byte[] { O_dup2_x1             };
+  static byte[] BC_DUP2_X2     = new byte[] { O_dup2_x2             };
   static byte[] BC_POP         = new byte[] { O_pop                 };
   static byte[] BC_POP2        = new byte[] { O_pop2                };
 
@@ -155,6 +157,8 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   static byte[] BC_DNEWARRAY   = new byte[] { O_newarray, T_DOUBLE  };
 
   static byte[] BC_ACONST_NULL = new byte[] { O_aconst_null         };
+
+  static byte[] BC_LCMP        = new byte[] { O_lcmp                };
 
   static byte[] BC_MONITORENTER = new byte[] { O_monitorenter       };
   static byte[] BC_MONITOREXIT = new byte[] { O_monitorexit         };

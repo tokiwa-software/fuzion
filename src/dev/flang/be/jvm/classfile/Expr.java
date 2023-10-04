@@ -140,6 +140,8 @@ public abstract class Expr extends ByteCode
   public static final Expr DUP_X1      = new Simple("DUP_X1" , PrimitiveType.type_void, BC_DUP_X1 );
   public static final Expr DUP_X2      = new Simple("DUP_x2" , PrimitiveType.type_void, BC_DUP_X2 );
   public static final Expr SWAP        = new Simple("SWAP"   , PrimitiveType.type_void, BC_SWAP   );
+  public static final Expr DUP2_X1     = new Simple("DUP2_x1", PrimitiveType.type_void, BC_DUP2_X1);
+  public static final Expr DUP2_X2     = new Simple("DUP2_x2", PrimitiveType.type_void, BC_DUP2_X2);
 
   public static final Expr THROW       = new Simple("THROW"  , PrimitiveType.type_void, BC_ATHROW);
 
@@ -172,6 +174,8 @@ public abstract class Expr extends ByteCode
   public static final Expr DNEWARRAY   = new Simple("DNEWARRAY", PrimitiveType.type_double.array (), BC_DNEWARRAY);
 
   public static final Expr ACONST_NULL = new Simple("ACONST_NULL", JAVA_LANG_OBJECT, BC_ACONST_NULL);
+
+  public static final Expr LCMP        = new Simple("LCMP", PrimitiveType.type_int, BC_LCMP);
 
   public static final Expr MONITORENTER = new Simple("MONITORENTER", PrimitiveType.type_void, BC_MONITORENTER);
   public static final Expr MONITOREXIT = new Simple("MONITOREXIT", PrimitiveType.type_void, BC_MONITOREXIT);
