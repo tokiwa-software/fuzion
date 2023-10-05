@@ -47,13 +47,14 @@ composition is
 
   # I
   # identity
+  # Bird: ?
   # BQN: ⊣⊢
   # Haskell id
   id(T type) T -> T is x->x
 
   # K
   # Elementary Cancellator
-  # Kestrel
+  # Bird: Kestrel
   # BQN: ⊣
   # Haskell ?
   left(T, U type) (T,U) -> T is (x,y) -> x
@@ -102,6 +103,7 @@ composition is
 
   # Φ (S′)
   # composition of two unary functions and one binary function
+  # Bird: ?
   # BQN: 3-train?
   # Haskell: liftA2
   fork(f (U1,U2) -> V, g T1 -> U1, h T2 -> U2) (T1,T2) -> V is (x,y) -> f (g x) (h y)
@@ -114,29 +116,34 @@ composition is
   fork2(f (U1,U2) -> V, g (T1,T2) -> U1, h (T1,T2) -> U2) (T1,T2) -> V is (x,y) -> f (g x y) (h x y)
 
   # D
-  # composition of one binary function f and one unaray function g...
+  # composition of one binary function f and one unary function g...
   # Bird: Dove
   # BQN: ⟜
   # Haskell:
   after2(f (V, U) -> W, g T -> U) (V,T) -> W is (x,y) -> f x (g y)
 
   # D2
-  # composition of one binary function g and tow unaray functions f, h
+  # composition of one binary function g and tow unary functions f, h
   # Bird: Dovekie
   # BQN: a⊸b⟜c
   # Haskell:
   d2(f T -> V, g (V,W) -> X, h U -> W) (T,U) -> X is (x,y) -> g (f x) (h y)
 
   # left ∘ flip
+  # Bird: ?
   # BQN: ⊢
   right(T, U type) (T,U) -> U is (x,y) -> y
 
-  #
+  # ?
+  # composition of one unary function f and one binary function g...
+  # Bird: ?
   # BQN: ⊸
   before1(f V -> U, g (U, V) -> W) V     -> W is x     -> g (f x) x
   before2(f T -> U, g (U, V) -> W) (T,V) -> W is (x,y) -> g (f x) y
 
-  #
+  # ?
+  # Constant cancellator?
+  # Bird: ?
   # BQN: ˙
   const1(T, U    type, v T) U     -> T is x     -> v
   const2(T, U, V type, v T) (U,V) -> T is (x,y) -> v
