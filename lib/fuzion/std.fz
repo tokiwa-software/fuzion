@@ -46,4 +46,4 @@ module fuzion.std is
 
 
   # fills arg with current UTC date time
-  module date_time(array_of_i32 Any) is intrinsic
+  module date_time(array_of_i32 fuzion.sys.Pointer) is intrinsic

@@ -26,6 +26,30 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
+import dev.flang.be.jvm.runtime.Runtime.SystemErrNo;
 import dev.flang.util.ANY;
 
 
@@ -245,6 +269,532 @@ public class Intrinsics extends ANY
   public static double  f64_type_tanh               (double a          ) { return         Math.tanh (         a); }
 
   public static void fuzion_std_exit (int code) { System.exit(code); }
+
+  public static void fuzion_std_date_time(Object data)
+  {
+    int[] arg0 = (int[])data;
+    var date = new Date();
+    var calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+    calendar.setTime(date);
+    arg0[0] = calendar.get(Calendar.YEAR);
+    arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
+    arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
+    arg0[3] = calendar.get(Calendar.MINUTE);
+    arg0[4] = calendar.get(Calendar.SECOND);
+    arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
+  }
+
+  public static int fuzion_sys_net_bind0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
+  {
+    long[] result = (long[]) res;
+    var host = Runtime.utf8ByteArrayDataToString((byte[]) host0);
+    var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
+
+    if (family != 2 && family != 10)
+      {
+        throw new RuntimeException("NYI");
+      }
+    try
+      {
+        return switch (protocol)
+          {
+            case 6 ->
+              {
+                var ss = ServerSocketChannel.open();
+                ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            case 17 ->
+              {
+                var ss = DatagramChannel.open();
+                ss.bind(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            default -> throw new RuntimeException("NYI");
+          };
+      }
+    catch(BindException e)
+      {
+        result[0] = SystemErrNo.EADDRINUSE.errno;
+        return -1;
+      }
+    catch(IOException e)
+      {
+        result[0] = -1;
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_listen(long sockfd, int backlog)
+  {
+    return 0;
+  }
+
+  public static boolean fuzion_sys_net_accept(long sockfd, Object res)
+  {
+    long[] result = (long[]) res;
+    try
+      {
+        var asc = Runtime._openStreams_.get(sockfd);
+        if(asc instanceof ServerSocketChannel ssc)
+          {
+            var socket = ssc.accept();
+            result[0] = Runtime._openStreams_.add(socket);
+            return true;
+          }
+        else if(asc instanceof DatagramChannel dc)
+          {
+            result[0] = sockfd;
+            return true;
+          }
+        throw new RuntimeException("NYI");
+      }
+    catch(IOException e)
+      {
+        return false;
+      }
+  }
+
+  public static int fuzion_sys_net_connect0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
+  {
+    long[] result = (long[]) res;
+    var host = Runtime.utf8ByteArrayDataToString((byte[]) host0);
+    var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
+    if (family != 2 && family != 10)
+      {
+        throw new RuntimeException("NYI");
+      }
+    try
+      {
+        return switch (protocol)
+          {
+            case 6 ->
+              {
+                var socket = SocketChannel.open();
+                socket.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(socket);
+                yield 0;
+              }
+            case 17 ->
+              {
+                var ss = DatagramChannel.open();
+                ss.connect(new InetSocketAddress(host, Integer.parseInt(port)));
+                result[0] = Runtime._openStreams_.add(ss);
+                yield 0;
+              }
+            default -> throw new RuntimeException("NYI");
+          };
+      }
+    catch(IOException e)
+      {
+        result[0] = SystemErrNo.ECONNREFUSED.errno;
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_get_peer_address(long sockfd, Object res)
+  {
+    byte[] data = (byte[])res;
+    try
+      {
+        if (Runtime._openStreams_.get(sockfd) instanceof SocketChannel sc)
+          {
+            byte[] address = ((InetSocketAddress)sc.getRemoteAddress()).getAddress().getAddress();
+            System.arraycopy(address, 0, data, 0, address.length);
+            return address.length;
+          }
+        return -1;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static char fuzion_sys_net_get_peer_port(long sockfd)
+  {
+    try
+      {
+        if (Runtime._openStreams_.get(sockfd) instanceof SocketChannel sc)
+          {
+            return (char) ((InetSocketAddress)sc.getRemoteAddress()).getPort();
+          }
+        return 0;
+      }
+    catch (IOException e)
+      {
+        return 0;
+      }
+  }
+
+  public static boolean fuzion_sys_net_read(long sockfd, Object b, int length, Object res)
+  {
+    byte[] buff = (byte[])b;
+    long[] result = (long[])res;
+
+    try
+      {
+        var desc = Runtime._openStreams_.get(sockfd);
+        // NYI blocking / none blocking read
+        long bytesRead;
+        if (desc instanceof DatagramChannel dc)
+          {
+            bytesRead = dc.receive(ByteBuffer.wrap(buff)) == null
+              ? 0
+              // NYI how to determine datagram length?
+              : buff.length;
+          }
+        else if (desc instanceof ByteChannel sc)
+          {
+            bytesRead = sc.read(ByteBuffer.wrap(buff));
+          }
+        else
+          {
+            throw new RuntimeException("NYI");
+          }
+        result[0] = bytesRead;
+        return bytesRead != -1;
+      }
+    catch(IOException e) //SocketTimeoutException and others
+      {
+        // unspecified error
+        result[0] = -1;
+        return false;
+      }
+  }
+
+  public static int fuzion_sys_net_write(long sockfd, Object fileContent, int l)
+  {
+    try
+      {
+        var sc = (ByteChannel)Runtime._openStreams_.get(sockfd);
+        sc.write(ByteBuffer.wrap((byte[])fileContent));
+        return 0;
+      }
+    catch(IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_net_close0(long sockfd)
+  {
+    return Runtime._openStreams_.remove(sockfd)
+      ? 0
+      : -1;
+  }
+
+  public static int fuzion_sys_net_set_blocking0(long sockfd, int blocking)
+  {
+    var asc = (AbstractSelectableChannel)Runtime._openStreams_.get(sockfd);
+    try
+      {
+        asc.configureBlocking(blocking == 1);
+        return 0;
+      }
+    catch(IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_fileio_flush(long fd)
+  {
+    var s = Runtime._openStreams_.get(fd);
+    if (s instanceof PrintStream ps)
+      {
+        ps.flush();
+      }
+    return 0;
+  }
+
+  public static int fuzion_sys_fileio_read(long fd, Object d, int l)
+  {
+    byte[] byteArr = (byte[])d;
+    try
+      {
+        var s = Runtime._openStreams_.get(fd);
+        int bytesRead = 0;
+        if (s instanceof RandomAccessFile raf)
+          {
+            bytesRead = raf.read(byteArr);
+          }
+        else
+          {
+            bytesRead = ((InputStream) s).read(byteArr);
+          }
+
+        return bytesRead;
+      }
+    catch (Exception e)
+      {
+        return -2;
+      }
+  }
+
+  public static int fuzion_sys_fileio_write(long f, Object data, int l)
+  {
+    try
+      {
+        byte[] fileContent = (byte[])data;
+        var s = Runtime._openStreams_.get(f);
+        if (s instanceof RandomAccessFile raf)
+          {
+            /* NYI:
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
+              }
+            */
+            raf.write(fileContent);
+          }
+        else if (s instanceof OutputStream os)
+          {
+            os.write(fileContent);
+          }
+        return 0;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_delete(Object s)
+  {
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    try
+      {
+        return Files.deleteIfExists(path);
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_move(Object o, Object n)
+  {
+    Path oldPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[])o));
+    Path newPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[])n));
+    try
+      {
+        Files.move(oldPath, newPath);
+        return true;
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_create_dir(Object s)
+  {
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    try
+      {
+        Files.createDirectory(path);
+        return true;
+      }
+    catch (Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static void fuzion_sys_fileio_open(Object s, Object res, byte mode)
+  {
+    var path = Runtime.utf8ByteArrayDataToString((byte[])s);
+    long[] open_results = (long[])res;
+    try
+      {
+        switch (mode)
+          {
+          case 0 :
+            RandomAccessFile fis = new RandomAccessFile(path, "r");
+            open_results[0] = Runtime._openStreams_.add(fis);
+            break;
+          case 1 :
+            RandomAccessFile fos = new RandomAccessFile(path, "rw");
+            open_results[0] = Runtime._openStreams_.add(fos);
+            break;
+          case 2 :
+            RandomAccessFile fas = new RandomAccessFile(path, "rw");
+            fas.seek(fas.length());
+            open_results[0] = Runtime._openStreams_.add(fas);
+            break;
+          default:
+            open_results[1] = -1;
+            System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
+            System.exit(1);
+          }
+      }
+    catch (Exception e)
+      {
+        open_results[1] = -1;
+      }
+    return;
+  }
+
+  public static byte fuzion_sys_fileio_close(long fd)
+  {
+    return (byte) (Runtime._openStreams_.remove(fd)
+                                    ? 0
+                                    : -1);
+  }
+
+  public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI : should be altered in the future to not resolve symbolic links
+  {
+    return fuzion_sys_fileio_stats(s, stats);
+  }
+
+  public static boolean fuzion_sys_fileio_stats(Object s, Object res)
+  {
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    long[] stats = (long[]) res;
+    var err = SystemErrNo.UNSPECIFIED;
+    try
+      {
+        BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
+        stats[0] = metadata.size();
+        stats[1] = metadata.lastModifiedTime().to(TimeUnit.SECONDS);
+        stats[2] = metadata.isRegularFile() ? 1: 0;
+        stats[3] = metadata.isDirectory() ? 1: 0;
+        return true;
+      }
+    catch (UnsupportedOperationException e)
+      {
+        err = SystemErrNo.ENOTSUP;
+      }
+    catch (IOException e)
+      {
+        err = SystemErrNo.EIO;
+      }
+    catch (SecurityException e)
+      {
+        err = SystemErrNo.EACCES;
+      }
+
+    stats[0] = err.errno;
+    stats[1] = 0;
+    stats[2] = 0;
+    stats[3] = 0;
+    return false;
+  }
+
+  public static void fuzion_sys_fileio_seek(long fd, short s, Object res)
+  {
+    long[] seekResults = (long[]) res;
+    try
+      {
+        var raf = (RandomAccessFile) Runtime._openStreams_.get(fd);
+        raf.seek(s);
+        seekResults[0] = raf.getFilePointer();
+        return;
+      }
+    catch (Exception e)
+      {
+        seekResults[1] = -1;
+        return;
+      }
+  }
+
+  public static void fuzion_sys_fileio_file_position(long fd, Object res)
+  {
+    long[] arr = (long[])res;
+    try
+      {
+        arr[0] = ((RandomAccessFile) Runtime._openStreams_.get(fd)).getFilePointer();
+        return;
+      }
+    catch (Exception e)
+      {
+        arr[1] = -1;
+        return;
+      }
+  }
+
+  public static byte[] fuzion_sys_fileio_mmap(long fd, long offset, long size, Object res)
+  {
+    int[] result = (int[])res;
+    try
+      {
+        var raf = (RandomAccessFile) Runtime._openStreams_.get(fd);
+
+        // offset+size must not exceed file size, to match semantics of
+        // c-backend.
+        if (raf.length() < (offset + size))
+          {
+            result[0] = -1;
+            return new byte[0];
+          }
+
+        var mmap = raf.getChannel().map(MapMode.READ_WRITE, offset, size);
+
+        // success
+        result[0] = 0;
+        return new byte[0];
+        /* NYI
+                  @Override
+                  void set(
+                    int x,
+                    Value v,
+                    AbstractType elementType)
+                  {
+                    checkIndex(x);
+                    mmap.put(x, (byte)v.u8Value());
+                  }
+
+                  @Override
+                  Value get(
+                    int x,
+                    AbstractType elementType)
+                  {
+                    checkIndex(x);
+                    return new u8Value(mmap.get(x));
+                  }
+
+                  @Override
+                  int length(){
+                    return (int)size;
+                  }
+        */
+      }
+    catch (IOException e)
+      {
+        result[0] = -1;
+        return new byte[0];
+      }
+  }
+
+  public static int fuzion_sys_fileio_munmap()
+  {
+    return 0;
+  }
+
+  public static void fuzion_std_nano_sleep(long d)
+  {
+    try
+      {
+        TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE: d);
+      }
+    catch (InterruptedException ie)
+      {
+        throw new Error("unexpected interrupt", ie);
+      }
+  };
+
+  public static boolean fuzion_sys_env_vars_has0(Object s)
+  {
+    return System.getenv(Runtime.utf8ByteArrayDataToString((byte[])s)) != null;
+  }
+
+  public static String fuzion_sys_env_vars_get0(Object s)
+  {
+    return System.getenv(Runtime.utf8ByteArrayDataToString((byte[])s));
+  }
 
 }
 
