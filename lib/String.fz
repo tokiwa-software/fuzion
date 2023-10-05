@@ -384,7 +384,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   is
     codepoint_array
       .slice from to
-      .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
+      .map_sequence String c->c  # NYI: this should maybe not be needed since codepoint is a string
       .fold String.type.concat
 
 

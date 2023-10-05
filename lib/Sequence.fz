@@ -198,9 +198,8 @@ public Sequence(T type) ref is
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) => drop(from).take to-from
-    # NYI: OPTIMIZATION: We could redefine this, e.g. to avoid copying array data
-    # on array.slice(from,to).as_array.
+  public slice(from, to i32) Sequence T is
+    drop(from).take to-from
 
 
   # create a tuple of two Sequences by splitting this at the given index, i.e.,
