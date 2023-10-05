@@ -202,7 +202,7 @@ public fuzion.java is
 
   # intrinsic to convert an array to a Java Array object
   #
-  private array_to_java_object0(T type, a Any) Array T is intrinsic_constructor
+  private array_to_java_object0(T type, a fuzion.sys.Pointer) Array T is intrinsic_constructor
 
 
   # convert a string to a Java String object
@@ -213,7 +213,7 @@ public fuzion.java is
 
   # intrinsic to convert a string to a Java String object
   #
-  private string_to_java_object0(s Any) Java_Object is intrinsic_constructor
+  private string_to_java_object0(s fuzion.sys.Pointer) Java_Object is intrinsic_constructor
 
 
   # convert a Java String to a string
