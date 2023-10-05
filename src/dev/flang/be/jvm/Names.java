@@ -131,11 +131,13 @@ public class Names extends ANY implements ClassFileConstants
   private static final String DYNAMIC_FUNCTION_PREFIX = "fzD_";
 
   static final String PRECONDITION_NAME = "fzPrecondition";
-  static final String ROUTINE_NAME = "fzRoutine";
+  static final String ROUTINE_NAME      = "fzRoutine";
   static
   {
     if (CHECKS) check
-      (ROUTINE_NAME.equals(Runtime.ROUTINE_NAME));
+      (PRECONDITION_NAME.equals(Runtime.PRECONDITION_NAME),
+       ROUTINE_NAME.equals(Runtime.ROUTINE_NAME),
+       CLASS_PREFIX.equals(Runtime.CLASS_PREFIX));
   }
 
   /**

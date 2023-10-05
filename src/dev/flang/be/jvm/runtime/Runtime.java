@@ -114,11 +114,13 @@ public class Runtime extends ANY
 
 
   /**
-   * Copy of dev.flang.be.jvm.Names.ROUTINE_NAME without adding a dependency on
+   * Copy of dev.flang.be.jvm.Names.* without adding a dependency on
    * that package.  We do not want to bundle the backend classes with a
    * stand-alone application that needs the runtime classes, so this is copied.
    */
-  public static final String ROUTINE_NAME = "fzRoutine";
+  public static final String PRECONDITION_NAME = "fzPrecondition";
+  public static final String ROUTINE_NAME      = "fzRoutine";
+  public static final String CLASS_PREFIX      = "fzC_";
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -597,7 +599,39 @@ public class Runtime extends ANY
   public static void contract_fail(String msg)
   {
     var stacktrace = new StringWriter();
-    new Throwable().printStackTrace(new PrintWriter(stacktrace));
+    stacktrace.write("Call stack:\n");
+    String last = "";
+    int count = 0;
+    for (var s : new Throwable().getStackTrace())
+      {
+        var m = s.getMethodName();
+        var r = switch (m)
+          {
+          case "main",
+               ROUTINE_NAME      -> "";
+          case PRECONDITION_NAME -> "precondition of ";
+          default -> null;
+          };
+        var cl = s.getClassName();
+        if (r != null && cl.startsWith(CLASS_PREFIX))
+          {
+            cl = cl.substring(CLASS_PREFIX.length());
+            var str = r + cl + "\n";
+            if (str == last)
+              {
+                count++;
+              }
+            else
+              {
+                if (count > 1)
+                  {
+                    stacktrace.write("\n  ... repeated " + count + " times ...");
+                  }
+                stacktrace.write(str);
+                count = 1;
+              }
+          }
+      }
     Errors.fatal("CONTRACT FAILED: " + msg, stacktrace.toString());
   }
 

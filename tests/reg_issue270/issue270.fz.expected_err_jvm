@@ -1,26 +1,7 @@
 
 error 1: CONTRACT FAILED: pre-condition on call to 'issue270'
-java.lang.Throwable
-	at dev.flang.be.jvm.runtime.Runtime.contract_fail(Runtime.java:600)
-	at fzC_issue270.fzPrecondition(Unknown Source)
-	at fzC_universe.main(Unknown Source)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
-	at dev.flang.be.jvm.Runner.runMain(Runner.java:120)
-	at dev.flang.be.jvm.JVM$CompilePhase$4.finish(JVM.java:488)
-	at dev.flang.be.jvm.JVM.lambda$createCode$0(JVM.java:785)
-	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:992)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEachOrdered(ReferencePipeline.java:772)
-	at dev.flang.be.jvm.JVM.createCode(JVM.java:776)
-	at dev.flang.be.jvm.JVM.compile(JVM.java:761)
-	at dev.flang.tools.Fuzion$Backend$3.process(Fuzion.java:163)
-	at dev.flang.tools.Fuzion$Backend.processFrontEnd(Fuzion.java:444)
-	at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:908)
-	at dev.flang.tools.Tool.lambda$run$0(Tool.java:145)
-	at dev.flang.util.Errors.runAndExit(Errors.java:762)
-	at dev.flang.tools.Tool.run(Tool.java:145)
-	at dev.flang.tools.Fuzion.main(Fuzion.java:557)
+Call stack:
+precondition of issue270
+universe
 
 *** fatal errors encountered, stopping.
