@@ -515,32 +515,6 @@ public class Clazzes extends ANY
 
 
   /**
-   * When it is detected that f is called dynamically, execute r.run().
-   */
-  static void whenCalled(Clazz c,
-                         Runnable r)
-  {
-    if (c.isCalled())
-      {
-        r.run();
-      }
-    else
-      {
-        var l = _whenCalled_.get(c);
-        if (l == null)
-          {
-            l = new List<Runnable>(r);
-            _whenCalled_.put(c, l);
-          }
-        else
-          {
-            l.add(r);
-          }
-      }
-  }
-
-
-  /**
    * Remember that f is called dynamically.  In case f was not known to be
    * called dynamically, execute all the runnables registered for f by
    * whenCalledDynamically.
