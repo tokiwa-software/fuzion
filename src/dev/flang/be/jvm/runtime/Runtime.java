@@ -452,9 +452,13 @@ public class Runtime extends ANY
   public static void handleInvocationTargetException(InvocationTargetException e)
   {
     var o = e.getCause();
-    if (o instanceof RuntimeException r) { throw r; }
-    if (o instanceof Error            r) { throw r; }
-    if (o != null)
+    if (o instanceof StackOverflowError so)
+      {
+        Errors.fatal("Stack overflow", stackTrace(so));
+      }
+    else if (o instanceof RuntimeException r) { throw r; }
+    else if (o instanceof Error            r) { throw r; }
+    else if (o != null)
       {
         Errors.fatal("Error while running JVM compiled code: " + o);
       }
@@ -571,11 +575,39 @@ public class Runtime extends ANY
    */
   public static void contract_fail(String msg)
   {
+    Errors.fatal("CONTRACT FAILED: " + msg, stackTrace());
+  }
+
+
+  /**
+   * Get the current stack trace of Fuzion routines for printing error messages.
+   *
+   * @return the stack trace as a multi-line String.
+   */
+  public static String stackTrace()
+  {
+    return stackTrace(new Throwable());
+  }
+
+
+  /**
+   * Get the stack trace of Fuzion routines of a given Throwable for printing
+   * error messages.
+   *
+   * @param t the Throwable, must not be null,
+   *
+   * @return the stack trace as a multi-line String.
+   */
+  public static String stackTrace(Throwable t)
+  {
+    if (PRECONDITIONS) require
+      (t != null);
+
     var stacktrace = new StringWriter();
     stacktrace.write("Call stack:\n");
     String last = "";
     int count = 0;
-    for (var s : new Throwable().getStackTrace())
+    for (var s : t.getStackTrace())
       {
         var m = s.getMethodName();
         var r = switch (m)
@@ -589,8 +621,8 @@ public class Runtime extends ANY
         if (r != null && cl.startsWith(CLASS_PREFIX))
           {
             cl = cl.substring(CLASS_PREFIX.length());
-            var str = r + cl + "\n";
-            if (str == last)
+            var str = r + cl;
+            if (str.equals(last))
               {
                 count++;
               }
@@ -600,14 +632,23 @@ public class Runtime extends ANY
                   {
                     stacktrace.write("\n  ... repeated " + count + " times ...");
                   }
+                else if (count > 0)
+                  {
+                    stacktrace.write("\n");
+                  }
                 stacktrace.write(str);
+                last = str;
                 count = 1;
               }
           }
       }
-    Errors.fatal("CONTRACT FAILED: " + msg, stacktrace.toString());
-  }
+    if (count > 1)
+      {
+        stacktrace.write("\n  ... repeated " + count + " times ...");
+      }
 
+    return stacktrace.toString();
+  }
 
 
   /**
