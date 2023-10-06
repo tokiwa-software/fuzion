@@ -32,10 +32,10 @@ FUZION_OPTIONS ?=
 FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 int:
-	$(FUZION) $(NAME) 2>err.txt || cat err.txt
+	$(FUZION) $(NAME) 2>err.txt || (RC=$? && cat err.txt && exit $RC)
 
 jvm:
-	$(FUZION) -jvm $(NAME) 2>err.txt || cat err.txt
+	$(FUZION) -jvm $(NAME) 2>err.txt || (RC=$? && cat err.txt && exit $RC)
 
 c:
-	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || cat err.txt
+	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || (RC=$? && cat err.txt && exit $RC)
