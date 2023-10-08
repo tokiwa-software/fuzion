@@ -1029,29 +1029,6 @@ public class Clazzes extends ANY
 
 
   /**
-   * Find all static clazzes for this Tag and store them in outerClazz.
-   */
-  public static void findClazzes(InlineArray i, Clazz outerClazz)
-  {
-    Clazz ac = clazz(i, outerClazz);
-    if (i._arrayClazzId < 0)
-      {
-        i._arrayClazzId = getRuntimeClazzIds(2);
-      }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internal_array, i).resultClazz();
-    sa.instantiated(i);
-    outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
-    outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
-    ac.instantiated(i);
-    var ec = outerClazz.actualClazz(i.elementType());
-    for (var e : i._elements)
-      {
-        propagateExpectedClazz(e, ec, outerClazz);
-      }
-  }
-
-
-  /**
    * Find all static clazzes for this Env and store them in outerClazz.
    */
   public static void findClazzes(Env v, Clazz outerClazz)
@@ -1146,6 +1123,7 @@ public class Clazzes extends ANY
 
     else if (e instanceof InlineArray ia)
       {
+        check(false); // InlineArray is handled in frontend
         result = outerClazz.actualClazz(ia.type());
       }
 

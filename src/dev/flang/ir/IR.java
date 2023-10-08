@@ -381,10 +381,14 @@ public class IR extends ANY
       {
         result = ExprKind.Env;
       }
-    else if (e instanceof AbstractConstant ||
-             e instanceof InlineArray         )
+    else if (e instanceof AbstractConstant)
       {
         result = ExprKind.Const;
+      }
+    else if (e instanceof InlineArray ia)
+      {
+        check(false); // InlineArray is handled in frontend
+        result = ExprKind.Unit;
       }
     else
       {
