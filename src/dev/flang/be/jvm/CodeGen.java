@@ -441,7 +441,7 @@ class CodeGen
         var tc = _fuir.accessTargetClazz(cl, c, i);
         var tt = ccs[0];                   // target clazz we match against
         var cc = ccs[1];                   // called clazz in case of match
-        if (tc != tt)
+        if (tc != tt || _types.hasInterfaceFile(tc))
           {
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
