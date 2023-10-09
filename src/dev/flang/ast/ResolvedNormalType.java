@@ -177,8 +177,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
    *
-   * @param ref true iff this type should be a ref type, otherwise it will be a
-   * value type.
+   * @param refOrVal
    */
   public ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, UnresolvedType.RefOrVal refOrVal)
   {
