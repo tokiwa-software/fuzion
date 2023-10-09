@@ -565,8 +565,7 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
                                           _names.getTag(subjClazz),
                                           "()I",
-                                          PrimitiveType.type_int,
-                                          1 /* num arg slots: only one, Expr.value */));
+                                          PrimitiveType.type_int));
 
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)

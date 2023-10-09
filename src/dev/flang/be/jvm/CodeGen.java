@@ -477,7 +477,6 @@ class CodeGen
     var dn = _names.dynamicFunction(cc0);
     var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).descriptor() + ")V";
     var dr = isCall ? _types.javaType(rc)                       : PrimitiveType.type_void;
-    var da = isCall ? _types.dynDescriptorArgsCount(cc0, false) : 1;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -490,7 +489,7 @@ class CodeGen
         _types.classFile(tt).addImplements(intfc._name);
         addStub(tt, cc, dn, ds, isCall);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr, da);
+    return Expr.invokeInterface(intfc._name, dn, ds, dr);
   }
 
 
