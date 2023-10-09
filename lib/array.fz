@@ -116,34 +116,58 @@ public array(redef T type,
     pre
       debug: i ≥ 0
   is
-    slice i length
+    (slice i length).as_list
 
 
   # create a slice from this array's elements at index 'from' (included)
   # up to 'to' (excluded).
   #
-  # NYI: array.slice should better return an array containing a slice of
-  # internal_array.
+  # Complexity:
+  # index access : O(1)
+  # count        : O(1)
   #
-  public redef slice(from, to i32) list T
+  public redef slice(from, to i32) Sequence T
     pre
       debug: from ≥ 0
   is
-    if to ≤ from
-      nil
-    else
-      array_cons from to
+
+    ref : Sequence T
+
+      # this array slice as a list
+      #
+      public redef as_list list T is
+        if to ≤ from
+          nil
+        else
+          array_cons from to
+
+      # get the contents of this slice at the given index
+      #
+      public redef index [ ] (i i32) T
+      is
+        array.this[from+i]
+
+      # is this sequence known to be finite?  For infinite sequences, features like
+      # count diverge.
+      #
+      public redef finite => true
+
+      # redefines Sequence.count for array.slice,
+      # reducing complexity from O(n) to O(1).
+      #
+      public redef count => to-from
+
 
 
   # create a cons cell for a list of this array starting at the given
-  # index and up to to
+  # index `i` and up to `to`
   #
   array_cons (i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ length
   is
     head => array.this[i]
-    tail => slice i+1 to
+    tail => (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
