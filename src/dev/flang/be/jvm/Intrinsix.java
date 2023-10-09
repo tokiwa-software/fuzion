@@ -554,6 +554,15 @@ public class Intrinsix extends ANY implements ClassFileConstants
             PrimitiveType.type_long));
       return new Pair<>(res, Expr.UNIT);
     });
+    put("fuzion.sys.env_vars.get0", (jvm, cl, pre, cc, tvalue, args) -> {
+      return jvm.constString(
+        tvalue.drop()
+          .andThen(args.get(0))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+            "fuzion_sys_env_vars_get0",
+            methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
+            JAVA_LANG_STRING)));
+    });
     put("fuzion.sys.env_vars.set0", (jvm, cl, pre, cc, tvalue, args) -> {
       var res =
         tvalue.drop()

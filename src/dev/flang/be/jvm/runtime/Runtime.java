@@ -651,6 +651,12 @@ public class Runtime extends ANY
   }
 
 
+  public static String fuzion_sys_env_vars_get0(byte[] d)
+  {
+    return System.getenv(utf8ByteArrayDataToString(d));
+  }
+
+
   /**
    * @param instance the effect instance that is installed
    *
