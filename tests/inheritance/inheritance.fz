@@ -400,4 +400,51 @@ inheritance is
         exit_code <- 1
   inheritOuter
 
+  # regression test from issue #2058 that failed for C and JVM backends
+  reg_test_2058 =>
+
+    chck "s.v.hi"   s.v.hi   "hi v 42"
+    chck "s.v.v.hi" s.v.v.hi "hi v 42"
+    s is
+      z := 42
+      hi => ""
+      v ref : s is
+        redef hi => "hi v {s.this.z}"
+
+    chck(msg, v, expected String) =>
+      if v = expected
+        say "$msg: PASSED."
+      else
+        say "$msg: $v != $expected *** FAILED."
+        exit_code <- 1
+
+  reg_test_2058
+
+  # regression test from issue #2064 that failed for JVM backend
+  reg_test_2064 =>
+
+    # this version broke the JVM backend since a cast from interface A
+    # to class A was missing when using the outer ref from B
+    #
+    v1 =>
+      A(i i32) ref is
+        B ref : A 66 is
+          _ := A.this.i
+      _ := (A 3).B
+    v1
+
+    # this version was fine for the JVM backend, the outer ref from B could have
+    # two types (A and C1), so dynamic binding is used and the cast not needed:
+    #
+    v2 =>
+      A(i i32) ref is
+        B ref : A 66 is
+          _ := A.this.i
+      _ := (A 3).B
+      C1 ref : A 4  is
+      _ := C1.B
+    v2
+
+  reg_test_2064
+
   exit exit_code.get
