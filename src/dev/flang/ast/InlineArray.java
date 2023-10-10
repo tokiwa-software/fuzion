@@ -289,7 +289,7 @@ public class InlineArray extends ExprWithPos
    * Is this a compile-time constant?
    */
   @Override
-  boolean isCompileTimeConst()
+  public boolean isCompileTimeConst()
   {
     return NumLiteral.findConstantType(elementType()) != null &&
       this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());

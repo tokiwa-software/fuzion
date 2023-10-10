@@ -75,6 +75,26 @@ public abstract class AbstractConstant extends Expr
   }
 
 
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  public boolean isCompileTimeConst()
+  {
+    return !type().isRef(); // String is ref but NYI
+  }
+
+
+  /**
+   * This expression as a compile time constant.
+   */
+  @Override
+  public AbstractConstant asCompileTimeConstant()
+  {
+    return this;
+  }
+
+
 }
 
 /* end of file */
