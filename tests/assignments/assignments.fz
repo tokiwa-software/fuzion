@@ -1,0 +1,202 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test assignments
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This tests declares a value type feature with three fields of a mutable type
+# and uses different assignments to pass these values around and modify them.
+#
+# The same tests are then performed for a reference type that is otherwise equal
+# to the value type.
+#
+value_assignments =>
+
+  v is
+    x := mut 42
+    y := mut 3.14
+    z := mut "hi!"
+
+    redef as_string => "value: $x $y $z"
+
+    set_x(x0) => x <- x0
+    set_y(y0) => y <- y0
+    set_z(z0) => z <- z0
+
+    # show v.this, call f that may have the side-effect of modifying v, and show v.this again.
+    show_mod_show(f ()->unit) =>
+      say v.this
+      f.call
+      say v.this
+
+  a := v
+  b := a
+  c := b
+
+  say a
+  say b
+  say c
+  a.x <- 4711
+  b.y <- 2.71
+  c.z <- "¡Hola!"
+  say a
+  say b
+  say c
+
+  q(d, e, f v) =>
+    say d
+    say e
+    say f
+    d.x <- 32168
+    e.y <- 6.62607015E-34
+    f.z <- "んちわ!"
+    say d
+    say e
+    say f
+
+  q a a a
+  say a
+
+  g := v
+  h := g
+  i := h
+  g.set_x 911
+  h.set_y 5.670374419E-8
+  i.set_z "Salut!"
+  say g
+  say h
+  say i
+
+  j(p v) => p.x <- 0815; p
+  k(p v) => p.y <- 7.2973525693E-3; p
+  l(p v) => p.z <- "привіт"; p
+  vv := v
+  say (j vv)
+  say (k vv)
+  say (l vv)
+  say vv
+
+  m(p v) => p.set_x 299792458; p
+  n(p v) => p.set_y 5.29177210903E-11; p
+  o(p v) => p.set_z "హలో"; p
+  say (m vv)
+  say (n vv)
+  say (o vv)
+  say vv
+
+  vv.show_mod_show ()->
+    vv.x <- 2023
+    vv.y <- 1E-18
+    vv.z <- "สวัสดี"
+
+  vv.show_mod_show ()->
+    vv.x <- 1984
+    vv.y <- 7.2973525693E-3
+    vv.z <- "Kamusta"
+
+
+ref_assignments =>
+
+  v ref is
+    x := mut 42
+    y := mut 3.14
+    z := mut "hi!"
+
+    redef as_string => "ref: $x $y $z"
+
+    set_x(x0) => x <- x0
+    set_y(y0) => y <- y0
+    set_z(z0) => z <- z0
+
+    # show v.this, call f that may have the side-effect of modifying v, and show v.this again.
+    show_mod_show(f ()->unit) =>
+      say v.this
+      f.call
+      say v.this
+
+  a := v
+  b := a
+  c := b
+
+  say a
+  say b
+  say c
+  a.x <- 4711
+  b.y <- 2.71
+  c.z <- "¡Hola!"
+  say a
+  say b
+  say c
+
+  q(d, e, f v) =>
+    say d
+    say e
+    say f
+    d.x <- 32168
+    e.y <- 6.62607015E-34
+    f.z <- "んちわ!"
+    say d
+    say e
+    say f
+
+  q a a a
+  say a
+
+  g := v
+  h := g
+  i := h
+  g.set_x 911
+  h.set_y 5.670374419E-8
+  i.set_z "Salut!"
+  say g
+  say h
+  say i
+
+  j(p v) => p.x <- 0815; p
+  k(p v) => p.y <- 7.2973525693E-3; p
+  l(p v) => p.z <- "привіт"; p
+  vv := v
+  say (j vv)
+  say (k vv)
+  say (l vv)
+  say vv
+
+  m(p v) => p.set_x 299792458; p
+  n(p v) => p.set_y 5.29177210903E-11; p
+  o(p v) => p.set_z "హలో"; p
+  say (m vv)
+  say (n vv)
+  say (o vv)
+  say vv
+
+  vv.show_mod_show ()->
+    vv.x <- 2023
+    vv.y <- 1E-18
+    vv.z <- "สวัสดี"
+
+  vv.show_mod_show ()->
+    vv.x <- 1984
+    vv.y <- 7.2973525693E-3
+    vv.z <- "Kamusta"
+
+value_assignments
+ref_assignments
