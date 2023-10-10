@@ -354,22 +354,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
       ? Types.intern(ResolvedNormalType.newType(actualType, this._outer._type))
       : actualType;
     this._dynamicBinding = null;
-
-    if (POSTCONDITIONS) ensure
-      (Errors.any() || !hasCycles());
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
-
-  /**
-   * Is there any outers that share the same feature?
-   */
-  private boolean hasCycles()
-  {
-    return selfAndOuters().count() != selfAndOuters().map(x -> x.feature()).collect(Collectors.toSet()).size();
-  }
 
   /**
    * Returns itself and all outer clazzes
@@ -2150,10 +2139,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_typeClazz == null)
       {
+        var tt = _type.typeType();
+        var ty = Types.resolved.f_Type.selfType();
         _typeClazz = _type.containsError()  ? Clazzes.error.get() :
-                     feature().isUniverse() ? this
-                                            : Clazzes.create(_type.typeType(),
-                                                             _outer.typeClazz());
+                     feature().isUniverse() ? this                :
+                     tt.compareTo(ty) == 0  ? Clazzes.create(ty, Clazzes.universe.get())
+                                            : Clazzes.create(tt, _outer.typeClazz()    );
       }
     return _typeClazz;
   }

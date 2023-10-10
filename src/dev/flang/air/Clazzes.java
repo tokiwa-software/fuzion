@@ -317,12 +317,11 @@ public class Clazzes extends ANY
     var ao = actualType.featureOfType().outer();
     while (o != null)
       {
-        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()))
+        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
           {
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
-        // NYI: Check if the following code is still needed:
         if (o._type == actualType && actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
@@ -368,8 +367,7 @@ public class Clazzes extends ANY
     // e.g. treat clazzes of inherited features with a reference outer clazz
     // the same.
 
-    var newcl = wouldCreateCycleInOuters(actualType, outer) ? clazz(actualType)
-                                                            : new Clazz(actualType, select, outer);
+    var newcl = new Clazz(actualType, select, outer);
     var result = intern(newcl);
     if (result == newcl)
       {
@@ -396,17 +394,6 @@ public class Clazzes extends ANY
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
-  }
-
-
-  /**
-   * Would creating new clazz for actualType and outer result in a cycle?
-   */
-  private static boolean wouldCreateCycleInOuters(AbstractType actualType, Clazz outer)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || !actualType.dependsOnGenerics());
-    return outer != null && outer.selfAndOuters().anyMatch(ou -> actualType.featureOfType().equals(ou.feature()));
   }
 
 
