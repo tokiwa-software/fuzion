@@ -433,7 +433,7 @@ inheritance is
       _ := (A 3).B
     v1
 
-    # this version was fine the JVM backend, the outer ref from B could have
+    # this version was fine for the JVM backend, the outer ref from B could have
     # two types (A and C1), so dynamic binding is used and the cast not needed:
     #
     v2 =>
