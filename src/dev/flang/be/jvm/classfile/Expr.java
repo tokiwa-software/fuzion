@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import dev.flang.util.Errors;
 import dev.flang.util.Pair;
 
 
@@ -313,12 +314,19 @@ public abstract class Expr extends ByteCode
   /**
    * create invokeinterface bytecode to call given class, name and descr producing
    * given result type on the stack.
+   *
+   * @param cls the name of the interface class we are calling
+   *
+   * @param name the name of the interface method we are calling
+   *
+   * @param descr the descriptor if the interface method we are calling
+   *
+   * param rt the JavaType of the result of call
+   *
+   * @return Code to produce bytecode for the interface call.
    */
-  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt, int count)
+  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt)
   {
-    if (PRECONDITIONS) check
-      (count > 0 && count <= 0xff);
-
     return new Expr()
       {
         public String toString() { return "invokeInterface " + cls + "." + name; }
@@ -331,6 +339,12 @@ public abstract class Expr extends ByteCode
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpInterfaceMethod(cl, nat);
+          var count = 1 + ClassFileConstants.slotCountForArgs(descr);
+          if (count > ClassFileConstants.MAX_INVOKE_INTERFACE_SLOTS)
+            {
+              Errors.fatal("Too many argument slots required for call to " + cls + "." + name + descr + ": " + count +
+                           ", maximum allowed is " + ClassFileConstants.MAX_INVOKE_INTERFACE_SLOTS);
+            }
           code(ba, O_invokeinterface, m, (byte) count, (byte) 0);
         }
     };

@@ -726,6 +726,22 @@ public interface ClassFileConstants
   }
 
 
+  /**
+   * This counts the number of slots for a call with the given descriptor.  This
+   * is the sum of the slot count of all arguments in the descriptor, not
+   * including the target value.
+   *
+   * @param a call desrciptor, e.g., "(JDZLjava/lang/Object;II)F"
+   *
+   * @return the slot count, e.g., 8 for "(JDZLjava/lang/Object;II)F"
+   * (==2+2+1+1+1+1).
+   */
+  static int slotCountForArgs(String descriptor)
+  {
+    return argTypesFromDescriptor(descriptor).mapToInt(x -> x.stackSlots()).sum();
+  }
+
+
   public static int ACC_PUBLIC        = 0x0001;  // class,         field, method
   public static int ACC_PRIVATE       = 0x0002;  //                field, method
   public static int ACC_PROTECTED     = 0x0004;  //                field, method
@@ -990,6 +1006,15 @@ public interface ClassFileConstants
    */
   public static final int MIN_BRANCH_OFFSET = -0x8000;
   public static final int MAX_BRANCH_OFFSET =  0x7fff;
+
+
+
+  /**
+   * The invokeinterface bytecode requires the number of argument slots given in
+   * a byte:
+   */
+  public static final int MAX_INVOKE_INTERFACE_SLOTS = 0xff;
+
 
 }
 
