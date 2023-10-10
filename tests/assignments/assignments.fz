@@ -48,6 +48,8 @@ value_assignments =>
       f.call
       say v.this
 
+  # test plain assignments and modifications of the assigned values:
+
   a := v
   b := a
   c := b
@@ -62,19 +64,33 @@ value_assignments =>
   say b
   say c
 
-  q(d, e, f v) =>
+  # test assignments to function arguments
+
+  q(d, e, f v, modify ()->unit) =>
+    say a
     say d
     say e
     say f
     d.x <- 32168
     e.y <- 6.62607015E-34
     f.z <- "んちわ!"
+    say a
+    say d
+    say e
+    say f
+    modify
+    say a
     say d
     say e
     say f
 
-  q a a a
+  q a a a ()->
+    a.x <- 2 * a.x.get
+    a.set_y (0.5 * a.y.get)
+    a.z <- a.z.get + a.z.get
   say a
+
+  # test plain assignments and modifications via an outer reference
 
   g := v
   h := g
@@ -86,6 +102,8 @@ value_assignments =>
   say h
   say i
 
+  # test argument passing and modifications via argument fields
+
   j(p v) => p.x <- 0815; p
   k(p v) => p.y <- 7.2973525693E-3; p
   l(p v) => p.z <- "привіт"; p
@@ -95,6 +113,8 @@ value_assignments =>
   say (l vv)
   say vv
 
+  # test argument passing and modifications via argument fields and outer references
+
   m(p v) => p.set_x 299792458; p
   n(p v) => p.set_y 5.29177210903E-11; p
   o(p v) => p.set_z "హలో"; p
@@ -103,15 +123,19 @@ value_assignments =>
   say (o vv)
   say vv
 
+  # test passing as outer reference and modification from outside via a function argument
+
   vv.show_mod_show ()->
     vv.x <- 2023
     vv.y <- 1E-18
     vv.z <- "สวัสดี"
 
+  # test passing as outer reference and modification from outside via a function argument using outer references
+
   vv.show_mod_show ()->
-    vv.x <- 1984
-    vv.y <- 7.2973525693E-3
-    vv.z <- "Kamusta"
+    vv.set_x 1984
+    vv.set_y 7.2973525693E-3
+    vv.set_z "Kamusta"
 
 
 ref_assignments =>
@@ -133,6 +157,8 @@ ref_assignments =>
       f.call
       say v.this
 
+  # test plain assignments and modifications of the assigned values:
+
   a := v
   b := a
   c := b
@@ -147,19 +173,33 @@ ref_assignments =>
   say b
   say c
 
-  q(d, e, f v) =>
+  # test assignments to function arguments
+
+  q(d, e, f v, modify ()->unit) =>
+    say a
     say d
     say e
     say f
     d.x <- 32168
     e.y <- 6.62607015E-34
     f.z <- "んちわ!"
+    say a
+    say d
+    say e
+    say f
+    modify
+    say a
     say d
     say e
     say f
 
-  q a a a
+  q a a a ()->
+    a.x <- 2 * a.x.get
+    a.set_y (0.5 * a.y.get)
+    a.z <- a.z.get + a.z.get
   say a
+
+  # test plain assignments and modifications via an outer reference
 
   g := v
   h := g
@@ -171,6 +211,8 @@ ref_assignments =>
   say h
   say i
 
+  # test argument passing and modifications via argument fields
+
   j(p v) => p.x <- 0815; p
   k(p v) => p.y <- 7.2973525693E-3; p
   l(p v) => p.z <- "привіт"; p
@@ -180,6 +222,8 @@ ref_assignments =>
   say (l vv)
   say vv
 
+  # test argument passing and modifications via argument fields and outer references
+
   m(p v) => p.set_x 299792458; p
   n(p v) => p.set_y 5.29177210903E-11; p
   o(p v) => p.set_z "హలో"; p
@@ -188,15 +232,20 @@ ref_assignments =>
   say (o vv)
   say vv
 
+  # test passing as outer reference and modification from outside via a function argument
+
   vv.show_mod_show ()->
     vv.x <- 2023
     vv.y <- 1E-18
     vv.z <- "สวัสดี"
 
+  # test passing as outer reference and modification from outside via a function argument using outer references
+
   vv.show_mod_show ()->
-    vv.x <- 1984
-    vv.y <- 7.2973525693E-3
-    vv.z <- "Kamusta"
+    vv.set_x 1984
+    vv.set_y 7.2973525693E-3
+    vv.set_z "Kamusta"
+
 
 value_assignments
 ref_assignments
