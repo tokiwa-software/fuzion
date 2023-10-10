@@ -42,7 +42,7 @@ calls is
       exit_code <- 1
 
 /*
-  We have the following possibilities when calling a feature `f` declared in do `on`
+  We have the following possibilities when calling a feature `f` declared in `on` with
   actual outer clazz `oa`:
 
   inheritsCall: called normally or as a direct parent
@@ -71,6 +71,7 @@ calls is
      on is
        f ... is
          exprs
+
      # f declared for ref
      on ref is
        f ... is
@@ -402,16 +403,16 @@ calls is
       redef where => "oあ"
 
     t := oa
-    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"    # NYI f#1..
-    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"
-    yak "caseC2a: "; chck t.f.s "f#0 in oa type calls.caseC2.ref on"
-# NYI    yak "caseC2a: "; chck $t.cnt.get $3
+    yak "caseC2a: "; chck t.f.s "f#1 in oa type calls.caseC2.ref on"
+    yak "caseC2a: "; chck t.f.s "f#2 in oa type calls.caseC2.ref on"
+    yak "caseC2a: "; chck t.f.s "f#3 in oa type calls.caseC2.ref on"
+    yak "caseC2a: "; chck $t.cnt.get $3
 
     t := oあ
-    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"    # NYI f#1..
-    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"
-    yak "caseC2b: "; chck t.f.s "f#0 in oあ type calls.caseC2.ref on"
-# NYI    yak "caseC2b: "; chck $t.cnt.get $3
+    yak "caseC2b: "; chck t.f.s "f#1 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck t.f.s "f#2 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck t.f.s "f#3 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck $t.cnt.get $3
 
   caseC2
 
@@ -506,16 +507,16 @@ calls is
       redef where => "oあ"
 
     t := oa
-    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"    # NYI f#1..
-    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"
-    yak "caseC5a: "; chck t.f.s "f#0 in oa type calls.caseC5.on"
-# NYI    yak "caseC5a: "; chck $t.cnt.get $3
+    yak "caseC5a: "; chck t.f.s "f#1 in oa type calls.caseC5.on"
+    yak "caseC5a: "; chck t.f.s "f#2 in oa type calls.caseC5.on"
+    yak "caseC5a: "; chck t.f.s "f#3 in oa type calls.caseC5.on"
+    yak "caseC5a: "; chck $t.cnt.get $3
 
     t := oあ
-    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"    # NYI f#1..
-    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"
-    yak "caseC5b: "; chck t.f.s "f#0 in oあ type calls.caseC5.on"
-# NYI   yak "caseC5b: "; chck $t.cnt.get $3
+    yak "caseC5b: "; chck t.f.s "f#1 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck t.f.s "f#2 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck t.f.s "f#3 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck $t.cnt.get $3
 
   caseC5
 
@@ -542,16 +543,16 @@ calls is
     oa2 on is oあ
 
     t := oa1
-    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"    # NYI f#1..
-    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"
-    yak "caseC6a: "; chck t.f.s "f#0 in oa type calls.caseC6.on"
-# NYI    yak "caseC6a: "; chck $t.cnt.get $3
+    yak "caseC6a: "; chck t.f.s "f#1 in oa type calls.caseC6.on"
+    yak "caseC6a: "; chck t.f.s "f#2 in oa type calls.caseC6.on"
+    yak "caseC6a: "; chck t.f.s "f#3 in oa type calls.caseC6.on"
+    yak "caseC6a: "; chck $t.cnt.get $3
 
     t := oa2
-    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"    # NYI f#1..
-    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"
-    yak "caseC6b: "; chck t.f.s "f#0 in oあ type calls.caseC6.on"
-# NYI    yak "caseC6b: "; chck $t.cnt.get $3
+    yak "caseC6b: "; chck t.f.s "f#1 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck t.f.s "f#2 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck t.f.s "f#3 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck $t.cnt.get $3
 
   caseC6
 /*

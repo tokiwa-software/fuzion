@@ -58,22 +58,28 @@ caseC1b: PASSED: f#1 in on type calls.caseC1.on
 caseC1b: PASSED: f#2 in on type calls.caseC1.on
 caseC1b: PASSED: f#3 in on type calls.caseC1.on
 caseC1b: PASSED: 3
-caseC2a: PASSED: f#0 in oa type calls.caseC2.ref on
-caseC2a: PASSED: f#0 in oa type calls.caseC2.ref on
-caseC2a: PASSED: f#0 in oa type calls.caseC2.ref on
-caseC2b: PASSED: f#0 in oあ type calls.caseC2.ref on
-caseC2b: PASSED: f#0 in oあ type calls.caseC2.ref on
-caseC2b: PASSED: f#0 in oあ type calls.caseC2.ref on
-caseC5a: PASSED: f#0 in oa type calls.caseC5.on
-caseC5a: PASSED: f#0 in oa type calls.caseC5.on
-caseC5a: PASSED: f#0 in oa type calls.caseC5.on
-caseC5b: PASSED: f#0 in oあ type calls.caseC5.on
-caseC5b: PASSED: f#0 in oあ type calls.caseC5.on
-caseC5b: PASSED: f#0 in oあ type calls.caseC5.on
-caseC6a: PASSED: f#0 in oa type calls.caseC6.on
-caseC6a: PASSED: f#0 in oa type calls.caseC6.on
-caseC6a: PASSED: f#0 in oa type calls.caseC6.on
-caseC6b: PASSED: f#0 in oあ type calls.caseC6.on
-caseC6b: PASSED: f#0 in oあ type calls.caseC6.on
-caseC6b: PASSED: f#0 in oあ type calls.caseC6.on
-0 failed 78 passed.
+caseC2a: FAILED: f#0 in oa type calls.caseC2.ref on /= f#1 in oa type calls.caseC2.ref on
+caseC2a: FAILED: f#0 in oa type calls.caseC2.ref on /= f#2 in oa type calls.caseC2.ref on
+caseC2a: FAILED: f#0 in oa type calls.caseC2.ref on /= f#3 in oa type calls.caseC2.ref on
+caseC2a: FAILED: 0 /= 3
+caseC2b: FAILED: f#0 in oあ type calls.caseC2.ref on /= f#1 in oあ type calls.caseC2.ref on
+caseC2b: FAILED: f#0 in oあ type calls.caseC2.ref on /= f#2 in oあ type calls.caseC2.ref on
+caseC2b: FAILED: f#0 in oあ type calls.caseC2.ref on /= f#3 in oあ type calls.caseC2.ref on
+caseC2b: FAILED: 0 /= 3
+caseC5a: FAILED: f#0 in oa type calls.caseC5.on /= f#1 in oa type calls.caseC5.on
+caseC5a: FAILED: f#0 in oa type calls.caseC5.on /= f#2 in oa type calls.caseC5.on
+caseC5a: FAILED: f#0 in oa type calls.caseC5.on /= f#3 in oa type calls.caseC5.on
+caseC5a: FAILED: 0 /= 3
+caseC5b: FAILED: f#0 in oあ type calls.caseC5.on /= f#1 in oあ type calls.caseC5.on
+caseC5b: FAILED: f#0 in oあ type calls.caseC5.on /= f#2 in oあ type calls.caseC5.on
+caseC5b: FAILED: f#0 in oあ type calls.caseC5.on /= f#3 in oあ type calls.caseC5.on
+caseC5b: FAILED: 0 /= 3
+caseC6a: FAILED: f#0 in oa type calls.caseC6.on /= f#1 in oa type calls.caseC6.on
+caseC6a: FAILED: f#0 in oa type calls.caseC6.on /= f#2 in oa type calls.caseC6.on
+caseC6a: FAILED: f#0 in oa type calls.caseC6.on /= f#3 in oa type calls.caseC6.on
+caseC6a: FAILED: 0 /= 3
+caseC6b: FAILED: f#0 in oあ type calls.caseC6.on /= f#1 in oあ type calls.caseC6.on
+caseC6b: FAILED: f#0 in oあ type calls.caseC6.on /= f#2 in oあ type calls.caseC6.on
+caseC6b: FAILED: f#0 in oあ type calls.caseC6.on /= f#3 in oあ type calls.caseC6.on
+caseC6b: FAILED: 0 /= 3
+24 failed 60 passed.
