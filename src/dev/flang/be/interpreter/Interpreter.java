@@ -642,7 +642,7 @@ public class Interpreter extends ANY
    *
    * @param d
    * @param t
-   * @return the primite array, e.g. int[], short[], etc.
+   * @return the primitive array, e.g. int[], short[], etc.
    */
   private Object toArray(byte[] d, AbstractType t)
   {

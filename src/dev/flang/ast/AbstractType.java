@@ -1058,7 +1058,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         if (result == 0)
           {
-            // for artifical built in types
+            // for artificial built in types
             result = name().compareTo(other.name());
           }
         if (result == 0 && isRef() ^ other.isRef())

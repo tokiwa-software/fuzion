@@ -51,7 +51,7 @@ public class FreeType extends UnresolvedType
    *
    * @param pos the source position
    *
-   * @param constraint the contraint.
+   * @param constraint the constraint.
    */
   public FreeType(SourcePosition pos, String name, UnresolvedType constraint)
   {

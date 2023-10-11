@@ -82,7 +82,7 @@ public class Choices extends ANY implements ClassFileConstants
      */
     refsAndUnits,
 
-    /* Any othe choice type that requires its own instance, a tag and fields for all possible
+    /* Any other choice type that requires its own instance, a tag and fields for all possible
      * values.
      */
     general

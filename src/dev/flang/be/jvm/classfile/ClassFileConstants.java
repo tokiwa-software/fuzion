@@ -731,7 +731,7 @@ public interface ClassFileConstants
    * is the sum of the slot count of all arguments in the descriptor, not
    * including the target value.
    *
-   * @param a call desrciptor, e.g., "(JDZLjava/lang/Object;II)F"
+   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
    *
    * @return the slot count, e.g., 8 for "(JDZLjava/lang/Object;II)F"
    * (==2+2+1+1+1+1).
@@ -1002,7 +1002,7 @@ public interface ClassFileConstants
 
 
   /**
-   * min / max offset in a branching bytecode instrution such as `ifeq`.
+   * min / max offset in a branching bytecode instruction such as `ifeq`.
    */
   public static final int MIN_BRANCH_OFFSET = -0x8000;
   public static final int MAX_BRANCH_OFFSET =  0x7fff;

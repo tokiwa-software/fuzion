@@ -983,7 +983,7 @@ public class C extends ANY
    *
    * @param bbLE byte buffer (little endian)
    *
-   * @return C expression that creates corresponging constant value.
+   * @return C expression that creates corresponding constant value.
    */
   public CExpr primitiveExpression(SpecialClazzes sc, ByteBuffer bbLE)
   {

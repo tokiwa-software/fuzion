@@ -719,7 +719,7 @@ class CodeGen
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
 
-                  // NYI: ignore life time for now. This needs to be revisted when code that is generated
+                  // NYI: ignore life time for now. This needs to be revisited when code that is generated
                   // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
                   //
                   // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
@@ -797,7 +797,7 @@ class CodeGen
 
 
   /**
-   * Create C code to pass given number of arguments plus one implicit target
+   * Create code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
    * @param needTarget true if the target value must not be dropped even if it
@@ -987,7 +987,7 @@ class CodeGen
    * For a constant of given type, determine the creation strategy. In
    * particular, for primitive type constants, do not create them early and
    * cache them, while for more complex constants, it might be better to create
-   * them early on and reuse the instnace.
+   * them early on and reuse the instance.
    *
    * @param constCl the clazz of the type of the constant.
    *
@@ -1013,7 +1013,7 @@ class CodeGen
    *
    * @param d the constant in serialized form
    *
-   * @return the value and code to produce the constnat
+   * @return the value and code to produce the constant
    */
   Pair<Expr, Expr> createConstant(int constCl, byte[] d)
   {

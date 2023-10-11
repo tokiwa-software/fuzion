@@ -50,7 +50,7 @@ class PreallocatedConstant extends ANY implements Comparable<PreallocatedConstan
 
 
   /**
-   * The serialized byte data of the constnat
+   * The serialized byte data of the constant
    */
   final byte[] _data;
 
