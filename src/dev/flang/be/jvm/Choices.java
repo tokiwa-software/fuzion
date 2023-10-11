@@ -729,7 +729,8 @@ public class Choices extends ANY implements ClassFileConstants
           if (_fuir.clazzIsUnitType(tc))
             {
               res = value.drop()
-                .andThen(Expr.ACONST_NULL);
+                .andThen(Expr.ACONST_NULL)
+                .andThen(Expr.checkcast(_types.javaType(newcl)));
             }
           else
             {
