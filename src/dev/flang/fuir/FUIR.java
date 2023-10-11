@@ -2444,7 +2444,9 @@ hw25 is
     var cc = accessedClazz  (cl, c, ix);
 
     var e = _codeIds.get(c).get(ix);
-    return ((AbstractCall)e).isCompileTimeConst() && !dependsOnOuterRef(cc);
+    return ((AbstractCall)e).isCompileTimeConst() && !dependsOnOuterRef(cc)
+      // NYI can we allow none universe targets in some cases?
+      && clazzUniverse() == accessTargetClazz(cl, c, ix);
   }
 
 
