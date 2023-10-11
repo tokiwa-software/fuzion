@@ -384,7 +384,7 @@ public class Names extends ANY implements ClassFileConstants
 
   /**
    * Map from PreallocatedConstants to field names if static field in
-   * fzC_univers that hold these constant values.
+   * fzC_universe that hold these constant values.
    */
   TreeMap<PreallocatedConstant, String> _preallocatedConstantFieldNames = new TreeMap<>();
 
@@ -615,7 +615,7 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the field name for a static field in fzC_universo to hold a constant
+   * Get the field name for a static field in fzC_universe to hold a constant
    * with given type and data.
    *
    * @param constCl the clazz of the type of the constant.

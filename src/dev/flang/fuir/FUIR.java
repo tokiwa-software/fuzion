@@ -1959,7 +1959,7 @@ hw25 is
    *
    * @param cl index of a clazz that is an heir of 'Function'.
    *
-   * @return the index of the requested `Functionl.call` method's clazz.
+   * @return the index of the requested `Function.call` method's clazz.
    */
   public int lookupCall(int cl)
   {

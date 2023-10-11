@@ -285,7 +285,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     private final Kaku _kaku;
 
     /**
-     * The initializ size of _kaku.
+     * The initial size of _kaku.
      */
     private final int _initialSize;
 

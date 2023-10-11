@@ -51,7 +51,7 @@ public class Label extends Expr
    * initially: -1
    *
    * after ByteCodeSizeEstimate: pe: A position estimate that may shrink
-   * during ByteCodeFixLabals phase.
+   * during ByteCodeFixLabels phase.
    *
    * after ByteCodeFixLabels: pf: The final position.
    *

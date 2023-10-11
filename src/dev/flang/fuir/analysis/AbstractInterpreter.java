@@ -376,7 +376,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Create C code to pass given number of arguments plus one implicit target
+   * Create code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
    * @param cc clazz that is called

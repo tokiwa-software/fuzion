@@ -419,7 +419,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * This will run several passes with different instances of ByteCodeWrite
    * where first an ByteCodeSizeEstimate is used to get an upper bound for the
-   * bytecode size, then ByteCodeFixlabals is used to find all branch targets
+   * bytecode size, then ByteCodeFixLabels is used to find all branch targets
    * and fix the layout, and finally ByteCodeWrite is used to write the
    * bytecodes to a file.
    *
