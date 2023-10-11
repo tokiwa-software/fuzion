@@ -1955,6 +1955,7 @@ public class DFA extends ANY
       default ->
         {
           var result = newInstance(constCl, context);
+          var args = new List<Val>();
           var offset = 0;
           for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
             {
@@ -1963,8 +1964,15 @@ public class DFA extends ANY
               var n = _fuir.clazzArgFieldBytes(constCl, index);
               var bytes = b.slice(offset, n);
               offset += n;
-              result.setField(this, f, newValueConst(fr, context, bytes));
+              var arg = newValueConst(fr, context, bytes);
+              args.add(arg);
+              result.setField(this, f, arg);
             }
+
+          // register calls for constant creation even though
+          // not every backend actually performs these calls.
+          newCall(constCl, false, _universe, args, null /* new environment */, context);
+
           yield result;
         }
       };
