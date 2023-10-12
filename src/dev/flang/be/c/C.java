@@ -125,6 +125,10 @@ public class C extends ANY
     /**
      * Create code to assign value to a given field w/o dynamic binding.
      *
+     * @param cl the clazz we are compiling
+     *
+     * @param pre true iff we are compiling the precondition
+     *
      * @param tc clazz id of the target instance
      *
      * @param f clazz id of the assigned field
@@ -137,7 +141,7 @@ public class C extends ANY
      *
      * @return statement to perform the given access
      */
-    public CStmnt assignStatic(int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int cl, boolean pre, int tc, int f, int rt, CExpr tvalue, CExpr val)
     {
       return assignField(tvalue, tc, tc, f, val, rt);
     }
@@ -146,6 +150,18 @@ public class C extends ANY
     /**
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of call in current code block
+     *
+     * @param tvalue the target instance
+     *
+     * @param avalue the new value to be assigned to the field.
      */
     public CStmnt assign(int cl, boolean pre, int c, int i, CExpr tvalue, CExpr avalue)
     {

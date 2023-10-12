@@ -123,6 +123,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     /**
      * Perform an assignment val to field f in instance rt
      *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
      * @param tc clazz id of the target instance
      *
      * @param f clazz id of the assigned field
@@ -135,11 +139,23 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @return resulting code of this assignment.
      */
-    public abstract RESULT assignStatic(int tc, int f, int rt, VALUE tvalue, VALUE val);
+    public abstract RESULT assignStatic(int cl, boolean pre, int tc, int f, int rt, VALUE tvalue, VALUE val);
 
     /**
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of call in current code block
+     *
+     * @param tvalue the target instance
+     *
+     * @param avalue the new value to be assigned to the field.
      */
     public abstract RESULT              assign(int cl, boolean pre, int c, int i, VALUE tvalue, VALUE avalue);
 
@@ -409,6 +425,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * @param l list that will receive the result
    *
    * @param cl the clazz we are interpreting.
+   *
+   * @param pre true iff interpreting cl's precondition, false for cl itself.
    */
   void assignOuterAndArgFields(List<RESULT> l, int cl, boolean pre)
   {
@@ -420,7 +438,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         l.add(cur._v1);
         var out = _processor.outer(cl);
         l.add(out._v1);
-        l.add(_processor.assignStatic(cl, or, rt, cur._v0, out._v0));
+        l.add(_processor.assignStatic(cl, pre, cl, or, rt, cur._v0, out._v0));
       }
 
     var ac = _fuir.clazzArgCount(cl);
@@ -433,7 +451,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         var ai = _processor.arg(cl, i);
         if (ai != null)
           {
-            l.add(_processor.assignStatic(cl, af, at, cur._v0, ai));
+            l.add(_processor.assignStatic(cl, pre, cl, af, at, cur._v0, ai));
           }
       }
   }
@@ -477,6 +495,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Perform abstract interpretation on given code
    *
    * @param cl clazz id
+   *
+   * @param pre true to process cl's precondition, false to process cl's code.
    *
    * @param c the code block to interpret
    *
@@ -561,6 +581,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Perform abstract interpretation on given statement
    *
    * @param cl clazz id
+   *
+   * @param pre true to process cl's precondition, false to process cl's code
+   * followed by its postcondition.
    *
    * @param stack the stack containing the current arguments waiting to be used
    *

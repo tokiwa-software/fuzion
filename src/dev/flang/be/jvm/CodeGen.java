@@ -210,6 +210,10 @@ class CodeGen
   /**
    * Create code to assign value to a given field w/o dynamic binding.
    *
+   * @param cl id of clazz we are interpreting
+   *
+   * @param pre true iff interpreting cl's precondition, false for cl itself.
+   *
    * @param tc clazz id of the target instance
    *
    * @param f clazz id of the assigned field
@@ -222,7 +226,7 @@ class CodeGen
    *
    * @return statement to perform the given assignment
    */
-  public Expr assignStatic(int tc, int f, int rt, Expr tvalue, Expr val)
+  public Expr assignStatic(int cl, boolean pre, int tc, int f, int rt, Expr tvalue, Expr val)
   {
     if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
       {
@@ -230,7 +234,7 @@ class CodeGen
       }
     else
       {
-        return assignField(tvalue, f, val, rt);
+        return assignField(cl, pre, tvalue, f, val, rt);
       }
   }
 
@@ -248,6 +252,9 @@ class CodeGen
    *
    * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
+   * @param tvalue the target instance
+   *
+   * @param avalue the new value to be assigned to the field.
    */
   public Expr assign(int cl, boolean pre, int c, int i, Expr tvalue, Expr avalue)
   {
@@ -589,12 +596,16 @@ class CodeGen
 
     return isCall ? staticCall(cl, pre, tv, args, cc, false, c, i)
                   : new Pair<>(Expr.UNIT,
-                               assignField(tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+                               assignField(cl, pre, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
 
 
   /**
    * Create code to assign value to a field
+   *
+   * @param cl the clazz we are compiling
+   *
+   * @param pre true iff we are compiling the precondition
    *
    * @param tc the static target clazz
    *
@@ -602,7 +613,7 @@ class CodeGen
    *
    * @param f the field
    */
-  Expr assignField(Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int cl, boolean pre, Expr tvalue, int f, Expr value, int rt)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse());

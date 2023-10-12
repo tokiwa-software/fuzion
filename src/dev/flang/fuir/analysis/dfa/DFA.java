@@ -167,6 +167,10 @@ public class DFA extends ANY
     /**
      * Perform an assignment val to field f in instance rt
      *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
      * @param tc clazz id of the target instance
      *
      * @param f clazz id of the assigned field
@@ -179,7 +183,7 @@ public class DFA extends ANY
      *
      * @return resulting code of this assignment.
      */
-    public Unit assignStatic(int tc, int f, int rt, Val tvalue, Val val)
+    public Unit assignStatic(int cl, boolean pre, int tc, int f, int rt, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
       return _unit_;
@@ -189,6 +193,18 @@ public class DFA extends ANY
     /**
      * Perform an assignment of avalue to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
+     * @param c current code block
+     *
+     * @param i index of call in current code block
+     *
+     * @param tvalue the target instance
+     *
+     * @param avalue the new value to be assigned to the field.
      */
     public Unit assign(int cl, boolean pre, int c, int i, Val tvalue, Val avalue)
     {
