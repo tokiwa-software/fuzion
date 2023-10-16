@@ -219,12 +219,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
               ifcc = O_ifeq;
               jt2 = ClassFileConstants.PrimitiveType.type_long;
             }
-          else if (jt instanceof ClassFileConstants.AType)
+          else if (jvm._fuir.clazzIsRef(rc) || jvm._fuir.clazzIsChoice(rc) && jt instanceof ClassFileConstants.AType)
+            {
+              if (CHECKS) check
+                (jt instanceof ClassFileConstants.AType);
+              ifcc = O_if_acmpeq;
+            }
+          else if (jvm._fuir.clazzIsChoice(rc) && jt instanceof ClassFileConstants.AType)
             {
               ifcc = O_if_acmpeq;
             }
           else
             {
+              // NYI: need support to compare arbitrary value and choice types
               throw new Error("NYI: compare_and_set0 does not support type " + jvm._fuir.clazzAsString(rc));
             }
           var val =  locked

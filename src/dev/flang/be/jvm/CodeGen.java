@@ -210,6 +210,10 @@ class CodeGen
   /**
    * Create code to assign value to a given field w/o dynamic binding.
    *
+   * @param cl id of clazz we are interpreting
+   *
+   * @param pre true iff interpreting cl's precondition, false for cl itself.
+   *
    * @param tc clazz id of the target instance
    *
    * @param f clazz id of the assigned field
@@ -222,7 +226,7 @@ class CodeGen
    *
    * @return statement to perform the given assignment
    */
-  public Expr assignStatic(int tc, int f, int rt, Expr tvalue, Expr val)
+  public Expr assignStatic(int cl, boolean pre, int tc, int f, int rt, Expr tvalue, Expr val)
   {
     if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
       {
@@ -230,7 +234,7 @@ class CodeGen
       }
     else
       {
-        return assignField(tvalue, f, val, rt);
+        return assignField(cl, pre, tvalue, f, val, rt);
       }
   }
 
@@ -248,6 +252,9 @@ class CodeGen
    *
    * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
+   * @param tvalue the target instance
+   *
+   * @param avalue the new value to be assigned to the field.
    */
   public Expr assign(int cl, boolean pre, int c, int i, Expr tvalue, Expr avalue)
   {
@@ -589,12 +596,16 @@ class CodeGen
 
     return isCall ? staticCall(cl, pre, tv, args, cc, false, c, i)
                   : new Pair<>(Expr.UNIT,
-                               assignField(tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+                               assignField(cl, pre, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
 
 
   /**
    * Create code to assign value to a field
+   *
+   * @param cl the clazz we are compiling
+   *
+   * @param pre true iff we are compiling the precondition
    *
    * @param tc the static target clazz
    *
@@ -602,7 +613,7 @@ class CodeGen
    *
    * @param f the field
    */
-  Expr assignField(Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int cl, boolean pre, Expr tvalue, int f, Expr value, int rt)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse());
@@ -623,8 +634,9 @@ class CodeGen
             tvalue = tvalue
               .andThen(_jvm.LOAD_UNIVERSE);
           }
-        res = tvalue
-          .andThen(value)
+        var v = cloneValue(cl, pre, value, rt, f);
+        return tvalue
+          .andThen(v)
           .andThen(_jvm.putfield(f));
       }
     else
@@ -638,6 +650,125 @@ class CodeGen
           .andThen(value.drop());
       }
     return res;
+  }
+
+
+  /**
+   * Clone a value if it is of value type. This is required since value types in
+   * the JVM backend are currently imlemented as reference values to instances
+   * of a Java class, so they have reference semantics.  To get value semantics,
+   * this creates a new instance and copies all the fields from value into the
+   * new instance.
+   *
+   * NYI: OPTIMIZATION: Once value features like `point(x,y i32)` are
+   * represented as tuples of primitive values (`int, int`) instead of instances
+   * of Java classes (`class Point { int x, y; }`, this cloning will no longer
+   * be needed.
+   *
+   * @param cl the class whose code requires this cloning
+   *
+   * @param pre true iff this happens in cl's pre-condition.
+   *
+   * @param value the value that might need to be cloned.
+   *
+   * @param rt the Fuzion type of the value
+   *
+   * @return value iff cloning was not required, or an expression that creates a
+   * clone of value.
+   */
+  Expr cloneValue(int cl, boolean pre, Expr value, int rt, int f)
+  {
+    if (!_fuir.clazzIsRef(rt) &&
+        (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
+        !_types.isScalar(rt) &&
+        (!_fuir.clazzIsChoice(rt) || _choices.kind(rt) == Choices.ImplKind.general))
+      {
+        var vl = _jvm.allocLocal(cl, pre, 1);
+        var nl = _jvm.allocLocal(cl, pre, 1);
+        var e = value
+          .andThen(Expr.astore(vl))
+          .andThen(_jvm.new0(rt))
+          .andThen(Expr.astore(nl));
+        var jt = _types.javaType(rt);
+        if (_fuir.clazzIsChoice(rt))
+          {
+            var cf = _types.classFile(rt);
+            var cc = _names.javaClass(rt);
+            e = e
+              .andThen(Expr.aload(nl, jt))
+              .andThen(Expr.aload(vl, jt))
+              .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
+              .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
+            var hasref = false;
+            for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+              {
+                var tc = _fuir.clazzChoice(rt, i);
+                if (_fuir.clazzIsRef(tc))
+                  {
+                    hasref = true;
+                  }
+                else
+                  {
+                    var ft = _choices.generalValueFieldType(rt, i);
+                    if (ft != PrimitiveType.type_void)
+                      {
+                        var fn = _choices.generalValueFieldName(rt, i);
+                        var v = Expr.aload(vl, jt)
+                          .andThen(Expr.getfield(cc, fn, ft));
+                        if (!_fuir.clazzIsRef(tc) && _types.javaType(tc) instanceof AType)
+                          { // the value type may be a null reference if it is unused.
+                            v = v
+                              .andThen(Expr.DUP)
+                              .andThen(Expr.branch(O_ifnonnull,
+                                                   cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, tc, -1),
+                                                   Expr.UNIT));
+                          }
+                        else
+                          {
+                            v = cloneValue(cl, pre, v, tc, -1);
+                          }
+                        e = e
+                          .andThen(Expr.aload(nl, jt))
+                          .andThen(v)
+                          .andThen(Expr.putfield(cc, fn, ft));
+                      }
+                  }
+              }
+            if (hasref)
+              {
+                e = e
+                  .andThen(Expr.aload(nl, jt))
+                  .andThen(Expr.aload(vl, jt))
+                  .andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                  .andThen(Expr.putfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE));
+              }
+          }
+        else
+          {
+            for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+              {
+                var fi = _fuir.clazzField(rt, i);
+                if (_jvm.fieldExists(fi))
+                  {
+                    var rti = _fuir.clazzResultClazz(fi);
+                    var v = readField(Expr.aload(vl, jt),
+                                         rt,
+                                         fi,
+                                         rti);
+                    v = cloneValue(cl, pre, v, rti, fi);
+                    e = e
+                      .andThen(assignField(cl, pre,
+                                           Expr.aload(nl, jt),
+                                           fi,
+                                           v,
+                                           rti));
+                  }
+              }
+          }
+        value = e
+          .andThen(Expr.aload(nl, jt));
+      }
+    return value;
   }
 
 
