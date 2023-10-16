@@ -1482,6 +1482,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private void inspectCode(ExpressionVisitor fc, AbstractFeature f)
   {
     f.visitExpressions(fc);
+    Stream
+      .concat(f.contract().req.stream(), f.contract().ens.stream())
+      .forEach(c -> c.visitExpressions(fc));
+
     for (var c: f.inherits())
       {
         AbstractFeature cf = c.calledFeature();

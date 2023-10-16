@@ -56,6 +56,25 @@ public abstract class AbstractConstant extends Expr
   public abstract byte[] data();
 
 
+  /**
+   * visit all the expressions within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this or an alternative Expr if the action performed during the
+   * visit replaces this by the alternative.
+   */
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    v.action(this);
+    return this;
+  }
+
+
 }
 
 /* end of file */
