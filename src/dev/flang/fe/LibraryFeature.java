@@ -51,6 +51,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -698,6 +699,26 @@ public class LibraryFeature extends AbstractFeature
             {
               x = new AbstractBlock(new List<>())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+              break;
+            }
+          case InlineArray:
+            {
+              var el = new List<Expr>();
+              var code = code(iat+4, new Stack<Expr>(), -1);
+              var p = _libModule.codeNextPos(iat+4);
+
+              var n = _libModule.data().getInt(p);
+              var ep = p+4; // first element, code block position
+
+              for (int index = 0; index < n; index++)
+                {
+                  var st = new Stack<Expr>();
+                  var elCode = code(ep, st, -1);
+                  el.add(st.isEmpty() ? elCode._expressions.get(0) : st.pop());
+                  ep = _libModule.codeNextPos(ep);
+                }
+
+              x = new InlineArray(LibraryFeature.this.pos(fpos), el, code);
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);

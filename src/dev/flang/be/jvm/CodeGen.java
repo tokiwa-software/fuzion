@@ -1172,8 +1172,35 @@ class CodeGen
       case c_array_u64    -> _jvm.constArray64 (constCl, d);
       case c_array_f32    -> _jvm.constArrayF32(constCl, d);
       case c_array_f64    -> _jvm.constArrayF64(constCl, d);
-      default             -> new Pair<>(valueConst(constCl, ByteBuffer.wrap(d)), Expr.UNIT);
+      default             -> _fuir.clazzIsArray(constCl) ? _jvm.const_array(constCl, constArray(constCl, d)) : new Pair<>(valueConst(constCl, ByteBuffer.wrap(d)), Expr.UNIT);
       };
+  }
+
+
+  private Expr constArray(int constCl, byte[] d)
+  {
+    var elementType = this._fuir.inlineArrayElementClazz(constCl);
+    var bytesPerField = _fuir.clazzBytes(elementType);
+    if (CHECKS) check
+      (d.length % bytesPerField == 0);
+
+    var jt = this._types.resultType(elementType);
+    var aLen = Expr
+      .iconst(d.length / bytesPerField);
+
+    var result =  aLen
+      .andThen(jt.newArray());
+
+    for (int i = 0; i < d.length; i=i+bytesPerField)
+      {
+        result = result
+          .andThen(Expr.DUP) // T[], T[]
+          .andThen(Expr.checkcast(jt.array()))
+          .andThen(Expr.iconst(i / bytesPerField))
+          .andThen(valueConst(elementType, ByteBuffer.wrap(d).slice(i, bytesPerField)))
+          .andThen(jt.xastore());
+      }
+    return result;
   }
 
 

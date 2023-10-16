@@ -270,16 +270,16 @@ public class C extends ANY
           case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_array_i8  -> constArray(constCl, SpecialClazzes.c_i8 , d);
-          case c_array_i16 -> constArray(constCl, SpecialClazzes.c_i16, d);
-          case c_array_i32 -> constArray(constCl, SpecialClazzes.c_i32, d);
-          case c_array_i64 -> constArray(constCl, SpecialClazzes.c_i64, d);
-          case c_array_u8  -> constArray(constCl, SpecialClazzes.c_u8 , d);
-          case c_array_u16 -> constArray(constCl, SpecialClazzes.c_u16, d);
-          case c_array_u32 -> constArray(constCl, SpecialClazzes.c_u32, d);
-          case c_array_u64 -> constArray(constCl, SpecialClazzes.c_u64, d);
-          case c_array_f32 -> constArray(constCl, SpecialClazzes.c_f32, d);
-          case c_array_f64 -> constArray(constCl, SpecialClazzes.c_f64, d);
+          case c_array_i8  -> constArrayPrimitives(constCl, SpecialClazzes.c_i8 , d);
+          case c_array_i16 -> constArrayPrimitives(constCl, SpecialClazzes.c_i16, d);
+          case c_array_i32 -> constArrayPrimitives(constCl, SpecialClazzes.c_i32, d);
+          case c_array_i64 -> constArrayPrimitives(constCl, SpecialClazzes.c_i64, d);
+          case c_array_u8  -> constArrayPrimitives(constCl, SpecialClazzes.c_u8 , d);
+          case c_array_u16 -> constArrayPrimitives(constCl, SpecialClazzes.c_u16, d);
+          case c_array_u32 -> constArrayPrimitives(constCl, SpecialClazzes.c_u32, d);
+          case c_array_u64 -> constArrayPrimitives(constCl, SpecialClazzes.c_u64, d);
+          case c_array_f32 -> constArrayPrimitives(constCl, SpecialClazzes.c_f32, d);
+          case c_array_f64 -> constArrayPrimitives(constCl, SpecialClazzes.c_f64, d);
           case c_Const_String ->
           {
             var tmp = _names.newTemp();
@@ -287,30 +287,116 @@ public class C extends ANY
           }
           default ->
           {
-            var sb = new StringBuilder();
-            var offset = 0;
-            var argCount = _fuir.clazzArgCount(constCl);
-
-            for (int i = 0; i < argCount; i++)
-              {
-                var arg = _fuir.clazzArg(constCl, i);
-                int bytes = _fuir.clazzArgFieldBytes(constCl, i);
-                sb.append("." + _names.fieldName(arg).code());
-                sb.append(" = ");
-                sb.append(constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false)._v0.code());
-                if (i + 1 != argCount)
-                  {
-                    sb.append(",");
-                  }
-                offset += bytes;
-              }
-
-            var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
-            yield onHeap
-              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.EMPTY)
-              : new Pair<>(cl, CStmnt.EMPTY);
+            yield _fuir.clazzIsArray(constCl)
+              ? constArray(constCl, _fuir.inlineArrayElementClazz(constCl), d)
+              : valueConst(constCl, d, onHeap);
           }
         };
+    }
+
+
+    private Pair<CExpr, CStmnt> valueConst(int constCl, byte[] d, boolean onHeap)
+    {
+      var sb = new StringBuilder();
+      var offset = 0;
+      var argCount = _fuir.clazzArgCount(constCl);
+
+      for (int i = 0; i < argCount; i++)
+        {
+          var arg = _fuir.clazzArg(constCl, i);
+          int bytes = _fuir.clazzArgFieldBytes(constCl, i);
+          sb.append("." + _names.fieldName(arg).code());
+          sb.append(" = ");
+          sb.append(constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false)._v0.code());
+          if (i + 1 != argCount)
+            {
+              sb.append(",");
+            }
+          offset += bytes;
+        }
+
+      var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
+      return onHeap
+        ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.EMPTY)
+        : new Pair<>(cl, CStmnt.EMPTY);
+    }
+
+
+    /**
+     * produce an expression to create an array
+     * on the heap from the given data
+     *
+     * @param constCl, e.g. array (tuple i32 i64)
+     *
+     * @return
+     */
+    public Pair<CExpr, CStmnt> constArray(int constCl, int elementType, byte[] d)
+    {
+      var bytesPerField    = _fuir.clazzBytes(elementType);
+      var tmp              = _names.newTemp();
+      var tmpR             = _names.newTemp();
+      var c_internal_array = _fuir.lookup_array_internal_array(constCl);
+      var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
+      var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
+      var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
+      var internal_array   = _names.fieldName(c_internal_array);
+      var data             = _names.fieldName(c_data);
+      var length           = _names.fieldName(c_length);
+      var sysArray         = fields(tmp, constCl).field(internal_array);
+      var type             = _types.clazz(constCl);
+      var typeR            = type + "*";
+      var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
+                            CStmnt.decl(typeR, tmpR),
+                            sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name, // NYI cast to void* should suffice but does
+                                                                                            // not work yet for e.g. floats: say [f32 -17.3, f32 1.2]
+                                                                    new List<>(arrayInit(d, elementType),
+                                                                               CExpr.sizeOfType(_types.clazz(elementType))
+                                                                                .mul(CExpr.int32const(d.length / bytesPerField))
+                                                                               ))),
+                            sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
+                            tmpR.assign(CExpr.call(CNames.HEAP_CLONE._name,
+                                                    new List<>(tmp.adrOf(),
+                                                              tmp.sizeOfExpr())).castTo(typeR)));
+      return new Pair<>(tmpR.deref(),
+                        stmnts);
+    }
+
+
+    /**
+     * create an array with the given bytes as input.
+     *
+     * @param d the data of the array
+     *
+     * @param elementType i8, f32, etc.
+     */
+    public CExpr arrayInit(byte[] d, int elementType)
+    {
+      var bytesPerField = _fuir.clazzBytes(elementType);
+      return new CExpr() {
+        int precedence()
+        {
+          return 0;
+        }
+
+        void code(CString sb)
+        {
+          sb.append("(" + _names.struct(elementType) + "[]){");
+          for(int i = 0; i < d.length; i = i + bytesPerField)
+            {
+              var b = ByteBuffer.wrap(d, i, bytesPerField);
+              byte[] bb = new byte[b.remaining()];
+              b.get(bb);
+              constData(elementType, bb, false)
+                ._v0
+                .code(sb);
+              if (i + bytesPerField != d.length)
+                {
+                  sb.append(", ");
+                }
+            }
+          sb.append("}");
+        }
+      };
     }
 
 
@@ -1093,7 +1179,7 @@ public class C extends ANY
    * @param bytesPerField
    * @return
    */
-  public Pair<CExpr, CStmnt> constArray(int constCl, SpecialClazzes elementType, byte[] d)
+  public Pair<CExpr, CStmnt> constArrayPrimitives(int constCl, SpecialClazzes elementType, byte[] d)
   {
     var bytesPerField    = bytesOfConst(elementType);
     var tmp              = _names.newTemp();

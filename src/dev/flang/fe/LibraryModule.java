@@ -1507,6 +1507,7 @@ Expression
       case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
+      case InlineArray -> inlineArrayNextPos(eAt);
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
       };
   }
@@ -2053,6 +2054,13 @@ Env
   int envNextPos(int at)
   {
     return typeNextPos(envTypePos(at));
+  }
+
+
+  private int inlineArrayNextPos(int at)
+  {
+    var sz = data().getInt(at);
+    return at + 4 /* size int */ + sz /* size of code and type */;
   }
 
 

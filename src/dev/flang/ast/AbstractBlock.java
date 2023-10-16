@@ -111,7 +111,10 @@ public abstract class AbstractBlock extends Expr
    */
   AbstractType typeIfKnown()
   {
-    return Types.resolved.t_unit;
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeIfKnown();
   }
 
 

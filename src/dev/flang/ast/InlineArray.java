@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.nio.ByteBuffer;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -73,6 +75,12 @@ public class InlineArray extends ExprWithPos
   public int _arrayClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
+  /**
+   * The code for initializing this array.
+   */
+  private Expr _code;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -90,6 +98,23 @@ public class InlineArray extends ExprWithPos
   }
 
 
+  /**
+   * Constructor
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param elements the elements of this array
+   *
+   * @param code the code to initialize this array
+   */
+  public InlineArray(SourcePosition pos, List<Expr> elements, Expr code)
+  {
+    super(pos);
+    this._elements = elements;
+    this._code = code;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -102,6 +127,10 @@ public class InlineArray extends ExprWithPos
    */
   AbstractType typeIfKnown()
   {
+    if (_code != null)
+      {
+        _type = _code.typeIfKnown();
+      }
     if (_type == null)
       {
         AbstractType t = Types.resolved.t_void;
@@ -217,13 +246,25 @@ public class InlineArray extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    var li = _elements.listIterator();
-    while (li.hasNext())
+    if (_code != null)
       {
-        var e = li.next();
-        li.set(e.visit(v, outer));
+        var c = _code.visit(v, outer);
+
+        if (CHECKS) check
+          (c == _code);
+
+        return this;
       }
-    return v.action(this, outer);
+    else
+      {
+        var li = _elements.listIterator();
+        while (li.hasNext())
+          {
+            var e = li.next();
+            li.set(e.visit(v, outer));
+          }
+        return v.action(this, outer);
+      }
   }
 
 
@@ -235,10 +276,17 @@ public class InlineArray extends ExprWithPos
    */
   public void visitExpressions(ExpressionVisitor v)
   {
-    super.visitExpressions(v);
-    for (var e : _elements)
+    if (_code != null)
       {
-        e.visitExpressions(v);
+        _code.visitExpressions(v);
+      }
+    else
+      {
+        super.visitExpressions(v);
+        for (var e : _elements)
+          {
+            e.visitExpressions(v);
+          }
       }
   }
 
@@ -293,6 +341,64 @@ public class InlineArray extends ExprWithPos
   {
     return NumLiteral.findConstantType(elementType()) != null &&
       this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());
+  }
+
+
+  public Expr code()
+  {
+    return _code;
+  }
+
+  @Override
+  public AbstractConstant asCompileTimeConstant()
+  {
+    return new AbstractConstant() {
+
+      @Override
+      public SourcePosition pos()
+      {
+        throw new UnsupportedOperationException("Unimplemented method 'pos'");
+      }
+
+      @Override
+      public byte[] data()
+      {
+        if (PRECONDITIONS) require
+          (_elements.stream().allMatch(e -> e.isCompileTimeConst()));
+
+        var result = ByteBuffer.allocate(InlineArray.this
+          ._elements
+          .stream()
+          .mapToInt(e -> e.asCompileTimeConstant().data().length)
+          .sum());
+
+        InlineArray.this
+          ._elements
+          .stream()
+          .forEach(e -> result.put(e.asCompileTimeConstant().data()));
+
+        return result.array();
+      }
+
+      @Override
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      {
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+      }
+
+      @Override
+      AbstractType typeIfKnown()
+      {
+        var r = InlineArray.this.typeIfKnown();
+
+        if (POSTCONDITIONS) ensure
+          (!r.dependsOnGenerics(),
+           !r.containsThisType());
+
+        return r;
+      }
+
+    };
   }
 
 
@@ -353,7 +459,7 @@ public class InlineArray extends ExprWithPos
                                                new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
         exprs.add(arrayCall);
-        result = new Block(pos(), exprs);
+        _code = new Block(pos(), exprs);
       }
     return result;
   }

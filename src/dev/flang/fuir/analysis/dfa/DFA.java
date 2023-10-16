@@ -498,9 +498,26 @@ public class DFA extends ANY
              c_array_f32  ,
              c_array_f64  -> newConstArray(constCl, d, _call);
         case c_Const_String -> newConstString(d, _call);
-        default -> newValueConst(constCl, _call, ByteBuffer.wrap(d));
+        default -> _fuir.clazzIsArray(constCl) ? newArrayConst(constCl, _call, ByteBuffer.wrap(d)) : newValueConst(constCl, _call, ByteBuffer.wrap(d));
         };
       return new Pair<>(r, o);
+    }
+
+
+    private Value newArrayConst(int constCl, Call context, ByteBuffer d)
+    {
+      var result = newInstance(constCl, context);
+      var sa = _fuir.clazzField(constCl, 0);
+      var sa0 = newInstance(_fuir.clazzResultClazz(sa), context);
+
+      var elementClazz = _fuir.inlineArrayElementClazz(constCl);
+      var data = _fuir.clazzField(_fuir.clazzResultClazz(sa), 0);
+      var length = _fuir.clazzField(_fuir.clazzResultClazz(sa), 1);
+
+      sa0.setField(DFA.this, data, new SysArray(DFA.this, newValueConst(elementClazz, context, d) /* NYI only one element is init */));
+      sa0.setField(DFA.this, length, new NumericValue(DFA.this, _fuir.clazzResultClazz(length) /*, NYI length */));
+      result.setField(DFA.this, sa, sa0);
+      return result;
     }
 
 

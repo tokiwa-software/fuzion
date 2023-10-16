@@ -1819,9 +1819,9 @@ hw25 is
       {
         return ac.asCompileTimeConstant().data();
       }
-    else if (ic instanceof InlineArray)
+    else if (ic instanceof InlineArray ia)
       {
-        throw new Error("NYI: FUIR support for InlineArray still missing");
+        return ia.asCompileTimeConstant().data();
       }
     throw new Error("Unexpected constant type " + ((Expr) ic).type() + ", expected bool, i32, u32, i64, u64, or string");
   }
@@ -2081,7 +2081,7 @@ hw25 is
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
-      case Const   -> "Const";
+      case Const   -> "Const of type " + clazzAsString(constClazz(c, ix));
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
@@ -2095,6 +2095,7 @@ hw25 is
       case Env     -> "Env";
       case Pop     -> "Pop";
       case Unit    -> "Unit";
+      case InlineArray -> "InlineArray";
       };
   }
 
@@ -2357,6 +2358,7 @@ hw25 is
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Unit    -> codeIndex(c, ix, -1);
+      case InlineArray -> { check(false); yield codeIndex(c, ix, -1); }
       };
   }
 
@@ -2476,6 +2478,67 @@ hw25 is
             yield result;
           }
       };
+  }
+
+  public int inlineArrayElementClazz(int constCl)
+  {
+    return Clazzes.clazz(clazz(constCl)._type.generics().get(0))._idInFUIR;
+  }
+
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazz(constCl)._type.featureOfType() == Types.resolved.f_array;
+  }
+
+  public int clazzBytes(int elementType)
+  {
+    return clazz(elementType)._type.bytes();
+  }
+
+
+  /**
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l.  pop the result in case dumpResult==true.
+   *
+   * @param l list of ExprKind that should be extended by s's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  @Override
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  {
+    if (e instanceof InlineArray ia && isConst(ia))
+      {
+        l.add(ia.asCompileTimeConstant());
+      }
+    else
+      {
+        super.toStack(l, e, dumpResult);
+      }
+  }
+
+
+  private boolean isConst(InlineArray ia)
+  {
+    return
+      !ia.type().dependsOnGenerics() &&
+      !ia.type().containsThisType() &&
+      // NYI nested arrays
+      ia.elementType().featureOfType().compareTo(Types.resolved.f_array) != 0 &&
+      ia._elements
+        .stream()
+        .allMatch(el -> {
+          var s = new List<>();
+          super.toStack(s, el);
+          return s
+            .stream()
+            .allMatch(x -> {
+              // NYI string constants
+              return x instanceof AbstractConstant c && c.isCompileTimeConst() || x instanceof AbstractCall ac && ac.isCompileTimeConst();
+            });
+        });
   }
 
 

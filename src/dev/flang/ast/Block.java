@@ -244,22 +244,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  AbstractType typeIfKnown()
-  {
-    Expr resExpr = resultExpression();
-    return resExpr == null
-      ? Types.resolved.t_unit
-      : resExpr.typeIfKnown();
-  }
-
-
-  /**
    * Load all features that are called by this expression.
    *
    * @param res this is called during type resolution, res gives the resolution
