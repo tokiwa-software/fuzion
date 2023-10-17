@@ -604,6 +604,8 @@ public interface ClassFileConstants
   static ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
   static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
 
+  static ClassType NULL_TYPE = new ClassType("java/lang/Object");
+
   static class ArrayType extends AType
   {
     final JavaType _elementType;
