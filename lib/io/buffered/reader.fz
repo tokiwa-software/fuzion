@@ -1,0 +1,225 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.buffered.reader
+#
+# -----------------------------------------------------------------------
+
+
+# buffered.reader effect allows buffered reading
+# by using the given Read_Provider
+#
+# note: anything in the buffer when effect is uninstalled will be discarded.
+#
+public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+
+
+  # install this effect and execute 'f'. Wrap the result of 'f' into an
+  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
+  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
+  # resulting 'outcome'.
+  #
+  public with(R type, f ()->R) outcome R is
+    try reader R ()->(run f (_ -> exit 1))
+
+
+  # terminate immediately with the given error wrapped in 'option'.
+  #
+  raise(e error) =>
+    (try reader).env.raise e
+
+
+  # read returns the current buffer or end of file.
+  # in case the buffer is empty it fills the buffer
+  # before returning it.
+  #
+  public read array u8 | io.end_of_file is
+    match buffer
+      b array =>
+        if b.is_empty
+          fill_buffer
+        buffer
+      io.end_of_file => io.end_of_file
+
+
+
+  # fill the currently empty buffer
+  #
+  private fill_buffer
+  pre match buffer
+        a array => a.is_empty
+        io.end_of_file => false
+  is
+    match rp.read buf_size
+      a array =>
+        set buffer := a
+        replace
+      eof io.end_of_file =>
+        set buffer := eof
+        replace
+      e error => raise e
+
+
+
+  # discard n items from buffer
+  #
+  public discard(n i32)
+  pre n >= 0
+  is
+    match buffer
+      b array =>
+        set buffer := (b.drop n).as_array
+        replace
+      io.end_of_file =>
+
+
+
+  # discard complete buffer
+  #
+  # NYI naming this feature discard leads to error: Duplicate feature declaration
+  public discard_all
+  is
+    match buffer
+      b array =>
+        # NYI #169 backward type propagation for []
+        e array u8 := []
+        set buffer := e
+        replace
+      io.end_of_file =>
+
+
+
+# short hand for getting the currently installed `buffer.reader u8`
+#
+reader =>
+  io.buffered.reader.env
+
+
+
+# read n bytes using the currently installed byte reader effect
+# if the returned sequence is or count is less than n, end of file has been reached.
+#
+read_bytes(n i32) Sequence u8 ! reader is
+
+  res := mut ((marray (array u8)).type.new)
+
+  while ((res.get.flat_map_sequence u8 x->x).count < n &&
+    match reader.read
+      io.end_of_file => false
+      a (array u8) =>
+        reader.discard a.count
+        res <- res.get.add a
+        true
+    )
+
+  res
+    .get
+    .flat_map_sequence u8 x->x
+    .as_array
+
+
+
+# read string, up to n codepoints or until end of file
+# requires `buffered.reader` effect to be installed.
+#
+public read_string(n i32) String ! reader is
+
+
+  as_string(x array u8 | io.end_of_file) =>
+    match x
+      io.end_of_file => ""
+      a array => String.type.from_bytes a
+
+  valid_codepoints(str String) =>
+    str
+      .codepoints_and_errors
+      .filter x->
+        match x
+          codepoint => true
+          error => false
+      .count
+
+  codepoints(str_arr marray String) =>
+    (str_arr.map_sequence (str -> valid_codepoints str)).fold i32.type.sum
+
+
+  for str_arr := (marray String).type.new 1 (as_string reader.read), str_arr.add (as_string reader.read)
+  while (codepoints str_arr < n &&
+    match reader.read
+      io.end_of_file =>
+        # if we have not discarded/read anything yet, raise end of file error
+        if str_arr.count = 1
+          reader.raise (error "-- end of file --")
+        false
+      a array =>
+        reader.discard_all
+        true)
+  else
+
+    str := String.type.join str_arr
+    res := str.substring_codepoint 0 n
+
+    # discard only the bytes we are using in result
+    reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
+
+    res
+
+
+
+# use the currently installed byte reader effect
+# to read until a line feed occurs.
+# returns the line
+#
+public read_line String ! reader is
+
+  res := mut ((marray (array u8)).type.new)
+
+  while
+    match reader.read
+      io.end_of_file =>
+        false
+      a array =>
+
+        # trailing carriage returns are dropped
+        add_to_res(a array u8) is
+          if !a.is_empty
+            res <- res.get.add (if a.last = character_encodings.ascii.cr
+                                  (a.slice 0 a.count-1).as_array
+                                else
+                                  a)
+
+        match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+          idx i32 =>
+            add_to_res (a.slice 0 idx).as_array
+            reader.discard idx+1
+            false
+          nil =>
+            add_to_res a
+            reader.discard_all
+            true
+
+  bytes :=
+    res
+      .get
+      .flat_map_sequence u8 x->x
+      .as_array
+
+  ref : String
+    utf8 Sequence u8 is
+      bytes

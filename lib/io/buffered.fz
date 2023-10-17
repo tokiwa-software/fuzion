@@ -17,37 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stdin
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion standard library feature buffered
 #
 # -----------------------------------------------------------------------
 
 
-# short-hand to return an io.reader with a read provider
-# allowing to read from stdin.
+# unit type to group buffered io
 #
-# usage example:
-# ```
-# line_or_error := io.stdin.on ()->
-#   io.buffered.read_line
-# ```
-#
-public stdin io.buffered.reader is
-
-
-  read_provider : io.Read_Provider is
-    read(count i32) choice (array u8) io.end_of_file error is
-      res := [u8 0]
-      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 res.internal_array.data 1
-      if v < -1
-        error "an error occurred while reading stdin"
-      else if v <= 0
-        io.end_of_file
-      else
-        res
-
-
-  # NYI #169 backward type propagation for []
-  empty array u8 := []
-  io.buffered.reader read_provider 1 empty
+public buffered is
