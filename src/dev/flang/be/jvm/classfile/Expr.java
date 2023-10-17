@@ -240,18 +240,37 @@ public abstract class Expr extends ByteCode
    * as a string constant followed by a pop bytecode to discard it.
    *
    * If ENABLED_COMMENTS is false, this will return UNIT.
+   *
+   * @param msg a message to be shown in the comment
    */
   public static Expr comment(String msg)
   {
     if (ENABLE_COMMENTS)
       {
-        var s = stringconst(msg);
-        return s.andThen(s.type().pop());
+        return commentAlways(msg);
       }
     else
       {
         return UNIT;
       }
+  }
+
+
+  /**
+   * Create a comment in the bytecode with the given msg.  This should usually
+   * not be called directly, but via comment().  Direct calls are useful,
+   * however, for debugging.
+   *
+   * Java bytecode does not have a comment mechanism. Instead, if
+   * ENABLE_COMMENTS is true, this will create a ldc bytecode that loads the msg
+   * as a string constant followed by a pop bytecode to discard it.
+   *
+   * @param msg a message to be shown in the comment
+   */
+  public static Expr commentAlways(String msg)
+  {
+    var s = stringconst(msg);
+    return s.andThen(s.type().pop());
   }
 
 
@@ -1091,6 +1110,9 @@ public abstract class Expr extends ByteCode
    */
   public Expr andThen(Expr s)
   {
+    if (PRECONDITIONS) require
+      (s != null);
+
     if (this == UNIT)
       {
         return s;
