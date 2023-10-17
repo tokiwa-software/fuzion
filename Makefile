@@ -1107,6 +1107,7 @@ run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf fuzion_generated_clazzes
 	find $(FZ_SRC) -name "*~" -type f -exec rm {} \;
 
 .PHONY: release
