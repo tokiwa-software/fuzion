@@ -158,9 +158,10 @@ public class InlineArray extends ExprWithPos
 
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        if (t.isChoice() && t.choiceGenerics().stream().filter(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array).count() == 1)
+        var choices = t.choices().filter(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array).collect(List.collector());
+        if (choices.size() == 1)
           {
-            t = t.choiceGenerics().stream().filter(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array).findFirst().get();
+            t = choices.getFirst();
           }
 
         var elementType = elementType(t);
