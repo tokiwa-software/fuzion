@@ -40,8 +40,7 @@ module fileio is
     if res < -1
       error "unspecified read error: {res}"
     else if res < 0
-      r array u8 := [] # NYI type inference assigning array to choice
-      r
+      []
     else
       (buf.slice 0 res).as_array
 

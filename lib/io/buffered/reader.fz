@@ -97,9 +97,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   is
     match buffer
       b array =>
-        # NYI #169 backward type propagation for []
-        e array u8 := []
-        set buffer := e
+        set buffer := []
         replace
       io.end_of_file =>
 
