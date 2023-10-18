@@ -1788,6 +1788,7 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_f32   ) == 0) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64   ) == 0) { clazz = Clazzes.f64        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_string) == 0) { clazz = Clazzes.Const_String.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
+    // this abstract constant was a call
     else if (ic instanceof AbstractConstant)
       {
         clazz = Clazzes.clazz(t);
@@ -1810,15 +1811,10 @@ hw25 is
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const || codeAt(c, ix) == ExprKind.Call
-       );
+       codeAt(c, ix) == ExprKind.Const);
 
     var ic = _codeIds.get(c).get(ix);
     if      (ic instanceof AbstractConstant co) { return co.data(); }
-    else if (ic instanceof AbstractCall ac && ac.isCompileTimeConst())
-      {
-        return ac.asCompileTimeConstant().data();
-      }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
@@ -2434,48 +2430,57 @@ hw25 is
 
 
   /**
-   * Can this call be turned into a compile time constant?
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l. pop the result in case dumpResult==true.
+   *
+   * @param l list of ExprKind that should be extended by s's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
    */
-  public boolean callCanBeConstant(int cl, int c, int ix)
+  @Override
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
-    if (PRECONDITIONS) require
-      (_codeIds.get(c).get(ix) instanceof AbstractCall);
-
-    var cc = accessedClazz  (cl, c, ix);
-
-    var e = _codeIds.get(c).get(ix);
-    return ((AbstractCall)e).isCompileTimeConst() && !dependsOnOuterRef(cc)
-      // NYI can we allow none universe targets in some cases?
-      && clazzUniverse() == accessTargetClazz(cl, c, ix);
+    if (e instanceof AbstractCall ac && isConst(ac))
+      {
+        if (!dumpResult)
+          {
+            l.add(ac.asCompileTimeConstant());
+          }
+      }
+    else
+      {
+        super.toStack(l, e, dumpResult);
+      }
   }
 
 
+
   /**
-   * @param cc the called clazz
+   * Can this call be turned into a constant?
    *
-   * @return if call or any of its args depend on outer refs
+   * @param ac the call to be analyzed.
+   *
+   * @return true iff the call is suitable to be turned into
+   * a compile time constant.
    */
-  private boolean dependsOnOuterRef(int cc)
+  private boolean isConst(AbstractCall ac)
   {
-    return switch (getSpecialId(cc))
+    var result = false;
+    if (ac.isCompileTimeConst())
       {
-        case c_u8, c_u16, c_u32, c_u64,
-             c_i8, c_i16, c_i32, c_i64,
-             c_f32, c_f64 ->
-          {
-            yield false;
-          }
-        default ->
-          {
-            var result = this.clazzOuterRef(cc) != -1;
-            var n = clazzArgCount(cc);
-            for (int i = 0; i < n; i++)
-              {
-                result = result || dependsOnOuterRef(clazzArgClazz(cc, i));
-              }
-            yield result;
-          }
-      };
+        var s = new List<>();
+        super.toStack(s, ac, false);
+        result = s
+          .stream()
+          .allMatch(x -> {
+            // NYI string constants
+            return x instanceof AbstractConstant c && c.isCompileTimeConst()
+              || x instanceof AbstractCall ac0 && ac0.isCompileTimeConst();
+          });
+      }
+    return result;
   }
 
 

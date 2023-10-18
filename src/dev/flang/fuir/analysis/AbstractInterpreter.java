@@ -651,10 +651,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(cl, c, i);
           var tvalue = pop(stack, tc);
-          var r = _fuir.callCanBeConstant(cl, c, i)
-             // NYI any contracts are currently ignored
-            ? _processor.constData(_fuir.clazzResultClazz(cc0), _fuir.constData(c, i))
-            : _processor.call(cl, pre, c, i, tvalue, args);
+          var r = _processor.call(cl, pre, c, i, tvalue, args);
           if (r._v0 == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);
