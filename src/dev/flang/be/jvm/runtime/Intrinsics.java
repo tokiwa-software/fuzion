@@ -286,6 +286,9 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_bind0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     long[] result = (long[]) res;
     var host = Runtime.utf8ByteArrayDataToString((byte[]) host0);
     var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
@@ -334,6 +337,9 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_net_accept(long sockfd, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     long[] result = (long[]) res;
     try
       {
@@ -359,6 +365,9 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_connect0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     long[] result = (long[]) res;
     var host = Runtime.utf8ByteArrayDataToString((byte[]) host0);
     var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
@@ -396,6 +405,9 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_get_peer_address(long sockfd, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     byte[] data = (byte[])res;
     try
       {
@@ -431,6 +443,12 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_net_read(long sockfd, Object b, int length, Object res)
   {
+    if (CHECKS)
+      {
+        Runtime.ensure_not_frozen(b);
+        Runtime.ensure_not_frozen(res);
+      }
+
     byte[] buff = (byte[])b;
     long[] result = (long[])res;
 
@@ -512,6 +530,10 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_fileio_read(long fd, Object d, int l)
   {
+    System.err.println("fuzion_sys_fileio_read");
+    if (CHECKS)
+      Runtime.ensure_not_frozen(d);
+
     byte[] byteArr = (byte[])d;
     try
       {
@@ -606,6 +628,9 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_open(Object s, Object res, byte mode)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     var path = Runtime.utf8ByteArrayDataToString((byte[])s);
     long[] open_results = (long[])res;
     try
@@ -652,6 +677,9 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_stats(Object s, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
     long[] stats = (long[]) res;
     var err = SystemErrNo.UNSPECIFIED;
@@ -686,6 +714,9 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_seek(long fd, short s, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     long[] seekResults = (long[]) res;
     try
       {
@@ -703,6 +734,9 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_file_position(long fd, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     long[] arr = (long[])res;
     try
       {
@@ -718,6 +752,9 @@ public class Intrinsics extends ANY
 
   public static byte[] fuzion_sys_fileio_mmap(long fd, long offset, long size, Object res)
   {
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
     int[] result = (int[])res;
     try
       {

@@ -447,20 +447,54 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
           else
             {
-              var arrAndIndex = args.get(0)
-                .andThen(Expr.checkcast(jt.array()))
-                .andThen(args.get(1));
               if (in.equals("fuzion.sys.internal_array.get"))
                 {
-                  val = arrAndIndex
+                  val = args.get(0)
+                    .andThen(Expr.checkcast(jt.array()))
+                    .andThen(args.get(1))
                     .andThen(jt.xaload());
                 }
               else if (in.equals("fuzion.sys.internal_array.setel"))
                 {
-                  code = arrAndIndex
+                  var check_frozen = Expr.UNIT;
+                  if (CHECKS)
+                    {
+                      check_frozen = Expr.DUP
+                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                   "ensure_not_frozen",
+                                                   "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
+                                                   ClassFileConstants.PrimitiveType.type_void));
+                    }
+                  code = args.get(0)
+                    .andThen(Expr.checkcast(jt.array()))
+                    .andThen(check_frozen)
+                    .andThen(args.get(1))
                     .andThen(args.get(2))
                     .andThen(jt.xastore());
                 }
+            }
+          return new Pair<>(val, code);
+        });
+
+    put("fuzion.sys.internal_array.freeze",
+        "fuzion.sys.internal_array.ensure_not_frozen",
+
+        (jvm, cl, pre, cc, tvalue, args) ->
+        {
+          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var at = jvm._fuir.clazzOuterClazz(cc);       // array type
+          var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
+          var val = Expr.UNIT;
+          var code = Expr.UNIT;
+          if (CHECKS)
+            {
+              var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(at);
+              code = tvalue
+                .andThen(jvm.getfield(data))
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                           in.replace("fuzion.sys.internal_array.",""),
+                                           "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
+                                           ClassFileConstants.PrimitiveType.type_void));
             }
           return new Pair<>(val, code);
         });

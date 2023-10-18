@@ -30,10 +30,17 @@ import dev.flang.be.interpreter.OpenResources; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+
 import java.io.StringWriter;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import java.nio.charset.StandardCharsets;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 
 /**
@@ -253,6 +260,8 @@ public class Runtime extends ANY
         var c = str.charAt(i/2);
         result[i] = (byte) (i % 2 == 0 ? c : c >> 8);
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -272,6 +281,8 @@ public class Runtime extends ANY
       {
         result[i] = (short) str.charAt(i);
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -291,6 +302,8 @@ public class Runtime extends ANY
       {
         result[i] = str.charAt(i);
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -312,6 +325,8 @@ public class Runtime extends ANY
           ((str.charAt(2*i + 0) & 0xffff)      ) |
           ((str.charAt(2*i + 1) & 0xffff) << 16) ;
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -336,6 +351,8 @@ public class Runtime extends ANY
           ((str.charAt(4*i + 2) & 0xffffL) << 32) |
           ((str.charAt(4*i + 3) & 0xffffL) << 48) ;
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -357,6 +374,8 @@ public class Runtime extends ANY
         result[i] = Float.intBitsToFloat(((str.charAt(2*i + 0) & 0xffff)      ) |
                                          ((str.charAt(2*i + 1) & 0xffff) << 16) );
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -380,6 +399,8 @@ public class Runtime extends ANY
                                             ((str.charAt(4*i + 2) & 0xffffL) << 32) |
                                             ((str.charAt(4*i + 3) & 0xffffL) << 48) );
       }
+    if (CHECKS)
+      freeze(result);
     return result;
   }
 
@@ -720,6 +741,48 @@ public class Runtime extends ANY
   public static byte[] args_get(int i)
   {
     return args[i].getBytes(StandardCharsets.UTF_8);
+  }
+
+
+  /*---------------------------------------------------------------------*/
+
+
+  /**
+   * Weak map of frozen (immutable) arrays, used to debug accidental
+   * modifications of frozen array.
+   */
+  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap()) : null;
+
+
+  /**
+   * If CHECKS are enabled, add the given pointer to the set of frozen (immutable) arrays.
+   *
+   * @param p a pointer to an array.
+   */
+  public static void freeze(Object p)
+  {
+    if (CHECKS)
+      {
+        _frozenPointers_.put(p, "");
+      }
+  }
+
+
+  /**
+   * If CHECKS are enabled, check that the given pointer was not added to set of
+   * frozen (immutable) arrays using freeze(p).
+   *
+   * @param p a pointer to an array.
+   */
+  public static void ensure_not_frozen(Object p)
+  {
+    if (CHECKS)
+      {
+        if (_frozenPointers_.containsKey(p))
+          {
+            Errors.fatal("Attempt to modify immutable array", stackTrace());
+          }
+      }
   }
 
 

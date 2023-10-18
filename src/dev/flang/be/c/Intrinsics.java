@@ -797,6 +797,14 @@ public class Intrinsics extends ANY
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         });
+    put("fuzion.sys.internal_array.freeze", (c,cl,outer,in) ->
+        {
+          return CStmnt.EMPTY;
+        });
+    put("fuzion.sys.internal_array.ensure_not_frozen", (c,cl,outer,in) ->
+        {
+          return CStmnt.EMPTY;
+        });
     put("fuzion.sys.env_vars.has0", (c,cl,outer,in) ->
         {
           return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
