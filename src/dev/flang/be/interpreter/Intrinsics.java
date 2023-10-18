@@ -785,6 +785,14 @@ public class Intrinsics extends ANY
                               /* type  */ elementType(innerClazz._outer));
           return Value.EMPTY_VALUE;
         });
+    put("fuzion.sys.internal_array.freeze", (interpreter, innerClazz) -> args ->
+        {
+          return Value.EMPTY_VALUE;
+        });
+    put("fuzion.sys.internal_array.ensure_not_frozen", (interpreter, innerClazz) -> args ->
+        {
+          return Value.EMPTY_VALUE;
+        });
     put("fuzion.sys.env_vars.has0", (interpreter, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (interpreter, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     // setting env variable not supported in java

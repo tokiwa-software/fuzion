@@ -37,6 +37,7 @@ public array(redef T type,
       _ unit,
       _ unit) : Sequence T is
 
+  internal_array.freeze
 
   public length => internal_array.length
 

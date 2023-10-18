@@ -455,6 +455,10 @@ public class CFG extends ANY
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.internal_array.freeze"
+                                         , (cfg, cl) -> { } );
+    put("fuzion.sys.internal_array.ensure_not_frozen"
+                                         , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
