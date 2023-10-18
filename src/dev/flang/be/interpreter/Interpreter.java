@@ -161,8 +161,6 @@ public class Interpreter extends ANY
     return sb.toString();
   }
 
-  static Map<AbstractConstant, Value> _cachedConsts_ = new HashMap<>();
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -356,36 +354,31 @@ public class Interpreter extends ANY
 
     else if (e instanceof AbstractConstant i)
       {
-        result = _cachedConsts_.get(i);
-        if (result == null)
-          {
-            var t = i.type();
-            var d = i.data();
-            if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
-            else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
-            else if (t.compareTo(Types.resolved.t_i16   ) == 0) { result = new i16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort ()       ); }
-            else if (t.compareTo(Types.resolved.t_i32   ) == 0) { result = new i32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
-            else if (t.compareTo(Types.resolved.t_i64   ) == 0) { result = new i64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
-            else if (t.compareTo(Types.resolved.t_u8    ) == 0) { result = new u8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      () & 0xff); }
-            else if (t.compareTo(Types.resolved.t_u16   ) == 0) { result = new u16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar  ()       ); }
-            else if (t.compareTo(Types.resolved.t_u32   ) == 0) { result = new u32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
-            else if (t.compareTo(Types.resolved.t_u64   ) == 0) { result = new u64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
-            else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
-            else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
-            else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
-            else if (t.compareTo(Types.resolved.t_array_i8 ) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_i16) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_i32) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_i64) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_u8 ) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_u16) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_u32) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_u64) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_f32) == 0) { result = constArray(d,t); }
-            else if (t.compareTo(Types.resolved.t_array_f64) == 0) { result = constArray(d,t); }
-            else                                                { result = Value.NO_VALUE; check(false); }
-            _cachedConsts_.put(i, result);
-          }
+        var t = i.type();
+        var d = i.data().clone();
+        if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
+        else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
+        else if (t.compareTo(Types.resolved.t_i16   ) == 0) { result = new i16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort ()       ); }
+        else if (t.compareTo(Types.resolved.t_i32   ) == 0) { result = new i32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+        else if (t.compareTo(Types.resolved.t_i64   ) == 0) { result = new i64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+        else if (t.compareTo(Types.resolved.t_u8    ) == 0) { result = new u8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      () & 0xff); }
+        else if (t.compareTo(Types.resolved.t_u16   ) == 0) { result = new u16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar  ()       ); }
+        else if (t.compareTo(Types.resolved.t_u32   ) == 0) { result = new u32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+        else if (t.compareTo(Types.resolved.t_u64   ) == 0) { result = new u64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+        else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
+        else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
+        else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+        else if (t.compareTo(Types.resolved.t_array_i8 ) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_i16) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_i32) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_i64) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_u8 ) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_u16) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_u32) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_u64) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_f32) == 0) { result = constArray(d,t); }
+        else if (t.compareTo(Types.resolved.t_array_f64) == 0) { result = constArray(d,t); }
+        else                                                { result = Value.NO_VALUE; check(false); }
       }
 
     else if (e instanceof AbstractBlock b)

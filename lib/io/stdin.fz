@@ -38,12 +38,7 @@ public stdin io.buffered.reader is
 
   read_provider : io.Read_Provider is
     read(count i32) choice (array u8) io.end_of_file error is
-      # NYI next line should be
-      # res := [u8 0]
-      # but a bug in array constants implementation
-      # leads to failure of tests/stdin currently
-      # this is just a quick hack to work around this
-      res := (array u8 1 i->0)
+      res := [u8 0]
       v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 res.internal_array.data 1
       if v < -1
         error "an error occurred while reading stdin"
