@@ -530,7 +530,6 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_fileio_read(long fd, Object d, int l)
   {
-    System.err.println("fuzion_sys_fileio_read");
     if (CHECKS)
       Runtime.ensure_not_frozen(d);
 
