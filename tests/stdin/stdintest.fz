@@ -36,7 +36,7 @@ stdintest =>
     b := read 1
     # read 0 should not read anything
     read 0
-    # read 1 utf8
+    # read 1 utf8 codepoint
     smiley := read 1
 
     # printing repeatedly should always yield the same string
