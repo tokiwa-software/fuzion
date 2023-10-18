@@ -47,8 +47,10 @@ public stat(ps Stat_Handler) : simple_effect is
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
         path String) outcome meta_data is
-    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
-    if (ps.stats (fuzion.sys.c_string path) data.internal_array.data)
+    arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    res := ps.stats (fuzion.sys.c_string path) arr.data
+    data := arr.as_array
+    if res
       replace
       meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
     else
@@ -63,8 +65,10 @@ public stat(ps Stat_Handler) : simple_effect is
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
          path String) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
-    data := array 4 i->(i64 0) # data will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
-    if (ps.stats (fuzion.sys.c_string path) data.internal_array.data)
+    arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    res := ps.stats (fuzion.sys.c_string path) arr.data
+    data := arr.as_array
+    if res
       replace
       meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
     else

@@ -28,16 +28,16 @@
 #
 public internal_array_init(T type, private length i32) =>
 
-  private alloc(X type, l i32) Pointer is intrinsic
+  private alloc(X type, l i32) fuzion.sys.Pointer is intrinsic
 
   internal_array T (alloc T length) length
 
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
-module:public internal_array(T type, module data Pointer, public length i32) is
+module:public internal_array(T type, module data fuzion.sys.Pointer, public length i32) is
 
-  private get  (X type, d Pointer, i i32) X is intrinsic
-  private setel(X type, d Pointer, i i32, o X) unit is intrinsic
+  private get  (X type, d fuzion.sys.Pointer, i i32) X is intrinsic
+  private setel(X type, d fuzion.sys.Pointer, i i32, o X) unit is intrinsic
 
   # make sure that this internal array will no longer be modified.  This is just for
   # debugging and will be a NOP in case internal checks are disabled or in case the
@@ -50,6 +50,13 @@ module:public internal_array(T type, module data Pointer, public length i32) is
   # the backend does not support these checks or intenal checks are disabled.
   #
   module ensure_not_frozen unit is intrinsic
+
+
+  # wrap this into an immutable array.
+  #
+  module fixed as_array =>
+    array T (fuzion.sys.internal_array T data length) unit unit unit
+
 
   module indices => 0..length-1
 
