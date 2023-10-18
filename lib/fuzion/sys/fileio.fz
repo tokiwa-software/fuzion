@@ -67,7 +67,7 @@ module fileio is
   private get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 is
-    md := array 4 i->(i64 0)
+    md array i64 := [0, 0, 0, 0]
     match stats (fuzion.sys.c_string path) md.internal_array.data
       TRUE => md[0]
       FALSE => error "error getting file size"
@@ -200,7 +200,7 @@ module fileio is
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 is
-    open_results := array 2 i->(i64 0) # open_results[file descriptor, error number]
+    open_results array i64 := [0, 0] # open_results[file descriptor, error number]
     open (fuzion.sys.c_string path) open_results.internal_array.data flag
     if open_results[1] = i64 0
       open_results[0]
@@ -251,7 +251,7 @@ module fileio is
               fd i64,
               # the offset to seek from the beginning of this file
               offset i64) outcome i64 is
-    arr := array 2 (i -> i64 0)
+    arr array i64 := [0, 0]
     seek fd offset arr.internal_array.data
     if arr[1] = i64 0
       arr[0]
@@ -279,7 +279,7 @@ module fileio is
   module file_position(
                        # file descriptor
                        fd i64) outcome i64 is
-    arr := array 2 (i -> i64 0)
+    arr array i64 := [0, 0]
     file_position fd arr.internal_array.data
     if arr[1] = i64 0
       arr[0]
