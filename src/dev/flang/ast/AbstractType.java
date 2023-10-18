@@ -1743,10 +1743,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Flatten this type.
    *
-   * This is not a choice it will just return itself.
+   * If this is a - possibly nested - choice return
+   *   all choice generics
    *
-   * This is a - possibly nested - choice it will return
-   * all choice generics.
+   * else this returns a Stream of itself.
    */
   public Stream<AbstractType> choices()
   {
