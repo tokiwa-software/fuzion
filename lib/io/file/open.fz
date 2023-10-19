@@ -68,9 +68,9 @@ module:public open(T type, private fd i64, public file_name String) : simple_eff
   pre offset % 4096 = 0 # NYI get real page size instead of 4096.
   is
 
-    res := array i32 1 (i->0)
-
-    allocated_memory := fuzion.sys.fileio.mmap fd offset size res.internal_array.data
+    arr := fuzion.sys.internal_array_init i32 1
+    allocated_memory := fuzion.sys.fileio.mmap fd offset size arr.data
+    res := arr.as_array
 
     if res[0] = -1
       error "mmap failed"
@@ -111,4 +111,3 @@ private:public open_unique_type is
 #
 public open =>
   (open open_unique_type).env
-
