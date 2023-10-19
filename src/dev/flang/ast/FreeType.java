@@ -57,7 +57,7 @@ public class FreeType extends UnresolvedType
   {
     super(pos,
           name,
-          Call.NO_GENERICS, null, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+          Call.NO_GENERICS, null, RefOrVal.LikeUnderlyingFeature);
 
     this._constraint = constraint;
   }

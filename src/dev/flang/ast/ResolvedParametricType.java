@@ -57,7 +57,7 @@ public class ResolvedParametricType extends ResolvedType
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  UnresolvedType.RefOrVal _refOrVal;
+  RefOrVal _refOrVal;
 
 
   /**
@@ -72,7 +72,7 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  ResolvedParametricType(Generic generic, UnresolvedType.RefOrVal rov)
+  ResolvedParametricType(Generic generic, RefOrVal rov)
   {
     if (PRECONDITIONS) require
       (switch (rov) { case Boxed, LikeUnderlyingFeature -> true;
@@ -88,7 +88,7 @@ public class ResolvedParametricType extends ResolvedType
    */
   ResolvedParametricType(Generic generic)
   {
-    this(generic, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+    this(generic, RefOrVal.LikeUnderlyingFeature);
   }
 
 
@@ -192,7 +192,7 @@ public class ResolvedParametricType extends ResolvedType
         _asRef = switch (_refOrVal)
           {
           case Boxed -> this;
-          default    -> new ResolvedParametricType(_generic, UnresolvedType.RefOrVal.Boxed);
+          default    -> new ResolvedParametricType(_generic, RefOrVal.Boxed);
           };
       }
     return _asRef;

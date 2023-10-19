@@ -918,7 +918,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
     var g = generics().asActuals();
-    var result = new ResolvedNormalType(g, g, o, this, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+    var result = new ResolvedNormalType(g, g, o, this);
 
     if (POSTCONDITIONS) ensure
       (result != null,

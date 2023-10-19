@@ -389,7 +389,7 @@ public class Function extends ExprWithPos
         var fr = functionOrRoutine();
         var ug = generics(res);
         var generics = FormalGenerics.resolve(res, ug, outer);
-        _type = fr != null ? new ResolvedNormalType(generics, ug, null, fr, UnresolvedType.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
+        _type = fr != null ? new ResolvedNormalType(generics, ug, null, fr).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else

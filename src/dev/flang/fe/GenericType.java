@@ -62,7 +62,7 @@ public class GenericType extends LibraryType
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  UnresolvedType.RefOrVal _refOrVal;
+  RefOrVal _refOrVal;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -71,7 +71,7 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  GenericType(LibraryModule mod, int at, Generic generic, UnresolvedType.RefOrVal rov)
+  GenericType(LibraryModule mod, int at, Generic generic, RefOrVal rov)
   {
     super(mod, at);
 
@@ -85,7 +85,7 @@ public class GenericType extends LibraryType
    */
   GenericType(LibraryModule mod, int at, Generic generic)
   {
-    this(mod, at, generic, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+    this(mod, at, generic, RefOrVal.LikeUnderlyingFeature);
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -174,7 +174,7 @@ public class GenericType extends LibraryType
    */
   public boolean isThisType()
   {
-    if (this._refOrVal == UnresolvedType.RefOrVal.ThisType)
+    if (this._refOrVal == RefOrVal.ThisType)
       {
         throw new Error("Unexpected ThisType in GenericType");
       }
@@ -193,7 +193,7 @@ public class GenericType extends LibraryType
     return switch (_refOrVal)
       {
       case Boxed -> this;
-      default    -> new GenericType(_libModule, _at, _generic, UnresolvedType.RefOrVal.Boxed);
+      default    -> new GenericType(_libModule, _at, _generic, RefOrVal.Boxed);
       };
   }
   public AbstractType asValue()

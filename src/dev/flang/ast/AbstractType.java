@@ -50,6 +50,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Is this type explicitly a reference or a value type, or whatever the
+   * underlying feature is?
+   */
+  protected enum RefOrVal
+  {
+    Boxed,                  // this is boxed value type or an explicit reference type
+    Value,                  // this is an explicit value type
+    LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
+    ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -1273,7 +1289,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                                          g,
                                                          outer().typeType(res),
                                                          f,
-                                                         UnresolvedType.RefOrVal.Value));
+                                                         RefOrVal.Value));
           }
       }
     return result;

@@ -60,7 +60,7 @@ public class ResolvedNormalType extends ResolvedType
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  UnresolvedType.RefOrVal _refOrVal;
+  RefOrVal _refOrVal;
 
 
   /**
@@ -179,9 +179,27 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param refOrVal
    */
-  public ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, UnresolvedType.RefOrVal refOrVal)
+  public ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
     this(g, ug, o, f, refOrVal, true);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param g the actual generic arguments (resolved)
+   *
+   * @param ug the actual generic arguments (unresolved)
+   *
+   * @param o
+   *
+   * @param f if this type corresponds to a feature, then this is the
+   * feature, else null.
+   */
+  public ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
+  {
+    this(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
   }
 
 
@@ -204,7 +222,7 @@ public class ResolvedNormalType extends ResolvedType
                             List<AbstractType> ug,
                             AbstractType o,
                             AbstractFeature f,
-                            UnresolvedType.RefOrVal refOrVal,
+                            RefOrVal refOrVal,
                             boolean fixOuterThisType)
   {
     if (PRECONDITIONS) require
@@ -220,7 +238,7 @@ public class ResolvedNormalType extends ResolvedType
         // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
         // outer types. Is it possible to not create asThisType() in This.java
         // in the first place?
-        o = new ResolvedNormalType(ot, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+        o = new ResolvedNormalType(ot, RefOrVal.LikeUnderlyingFeature);
       }
 
     if (o == null && f != null)
@@ -245,7 +263,7 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param refOrVal must be UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.Val
    */
-  public ResolvedNormalType(ResolvedNormalType original, UnresolvedType.RefOrVal refOrVal)
+  public ResolvedNormalType(ResolvedNormalType original, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (refOrVal != original._refOrVal);
@@ -297,7 +315,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, UnresolvedType.RefOrVal.LikeUnderlyingFeature);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature);
   }
 
 
@@ -309,13 +327,13 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param t a type, must not be generic argument.
    */
-  private static UnresolvedType.RefOrVal refOrVal(AbstractType t)
+  private static RefOrVal refOrVal(AbstractType t)
   {
     return
       t instanceof ResolvedNormalType tt         ? tt._refOrVal                   :
-      t.isRef() == t.featureOfType().isThisRef() ? UnresolvedType.RefOrVal.LikeUnderlyingFeature :
-      t.isRef()                                  ? UnresolvedType.RefOrVal.Boxed
-                                                 : UnresolvedType.RefOrVal.Value;
+      t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+      t.isRef()                                  ? RefOrVal.Boxed
+                                                 : RefOrVal.Value;
   }
 
 
@@ -374,7 +392,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new ResolvedNormalType(this, UnresolvedType.RefOrVal.Boxed));
+        result = Types.intern(new ResolvedNormalType(this, RefOrVal.Boxed));
       }
     return result;
   }
@@ -392,7 +410,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
-        result = Types.intern(new ResolvedNormalType(this, UnresolvedType.RefOrVal.ThisType));
+        result = Types.intern(new ResolvedNormalType(this, RefOrVal.ThisType));
       }
 
     if (POSTCONDITIONS) ensure
@@ -415,7 +433,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new ResolvedNormalType(this, UnresolvedType.RefOrVal.Value));
+        result = Types.intern(new ResolvedNormalType(this, RefOrVal.Value));
       }
     return result;
   }
@@ -441,7 +459,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public boolean isThisType()
   {
-    return this._refOrVal == UnresolvedType.RefOrVal.ThisType;
+    return this._refOrVal == RefOrVal.ThisType;
   }
 
 
@@ -465,8 +483,8 @@ public class ResolvedNormalType extends ResolvedType
           + (outer == "" ||
              outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
                                                          : outer + ".")
-          + (_refOrVal == UnresolvedType.RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-             _refOrVal == UnresolvedType.RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
+             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
                                                                                       : ""       )
           + (_feature == null ? Errors.ERROR_STRING
                               : _feature.featureName().baseName());
@@ -474,8 +492,8 @@ public class ResolvedNormalType extends ResolvedType
     else
       {
         result =
-          (_refOrVal == UnresolvedType.RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-           _refOrVal == UnresolvedType.RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
+           _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
                                                                                     : ""       )
           + _feature.qualifiedName();
       }
