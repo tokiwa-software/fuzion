@@ -177,7 +177,7 @@ public abstract class Expr extends ByteCode
   public static final Expr FNEWARRAY   = new Simple("FNEWARRAY", PrimitiveType.type_float.array  (), BC_FNEWARRAY);
   public static final Expr DNEWARRAY   = new Simple("DNEWARRAY", PrimitiveType.type_double.array (), BC_DNEWARRAY);
 
-  public static final Expr ACONST_NULL = new Simple("ACONST_NULL", JAVA_LANG_OBJECT, BC_ACONST_NULL);
+  public static final Expr ACONST_NULL = new Simple("ACONST_NULL", NULL_TYPE, BC_ACONST_NULL);
 
   public static final Expr LCMP        = new Simple("LCMP", PrimitiveType.type_int, BC_LCMP);
 

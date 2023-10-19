@@ -191,7 +191,8 @@ class CodeGen
        v.type()                instanceof ClassType     jt &&
        _types.resultType(type) instanceof ClassType     ct &&
        (_fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
-        jt.sameAs(ct)          /* but value or choice types must be the same!        */ ));
+        jt.sameAs(ct)          /* but value or choice types must be the same!        */ ||
+        jt == NULL_TYPE));
 
     return v.andThen(v.type().pop());
   }
