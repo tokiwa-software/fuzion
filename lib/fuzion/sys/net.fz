@@ -124,7 +124,7 @@ module net is
   #
   module read(descriptor i64, max_bytes i32) outcome (array u8) is
     buff := fuzion.sys.internal_array_init u8 max_bytes
-    iarr := fuzion.sys.internal_array_init i64 0
+    iarr := fuzion.sys.internal_array_init i64 1
     res := read descriptor buff.data max_bytes iarr.data
     arr := iarr.as_array
     if res
@@ -204,9 +204,9 @@ module net is
   # not useful for UDP sockets (information not necessarily available)
   #
   module get_peer_address(sockfd i64) outcome (list u8) is
-    addr array u8 := [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-    l := get_peer_address sockfd addr.internal_array.data
-    addr.take l
+    iarr := fuzion.sys.internal_array_init u8 16
+    l := get_peer_address sockfd iarr.data
+    iarr.as_array.take l
 
 
   # get a socket's peer's port

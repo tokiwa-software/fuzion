@@ -1688,7 +1688,7 @@ public class DFA extends ANY
           if (array instanceof SysArray sa)
             {
               sa.setel(new NumericValue(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
-                       new NumericValue(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_i64)));
+                       new NumericValue(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8  )));
               return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
             }
           else
