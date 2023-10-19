@@ -37,7 +37,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ParsedType extends UnresolvedType implements HasSourcePosition
+public class ParsedType extends UnresolvedType
 {
 
 
