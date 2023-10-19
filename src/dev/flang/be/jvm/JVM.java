@@ -1602,7 +1602,7 @@ should be avoided as much as possible.
                         var fn = _types._choices.generalValueFieldName(rt, i);
                         var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
-                        if (!_fuir.clazzIsRef(tc) && _types.javaType(tc) instanceof AType)
+                        if (!_fuir.clazzIsRef(tc) && ft instanceof AType)
                           { // the value type may be a null reference if it is unused.
                             v = v
                               .andThen(Expr.DUP)
@@ -1688,138 +1688,152 @@ should be avoided as much as possible.
     var jt = _types.javaType(rt);
     var jt2 = jt;
 
-    // first, check if we have a primitive or reference type
-    if (jt == ClassFileConstants.PrimitiveType.type_boolean ||
-        jt == ClassFileConstants.PrimitiveType.type_byte    ||
-        jt == ClassFileConstants.PrimitiveType.type_short   ||
-        jt == ClassFileConstants.PrimitiveType.type_char    ||
-        jt == ClassFileConstants.PrimitiveType.type_int)
-      {
-        ifcc = O_if_icmpeq;
-      }
-    else if (jt == ClassFileConstants.PrimitiveType.type_float)
-      {
-        cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
-        ifcc = O_if_icmpeq;
-        jt2 = ClassFileConstants.PrimitiveType.type_int;
-      }
-    else if (jt == ClassFileConstants.PrimitiveType.type_long)
-      {
-        cmp = Expr.LCMP;
-        ifcc = O_ifeq;
-      }
-    else if (jt == ClassFileConstants.PrimitiveType.type_double)
-      {
-        cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
-        cmp = Expr.LCMP;
-        ifcc = O_ifeq;
-        jt2 = ClassFileConstants.PrimitiveType.type_long;
-      }
-    else if (_fuir.clazzIsRef(rt) || _fuir.clazzIsChoice(rt) && jt instanceof ClassFileConstants.AType)
-      {
-        if (CHECKS) check
-          (jt instanceof ClassFileConstants.AType);
-        ifcc = O_if_acmpeq;
-      }
-    else if (_fuir.clazzIsChoice(rt) && jt instanceof ClassFileConstants.AType)
-      {
-        ifcc = O_if_acmpeq;
-      }
-
-    if (ifcc != 0)
-      { // handle primitive or reference type:
-        result =  value1
-          .andThen(cast)
-          .andThen(value2)
-          .andThen(cast)
-          .andThen(cmp)
-          .andThen(Expr.branch(ifcc,
-                               Expr.iconst(1),
-                               Expr.iconst(0)));
+    if (jt == ClassFileConstants.PrimitiveType.type_void)
+      { // unit-type values are always equal:
+        result = Expr.iconst(1);
       }
     else
-      { // we have a structured type:
-        var v1 = allocLocal(cl, pre, 1);
-        var v2 = allocLocal(cl, pre, 1);
-        result = value1
-          .andThen(Expr.astore(v1))
-          .andThen(Expr.NOP)
-          .andThen(value2)
-          .andThen(Expr.astore(v2));
-        if (_fuir.clazzIsChoice(rt))
+      {
+        // check if we have a primitive or reference types
+        if (jt == ClassFileConstants.PrimitiveType.type_boolean ||
+            jt == ClassFileConstants.PrimitiveType.type_byte    ||
+            jt == ClassFileConstants.PrimitiveType.type_short   ||
+            jt == ClassFileConstants.PrimitiveType.type_char    ||
+            jt == ClassFileConstants.PrimitiveType.type_int)
           {
-            result = result.andThen(reportErrorInCode("NYI: compare for choice type `" + _fuir.clazzAsString(rt) + "` not supported"))
-              .andThen(Expr.iconst(0));
-        /* --- code from clone ---
-            var cf = _types.classFile(rt);
-            var cc = _names.javaClass(rt);
-            e = e
-              .andThen(Expr.aload(nl, jt))
-              .andThen(Expr.aload(vl, jt))
-              .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
-              .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
-            var hasref = false;
-            for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
-              {
-                var tc = _fuir.clazzChoice(rt, i);
-                if (_fuir.clazzIsRef(tc))
-                  {
-                    hasref = true;
-                  }
-                else
-                  {
-                    var ft = _choices.generalValueFieldType(rt, i);
-                    if (ft != PrimitiveType.type_void)
-                      {
-                        var fn = _choices.generalValueFieldName(rt, i);
-                        var v = Expr.aload(vl, jt)
-                          .andThen(Expr.getfield(cc, fn, ft));
-                        if (!_fuir.clazzIsRef(tc) && _types.javaType(tc) instanceof AType)
-                          { // the value type may be a null reference if it is unused.
-                            v = v
-                              .andThen(Expr.DUP)
-                              .andThen(Expr.branch(O_ifnonnull,
-                                                   cloneValue(cl, pre, Expr.UNIT // target is DUPped on stack
-                                                   , tc, -1)));
-                          }
-                        else
-                          {
-                            v = cloneValue(cl, pre, v, tc, -1);
-                          }
-                        e = e
-                          .andThen(Expr.aload(nl, jt))
-                          .andThen(v)
-                          .andThen(Expr.putfield(cc, fn, ft));
-                      }
-                  }
-              }
-            if (hasref)
-              {
-                e = e
-                  .andThen(Expr.aload(nl, jt))
-                  .andThen(Expr.aload(vl, jt))
-                  .andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
-                  .andThen(Expr.putfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE));
-              }
-        */
+            ifcc = O_if_icmpeq;
+          }
+        else if (jt == ClassFileConstants.PrimitiveType.type_float)
+          {
+            cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
+            ifcc = O_if_icmpeq;
+            jt2 = ClassFileConstants.PrimitiveType.type_int;
+          }
+        else if (jt == ClassFileConstants.PrimitiveType.type_long)
+          {
+            cmp = Expr.LCMP;
+            ifcc = O_ifeq;
+          }
+        else if (jt == ClassFileConstants.PrimitiveType.type_double)
+          {
+            cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
+            cmp = Expr.LCMP;
+            ifcc = O_ifeq;
+            jt2 = ClassFileConstants.PrimitiveType.type_long;
+          }
+        else if (_fuir.clazzIsRef(rt))
+          {
+            if (CHECKS) check
+                          (jt instanceof ClassFileConstants.AType);
+            ifcc = O_if_acmpeq;
+          }
+        else if (_fuir.clazzIsChoice(rt) &&
+                 jt instanceof ClassFileConstants.AType &&
+                 (_types._choices.kind(rt) == Choices.ImplKind.nullable ||
+                  _types._choices.kind(rt) == Choices.ImplKind.refsAndUnits))
+          {
+            ifcc = O_if_acmpeq;
+          }
+
+        if (ifcc != 0)
+          { // handle primitive or reference type:
+            result = value1
+              .andThen(cast)
+              .andThen(value2)
+              .andThen(cast)
+              .andThen(cmp)
+              .andThen(Expr.branch(ifcc,
+                                   Expr.iconst(1),
+                                   Expr.iconst(0)));
           }
         else
-          {
-            result = result
-              .andThen(Expr.iconst(1));
-            for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+          { // we have a structured type:
+            var v1 = allocLocal(cl, pre, 1);
+            var v2 = allocLocal(cl, pre, 1);
+            result = value1
+              .andThen(Expr.astore(v1))
+              .andThen(value2)
+              .andThen(Expr.astore(v2));
+
+            if (_fuir.clazzIsChoice(rt))
               {
-                var fi = _fuir.clazzField(rt, i);
-                if (fieldExists(fi))
+                if (CHECKS) check
+                  (_types._choices.kind(rt) == Choices.ImplKind.general);
+
+                var cf = _types.classFile(rt);
+                var cc = _names.javaClass(rt);
+                result = result
+                  .andThen(Expr.aload(v1, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.aload(v2, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.branch(O_if_icmpeq,
+                                       Expr.iconst(1),
+                                       Expr.iconst(0)));
+                var hasref = false;
+                for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
                   {
-                    var rti = _fuir.clazzResultClazz(fi);
-                    var f1 = readField(Expr.aload(v1, jt), rt, fi, rti);
-                    var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
+                    var tc = _fuir.clazzChoice(rt, i);
+                    if (_fuir.clazzIsRef(tc))
+                      {
+                        hasref = true;
+                      }
+                    else
+                      {
+                        var ft = _types._choices.generalValueFieldType(rt, i);
+                        if (ft != PrimitiveType.type_void)
+                          {
+                            var fn = _types._choices.generalValueFieldName(rt, i);
+                            var vi1 = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft));
+                            var vi2 = Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft));
+                            var cmpi = compareValues(cl, pre, vi1, vi2, _fuir.clazzChoice(rt, i))
+                              .andThen(Expr.IAND);
+                            if ( !_fuir.clazzIsRef(tc) && ft instanceof AType)
+                              { // the value type may be a null reference if it is unused.
+                                cmpi = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft))
+                                  .andThen(Expr.branch
+                                           (O_ifnonnull,
+                                            Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft))
+                                            .andThen(Expr.branch
+                                                     (O_ifnonnull,
+                                                      cmpi))));
+                              }
+                            result = result
+                              .andThen(cmpi);
+                           }
+                      }
+                  }
+                if (hasref)
+                  {
                     result = result
-                      .andThen(compareValues(cl, pre, f1, f2, rti))
+                      .andThen(Expr.aload(v1, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.aload(v2, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.branch(O_if_acmpeq,
+                                           Expr.iconst(1),
+                                           Expr.iconst(0)))
                       .andThen(Expr.IAND);
                   }
               }
+            else // not a choice, so a 'normal' product type
+              {
+                if (CHECKS) check
+                  (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
+
+                var and = Expr.UNIT; // set to Expr.IAND after first field to AND the values
+                for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+                  {
+                    var fi = _fuir.clazzField(rt, i);
+                    if (fieldExists(fi))
+                      {
+                        var rti = _fuir.clazzResultClazz(fi);
+                        var f1 = readField(Expr.aload(v1, jt), rt, fi, rti);
+                        var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
+                        result = result
+                          .andThen(compareValues(cl, pre, f1, f2, rti))
+                          .andThen(and);
+                        and = Expr.IAND;
+                      }
+                  }
+              }
+
           }
       }
     return result;

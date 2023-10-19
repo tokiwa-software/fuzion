@@ -28,27 +28,33 @@
 #
 test_atomic is
 
-  chck(T type: property.equatable, x, y T) =>
-    if x = y
+  chck0(T type, x, y T, eq (T,T)->bool) =>
+    if eq x y
       say "PASSED $x = $y"
     else
       say "FAILED $x /= $y"
 
-  test(T type : property.equatable, a, b, c, d T) =>
+  chck(T type: property.equatable, x, y T) =>
+    chck0 x y (a,b)->a=b
+
+  test0(T type, a, b, c, d T, eq (T,T)->bool) =>
     a1 := concur.atomic a
-    chck a1.read a
+    chck0 a1.read a eq
     a1.write b
-    chck a1.read b
+    chck0 a1.read b eq
     o := a1.compare_and_swap c d
-    chck a1.read b
+    chck0 a1.read b eq
     o := a1.compare_and_swap b c
-    chck a1.read c
+    chck0 a1.read c eq
     o := a1.compare_and_swap b d
-    chck a1.read c
+    chck0 a1.read c eq
     if a1.racy_accesses_supported
-      chck a1.racy_read c
+      chck0 a1.racy_read c eq
       a1.racy_write d
-      chck a1.racy_read d
+      chck0 a1.racy_read d eq
+
+  test(T type : property.equatable, a, b, c, d T) =>
+    test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is
     fixed type.equality(a, b test_atomic.p) => a.x = b.x && a.y = b.y
@@ -59,6 +65,94 @@ test_atomic is
   test true true false false
   test "A" "B" "C" "D"
   test (p 1 1) (p 2 2) (p 3 3) (p 4 4)
+
+  # test unit-like choice
+  unit_like : choice TRUE is
+    ord => match unit_like.this
+      TRUE => 0
+    redef as_string => match unit_like.this
+      TRUE => "TRUE"
+  test0 unit_like TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
+
+/* NYI: commented out due to #2104
+
+  # test unit-like choice
+  unit_like2 : choice TRUE void is
+    ord => match unit_like2.this
+      TRUE => 0
+      void => 1   # cannot happen!
+    redef as_string => match unit_like2.this
+      TRUE => "TRUE"
+      void => "*** cannot happen ***"
+  test0 unit_like2 TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
+*/
+
+  # test bool-like choice
+  on, off.
+  switch : choice on off is
+    ord => match switch.this
+      on => 0
+      off => 1
+    redef as_string => match switch.this
+      on => "on"
+      off => "off"
+    type.equality(a, b switch.this) => a.ord = b.ord
+  test0 switch on on off off ((a,b)-> a.ord=b.ord)
+
+  # test int-like choice
+  red, yellow, green.
+  lights : choice red yellow green is
+    ord => match lights.this
+      red => 0
+      yellow => 1
+      green => 2
+    redef as_string => match lights.this
+      red => "red"
+      yellow => "yellow"
+      green => "green"
+  test0 lights red yellow green red ((a,b)-> a.ord=b.ord)
+
+  # test refs-and-units choice
+  Sign ref is
+  yield : Sign is
+    redef as_string => "yield sign"
+  prio : Sign is
+    redef as_string => "priority sign"
+  lights2 : choice red yellow green String Sign is
+    ord => match lights2.this
+      red => 0
+      yellow => 1
+      green => 2
+      String => 3
+      Sign => 4
+    redef as_string => match lights2.this
+      red => "red"
+      yellow => "yellow"
+      green => "green"
+      s String => s
+      s Sign => $s
+  test0 lights2 red "blinking" yield prio ((a,b)-> a.ord=b.ord)
+
+  # test general choice
+  lights3 : choice red yellow green String error is
+    ord => match lights3.this
+      red => 0
+      yellow => 1
+      green => 2
+      String => 3
+      error => 4
+    redef as_string => match lights3.this
+      red => "red"
+      yellow => "yellow"
+      green => "green"
+      s String => s
+      e error => $e
+  test0 lights3 red "blinking" green (error "out-of-order") ((a,b)-> a.ord=b.ord)
+
+  # test general choice
+  test0 (option 23) (option 42) nil (option 4711) (a,b)->
+    a?? = b?? && (a!! || a.get = b.get)
+
 
   a := concur.atomic i64 0x0000000080000000
   c1 := concur.atomic i64 0
