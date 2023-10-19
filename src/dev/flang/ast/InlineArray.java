@@ -107,7 +107,7 @@ public class InlineArray extends ExprWithPos
         AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
           {
-            var et = e.typeIfKnown();
+            var et = AbstractType.forInferencing(e.typeIfKnown());
             t =
               t  == null ? null :
               et == null ? null : t.union(et);

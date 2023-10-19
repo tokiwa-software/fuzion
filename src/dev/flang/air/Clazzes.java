@@ -164,7 +164,6 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_f32.asRef()      );
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_f64.asRef()      );
   public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
-  public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz array_i8    = new OnDemandClazz(() -> Types.resolved.t_array_i8         );
@@ -1073,15 +1072,6 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractConstant c)
       {
         result = outerClazz.actualClazz(c.type());
-        if (result == string.get())
-          { /* this is a bit tricky: in the front end, the type of a string
-             * constant is 'string'.  However, for the back end, the type is
-             * 'Const_String' such that the backend can create an instance of
-             * 'constString' and see the correct type (and create proper type
-             * conversion code to 'string' if this is needed).
-             */
-            result = Const_String.get();
-          }
       }
 
     else if (e instanceof Tag t)
@@ -1323,7 +1313,6 @@ public class Clazzes extends ANY
     ref_f32.clear();
     ref_f64.clear();
     any.clear();
-    string.clear();
     Const_String.clear();
     c_unit.clear();
     error.clear();

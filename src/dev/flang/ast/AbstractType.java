@@ -1771,6 +1771,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * @return the type to use for inferencing instead of `t`.
+   */
+  public static AbstractType forInferencing(AbstractType t)
+  {
+    return t == Types.resolved.t_Const_String
+      ? Types.resolved.t_string
+      : t;
+  }
+
+
 }
 
 /* end of file */

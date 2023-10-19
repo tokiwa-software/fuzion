@@ -1934,7 +1934,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
       _outer == Clazzes.any.getIfCreated()    ||
-      _outer == Clazzes.string.getIfCreated() ||
 
       _outer._isNormalized ||
 
@@ -1977,9 +1976,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isInstantiated()
   {
-    return this == Clazzes.fuzionSysArray_u8 ||
-      this == Clazzes.Const_String.get() ||
-      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
+    return _checkingInstantiatedHeirs > 0 || (isOuterInstantiated() || isChoice()
+      || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
   }
 
 

@@ -74,7 +74,7 @@ public class StrConst extends Constant
    */
   AbstractType typeIfKnown()
   {
-    return Types.resolved.t_string;
+    return Types.resolved.t_Const_String;
   }
 
 

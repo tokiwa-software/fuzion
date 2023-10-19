@@ -475,7 +475,7 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (result != null);
 
-    return result;
+    return AbstractType.forInferencing(result);
   }
 
 
@@ -1882,7 +1882,7 @@ public class Call extends AbstractCall
             actualType = Types.resolved.f_Type.selfType();
           }
       }
-    return actualType;
+    return AbstractType.forInferencing(actualType);
   }
 
 

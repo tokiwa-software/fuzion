@@ -481,7 +481,7 @@ public class Impl extends ANY
               {
                 var iv = _initialValues.get(i);
                 var io = _outerOfInitialValues.get(i);
-                var t = iv.typeIfKnown();
+                var t = AbstractType.forInferencing(iv.typeIfKnown());
                 if (t != null)
                   {
                     var l = positions.get(t);
@@ -521,13 +521,13 @@ public class Impl extends ANY
        _kind == Kind.FieldActual ||
        _kind == Kind.RoutineDef     );
 
-    return switch (_kind)
+    return AbstractType.forInferencing(switch (_kind)
       {
       case FieldDef    -> _initialValue.typeIfKnown();
       case RoutineDef  -> _code.typeIfKnown();
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> throw new Error("missing case "+_kind);
-      };
+      });
   }
 
 
