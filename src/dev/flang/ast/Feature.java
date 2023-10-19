@@ -1678,7 +1678,12 @@ public class Feature extends AbstractFeature
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
           }
-        _resultType.checkChoice(_posOfReturnType);
+
+        if (!isTypeParameter())
+          {
+            _resultType.checkChoice(_posOfReturnType);
+          }
+
         if (_resultType.isThisType() && _resultType.featureOfType() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
