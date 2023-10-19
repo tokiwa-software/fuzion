@@ -958,7 +958,7 @@ public abstract class Expr extends ByteCode
         }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          code(ba, O_anewarray, cf.cpClass(type.descriptor2()));
+          code(ba, O_anewarray, cf.cpClass(type.refDescriptor()));
         }
     };
   }
@@ -1061,7 +1061,7 @@ public abstract class Expr extends ByteCode
         }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          code(ba, O_checkcast, cf.cpClass(type.descriptor2()));
+          code(ba, O_checkcast, cf.cpClass(type.refDescriptor()));
         }
     };
   }

@@ -482,7 +482,7 @@ class CodeGen
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
-    var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).descriptor() + ")V";
+    var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).argDescriptor() + ")V";
     var dr = isCall ? _types.javaType(rc)                       : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
