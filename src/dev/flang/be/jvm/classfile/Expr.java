@@ -236,12 +236,15 @@ public abstract class Expr extends ByteCode
    * Create a comment in the bytecode with the given msg.
    *
    * Java bytecode does not have a comment mechanism. Instead, if
-   * ENABLE_COMMENTS is true, this will create a ldc bytecode that loads the msg
-   * as a string constant followed by a pop bytecode to discard it.
+   * ENABLE_COMMENTS is true, this will create an ldc bytecode that loads the
+   * message as a string constant followed by a pop bytecode to discard it.
    *
    * If ENABLED_COMMENTS is false, this will return UNIT.
    *
    * @param msg a message to be shown in the comment
+   *
+   * @return Expr that is effectively a NOP but that shows msg when disassembled,
+   * e.g., using javap.
    */
   public static Expr comment(String msg)
   {
@@ -261,11 +264,14 @@ public abstract class Expr extends ByteCode
    * not be called directly, but via comment().  Direct calls are useful,
    * however, for debugging.
    *
-   * Java bytecode does not have a comment mechanism. Instead, if
-   * ENABLE_COMMENTS is true, this will create a ldc bytecode that loads the msg
-   * as a string constant followed by a pop bytecode to discard it.
+   * Java bytecode does not have a comment mechanism. Instead, this will create
+   * an ldc bytecode that loads the message as a string constant followed by a pop
+   * bytecode to discard it.
    *
    * @param msg a message to be shown in the comment
+   *
+   * @return Expr that is effectively a NOP but that shows msg when disassembled,
+   * e.g., using javap.
    */
   public static Expr commentAlways(String msg)
   {
