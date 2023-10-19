@@ -1607,8 +1607,7 @@ should be avoided as much as possible.
                             v = v
                               .andThen(Expr.DUP)
                               .andThen(Expr.branch(O_ifnonnull,
-                                                   cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, tc, -1),
-                                                   Expr.UNIT));
+                                                   cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, tc, -1)));
                           }
                         else
                           {
@@ -1781,8 +1780,7 @@ should be avoided as much as possible.
                               .andThen(Expr.DUP)
                               .andThen(Expr.branch(O_ifnonnull,
                                                    cloneValue(cl, pre, Expr.UNIT // target is DUPped on stack
-                                                   , tc, -1),
-                                                   Expr.UNIT));
+                                                   , tc, -1)));
                           }
                         else
                           {

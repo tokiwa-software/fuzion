@@ -1055,8 +1055,7 @@ class CodeGen
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                              Names.RUNTIME_CONTRACT_FAIL,
                                                              Names.RUNTIME_CONTRACT_FAIL_SIG,
-                                                             ClassFileConstants.PrimitiveType.type_void)),
-                                  Expr.UNIT));
+                                                             ClassFileConstants.PrimitiveType.type_void))));
   }
 
 

@@ -964,6 +964,16 @@ public abstract class Expr extends ByteCode
   }
 
 
+  /**
+   * Create conditional branch with one Expr executed if the condition holds
+   * (`pos`) and one if it does not (`neg`).
+   *
+   * @param bc a condition bytecode O_if*
+   *
+   * @param pos code to be executed if the condition holds.
+   *
+   * @param neg code to be executed if the condition does not hold.
+   */
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
@@ -1049,6 +1059,37 @@ public abstract class Expr extends ByteCode
       .andThen(lEnd);
   }
 
+  /**
+   * Create conditional branch with one Expr executed if the condition
+   * holds. I.e., this typically results in a branch using the negated condition
+   * that jumps behind the code given as `pos`.
+   *
+   * @param bc a condition bytecode O_if*
+   *
+   * @param pos code to be executed if the condition holds.
+   */
+  public static Expr branch(byte bc, Expr pos)
+  {
+    if (PRECONDITIONS) require
+      (bc == ClassFileConstants.O_ifeq      ||
+       bc == ClassFileConstants.O_ifne      ||
+       bc == ClassFileConstants.O_iflt      ||
+       bc == ClassFileConstants.O_ifge      ||
+       bc == ClassFileConstants.O_ifgt      ||
+       bc == ClassFileConstants.O_ifle      ||
+       bc == ClassFileConstants.O_if_icmpeq ||
+       bc == ClassFileConstants.O_if_icmpne ||
+       bc == ClassFileConstants.O_if_icmplt ||
+       bc == ClassFileConstants.O_if_icmpge ||
+       bc == ClassFileConstants.O_if_icmpgt ||
+       bc == ClassFileConstants.O_if_icmple ||
+       bc == ClassFileConstants.O_if_acmpeq ||
+       bc == ClassFileConstants.O_if_acmpne ||
+       bc == ClassFileConstants.O_ifnull    ||
+       bc == ClassFileConstants.O_ifnonnull   );
+
+    return branch(bc, pos, UNIT);
+  }
 
   public static Expr checkcast(JavaType type)
   {
