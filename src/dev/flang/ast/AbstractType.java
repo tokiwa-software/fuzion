@@ -902,13 +902,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 t2 = Types.intern(t2);
                 if (i1 < i2)
                   {
-                    if ((t1 == t2 ||
-                         !t1.isGenericArgument() &&
-                         !t2.isGenericArgument() &&
-                         (t1.isDirectlyAssignableFrom(t2) ||
-                          t2.isDirectlyAssignableFrom(t1) )) &&
-                        t1 != Types.t_ERROR &&
-                        t2 != Types.t_ERROR)
+                    if (!t1.disjoint(t2) &&
+                         t1 != Types.t_ERROR &&
+                         t2 != Types.t_ERROR)
                       {
                         AstErrors.genericsMustBeDisjoint(pos, t1, t2);
                       }
@@ -919,6 +915,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
   }
+
+
+  /**
+   * Are this and other disjoint?
+   * In other words:
+   * Do the sets these types represent not have any overlapping values?
+   */
+  private boolean disjoint(AbstractType other)
+  {
+    return this.compareTo(Types.resolved.t_void) == 0
+        || other.compareTo(Types.resolved.t_void) == 0
+        || !this.isDirectlyAssignableFrom(other)
+        && !other.isDirectlyAssignableFrom(this);
+  }
+
 
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
