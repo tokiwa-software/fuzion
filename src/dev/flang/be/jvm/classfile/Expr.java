@@ -147,6 +147,43 @@ public abstract class Expr extends ByteCode
   public static final Expr DUP2_X1     = new Simple("DUP2_x1", PrimitiveType.type_void, BC_DUP2_X1);
   public static final Expr DUP2_X2     = new Simple("DUP2_x2", PrimitiveType.type_void, BC_DUP2_X2);
 
+  public static final Expr IADD        = new Simple("BC_IADD" , PrimitiveType.type_int   , BC_IADD    );
+  public static final Expr LADD        = new Simple("BC_LADD" , PrimitiveType.type_long  , BC_LADD    );
+  public static final Expr FADD        = new Simple("BC_FADD" , PrimitiveType.type_float , BC_FADD    );
+  public static final Expr DADD        = new Simple("BC_DADD" , PrimitiveType.type_double, BC_DADD    );
+  public static final Expr ISUB        = new Simple("BC_ISUB" , PrimitiveType.type_int   , BC_ISUB    );
+  public static final Expr LSUB        = new Simple("BC_LSUB" , PrimitiveType.type_long  , BC_LSUB    );
+  public static final Expr FSUB        = new Simple("BC_FSUB" , PrimitiveType.type_float , BC_FSUB    );
+  public static final Expr DSUB        = new Simple("BC_DSUB" , PrimitiveType.type_double, BC_DSUB    );
+  public static final Expr IMUL        = new Simple("BC_IMUL" , PrimitiveType.type_int   , BC_IMUL    );
+  public static final Expr LMUL        = new Simple("BC_LMUL" , PrimitiveType.type_long  , BC_LMUL    );
+  public static final Expr FMUL        = new Simple("BC_FMUL" , PrimitiveType.type_float , BC_FMUL    );
+  public static final Expr DMUL        = new Simple("BC_DMUL" , PrimitiveType.type_double, BC_DMUL    );
+  public static final Expr IDIV        = new Simple("BC_IDIV" , PrimitiveType.type_int   , BC_IDIV    );
+  public static final Expr LDIV        = new Simple("BC_LDIV" , PrimitiveType.type_long  , BC_LDIV    );
+  public static final Expr FDIV        = new Simple("BC_FDIV" , PrimitiveType.type_float , BC_FDIV    );
+  public static final Expr DDIV        = new Simple("BC_DDIV" , PrimitiveType.type_double, BC_DDIV    );
+  public static final Expr IREM        = new Simple("BC_IREM" , PrimitiveType.type_int   , BC_IREM    );
+  public static final Expr LREM        = new Simple("BC_LREM" , PrimitiveType.type_long  , BC_LREM    );
+  public static final Expr FREM        = new Simple("BC_FREM" , PrimitiveType.type_float , BC_FREM    );
+  public static final Expr DREM        = new Simple("BC_DREM" , PrimitiveType.type_double, BC_DREM    );
+  public static final Expr INEG        = new Simple("BC_INEG" , PrimitiveType.type_int   , BC_INEG    );
+  public static final Expr LNEG        = new Simple("BC_LNEG" , PrimitiveType.type_long  , BC_LNEG    );
+  public static final Expr FNEG        = new Simple("BC_FNEG" , PrimitiveType.type_float , BC_FNEG    );
+  public static final Expr DNEG        = new Simple("BC_DNEG" , PrimitiveType.type_double, BC_DNEG    );
+  public static final Expr ISHL        = new Simple("BC_ISHL" , PrimitiveType.type_int   , BC_ISHL    );
+  public static final Expr LSHL        = new Simple("BC_LSHL" , PrimitiveType.type_long  , BC_LSHL    );
+  public static final Expr ISHR        = new Simple("BC_ISHR" , PrimitiveType.type_int   , BC_ISHR    );
+  public static final Expr LSHR        = new Simple("BC_LSHR" , PrimitiveType.type_long  , BC_LSHR    );
+  public static final Expr IUSHR       = new Simple("BC_IUSHR", PrimitiveType.type_int   , BC_IUSHR   );
+  public static final Expr LUSHR       = new Simple("BC_LUSHR", PrimitiveType.type_long  , BC_LUSHR   );
+  public static final Expr IAND        = new Simple("BC_IAND" , PrimitiveType.type_int   , BC_IAND    );
+  public static final Expr LAND        = new Simple("BC_LAND" , PrimitiveType.type_long  , BC_LAND    );
+  public static final Expr IOR         = new Simple("BC_IOR"  , PrimitiveType.type_int   , BC_IOR     );
+  public static final Expr LOR         = new Simple("BC_LOR"  , PrimitiveType.type_long  , BC_LOR     );
+  public static final Expr IXOR        = new Simple("BC_IXOR" , PrimitiveType.type_int   , BC_IXOR    );
+  public static final Expr LXOR        = new Simple("BC_LXOR" , PrimitiveType.type_long  , BC_LXOR    );
+
   public static final Expr THROW       = new Simple("THROW"  , PrimitiveType.type_void, BC_ATHROW);
 
   public static final Expr BALOAD      = new Simple("BALOAD" , PrimitiveType.type_byte,   BC_BALOAD);
@@ -199,22 +236,47 @@ public abstract class Expr extends ByteCode
    * Create a comment in the bytecode with the given msg.
    *
    * Java bytecode does not have a comment mechanism. Instead, if
-   * ENABLE_COMMENTS is true, this will create a ldc bytecode that loads the msg
-   * as a string constant followed by a pop bytecode to discard it.
+   * ENABLE_COMMENTS is true, this will create an ldc bytecode that loads the
+   * message as a string constant followed by a pop bytecode to discard it.
    *
    * If ENABLED_COMMENTS is false, this will return UNIT.
+   *
+   * @param msg a message to be shown in the comment
+   *
+   * @return Expr that is effectively a NOP but that shows msg when disassembled,
+   * e.g., using javap.
    */
   public static Expr comment(String msg)
   {
     if (ENABLE_COMMENTS)
       {
-        var s = stringconst(msg);
-        return s.andThen(s.type().pop());
+        return commentAlways(msg);
       }
     else
       {
         return UNIT;
       }
+  }
+
+
+  /**
+   * Create a comment in the bytecode with the given msg.  This should usually
+   * not be called directly, but via comment().  Direct calls are useful,
+   * however, for debugging.
+   *
+   * Java bytecode does not have a comment mechanism. Instead, this will create
+   * an ldc bytecode that loads the message as a string constant followed by a pop
+   * bytecode to discard it.
+   *
+   * @param msg a message to be shown in the comment
+   *
+   * @return Expr that is effectively a NOP but that shows msg when disassembled,
+   * e.g., using javap.
+   */
+  public static Expr commentAlways(String msg)
+  {
+    var s = stringconst(msg);
+    return s.andThen(s.type().pop());
   }
 
 
@@ -896,12 +958,22 @@ public abstract class Expr extends ByteCode
         }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          code(ba, O_anewarray, cf.cpClass(type.descriptor2()));
+          code(ba, O_anewarray, cf.cpClass(type.refDescriptor()));
         }
     };
   }
 
 
+  /**
+   * Create conditional branch with one Expr executed if the condition holds
+   * (`pos`) and one if it does not (`neg`).
+   *
+   * @param bc a condition bytecode O_if*
+   *
+   * @param pos code to be executed if the condition holds.
+   *
+   * @param neg code to be executed if the condition does not hold.
+   */
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
@@ -987,6 +1059,37 @@ public abstract class Expr extends ByteCode
       .andThen(lEnd);
   }
 
+  /**
+   * Create conditional branch with one Expr executed if the condition
+   * holds. I.e., this typically results in a branch using the negated condition
+   * that jumps behind the code given as `pos`.
+   *
+   * @param bc a condition bytecode O_if*
+   *
+   * @param pos code to be executed if the condition holds.
+   */
+  public static Expr branch(byte bc, Expr pos)
+  {
+    if (PRECONDITIONS) require
+      (bc == ClassFileConstants.O_ifeq      ||
+       bc == ClassFileConstants.O_ifne      ||
+       bc == ClassFileConstants.O_iflt      ||
+       bc == ClassFileConstants.O_ifge      ||
+       bc == ClassFileConstants.O_ifgt      ||
+       bc == ClassFileConstants.O_ifle      ||
+       bc == ClassFileConstants.O_if_icmpeq ||
+       bc == ClassFileConstants.O_if_icmpne ||
+       bc == ClassFileConstants.O_if_icmplt ||
+       bc == ClassFileConstants.O_if_icmpge ||
+       bc == ClassFileConstants.O_if_icmpgt ||
+       bc == ClassFileConstants.O_if_icmple ||
+       bc == ClassFileConstants.O_if_acmpeq ||
+       bc == ClassFileConstants.O_if_acmpne ||
+       bc == ClassFileConstants.O_ifnull    ||
+       bc == ClassFileConstants.O_ifnonnull   );
+
+    return branch(bc, pos, UNIT);
+  }
 
   public static Expr checkcast(JavaType type)
   {
@@ -999,7 +1102,7 @@ public abstract class Expr extends ByteCode
         }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
-          code(ba, O_checkcast, cf.cpClass(type.descriptor2()));
+          code(ba, O_checkcast, cf.cpClass(type.refDescriptor()));
         }
     };
   }
@@ -1054,6 +1157,9 @@ public abstract class Expr extends ByteCode
    */
   public Expr andThen(Expr s)
   {
+    if (PRECONDITIONS) require
+      (s != null);
+
     if (this == UNIT)
       {
         return s;

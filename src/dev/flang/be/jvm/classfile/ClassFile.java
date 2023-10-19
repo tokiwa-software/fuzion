@@ -624,7 +624,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     CPClass(AType t)
     {
-      this(t.descriptor2());
+      this(t.refDescriptor());
     }
 
     CPoolTag tag() { return CPoolTag.tag_class; }

@@ -85,8 +85,8 @@ public class Intrinsics extends ANY
   public static byte    i8_infix_caret              (byte   a, byte   b) { return (byte)          (a ^   b); }
   public static byte    i8_infix_gtgt               (byte   a, byte   b) { return (byte)          (a >>  b); }
   public static byte    i8_infix_ltlt               (byte   a, byte   b) { return (byte)          (a <<  b); }
-  public static boolean i8_type_equality             (byte   a, byte   b) { return                 ( a == b); }
-  public static boolean i8_type_lteq                 (byte   a, byte   b) { return                 ( a <= b); }
+  public static boolean i8_type_equality            (byte   a, byte   b) { return                 ( a == b); }
+  public static boolean i8_type_lteq                (byte   a, byte   b) { return                 ( a <= b); }
   public static int     i16_as_i32                  (short  a          ) { return                 (      a); }
   public static char    i16_cast_to_u16             (short  a          ) { return (char)          (      a); }
   public static short   i16_prefix_minusDEGREE      (short  a          ) { return (short)         (  -   a); }
@@ -146,8 +146,8 @@ public class Intrinsics extends ANY
   public static byte    u8_infix_caret              (byte   a, byte   b) { return (byte)          ((0xff & a) ^   (0xff & b)); }
   public static byte    u8_infix_gtgt               (byte   a, byte   b) { return (byte)          ((0xff & a) >>> (0xff & b)); }
   public static byte    u8_infix_ltlt               (byte   a, byte   b) { return (byte)          ((0xff & a) <<  (0xff & b)); }
-  public static boolean u8_type_equality             (byte   a, byte   b) { return                 (a ==  b) ; }
-  public static boolean u8_type_lteq                 (byte   a, byte   b) { return Integer.compareUnsigned (a,    b) <= 0; }
+  public static boolean u8_type_equality            (byte   a, byte   b) { return                 (a ==  b) ; }
+  public static boolean u8_type_lteq                (byte   a, byte   b) { return Integer.compareUnsigned (a,    b) <= 0; }
   public static int     u16_as_i32                  (char   a          ) { return                 (      a); }
   public static byte    u16_low8bits                (char   a          ) { return (byte)          (      a); }
   public static short   u16_cast_to_i16             (char   a          ) { return (short)         (      a); }

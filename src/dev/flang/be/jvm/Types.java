@@ -145,13 +145,13 @@ public class Types extends ANY implements ClassFileConstants
 
             var rt = javaType(cl);
             var vt = resultType(vcl);
-            if (!_fuir.clazzIsUnitType(vcl))
+            if (vt != PrimitiveType.type_void)
               {
                 cf.field(ACC_PUBLIC,
                          Names.BOXED_VALUE_FIELD_NAME,
                          vt.descriptor(),
                          new List<>());
-                sig = "(" + vt.descriptor() + ")V";
+                sig = "(" + vt.argDescriptor() + ")V";
                 cod = rt.load(0)
                   .andThen(vt.load(1))
                   .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt));
@@ -207,8 +207,7 @@ public class Types extends ANY implements ClassFileConstants
       (_fuir.clazzIsBoxed(cl));
 
     var vcl = _fuir.clazzAsValue(cl);
-    var arg = _fuir.clazzIsUnitType(vcl) ? ""
-                                         : javaType(vcl).descriptor();
+    var arg = javaType(vcl).argDescriptor();
     return "(" + arg + ")" + javaType(cl).descriptor();
   }
 
