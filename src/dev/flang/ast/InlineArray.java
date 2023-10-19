@@ -155,6 +155,15 @@ public class InlineArray extends ExprWithPos
   {
     if (_type == null)
       {
+
+        // if expected type is choice, examine if there is exactly one
+        // array in choice generics, if so use this for further type propagation.
+        var choices = t.choices().filter(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array).collect(List.collector());
+        if (choices.size() == 1)
+          {
+            t = choices.getFirst();
+          }
+
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {

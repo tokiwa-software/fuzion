@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 import java.math.BigInteger;
@@ -717,6 +718,14 @@ public class NumLiteral extends Constant
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
+    // if expected type is choice, examine if there is exactly one
+    // array in choice generics, if so use this for further type propagation.
+    var choices = t.choices().filter(cg -> !cg.isGenericArgument() && findConstantType(cg) != null).collect(List.collector());
+    if (choices.size() == 1)
+      {
+        t = choices.getFirst();
+      }
+
     if (_type == null && findConstantType(t) != null)
       {
         _type = t;

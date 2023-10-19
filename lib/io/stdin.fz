@@ -48,6 +48,4 @@ public stdin io.buffered.reader is
         arr.as_array
 
 
-  # NYI #169 backward type propagation for []
-  empty array u8 := []
-  io.buffered.reader read_provider 1 empty
+  io.buffered.reader read_provider 1 []

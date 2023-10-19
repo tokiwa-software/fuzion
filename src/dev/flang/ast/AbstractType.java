@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -1747,6 +1748,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       .stream()
       .filter(af -> af.visibility().typeVisibility().ordinal() < v.ordinal())
       .collect(Collectors.toSet());
+  }
+
+
+  /**
+   * Flatten this type.
+   *
+   * If this is a - possibly nested - choice return
+   *   all choice generics
+   *
+   * else this returns a Stream of itself.
+   */
+  public Stream<AbstractType> choices()
+  {
+    return isChoice()
+      ? choiceGenerics()
+        .stream()
+        .flatMap(cg -> cg.choices())
+      : Stream.of(this);
   }
 
 
