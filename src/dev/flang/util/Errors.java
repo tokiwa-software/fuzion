@@ -519,6 +519,34 @@ public class Errors extends ANY
                  : "" + count + " " + what + "s";
   }
 
+
+  /**
+   * Create a string like "never", "once", "twice", "3 times, "4 times", "-1 times".
+   *
+   * @param count the number of times something happened.
+   */
+  public static String times(int count)
+  {
+    return
+      count == 0 ? "never"  :
+      count == 1 ? "once "  :
+      count == 1 ? "twice " : "" + count + " times";
+  }
+
+
+  /**
+   * Create a string like "... repeated 4 times ...", "... repeated twice ..."
+   *
+   * @param count the number of times something was repeated
+   */
+  public static String repeated(int count)
+  {
+    if (PRECONDITIONS) require
+      (count > 0);
+
+    return "... repeated " + Errors.times(count) + " ...";
+  }
+
   /**
    * Record the given error found during compilation.
    */
