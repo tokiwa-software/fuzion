@@ -1692,8 +1692,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        if ( g.isOpen() && foundAt.get(i) == null ||
-            !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
             if (CHECKS) check
