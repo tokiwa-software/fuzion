@@ -20,51 +20,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class QualThisType
+ * Source of enum RefOrVal
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
-import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
-
-
 /**
- * Type created by parser for types like `a.b.this`.
- *
- * @author Fridtjof Siebert (siebert@tokiwa.software)
+ * Is this type explicitly a reference or a value type, or whatever the
+ * underlying feature is?
  */
-public class QualThisType extends UnresolvedType
-{
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  final List<ParsedName> _qual;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Create the type corresponding to "<qual>.this".
-   *
-   * @param pos the source position
-   *
-   * @param qual the qualifier
-   */
-  public QualThisType(List<ParsedName> qual)
+enum RefOrVal
   {
-    super(SourcePosition.range(qual),
-          qual.getLast()._name,
-          Call.NO_GENERICS, null, RefOrVal.ThisType);
-
-    this._qual = qual;
+    Boxed,                  // this is boxed value type or an explicit reference type
+    Value,                  // this is an explicit value type
+    LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
+    ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
   }
-
-
-}
-
-/* end of file */

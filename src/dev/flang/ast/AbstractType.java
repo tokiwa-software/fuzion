@@ -50,7 +50,6 @@ import dev.flang.util.YesNo;
 public abstract class AbstractType extends ANY implements Comparable<AbstractType>
 {
 
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -1281,11 +1280,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             var g = new List<AbstractType>(this);
             g.addAll(generics());
+
+            if (CHECKS) check
+              (!f.isThisRef());
+
             result = Types.intern(new ResolvedNormalType(g,
                                                          g,
                                                          outer().typeType(res),
-                                                         f,
-                                                         UnresolvedType.RefOrVal.Value));
+                                                         f));
           }
       }
     return result;

@@ -126,8 +126,7 @@ public class InlineArray extends ExprWithPos
               Types.intern(new ResolvedNormalType(new List<>(t),
                                                   new List<>(t),
                                                   null,
-                                                  Types.resolved.f_array,
-                                                  UnresolvedType.RefOrVal.LikeUnderlyingFeature));
+                                                  Types.resolved.f_array));
           }
       }
     return _type;
