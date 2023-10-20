@@ -28,12 +28,7 @@
 # When called, this feature returns its argument
 #
 #
-public id(T type, x T) T =>
-
-  x
-
-  # human readable string
-  public redef as_string => "id $T"
+public id(T type, x T) T => x
 
 
 # id -- feature returing the unary identity function
