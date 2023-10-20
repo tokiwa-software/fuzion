@@ -651,7 +651,7 @@ public class Runtime extends ANY
               {
                 if (count > 1)
                   {
-                    stacktrace.write("\n  ... repeated " + count + " times ...");
+                    stacktrace.write("\n  " + Errors.repeated(count));
                   }
                 else if (count > 0)
                   {
@@ -665,7 +665,7 @@ public class Runtime extends ANY
       }
     if (count > 1)
       {
-        stacktrace.write("\n  ... repeated " + count + " times ...");
+        stacktrace.write("\n  " + Error.repeated(count));
       }
 
     return stacktrace.toString();

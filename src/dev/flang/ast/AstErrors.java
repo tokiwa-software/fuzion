@@ -1672,7 +1672,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Repeated entry in destructuring",
-          "Variable " + ss(n) + " appears " + count + " times.");
+          "Variable " + ss(n) + " appears " + times(count) + ".");
   }
 
 

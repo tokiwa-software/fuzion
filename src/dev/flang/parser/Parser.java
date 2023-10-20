@@ -156,7 +156,7 @@ public class Parser extends Lexer
               {
                 sb.append(sb.length() == 0 ? "" : ", ")
                   .append(lastMethod)
-                  .append(count > 1 ? " ("+count+" times)" : "");
+                  .append(count > 1 ? " (" + Errors.times(count) + ")" : "");
                 count = 0;
               }
             if (!m.equals("parseStack") &&
