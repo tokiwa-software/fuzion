@@ -665,7 +665,7 @@ public class Runtime extends ANY
       }
     if (count > 1)
       {
-        stacktrace.write("\n  " + Error.repeated(count));
+        stacktrace.write("\n  " + Errors.repeated(count));
       }
 
     return stacktrace.toString();

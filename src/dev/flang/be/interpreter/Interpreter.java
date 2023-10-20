@@ -120,7 +120,7 @@ public class Interpreter extends ANY
   {
     if (repeat > 1)
       {
-        sb.append(Error.repeated(repeat)).append("\n\n");
+        sb.append(Errors.repeated(repeat)).append("\n\n");
       }
     else if (repeat > 0)
       {
