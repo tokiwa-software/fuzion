@@ -673,6 +673,24 @@ public class FUIR extends IR
 
 
   /**
+   * @param cl clazz id
+   *
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
+   *
+   * @return how many bytes are used when serializing this arg?
+   *         example: if the args type is `(tuple u8 u16)` result is 1+2=3
+   */
+  public int clazzArgFieldBytes(int cl, int arg)
+  {
+    return clazz(cl)
+      .argumentFields()[arg]
+      .resultClazz()
+      ._type
+      .bytes();
+  }
+
+
+  /**
    * is the given clazz a choice clazz
    *
    * @param cl a clazz id
@@ -1792,10 +1810,15 @@ hw25 is
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const);
+       codeAt(c, ix) == ExprKind.Const || codeAt(c, ix) == ExprKind.Call
+       );
 
     var ic = _codeIds.get(c).get(ix);
     if      (ic instanceof AbstractConstant co) { return co.data(); }
+    else if (ic instanceof AbstractCall ac && ac.isCompileTimeConst())
+      {
+        return ac.asCompileTimeConstant().data();
+      }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
@@ -2407,6 +2430,50 @@ hw25 is
   public boolean hasPrecondition(int cl)
   {
     return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+  }
+
+
+  /**
+   * Can this call be turned into a compile time constant?
+   */
+  public boolean callCanBeConstant(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (_codeIds.get(c).get(ix) instanceof AbstractCall);
+
+    var cc = accessedClazz  (cl, c, ix);
+
+    var e = _codeIds.get(c).get(ix);
+    return ((AbstractCall)e).isCompileTimeConst() && !dependsOnOuterRef(cc);
+  }
+
+
+  /**
+   * @param cc the called clazz
+   *
+   * @return if call or any of its args depend on outer refs
+   */
+  private boolean dependsOnOuterRef(int cc)
+  {
+    return switch (getSpecialId(cc))
+      {
+        case c_u8, c_u16, c_u32, c_u64,
+             c_i8, c_i16, c_i32, c_i64,
+             c_f32, c_f64 ->
+          {
+            yield false;
+          }
+        default ->
+          {
+            var result = this.clazzOuterRef(cc) != -1;
+            var n = clazzArgCount(cc);
+            for (int i = 0; i < n; i++)
+              {
+                result = result || dependsOnOuterRef(clazzArgClazz(cc, i));
+              }
+            yield result;
+          }
+      };
   }
 
 

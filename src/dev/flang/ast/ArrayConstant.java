@@ -59,7 +59,7 @@ public class ArrayConstant extends Constant
 
 
   /**
-   * Constructor for ArrayConstante at the given source code position, with the
+   * Constructor for ArrayConstant at the given source code position, with the
    * given elements and element type.
    *
    * @param pos the sourcecode position, used for error messages.
@@ -101,12 +101,12 @@ public class ArrayConstant extends Constant
   {
     var l = _elements
       .stream()
-      .map(x -> ((AbstractConstant) x).data().length)
+      .map(x -> x.asCompileTimeConstant().data().length)
       .collect(Collectors.summingInt(x -> x));
     var b = ByteBuffer.wrap(new byte[l]);
     _elements
       .stream()
-      .forEach(x -> b.put(((AbstractConstant) x).data()));
+      .forEach(x -> b.put(x.asCompileTimeConstant().data()));
     return b.array();
   }
 

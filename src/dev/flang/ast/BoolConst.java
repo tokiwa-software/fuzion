@@ -104,11 +104,6 @@ public class BoolConst extends Constant
   }
 
 
-  boolean isCompileTimeConst()
-  {
-    return true;
-  }
-
   boolean getCompileTimeConstBool()
   {
     return b;

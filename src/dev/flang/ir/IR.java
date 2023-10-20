@@ -294,7 +294,7 @@ public class IR extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+e.getClass()+" in FUIR.toStack");
+        System.err.println("Missing handling of "+e.getClass()+" in IR.toStack");
       }
   }
 
@@ -381,10 +381,14 @@ public class IR extends ANY
       {
         result = ExprKind.Env;
       }
-    else if (e instanceof AbstractConstant ||
-             e instanceof InlineArray         )
+    else if (e instanceof AbstractConstant)
       {
         result = ExprKind.Const;
+      }
+    else if (e instanceof InlineArray)
+      {
+        check(false);
+        result = null;
       }
     else
       {

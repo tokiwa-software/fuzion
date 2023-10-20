@@ -180,6 +180,29 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
+   * This expression as a compile time constant.
+   */
+  @Override
+  public AbstractConstant asCompileTimeConstant()
+  {
+    if (PRECONDITIONS) require
+      (isCompileTimeConst());
+
+    return resultExpression().asCompileTimeConstant();
+  }
+
+
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  public boolean isCompileTimeConst()
+  {
+    return _expressions.size() == 1 && resultExpression().isCompileTimeConst();
+  }
+
+
+  /**
    * toString
    *
    * @return
