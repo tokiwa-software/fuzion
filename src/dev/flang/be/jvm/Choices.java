@@ -35,6 +35,7 @@ import dev.flang.be.jvm.classfile.Label;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -438,7 +439,8 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          throw new Error("JVM backend match called for voidlike choice type" + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.clazzAsString(cl));
+          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.clazzAsString(cl));
+          throw new Error(); // never executed, just to keep javac from complaining.
         }
       case unitlike:
         {

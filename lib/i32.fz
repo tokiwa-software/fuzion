@@ -179,12 +179,12 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b i32) bool is intrinsic
+  fixed type.equality(a, b i32) bool is intrinsic_constructor
 
 
   # total order
   #
-  fixed type.lteq(a, b i32) bool is intrinsic
+  fixed type.lteq(a, b i32) bool is intrinsic_constructor
 
 
   # returns the number in whose bit representation all bits are ones
