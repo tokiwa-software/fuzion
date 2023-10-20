@@ -29,10 +29,39 @@
 # one-dimensional immutable arrays with an additional access function with
 # three index parameters.
 #
-public array3(redef T type,
-       public length0, length1, length2 i32,
+public array3(T type,
+       length0, length1, length2 i32,
        init3 (i32, i32, i32) -> T)
- : array T (fuzion.sys.internal_array_init T length0*length1*length2) unit unit unit
+  pre
+    safety: length0 ≥ 0,
+    safety: length1 ≥ 0,
+    safety: length2 ≥ 0,
+    safety: length0 *? length1 *? length2 >=? 0
+=>
+
+  internal_array := fuzion.sys.internal_array_init T length0*length1
+  for i1 in 0..length0-1 do
+    for i2 in 0..length1-1 do
+      for i3 in 0..length2-1 do
+        internal_array[(i1 * length1 + i2) * length2 + i3] := init3 i1 i2 i3
+
+
+  array3 T length0 length1 length2 internal_array unit unit
+
+
+
+# array(length0, length1, length2) -- three-dimensional immutable array
+#
+# array provides three-dimensional immutable arrays. These are actually
+# one-dimensional immutable arrays with an additional access function with
+# three index parameters.
+#
+private:public array3(redef T type,
+       public length0, length1, length2 i32,
+       redef internal_array fuzion.sys.internal_array T,
+       _ unit,
+       _ unit)
+ : array T internal_array unit unit unit
   pre
     safety: length0 ≥ 0,
     safety: length1 ≥ 0,
@@ -55,11 +84,6 @@ is
   #
   public indices2 => 0..length2-1
 
-
-  for i1 in 0..length0-1 do
-    for i2 in 0..length1-1 do
-      for i3 in 0..length2-1 do
-        internal_array[(i1 * length1 + i2) * length2 + i3] := init3 i1 i2 i3
 
   public index [ ] (i0, i1, i2 i32) T
     pre
