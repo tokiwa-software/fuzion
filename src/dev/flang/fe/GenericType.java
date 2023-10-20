@@ -55,14 +55,10 @@ public class GenericType extends LibraryType
    */
   Generic _generic;
 
-
   /**
-   * Is this an explicit reference or value type?  Ref/Value to make this a
-   * reference/value type independent of the type of the underlying feature
-   * defining a ref type or not, false to keep the underlying feature's
-   * ref/value status.
+   * Is this generic type boxed?
    */
-  RefOrVal _refOrVal;
+  boolean _isBoxed;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -71,12 +67,12 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  GenericType(LibraryModule mod, int at, Generic generic, RefOrVal rov)
+  private GenericType(LibraryModule mod, int at, Generic generic, boolean isBoxed)
   {
     super(mod, at);
 
     this._generic = generic;
-    this._refOrVal = rov;
+    this._isBoxed = isBoxed;
   }
 
 
@@ -85,7 +81,7 @@ public class GenericType extends LibraryType
    */
   GenericType(LibraryModule mod, int at, Generic generic)
   {
-    this(mod, at, generic, RefOrVal.LikeUnderlyingFeature);
+    this(mod, at, generic, false);
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -125,6 +121,7 @@ public class GenericType extends LibraryType
     return Types.f_ERROR;
   }
 
+
   public boolean isGenericArgument()
   {
     return true;
@@ -154,32 +151,25 @@ public class GenericType extends LibraryType
     return _generic;
   }
 
+
   /**
    * A parametric type is not considered a ref type even it the actual type
    * might very well be a ref.
    */
   public boolean isRef()
   {
-    return switch (_refOrVal)
-      {
-      case Boxed -> true;
-      case Value -> false;
-      case LikeUnderlyingFeature -> false;
-      case ThisType -> throw new Error("dev.flang.fe.GenericType.isRef: unexpected ThisType for GenericType '"+this+"'");
-      };
+    return _isBoxed;
   }
+
 
   /**
    * isThisType
    */
   public boolean isThisType()
   {
-    if (this._refOrVal == RefOrVal.ThisType)
-      {
-        throw new Error("Unexpected ThisType in GenericType");
-      }
     return false;
   }
+
 
   public AbstractType outer()
   {
@@ -188,18 +178,21 @@ public class GenericType extends LibraryType
     return null;
   }
 
+
   public AbstractType asRef()
   {
-    return switch (_refOrVal)
-      {
-      case Boxed -> this;
-      default    -> new GenericType(_libModule, _at, _generic, RefOrVal.Boxed);
-      };
+    return _isBoxed
+      ? this
+      : new GenericType(_libModule, _at, _generic, true);
   }
+
+
   public AbstractType asValue()
   {
     throw new Error("GenericType.asValue() not defined");
   }
+
+
   public AbstractType asThis()
   {
     throw new Error("GenericType.asThis() not defined");

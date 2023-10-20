@@ -52,12 +52,9 @@ public class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * Is this an explicit reference or value type?  Ref/Value to make this a
-   * reference/value type independent of the type of the underlying feature
-   * defining a ref type or not, false to keep the underlying feature's
-   * ref/value status.
+   * Is this generic type boxed?
    */
-  RefOrVal _refOrVal;
+  private boolean _isBoxed;
 
 
   /**
@@ -72,14 +69,10 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  ResolvedParametricType(Generic generic, RefOrVal rov)
+  private ResolvedParametricType(Generic generic, boolean isBoxed)
   {
-    if (PRECONDITIONS) require
-      (switch (rov) { case Boxed, LikeUnderlyingFeature -> true;
-                      case Value, ThisType -> false; });
-
     this._generic = generic;
-    this._refOrVal = rov;
+    this._isBoxed = isBoxed;
   }
 
 
@@ -88,7 +81,7 @@ public class ResolvedParametricType extends ResolvedType
    */
   ResolvedParametricType(Generic generic)
   {
-    this(generic, RefOrVal.LikeUnderlyingFeature);
+    this(generic, false);
   }
 
 
@@ -166,13 +159,7 @@ public class ResolvedParametricType extends ResolvedType
    */
   public boolean isRef()
   {
-    return switch (_refOrVal)
-      {
-      case Boxed -> true;
-      case Value -> false;
-      case LikeUnderlyingFeature -> false;
-      case ThisType -> throw new Error("dev.flang.fe.ResolvedParametricType.isRef: unexpected ThisType for ResolvedParametricType '"+this+"'");
-      };
+    return _isBoxed;
   }
 
 
@@ -189,11 +176,9 @@ public class ResolvedParametricType extends ResolvedType
   {
     if (_asRef == null)
       {
-        _asRef = switch (_refOrVal)
-          {
-          case Boxed -> this;
-          default    -> new ResolvedParametricType(_generic, RefOrVal.Boxed);
-          };
+        _asRef = _isBoxed
+          ? this
+          : new ResolvedParametricType(_generic, true);
       }
     return _asRef;
   }
