@@ -763,7 +763,13 @@ public class Runtime extends ANY
   {
     if (CHECKS)
       {
-        _frozenPointers_.put(p, "");
+        // note that the internal array for `array unit` is null, we never
+        // freeze this since modifcations of unit-type arrays are pretty
+        // harmless.
+        if (p != null)
+          {
+            _frozenPointers_.put(p, "");
+          }
       }
   }
 
@@ -778,6 +784,8 @@ public class Runtime extends ANY
   {
     if (CHECKS)
       {
+        // note that p may be null for `array unit`, and `null` is supported by
+        // Java's WeakHashMap and will not be added by `freeze`, so we are fine.
         if (_frozenPointers_.containsKey(p))
           {
             Errors.fatal("Attempt to modify immutable array", stackTrace());
