@@ -2213,7 +2213,7 @@ public class Call extends AbstractCall
             var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                            : cf.resultTypeIfPresent(res, _generics);
 
-            if (t != null)
+            if (t != null && t != Types.t_ERROR)
               {
                 setActualResultType(res, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
