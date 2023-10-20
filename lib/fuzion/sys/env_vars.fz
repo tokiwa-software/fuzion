@@ -32,7 +32,7 @@ module env_vars is
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  private has0(s fuzion.sys.Pointer) bool is intrinsic
+  private has0(s fuzion.sys.Pointer) bool is intrinsic_constructor
 
 
   # intrinsic to get env var with given name
@@ -43,10 +43,10 @@ module env_vars is
   is intrinsic
 
   # intrinsic to set env var
-  private set0(s fuzion.sys.Pointer, t fuzion.sys.Pointer) bool is intrinsic
+  private set0(s fuzion.sys.Pointer, t fuzion.sys.Pointer) bool is intrinsic_constructor
 
   # intrinsic to unset env var
-  private unset0(s fuzion.sys.Pointer) bool is intrinsic
+  private unset0(s fuzion.sys.Pointer) bool is intrinsic_constructor
 
 
   # check if env var with given name exists

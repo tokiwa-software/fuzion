@@ -118,7 +118,7 @@ module fileio is
                  # the internal array data representing the file/dir path in bytes
                  path fuzion.sys.Pointer,
                  # dummy parameter to avoid duplicate feature name
-                 _ unit) bool is intrinsic
+                 _ unit) bool is intrinsic_constructor
 
 
   #  moves file/dir from an old path to a the new path
@@ -145,7 +145,7 @@ module fileio is
                # the internal array data representing the new file/dir path in bytes
                new_path fuzion.sys.Pointer,
                # dummy parameter for overloading
-               _ unit) bool is intrinsic
+               _ unit) bool is intrinsic_constructor
 
 
   # creates a directory using the specified path
@@ -166,7 +166,7 @@ module fileio is
                      # the internal array data representing the dir path in bytes
                      path fuzion.sys.Pointer,
                      # dummy parameter to enable overloading
-                     _ unit) bool is intrinsic
+                     _ unit) bool is intrinsic_constructor
 
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
@@ -180,7 +180,7 @@ module fileio is
         # the internal array data representing the file/dir path in bytes
         path fuzion.sys.Pointer,
         # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
-        meta_data fuzion.sys.Pointer) bool is intrinsic
+        meta_data fuzion.sys.Pointer) bool is intrinsic_constructor
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
   # returns TRUE in case the operation was successful and FALSE in case of failure
