@@ -316,12 +316,14 @@ public abstract class Module extends ANY
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
 
-          // in same file
-    return ((usedIn.sameAs(definedIn)
-          // at least module visible and in same module
-          || v.ordinal() >= Visi.MOD.ordinal() && this == m
-          // publicly visible
-          || v == Visi.PUB));
+    return  // built-in or generated features like #loop0
+            af.pos().isBuiltIn()
+            // in same file
+            || ((usedIn.sameAs(definedIn)
+            // at least module visible and in same module
+            || v.ordinal() >= Visi.MOD.ordinal() && this == m
+            // publicly visible
+            || v == Visi.PUB));
   }
 
 

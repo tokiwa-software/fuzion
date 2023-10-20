@@ -34,15 +34,16 @@ module fileio is
   # has been reached.
   #
   module read(fd i64, n u64) outcome (array u8) is
-    buf := array n.as_i32 i->(u8 0)
-    res := read fd buf.internal_array.data buf.length
+    len := n.as_i32
+    arr := fuzion.sys.internal_array_init u8 len
+    res := read fd arr.data len
 
     if res < -1
       error "unspecified read error: {res}"
     else if res < 0
-      r array u8 := [] # NYI type inference assigning array to choice
-      r
+      []
     else
+      buf := arr.as_array
       (buf.slice 0 res).as_array
 
 
@@ -67,9 +68,9 @@ module fileio is
   private get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 is
-    md array i64 := [0, 0, 0, 0]
-    match stats (fuzion.sys.c_string path) md.internal_array.data
-      TRUE => md[0]
+    md := fuzion.sys.internal_array_init i64 4
+    match stats (fuzion.sys.c_string path) md.data
+      TRUE  => md.as_array[0]
       FALSE => error "error getting file size"
 
 
@@ -200,8 +201,9 @@ module fileio is
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 is
-    open_results array i64 := [0, 0] # open_results[file descriptor, error number]
-    open (fuzion.sys.c_string path) open_results.internal_array.data flag
+    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
+    open (fuzion.sys.c_string path) or.data flag
+    open_results := or.as_array
     if open_results[1] = i64 0
       open_results[0]
     else
@@ -251,8 +253,9 @@ module fileio is
               fd i64,
               # the offset to seek from the beginning of this file
               offset i64) outcome i64 is
-    arr array i64 := [0, 0]
-    seek fd offset arr.internal_array.data
+    iarr := fuzion.sys.internal_array_init i64 2
+    seek fd offset iarr.data
+    arr := iarr.as_array
     if arr[1] = i64 0
       arr[0]
     else
@@ -279,8 +282,9 @@ module fileio is
   module file_position(
                        # file descriptor
                        fd i64) outcome i64 is
-    arr array i64 := [0, 0]
-    file_position fd arr.internal_array.data
+    iarr := fuzion.sys.internal_array_init i64 2
+    file_position fd iarr.data
+    arr := iarr.as_array
     if arr[1] = i64 0
       arr[0]
     else

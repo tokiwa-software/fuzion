@@ -291,6 +291,18 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * The actual text in the source code this source position points to.
+   * If this SourcePosition instance is not a SourceRange this returns an emtpy string.
+   *
+   * @return
+   */
+  public String sourceText()
+  {
+    return _sourceFile.asString(bytePos(), byteEndPos());
+  }
+
+
+  /**
    * Convert this position to a string of the form
    * "<filename>:<line>:<column>:".
    */
@@ -305,41 +317,34 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     int result = fileName().compareTo(o.fileName());
     if (result == 0)
       {
-        result = _bytePos - o._bytePos;
+        result = bytePos() - o.bytePos();
+      }
+    if (result == 0)
+      {
+        result = byteEndPos() - o.byteEndPos();
       }
     return result;
   }
 
 
   /**
-   * Create a SourcePosition or SourceRange that extends form this position's
-   * start to end's end.
+   * Create a SourcePosition or SourceRange that extends from this position's
+   * start to byteEndPos.
    *
-   * @param end a second position that must refer to the same source file and
-   * not be before this.
+   * @param byteEndPos a second position not be before this.
    */
-  public SourcePosition rangeTo(SourcePosition end)
+  public SourcePosition rangeTo(int byteEndPos)
   {
     if (PRECONDITIONS) require
-      (_sourceFile == end._sourceFile,
-       bytePos() <= end.byteEndPos());
+      (bytePos() <= byteEndPos);
 
-    if (this == end)
+    if (byteEndPos() == byteEndPos)
       {
         return this;
       }
     else
       {
-        var p = bytePos();
-        var e = byteEndPos();
-        if (p == e)
-          {
-            return this;
-          }
-        else
-          {
-            return new SourceRange(_sourceFile, p, e);
-          }
+        return new SourceRange(_sourceFile, bytePos(), byteEndPos);
       }
   }
 
@@ -355,7 +360,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     if (PRECONDITIONS) require
       (list.size() > 0);
 
-    return list.getFirst().pos().rangeTo(list.getLast().pos());
+    return list.getFirst().pos().rangeTo(list.getLast().pos().byteEndPos());
   }
 
 }

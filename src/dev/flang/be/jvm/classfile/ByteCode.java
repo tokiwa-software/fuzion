@@ -125,6 +125,43 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   static byte[] BC_POP         = new byte[] { O_pop                 };
   static byte[] BC_POP2        = new byte[] { O_pop2                };
 
+  static byte[] BC_IADD        = new byte[] { O_iadd                };
+  static byte[] BC_LADD        = new byte[] { O_ladd                };
+  static byte[] BC_FADD        = new byte[] { O_fadd                };
+  static byte[] BC_DADD        = new byte[] { O_dadd                };
+  static byte[] BC_ISUB        = new byte[] { O_isub                };
+  static byte[] BC_LSUB        = new byte[] { O_lsub                };
+  static byte[] BC_FSUB        = new byte[] { O_fsub                };
+  static byte[] BC_DSUB        = new byte[] { O_dsub                };
+  static byte[] BC_IMUL        = new byte[] { O_imul                };
+  static byte[] BC_LMUL        = new byte[] { O_lmul                };
+  static byte[] BC_FMUL        = new byte[] { O_fmul                };
+  static byte[] BC_DMUL        = new byte[] { O_dmul                };
+  static byte[] BC_IDIV        = new byte[] { O_idiv                };
+  static byte[] BC_LDIV        = new byte[] { O_ldiv                };
+  static byte[] BC_FDIV        = new byte[] { O_fdiv                };
+  static byte[] BC_DDIV        = new byte[] { O_ddiv                };
+  static byte[] BC_IREM        = new byte[] { O_irem                };
+  static byte[] BC_LREM        = new byte[] { O_lrem                };
+  static byte[] BC_FREM        = new byte[] { O_frem                };
+  static byte[] BC_DREM        = new byte[] { O_drem                };
+  static byte[] BC_INEG        = new byte[] { O_ineg                };
+  static byte[] BC_LNEG        = new byte[] { O_lneg                };
+  static byte[] BC_FNEG        = new byte[] { O_fneg                };
+  static byte[] BC_DNEG        = new byte[] { O_dneg                };
+  static byte[] BC_ISHL        = new byte[] { O_ishl                };
+  static byte[] BC_LSHL        = new byte[] { O_lshl                };
+  static byte[] BC_ISHR        = new byte[] { O_ishr                };
+  static byte[] BC_LSHR        = new byte[] { O_lshr                };
+  static byte[] BC_IUSHR       = new byte[] { O_iushr               };
+  static byte[] BC_LUSHR       = new byte[] { O_lushr               };
+  static byte[] BC_IAND        = new byte[] { O_iand                };
+  static byte[] BC_LAND        = new byte[] { O_land                };
+  static byte[] BC_IOR         = new byte[] { O_ior                 };
+  static byte[] BC_LOR         = new byte[] { O_lor                 };
+  static byte[] BC_IXOR        = new byte[] { O_ixor                };
+  static byte[] BC_LXOR        = new byte[] { O_lxor                };
+
   static byte[] BC_ATHROW      = new byte[] { O_athrow              };
 
   static byte[] BC_ARRAYLENGTH = new byte[] { O_arraylength         };

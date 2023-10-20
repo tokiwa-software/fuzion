@@ -830,7 +830,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         var typeFeature = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
                                       inh,
                                       Contract.EMPTY_CONTRACT,
-                                      new Impl(p, new Block(p, new List<>()), Impl.Kind.Routine));
+                                      new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
         typeFeature._typeFeatureOrigin = this;
         res._module.addTypeFeature(outerType, typeFeature);
         result = typeFeature;

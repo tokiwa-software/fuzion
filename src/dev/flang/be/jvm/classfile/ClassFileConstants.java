@@ -125,8 +125,23 @@ public interface ClassFileConstants
     Expr pop();
     JavaType array();
     int stackSlots();
+
+    /**
+     * descriptor string, "Ljava/lang/Object;", "I", "[[B", etc.
+     */
     String descriptor();
-    String descriptor2();
+
+    /**
+     * descriptor string if we know this is a reference: "java/lang/Object", "[I", etc.
+     */
+    String refDescriptor();
+
+    /**
+     * Descriptor if used as method argument. This is "" for void, otherwise same
+     * as descriptor().
+     */
+    default String argDescriptor() { return descriptor(); }
+
     String className();
   }
 
@@ -163,6 +178,13 @@ public interface ClassFileConstants
       {
         return Expr.UNIT;
       }
+
+      /**
+       * Arguments of void type are just dropped, so argDescriptor is redefined to return
+       * empty String.
+       */
+      public String argDescriptor() { return ""; }
+
       public String className() { return "void"; }
       public JavaType array()
       { // void[] type is java.lang.Object
@@ -428,13 +450,13 @@ public interface ClassFileConstants
 
 
     final String _descriptor;
-    final String _descriptor2;
+    final String _refDescriptor;
     final int _stackSlots;
 
-    PrimitiveType(String desc, String desc2, int stackSlots)
+    PrimitiveType(String desc, String refDesc, int stackSlots)
     {
       _descriptor = desc;
-      _descriptor2 = desc2;
+      _refDescriptor = refDesc;
       _stackSlots = stackSlots;
     }
 
@@ -448,9 +470,9 @@ public interface ClassFileConstants
       return _descriptor;
     }
 
-    public String descriptor2()
+    public String refDescriptor()
     {
-      throw new Error("JavaType.descriptor2 only defined for ref type, not for " + this);
+      throw new Error("JavaType.refDescriptor only defined for ref type, not for " + this);
     }
 
     public Expr load(int index)
@@ -518,7 +540,7 @@ public interface ClassFileConstants
       return _descriptor;
     }
 
-    public String descriptor2()
+    public String refDescriptor()
     {
       return descriptor();
     }
@@ -587,7 +609,7 @@ public interface ClassFileConstants
       return _className;
     }
 
-    public String descriptor2()
+    public String refDescriptor()
     {
       return className();
     }
@@ -603,6 +625,8 @@ public interface ClassFileConstants
   static ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
   static ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
   static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
+
+  static ClassType NULL_TYPE = new ClassType("java/lang/Object");
 
   static class ArrayType extends AType
   {

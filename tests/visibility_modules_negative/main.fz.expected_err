@@ -4,7 +4,7 @@
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
-In call: 'b.mod_pub'
+In call: 'mod_pub'
 To solve this, you might change the visibility of this feature: 'mod_pub' (no arguments)
 
 

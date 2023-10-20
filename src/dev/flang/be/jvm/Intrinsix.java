@@ -185,89 +185,48 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
           var jt = jvm._types.javaType(rc);
-          var jt2 = jt;  // if jt is float or double, jt2 will be int or long since we do bit-wise comparison
-          var cast = Expr.UNIT;  // optional cast operation to cast float/double to int/long
-          var cmp  = Expr.UNIT;  // optional compare code before branch, needed for long and double
-          byte ifcc;            // the branch instruction comparing expected and existing values, ture if they are equal.
           int tslot  = jvm.allocLocal(cl, pre, 1);                  // local var slot for target
-          int exslot = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for arg(0), expected value after cast
           int nvslot = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for arg(1), new value, not casted
           int vslot  = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for old value, not casted.
-          if (jt == ClassFileConstants.PrimitiveType.type_boolean ||
-              jt == ClassFileConstants.PrimitiveType.type_byte    ||
-              jt == ClassFileConstants.PrimitiveType.type_short   ||
-              jt == ClassFileConstants.PrimitiveType.type_char    ||
-              jt == ClassFileConstants.PrimitiveType.type_int)
-            {
-              ifcc = O_if_icmpeq;
-            }
-          else if (jt == ClassFileConstants.PrimitiveType.type_float)
-            {
-              cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
-              ifcc = O_if_icmpeq;
-              jt2 = ClassFileConstants.PrimitiveType.type_int;
-            }
-          else if (jt == ClassFileConstants.PrimitiveType.type_long)
-            {
-              cmp = Expr.LCMP;
-              ifcc = O_ifeq;
-            }
-          else if (jt == ClassFileConstants.PrimitiveType.type_double)
-            {
-              cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
-              cmp = Expr.LCMP;
-              ifcc = O_ifeq;
-              jt2 = ClassFileConstants.PrimitiveType.type_long;
-            }
-          else if (jvm._fuir.clazzIsRef(rc) || jvm._fuir.clazzIsChoice(rc) && jt instanceof ClassFileConstants.AType)
-            {
-              if (CHECKS) check
-                (jt instanceof ClassFileConstants.AType);
-              ifcc = O_if_acmpeq;
-            }
-          else if (jvm._fuir.clazzIsChoice(rc) && jt instanceof ClassFileConstants.AType)
-            {
-              ifcc = O_if_acmpeq;
+
+          Expr pos, neg, oldv;
+          if (jvm._fuir.clazzIntrinsicName(cc).equals("concur.atomic.compare_and_set0"))
+            { // compare_and_set: return true or false
+              pos = Expr.iconst(1);            // 1
+              neg = Expr.iconst(0);            // 0
+              oldv = Expr.UNIT;
             }
           else
-            {
-              // NYI: need support to compare arbitrary value and choice types
-              throw new Error("NYI: compare_and_set0 does not support type " + jvm._fuir.clazzAsString(rc));
+            { // compare_and_swap: return old value
+              pos = Expr.UNIT;
+              neg = Expr.UNIT;
+              oldv = jt.load(vslot);
             }
-          var val =  locked
-            (tvalue                                       // tv
-             .andThen(Expr.astore(tslot))                 //
-             .andThen(args.get(0))                        // ex
-             .andThen(cast)                               // ex
-             .andThen(jt2.store(exslot))                  //
-             .andThen(args.get(1))                        // nv
-             .andThen(jt.store(nvslot))                   //
-             .andThen(jt2.load(exslot))                   // ex
-             .andThen(tt.load(tslot))                     // ex tv
-             .andThen(jvm.getfield(v))                    // ex v
-             .andThen(jt.store(vslot))                    // ex
-             .andThen(jt.load(vslot))                     // ex v
-             .andThen(cast)                               // ex v
-             .andThen(cmp)                                // ex v --or-- cmp_result
-             .andThen
-             ( jvm._fuir.clazzIntrinsicName(cc).equals("concur.atomic.compare_and_set0")
-               ? (Expr.branch(ifcc,                       // -
-                              tt.load(tslot)              // tv
-                              .andThen(jt.load(nvslot))   // tv nv
-                              .andThen(jvm.putfield(v))   // -
-                              .andThen(Expr.iconst(1)),   // 1
-                              Expr.iconst(0)              // 0
-                              )
-                  )                                       // 0/1
-               : (Expr.branch(ifcc,                       // -
-                              tt.load(tslot)              // tv
-                              .andThen(jt.load(nvslot))   // tv nv
-                              .andThen(jvm.putfield(v)),  // -
-                              Expr.UNIT                   // -
-                              )
-                  .andThen(jt.load(vslot))                // v
-                  )
-               ));
+
+          Expr val =
+            locked(
+                   // preparation: store target in tslot, arg1 in nvslot and value field in vslot
+                   tvalue                                       // target       -> tslot
+                   .andThen(Expr.astore(tslot))                 //
+                   .andThen(args.get(1))                        // new value    -> nslot
+                   .andThen(jt.store(nvslot))                   //
+                   .andThen(tt.load(tslot))                     // target.value -> vslot
+                   .andThen(jvm.getfield(v))                    //
+                   .andThen(jt.store(vslot))                    //
+                   // actual comparison:
+                   .andThen(jvm.compareValues(cl,
+                                              pre,
+                                              args.get(0),
+                                              jt.load(vslot),
+                                              rc))              // cmp_result
+                   // conditional assignment code and result
+                   .andThen(Expr.branch(O_ifne,                     // -
+                                        tt.load(tslot)              // tv
+                                        .andThen(jt.load(nvslot))   // tv nv
+                                        .andThen(jvm.putfield(v))   // -
+                                        .andThen(pos),              // - --or-- 1
+                                        neg))                       // - --or-- 0
+                   .andThen(oldv));                                 // v --or-- 0/1
           return new Pair<>(val, Expr.UNIT);
         });
 

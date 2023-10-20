@@ -399,7 +399,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
+        result = new Block(pos, new List<>(assignToField(res, outer, r),
                                                     new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;

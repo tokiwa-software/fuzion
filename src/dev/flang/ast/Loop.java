@@ -274,13 +274,11 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof If);
 
-    var prologPos = pos;
-    var nextItPos = pos;
     var succPos = pos; // NYI: if present, use position of success block, otherwise of "until" condition
     _elsePos   = pos;  // NYI: if present, use position of "else" keyword
     _indexVars = iv;
     _nextValues = nv;
-    block = Block.newIfNull(pos, block);
+    block = Block.newIfNull(block);
     _successBlock = sb;
     _elseBlock0 = eb0;
     _elseBlock1 = eb1;
@@ -299,11 +297,11 @@ public class Loop extends ANY
       }
 
     _prologSuccessBlock = new List<>();
-    _prolog             = new Block(prologPos, _prologSuccessBlock, hasImplicitResult);
+    _prolog             = new Block(_prologSuccessBlock, hasImplicitResult);
     if (!_indexVars.isEmpty())
       {
         _nextItSuccessBlock = new List<>();
-        _nextIteration = new Block(nextItPos, _nextItSuccessBlock, hasImplicitResult);
+        _nextIteration = new Block(_nextItSuccessBlock, hasImplicitResult);
         addIterators();
       }
 
@@ -326,7 +324,7 @@ public class Loop extends ANY
       {
         _nextIteration = new If(untilCond.pos(),
                                 untilCond,
-                                Block.newIfNull(succPos, _successBlock),
+                                Block.newIfNull(_successBlock),
                                 _nextIteration);
       }
     block._expressions.add(_nextIteration);
@@ -442,7 +440,7 @@ public class Loop extends ANY
       }
     else if (booleanAsImplicitResult(whileCond, untilCond))
       { /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = Block.newIfNull(succPos, _successBlock);
+        _successBlock = Block.newIfNull(_successBlock);
         _successBlock._expressions.add(BoolConst.TRUE );
         if (_elseBlock0 == null)
           {
@@ -574,7 +572,7 @@ public class Loop extends ANY
                 mustDeclareLoopElse = false;
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
-            var p = f.pos();
+            var p = SourcePosition.notAvailable;
             Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
             Feature stream = new Feature(p,
                                          Visi.PRIV,
@@ -593,8 +591,8 @@ public class Loop extends ANY
             Call next2    = new Call(p, new Call(p, streamName), "next");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
-            If ifHasNext1 = new If(p, hasNext1, new Block(p, prolog2));
-            If ifHasNext2 = new If(p, hasNext2, new Block(p, nextIt2));
+            If ifHasNext1 = new If(p, hasNext1, new Block(prolog2));
+            If ifHasNext2 = new If(p, hasNext2, new Block(nextIt2));
             if (_loopElse != null)
               {
                 ifHasNext1.setElse(Block.fromExpr(callLoopElse(true )));

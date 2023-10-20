@@ -507,8 +507,7 @@ public class Choices extends ANY implements ClassFileConstants
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          tag
                                              Expr.POP                               //          -
                                                .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
-                                               .andThen(Expr.gotoLabel(lEnd)),
-                                             Expr.UNIT));
+                                               .andThen(Expr.gotoLabel(lEnd))));
                     }
                 }
             }
@@ -601,7 +600,7 @@ public class Choices extends ANY implements ClassFileConstants
                       code = code.andThen(Expr.DUP)                             //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                           //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,    //          sub, tag
-                                             pos, Expr.UNIT));
+                                             pos));
                     }
                 }
             }
@@ -658,7 +657,7 @@ public class Choices extends ANY implements ClassFileConstants
                       code = code.andThen(Expr.DUP)                                 //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          sub, tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          sub, tag
-                                             pos, Expr.UNIT));
+                                             pos));
                     }
                 }
             }
@@ -729,8 +728,7 @@ public class Choices extends ANY implements ClassFileConstants
           if (_fuir.clazzIsUnitType(tc))
             {
               res = value.drop()
-                .andThen(Expr.ACONST_NULL)
-                .andThen(Expr.checkcast(_types.javaType(newcl)));
+                .andThen(Expr.ACONST_NULL);
             }
           else
             {

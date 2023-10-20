@@ -51,11 +51,11 @@ choice_negative is
   phases caused errors: */
 
   instantiate1 is
-    x := choice i32 String  // 7. should flag an error: cannot instanciate choice
+    x := choice i32 String  // 7. should flag an error: cannot instantiate choice
 
   instantiate2 is
     MyChoice : choice String bool f64 is
-    x := MyChoice  // 8. should flag an error: cannot instanciate choice
+    x := MyChoice  // 8. should flag an error: cannot instantiate choice
 
   multi1 is
     A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice

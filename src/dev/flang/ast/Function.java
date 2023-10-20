@@ -168,6 +168,22 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
+
+    // if expected type is choice, examine if there is exactly one
+    // array in choice generics, if so use this for further type propagation.
+    var choices = t
+      .choices()
+      .filter(cg -> !cg.isGenericArgument() && (
+        cg.featureOfType() == Types.resolved.f_Unary ||
+        cg.featureOfType() == Types.resolved.f_Lazy  ||
+        cg.featureOfType() == Types.resolved.f_function)
+      )
+      .collect(List.collector());
+    if (choices.size() == 1)
+      {
+        t = choices.getFirst();
+      }
+
     _type = propagateExpectedType2(res, outer, t, false);
     return this;
   }
@@ -272,7 +288,7 @@ public class Function extends ExprWithPos
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
-                                   new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
+                                   new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
@@ -523,7 +539,7 @@ public class Function extends ExprWithPos
                                            NO_FEATURES,
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
-                                           new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
+                                           new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
                               call.target(),
