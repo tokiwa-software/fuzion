@@ -146,7 +146,7 @@ public class Destructure extends Expr
           }
       }
     exprs.add(this);
-    return new Block(_pos,exprs);
+    return new Block(exprs);
   }
 
 
@@ -342,7 +342,7 @@ public class Destructure extends Expr
             ((Feature) f)._returnType = new FunctionReturnType(Types.t_ERROR);
           }
       }
-    return new Block(_pos, exprs);
+    return new Block(exprs);
   }
 
 

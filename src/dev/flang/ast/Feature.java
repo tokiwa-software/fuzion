@@ -324,8 +324,7 @@ public class Feature extends AbstractFeature
          new List<>(),
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
-                  new Block(SourcePosition.builtIn,
-                            new List<Expr>()),
+                  new Block(new List<Expr>()),
                   Impl.Kind.Routine));
   }
 
@@ -1953,7 +1952,7 @@ public class Feature extends AbstractFeature
       {
         /* add assignment of initial value: */
         result = new Block
-          (_pos, new List<>
+          (new List<>
            (this,
             new Assign(res, _pos, this, _impl._initialValue, outer)
             {

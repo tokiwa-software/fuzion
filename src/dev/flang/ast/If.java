@@ -383,7 +383,7 @@ public class If extends ExprWithPos
     if (elseBlock == null && elseIf == null)
       {
         var unit = new Call(pos(), "unit");
-        elseBlock = new Block(pos(), new List<>(unit));
+        elseBlock = new Block(new List<>(unit));
       }
   }
 

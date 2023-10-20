@@ -358,7 +358,7 @@ field       : returnType
             addFeaturesFromBlock(first, l, p._code, ng, p, v);
             c._generics = ng;
           }
-        p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
+        p = new Impl(p.pos, new Block(new List<>()), Impl.Kind.Routine);
       }
     return p;
   }
@@ -1962,7 +1962,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
         // s9a := i16 -(32768)
         return (actual instanceof NumLiteral)
           ? actual
-          : new Block(pos, tokenSourcePos(), new List<>(actual));
+          : new Block(tokenSourcePos(), new List<>(actual));
       }
     // a tuple
     else
@@ -2150,14 +2150,15 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_numliteral: var l = skipNumLiteral();
+          case t_numliteral: var endPos = tokenEndPos();
+                             var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
                              var d = l.mantissaDotAt();
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourcePos(p1), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourcePos(p1).rangeTo(endPos), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2439,8 +2440,7 @@ caseBlock   : ARROW          // if followed by '|'
     sameLine(oldLine);
     if (bar)
       {
-        SourcePosition pos1 = tokenSourcePos();
-        result = new Block(pos1, pos1, new List<>());
+        result = new Block(tokenSourcePos(), new List<>());
       }
     else
       {
@@ -2529,7 +2529,7 @@ block       : exprs
         //
         // so there is an empty block.
         //
-        return new Block(pos1, pos1, new List<>());
+        return new Block(pos1, new List<>());
       }
     else if (currentAtMinIndent() != Token.t_lbrace)
       {
@@ -2546,7 +2546,7 @@ block       : exprs
             pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
             pos2 = pos1;
           }
-        return new Block(pos1, pos2, l);
+        return new Block(pos2, l);
       }
     else
       {
@@ -2568,7 +2568,7 @@ brblock     : BRACEL exprs BRACER
                               () -> {
                                 var l = exprs();
                                 var pos2 = tokenSourcePos();
-                                return new Block(pos1, pos2, l);
+                                return new Block(l);
                               });
   }
 
@@ -3259,7 +3259,7 @@ anonymous   : "ref"
     // does not work yet, probably because of too much that is done explicitly
     // for anonymous features.
     //
-    // return new Block(pos, b.closingBracePos_, new List<>(f, ca));
+    // return new Block(b.closingBracePos_, new List<>(f, ca));
   }
 
 
@@ -3591,7 +3591,7 @@ implRout    : block
                                                 new Impl(pos, block()       , Impl.Kind.Routine   ); }
     else if (skip(true, "=>"      )) { result = new Impl(pos, block()       , Impl.Kind.RoutineDef); }
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()       , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, new Block(pos), Impl.Kind.Routine   ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, new Block()   , Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");

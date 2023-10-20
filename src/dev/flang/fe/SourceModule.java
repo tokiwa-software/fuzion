@@ -587,6 +587,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (inner.impl().initialValue() != null &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
+        (outer.isUniverse() || !outer.pos().isBuiltIn()) && // some generated features in loops do not have source position
         !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
                                           *
                                           *   echo "for i in 1..10 do stdout.println(i)" | fz -

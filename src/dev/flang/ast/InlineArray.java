@@ -362,7 +362,7 @@ public class InlineArray extends ExprWithPos
                                                new Actual(unit3));
         var arrayCall       = new Call(pos(), null, "array"     , sysArrArgs).resolveTypes(res, outer);
         exprs.add(arrayCall);
-        result = new Block(pos(), exprs);
+        result = new Block(exprs);
       }
     return result;
   }

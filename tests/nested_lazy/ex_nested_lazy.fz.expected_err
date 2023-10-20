@@ -16,13 +16,13 @@ assignable to       : 'Any',
                       'ref i32',
                       'ref integer',
                       'ref numeric'
-for value assigned  : 'box(ex_nested_lazy.this.x1.call)'
+for value assigned  : 'x1'
 To solve this, you could change the type of the target 'f' to 'ref i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
 
 
 --CURDIR--/ex_nested_lazy.fz:39:18: error 2: Incompatible types in assignment
   say (lazy0 ()->42)
------------------^
+-----------------^^
 assignment to field : 'ex_nested_lazy.#fun1.call.result'
 expected formal type: 'Function i32'
 actual type found   : 'ref i32'
@@ -36,17 +36,13 @@ assignable to       : 'Any',
                       'ref i32',
                       'ref integer',
                       'ref numeric'
-for value assigned  : 
-{
-  box(42)
-}
-
+for value assigned  : '42'
 To solve this, you could change the type of the target 'ex_nested_lazy.#fun1.call.result' to 'ref i32' or convert the type of the assigned value to 'Function i32'.
 
 
 --CURDIR--/ex_nested_lazy.fz:47:18: error 3: Incompatible types in assignment
   say (lazy1 ()->42)
------------------^
+-----------------^^
 assignment to field : 'ex_nested_lazy.#fun3.call.result'
 expected formal type: 'Lazy i32'
 actual type found   : 'ref i32'
@@ -60,11 +56,7 @@ assignable to       : 'Any',
                       'ref i32',
                       'ref integer',
                       'ref numeric'
-for value assigned  : 
-{
-  box(42)
-}
-
+for value assigned  : '42'
 To solve this, you could change the type of the target 'ex_nested_lazy.#fun3.call.result' to 'ref i32' or convert the type of the assigned value to 'Lazy i32'.
 
 3 errors.

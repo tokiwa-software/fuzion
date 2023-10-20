@@ -288,7 +288,7 @@ public class Function extends ExprWithPos
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
-                                   new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
+                                   new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
@@ -539,7 +539,7 @@ public class Function extends ExprWithPos
                                            NO_FEATURES,
                                            inherits,
                                            Contract.EMPTY_CONTRACT,
-                                           new Impl(pos(), new Block(pos(), expressions), Impl.Kind.Routine));
+                                           new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target().type().featureOfType());
             result = new Call(pos(),
                               call.target(),
