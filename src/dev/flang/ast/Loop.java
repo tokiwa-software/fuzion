@@ -274,7 +274,6 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof If);
 
-    var succPos = pos; // NYI: if present, use position of success block, otherwise of "until" condition
     _elsePos   = pos;  // NYI: if present, use position of "else" keyword
     _indexVars = iv;
     _nextValues = nv;
@@ -289,7 +288,7 @@ public class Loop extends ANY
         AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
       }
 
-    var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond, succPos);
+    var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
     if (_elseBlock0 != null && iterates())
       {
         moveElseBlockToRoutine();
@@ -423,7 +422,7 @@ public class Loop extends ANY
    *
    * @return true if implicit success and else blocks have been added.
    */
-  private boolean defaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond, SourcePosition succPos)
+  private boolean defaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond)
   {
     boolean result = false;
     if (lastIndexVarAsImplicitResult())
