@@ -483,7 +483,25 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return value;
       }
-    // Case 2: no nested tagging necessary:
+    // Case 2.1: ambigous assignment via subtype
+    //
+    // example:
+    //
+    //  A ref is
+    //  B ref is
+    //  C ref : B, A is
+    //  t choice A B := C
+    //
+    else if (frmlT
+              .choiceGenerics()
+              .stream()
+              .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+              .count() > 1)
+      {
+        AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+        return Expr.ERROR_VALUE;
+      }
+    // Case 2.2: no nested tagging necessary:
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
     else if (frmlT
