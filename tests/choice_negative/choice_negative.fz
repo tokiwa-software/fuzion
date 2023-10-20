@@ -165,3 +165,11 @@ choice_negative is
 
     j := 42 ? TRUE => true   // 36. should flag an error, match subject must be choice
             | FALSE => false
+
+
+  ambigous_assignment_to_choice_via_subtype is
+    A ref is
+    B ref is
+    C ref : B, A is
+    t1 choice A B := C  // 37. should flag an error, Ambiguous assignment to ...
+    t2 choice A B => C  // 38. should flag an error, Ambiguous assignment to ...
