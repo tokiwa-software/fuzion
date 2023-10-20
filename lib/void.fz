@@ -72,5 +72,5 @@
 # a feature call that returns void.
 #
 #
-public void : choice ()  # an empty union, so this type has no value
+public void : choice  # an empty union, so this type has no value
 is
