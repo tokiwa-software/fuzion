@@ -1,5 +1,5 @@
 
---CURDIR--/test_issue1216.fz:4:5: error 1: Incompatible types when passing argument in a call
+--CURDIR--/test_issue1216.fz:27:5: error 1: Incompatible types when passing argument in a call
   f b
 ----^
 Actual type for argument #1 'minime' does not match expected type.
