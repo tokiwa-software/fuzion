@@ -458,7 +458,6 @@ abstract class CStmnt extends ANY
   }
 
 
-
   /**
    * An if statement
    *
@@ -488,6 +487,41 @@ abstract class CStmnt extends ANY
     };
   }
 
+
+  /**
+   * An if-else statement
+   *
+   * @param cc the condition value
+   *
+   * @param s the code to execute if cc is TRUE
+   *
+   * @param e the code to execute if cc is FALSE
+   *
+   * @return the if statement
+   */
+  static CStmnt iff(CExpr cc, CStmnt s, CStmnt e)
+  {
+    return new CStmnt()
+      {
+        void code(CString sb)
+        {
+          sb.append("if (");
+          cc.code(sb);
+          sb.append(")\n")
+            .append("{\n");
+          s.codeSemi(sb.indent());
+          sb.append("}\n")
+            .append("else\n")
+            .append("{\n");
+          e.codeSemi(sb.indent());
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
+  }
 
 
   /**
