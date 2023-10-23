@@ -1,0 +1,4 @@
+a option String is
+  mutate.go ()->
+    ref : String
+      utf8 => (list u8).type.empty

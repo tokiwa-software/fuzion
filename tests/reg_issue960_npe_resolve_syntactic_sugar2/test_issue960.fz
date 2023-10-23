@@ -1,0 +1,8 @@
+test_ambig is
+
+  if true
+    x := 42
+
+  if true
+    x := 007
+    f := ()->x

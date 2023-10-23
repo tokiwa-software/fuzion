@@ -1,0 +1,16 @@
+
+--CURDIR--/test_issue960.fz:8:5: error 1: Failed to infer result type for feature 'test_ambig.f'.
+    f := ()->x
+----^
+To solve this, please specify a result type explicitly.
+
+
+--CURDIR--/test_issue960.fz:8:12: error 2: No type information can be inferred from a lambda expression
+    f := ()->x
+-----------^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+2 errors.

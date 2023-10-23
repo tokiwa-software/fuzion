@@ -1,0 +1,4 @@
+outer is
+  f(minime outer.this) =>
+  b ref : outer is
+  f b

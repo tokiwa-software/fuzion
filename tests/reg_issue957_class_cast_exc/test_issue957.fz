@@ -1,0 +1,4 @@
+gt0(T type, x T) => T
+Any.gt => gt0 Any.this
+
+say (option 32).gt
