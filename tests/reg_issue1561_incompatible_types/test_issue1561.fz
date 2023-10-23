@@ -21,4 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-public x.y is
+ex =>
+  read_line option String is
+
+    (try unit String ()->
+      ref : String
+        utf8 Sequence u8 is
+          (list u8).type.empty
+    ).as_option

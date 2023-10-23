@@ -21,4 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-public x.y is
+test_ambig is
+
+  if true
+    x := 42
+
+  if true
+    x := 007
+    f := ()->x # NYI type inference nullary lambda expression: issue #1015
