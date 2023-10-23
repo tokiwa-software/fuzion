@@ -128,11 +128,13 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
+                  var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
                                            CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.iff(eq,
-                                                                 f.assign(new_value)))),
+                                                      CStmnt.seq(res.decl("bool", res),
+                                                                 compareValues(c, tmp, expected, rc, res),
+                                                                 CStmnt.iff(res,
+                                                                            f.assign(new_value))))),
                                     tmp.ret());
                 }
             }
@@ -187,14 +189,13 @@ public class Intrinsics extends ANY
                       eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
                     }
 
-                  code = CStmnt.seq(CStmnt.decl("bool", res, new CIdent("false")),
+                  code = CStmnt.seq(CStmnt.decl("bool", res),
                                     locked(CNames.GLOBAL_LOCK,
                                            CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.iff(eq,
-                                                                 CStmnt.seq(
-                                                                  f.assign(new_value),
-                                                                  res.assign(new CIdent("true"))
-                                                                  )))),
+                                                      compareValues(c, tmp, expected, rc, res),
+                                                      CStmnt.iff(res,
+                                                                 f.assign(new_value)
+                                                                 ))),
                                     CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
                 }
             }
@@ -1253,6 +1254,104 @@ public class Intrinsics extends ANY
           .assign(expr_res),
         c._names.FZ_TRUE.ret()
       ));
+  }
+
+
+  /**
+   * Create code for field-by-field comparison of two value or choice type values.
+   *
+   * @param c the C backend
+   *
+   * @param value1 the first value to compare
+   *
+   * @param value2 the second value to compare
+   *
+   * @param rt the Fuzion type of the value
+   *
+   * @param tmp local variable to type `bool` to be set to `true` iff `value1`
+   * equals `value2`, and to `false` otherwise.
+   *
+   * @return code to perform the comparison
+   */
+  static CStmnt compareValues(C c, CExpr value1, CExpr value2, int rt, CIdent tmp)
+  {
+    if (PRECONDITIONS) require
+      (value1 != null,
+       value2 != null);
+
+    CStmnt result;
+
+    if (c._fuir.clazzIsUnitType(rt))
+      { // unit-type values are always equal:
+        result = tmp.assign(new CIdent("true"));
+      }
+    else if (c._fuir.clazzIsRef(rt) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i8  ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i16 ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i32 ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i64 ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u8  ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u16 ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u32 ) ||
+             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u64 )    )
+      {
+        result = tmp.assign(CExpr.eq(value1, value2));
+      }
+    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f32))
+      {
+        result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
+      }
+    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f64))
+      {
+        result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
+      }
+    else if (c._fuir.clazzIsChoiceOfOnlyRefs(rt))
+      {
+        var union1 = value1.field(CNames.CHOICE_UNION_NAME);
+        var union2 = value2.field(CNames.CHOICE_UNION_NAME);
+        var fld = CNames.CHOICE_REF_ENTRY_NAME;
+        var entry1  = union1.field(fld);
+        var entry2  = union2.field(fld);
+        result = tmp.assign(CExpr.eq(entry1, entry2));
+      }
+    else if (c._fuir.clazzIsChoice(rt))
+      {
+        var union1 = value1.field(CNames.CHOICE_UNION_NAME);
+        var union2 = value2.field(CNames.CHOICE_UNION_NAME);
+        var cazes = new List<CStmnt>();
+        for (int i = 0; i < c._fuir.clazzNumChoices(rt); i++)
+          {
+            var tc = c._fuir.clazzChoice(rt, i);
+            var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
+                                             : new CIdent(CNames.CHOICE_ENTRY_NAME + i);
+            var entry1  = union1.field(fld);
+            var entry2  = union2.field(fld);
+            var cmp = compareValues(c, entry1, entry2, tc, tmp);
+            cazes.add(CStmnt.caze(new List<>(CExpr.int32const(i)),
+                                  CStmnt.seq(cmp, CStmnt.BREAK)));
+          }
+        result = CStmnt.iff(CExpr.eq(value1.field(CNames.TAG_NAME),
+                                     value2.field(CNames.TAG_NAME)),
+                            CStmnt.suitch(value1.field(CNames.TAG_NAME),
+                                          cazes,
+                                          null),
+                            tmp.assign(new CIdent("false")));
+      }
+    else // not a choice, so a 'normal' product type
+      {
+        result = tmp.assign(new CIdent("true"));
+        for (var i = 0; i < c._fuir.clazzNumFields(rt); i++)
+          {
+            var fi = c._fuir.clazzField(rt, i);
+            var rti = c._fuir.clazzResultClazz(fi);
+            var f1 = value1.field(c._names.fieldName(fi));
+            var f2 = value2.field(c._names.fieldName(fi));
+            result = CStmnt.seq(result,
+                                CStmnt.iff(tmp,
+                                           compareValues(c, f1, f2, rti, tmp)));
+          }
+      }
+    return result;
   }
 
 }
