@@ -1310,9 +1310,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             AstErrors.cannotRedefineChoice(f, o);
           }
-        else if ((t1.isChoice()
-                  ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                  : !t1.isAssignableFrom(t2)) &&
+        else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  t2 != Types.resolved.t_void &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
