@@ -1308,7 +1308,7 @@ typedef
 typeFeature
 typeFeatureOrigin
 typefrom
-typeIfKnown
+typeForInferencing
 typeInference
 typeInParens
 typeList

@@ -155,13 +155,13 @@ public class This extends ExprWithPos
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     return null;  // After type resolution, This is no longer part of the code.
   }
@@ -239,7 +239,7 @@ public class This extends ExprWithPos
                 Expr c = new Call(pos(), getOuter, or, -1)
                   {
                     @Override
-                    AbstractType typeIfKnown()
+                    AbstractType typeForInferencing()
                     {
                       return isAdr ? t : _type;
                     }

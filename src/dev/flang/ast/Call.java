@@ -473,9 +473,9 @@ public class Call extends AbstractCall
     result = Types.intern(result);
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (result != null && result != Types.resolved.t_Const_String);
 
-    return AbstractType.forInferencing(result);
+    return result;
   }
 
 
@@ -584,7 +584,7 @@ public class Call extends AbstractCall
     if (cb != null && _actuals.size() == 1)
       {
         var b = res.resolveType(cb._actuals.getLast(), thiz);
-        if (b.typeIfKnown() != Types.t_ERROR)
+        if (b.typeForInferencing() != Types.t_ERROR)
           {
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
             var tmp = new Feature(res,
@@ -1116,13 +1116,13 @@ public class Call extends AbstractCall
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     return _type;
   }
@@ -1723,7 +1723,7 @@ public class Call extends AbstractCall
     // the types of the actuals:
     if (!missing.isEmpty() &&
         (!Errors.any() ||
-         !_actuals.stream().anyMatch(x -> x.typeIfKnown() == Types.t_ERROR)))
+         !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
       }
@@ -1873,7 +1873,7 @@ public class Call extends AbstractCall
   AbstractType typeFromActual(Expr actual,
                               AbstractFeature outer)
   {
-    var actualType = actual == null ? null : actual.typeIfKnown();
+    var actualType = actual == null ? null : actual.typeForInferencing();
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
@@ -1882,7 +1882,7 @@ public class Call extends AbstractCall
             actualType = Types.resolved.f_Type.selfType();
           }
       }
-    return AbstractType.forInferencing(actualType);
+    return actualType;
   }
 
 
@@ -1985,8 +1985,8 @@ public class Call extends AbstractCall
           {
             for (var p: aft.inherits())
               {
-                var pt = p.typeIfKnown();
-                if (pt != null)
+                var pt = p.type();
+                if (pt != Types.t_ERROR)
                   {
                     var apt = pt.applyTypePars(actualType);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
@@ -2275,9 +2275,9 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || result.typeIfKnown() != Types.t_ERROR);
+      (Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
-    return result.typeIfKnown() == Types.t_ERROR && !res._options.isLanguageServer()
+    return result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
       : result;
   }
@@ -2303,7 +2303,7 @@ public class Call extends AbstractCall
         // NYI: Need to check why this is needed, it does not make sense to
         // propagate the target's type to target. But if removed,
         // tests/reg_issue16_chainedBool/ fails with C backend:
-        _target = _target.propagateExpectedType(res, outer, _target.typeIfKnown());
+        _target = _target.propagateExpectedType(res, outer, _target.typeForInferencing());
       }
   }
 
