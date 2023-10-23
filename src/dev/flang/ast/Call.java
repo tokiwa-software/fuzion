@@ -1692,8 +1692,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        if ( g.isOpen() && foundAt.get(i) == null ||
-            !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
             if (CHECKS) check
@@ -2158,14 +2157,14 @@ public class Call extends AbstractCall
     if (!loadCalledFeatureUnlessTargetVoid(res, outer))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
-        // `Expr`. Solution: we wrap `_target` into a call `universe.void
+        // `Expr`. Solution: we wrap `_target` into a call `universe.id void
         // _target`.
         result = new Call(pos(),
                           new Universe(),
                           new List<>(new Actual(_target)),
-                          NO_GENERICS,
+                          new List<>(Types.resolved.t_void),
                           new List<>(_target),
-                          Types.resolved.f_void,
+                          Types.resolved.f_id,
                           Types.resolved.t_void);
         result.resolveTypes(res, outer);
       }

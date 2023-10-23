@@ -72,11 +72,5 @@
 # a feature call that returns void.
 #
 #
-public void(absurd void) is absurd
-
-# NYI: possible alternative definitions base on choice types
-#
-# void : choice is
-#
-# void (absurd choice) is absurd
-#
+public void : choice  # an empty union, so this type has no value
+is
