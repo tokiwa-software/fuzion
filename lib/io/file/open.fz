@@ -95,7 +95,7 @@ module:public open(T type, private fd i64, public file_name String) : simple_eff
      # the length of this buffer
      public length i64
     )
-    : container.buffer u8 (io.file.open T) is
+    : container.Buffer u8 (io.file.open T) is
 
 
     # get byte at given index i
