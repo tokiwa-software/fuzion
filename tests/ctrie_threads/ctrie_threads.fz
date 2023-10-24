@@ -99,7 +99,7 @@ ctrie_threads is
 
     say ctrie.size # 999-900 = 99
     if ctrie.size != 99
-      say ctrie.as_string_internal
+      say ctrie
 
 
   test3 is

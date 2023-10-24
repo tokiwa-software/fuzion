@@ -152,27 +152,23 @@ is
       && (container.searchable_sequence a.array) = (container.searchable_sequence b.array)
 
 
-# NYI ref, work around for issue #1604
-Nil ref is
-
-
 # a prev_node is used in the generation aware compare and swap
 #
 # Main_Node.prev is initially nil
 # when a Main_Node is replaced it is put into
 # the successors `prev`-field.
 #
-private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil is
+private prev_node(CTK type : property.hashable, CTV type) : choice (failed_node CTK CTV) (Main_Node CTK CTV) nil is
 
   redef as_string =>
     match prev_node.this
-      f container.Failed_Node => f.as_string
+      f container.failed_node => f.as_string
       m container.Main_Node => m.as_string
-      Nil => nil.as_string
+      nil => nil.as_string
 
   is_nil =>
     match prev_node.this
-      Nil => true
+      nil => true
       * => false
 
 
@@ -218,7 +214,7 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
   pre match prev.read
-    Nil => true
+    nil => true
     * => false
   =>
     match data
@@ -228,13 +224,12 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 
 
 # a failed node where the previous indirection node contains a main node
-# NYI ref, work around for issue #1604
-private Failed_Node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) ref : property.equatable is
+private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) : property.equatable is
 
   redef as_string =>
-    "Failed_Node($prev)"
+    "failed_node($prev)"
 
-  fixed type.equality(a, b container.Failed_Node CTK CTV) bool is
+  fixed type.equality(a, b container.failed_node CTK CTV) bool is
     a.prev = b.prev
 
 
@@ -244,12 +239,12 @@ private indirection_node(CTK type : property.hashable, CTV type, data Main_Node 
 
 
 # an indirection node
-private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref /* NYI removing this ref leads to segfaults */ : property.equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref : property.equatable is
 
-  # NYI ref equality
-  #
+  id := fuzion.sys.misc.unique_id
+
   fixed type.equality(a, b container.Indirection_Node CTK CTV) bool is
-    a.gen = b.gen && a.data.read = b.data.read
+    a.id = b.id
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
@@ -299,7 +294,6 @@ private:public not_found is
 
 
 # descriptor for double-compare-single-swap operation
-# NYI ref, work around for issue #1604
 private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref
 pre exp.prev.read.is_nil
 is
@@ -424,27 +418,27 @@ is
     # abortably read root and get the current gen
     root_gen := (read_root true).gen
     match prev
-      Nil => m
-      fn Failed_Node =>
+      nil => m
+      fn failed_node =>
         if i.cas m fn.prev
           fn.prev
         else
           gcas_commit i i.data.read
       n Main_Node =>
         if root_gen = i.gen && !read_only
-          if m.cas_prev prev Nil
+          if m.cas_prev prev nil
             m
           else
             gcas_commit i m
         else
-          m.cas_prev prev (Failed_Node n)
+          m.cas_prev prev (failed_node n)
           gcas_commit i i.data.read
 
   # read `data`, if prev is set commit first
   private gcas_read(i Indirection_Node CTK CTV) Main_Node CTK CTV is
     m := i.data.read
     match m.prev.read
-      Nil => m
+      nil => m
       * => gcas_commit i m
 
   # generation aware compare and set
@@ -459,14 +453,14 @@ is
       c container_node => i.gen >= c.gen
       * => true),
     match o.prev.read
-      Nil => true
+      nil => true
       *   => false
   is
     nn := Main_Node n o
     if i.cas o nn
       gcas_commit i nn
       match nn.prev.read
-        Nil => ctrie_ok
+        nil => ctrie_ok
         * => restart
     else
       restart
@@ -577,7 +571,7 @@ is
       else
         list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)]
 
-    Main_Node d Nil
+    Main_Node d nil
 
 
   # lookup key k
@@ -746,7 +740,7 @@ is
     initial_gen := u64 0
 
     initial_root_node container.root_node CTK CTV :=
-      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) container.Nil) initial_gen
+      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
     container.ctrie CTK CTV (concur.atomic initial_root_node) false
 
