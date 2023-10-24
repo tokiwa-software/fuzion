@@ -1362,7 +1362,7 @@ public class DFA extends ANY
               throw new Error("intrinsic fuzion.sys.fileio.file_position: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.fileio.mmap"        , cl ->
+    put("fuzion.sys.fileio.mmap"         , cl ->
         {
           var array = cl._args.get(3);
           if (array instanceof SysArray sa)
@@ -1376,7 +1376,7 @@ public class DFA extends ANY
               throw new Error("intrinsic fuzion.sys.fileio.mmap: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.fileio.munmap"      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.fileio.munmap"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.mapped_buffer_get", cl ->
         {
           var array = cl._args.get(0).value();
