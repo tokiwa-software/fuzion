@@ -1377,6 +1377,35 @@ public class DFA extends ANY
             }
         });
     put("fuzion.sys.fileio.munmap"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.fileio.mapped_buffer_get", cl ->
+        {
+          var array = cl._args.get(0).value();
+          var index = cl._args.get(1).value();
+          if (array instanceof SysArray sa)
+            {
+              return sa.get(index);
+            }
+          else
+            {
+              throw new Error("intrinsic fuzion.sys.internal_array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
+            }
+        });
+    put("fuzion.sys.fileio.mapped_buffer_set", cl ->
+        {
+          var array = cl._args.get(0).value();
+          var index = cl._args.get(1).value();
+          var value = cl._args.get(2).value();
+          if (array instanceof SysArray sa)
+            {
+              sa.setel(index, value);
+              return Value.UNIT;
+            }
+          else
+            {
+              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
+            }
+        });
+
     put("fuzion.sys.fileio.flush"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.stdin.stdin0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.out.stdout"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

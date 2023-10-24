@@ -616,6 +616,19 @@ public class Intrinsics extends ANY
         {
           return new i32Value(0);
         });
+    put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
+        {
+          return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
+                                              /* type  */ Types.resolved.t_u8);
+        });
+    put("fuzion.sys.fileio.mapped_buffer_set", (interpreter, innerClazz) -> args ->
+        {
+          ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
+                                       /* value */ args.get(3),
+                                       /* type  */ Types.resolved.t_u8);
+          return Value.EMPTY_VALUE;
+        });
+
     put("fuzion.std.exit", (interpreter, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
