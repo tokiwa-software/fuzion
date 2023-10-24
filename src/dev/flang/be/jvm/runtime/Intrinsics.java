@@ -749,7 +749,7 @@ public class Intrinsics extends ANY
       }
   }
 
-  public static byte[] fuzion_sys_fileio_mmap(long fd, long offset, long size, Object res)
+  public static Object fuzion_sys_fileio_mmap(long fd, long offset, long size, Object res)
   {
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
@@ -771,32 +771,7 @@ public class Intrinsics extends ANY
 
         // success
         result[0] = 0;
-        return new byte[0];
-        /* NYI
-                  @Override
-                  void set(
-                    int x,
-                    Value v,
-                    AbstractType elementType)
-                  {
-                    checkIndex(x);
-                    mmap.put(x, (byte)v.u8Value());
-                  }
-
-                  @Override
-                  Value get(
-                    int x,
-                    AbstractType elementType)
-                  {
-                    checkIndex(x);
-                    return new u8Value(mmap.get(x));
-                  }
-
-                  @Override
-                  int length(){
-                    return (int)size;
-                  }
-        */
+        return mmap;
       }
     catch (IOException e)
       {
@@ -805,9 +780,18 @@ public class Intrinsics extends ANY
       }
   }
 
-  public static int fuzion_sys_fileio_munmap()
+  public static int fuzion_sys_fileio_munmap(Object adr, long size)
   {
     return 0;
+  }
+
+  public static byte fuzion_sys_fileio_mapped_buffer_get(Object buf, long i)
+  {
+    return ((ByteBuffer)buf).get((int) i);
+  }
+  public static void fuzion_sys_fileio_mapped_buffer_set(Object buf, long i, byte b)
+  {
+    ((ByteBuffer)buf).put((int) i, b);
   }
 
   public static void fuzion_std_nano_sleep(long d)

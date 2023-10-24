@@ -40,12 +40,12 @@ mmap_test is
     offset := page_size.as_i64
 
     # map 6 bytes of file starting from the end of the '+'s.
-    say (f.mmap offset (i64 6) ()->
+    say (f.mmap offset (i64 6) buf->
           # change the 'e' in hello to an 'a'.
-          f.mmap[1] := f.mmap[1] - 4)
+          buf[1] := buf[1] - 4)
 
     # mmap should fail, since offset+size exceeds file size.
-    say (f.mmap offset (i64 7) ()->)
+    say (f.mmap offset (i64 7) _->)
   )
 
 

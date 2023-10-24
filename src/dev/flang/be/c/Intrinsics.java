@@ -523,7 +523,7 @@ public class Intrinsics extends ANY
         }
         );
 
-    put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
+    put("fuzion.sys.fileio.mmap", (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
       A0.castTo("FILE * "),   // file
       A1.castTo("off_t"),     // offset
       A2.castTo("size_t"),    // size
@@ -533,6 +533,8 @@ public class Intrinsics extends ANY
       A0.castTo("void *"),    // address
       A1.castTo("size_t")     // size
     )).ret());
+    put("fuzion.sys.fileio.mapped_buffer_get", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).ret());
+    put("fuzion.sys.fileio.mapped_buffer_set", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).assign(A2.castTo("int8_t")));
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());

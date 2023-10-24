@@ -1,0 +1,94 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature buffer
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# buffer -- one-dimensional mutable buffer with effect
+#
+# buffer can be used to implement ranges of mutable memory that may be
+# visible to the outside or even may be modified by the outside.  Examples
+# are memory mapped files, memory shared between processes, bitmaps on a
+# display, memory mapped I/O, etc.
+#
+# To model the effects of reading or writing a buffer, an effect is given
+# as an argument to a buffer.  This effect should implement the operations
+# required to implement the `index []` and `set []` features as needed by
+# the backend.  This could be done via direct memory accesses, as for `mmap`
+# memory used in a native backend, or via an API such as `java.nio.ByteBuffer`
+# for a JVM backend.
+#
+module:public buffer
+  (# type of elements stored in this buffer
+   T type,
+
+   # effect used to modify this buffer
+   E type : effect)
+
+is
+
+
+  # length of this buffer.
+  #
+  public length i64 is abstract
+
+
+  # a sequence of all valid indices to access this array. Useful e.g., for
+  # `for`-loops:
+  #
+  #   for i in arr.indices do
+  #     say arr[i]
+  #
+  public indices => (i64 0)..length-1
+
+
+  # get element at given index i
+  #
+  public index [ ] (i i64) T ! E
+    pre
+      safety: 0 ≤ i < length
+  is
+    abstract
+
+
+  # set element at given index i to given value o
+  #
+  public set [ ] (i i64, o T) unit ! E
+    pre
+      safety: 0 ≤ i < length
+  is
+    abstract
+
+
+  # create immutable array from this buffer
+  #
+  public as_array ! E =>
+    array T length.as_i32 (i -> buffer.this[i.as_i64])
+
+
+  # create a list from this buffer
+  #
+  public as_list =>
+    # since buffer is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
