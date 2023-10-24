@@ -1,0 +1,11 @@
+test_issue1918 =>
+
+  count(n) =>
+    true
+
+  (1..4)
+    .map_sequence (_)->
+      concur.thread.spawn ()->
+        do
+          p option i32 := 1
+          while !(count p.get)
