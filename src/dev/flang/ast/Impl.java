@@ -351,7 +351,6 @@ public class Impl extends ANY
    *
    * @param outer the feature that contains this implementation.
    *
-   * @param t the expected type.
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
