@@ -136,7 +136,9 @@ read_bytes(n i32) Sequence u8 ! reader is
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-public read_string(n i32) String ! reader is
+public read_string(n i32) String ! reader
+pre n >= 0
+is
 
 
   as_string(x array u8 | io.end_of_file) =>
@@ -171,7 +173,7 @@ public read_string(n i32) String ! reader is
   else
 
     str := String.type.join str_arr
-    res := str.substring_codepoint 0 n
+    res := str.substring_codepoint 0 (min n str.codepoint_length)
 
     # discard only the bytes we are using in result
     reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
