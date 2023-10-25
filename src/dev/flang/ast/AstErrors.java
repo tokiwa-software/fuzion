@@ -178,6 +178,20 @@ public class AstErrors extends ANY
   {
     return s(f.visibility()) + " " + s(f);
   }
+
+
+  /**
+   * Produce a String from a list of candidates of the form "one of the features
+   * x at x.fz:23, or y at y.fz:42
+   */
+  static String sc(List<FeatureAndOuter> candidates)
+  {
+    return candidates.stream().map(c -> sbn(c._feature.featureName()) + " at " + c._feature.pos().show() + "\n")
+      .collect(List.collector())
+      .toString(candidates.size() > 1 ? "one of the features " : "the feature ", ", or\n", "");
+  }
+
+
   static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
   static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
   static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
@@ -1088,13 +1102,12 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the actual number of arguments to match " +
-                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
-                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+        solution = "To solve this, you might change the actual number of arguments to match " + sc(candidates);
       }
 
     return solution;
   }
+
 
   /**
    * Suggest to a user that they are trying to call a hidden feature.
@@ -1107,9 +1120,7 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the visibility of " +
-                   (candidates.size() > 1 ? "one of these features" : "this feature") + ": " +
-                   slbn(candidates.stream().map(c -> c._feature.featureName()).collect(List.collector()));
+        solution = "To solve this, you might change the visibility of " + sc(candidates);
       }
 
     return solution;
