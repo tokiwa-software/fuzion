@@ -149,7 +149,7 @@ public class Runtime extends ANY
   /**
    * This contains all started threads.
    */
-  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
+  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
     @Override
     protected boolean close(Thread f)
     {
@@ -703,27 +703,12 @@ public class Runtime extends ANY
     else
       {
         var t = new FuzionThread(r, code);
-        result = t.getId();
+        result = _startedThreads_.add(t);
+        // result = t.getId();
         // result = t.threadId(); // NYI: use for Java >=19
       }
     return result;
   }
-
-
-  public static void fuzion_sys_thread_join0(long threadId)
-  {
-    try
-      {
-        _startedThreads_.get(threadId).join();
-        _startedThreads_.remove(threadId);
-      }
-    catch (InterruptedException e)
-      {
-        // NYI handle this exception
-        System.err.println("Joining of threads was interrupted: " + e);
-        System.exit(1);
-      }
-  };
 
 
   static long unique_id()

@@ -811,6 +811,21 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[])s)) != null;
   }
 
+  public static void fuzion_sys_thread_join0(long threadId)
+  {
+    try
+      {
+        Runtime._startedThreads_.get(threadId).join();
+        Runtime._startedThreads_.remove(threadId);
+      }
+    catch (InterruptedException e)
+      {
+        // NYI handle this exception
+        System.err.println("Joining of threads was interrupted: " + e);
+        System.exit(1);
+      }
+  };
+
 }
 
 /* end of file */
