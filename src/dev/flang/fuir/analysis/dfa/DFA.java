@@ -1655,7 +1655,7 @@ public class DFA extends ANY
         {
           setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.net.read");
           setArrayI64ElementsToAnything(cl, 3, "fuzion.sys.net.read");
-          return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
+          return cl._dfa._bool;
         });
     put("fuzion.sys.net.write"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.net.close0"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
