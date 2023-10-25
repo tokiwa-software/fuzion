@@ -272,7 +272,7 @@ public class Intrinsics extends ANY
 
   public static void fuzion_std_date_time(Object data)
   {
-    int[] arg0 = (int[])data;
+    int[] arg0 = (int[]) data;
     var date = new Date();
     var calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
     calendar.setTime(date);
@@ -449,8 +449,8 @@ public class Intrinsics extends ANY
         Runtime.ensure_not_frozen(res);
       }
 
-    byte[] buff = (byte[])b;
-    long[] result = (long[])res;
+    byte[] buff   = (byte[]) b;
+    long[] result = (long[]) res;
 
     try
       {
@@ -488,7 +488,7 @@ public class Intrinsics extends ANY
     try
       {
         var sc = (ByteChannel)Runtime._openStreams_.get(sockfd);
-        sc.write(ByteBuffer.wrap((byte[])fileContent));
+        sc.write(ByteBuffer.wrap((byte[]) fileContent));
         return 0;
       }
     catch(IOException e)
@@ -585,7 +585,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_delete(Object s)
   {
-    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
     try
       {
         return Files.deleteIfExists(path);
@@ -598,8 +598,8 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_move(Object o, Object n)
   {
-    Path oldPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[])o));
-    Path newPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[])n));
+    Path oldPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) o));
+    Path newPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) n));
     try
       {
         Files.move(oldPath, newPath);
@@ -613,7 +613,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_create_dir(Object s)
   {
-    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
     try
       {
         Files.createDirectory(path);
@@ -630,8 +630,8 @@ public class Intrinsics extends ANY
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
-    var path = Runtime.utf8ByteArrayDataToString((byte[])s);
-    long[] open_results = (long[])res;
+    var path = Runtime.utf8ByteArrayDataToString((byte[]) s);
+    long[] open_results = (long[]) res;
     try
       {
         switch (mode)
@@ -679,7 +679,7 @@ public class Intrinsics extends ANY
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
-    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[])s));
+    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
     long[] stats = (long[]) res;
     var err = SystemErrNo.UNSPECIFIED;
     try
@@ -736,7 +736,7 @@ public class Intrinsics extends ANY
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
-    long[] arr = (long[])res;
+    long[] arr = (long[]) res;
     try
       {
         arr[0] = ((RandomAccessFile) Runtime._openStreams_.get(fd)).getFilePointer();
@@ -754,7 +754,7 @@ public class Intrinsics extends ANY
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
-    int[] result = (int[])res;
+    int[] result = (int[]) res;
     try
       {
         var raf = (RandomAccessFile) Runtime._openStreams_.get(fd);
@@ -808,7 +808,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
-    return System.getenv(Runtime.utf8ByteArrayDataToString((byte[])s)) != null;
+    return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
 }
