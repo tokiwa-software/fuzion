@@ -78,7 +78,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
   {
     for (var m : Intrinsics.class.getDeclaredMethods())
       {
-        _availableIntrinsics.add(m.getName());
+        if (!m.isSynthetic())
+          {
+            _availableIntrinsics.add(m.getName());
+          }
       }
   }
 
