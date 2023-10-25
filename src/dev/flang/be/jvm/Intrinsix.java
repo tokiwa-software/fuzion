@@ -561,7 +561,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
             "fuzion_sys_env_vars_get0",
             methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
-            JAVA_LANG_STRING)));
+            PrimitiveType.type_byte.array())));
     });
     put("fuzion.sys.env_vars.set0", (jvm, cl, pre, cc, tvalue, args) -> {
       var res =
