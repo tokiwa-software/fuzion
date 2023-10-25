@@ -1817,7 +1817,7 @@ should be avoided as much as possible.
                 if (CHECKS) check
                   (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
 
-                var and = Expr.UNIT; // set to Expr.IAND after first field to AND the values
+                var count = 0;
                 for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
                   {
                     var fi = _fuir.clazzField(rt, i);
@@ -1828,12 +1828,16 @@ should be avoided as much as possible.
                         var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
                         result = result
                           .andThen(compareValues(cl, pre, f1, f2, rti))
-                          .andThen(and);
-                        and = Expr.IAND;
+                          .andThen(count > 0 ? Expr.IAND  // if several field, use AND to cumulate result
+                                             : Expr.UNIT);
+                        count++;
                       }
                   }
+                if (count == 0)
+                  { // no fields exist, so values are equal:
+                    result = result.andThen(Expr.iconst(1));
+                  }
               }
-
           }
       }
     return result;
