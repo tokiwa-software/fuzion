@@ -40,7 +40,6 @@
 # it is not wait-free and thus no such guarantee is given per thread.
 #
 # NYI addif
-# NYI equality comparison could be ref equality
 # NYI generation might overflow, which might lead to weird effects.
 #
 # glossary:
@@ -58,30 +57,25 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) : property.equatable is
+private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
-  fixed type.equality(a, b container.tomb_node CTK CTV) bool is
-    a.sn = b.sn
 
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) : property.equatable  is
+private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
-  fixed type.equality(a, b container.singleton_node CTK CTV) bool is
-    a.k = b.k
-
 
 # an indirection or a singleton node
 # these are put into a container node
-private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), property.equatable is
+private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -92,21 +86,11 @@ private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Nod
       indirection_node Indirection_Node => indirection_node.as_list f
       singleton_node singleton_node => singleton_node.as_list
 
-  fixed type.equality(a, b container.branch CTK CTV) bool is
-    match a
-      ai container.Indirection_Node =>
-        match b
-          bi container.Indirection_Node => ai = bi
-          bs container.singleton_node => false
-      as container.singleton_node =>
-        match b
-          bi container.Indirection_Node => false
-          bs container.singleton_node => as = bs
 
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64) : property.equatable
+private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64)
 pre array ∀ (b ->
       match b
         i Indirection_Node => i.gen <= gen
@@ -146,10 +130,6 @@ is
     array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list f)
          .as_list
 
-  fixed type.equality(a, b container.container_node CTK CTV) bool is
-    a.bmp = b.bmp
-      && a.gen = b.gen
-      && (container.searchable_sequence a.array) = (container.searchable_sequence b.array)
 
 
 # a prev_node is used in the generation aware compare and swap
@@ -175,7 +155,12 @@ private prev_node(CTK type : property.hashable, CTV type) : choice (failed_node 
 # a container, tomb or linked list node, with a previous field
 # to support the generational compare and swap
 #
-private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref /* needs ref, cyclic layout container->indirection->main*/ : property.equatable is
+private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref : property.equatable is
+
+  id := fuzion.sys.misc.unique_id
+
+  fixed type.equality(a, b Main_Node.this) bool is
+    a.id = b.id
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
@@ -191,27 +176,6 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
       list_node list_node => "$list_node"
     "Main_Node[prev={prev.read}]($s)"
 
-  # equality
-  #
-  fixed type.equality(a, b container.Main_Node CTK CTV) bool
-  is
-    match a.data
-      ca container.container_node =>
-        match b.data
-          cb container.container_node => ca = cb
-          tb container.tomb_node => false
-          lb container.list_node => false
-      ta container.tomb_node =>
-        match b.data
-          cb container.container_node => false
-          tb container.tomb_node => ta = tb
-          lb container.list_node => false
-      la container.list_node =>
-        match b.data
-          cb container.container_node => false
-          tb container.tomb_node => false
-          lb container.list_node => la = lb
-
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
   pre match prev.read
     nil => true
@@ -224,13 +188,10 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 
 
 # a failed node where the previous indirection node contains a main node
-private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) : property.equatable is
+private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
   redef as_string =>
     "failed_node($prev)"
-
-  fixed type.equality(a, b container.failed_node CTK CTV) bool is
-    a.prev = b.prev
 
 
 # shorthand for creating a new indirection node from Main_Node and gen
@@ -243,7 +204,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
 
   id := fuzion.sys.misc.unique_id
 
-  fixed type.equality(a, b container.Indirection_Node CTK CTV) bool is
+  fixed type.equality(a, b Indirection_Node.this) bool is
     a.id = b.id
 
   # compare and update
@@ -259,7 +220,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), property.equatable
+private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
   redef as_list => from.as_list
@@ -276,9 +237,6 @@ is
     match drop_while(sn -> sn.k != k).head
           nil => not_found
           sn singleton_node => sn.v
-
-  fixed type.equality(a, b container.list_node CTK CTV) bool is
-    (container.searchable_sequence a.from) = (container.searchable_sequence b.from)
 
 
 # unit type to indicate an operation did not succeed yet
