@@ -102,7 +102,7 @@ public class InlineArray extends ExprWithPos
    */
   AbstractType typeIfKnown()
   {
-    if (_type == null)
+    if (_type == null && !_elements.isEmpty())
       {
         AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
