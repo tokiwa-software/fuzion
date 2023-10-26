@@ -774,9 +774,9 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(value)
                 .andThen(Expr.putfield(_names.javaClass(newcl),
                                        fn,
-                                       ft))
-                .is(_types.javaType(newcl));
+                                       ft));
             }
+          res = res.is(_types.javaType(newcl));
           break;
         }
       default: throw new Error("Unexpected choice kind in tag of JVM backend: " + kind(newcl));
