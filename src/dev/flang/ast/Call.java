@@ -1206,17 +1206,7 @@ public class Call extends AbstractCall
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if ((_type.isFunType() &&
-         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
-         _calledFeature.arguments().size() == 0      &&
-         hasParentheses()
-         ||
-         _type.isLazyType()                          &&   // we are `Lazy T`
-         _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-         _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-         _actualsNew.isEmpty()                       &&   // dto.
-         originalLazyValue() == this                      // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
-         ))
+    if (isImmediateFunctionCall())
       {
         var wasLazy = _type.isLazyType();
         result = new Call(pos(),
@@ -1239,6 +1229,26 @@ public class Call extends AbstractCall
         _actuals = Expr.NO_EXPRS;
       }
     return result;
+  }
+
+
+  /**
+   * Is this call returning a Function/lambda that should
+   * immediately be called?
+   */
+  private boolean isImmediateFunctionCall()
+  {
+    return
+      _type.isFunType() &&
+      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature.arguments().size() == 0      &&
+      hasParentheses()
+    ||
+      _type.isLazyType()                          &&   // we are `Lazy T`
+      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+      _actualsNew.isEmpty()                       &&   // dto.
+      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
   }
 
 
