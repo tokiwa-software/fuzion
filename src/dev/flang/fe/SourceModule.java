@@ -56,7 +56,6 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
-import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
