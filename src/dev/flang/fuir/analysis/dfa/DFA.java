@@ -498,7 +498,19 @@ public class DFA extends ANY
              c_array_f32  ,
              c_array_f64  -> newConstArray(constCl, d, _call);
         case c_Const_String -> newConstString(d, _call);
-        default -> newValueConst(constCl, _call, ByteBuffer.wrap(d));
+        default ->
+          {
+            if (!_fuir.clazzIsChoice(constCl))
+              {
+                yield newValueConst(constCl, _call, ByteBuffer.wrap(d));
+              }
+            else
+              {
+                Errors.error("Unsupported constant in DFA analysis.",
+                             "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                yield null;
+              }
+          }
         };
       return new Pair<>(r, o);
     }

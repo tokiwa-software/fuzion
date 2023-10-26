@@ -194,8 +194,8 @@ public abstract class AbstractCall extends Expr
       calledFeature().code().containsOnlyDeclarations() &&
       // we are calling a value type feature
       !calledFeature().selfType().isRef() &&
-      // only refs without args may be inherited
-      calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.type().isRef()) &&
+      // only features without args and no fields may be inherited
+      calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
       // no unit
       this.actuals().size() > 0 &&
       this.actuals().stream().allMatch(x -> x.isCompileTimeConst());

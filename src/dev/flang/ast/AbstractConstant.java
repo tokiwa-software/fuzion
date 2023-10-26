@@ -81,7 +81,9 @@ public abstract class AbstractConstant extends Expr
   @Override
   public boolean isCompileTimeConst()
   {
-    return !type().isRef(); // String is ref but NYI
+    // NYI everything ref, e.g. strings do not work yet.
+    // everything ref needs to live on the heap, does not work with compound literals.
+    return !type().isRef();
   }
 
 

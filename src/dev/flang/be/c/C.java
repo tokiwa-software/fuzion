@@ -290,6 +290,7 @@ public class C extends ANY
             var sb = new StringBuilder();
             var offset = 0;
             var argCount = _fuir.clazzArgCount(constCl);
+            var l = new List<CStmnt>();
 
             for (int i = 0; i < argCount; i++)
               {
@@ -297,7 +298,9 @@ public class C extends ANY
                 int bytes = _fuir.clazzArgFieldBytes(constCl, i);
                 sb.append("." + _names.fieldName(arg).code());
                 sb.append(" = ");
-                sb.append(constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false)._v0.code());
+                var cd = constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false);
+                l.add(cd._v1);
+                sb.append(cd._v0.code());
                 if (i + 1 != argCount)
                   {
                     sb.append(",");
@@ -307,8 +310,8 @@ public class C extends ANY
 
             var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
             yield onHeap
-              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.EMPTY)
-              : new Pair<>(cl, CStmnt.EMPTY);
+              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.seq(l))
+              : new Pair<>(cl, CStmnt.seq(l));
           }
         };
     }

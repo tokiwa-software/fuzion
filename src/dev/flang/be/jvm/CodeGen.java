@@ -972,50 +972,37 @@ class CodeGen
       case c_array_u64    -> _jvm.constArray64 (constCl, d);
       case c_array_f32    -> _jvm.constArrayF32(constCl, d);
       case c_array_f64    -> _jvm.constArrayF64(constCl, d);
-      default             -> new Pair<>(valueConst(constCl, ByteBuffer.wrap(d)), Expr.UNIT);
-      };
-  }
-
-
-  /**
-   * create code to initialize constant from data `b`.
-   *
-   * @param constCl the clazz of this constant
-   *
-   * @param b the serialized data to be used for creating this constant
-   *
-   * @return the code for initializing the constant
-   *
-   */
-  private Expr valueConst(int constCl, ByteBuffer b)
-  {
-    return switch (_fuir.getSpecialId(constCl))
-      {
-        // we reached the "bottom" of this value const
-      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 ->
+      default             ->
         {
-          byte[] bb = new byte[b.remaining()];
-          b.get(bb);
-          yield createConstant(constCl, bb)._v0;
-        }
-        // complex instance
-      default ->
-        {
-          var result = _jvm.new0(constCl);
-          var offset = 0;
-          for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+          if (!_fuir.clazzIsChoice(constCl))
             {
-              var f = _fuir.clazzArg(constCl, index);
-              var fr = _fuir.clazzArgClazz(constCl, index);
-              var n = _fuir.clazzArgFieldBytes(constCl, index);
-              var bytes = b.slice(offset, n);
-              offset += n;
-              result = result                                  // Stack: constCl
-                .andThen(Expr.DUP)                             //        constCl, constCl
-                .andThen(valueConst(fr, bytes))                //        constCl, constCl, val
-                .andThen(_jvm.putfield(f));                    //        constCl
+              var b = ByteBuffer.wrap(d);
+              var result = _jvm.new0(constCl);
+              var offset = 0;
+              for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+                {
+                  var f = _fuir.clazzArg(constCl, index);
+                  var fr = _fuir.clazzArgClazz(constCl, index);
+                  var n = _fuir.clazzArgFieldBytes(constCl, index);
+                  var bytes = b.slice(offset, n);
+                  byte[] bb = new byte[bytes.remaining()];
+                  bytes.get(bb);
+                  offset += n;
+                  var c = createConstant(fr, bb);
+                  result = result                                  // Stack: constCl
+                    .andThen(Expr.DUP)                             //        constCl, constCl
+                    .andThen(c._v0)                                //        constCl, constCl, val
+                    .andThen(c._v1)                                //        constCl, constCl, val
+                    .andThen(_jvm.putfield(f));                    //        constCl
+                }
+              yield new Pair<>(result, Expr.UNIT);
             }
-          yield result;
+          else
+            {
+              Errors.error("Unsupported constant in JVM backend.",
+                           "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+              yield null;
+            }
         }
       };
   }

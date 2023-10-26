@@ -686,7 +686,7 @@ public class FUIR extends IR
       .argumentFields()[arg]
       .resultClazz()
       ._type
-      .bytes();
+      .serializedSize();
   }
 
 

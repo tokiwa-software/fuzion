@@ -1774,11 +1774,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * bytes used when serializing call that results in this type.
    */
-  public int bytes()
+  public int serializedSize()
   {
     var ct = NumLiteral.findConstantType(this);
     return ct == null
-      ? this.featureOfType().arguments().stream().mapToInt(a -> a.resultType().bytes()).sum()
+      ? this.featureOfType().arguments().stream().mapToInt(a -> a.resultType().serializedSize()).sum()
       : ct.bytes();
   }
 
