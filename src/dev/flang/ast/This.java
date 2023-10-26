@@ -256,19 +256,6 @@ public class This extends ExprWithPos
 
 
   /**
-   * Resolve syntactic sugar. In this case, This is removed completely, it has
-   * been replaced during resolveTypes by calls to the outer reference this
-   * refers to.
-   *
-   * @return the Expr this was replaced by.
-   */
-  public Expr resolveSyntacticSugar()
-  {
-    throw new Error("This should disappear after type resolution");
-  }
-
-
-  /**
    * Check if this is an implicit access to the universe, i.e., for a feature
    * call f.g.h where f is found in the universe, this call will be converted to
    * "universe.this.f.g.h", this returns true for "universe.this".
