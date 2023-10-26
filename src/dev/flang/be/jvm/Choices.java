@@ -131,39 +131,37 @@ public class Choices extends ANY implements ClassFileConstants
     int units = 0;
     int refs = 0;
     boolean overlappingRefs = false;
+    for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
+      {
+        var tc = _fuir.clazzChoice(cl, i);
+        if (!_fuir.clazzIsVoidType(tc))
+          {
+            nonVoid++;
+            if (_fuir.clazzIsUnitType(tc))
+              {
+                units++;
+              }
+            else if (_fuir.clazzIsRef(tc))
+              {
+                refs++;
+                for (var j = 0; j < i; j++)
+                  {
+                    var tcj = _fuir.clazzChoice(cl, j);
+                    if (overlappingRefs(tc, tcj))
+                      {
+                        overlappingRefs = true;
+                      }
+                  }
+              }
+          }
+      }
+
     if (_fuir.clazzIs(cl, FUIR.SpecialClazzes.c_bool))
       { // very small examples may use only `TRUE` or only `FALSE`, or none of
         // these values, which would then turn `bool` into a `unitlike` or even
         // `voidlike` choice, but we do not want to deal with this exotic case:
         nonVoid = 2;
         units = 2;
-      }
-    else
-      {
-        for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
-          {
-            var tc = _fuir.clazzChoice(cl, i);
-            if (!_fuir.clazzIsVoidType(tc))
-              {
-                nonVoid++;
-                if (_fuir.clazzIsUnitType(tc))
-                  {
-                    units++;
-                  }
-                else if (_fuir.clazzIsRef(tc))
-                  {
-                    refs++;
-                    for (var j = 0; j < i; j++)
-                      {
-                        var tcj = _fuir.clazzChoice(cl, j);
-                        if (overlappingRefs(tc, tcj))
-                          {
-                            overlappingRefs = true;
-                          }
-                      }
-                  }
-              }
-          }
       }
 
     if      (nonVoid == 0                               ) { return ImplKind.voidlike; }
