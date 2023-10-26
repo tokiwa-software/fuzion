@@ -1062,7 +1062,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_int run_tests_c run_tests_jvm
+run_tests: run_tests_c run_tests_jvm run_tests_int
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
@@ -1080,11 +1080,11 @@ run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
-	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm || echo "*** NYI: ignoring failed JVM backend tests ***"
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
-run_tests_parallel: run_tests_int_parallel run_tests_c_parallel run_tests_jvm_parallel
+run_tests_parallel: run_tests_c_parallel run_tests_jvm_parallel run_tests_int_parallel
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
@@ -1102,7 +1102,7 @@ run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 .PHONY .SILENT: run_tests_jvm_parallel
 run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
-	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm || echo "*** NYI: ignoring failed JVM backend tests ***"
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
 .PHONY: clean
 clean:
