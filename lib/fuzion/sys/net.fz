@@ -87,11 +87,10 @@ module net is
   # returns an error or a new descriptor.
   module accept(sd i64) outcome i64 is
     iarr := fuzion.sys.internal_array_init i64 1
-    arr := iarr.as_array
     if accept sd iarr.data then
-      arr[0]
+      iarr[0]
     else
-      error "accept failed, error number: {arr[0]}"
+      error "accept failed, error number: {iarr[0]}"
 
 
   # open and connect a client socket
