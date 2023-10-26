@@ -224,7 +224,8 @@ public abstract class Expr extends ByteCode
 
   /**
    * Flag to enable (or suppress, if false) comments in the bytecode, see
-   * comment(String).
+   * comment(String) for how to use this and dev.flang.be.jvm.JVM.CODE_COMMENTS
+   * for how to enable this.
    */
   public static boolean ENABLE_COMMENTS = false;
 
