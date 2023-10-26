@@ -39,11 +39,11 @@ nested_choice_negative =>
 
   my_string : String is
   my_choice2 : choice String my_string is
-  my_choice2 := "str" // 2. should flag an error: generics must be disjoint
+  mc2 my_choice2 := "str" // 2. should flag an error: generics must be disjoint
 
   my_i32 : i32 1 is
   my_choice3 : choice i32 my_i32 is
-  my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
+  mc3 my_choice3 := my_i32 // 3. should flag an error: generics must be disjoint
 
   my_generic_choice(A,B type) : choice A B is
   a my_generic_choice String my_string := "string" // 4. should flag an error: generics must be disjoint
