@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
-doubledeclaration_negative.cyclic1.b => 44  // 2. should flag an error, feature already declared in doubledeclaration_negative.fz
+public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+public redef doubledeclaration_negative.cyclic1.b => 44  // 2. should flag an error, feature already declared in doubledeclaration_negative.fz
