@@ -429,7 +429,8 @@ public class Resolution extends ANY
   public void resolveDeclarations(AbstractFeature af)
   {
     if (PRECONDITIONS) require
-      (state(af).atLeast(State.LOADED));
+      (state(af).atLeast(State.LOADED),
+       af != Types.f_ERROR);
 
     if (af instanceof Feature f)
       {

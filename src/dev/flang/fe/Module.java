@@ -31,6 +31,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Consts;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
+import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
@@ -192,9 +193,9 @@ public abstract class Module extends ANY
       {
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.any() || cf != null);
+          (Errors.any() || (cf != null && cf != Types.f_ERROR));
 
-        if (cf != null && (cf.isConstructor() || cf.isChoice()))
+        if (cf != null && cf != Types.f_ERROR && (cf.isConstructor() || cf.isChoice()))
           {
             data(cf)._heirs.add(outer);
             resolveDeclarations(cf);

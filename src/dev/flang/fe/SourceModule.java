@@ -502,11 +502,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
            }
-         else
+         else if (o != Types.f_ERROR)
            {
              setOuterAndAddInner(inner, o);
              _res.resolveDeclarations(o);
              inner.scheduleForResolution(_res);
+           }
+          else
+           {
+             if (CHECKS) check
+               (Errors.any());
            }
        });
   }
