@@ -86,7 +86,7 @@ public class Env extends ExprWithPos
    */
   AbstractType typeIfKnown()
   {
-    return _type;
+    return null;
   }
 
 
@@ -134,8 +134,19 @@ public class Env extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
-    _type = _type.resolve(res, outer);
-    return this;
+    var resolvedType = _type.resolve(res, outer);
+
+    if (CHECKS) check
+      (resolvedType instanceof ResolvedType);
+
+    return new Env(this.pos(), resolvedType)
+    {
+      @Override
+      public AbstractType type()
+      {
+        return resolvedType;
+      }
+    };
   }
 
 
