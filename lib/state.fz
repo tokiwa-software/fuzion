@@ -46,36 +46,36 @@ is
 
   # monadic operator
   #
-  redef infix >>= (f T -> state T S) => state.this.bind T f
+  public redef infix >>= (f T -> state T S) => state.this.bind T f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind (B type, f T -> state B S) state B S is
+  public bind (B type, f T -> state B S) state B S is
     f val
 
 
   # return function
   #
-  return (a T) => state a get mode
+  public return (a T) => state a get mode
 
 
   # map this using f
   #
-  map (B type, f T -> B) state B S is
+  public map (B type, f T -> B) state B S is
     state (f val) get mode
 
 
   # modify the state, leaving the contents unchanged
   #
-  modify (f S -> S) => state val (f get) mode
+  public modify (f S -> S) => state val (f get) mode
 
 
   # set state to new, leaving the contents unchanged
   #
-  put (new S) => state val new mode
+  public put (new S) => state val new mode
 
 
   # converts option to a string
