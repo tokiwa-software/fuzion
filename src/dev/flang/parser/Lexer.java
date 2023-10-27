@@ -453,6 +453,12 @@ public class Lexer extends SourceFile
 
 
   /**
+   * End position of the previous token, -1 if none
+   */
+  private int _lastTokenEndPos = -1;
+
+
+  /**
    * Minimum indentation required for the current token: current() must have
    * indentation > _minIndent, while currentAtMinIndent() must have indentation
    * >= _minIndent.
@@ -532,6 +538,7 @@ public class Lexer extends SourceFile
     _curToken = original._curToken;
     _tokenPos = original._tokenPos;
     _lastTokenPos = original._lastTokenPos;
+    _lastTokenEndPos = original._lastTokenEndPos;
     _minIndent = original._minIndent;
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
@@ -828,6 +835,7 @@ public class Lexer extends SourceFile
   public void next()
   {
     _lastTokenPos = _tokenPos;
+    _lastTokenEndPos = tokenEndPos();
     _ignoredTokenBefore = false;
     nextRaw();
     while (ignore(currentNoLimit()))
@@ -932,6 +940,16 @@ public class Lexer extends SourceFile
   int lastTokenPos()
   {
     return _lastTokenPos;
+  }
+
+
+  /**
+   * The byte end position of the previous non-skip token in the source file.  -1 if
+   * this does not exist.
+   */
+  int lastTokenEndPos()
+  {
+    return _lastTokenEndPos;
   }
 
 

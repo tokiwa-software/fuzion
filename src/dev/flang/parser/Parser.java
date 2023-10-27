@@ -2158,7 +2158,7 @@ simpleterm  : bracketTerm
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourcePos(p1).rangeTo(endPos), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourceRange(p1, endPos), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2192,6 +2192,11 @@ simpleterm  : bracketTerm
       {
         result = call(result);
       }
+    var p2 = lastTokenEndPos();
+    if (p1 < p2) // in case or a parsing error, we might not have made any progress
+      {
+        result.setSourceRange(sourceRange(p1, p2));
+      }
     return result;
   }
 
@@ -2220,7 +2225,7 @@ stringTermB : '}any chars&quot;'
         if (isString(t))
           {
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos(), ps._v0);
+            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps._v0);
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))

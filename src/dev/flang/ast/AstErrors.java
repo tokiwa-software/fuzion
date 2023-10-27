@@ -123,7 +123,7 @@ public class AstErrors extends ANY
   }
   static String s(Expr e)
   {
-    return expr(e.pos().sourceText());
+    return expr(e.sourceRange().sourceText());
   }
   static String s(AbstractAssign a)
   {
