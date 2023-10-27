@@ -1165,11 +1165,11 @@ public class Feature extends AbstractFeature
         while (i.hasNext() && !_detectedCyclicInheritance)
           {
             var p = i.next();
-            p.loadCalledFeature(res, this);
             if (p instanceof Call cp)
               {
                 cp._isInheritanceCall = true;
               }
+            p.loadCalledFeature(res, this);
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);

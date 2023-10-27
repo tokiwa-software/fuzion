@@ -776,7 +776,8 @@ public class Call extends AbstractCall
                     actualsResolved = true;
                     findChainedBooleans(res, thiz);
                   }
-                if (_calledFeature == null)
+                // !isInheritanceCall: see issue #2153
+                if (_calledFeature == null && !isInheritanceCall())
                   { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
