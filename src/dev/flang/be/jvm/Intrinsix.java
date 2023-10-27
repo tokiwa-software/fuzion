@@ -578,16 +578,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.iconst(0)); // false
       return new Pair<>(res, Expr.UNIT);
     });
-    put("fuzion.sys.thread.join0", (jvm, cl, pre, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(args.get(0))
-          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-            "fuzion_sys_thread_join0",
-            methodDescriptor(Runtime.class, "fuzion_sys_thread_join0"),
-            PrimitiveType.type_void));
-      return new Pair<>(Expr.UNIT, res);
-    });
 
     put("fuzion.sys.thread.spawn0",
         (jvm, cl, pre, cc, tvalue, args) ->

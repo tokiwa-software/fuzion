@@ -827,17 +827,29 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.thread.join0", (interpreter, innerClazz) -> args ->
         {
-          try
+          var thread = _startedThreads_.get(args.get(1).i64Value());
+          var result = false;
+          do
             {
-              _startedThreads_.get(args.get(1).i64Value()).join();
-              _startedThreads_.remove(args.get(1).i64Value());
+              try
+                {
+                  thread.join();
+                  result = true;
+                }
+              catch (InterruptedException e)
+                {
+
+                }
             }
-          catch (InterruptedException e)
-            {
-              // NYI handle this exception
-              System.err.println("Joining of threads was interrupted: " + e);
-              System.exit(1);
-            }
+          while (!result);
+
+          // NYI: comment, fridi:
+          // Furthermore, remove should probably not be called by join, but either by
+          // the Thread itself or by some cleanup mechanism that removes terminated
+          // threads, either when new threads are started or by a system thread that
+          // joins and removes threads that are about to terminate.
+          _startedThreads_.remove(args.get(1).i64Value());
+
           return Value.EMPTY_VALUE;
         });
 

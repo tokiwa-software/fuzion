@@ -811,6 +811,33 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
+  public static void fuzion_sys_thread_join0(long threadId)
+  {
+    var thread = Runtime._startedThreads_.get(threadId);
+    var result = false;
+    do
+      {
+        try
+          {
+            thread.join();
+            result = true;
+          }
+        catch (InterruptedException e)
+          {
+
+          }
+      }
+    while (!result);
+
+    // NYI: comment, fridi:
+    // Furthermore, remove should probably not be called by join, but either by
+    // the Thread itself or by some cleanup mechanism that removes terminated
+    // threads, either when new threads are started or by a system thread that
+    // joins and removes threads that are about to terminate.
+    Runtime._startedThreads_.remove(threadId);
+  }
+
+
 }
 
 /* end of file */
