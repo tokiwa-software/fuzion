@@ -56,6 +56,9 @@ public class FuzionConstants extends ANY
   public static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
 
 
+  public static final String BASE_MODULE_NAME = "base";
+
+
   /*----------------------  special feature names  ----------------------*/
 
 

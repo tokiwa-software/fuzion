@@ -45,6 +45,11 @@ public class SourceFile extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
+  /**
+   * SourceFile instance used for SourcePosition._builtIn_.
+   */
+  public static final SourceFile _builtIn_ = new SourceFile(Path.of("--builtin--"), new byte[0]);
+
 
   /**
    * Result of failure to decode a codepoint.
