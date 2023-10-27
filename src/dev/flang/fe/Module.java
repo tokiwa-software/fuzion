@@ -29,8 +29,8 @@ package dev.flang.fe;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Consts;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.State;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
@@ -350,7 +350,7 @@ public abstract class Module extends ANY
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVING_DECLARATIONS) || of.isUniverse());
+      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
 
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;

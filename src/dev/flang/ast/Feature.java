@@ -764,7 +764,7 @@ public class Feature extends AbstractFeature
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == Feature.State.LOADING);
+      (isUniverse() || state() == State.LOADING);
 
     return _outer != null;
   }
@@ -775,7 +775,7 @@ public class Feature extends AbstractFeature
   public void setOuter(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == Feature.State.LOADING,
+      (isUniverse() || state() == State.LOADING,
        !outerSet());
 
     this._outer = outer;
@@ -966,7 +966,7 @@ public class Feature extends AbstractFeature
    */
   boolean isChoiceBeforeTypesResolved()
   {
-    if (state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         if (isBaseChoice())
           {
@@ -1159,7 +1159,7 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_INHERITANCE;
 
         if (CHECKS) check
-          ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
+          ((_outer == null) || res.state(_outer).atLeast(State.RESOLVING));
 
         var i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)

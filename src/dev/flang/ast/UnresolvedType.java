@@ -607,14 +607,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *   a.type.b.type.c.d
    *
    * then we replace 'b.this.type' by the type parameter of a.b.type.
+   * @param res
    *
    * @param outerfeat the outer feature this type is declared in.
    */
-  AbstractType resolveThisType(AbstractFeature outerfeat)
+  AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
     AbstractType result = this;
     var o = outerfeat;
@@ -664,9 +665,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
-    AbstractType result = resolveThisType(outerfeat);
+    AbstractType result = resolveThisType(res, outerfeat);
     if (result == this)
       {
         result = findGenerics(outerfeat);
@@ -698,7 +699,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
     findGenerics(outerfeat);
     if (_resolved == null)

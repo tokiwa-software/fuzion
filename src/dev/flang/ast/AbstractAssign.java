@@ -221,7 +221,7 @@ public abstract class AbstractAssign extends Expr
   private boolean resultTypeKnown(Resolution res)
   {
     return  _assignedField != Types.f_ERROR
-         && _assignedField.state().atLeast(Feature.State.RESOLVED_TYPES)
+         && res.state(_assignedField).atLeast(State.RESOLVED_TYPES)
          && _assignedField.resultTypeRaw(res) != null;
   }
 

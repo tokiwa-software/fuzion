@@ -1240,7 +1240,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       featureOfType().state().atLeast(Feature.State.RESOLVED));
+       featureOfType().state().atLeast(State.RESOLVED));
 
     return typeType(null);
   }
@@ -1261,7 +1261,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
+       res != null || featureOfType().state().atLeast(State.RESOLVED));
 
     var result = this;
     var fot = featureOfType();

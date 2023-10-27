@@ -80,39 +80,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     }
   }
 
-
-  // NYI The feature state should be part of the resolution.
-  public enum State {
-    LOADING,
-    FINDING_DECLARATIONS,
-    LOADED,
-    RESOLVING,
-    RESOLVING_INHERITANCE,
-    RESOLVED_INHERITANCE,
-    RESOLVING_DECLARATIONS,
-    RESOLVED_DECLARATIONS,
-    RESOLVING_TYPES,
-    RESOLVED_TYPES,
-    RESOLVING_SUGAR1,
-    RESOLVED_SUGAR1,
-    TYPES_INFERENCING,
-    TYPES_INFERENCED,
-    BOXING,
-    BOXED,
-    CHECKING_TYPES1,
-    CHECKED_TYPES1,
-    RESOLVING_SUGAR2,
-    RESOLVED_SUGAR2,
-    CHECKING_TYPES2,
-    RESOLVED,
-    ERROR;
-    public boolean atLeast(State s)
-    {
-      return this.ordinal() >= s.ordinal();
-    }
-  };
-
-
   /*------------------------  static variables  -------------------------*/
 
 
@@ -236,7 +203,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   boolean isBaseChoice()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
 
     // NYI: cleanup: would be nice to implement this as follows or similar:
     //
@@ -267,7 +234,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature universe()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.LOADED));
+      (state().atLeast(State.LOADED));
 
     AbstractFeature r = this;
     while (!r.isUniverse() && r != Types.f_ERROR)
@@ -296,7 +263,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     var n = featureName().baseName();
     return
-      !state().atLeast(Feature.State.FINDING_DECLARATIONS) ||
+      !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                         ||
       outer() == null                                      ||
       outer().isUniverse()                                    ? n
@@ -359,9 +326,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * NYI: Remove, replace by Resolution.state(Feature).
    */
-  Feature.State state()
+  public State state()
   {
-    return Feature.State.RESOLVED;
+    return State.RESOLVED;
   }
 
 
@@ -400,7 +367,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.RESOLVING_TYPES));
+      (state().atLeast(State.RESOLVING_TYPES));
 
     List<AbstractType> result;
 
@@ -503,7 +470,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractType selfType()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+      (state().atLeast(State.FINDING_DECLARATIONS));
 
     AbstractType result = _selfType;
     if (result == null)
@@ -513,7 +480,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           : createThisType();
         _selfType = result;
       }
-    if (state().atLeast(Feature.State.RESOLVED_TYPES))
+    if (state().atLeast(State.RESOLVED_TYPES))
       {
         result = Types.intern(result);
       }
@@ -524,7 +491,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        // does not hold if feature is declared repeatedly
        Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
-       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       !state().atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
        );
 
     return result;
@@ -697,7 +664,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.FINDING_DECLARATIONS),
+      (res.state(this).atLeast(State.FINDING_DECLARATIONS),
        res != null,
        Errors.any() || !isUniverse(),
        !isTypeFeature());
@@ -914,7 +881,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+      (state().atLeast(State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
     var g = generics().asActuals();
@@ -926,7 +893,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        // does not hold if feature is declared repeatedly
        Errors.any() || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
-       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       !state().atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
        );
 
     return result;
@@ -961,7 +928,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType resultTypeRaw(Resolution res, List<AbstractType> actualGenerics)
   {
     if (CHECKS) check
-      (state().atLeast(Feature.State.RESOLVING_TYPES));
+      (res.state(this).atLeast(State.RESOLVING_TYPES));
 
     var result = resultTypeRaw(res);
     if (result != null)
@@ -988,7 +955,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    if (!state().atLeast(Feature.State.RESOLVING_TYPES))
+    if (!res.state(this).atLeast(State.RESOLVING_TYPES))
       {
         res.resolveTypes(this);
       }
@@ -1229,7 +1196,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (PRECONDITIONS) require
       (heir != null,
-       state().atLeast(Feature.State.RESOLVING_TYPES));
+       state().atLeast(State.RESOLVING_TYPES));
 
     if (heir != Types.f_ERROR)
       {
@@ -1292,7 +1259,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       heir.state().atLeast(Feature.State.CHECKING_TYPES1));
+       res.state(heir).atLeast(State.CHECKING_TYPES1));
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 
@@ -1379,8 +1346,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean inheritsFrom(AbstractFeature parent)
   {
     if (PRECONDITIONS) require
-                         (state().atLeast(Feature.State.LOADED),
-       parent != null && parent.state().atLeast(Feature.State.LOADED));
+                         (state().atLeast(State.LOADED),
+       parent != null && parent.state().atLeast(State.LOADED));
 
     if (this == parent)
       {
@@ -1472,7 +1439,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     for (var frml : arguments())
       {
         if (CHECKS) check
-          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
         if (CHECKS) check

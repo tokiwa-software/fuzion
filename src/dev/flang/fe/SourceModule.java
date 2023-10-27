@@ -56,8 +56,8 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
+import dev.flang.ast.State;
 import dev.flang.ast.Types;
-import dev.flang.ast.AbstractFeature.State;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -236,7 +236,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _res = new Resolution(_options, _universe, this);
     if (_dependsOn.length > 0)
       {
-        _universe.setState(Feature.State.RESOLVED);
+        _universe.setState(State.RESOLVED);
         new Types.Resolved(this,
                            (name) ->
                              {
@@ -381,7 +381,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                  for (var inner : parseAndGetFeatures(p))
                                    {
                                      findDeclarations(inner, f);
-                                     if (inner.state().atLeast(Feature.State.LOADED))
+                                     if (inner.state().atLeast(State.LOADED))
                                        {
                                          inner.scheduleForResolution(_res);
                                        }
@@ -426,7 +426,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public void findDeclarations(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (inner.isUniverse() || inner.state() == Feature.State.LOADING,
+      (inner.isUniverse() || inner.state() == State.LOADING,
        ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
@@ -541,11 +541,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void setOuterAndAddInner(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (inner.isUniverse() || inner.state() == Feature.State.LOADING,
+      (inner.isUniverse() || inner.state() == State.LOADING,
        inner.isUniverse() == (outer == null));
 
     inner.setOuter(outer);
-    inner.setState(Feature.State.FINDING_DECLARATIONS);
+    inner.setState(State.FINDING_DECLARATIONS);
     inner.checkName();
     inner.addOuterRef(_res);
 
@@ -598,11 +598,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
         AstErrors.initialValueNotAllowed(inner);
       }
 
-    inner.setState(Feature.State.LOADED);
+    inner.setState(State.LOADED);
 
     if (POSTCONDITIONS) ensure
       (inner.outer() == outer,
-       inner.state() == Feature.State.LOADED);
+       inner.state() == State.LOADED);
   }
 
 
@@ -714,7 +714,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public void findDeclaredOrInheritedFeatures(Feature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
+      (outer.state() == State.RESOLVING_DECLARATIONS);
 
     var d = data(outer);
     if (d._declaredOrInheritedFeatures == null)
@@ -794,11 +794,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
         f.redefines().add(existing);
       }
     if (f     instanceof Feature ff &&
-        outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+        outer.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         ff._addedLate = true;
       }
-    if (f instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (f instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         ff._addedLate = true;
       }
@@ -820,7 +820,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
+      (outer.state().atLeast(State.LOADING));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
@@ -863,7 +863,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     df.put(fn, f);
-    if (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (outer.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         addToDeclaredOrInheritedFeatures(outer, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
@@ -943,7 +943,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
+      (outer.state().atLeast(State.LOADING));
 
     var result = declaredOrInheritedFeatures(outer).get(name);
 
@@ -981,7 +981,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
+      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;

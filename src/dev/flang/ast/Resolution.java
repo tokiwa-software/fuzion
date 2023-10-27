@@ -212,7 +212,7 @@ public class Resolution extends ANY
   void add(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVING);
+      (f.state() == State.RESOLVING);
 
     forInheritance.add(f);
   }
@@ -224,7 +224,7 @@ public class Resolution extends ANY
   void scheduleForDeclarations(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVED_INHERITANCE);
+      (f.state() == State.RESOLVED_INHERITANCE);
 
     forDeclarations.add(f);
   }
@@ -236,7 +236,7 @@ public class Resolution extends ANY
   void scheduleForTypeResolution(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVED_DECLARATIONS);
+      (f.state() == State.RESOLVED_DECLARATIONS);
 
     forType.add(f);
   }
@@ -249,7 +249,7 @@ public class Resolution extends ANY
   void scheduleForSyntacticSugar1Resolution(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVED_TYPES);
+      (f.state() == State.RESOLVED_TYPES);
 
     forSyntacticSugar1.add(f);
   }
@@ -261,7 +261,7 @@ public class Resolution extends ANY
   void scheduleForTypeInference(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVED_SUGAR1);
+      (f.state() == State.RESOLVED_SUGAR1);
 
     forTypeInference.add(f);
   }
@@ -273,7 +273,7 @@ public class Resolution extends ANY
   void scheduleForBoxing(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.TYPES_INFERENCED);
+      (f.state() == State.TYPES_INFERENCED);
 
     forBoxing.add(f);
   }
@@ -286,7 +286,7 @@ public class Resolution extends ANY
   void scheduleForCheckTypes1(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.BOXED);
+      (f.state() == State.BOXED);
 
     forCheckTypes1.add(f);
   }
@@ -299,7 +299,7 @@ public class Resolution extends ANY
   void scheduleForSyntacticSugar2Resolution(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.CHECKED_TYPES1);
+      (f.state() == State.CHECKED_TYPES1);
 
     forSyntacticSugar2.add(f);
   }
@@ -314,7 +314,7 @@ public class Resolution extends ANY
   void scheduleForCheckTypes2(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == Feature.State.RESOLVED_SUGAR2);
+      (f.state() == State.RESOLVED_SUGAR2);
 
     forCheckTypes2.add(f);
   }
@@ -429,7 +429,7 @@ public class Resolution extends ANY
   public void resolveDeclarations(AbstractFeature af)
   {
     if (PRECONDITIONS) require
-      (af.state().atLeast(Feature.State.LOADED));
+      (state(af).atLeast(State.LOADED));
 
     if (af instanceof Feature f)
       {
@@ -439,7 +439,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (af.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (state(af).atLeast(State.RESOLVED_DECLARATIONS));
   }
 
 
@@ -453,7 +453,7 @@ public class Resolution extends ANY
   void resolveTypes(AbstractFeature af)
   {
     if (PRECONDITIONS) require
-      (af.state().atLeast(Feature.State.LOADED));
+      (state(af).atLeast(State.LOADED));
 
     if (af instanceof Feature f)
       {
@@ -462,7 +462,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || af.state().atLeast(Feature.State.RESOLVED_TYPES));
+      (Errors.any() || state(af).atLeast(State.RESOLVED_TYPES));
   }
 
 
@@ -479,6 +479,20 @@ public class Resolution extends ANY
   {
     var rt = new Feature.ResolveTypes(this);
     return e.visit(rt, outer);
+  }
+
+
+  /**
+   * Returns the state the feature `af` is in
+   * w.r.t. this resolution.
+   */
+  public State state(AbstractFeature af)
+  {
+    if (PRECONDITIONS) require
+      (af != null,
+       af != Types.f_ERROR);
+
+    return af.state();
   }
 
 }

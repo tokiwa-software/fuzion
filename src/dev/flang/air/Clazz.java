@@ -45,11 +45,11 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -410,8 +410,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private boolean hasUsedOuterRef(AbstractFeature f)
   {
     var or = f.outerRef();
+
+    if (CHECKS) check
+      (Errors.any() || or == null || or.state().atLeast(State.RESOLVED));
+
     return !f.isConstructor()  // do not specialize a constructor
-      && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
+      && or != null && or.state().atLeast(State.RESOLVED);
   }
 
 
