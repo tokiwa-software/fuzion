@@ -2471,6 +2471,7 @@ public class Call extends AbstractCall
    *  - convert boolean operations &&, || and : into if-expressions
    *  - convert repeated boolean operations ! into identity   // NYI
    *  - perform constant propagation for basic algebraic ops  // NYI
+   *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
    *  - replace calls to intrinsics that return compile time constants
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
@@ -2478,8 +2479,9 @@ public class Call extends AbstractCall
   Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
-    //    if (true) return result;
-    if (!Errors.any())
+    // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
+    // also we can not inherit from none constructor features like and/or etc.
+    if (!Errors.any() && !isInheritanceCall())
       {
         // convert
         //   a && b into if a b     else false
