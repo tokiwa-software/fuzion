@@ -4,7 +4,7 @@
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
-In call: 'mod_pub'
+In call: 'b.mod_pub'
 To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $FUZION/lib/b.fz:26:17:
   module:public mod_pub is
 ----------------^

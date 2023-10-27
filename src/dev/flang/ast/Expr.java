@@ -34,6 +34,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -69,6 +70,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return SourcePosition.builtIn;
       }
+      public void setSourceRange(SourceRange r)
+      { // do not change the source position if there was an error.
+      }
       public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
@@ -96,6 +100,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * Souce code position range of this Expression. null if not known.
+   */
+  private SourceRange _range;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -107,6 +116,44 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Source range of this Expr.  Note that this might be longer than the Expr
+   * itself, e.g., in a call
+   *
+   *    f (x.q y)
+   *
+   * The argument to f is the call `x.q y` whose position is
+   *
+   *    f (x.q y)
+   * --------^
+   *
+   * but the source range is
+   *
+   *    f (x.q y)
+   * -----^^^^^^^
+   *
+   */
+  public SourcePosition sourceRange()
+  {
+    return _range == null ? pos() : _range;
+  }
+
+
+  public void setSourceRange(SourceRange r)
+  {
+    if (PRECONDITIONS) require
+      (/* make sure we do not accidentally set this repeatedly, as for special
+        * Exprs like ERROR_VALUE, but we might extend it as in adding
+        * parentheses around the Expr:
+        */
+       _range == null ||
+       _range.bytePos()    >= r.bytePos() &&
+       _range.byteEndPos() <= r.byteEndPos());
+
+    _range = r;
+  }
 
 
   /**
