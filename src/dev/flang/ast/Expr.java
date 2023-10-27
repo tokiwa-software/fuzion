@@ -77,7 +77,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return this;
       }
-      AbstractType typeIfKnown()
+      AbstractType typeForInferencing()
       {
         return Types.t_ERROR;
       }
@@ -164,7 +164,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   public AbstractType type()
   {
-    var result = typeIfKnown();
+    var result = typeForInferencing();
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -190,13 +190,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     return type();
   }

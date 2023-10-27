@@ -2298,6 +2298,9 @@ public class Feature extends AbstractFeature
         result = result.asThis();
       }
 
+    if (POSTCONDITIONS) ensure
+      (isTypeFeaturesThisType() || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
+
     return result;
   }
 

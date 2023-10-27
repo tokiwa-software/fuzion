@@ -94,20 +94,20 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     if (_type == null && !_elements.isEmpty())
       {
         AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
           {
-            var et = e.typeIfKnown();
+            var et = e.typeForInferencing();
             t =
               t  == null ? null :
               et == null ? null : t.union(et);
