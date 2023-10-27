@@ -2261,7 +2261,7 @@ public class Feature extends AbstractFeature
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = (outer() instanceof Feature of) ? of.resultTypeRaw(res) : outer().resultType();
+        result = outer().resultTypeRaw(res);
       }
     else if (_impl._kind == Impl.Kind.FieldDef    ||
              _impl._kind == Impl.Kind.FieldActual ||
@@ -2293,7 +2293,6 @@ public class Feature extends AbstractFeature
       {
         result = _returnType.functionReturnType();
       }
-    //    result = result instanceof ResolvedType ? Types.intern(result) : result; // NYI: why?
     if (isOuterRef())
       {
         result = result.asThis();

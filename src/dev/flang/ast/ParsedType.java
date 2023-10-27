@@ -77,7 +77,7 @@ public class ParsedType extends UnresolvedType
    *
    * @param rov UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.LikeUnderlyingFeature
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, UnresolvedType.RefOrVal rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, RefOrVal rov)
   {
     super(pos, name, generics, outer, rov);
   }

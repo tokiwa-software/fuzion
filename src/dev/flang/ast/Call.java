@@ -1206,17 +1206,7 @@ public class Call extends AbstractCall
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if ((_type.isFunType() &&
-         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
-         _calledFeature.arguments().size() == 0      &&
-         hasParentheses()
-         ||
-         _type.isLazyType()                          &&   // we are `Lazy T`
-         _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-         _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-         _actualsNew.isEmpty()                       &&   // dto.
-         originalLazyValue() == this                      // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
-         ))
+    if (isImmediateFunctionCall())
       {
         var wasLazy = _type.isLazyType();
         result = new Call(pos(),
@@ -1243,6 +1233,26 @@ public class Call extends AbstractCall
 
 
   /**
+   * Is this call returning a Function/lambda that should
+   * immediately be called?
+   */
+  private boolean isImmediateFunctionCall()
+  {
+    return
+      _type.isFunType() &&
+      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature.arguments().size() == 0      &&
+      hasParentheses()
+    ||
+      _type.isLazyType()                          &&   // we are `Lazy T`
+      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+      _actualsNew.isEmpty()                       &&   // dto.
+      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
+  }
+
+
+  /**
    * Helper routine for resolveFormalArgumentTypes to determine the actual type
    * of a formal argument after inheritance and determination of actual type
    * from the target type and generics provided to the call.
@@ -1258,7 +1268,7 @@ public class Call extends AbstractCall
   private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
   {
     int cnt = 1;
-    var frmlT = frml.resultType();
+    var frmlT = frml.resultTypeRaw(res);
     if (CHECKS) check
       (frmlT == Types.intern(frmlT));
 
@@ -1692,8 +1702,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        if ( g.isOpen() && foundAt.get(i) == null ||
-            !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
             if (CHECKS) check
@@ -2158,14 +2167,14 @@ public class Call extends AbstractCall
     if (!loadCalledFeatureUnlessTargetVoid(res, outer))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
-        // `Expr`. Solution: we wrap `_target` into a call `universe.void
+        // `Expr`. Solution: we wrap `_target` into a call `universe.id void
         // _target`.
         result = new Call(pos(),
                           new Universe(),
                           new List<>(new Actual(_target)),
-                          NO_GENERICS,
+                          new List<>(Types.resolved.t_void),
                           new List<>(_target),
-                          Types.resolved.f_void,
+                          Types.resolved.f_id,
                           Types.resolved.t_void);
         result.resolveTypes(res, outer);
       }

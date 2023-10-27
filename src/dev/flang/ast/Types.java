@@ -154,6 +154,7 @@ public class Types extends ANY
     public final AbstractType t_array_u64;
     public final AbstractType t_array_f32;
     public final AbstractType t_array_f64;
+    public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
     public final AbstractFeature f_TRUE;
@@ -210,6 +211,7 @@ public class Types extends ANY
       t_any           = ct.type(FuzionConstants.ANY_NAME);
       t_unit          = ct.type(FuzionConstants.UNIT_NAME);
       t_void          = ct.type("void");
+      f_id            = universe.get(mod, "id", 2);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
       f_TRUE          = universe.get(mod, "TRUE");

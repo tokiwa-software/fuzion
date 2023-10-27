@@ -1602,20 +1602,10 @@ should be avoided as much as possible.
                         var fn = _types._choices.generalValueFieldName(rt, i);
                         var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
-                        if (!_fuir.clazzIsRef(tc) && ft instanceof AType)
-                          { // the value type may be a null reference if it is unused.
-                            v = v
-                              .andThen(Expr.DUP)
-                              .andThen(Expr.branch(O_ifnonnull,
-                                                   cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, tc, -1)));
-                          }
-                        else
-                          {
-                            v = cloneValue(cl, pre, v, tc, -1);
-                          }
+                        var cv = cloneValueOrNull(cl, pre, v, tc, -1);
                         e = e
                           .andThen(Expr.aload(nl, jt))
-                          .andThen(v)
+                          .andThen(cv)
                           .andThen(Expr.putfield(cc, fn, ft));
                       }
                   }
@@ -1641,13 +1631,11 @@ should be avoided as much as possible.
                                          rt,
                                          fi,
                                          rti);
-                    v = cloneValue(cl, pre, v, rti, fi);
+                    var cv = cloneValueOrNull(cl, pre, v, rti, fi);
                     e = e
-                      .andThen(assignField(cl, pre,
-                                           Expr.aload(nl, jt),
-                                           fi,
-                                           v,
-                                           rti));
+                      .andThen(Expr.aload(nl,jt))
+                      .andThen(cv)
+                      .andThen(putfield(fi));
                   }
               }
           }
@@ -1655,6 +1643,47 @@ should be avoided as much as possible.
           .andThen(Expr.aload(nl, jt));
       }
     return value;
+  }
+
+
+  /**
+   * Helper for cloneValue to clone the value of a field in a choice or a
+   * product type that may be null.
+   *
+   * In a choice, a value may be null if that that field is unused, i.e., the
+   * choice is tagged for a different value.
+   *
+   * In a product type, the value of a field may be null if that value was not
+   * yet initialized. This may currently be the case of local variables on
+   * branches that were executed yet, or that may never be executed at all as for
+   * `str` in
+   *
+   *    point (x, y i32) is
+   *      if x > y
+   *         str := "$x is greater than $y"
+   *         if debug
+   *           say str
+   *
+   *   p := Point 3 4
+   *
+   */
+  private Expr cloneValueOrNull(int cl, boolean pre, Expr value, int rt, int f)
+  {
+    Expr result;
+    if (_types.javaType(rt) instanceof AType)
+      { // the value type may be a null reference if it is unused.
+        // NYI: The null-check should be removed when reading fields that are known to be initialized.
+        result = value
+          .andThen(Expr.DUP)
+          .andThen(Expr.branch(O_ifnonnull,
+                               cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, rt, f)));
+      }
+    else
+      {
+        result = cloneValue(cl, pre, value, rt, f);
+
+      }
+    return result;
   }
 
 
@@ -1817,7 +1846,7 @@ should be avoided as much as possible.
                 if (CHECKS) check
                   (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
 
-                var and = Expr.UNIT; // set to Expr.IAND after first field to AND the values
+                var count = 0;
                 for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
                   {
                     var fi = _fuir.clazzField(rt, i);
@@ -1828,12 +1857,16 @@ should be avoided as much as possible.
                         var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
                         result = result
                           .andThen(compareValues(cl, pre, f1, f2, rti))
-                          .andThen(and);
-                        and = Expr.IAND;
+                          .andThen(count > 0 ? Expr.IAND  // if several field, use AND to cumulate result
+                                             : Expr.UNIT);
+                        count++;
                       }
                   }
+                if (count == 0)
+                  { // no fields exist, so values are equal:
+                    result = result.andThen(Expr.iconst(1));
+                  }
               }
-
           }
       }
     return result;

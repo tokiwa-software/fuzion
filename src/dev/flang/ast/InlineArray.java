@@ -102,7 +102,7 @@ public class InlineArray extends ExprWithPos
    */
   AbstractType typeIfKnown()
   {
-    if (_type == null)
+    if (_type == null && !_elements.isEmpty())
       {
         AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
@@ -126,8 +126,7 @@ public class InlineArray extends ExprWithPos
               Types.intern(new ResolvedNormalType(new List<>(t),
                                                   new List<>(t),
                                                   null,
-                                                  Types.resolved.f_array,
-                                                  UnresolvedType.RefOrVal.LikeUnderlyingFeature));
+                                                  Types.resolved.f_array));
           }
       }
     return _type;

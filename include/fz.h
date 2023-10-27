@@ -29,6 +29,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #define _FUZION_H 1
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>     // setenv, unsetenv
@@ -458,6 +459,55 @@ char * fzE_return_string(void * in) {
   return in;
 }
 
+
+/**
+ * Perform bitwise comparison of two float values. This is used by
+ * concur.atmic.compare_and_swap/set to compare floats. In particular, this
+ * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * differ, etc.
+ *
+ * NYI: CLEANUP #2122: Move impleementation to fz.c / fzlib.o or similar!
+ *
+ * @param f1, f2 two float values
+ *
+ * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ */
+bool fzE_bitwise_compare_float(float f1, float f2)
+{
+  union
+  {
+    float f;
+    int32_t bits;
+  } v1, v2;
+  v1.f = f1;
+  v2.f = f2;
+  return v1.bits == v2.bits;
+}
+
+
+/**
+ * Perform bitwise comparison of two double values. This is used by
+ * concur.atmic.compare_and_swap/set to compare floats. In particular, this
+ * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * differ, etc.
+ *
+ * NYI: CLEANUP: #2122: Move impleementation to fz.c / fzlib.o or similar!
+ *
+ * @param d1, d2 two double values
+ *
+ * @return true iff d1 and d2 are represented in memory by the same bit patterns.
+ */
+bool fzE_bitwise_compare_double(double d1, double d2)
+{
+  union
+  {
+    double d;
+    int64_t bits;
+  } v1, v2;
+  v1.d = d1;
+  v2.d = d2;
+  return v1.bits == v2.bits;
+}
 
 
 #endif /* fz.h  */

@@ -1,5 +1,5 @@
 
---CURDIR--/issue1054.fz:7:3: error 1: Incompatible type parameter
+--CURDIR--/issue1054.fz:30:3: error 1: Incompatible type parameter
   c (floaty f32) // bad
 --^
 formal type parameter 'T' with constraint 'ex.this.type.floaty f64'

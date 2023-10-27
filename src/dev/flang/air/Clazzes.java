@@ -1149,7 +1149,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (thiz.isRef() == result._type.isRef());
+      (Errors.any() || thiz.isRef() == result._type.isRef());
 
     return result;
   }

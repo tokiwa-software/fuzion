@@ -180,19 +180,18 @@ public class If extends ExprWithPos
     while (it.hasNext())
       {
         var t = it.next().typeIfKnown();
-        if (t == null)
-          {
-            return null;
-          }
+        t = t == null
+          ? Types.resolved.t_void
+          : t;
         result = result.union(t);
       }
-      if (result==Types.t_UNDEFINED)
-        {
-          new IncompatibleResultsOnBranches(pos(),
-                                            "Incompatible types in branches of if expression",
-                                            branches());
-          result = Types.t_ERROR;
-        }
+    if (result==Types.t_UNDEFINED)
+      {
+        new IncompatibleResultsOnBranches(pos(),
+                                          "Incompatible types in branches of if expression",
+                                          branches());
+        result = Types.t_ERROR;
+      }
     return result;
   }
 
