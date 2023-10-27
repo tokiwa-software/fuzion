@@ -537,7 +537,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
     // NYI: cleanup: Basically, resolution should no longer be needed here, but
     // be done on UnresolvedType. Need to check how we can move this to

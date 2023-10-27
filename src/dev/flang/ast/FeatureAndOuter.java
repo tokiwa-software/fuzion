@@ -145,7 +145,7 @@ public class FeatureAndOuter extends ANY
   {
     var t = new This(pos, cur, _outer);
     Expr result = t;
-    if (cur.state() != Feature.State.RESOLVING_INHERITANCE)
+    if (res.state(cur) != State.RESOLVING_INHERITANCE)
       {
         var fcur = (Feature) cur; // NYI: cast to Feature!
         result = t.resolveTypes(res, fcur);

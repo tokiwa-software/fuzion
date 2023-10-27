@@ -1140,7 +1140,7 @@ public class AstErrors extends ANY
 
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
-        cf.state().atLeast(AbstractFeature.State.RESOLVED_TYPES)                &&
+        cf.state().atLeast(State.RESOLVED_TYPES)                &&
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
         tp.isFreeType()                                                         &&
@@ -1860,7 +1860,7 @@ public class AstErrors extends ANY
             for (var arg : args)
               {
                 var argtype = "--still unknown--";
-                if (arg.state().atLeast(Feature.State.RESOLVED_TYPES))
+                if (arg.state().atLeast(State.RESOLVED_TYPES))
                   {
                     allUnknown = false;
                     argtype = s(arg.resultType());

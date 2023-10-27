@@ -38,9 +38,9 @@ import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
@@ -196,7 +196,7 @@ public class MiddleEnd extends ANY
     if (!Clazzes.isUsed(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
-        if (!(f instanceof Feature ff) || ff.state() == Feature.State.RESOLVED)
+        if (f.state() == State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
           }

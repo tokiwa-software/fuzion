@@ -116,7 +116,7 @@ public class Assign extends AbstractAssign
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       outer.state().atLeast(Feature.State.RESOLVED_TYPES),
+       outer.state().atLeast(State.RESOLVED_TYPES),
        f != null);
 
     this._name = null;
@@ -145,15 +145,15 @@ public class Assign extends AbstractAssign
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       outer.state() == Feature.State.RESOLVING_TYPES   ||
-       outer.state() == Feature.State.RESOLVED_TYPES    ||
-       outer.state() == Feature.State.TYPES_INFERENCING ||
-       outer.state() == Feature.State.RESOLVING_SUGAR2,
+       res.state(outer) == State.RESOLVING_TYPES   ||
+       res.state(outer) == State.RESOLVED_TYPES    ||
+       res.state(outer) == State.TYPES_INFERENCING ||
+       res.state(outer) == State.RESOLVING_SUGAR2,
        f != null);
 
     this._name = null;
     this._pos = pos;
-    if (outer.state().atLeast(Feature.State.TYPES_INFERENCING))
+    if (res.state(outer).atLeast(State.TYPES_INFERENCING))
       {
         propagateExpectedType(res, outer);
       }

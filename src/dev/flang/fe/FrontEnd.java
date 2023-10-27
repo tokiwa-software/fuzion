@@ -46,6 +46,7 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.State;
 import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
@@ -84,7 +85,7 @@ public class FrontEnd extends ANY
    */
   class Universe extends Feature
   {
-    { setState(Feature.State.LOADING); }
+    { setState(State.LOADING); }
     public boolean isUniverse()
     {
       return true;

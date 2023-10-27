@@ -44,9 +44,9 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
+import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Universe; // NYI: remove dependency!
@@ -363,8 +363,8 @@ public class Clazzes extends ANY
     if (result == newcl)
       {
         if (CHECKS) check
-          (Errors.any() || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
-        if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
+          (Errors.any() || result.feature().state().atLeast(State.RESOLVED));
+        if (result.feature().state().atLeast(State.RESOLVED))
           {
             clazzesToBeVisited.add(result);
           }

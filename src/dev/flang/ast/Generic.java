@@ -116,7 +116,7 @@ public class Generic extends ANY implements Comparable<Generic>
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (_typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES));
+      (_typeParameter.state().atLeast(State.RESOLVED_TYPES));
 
     var result = _typeParameter.resultType();
 
@@ -138,7 +138,7 @@ public class Generic extends ANY implements Comparable<Generic>
   public AbstractType constraint(Resolution res)
   {
     if (PRECONDITIONS) require
-      (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (res.state(feature()).atLeast(State.RESOLVED_DECLARATIONS));
 
     res.resolveTypes(_typeParameter);
     return constraint();
@@ -162,7 +162,7 @@ public class Generic extends ANY implements Comparable<Generic>
    */
   boolean isThisTypeInTypeFeature()
   {
-    return typeParameter().state().atLeast(Feature.State.FINDING_DECLARATIONS) && typeParameter().outer().isTypeFeature() && index() == 0;
+    return typeParameter().state().atLeast(State.FINDING_DECLARATIONS) && typeParameter().outer().isTypeFeature() && index() == 0;
   }
 
 

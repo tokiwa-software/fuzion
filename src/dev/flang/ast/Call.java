@@ -533,7 +533,7 @@ public class Call extends AbstractCall
     AbstractFeature result;
 
     // are we searching for features called via thiz' inheritance calls?
-    if (thiz.state() == Feature.State.RESOLVING_INHERITANCE)
+    if (res.state(thiz) == State.RESOLVING_INHERITANCE)
       {
         if (_target instanceof Call tc)
           {
@@ -721,9 +721,9 @@ public class Call extends AbstractCall
   {
     var targetVoid = false;
     if (PRECONDITIONS) require
-      (thiz.state() == Feature.State.RESOLVING_INHERITANCE
-       ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
-       : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (res.state(thiz) == State.RESOLVING_INHERITANCE
+       ? res.state(thiz.outer()).atLeast(State.RESOLVED_DECLARATIONS)
+       : res.state(thiz)        .atLeast(State.RESOLVED_DECLARATIONS));
 
     if (_calledFeature == null)
       {
@@ -743,7 +743,7 @@ public class Call extends AbstractCall
                 var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
                 for (var fo : fos)
                   {
-                    if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+                    if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
                       {
                         ff.resolveArgumentTypes(res);
                       }
@@ -836,7 +836,7 @@ public class Call extends AbstractCall
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
       {
-        if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
           {
             ff.resolveArgumentTypes(res);
           }
@@ -1764,7 +1764,7 @@ public class Call extends AbstractCall
         for (var frml : va)
           {
             if (CHECKS) check
-                          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+                          (Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
             if (!checked[vai])
               {
