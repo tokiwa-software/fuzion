@@ -69,7 +69,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * SourcePosition instance for built-in types and features that do not have a
    * source code position.
    */
-  public static final SourceRange builtIn = new SourceRange(new SourceFile(Path.of("--builtin--"), new byte[0]), 0, 0)
+  public static final SourceRange builtIn = new SourceRange(SourceFile._builtIn_, 0, 0)
     {
       public boolean isBuiltIn()
       {

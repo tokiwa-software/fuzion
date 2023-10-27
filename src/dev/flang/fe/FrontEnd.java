@@ -163,7 +163,7 @@ public class FrontEnd extends ANY
     var lms = new List<LibraryModule>();
     if (options._loadBaseLib)
       {
-        _baseModule = module("base", modulePath("base"));
+        _baseModule = module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME));
         if (_baseModule != null)
           {
             lms.add(_baseModule);

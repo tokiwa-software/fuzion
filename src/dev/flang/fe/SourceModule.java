@@ -152,6 +152,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
+  String name()
+  {
+    return "*** source module ***";
+  }
+
+
   /*---------------------------  main control  --------------------------*/
 
 

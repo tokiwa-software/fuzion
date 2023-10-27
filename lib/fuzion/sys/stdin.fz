@@ -25,7 +25,7 @@
 
 # fuzion.sys.stdin
 # NYI name in does not work right now since in is reserved keyword
-public stdin is
+module stdin is
 
   module stdin0 i64 is intrinsic
 

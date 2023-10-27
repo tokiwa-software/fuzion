@@ -37,6 +37,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourceFile;
 
@@ -132,6 +133,12 @@ public abstract class Module extends ANY
    * @param outer the declaring feature
    */
   public abstract SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
+
+
+  /**
+   * The name of this module, e.g. base
+   */
+  abstract String name();
 
 
   /**
@@ -298,7 +305,9 @@ public abstract class Module extends ANY
     var v = af.visibility();
     var definesType = af.definesType() || ignoreDefinesType;
 
-    return definesType && (usedIn.sameAs(definedIn)
+            // generated inline code may access base library features
+    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
+      || definesType && (usedIn.sameAs(definedIn)
       || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
       || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
   }
@@ -316,8 +325,10 @@ public abstract class Module extends ANY
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
 
-    return  // built-in or generated features like #loop0
-            af.pos().isBuiltIn()
+            // generated inline code may access base library features
+    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
+            // built-in or generated features like #loop0
+            || af.pos().isBuiltIn()
             // in same file
             || ((usedIn.sameAs(definedIn)
             // at least module visible and in same module
