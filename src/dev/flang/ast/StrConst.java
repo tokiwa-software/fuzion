@@ -88,6 +88,19 @@ public class StrConst extends Constant
   @Override
   public AbstractType type()
   {
+    return Types.resolved.t_string;
+  }
+
+
+  /**
+   * The type of the constant that is created is not `String`, but
+   * `Const_String`.
+   *
+   * @return Types.resolved.t_Const_String
+   */
+  @Override
+  public AbstractType typeOfConstant()
+  {
     return Types.resolved.t_Const_String;
   }
 

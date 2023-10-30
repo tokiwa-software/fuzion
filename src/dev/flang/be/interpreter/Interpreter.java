@@ -359,7 +359,7 @@ public class Interpreter extends ANY
         result = _cachedConsts_.get(i);
         if (result == null)
           {
-            var t = i.type();
+            var t = i.typeOfConstant();
             var d = i.data();
             if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
             else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
