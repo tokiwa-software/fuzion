@@ -751,7 +751,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
