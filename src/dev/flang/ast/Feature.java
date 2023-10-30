@@ -2050,7 +2050,7 @@ public class Feature extends AbstractFeature
             { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
               found();
             }
-          else if (c == Call.ERROR)
+          else if (c == Call.ERROR && curres[1] == null)
             {
               curres[1] = Types.f_ERROR;
             }
