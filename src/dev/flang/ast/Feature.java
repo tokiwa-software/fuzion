@@ -2033,7 +2033,7 @@ public class Feature extends AbstractFeature
         void found()
         {
           if (PRECONDITIONS) require
-            (curres[1] == null);
+            (curres[1] == null || curres[1] == Types.f_ERROR);
 
           curres[1] = curres[0];
         }
@@ -2044,15 +2044,15 @@ public class Feature extends AbstractFeature
             { // Found the call, so we got the result!
               found();
             }
-          else
+          else if (c.calledFeatureKnown() &&
+                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
+                   c.calledFeature() == inner)
+            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
+              found();
+            }
+          else if (c == Call.ERROR && curres[1] == null)
             {
-              // NYI: Special handling for anonymous inner features that currently do not appear as expressions
-              if (c.calledFeatureKnown() &&
-                  c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                  c.calledFeature() == inner)
-                {
-                  found();
-                }
+              curres[1] = Types.f_ERROR;
             }
           return c;
         }
