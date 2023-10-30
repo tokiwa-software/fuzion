@@ -1757,7 +1757,7 @@ hw25 is
 
     Clazz clazz;
     var ic = _codeIds.get(c).get(ix);
-    var t = ((Expr) ic).type();
+    var t = ((AbstractConstant) ic).typeOfConstant();
     if      (t.compareTo(Types.resolved.t_bool        ) == 0) { clazz = Clazzes.bool        .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_i8          ) == 0) { clazz = Clazzes.i8          .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_i16         ) == 0) { clazz = Clazzes.i16         .getIfCreated(); }

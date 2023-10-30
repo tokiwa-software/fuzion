@@ -1071,7 +1071,7 @@ public class Clazzes extends ANY
 
     else if (e instanceof AbstractConstant c)
       {
-        result = outerClazz.actualClazz(c.type());
+        result = outerClazz.actualClazz(c.typeOfConstant());
       }
 
     else if (e instanceof Tag t)

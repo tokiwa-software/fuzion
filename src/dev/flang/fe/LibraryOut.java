@@ -720,7 +720,7 @@ class LibraryOut extends ANY
    *   |        | length | byte          | data of the constant                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        type(c.type());
+        type(c.typeOfConstant());
         var d = c.data();
         _data.writeInt(d.length);
         _data.write(d);
