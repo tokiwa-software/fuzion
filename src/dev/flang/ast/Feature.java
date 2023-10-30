@@ -2033,7 +2033,7 @@ public class Feature extends AbstractFeature
         void found()
         {
           if (PRECONDITIONS) require
-            (curres[1] == null);
+            (curres[1] == null || curres[1] == Types.f_ERROR);
 
           curres[1] = curres[0];
         }
