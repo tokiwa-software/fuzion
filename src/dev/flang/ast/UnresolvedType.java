@@ -704,7 +704,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     findGenerics(outerfeat);
     if (_resolved == null)
       {
-        AbstractType freeResult = null;
+        AbstractType result = null;
         var of = originalOuterFeature(outerfeat);
         var o = _outer;
         if (o != null && !isThisType() && !o.isThisType())
@@ -730,7 +730,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType);
             if (fo == null)
               {
-                freeResult = addAsFreeType(res, outerfeat);
+                result = addAsFreeType(res, outerfeat);
               }
             else if (isFreeType())
               {
@@ -739,7 +739,22 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             else
               {
                 f = fo._feature;
-                if (o == null && !fo._outer.isUniverse())
+                if (o == null && f.isTypeParameter())
+                  {
+                    var generic = new Generic(f);
+                    if (!_generics.isEmpty())
+                      {
+                        AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
+                      }
+                    var results = f.outer().handDown(res, new AbstractType[] { generic.type() }, of);
+
+                    if (CHECKS) check
+                      (!f.isOpenTypeParameter(), // lookupType would not give us an open type parameter
+                       results.length == 1);     // a non-open type parameter results in exactly one type
+
+                    result = results[0];
+                  }
+                else if (o == null && !fo._outer.isUniverse())
                   {
                     o = fo._outer.thisType(fo.isNextInnerFixed());
                   }
@@ -748,7 +763,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         _outer = o;
 
         _resolved =
-          freeResult != null ? freeResult :
+          result != null     ? result :
           f == Types.f_ERROR ? Types.t_ERROR
                              : new ResolvedNormalType(generics(),
                                                       unresolvedGenerics(),

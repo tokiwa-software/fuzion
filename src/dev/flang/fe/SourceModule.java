@@ -1135,11 +1135,15 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var f = fo._feature;
             if (typeVisible(pos._sourceFile, f, true))
               {
-                (f.definesType() ? type_fs
-                                 : nontype_fs).add(f);
-                if (f.definesType())
+                if (f.definesType() ||
+                    f.isTypeParameter() && !f.isOpenTypeParameter())
                   {
+                    type_fs.add(f);
                     result = fo;
+                  }
+                else
+                  {
+                    nontype_fs.add(f);
                   }
               }
           }
