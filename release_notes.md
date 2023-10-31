@@ -1,4 +1,81 @@
-## 2023-**-**: V0.085
+## 2023-10-31: V0.085
+
+- Fuzion language
+
+  - The syntax for a routine with an explicit result type now uses `=>`
+    [#2037](https://github.com/tokiwa-software/fuzion/pull/2037) as in
+
+            the_answer u8 => 42
+
+- Front end
+
+  - An error is now produced if actual type parameters do not meet the
+    constraints given for the formal type parameter
+    [#1054](https://github.com/tokiwa-software/fuzion/issues/1054),
+    [#1818](https://github.com/tokiwa-software/fuzion/pull/1818).
+
+  - Improved type inference for empty arrays
+    [#1899](https://github.com/tokiwa-software/fuzion/issues/1899),
+    [#2124](https://github.com/tokiwa-software/fuzion/pull/2124)) enabling code
+    like the following:
+
+            a =>
+              if true
+                []
+              else
+                [3]
+
+- JVM back end
+
+  - Added support for `concur.spawn`
+    [#2038](https://github.com/tokiwa-software/fuzion/pull/2038)
+        and `concur.atomic`
+        [#2036](https://github.com/tokiwa-software/fuzion/pull/2036).
+
+  - Improved stack trace printing in case of precondition failure
+    [#2049](https://github.com/tokiwa-software/fuzion/pull/2049).
+
+  - Improved stack overflow handling, now shows Fuzion stack trace
+     [#2060](https://github.com/tokiwa-software/fuzion/pull/2060).
+
+  - Added support for tail recursion optimization
+    [#2051](https://github.com/tokiwa-software/fuzion/pull/2051).
+
+  - Added checks to avoid accidental modification of immutable arrays by
+    intrinsic functions
+    [#2099](https://github.com/tokiwa-software/fuzion/pull/2099).
+
+  - Added support for memory mapping of files
+    [#2126](https://github.com/tokiwa-software/fuzion/pull/2126).
+
+  - The JVM backend is now enabled when running the tests, a build fails
+    if the JVM backend fails to run the tests
+    [#2149](https://github.com/tokiwa-software/fuzion/pull/2149).
+
+- C back end
+
+  - Improved support for `concur.atomic` to support compare-and-swap for choice
+    and value types and avoid accessing unitialized memory
+    [#2123](https://github.com/tokiwa-software/fuzion/pull/2123).
+
+- base library
+
+  - A set of features for function composition was added which is a start
+    towards providing a framework for function composition
+    [#2046](https://github.com/tokiwa-software/fuzion/issues/2046),
+    [#2047](https://github.com/tokiwa-software/fuzion/pull/2047).
+
+  - Added `io.buffered.reader` effect
+    [#1554](https://github.com/tokiwa-software/fuzion/pull/1554).
+
+  - The base library type `void` is now implemented as an empty choice type
+    [#1962](https://github.com/tokiwa-software/fuzion/pull/1962).  Also added
+    default identity features `id` with one argument, that is return, and with
+    no argument, that returns a unary identity function.
+
+  - Several visibility fixes
+    [#2157](https://github.com/tokiwa-software/fuzion/pull/2157),
+    [#2152](https://github.com/tokiwa-software/fuzion/pull/2152).
 
 
 ## 2023-08-08: V0.084
