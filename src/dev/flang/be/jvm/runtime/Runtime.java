@@ -107,6 +107,34 @@ public class Runtime extends ANY
 
 
   /**
+   * Flag to disallow intrinsics that would permit to take over the world via
+   * file or network access, system function calls etc.
+   */
+  private static boolean _enable_unsafe_intrinsics_ = true;
+
+  /**
+   * Disable unsafe intrinsics.
+   */
+  public static void disableUnsafeIntrinsics()
+  {
+    _enable_unsafe_intrinsics_ = false;
+  }
+
+
+  /**
+   * Check if unsafe intrinsics are enabled.  If not, terminate with a fatal
+   * error.
+   */
+  public static void unsafeIntrinsic()
+  {
+    if (!_enable_unsafe_intrinsics_)
+      {
+        Errors.fatal("unsafe operation not permitted", stackTrace());
+      }
+  }
+
+
+  /**
    * The main thread. This is used by currentThread() to return
    * _nyi_remove_main_FuzionThread_ in case of the main thread.
    *
