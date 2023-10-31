@@ -64,24 +64,21 @@ public class FuzionThread extends Thread
    */
   FuzionThread(Method r, Any code)
   {
-    super(() ->
-          {
-            try
-              {
-                r.invoke(null, code);
-              }
-            catch (IllegalAccessException e)
-              {
-                Errors.fatal("thread_spawn call caused `" + e + "` when calling `" + r + "`");
-              }
-            catch (InvocationTargetException e)
-              {
-                Runtime.handleInvocationTargetException(e);
-              }
-          },
-          "Fuzion child thread");
-
-    start();
+    this((Runnable) () ->
+         {
+           try
+             {
+               r.invoke(null, code);
+             }
+           catch (IllegalAccessException e)
+             {
+               Errors.fatal("thread_spawn call caused `" + e + "` when calling `" + r + "`");
+             }
+           catch (InvocationTargetException e)
+             {
+               Runtime.handleInvocationTargetException(e);
+             }
+         });
   }
 
 
@@ -90,7 +87,16 @@ public class FuzionThread extends Thread
    */
   FuzionThread(Main main)
   {
-    super(()->main.fz_run(), "Fuzion main thread");
+    this((Runnable) ()->main.fz_run());
+  }
+
+
+  /**
+   * Create a main FuzionThread and run code.
+   */
+  private FuzionThread(Runnable r)
+  {
+    super(()->Errors.runAndExit(r), "Fuzion thread");
     start();
   }
 
