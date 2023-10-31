@@ -86,14 +86,12 @@ public class FuzionThread extends Thread
 
 
   /**
-   * Create a FuzionThread instance to be used for the main thread.
-   *
-   * NYI: remove as soon as main feature is executed in a newly created
-   * FuzionThread.
+   * Create a main FuzionThread and run code.
    */
-  FuzionThread()
+  FuzionThread(Main main)
   {
-    super("Fuzion main thread");
+    super(()->main.fz_run(), "Fuzion main thread");
+    start();
   }
 
 

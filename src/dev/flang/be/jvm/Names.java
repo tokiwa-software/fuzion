@@ -33,6 +33,7 @@ import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.be.jvm.runtime.Any;
 import dev.flang.be.jvm.runtime.AnyI;
+import dev.flang.be.jvm.runtime.Main;
 import dev.flang.be.jvm.runtime.Runtime;
 import dev.flang.be.jvm.runtime.Intrinsics;
 
@@ -57,6 +58,24 @@ public class Names extends ANY implements ClassFileConstants
    * Name of JVM backend's runtime's class Runtime
    */
   static final String RUNTIME_CLASS = Runtime.class.getName().replace(".","/");
+
+
+  /**
+   * Name of JVM backend's runtime's method Runtime.run
+   */
+  static final String RUNTIME_RUN = "run";
+
+
+  /**
+   * Name of JVM backend's runtime's interface Main
+   */
+  static final String MAIN_INTERFACE = Main.class.getName().replace(".","/");
+
+
+  /**
+   * Name of JVM backend's runtime's interface method Main.fz_run.
+   */
+  static final String MAIN_RUN = "fz_run";
 
   /**
    * Name of JVM backend's runtime's class that defines Intrinsics that are not inlined.
