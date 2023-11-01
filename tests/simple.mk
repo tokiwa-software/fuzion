@@ -42,7 +42,7 @@ ENV = \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
 int:
-	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm:
 	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
@@ -51,7 +51,7 @@ c:
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
 record_jvm:
 	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)

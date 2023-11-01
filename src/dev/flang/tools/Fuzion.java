@@ -850,7 +850,7 @@ class Fuzion extends Tool
       }
     if (_backend == Backend.undefined)
       {
-        _backend = Backend.interpreter;
+        _backend = Backend.jvm;
       }
     if (_backend.needsMain() && _main == null && !_readStdin)
       {

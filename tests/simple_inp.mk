@@ -38,7 +38,7 @@ STDIN = $(NAME).fz.stdin
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 
 int:
-	cat $(STDIN) | ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 c:
 	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
@@ -47,7 +47,7 @@ jvm:
 	cat $(STDIN) | ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	cat $(STDIN) | ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
 record_c:
 	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)

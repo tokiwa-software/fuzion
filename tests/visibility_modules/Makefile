@@ -39,7 +39,7 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 
 
 int: clean modules/mod.fum
-	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm: clean modules/mod.fum
 	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
@@ -48,7 +48,7 @@ c: clean modules/mod.fum
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
-	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
 	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
