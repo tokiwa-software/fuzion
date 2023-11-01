@@ -169,7 +169,7 @@ public class If extends ExprWithPos
 
 
   /**
-   * Helper routine for typeIfKnown to determine the
+   * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
    */
   private AbstractType typeFromIfOrElse()
@@ -179,32 +179,31 @@ public class If extends ExprWithPos
     Iterator<Expr> it = branches();
     while (it.hasNext())
       {
-        var t = it.next().typeIfKnown();
-        if (t == null)
-          {
-            return null;
-          }
+        var t = it.next().typeForInferencing();
+        t = t == null
+          ? Types.resolved.t_void
+          : t;
         result = result.union(t);
       }
-      if (result==Types.t_UNDEFINED)
-        {
-          new IncompatibleResultsOnBranches(pos(),
-                                            "Incompatible types in branches of if expression",
-                                            branches());
-          result = Types.t_ERROR;
-        }
+    if (result==Types.t_UNDEFINED)
+      {
+        new IncompatibleResultsOnBranches(pos(),
+                                          "Incompatible types in branches of if expression",
+                                          branches());
+        result = Types.t_ERROR;
+      }
     return result;
   }
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     if (PRECONDITIONS) require
       (elseBlock != null || elseIf != null);

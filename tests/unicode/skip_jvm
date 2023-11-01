@@ -1,0 +1,2 @@
+NYI results in code size of bytecode created for `character_encodings.unicode.data.lower_case_mappings` is 107131, the maximum allowed length is 65535
+see: #2159

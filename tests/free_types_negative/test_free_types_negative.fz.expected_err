@@ -5,7 +5,7 @@
 Types inferred for first type parameter 'T':
 'String' found at --CURDIR--/test_free_types_negative.fz:49:11:
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
-----------^
+----------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:49:6:
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
 -----^^^^
@@ -17,7 +17,7 @@ Types inferred for first type parameter 'T':
 Types inferred for first type parameter 'T':
 'String' found at --CURDIR--/test_free_types_negative.fz:52:11:
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
-----------^
+----------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:52:6:
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
 -----^^^^
@@ -29,7 +29,7 @@ Types inferred for first type parameter 'T':
 Types inferred for first type parameter '#_0':
 'String' found at --CURDIR--/test_free_types_negative.fz:61:10:
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
----------^
+---------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:61:5:
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
 ----^^^^
@@ -92,7 +92,7 @@ actual type parameter 'String'
 For the formal argument 'test_free_type_negative.f.v' the following incompatible actual arguments where found for type inference:
 actual is value of type 'String' at --CURDIR--/test_free_types_negative.fz:75:5:
   f "[1,3,5]" Any    # 5.a should flag an error since two calls with incompatible actual argument types
-----^
+----^^^^^^^^^
 actual is value of type 'f64' at --CURDIR--/test_free_types_negative.fz:76:5:
   f 3.14 "e"         # 5.b should flag an error since two calls with incompatible actual argument types
 ----^^^^

@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
@@ -46,11 +45,11 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -420,8 +419,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private boolean hasUsedOuterRef(AbstractFeature f)
   {
     var or = f.outerRef();
+
+    if (CHECKS) check
+      (Errors.any() || or == null || or.state().atLeast(State.RESOLVED));
+
     return !f.isConstructor()  // do not specialize a constructor
-      && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
+      && or != null && or.state().atLeast(State.RESOLVED);
   }
 
 
@@ -1944,7 +1947,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
       _outer == Clazzes.any.getIfCreated()    ||
-      _outer == Clazzes.string.getIfCreated() ||
 
       _outer._isNormalized ||
 
@@ -1987,9 +1989,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isInstantiated()
   {
-    return this == Clazzes.fuzionSysArray_u8 ||
-      this == Clazzes.Const_String.get() ||
-      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
+    return _checkingInstantiatedHeirs > 0 || (isOuterInstantiated() || isChoice()
+      || _outer.isRef() && _outer.hasInstantiatedHeirs() || _outer.feature().isTypeFeature()) && _isInstantiated;
   }
 
 

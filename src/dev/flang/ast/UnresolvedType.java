@@ -607,14 +607,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *   a.type.b.type.c.d
    *
    * then we replace 'b.this.type' by the type parameter of a.b.type.
+   * @param res
    *
    * @param outerfeat the outer feature this type is declared in.
    */
-  AbstractType resolveThisType(AbstractFeature outerfeat)
+  AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
     AbstractType result = this;
     var o = outerfeat;
@@ -664,9 +665,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
-    AbstractType result = resolveThisType(outerfeat);
+    AbstractType result = resolveThisType(res, outerfeat);
     if (result == this)
       {
         result = findGenerics(outerfeat);
@@ -698,12 +699,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
     findGenerics(outerfeat);
     if (_resolved == null)
       {
-        AbstractType freeResult = null;
+        AbstractType result = null;
         var of = originalOuterFeature(outerfeat);
         var o = _outer;
         if (o != null && !isThisType() && !o.isThisType())
@@ -729,7 +730,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType);
             if (fo == null)
               {
-                freeResult = addAsFreeType(res, outerfeat);
+                result = addAsFreeType(res, outerfeat);
               }
             else if (isFreeType())
               {
@@ -738,7 +739,22 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             else
               {
                 f = fo._feature;
-                if (o == null && !fo._outer.isUniverse())
+                if (o == null && f.isTypeParameter())
+                  {
+                    var generic = new Generic(f);
+                    if (!_generics.isEmpty())
+                      {
+                        AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
+                      }
+                    var results = f.outer().handDown(res, new AbstractType[] { generic.type() }, of);
+
+                    if (CHECKS) check
+                      (!f.isOpenTypeParameter(), // lookupType would not give us an open type parameter
+                       results.length == 1);     // a non-open type parameter results in exactly one type
+
+                    result = results[0];
+                  }
+                else if (o == null && !fo._outer.isUniverse())
                   {
                     o = fo._outer.thisType(fo.isNextInnerFixed());
                   }
@@ -747,7 +763,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         _outer = o;
 
         _resolved =
-          freeResult != null ? freeResult :
+          result != null     ? result :
           f == Types.f_ERROR ? Types.t_ERROR
                              : new ResolvedNormalType(generics(),
                                                       unresolvedGenerics(),

@@ -1,14 +1,16 @@
 
---CURDIR--/main.fz:44:5: error 1: Could not find called feature
+--CURDIR--/main.fz:67:5: error 1: Could not find called feature
   b.mod_pub // should flag an error should not be callable
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
-In call: 'mod_pub'
-To solve this, you might change the visibility of this feature: 'mod_pub' (no arguments)
+In call: 'b.mod_pub'
+To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $FUZION/lib/b.fz:26:17:
+  module:public mod_pub is
+----------------^
 
 
---CURDIR--/main.fz:31:22: error 2: Type not found
+--CURDIR--/main.fz:54:22: error 2: Type not found
   priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
 ---------------------^^^
 Type 'mod' was not found, no corresponding feature nor formal type parameter exists
@@ -17,67 +19,67 @@ in feature: 'a'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/main.fz:5:18: error 3: Feature specifying type visibility does not define a type.
+--CURDIR--/main.fz:28:18: error 3: Feature specifying type visibility does not define a type.
   private:module not_a_constructor  => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^
 To solve this, remove the type visibility: 'module'.
 
 
---CURDIR--/main.fz:6:18: error 4: Feature specifying type visibility does not define a type.
+--CURDIR--/main.fz:29:18: error 4: Feature specifying type visibility does not define a type.
   private:public not_a_constructor2 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
 To solve this, remove the type visibility: 'public'.
 
 
---CURDIR--/main.fz:7:18: error 5: Feature specifying type visibility does not define a type.
+--CURDIR--/main.fz:30:18: error 5: Feature specifying type visibility does not define a type.
   module:public  not_a_constructor3 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
 To solve this, remove the type visibility: 'public'.
 
 
---CURDIR--/main.fz:13:10: error 6: Result type or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:36:10: error 6: Result type or any of its generics have more restrictive visibility than feature.
   module mod priv is  // should flag an error result type visibility more restrictive than a
 ---------^^^
 To solve this, increase the visibility of 'priv' (no arguments) or specify a different return type.
 
 
---CURDIR--/main.fz:15:10: error 7: Result type or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:38:10: error 7: Result type or any of its generics have more restrictive visibility than feature.
   module mod8 := priv_ce  // should flag an error priv_ce visibility more restrictive than mod8
 ---------^^^^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different return type.
 
 
---CURDIR--/main.fz:20:10: error 8: Argument types or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:43:10: error 8: Argument types or any of its generics have more restrictive visibility than feature.
   module mod2 (arg priv) is // should flag an error arg type visibility more restrictive than a
 ---------^^^^
 To solve this, increase the visibility of 'priv' (no arguments) or specify a different type for the argument 'arg'.
 
 
---CURDIR--/main.fz:26:10: error 9: Result type or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:49:10: error 9: Result type or any of its generics have more restrictive visibility than feature.
   module mod3 : choice priv_ce unit is // should flag an error priv_ce visibility more restrictive than mod3
 ---------^^^^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different return type.
 
 
---CURDIR--/main.fz:27:10: error 10: Result type or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:50:10: error 10: Result type or any of its generics have more restrictive visibility than feature.
   module mod4(T type : priv_ce) is // should flag an error priv_ce visibility more restrictive than mod4
 ---------^^^^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different return type.
 
 
---CURDIR--/main.fz:27:10: error 11: Argument types or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:50:10: error 11: Argument types or any of its generics have more restrictive visibility than feature.
   module mod4(T type : priv_ce) is // should flag an error priv_ce visibility more restrictive than mod4
 ---------^^^^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different type for the argument 'T'.
 
 
---CURDIR--/main.fz:28:10: error 12: Argument types or any of its generics have more restrictive visibility than feature.
+--CURDIR--/main.fz:51:10: error 12: Argument types or any of its generics have more restrictive visibility than feature.
   module mod5(arg array priv_ce) is // should flag an error priv_ce visibility more restrictive than mod5
 ---------^^^^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different type for the argument 'arg'.
 
 
---CURDIR--/main.fz:39:7: error 13: Called feature in precondition has more restrictive visibility than feature.
+--CURDIR--/main.fz:62:7: error 13: Called feature in precondition has more restrictive visibility than feature.
   pre my_false  // should flag an error my_false visibility more restrictive than feat4
 ------^^^^^^^^
 To solve this, increase the visibility of 'm.my_false' or do not use this feature in the precondition.

@@ -309,7 +309,7 @@ module fileio is
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
   #
-  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer is intrinsic
+  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer is intrinsic_constructor
 
 
   # close a memory mapped file
@@ -317,6 +317,31 @@ module fileio is
   # return: 0 on success, -1 on error
   #
   module munmap(address fuzion.sys.Pointer, size i64) i32 is intrinsic
+
+
+  # get a byte from a given mapped buffer
+  #
+  module mapped_buffer_get
+    (# memory address obtained by `mmap`
+     m fuzion.sys.Pointer,
+
+     # index of the byte
+     i i64
+    ) u8 is intrinsic_constructor
+
+
+  # set a byte of a given mapped buffer to a new value
+  #
+  module mapped_buffer_set
+    (# memory address obtained by `mmap`
+     m fuzion.sys.Pointer,
+
+     # index of the byte
+     i i64,
+
+     # new value to be written at m[i]
+     o u8
+    ) unit is intrinsic
 
 
   # flush user-space buffers of file descriptor

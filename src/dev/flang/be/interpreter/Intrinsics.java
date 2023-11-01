@@ -616,6 +616,19 @@ public class Intrinsics extends ANY
         {
           return new i32Value(0);
         });
+    put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
+        {
+          return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
+                                              /* type  */ Types.resolved.t_u8);
+        });
+    put("fuzion.sys.fileio.mapped_buffer_set", (interpreter, innerClazz) -> args ->
+        {
+          ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
+                                       /* value */ args.get(3),
+                                       /* type  */ Types.resolved.t_u8);
+          return Value.EMPTY_VALUE;
+        });
+
     put("fuzion.std.exit", (interpreter, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
@@ -814,17 +827,29 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.thread.join0", (interpreter, innerClazz) -> args ->
         {
-          try
+          var thread = _startedThreads_.get(args.get(1).i64Value());
+          var result = false;
+          do
             {
-              _startedThreads_.get(args.get(1).i64Value()).join();
-              _startedThreads_.remove(args.get(1).i64Value());
+              try
+                {
+                  thread.join();
+                  result = true;
+                }
+              catch (InterruptedException e)
+                {
+
+                }
             }
-          catch (InterruptedException e)
-            {
-              // NYI handle this exception
-              System.err.println("Joining of threads was interrupted: " + e);
-              System.exit(1);
-            }
+          while (!result);
+
+          // NYI: comment, fridi:
+          // Furthermore, remove should probably not be called by join, but either by
+          // the Thread itself or by some cleanup mechanism that removes terminated
+          // threads, either when new threads are started or by a system thread that
+          // joins and removes threads that are about to terminate.
+          _startedThreads_.remove(args.get(1).i64Value());
+
           return Value.EMPTY_VALUE;
         });
 

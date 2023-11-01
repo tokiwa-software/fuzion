@@ -473,7 +473,7 @@ public class Call extends AbstractCall
     result = Types.intern(result);
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (result != null && result != Types.resolved.t_Const_String);
 
     return result;
   }
@@ -533,7 +533,7 @@ public class Call extends AbstractCall
     AbstractFeature result;
 
     // are we searching for features called via thiz' inheritance calls?
-    if (thiz.state() == Feature.State.RESOLVING_INHERITANCE)
+    if (res.state(thiz) == State.RESOLVING_INHERITANCE)
       {
         if (_target instanceof Call tc)
           {
@@ -584,7 +584,7 @@ public class Call extends AbstractCall
     if (cb != null && _actuals.size() == 1)
       {
         var b = res.resolveType(cb._actuals.getLast(), thiz);
-        if (b.typeIfKnown() != Types.t_ERROR)
+        if (b.typeForInferencing() != Types.t_ERROR)
           {
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
             var tmp = new Feature(res,
@@ -721,9 +721,9 @@ public class Call extends AbstractCall
   {
     var targetVoid = false;
     if (PRECONDITIONS) require
-      (thiz.state() == Feature.State.RESOLVING_INHERITANCE
-       ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
-       : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (res.state(thiz) == State.RESOLVING_INHERITANCE
+       ? res.state(thiz.outer()).atLeast(State.RESOLVED_DECLARATIONS)
+       : res.state(thiz)        .atLeast(State.RESOLVED_DECLARATIONS));
 
     if (_calledFeature == null)
       {
@@ -743,7 +743,7 @@ public class Call extends AbstractCall
                 var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
                 for (var fo : fos)
                   {
-                    if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+                    if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
                       {
                         ff.resolveArgumentTypes(res);
                       }
@@ -776,7 +776,8 @@ public class Call extends AbstractCall
                     actualsResolved = true;
                     findChainedBooleans(res, thiz);
                   }
-                if (_calledFeature == null)
+                // !isInheritanceCall: see issue #2153
+                if (_calledFeature == null && !isInheritanceCall())
                   { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
                     findOperatorOnOuter(res, thiz);
                   }
@@ -835,7 +836,7 @@ public class Call extends AbstractCall
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
       {
-        if (fo._feature instanceof Feature ff && ff.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
           {
             ff.resolveArgumentTypes(res);
           }
@@ -1116,13 +1117,13 @@ public class Call extends AbstractCall
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  AbstractType typeForInferencing()
   {
     return _type;
   }
@@ -1206,17 +1207,7 @@ public class Call extends AbstractCall
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if ((_type.isFunType() &&
-         _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
-         _calledFeature.arguments().size() == 0      &&
-         hasParentheses()
-         ||
-         _type.isLazyType()                          &&   // we are `Lazy T`
-         _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-         _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-         _actualsNew.isEmpty()                       &&   // dto.
-         originalLazyValue() == this                      // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
-         ))
+    if (isImmediateFunctionCall())
       {
         var wasLazy = _type.isLazyType();
         result = new Call(pos(),
@@ -1243,6 +1234,26 @@ public class Call extends AbstractCall
 
 
   /**
+   * Is this call returning a Function/lambda that should
+   * immediately be called?
+   */
+  private boolean isImmediateFunctionCall()
+  {
+    return
+      _type.isFunType() &&
+      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature.arguments().size() == 0      &&
+      hasParentheses()
+    ||
+      _type.isLazyType()                          &&   // we are `Lazy T`
+      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+      _actualsNew.isEmpty()                       &&   // dto.
+      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
+  }
+
+
+  /**
    * Helper routine for resolveFormalArgumentTypes to determine the actual type
    * of a formal argument after inheritance and determination of actual type
    * from the target type and generics provided to the call.
@@ -1258,7 +1269,7 @@ public class Call extends AbstractCall
   private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
   {
     int cnt = 1;
-    var frmlT = frml.resultType();
+    var frmlT = frml.resultTypeRaw(res);
     if (CHECKS) check
       (frmlT == Types.intern(frmlT));
 
@@ -1713,7 +1724,7 @@ public class Call extends AbstractCall
     // the types of the actuals:
     if (!missing.isEmpty() &&
         (!Errors.any() ||
-         !_actuals.stream().anyMatch(x -> x.typeIfKnown() == Types.t_ERROR)))
+         !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
       }
@@ -1753,7 +1764,7 @@ public class Call extends AbstractCall
         for (var frml : va)
           {
             if (CHECKS) check
-                          (Errors.any() || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+                          (Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
             if (!checked[vai])
               {
@@ -1863,7 +1874,7 @@ public class Call extends AbstractCall
   AbstractType typeFromActual(Expr actual,
                               AbstractFeature outer)
   {
-    var actualType = actual == null ? null : actual.typeIfKnown();
+    var actualType = actual == null ? null : actual.typeForInferencing();
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
@@ -1975,8 +1986,8 @@ public class Call extends AbstractCall
           {
             for (var p: aft.inherits())
               {
-                var pt = p.typeIfKnown();
-                if (pt != null)
+                var pt = p.type();
+                if (pt != Types.t_ERROR)
                   {
                     var apt = pt.applyTypePars(actualType);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
@@ -2265,9 +2276,9 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || result.typeIfKnown() != Types.t_ERROR);
+      (Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
-    return result.typeIfKnown() == Types.t_ERROR && !res._options.isLanguageServer()
+    return result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
       : result;
   }
@@ -2293,7 +2304,7 @@ public class Call extends AbstractCall
         // NYI: Need to check why this is needed, it does not make sense to
         // propagate the target's type to target. But if removed,
         // tests/reg_issue16_chainedBool/ fails with C backend:
-        _target = _target.propagateExpectedType(res, outer, _target.typeIfKnown());
+        _target = _target.propagateExpectedType(res, outer, _target.typeForInferencing());
       }
   }
 
@@ -2471,6 +2482,7 @@ public class Call extends AbstractCall
    *  - convert boolean operations &&, || and : into if-expressions
    *  - convert repeated boolean operations ! into identity   // NYI
    *  - perform constant propagation for basic algebraic ops  // NYI
+   *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
    *  - replace calls to intrinsics that return compile time constants
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
@@ -2478,8 +2490,9 @@ public class Call extends AbstractCall
   Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
-    //    if (true) return result;
-    if (!Errors.any())
+    // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
+    // also we can not inherit from none constructor features like and/or etc.
+    if (!Errors.any() && !isInheritanceCall())
       {
         // convert
         //   a && b into if a b     else false

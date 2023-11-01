@@ -1,0 +1,9 @@
+ex =>
+
+  a =>
+    if true
+      []
+    else
+      [3]
+
+  say a

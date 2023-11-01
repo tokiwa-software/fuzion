@@ -351,7 +351,6 @@ public class Impl extends ANY
    *
    * @param outer the feature that contains this implementation.
    *
-   * @param t the expected type.
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
@@ -462,7 +461,7 @@ public class Impl extends ANY
           {
             iv.visit(new Feature.ResolveTypes(res),io);
           }
-        var t = iv.typeIfKnown();
+        var t = iv.typeForInferencing();
         if (t != null)
           {
             result = result.union(t);
@@ -482,7 +481,7 @@ public class Impl extends ANY
               {
                 var iv = _initialValues.get(i);
                 var io = _outerOfInitialValues.get(i);
-                var t = iv.typeIfKnown();
+                var t = iv.typeForInferencing();
                 if (t != null)
                   {
                     var l = positions.get(t);
@@ -524,8 +523,8 @@ public class Impl extends ANY
 
     return switch (_kind)
       {
-      case FieldDef    -> _initialValue.typeIfKnown();
-      case RoutineDef  -> _code.typeIfKnown();
+      case FieldDef    -> _initialValue.typeForInferencing();
+      case RoutineDef  -> _code.typeForInferencing();
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> throw new Error("missing case "+_kind);
       };

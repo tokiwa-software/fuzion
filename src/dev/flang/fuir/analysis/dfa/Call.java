@@ -29,9 +29,7 @@ package dev.flang.fuir.analysis.dfa;
 import java.nio.charset.StandardCharsets;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
 
-import dev.flang.fuir.analysis.dfa.DFA.IntrinsicDFA;
 
 import dev.flang.ir.IR;
 

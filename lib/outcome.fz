@@ -142,7 +142,7 @@ is
 
   # monadic operator
   #
-  redef infix >>= (f T -> outcome T) => outcome.this.bind f
+  public redef infix >>= (f T -> outcome T) => outcome.this.bind f
 
 
   # monadic operator

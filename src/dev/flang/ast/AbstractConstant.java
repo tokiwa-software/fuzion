@@ -51,6 +51,21 @@ public abstract class AbstractConstant extends Expr
 
 
   /**
+   * The type of the constant.  This may be different to the the user-visible
+   * `type()` of this constant, in particular, for a constnat string, `type()`
+   * returns `String`, while `typeOfConstant` is the actual child of `String`
+   * used for constants: `Const_String`.
+   *
+   * @return the type to be used to create the constant value. Is assignment
+   * compatible to `type()`.
+   */
+  public AbstractType typeOfConstant()
+  {
+    return type();
+  }
+
+
+  /**
    * Serialized form of the data of this constant.
    */
   public abstract byte[] data();

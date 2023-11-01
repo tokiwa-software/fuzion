@@ -1,5 +1,5 @@
 
---CURDIR--/issue170.fz:1:16: error 1: Names of arguments used in this feature must be distinct.
+--CURDIR--/issue170.fz:24:16: error 1: Names of arguments used in this feature must be distinct.
 say (a 3 4 5); a(b,b,b i32) => b+b+b
 ---------------^
 The duplicate name is 'b'
@@ -10,7 +10,7 @@ Argument #2: 'b' is duplicate
 To solve this, rename the arguments to have unique names.
 
 
---CURDIR--/issue170.fz:2:18: error 2: Names of arguments used in this feature must be distinct.
+--CURDIR--/issue170.fz:25:18: error 2: Names of arguments used in this feature must be distinct.
 say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
 -----------------^
 The duplicate names are 'd', 'e'

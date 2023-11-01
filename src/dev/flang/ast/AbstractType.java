@@ -1240,7 +1240,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       featureOfType().state().atLeast(Feature.State.RESOLVED));
+       featureOfType().state().atLeast(State.RESOLVED));
 
     return typeType(null);
   }
@@ -1261,7 +1261,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       res != null || featureOfType().state().atLeast(Feature.State.RESOLVED));
+       res != null || featureOfType().state().atLeast(State.RESOLVED));
 
     var result = this;
     var fot = featureOfType();
@@ -1780,6 +1780,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return ct == null
       ? this.featureOfType().arguments().stream().mapToInt(a -> a.resultType().serializedSize()).sum()
       : ct.bytes();
+  }
+
+
+  /**
+   * @return the type to use for inferencing instead of `t`.
+   */
+  public static AbstractType forInferencing(AbstractType t)
+  {
+    return t == Types.resolved.t_Const_String
+      ? Types.resolved.t_string
+      : t;
   }
 
 

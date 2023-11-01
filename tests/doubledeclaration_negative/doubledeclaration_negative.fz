@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-doubledeclaration_negative is
+public doubledeclaration_negative is
 
-  cyclic1 is
-   a := 3
-   b => 33
+  public cyclic1 is
+    public a := 3
+    public b => 33

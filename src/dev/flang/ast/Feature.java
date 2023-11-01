@@ -764,7 +764,7 @@ public class Feature extends AbstractFeature
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == Feature.State.LOADING);
+      (isUniverse() || state() == State.LOADING);
 
     return _outer != null;
   }
@@ -775,7 +775,7 @@ public class Feature extends AbstractFeature
   public void setOuter(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == Feature.State.LOADING,
+      (isUniverse() || state() == State.LOADING,
        !outerSet());
 
     this._outer = outer;
@@ -966,7 +966,7 @@ public class Feature extends AbstractFeature
    */
   boolean isChoiceBeforeTypesResolved()
   {
-    if (state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         if (isBaseChoice())
           {
@@ -1159,17 +1159,17 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_INHERITANCE;
 
         if (CHECKS) check
-          ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
+          ((_outer == null) || res.state(_outer).atLeast(State.RESOLVING));
 
         var i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
           {
             var p = i.next();
-            p.loadCalledFeature(res, this);
             if (p instanceof Call cp)
               {
                 cp._isInheritanceCall = true;
               }
+            p.loadCalledFeature(res, this);
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);
@@ -2033,7 +2033,7 @@ public class Feature extends AbstractFeature
         void found()
         {
           if (PRECONDITIONS) require
-            (curres[1] == null);
+            (curres[1] == null || curres[1] == Types.f_ERROR);
 
           curres[1] = curres[0];
         }
@@ -2044,15 +2044,15 @@ public class Feature extends AbstractFeature
             { // Found the call, so we got the result!
               found();
             }
-          else
+          else if (c.calledFeatureKnown() &&
+                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
+                   c.calledFeature() == inner)
+            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
+              found();
+            }
+          else if (c == Call.ERROR && curres[1] == null)
             {
-              // NYI: Special handling for anonymous inner features that currently do not appear as expressions
-              if (c.calledFeatureKnown() &&
-                  c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                  c.calledFeature() == inner)
-                {
-                  found();
-                }
+              curres[1] = Types.f_ERROR;
             }
           return c;
         }
@@ -2261,7 +2261,7 @@ public class Feature extends AbstractFeature
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = (outer() instanceof Feature of) ? of.resultTypeRaw(res) : outer().resultType();
+        result = outer().resultTypeRaw(res);
       }
     else if (_impl._kind == Impl.Kind.FieldDef    ||
              _impl._kind == Impl.Kind.FieldActual ||
@@ -2293,11 +2293,13 @@ public class Feature extends AbstractFeature
       {
         result = _returnType.functionReturnType();
       }
-    //    result = result instanceof ResolvedType ? Types.intern(result) : result; // NYI: why?
     if (isOuterRef())
       {
         result = result.asThis();
       }
+
+    if (POSTCONDITIONS) ensure
+      (isTypeFeaturesThisType() || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
 
     return result;
   }

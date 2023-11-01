@@ -46,6 +46,7 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.State;
 import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
@@ -84,7 +85,7 @@ public class FrontEnd extends ANY
    */
   class Universe extends Feature
   {
-    { setState(Feature.State.LOADING); }
+    { setState(State.LOADING); }
     public boolean isUniverse()
     {
       return true;
@@ -163,7 +164,7 @@ public class FrontEnd extends ANY
     var lms = new List<LibraryModule>();
     if (options._loadBaseLib)
       {
-        _baseModule = module("base", modulePath("base"));
+        _baseModule = module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME));
         if (_baseModule != null)
           {
             lms.add(_baseModule);

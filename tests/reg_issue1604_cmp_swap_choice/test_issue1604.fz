@@ -1,0 +1,73 @@
+test_issue1604 is
+
+  test_cas0 is
+
+    c : choice large small is
+
+    large(a,b,c,d u64).
+    small(x u8).
+
+    s := small 0x11
+    l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
+    a := concur.atomic c s
+
+    o := a.compare_and_swap s l
+    match o
+      _ small => #  ok
+      _ large => panic "***expected small***"
+    o := a.compare_and_swap l s
+    match o
+      _ small => panic "***expected large***"
+      _ large => #  ok
+
+
+
+  test_cas is
+
+    c : choice large small is
+
+    large(a,b,c,d u64).
+    small(x u8).
+
+
+    fill(a,b,c,d,e,f u64, n i32) unit is
+      if n > 0
+        fill ~a ~b ~c ~d ~e ~f n-1
+
+    s := small 0x11
+    l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
+    a := concur.atomic c s
+
+    test(n i32) unit is
+      if n > 0
+        s1 := small 0x11
+        l1 := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
+        o := a.compare_and_swap s1 l1
+        match o
+          _ small => #  ok
+          _ large => panic "***expected small*** at $n"
+        o := a.compare_and_swap l1 s1
+        match o
+          _ small => panic "***expected large*** at $n"
+          _ large => #  ok
+
+        test n-1
+
+    N := 100
+
+    say "setup:"
+    (fill 0xAAAA_AAAA_AAAA_AAAA
+          0xAAAA_AAAA_AAAA_AAAA
+          0xAAAA_AAAA_AAAA_AAAA
+          0xAAAA_AAAA_AAAA_AAAA
+          0xAAAA_AAAA_AAAA_AAAA
+          0xAAAA_AAAA_AAAA_AAAA N)
+
+    say "test:"
+    test N/2
+    say "ok"
+
+
+
+  test_cas0
+  _ := test_cas

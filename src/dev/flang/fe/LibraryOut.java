@@ -38,7 +38,6 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractFeature.State;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
@@ -54,6 +53,7 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
+import dev.flang.ast.State;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
@@ -720,7 +720,7 @@ class LibraryOut extends ANY
    *   |        | length | byte          | data of the constant                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        type(c.type());
+        type(c.typeOfConstant());
         var d = c.data();
         _data.writeInt(d.length);
         _data.write(d);

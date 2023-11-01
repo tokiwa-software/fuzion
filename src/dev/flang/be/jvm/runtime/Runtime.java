@@ -149,7 +149,7 @@ public class Runtime extends ANY
   /**
    * This contains all started threads.
    */
-  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
+  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
     @Override
     protected boolean close(Thread f)
     {
@@ -176,7 +176,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create a Java string from 0-terminated given byte array.
+   * Create a Java string from given byte array.
    */
   public static String utf8ByteArrayDataToString(byte[] ba)
   {
@@ -186,6 +186,19 @@ public class Runtime extends ANY
         l++;
       }
     return new String(ba, 0, l, StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Create the internal (Java) byte array for given Java String.
+   *
+   * @param str the Java string
+   *
+   * @return the resulting array using utf_8 encoded bytes
+   */
+  public static byte[] stringToUtf8ByteArray(String str)
+  {
+    return str.getBytes(StandardCharsets.UTF_8);
   }
 
 
@@ -238,7 +251,7 @@ public class Runtime extends ANY
    */
   public static byte[] internalArrayForConstString(String str)
   {
-    return str.getBytes(StandardCharsets.UTF_8);
+    return stringToUtf8ByteArray(str);
   }
 
 
@@ -672,9 +685,9 @@ public class Runtime extends ANY
   }
 
 
-  public static String fuzion_sys_env_vars_get0(byte[] d)
+  public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
-    return System.getenv(utf8ByteArrayDataToString(d));
+    return stringToUtf8ByteArray(System.getenv(utf8ByteArrayDataToString((byte[]) d)));
   }
 
 
@@ -703,27 +716,12 @@ public class Runtime extends ANY
     else
       {
         var t = new FuzionThread(r, code);
-        result = t.getId();
+        result = _startedThreads_.add(t);
+        // result = t.getId();
         // result = t.threadId(); // NYI: use for Java >=19
       }
     return result;
   }
-
-
-  public static void fuzion_sys_thread_join0(long threadId)
-  {
-    try
-      {
-        _startedThreads_.get(threadId).join();
-        _startedThreads_.remove(threadId);
-      }
-    catch (InterruptedException e)
-      {
-        // NYI handle this exception
-        System.err.println("Joining of threads was interrupted: " + e);
-        System.exit(1);
-      }
-  };
 
 
   static long unique_id()
@@ -740,7 +738,7 @@ public class Runtime extends ANY
 
   public static byte[] args_get(int i)
   {
-    return args[i].getBytes(StandardCharsets.UTF_8);
+    return stringToUtf8ByteArray(args[i]);
   }
 
 

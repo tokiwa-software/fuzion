@@ -1,5 +1,5 @@
 
---CURDIR--/issue270.fz:2:7: error 1: Precondition does not hold
+--CURDIR--/issue270.fz:25:7: error 1: Precondition does not hold
   pre false # 1. should flag an error: Precondition does not hold
 ------^^^^^
 For call to issue270

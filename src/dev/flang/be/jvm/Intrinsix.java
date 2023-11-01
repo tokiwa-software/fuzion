@@ -78,7 +78,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
   {
     for (var m : Intrinsics.class.getDeclaredMethods())
       {
-        _availableIntrinsics.add(m.getName());
+        if (!m.isSynthetic())
+          {
+            _availableIntrinsics.add(m.getName());
+          }
       }
   }
 
@@ -561,7 +564,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
             "fuzion_sys_env_vars_get0",
             methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
-            JAVA_LANG_STRING)));
+            PrimitiveType.type_byte.array())));
     });
     put("fuzion.sys.env_vars.set0", (jvm, cl, pre, cc, tvalue, args) -> {
       var res =
@@ -574,16 +577,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         tvalue.drop()
           .andThen(Expr.iconst(0)); // false
       return new Pair<>(res, Expr.UNIT);
-    });
-    put("fuzion.sys.thread.join0", (jvm, cl, pre, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(args.get(0))
-          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-            "fuzion_sys_thread_join0",
-            methodDescriptor(Runtime.class, "fuzion_sys_thread_join0"),
-            PrimitiveType.type_void));
-      return new Pair<>(Expr.UNIT, res);
     });
 
     put("fuzion.sys.thread.spawn0",

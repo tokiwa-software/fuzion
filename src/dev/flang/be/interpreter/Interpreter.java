@@ -359,7 +359,7 @@ public class Interpreter extends ANY
         result = _cachedConsts_.get(i);
         if (result == null)
           {
-            var t = i.type();
+            var t = i.typeOfConstant();
             var d = i.data();
             if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
             else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
@@ -372,7 +372,7 @@ public class Interpreter extends ANY
             else if (t.compareTo(Types.resolved.t_u64   ) == 0) { result = new u64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
             else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
             else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
-            else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+            else if (t.compareTo(Types.resolved.t_Const_String) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                  }
             else if (t.compareTo(Types.resolved.t_array_i8 ) == 0) { result = constArray(d,t); }
             else if (t.compareTo(Types.resolved.t_array_i16) == 0) { result = constArray(d,t); }
             else if (t.compareTo(Types.resolved.t_array_i32) == 0) { result = constArray(d,t); }

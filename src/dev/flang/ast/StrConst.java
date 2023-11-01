@@ -66,15 +66,42 @@ public class StrConst extends Constant
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  @Override
+  AbstractType typeForInferencing()
   {
     return Types.resolved.t_string;
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  @Override
+  public AbstractType type()
+  {
+    return Types.resolved.t_string;
+  }
+
+
+  /**
+   * The type of the constant that is created is not `String`, but
+   * `Const_String`.
+   *
+   * @return Types.resolved.t_Const_String
+   */
+  @Override
+  public AbstractType typeOfConstant()
+  {
+    return Types.resolved.t_Const_String;
   }
 
 

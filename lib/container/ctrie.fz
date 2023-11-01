@@ -40,8 +40,6 @@
 # it is not wait-free and thus no such guarantee is given per thread.
 #
 # NYI addif
-# NYI equality comparison could be ref equality
-# NYI generation might overflow, which might lead to weird effects.
 #
 # glossary:
 # CTK => ctrie key
@@ -58,30 +56,25 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) : property.equatable is
+private tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) is
   redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
-  fixed type.equality(a, b container.tomb_node CTK CTV) bool is
-    a.sn = b.sn
 
 
 # a singleton node
 # the node type containing actual data
-private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) : property.equatable  is
+private singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) is
   redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
 
-  fixed type.equality(a, b container.singleton_node CTK CTV) bool is
-    a.k = b.k
-
 
 # an indirection or a singleton node
 # these are put into a container node
-private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV), property.equatable is
+private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
   redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
@@ -92,34 +85,15 @@ private branch(CTK type : property.hashable, CTV type) : choice (Indirection_Nod
       indirection_node Indirection_Node => indirection_node.as_list f
       singleton_node singleton_node => singleton_node.as_list
 
-  fixed type.equality(a, b container.branch CTK CTV) bool is
-    match a
-      ai container.Indirection_Node =>
-        match b
-          bi container.Indirection_Node => ai = bi
-          bs container.singleton_node => false
-      as container.singleton_node =>
-        match b
-          bi container.Indirection_Node => false
-          bs container.singleton_node => as = bs
 
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64) : property.equatable
-pre array ∀ (b ->
-      match b
-        i Indirection_Node => i.gen <= gen
-        singleton_node => true
-    )
+private container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64)
 is
 
   # update a child node and return a new container_node
   update(pos u32, node branch CTK CTV, g u64)
-  pre debug: gen <= g,
-             match node
-               i Indirection_Node => i.gen <= gen
-               s singleton_node => true
   =>
     container_node bmp (array.put pos.as_i32 node) g
 
@@ -146,14 +120,6 @@ is
     array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list f)
          .as_list
 
-  fixed type.equality(a, b container.container_node CTK CTV) bool is
-    a.bmp = b.bmp
-      && a.gen = b.gen
-      && (container.searchable_sequence a.array) = (container.searchable_sequence b.array)
-
-
-# NYI ref, work around for issue #1604
-Nil ref is
 
 
 # a prev_node is used in the generation aware compare and swap
@@ -162,24 +128,29 @@ Nil ref is
 # when a Main_Node is replaced it is put into
 # the successors `prev`-field.
 #
-private prev_node(CTK type : property.hashable, CTV type) : choice (Failed_Node CTK CTV) (Main_Node CTK CTV) Nil is
+private prev_node(CTK type : property.hashable, CTV type) : choice (failed_node CTK CTV) (Main_Node CTK CTV) nil is
 
   redef as_string =>
     match prev_node.this
-      f container.Failed_Node => f.as_string
+      f container.failed_node => f.as_string
       m container.Main_Node => m.as_string
-      Nil => nil.as_string
+      nil => nil.as_string
 
   is_nil =>
     match prev_node.this
-      Nil => true
+      nil => true
       * => false
 
 
 # a container, tomb or linked list node, with a previous field
 # to support the generational compare and swap
 #
-private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref /* needs ref, cyclic layout container->indirection->main*/ : property.equatable is
+private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref : property.equatable is
+
+  id := fuzion.sys.misc.unique_id
+
+  fixed type.equality(a, b Main_Node.this) bool is
+    a.id = b.id
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
@@ -195,30 +166,9 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
       list_node list_node => "$list_node"
     "Main_Node[prev={prev.read}]($s)"
 
-  # equality
-  #
-  fixed type.equality(a, b container.Main_Node CTK CTV) bool
-  is
-    match a.data
-      ca container.container_node =>
-        match b.data
-          cb container.container_node => ca = cb
-          tb container.tomb_node => false
-          lb container.list_node => false
-      ta container.tomb_node =>
-        match b.data
-          cb container.container_node => false
-          tb container.tomb_node => ta = tb
-          lb container.list_node => false
-      la container.list_node =>
-        match b.data
-          cb container.container_node => false
-          tb container.tomb_node => false
-          lb container.list_node => la = lb
-
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
   pre match prev.read
-    Nil => true
+    nil => true
     * => false
   =>
     match data
@@ -228,14 +178,10 @@ private Main_Node(CTK type : property.hashable, CTV type, data choice (container
 
 
 # a failed node where the previous indirection node contains a main node
-# NYI ref, work around for issue #1604
-private Failed_Node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) ref : property.equatable is
+private failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
   redef as_string =>
-    "Failed_Node($prev)"
-
-  fixed type.equality(a, b container.Failed_Node CTK CTV) bool is
-    a.prev = b.prev
+    "failed_node($prev)"
 
 
 # shorthand for creating a new indirection node from Main_Node and gen
@@ -244,12 +190,12 @@ private indirection_node(CTK type : property.hashable, CTV type, data Main_Node 
 
 
 # an indirection node
-private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref /* NYI removing this ref leads to segfaults */ : property.equatable is
+private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref : property.equatable is
 
-  # NYI ref equality
-  #
-  fixed type.equality(a, b container.Indirection_Node CTK CTV) bool is
-    a.gen = b.gen && a.data.read = b.data.read
+  id := fuzion.sys.misc.unique_id
+
+  fixed type.equality(a, b Indirection_Node.this) bool is
+    a.id = b.id
 
   # compare and update
   private cas(old_n, new_n Main_Node CTK CTV) bool is
@@ -264,7 +210,7 @@ private Indirection_Node(CTK type : property.hashable, CTV type, data concur.ato
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV), property.equatable
+private list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (singleton_node CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
   redef as_list => from.as_list
@@ -282,9 +228,6 @@ is
           nil => not_found
           sn singleton_node => sn.v
 
-  fixed type.equality(a, b container.list_node CTK CTV) bool is
-    (container.searchable_sequence a.from) = (container.searchable_sequence b.from)
-
 
 # unit type to indicate an operation did not succeed yet
 # and thus needs a restart
@@ -299,7 +242,6 @@ private:public not_found is
 
 
 # descriptor for double-compare-single-swap operation
-# NYI ref, work around for issue #1604
 private Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref
 pre exp.prev.read.is_nil
 is
@@ -343,7 +285,6 @@ is
   # 2) copying a container node to a new generation
   #
   copy_to_gen(i Indirection_Node CTK CTV, new_gen u64) Indirection_Node CTK CTV
-  pre debug: i.gen <= new_gen
   post result.data.read.prev.read.is_nil
   is
     indirection_node (gcas_read i) new_gen
@@ -351,7 +292,6 @@ is
 
   # copy this container_node to new generation
   renew(cn container_node CTK CTV, new_gen u64) container_node CTK CTV
-  pre debug: cn.gen <= new_gen
   is
     copy := cn
       .array
@@ -424,27 +364,27 @@ is
     # abortably read root and get the current gen
     root_gen := (read_root true).gen
     match prev
-      Nil => m
-      fn Failed_Node =>
+      nil => m
+      fn failed_node =>
         if i.cas m fn.prev
           fn.prev
         else
           gcas_commit i i.data.read
       n Main_Node =>
         if root_gen = i.gen && !read_only
-          if m.cas_prev prev Nil
+          if m.cas_prev prev nil
             m
           else
             gcas_commit i m
         else
-          m.cas_prev prev (Failed_Node n)
+          m.cas_prev prev (failed_node n)
           gcas_commit i i.data.read
 
   # read `data`, if prev is set commit first
   private gcas_read(i Indirection_Node CTK CTV) Main_Node CTK CTV is
     m := i.data.read
     match m.prev.read
-      Nil => m
+      nil => m
       * => gcas_commit i m
 
   # generation aware compare and set
@@ -455,18 +395,15 @@ is
   # set is taking place.
   private gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) choice restart ctrie_ok
   pre
-    (match n
-      c container_node => i.gen >= c.gen
-      * => true),
     match o.prev.read
-      Nil => true
+      nil => true
       *   => false
   is
     nn := Main_Node n o
     if i.cas o nn
       gcas_commit i nn
       match nn.prev.read
-        Nil => ctrie_ok
+        nil => ctrie_ok
         * => restart
     else
       restart
@@ -577,7 +514,7 @@ is
       else
         list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)]
 
-    Main_Node d Nil
+    Main_Node d nil
 
 
   # lookup key k
@@ -596,7 +533,6 @@ is
   # try lookup key in ctrie
   # may fail and result in a restart
   private lookup(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
-  pre debug: i.gen <= gen
   is
     m := gcas_read i
     match m.data
@@ -632,7 +568,6 @@ is
   # try adding an element to the ctrie
   # may fail and result in a restart
   private add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart ctrie_ok
-  pre debug: i.gen <= gen
   is
     m := gcas_read i
     match m.data
@@ -675,7 +610,6 @@ is
   # try remove an element from the ctrie
   # may fail and result in a restart
   private remove(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
-  pre debug: i.gen <= gen
   is
     m := gcas_read i
     match m.data
@@ -725,10 +659,11 @@ is
   public snapshot(read_only bool) ctrie CTK CTV is
     root := read_root
     expmain := gcas_read root
-    descriptor := Rdcss_Descriptor root expmain (copy_to_gen root (root.gen +° 1))
+    new_gen := fuzion.sys.misc.unique_id
+    descriptor := Rdcss_Descriptor root expmain (copy_to_gen root new_gen)
     if rdcss_root descriptor
-      # new ctrie by increasing gen of root by one
-      ctrie CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen root (root.gen +° 1))) read_only
+      # new ctrie by changing generation of root
+      ctrie CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen root new_gen)) read_only
     else
       snapshot read_only
 
@@ -743,10 +678,10 @@ is
   # initialize a new ctrie
   public type.empty =>
 
-    initial_gen := u64 0
+    initial_gen := fuzion.sys.misc.unique_id
 
     initial_root_node container.root_node CTK CTV :=
-      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) container.Nil) initial_gen
+      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
     container.ctrie CTK CTV (concur.atomic initial_root_node) false
 

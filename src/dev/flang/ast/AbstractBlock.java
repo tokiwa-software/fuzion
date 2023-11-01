@@ -103,18 +103,19 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * typeIfKnown returns the type of this expression or null if the type is
+   * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
    *
    * @return this Expr's type or null if not known.
    */
-  AbstractType typeIfKnown()
+  @Override
+  AbstractType typeForInferencing()
   {
     Expr resExpr = resultExpression();
     return resExpr == null
       ? Types.resolved.t_unit
-      : resExpr.typeIfKnown();
+      : resExpr.typeForInferencing();
   }
 
 

@@ -5,7 +5,7 @@
 For the formal argument 'typeinference_for_args_negative.a3.a' the following incompatible actual arguments where found for type inference:
 actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:41:11:
   say (a3 "hello"     " world!")
-----------^
+----------^^^^^^^
 actuals are values of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:42:11:
   say (a3 1.0         " world!")
 ----------^^^
@@ -23,7 +23,7 @@ and at --CURDIR--/typeinference_for_args_negative.fz:44:11:
 For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
 actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:46:23:
   say (a4 "hello"     " world!")
-----------------------^
+----------------------^^^^^^^^^
 actual is value of type 'i32' at --CURDIR--/typeinference_for_args_negative.fz:47:33:
   say (a4 "1.0"       " world!".byte_length)
 --------------------------------^^^^^^^^^^^

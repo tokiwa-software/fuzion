@@ -29,14 +29,16 @@ package dev.flang.fe;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Consts;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.State;
+import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourceFile;
 
@@ -135,6 +137,12 @@ public abstract class Module extends ANY
 
 
   /**
+   * The name of this module, e.g. base
+   */
+  abstract String name();
+
+
+  /**
    * Get or create the data record for given outer feature.
    *
    * @param outer the feature we need to get the data record from.
@@ -192,9 +200,9 @@ public abstract class Module extends ANY
       {
         var cf = p.calledFeature();
         if (CHECKS) check
-          (Errors.any() || cf != null);
+          (Errors.any() || (cf != null && cf != Types.f_ERROR));
 
-        if (cf != null && (cf.isConstructor() || cf.isChoice()))
+        if (cf != null && cf != Types.f_ERROR && (cf.isConstructor() || cf.isChoice()))
           {
             data(cf)._heirs.add(outer);
             resolveDeclarations(cf);
@@ -298,7 +306,9 @@ public abstract class Module extends ANY
     var v = af.visibility();
     var definesType = af.definesType() || ignoreDefinesType;
 
-    return definesType && (usedIn.sameAs(definedIn)
+            // generated inline code may access base library features
+    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
+      || definesType && (usedIn.sameAs(definedIn)
       || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
       || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
   }
@@ -316,8 +326,10 @@ public abstract class Module extends ANY
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
 
-    return  // built-in or generated features like #loop0
-            af.pos().isBuiltIn()
+            // generated inline code may access base library features
+    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
+            // built-in or generated features like #loop0
+            || af.pos().isBuiltIn()
             // in same file
             || ((usedIn.sameAs(definedIn)
             // at least module visible and in same module
@@ -350,7 +362,7 @@ public abstract class Module extends ANY
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVING_DECLARATIONS) || of.isUniverse());
+      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
 
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;

@@ -156,6 +156,14 @@ public class Choices extends ANY implements ClassFileConstants
           }
       }
 
+    if (_fuir.clazzIs(cl, FUIR.SpecialClazzes.c_bool))
+      { // very small examples may use only `TRUE` or only `FALSE`, or none of
+        // these values, which would then turn `bool` into a `unitlike` or even
+        // `voidlike` choice, but we do not want to deal with this exotic case:
+        nonVoid = 2;
+        units = 2;
+      }
+
     if      (nonVoid == 0                               ) { return ImplKind.voidlike; }
     else if (nonVoid == units && units == 1             ) { return ImplKind.unitlike; }
     else if (nonVoid == units && units == 2             ) { return ImplKind.boollike; }
@@ -774,9 +782,9 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(value)
                 .andThen(Expr.putfield(_names.javaClass(newcl),
                                        fn,
-                                       ft))
-                .is(_types.javaType(newcl));
+                                       ft));
             }
+          res = res.is(_types.javaType(newcl));
           break;
         }
       default: throw new Error("Unexpected choice kind in tag of JVM backend: " + kind(newcl));
