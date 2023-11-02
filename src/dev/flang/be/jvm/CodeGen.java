@@ -342,37 +342,7 @@ class CodeGen
         s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
       }
     var res = Expr.UNIT;
-    if (_fuir.callPreconditionOnly(cl, c, i))
-      {
-        // NYI: double side-effects for args in inherits call
-        //
-        // the following code currently does not work for the JVM backend:
-        //
-        //   test =>
-        //     f(p String) => say "in f $p"; 42+p.byte_length
-        //
-        //     x(a i32)
-        //     pre
-        //       a >= 42
-        //     is
-        //       say "in x $a"
-        //
-        //     y : x (f "b") is
-        //       say "in y"
-        //
-        //     say "calling x"
-        //
-        //     _ := x (f "aaa")
-        //     say "calling y"
-        //     a := y
-        //     b := a
-        //
-        // This happens when the call is part of an inherits clause. In
-        // this case, the actual code for the call is inlined. In this case,
-        // saving the args in locals does not help against executing their
-        // side-effects twice, so we must check if this works and fix it if not.
-      }
-    else
+    if (!_fuir.callPreconditionOnly(cl, c, i))
       {
         var r = access(cl, pre, c, i, tvalue, args);
         s = s.andThen(r._v1);
