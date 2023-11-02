@@ -64,36 +64,40 @@ public class FuzionThread extends Thread
    */
   FuzionThread(Method r, Any code)
   {
-    super(() ->
-          {
-            try
-              {
-                r.invoke(null, code);
-              }
-            catch (IllegalAccessException e)
-              {
-                Errors.fatal("thread_spawn call caused `" + e + "` when calling `" + r + "`");
-              }
-            catch (InvocationTargetException e)
-              {
-                Runtime.handleInvocationTargetException(e);
-              }
-          },
-          "Fuzion child thread");
-
-    start();
+    this((Runnable) () ->
+         {
+           try
+             {
+               r.invoke(null, code);
+             }
+           catch (IllegalAccessException e)
+             {
+               Errors.fatal("thread_spawn call caused `" + e + "` when calling `" + r + "`");
+             }
+           catch (InvocationTargetException e)
+             {
+               Runtime.handleInvocationTargetException(e);
+             }
+         });
   }
 
 
   /**
-   * Create a FuzionThread instance to be used for the main thread.
-   *
-   * NYI: remove as soon as main feature is executed in a newly created
-   * FuzionThread.
+   * Create a main FuzionThread and run code.
    */
-  FuzionThread()
+  FuzionThread(Main main)
   {
-    super("Fuzion main thread");
+    this((Runnable) ()->main.fz_run());
+  }
+
+
+  /**
+   * Create a main FuzionThread and run code.
+   */
+  private FuzionThread(Runnable r)
+  {
+    super(()->Errors.runAndExit(r), "Fuzion thread");
+    start();
   }
 
 
