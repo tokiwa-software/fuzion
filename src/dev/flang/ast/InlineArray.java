@@ -112,7 +112,7 @@ public class InlineArray extends ExprWithPos
               t  == null ? null :
               et == null ? null : t.union(et);
           }
-        if (t == Types.t_UNDEFINED)
+        if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
                                               "Incompatible types in array elements",
