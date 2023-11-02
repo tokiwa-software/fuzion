@@ -141,7 +141,7 @@ public abstract class AbstractMatch extends Expr
         var t = c.code().typeForInferencing();
         result = result == null || t == null ? null : result.union(t);
       }
-    if (result == Types.t_UNDEFINED)
+    if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
                                           "Incompatible types in cases of match expression",
@@ -151,7 +151,6 @@ public abstract class AbstractMatch extends Expr
                                             public boolean hasNext() { return it.hasNext(); }
                                             public Expr next() { return it.next().code(); }
                                           });
-        result = Types.t_ERROR;
       }
     return result;
   }
