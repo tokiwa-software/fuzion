@@ -170,7 +170,7 @@ public abstract class AbstractCall extends Expr
       }
 
       @Override
-      AbstractType typeIfKnown()
+      AbstractType typeForInferencing()
       {
         return AbstractCall.this.type();
       }
