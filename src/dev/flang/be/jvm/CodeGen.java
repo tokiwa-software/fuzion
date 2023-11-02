@@ -974,9 +974,35 @@ class CodeGen
       case c_array_f64    -> _jvm.constArrayF64(constCl, d);
       default             ->
         {
-          Errors.error("Unsupported constant in JVM backend.",
-                       "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield null;
+          if (!_fuir.clazzIsChoice(constCl))
+            {
+              var b = ByteBuffer.wrap(d);
+              var result = _jvm.new0(constCl);
+              var offset = 0;
+              for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+                {
+                  var f = _fuir.clazzArg(constCl, index);
+                  var fr = _fuir.clazzArgClazz(constCl, index);
+                  var n = _fuir.clazzArgFieldBytes(constCl, index);
+                  var bytes = b.slice(offset, n);
+                  byte[] bb = new byte[bytes.remaining()];
+                  bytes.get(bb);
+                  offset += n;
+                  var c = createConstant(fr, bb);
+                  result = result                                  // Stack: constCl
+                    .andThen(Expr.DUP)                             //        constCl, constCl
+                    .andThen(c._v0)                                //        constCl, constCl, val
+                    .andThen(c._v1)                                //        constCl, constCl, val
+                    .andThen(_jvm.putfield(f));                    //        constCl
+                }
+              yield new Pair<>(result, Expr.UNIT);
+            }
+          else
+            {
+              Errors.error("Unsupported constant in JVM backend.",
+                           "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+              yield null;
+            }
         }
       };
   }

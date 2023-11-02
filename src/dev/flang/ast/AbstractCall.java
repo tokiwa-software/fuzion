@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.io.ByteArrayOutputStream;
+
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -123,6 +126,80 @@ public abstract class AbstractCall extends Expr
     return
       !(target() instanceof AbstractCurrent) &&
       !isInheritanceCall();
+  }
+
+
+  /**
+   * This call serialized as a constant.
+   */
+  public AbstractConstant asCompileTimeConstant()
+  {
+    if (PRECONDITIONS) require
+      (isCompileTimeConst());
+
+    return new AbstractConstant() {
+
+      @Override
+      public SourcePosition pos()
+      {
+        return AbstractCall.this.pos();
+      }
+
+
+      /**
+       * actuals are serialized in order. example
+       * `tuple (u8 5) (codepoint u32 72)` results in
+       * the following data:
+       *        b b b b b
+       * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)
+       */
+      @Override
+      public byte[] data()
+      {
+        var b = AbstractCall.this
+          .actuals()
+          .map2(x -> x.asCompileTimeConstant().data());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (var d : b)
+          {
+            out.write(d, 0, d.length);
+          }
+
+        return out.toByteArray();
+      }
+
+      @Override
+      AbstractType typeForInferencing()
+      {
+        return AbstractCall.this.type();
+      }
+
+      @Override
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      {
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+      }
+    };
+  }
+
+
+  @Override
+  public boolean isCompileTimeConst()
+  {
+    var result =
+      !isInheritanceCall() &&
+      calledFeature().isConstructor() &&
+      // contains no fields
+      calledFeature().code().containsOnlyDeclarations() &&
+      // we are calling a value type feature
+      !calledFeature().selfType().isRef() &&
+      // only features without args and no fields may be inherited
+      calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
+      // no unit
+      this.actuals().size() > 0 &&
+      this.actuals().stream().allMatch(x -> x.isCompileTimeConst());
+    return result;
   }
 
 }

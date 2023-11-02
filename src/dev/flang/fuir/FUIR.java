@@ -673,6 +673,24 @@ public class FUIR extends IR
 
 
   /**
+   * @param cl clazz id
+   *
+   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
+   *
+   * @return how many bytes are used when serializing this arg?
+   *         example: if the args type is `(tuple u8 u16)` result is 1+2=3
+   */
+  public int clazzArgFieldBytes(int cl, int arg)
+  {
+    return clazz(cl)
+      .argumentFields()[arg]
+      .resultClazz()
+      ._type
+      .serializedSize();
+  }
+
+
+  /**
    * is the given clazz a choice clazz
    *
    * @param cl a clazz id
@@ -1770,6 +1788,7 @@ hw25 is
     else if (t.compareTo(Types.resolved.t_f32         ) == 0) { clazz = Clazzes.f32         .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_f64         ) == 0) { clazz = Clazzes.f64         .getIfCreated(); }
     else if (t.compareTo(Types.resolved.t_Const_String) == 0) { clazz = Clazzes.Const_String.getIfCreated(); }
+    // this abstract constant was a call
     else if (ic instanceof AbstractConstant)
       {
         clazz = Clazzes.clazz(t);
@@ -2407,6 +2426,61 @@ hw25 is
   public boolean hasPrecondition(int cl)
   {
     return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+  }
+
+
+  /**
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l. pop the result in case dumpResult==true.
+   *
+   * @param l list of ExprKind that should be extended by s's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  @Override
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  {
+    if (e instanceof AbstractCall ac && isConst(ac))
+      {
+        if (!dumpResult)
+          {
+            l.add(ac.asCompileTimeConstant());
+          }
+      }
+    else
+      {
+        super.toStack(l, e, dumpResult);
+      }
+  }
+
+
+
+  /**
+   * Can this call be turned into a constant?
+   *
+   * @param ac the call to be analyzed.
+   *
+   * @return true iff the call is suitable to be turned into
+   * a compile time constant.
+   */
+  private boolean isConst(AbstractCall ac)
+  {
+    var result = false;
+    if (ac.isCompileTimeConst())
+      {
+        var s = new List<>();
+        super.toStack(s, ac, false);
+        result = s
+          .stream()
+          .allMatch(x -> {
+            // NYI string constants
+            return x instanceof AbstractConstant c && c.isCompileTimeConst()
+              || x instanceof AbstractCall ac0 && ac0.isCompileTimeConst();
+          });
+      }
+    return result;
   }
 
 

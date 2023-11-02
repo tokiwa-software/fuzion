@@ -1772,13 +1772,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * @return the type to use for inferencing instead of `t`.
+   * bytes used when serializing call that results in this type.
    */
-  public static AbstractType forInferencing(AbstractType t)
+  public int serializedSize()
   {
-    return t == Types.resolved.t_Const_String
-      ? Types.resolved.t_string
-      : t;
+    var ct = NumLiteral.findConstantType(this);
+    return ct == null
+      ? this.featureOfType().arguments().stream().mapToInt(a -> a.resultType().serializedSize()).sum()
+      : ct.bytes();
   }
 
 
