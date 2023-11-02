@@ -1062,7 +1062,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_jvm run_tests_c run_tests_int
+run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
@@ -1103,6 +1103,11 @@ run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
+
+.PHONY .SILENT: run_tests_jar
+run_tests_jar: $(FZ_JVM)
+	fz -jar tests/hello/HelloWorld.fz
+	java -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
 clean:
