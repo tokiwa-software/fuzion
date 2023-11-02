@@ -288,6 +288,15 @@ public Sequence(T type) ref is
   public fold (m Monoid T) => as_list.fold m.e m
 
 
+  # map this Sequence to a list that contains the result of folding
+  # all prefixes using the given monoid.
+  #
+  # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.sum
+  #
+  public scan (m Monoid T) => as_list.scan m.e m
+
+
   # reduce this Sequence to R with an initial value init
   # and a reducing function f.
   # the reduction is finished once f yields abort or

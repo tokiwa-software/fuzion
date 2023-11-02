@@ -197,7 +197,7 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # fold the elements of this list using the given monoid.
   #
-  # e.g., to sum the elements of a list of i32, use l.fold i32.sum
+  # e.g., to sum the elements of a list of i32, use l.fold i32.type.sum
   #
   public redef fold (m Monoid A) => fold m.e m
 
@@ -208,6 +208,25 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public fold (s A, m Monoid A) A is (list.this ? nil    => s
                                                 | c Cons => c.tail.fold (m.op s c.head) m)
+
+
+  # map this Sequence to a list that contains the result of folding
+  # all prefixes using the given monoid.
+  #
+  # e.g., for a Sequence of i32 s, s.scan i32.type.sum creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.type.sum
+  #
+  public redef scan (m Monoid A) => scan m.e m
+
+
+  # map this Sequence to a list that contains the result of folding
+  # all prefixes using the given monoid and initial value
+  #
+  # Used to scan a list tail-recursively
+  #
+  public scan (s A, m Monoid A) list A is (list.this ? nil    => nil
+                                                     | c Cons => acc := m.op s c.head
+                                                                 list acc (c.tail.scan acc m))
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
