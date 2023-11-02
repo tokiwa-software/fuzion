@@ -322,33 +322,92 @@ class CodeGen
    */
   public Pair<Expr, Expr> call(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
   {
-    var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-    var cc0 = _fuir.accessedClazz            (cl, c, i);
-    var s = Expr.UNIT;
-    if (ccP != -1)   // call precondition:
+    var p = combinePreconditionAndCall(cl, pre, c, i, tvalue, args);
+    if (p == null)
       {
-        // evaluate target and args and copy to local vars to avoid evaluating them twice.
-        var pt = storeInLocal(cl, pre, tvalue);
-        tvalue = pt._v0;
-        s = s.andThen(pt._v1);
-        var nargs = new List<Expr>();
-        for (var a : args)
+        var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+        var cc0 = _fuir.accessedClazz            (cl, c, i);
+        var s = Expr.UNIT;
+        var res = Expr.UNIT;
+        if (ccP != -1)   // call precondition:
           {
-            var pa = storeInLocal(cl, pre, a);
-            s = s.andThen(pa._v1);
-            nargs.add(pa._v0);
+            // evaluate target and args and copy to local vars to avoid evaluating them twice.
+            var pt = storeInLocal(cl, pre, tvalue);
+            tvalue = pt._v0;
+            s = s.andThen(pt._v1);
+            var nargs = new List<Expr>();
+            for (var a : args)
+              {
+                var pa = storeInLocal(cl, pre, a);
+                s = s.andThen(pa._v1);
+                nargs.add(pa._v0);
+              }
+            args = nargs;
+            s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
           }
-        args = nargs;
-        s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
+        if (!_fuir.callPreconditionOnly(cl, c, i))
+          {
+            var r = access(cl, pre, c, i, tvalue, args);
+            s = s.andThen(r._v1);
+            res = r._v0;
+          }
+        p = new Pair<>(res, s);
       }
-    var res = Expr.UNIT;
-    if (!_fuir.callPreconditionOnly(cl, c, i))
+    return p;
+  }
+
+
+  /**
+   * Optimization for call for the common case that a precondition is checked
+   * followed by a call to a statically bound routine of the same class. This
+   * call is then replaced by by a call to a combined method that checks the
+   * precondition and then calls the routine.
+   *
+   * @param cl the clazz we are compiling
+   *
+   * @param pre true iff we are compiling the precondition
+   *
+   * @param c the code block to compile
+   *
+   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   *
+   * @param tvalue the target of this call, CExpr.UNIT if none.
+   *
+   * @param args the arguments of this call.
+   *
+   * @return Result value and code generated for this combined call, null if
+   * combined call is not possible.
+   */
+  Pair<Expr, Expr> combinePreconditionAndCall(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  {
+    Pair<Expr, Expr> res = null;
+    var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+    var ccs = _fuir.accessedClazzes(cl, c, i);
+    if (ccs.length == 2)
       {
-        var r = access(cl, pre, c, i, tvalue, args);
-        s = s.andThen(r._v1);
-        res = r._v0;
+        var tt = ccs[0];                   // target clazz we match against
+        var cc = ccs[1];                   // called clazz in case of match
+        if (cc == ccP &&
+            _fuir.clazzKind(ccP) == FUIR.FeatureKind.Routine &&
+            !_fuir.clazzIsBoxed(tt) &&
+            cc != cl /* not a call to current clazz that might need tail-call optimization */ &&
+            _types.clazzNeedsCode(cc)
+            )
+          {
+            var tc = _fuir.accessTargetClazz(cl, c, i);
+            if (tc != tt || _types.hasInterfaceFile(tc))
+              {
+                tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
+              }
+            var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
+              .andThen(_types.invokeStaticCombindedPreAndCall(cc));
+
+            var rt = _fuir.clazzResultClazz(cc);
+            res = _fuir.clazzIsVoidType(rt) ? new Pair<>(null, call)
+                                            : new Pair<>(call, Expr.UNIT);
+          }
       }
-    return new Pair<>(res, s);
+    return res;
   }
 
 
@@ -555,8 +614,8 @@ class CodeGen
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
         !_fuir.clazzIsRef(cco)  // NYI: would be better if the AbstractInterpreter would
-                                // not confront us with boxed referenced here, such that
-                                // this second could be removed.
+                                // not confront us with boxed references here, such that
+                                // this special handling could be removed.
         )
       { // in case we access the value in a boxed target, unbox it first:
         tv = Expr.comment("UNBOXING , boxed type "+_fuir.clazzAsString(tt)+" desired type "+_fuir.clazzAsString(cco))
@@ -590,7 +649,7 @@ class CodeGen
    */
   Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int c, int i)
   {
-    var tc = _fuir.clazzOuterClazz(cc);
+    var oc = _fuir.clazzOuterClazz(cc);
     Expr code = Expr.UNIT;
     var val = Expr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -646,7 +705,6 @@ class CodeGen
                 }
               else
                 {
-                  var oc = _fuir.clazzOuterClazz(cc);
                   if (_fuir.clazzIsRef(oc))
                     { // the type of tvalue is oc's interface, we need the actual class:
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
@@ -688,7 +746,7 @@ class CodeGen
         }
       case Field:
         {
-          val = _jvm.readField(tvalue, tc, cc, rt);
+          val = _jvm.readField(tvalue, oc, cc, rt);
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
@@ -775,37 +833,6 @@ class CodeGen
 
 
   /**
-   * Get the slot of the local var for argument #i.
-   *
-   * The Java method cl receives its target and argument in the first local var
-   * slots on the Java stack.  This helper determines the slot number of a given
-   * argument.
-   *
-   * @param cl the clazz we are compiling.
-   *
-   * @param i the local variable index whose slot we are looking for.
-   *
-   * @return the slot that contains arg #i on a call to the Java code for `cl`.
-   */
-  public int argSlot(int cl, int i)
-  {
-    if (PRECONDITIONS) require
-      (0 <= i,
-       i < _fuir.clazzArgCount(cl));
-
-    var o = _fuir.clazzOuterRef(cl);
-    var ot = o == -1 ? -1 : _fuir.clazzResultClazz(o);
-    var l = ot == -1 ? 0 : _types.javaType(ot).stackSlots();
-    for (var j = 0; j < i; j++)
-      {
-        var t = _fuir.clazzArgClazz(cl, j);
-        l = l + _types.javaType(t).stackSlots();
-      }
-    return l;
-  }
-
-
-  /**
    * Get the value argument #i from the slot that contains the argument at the
    * beginning of a call to the Java code of cl.
    *
@@ -821,7 +848,7 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
-    var l = argSlot(cl, i);
+    var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.javaType(t);
     return jt.load(l);
@@ -848,7 +875,7 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
-    var l = argSlot(cl, i);
+    var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.javaType(t);
     return val.andThen(jt.store(l));
