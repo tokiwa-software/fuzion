@@ -488,7 +488,7 @@ public class Call extends AbstractCall
    */
   private boolean targetIsTypeParameter()
   {
-    return _target instanceof Call tc && tc._calledFeature.isTypeParameter();
+    return _target instanceof Call tc && tc != ERROR && tc._calledFeature.isTypeParameter();
   }
 
 
@@ -1454,7 +1454,18 @@ public class Call extends AbstractCall
     var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.featureOfType());
     var t4 = adjustThisTypeForTarget(t3);
     var t5 = resolveForCalledFeature(res, t4, tt);
-    _type = Types.intern(t5);
+    var t6 = Types.intern(t5);
+    // call may be resolved repeatedly. In case of recursive use of FieldActual
+    // (see #2182), we may see `void` as the result type of calls to argument
+    // fields during recursion.  We use only the non-recursive (i.e., non-void)
+    // ones:
+    if (_type == null ||
+        t6 != Types.resolved.t_void ||
+        !(_calledFeature instanceof Feature cf) ||
+        cf.impl()._kind != Impl.Kind.FieldActual)
+      {
+        _type = t6;
+      }
   }
 
 

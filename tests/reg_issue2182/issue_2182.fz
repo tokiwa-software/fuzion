@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue_2182
+#
+# -----------------------------------------------------------------------
+
+# the example from issue #2182:
+#
+# This is not called, the error was in the front end that did not need
+# a call
+#
+test_fib1 =>
+
+  fib(a) => list a (fib a)
+
+# a more useful fibonacci number generator that showed the same problem:
+#
+test_fib2 =>
+
+  # `fib a b` produces a list of fibonacci numbers starting with a and b
+  fib(a,b) => list a (fib b a+b)
+
+  # create an instance of this list starting with 1 1
+  fib := fib (u64 1) (u64 1)
+
+  # create fibonacci as a Unary function
+  fib := fib[]
+
+  # use `fib`
+  for i in 0..50 do
+    say "$i:{fib i}"
+
+test_fib1
+test_fib2
