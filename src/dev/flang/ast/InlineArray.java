@@ -112,7 +112,7 @@ public class InlineArray extends ExprWithPos
               t  == null ? null :
               et == null ? null : t.union(et);
           }
-        if (t == Types.t_UNDEFINED)
+        if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
                                               "Incompatible types in array elements",
@@ -297,7 +297,7 @@ public class InlineArray extends ExprWithPos
    * Is this a compile-time constant?
    */
   @Override
-  boolean isCompileTimeConst()
+  public boolean isCompileTimeConst()
   {
     return NumLiteral.findConstantType(elementType()) != null &&
       this._elements.stream().allMatch(x -> !(x instanceof InlineArray) && x.isCompileTimeConst());

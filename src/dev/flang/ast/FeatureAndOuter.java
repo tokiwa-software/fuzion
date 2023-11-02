@@ -289,9 +289,9 @@ public class FeatureAndOuter extends ANY
   {
     return
       "[" + _feature.qualifiedName() +
-      " found in " + _outer.qualifiedName() +
-      (_nextInner == null ? " no next inner" : " next inner " + _nextInner.qualifiedName()) +
-      (isNextInnerFixed() ? " fixed" : " not fixed") + "]";
+      " found in " + _outer.qualifiedName() + ", " +
+      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedName()) + ", " +
+      (isNextInnerFixed() ? "fixed" : "not fixed") + "]";
   }
 
 

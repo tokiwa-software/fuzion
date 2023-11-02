@@ -17,33 +17,35 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to syntax check fz files.
+#  Source code of Fuzion test issue_2182
 #
 # -----------------------------------------------------------------------
 
-name: syntax check fz files
+# the example from issue #2182:
+#
+# This is not called, the error was in the front end that did not need
+# a call
+#
+test_fib1 =>
 
-permissions:
-  contents: read
+  fib(a) => list a (fib a)
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
+# a more useful fibonacci number generator that showed the same problem:
+#
+test_fib2 =>
 
-env:
-  PRECONDITIONS: true
-  POSTCONDITIONS: true
+  # `fib a b` produces a list of fibonacci numbers starting with a and b
+  fib(a,b) => list a (fib b a+b)
 
-jobs:
-  run_tests:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+  # create an instance of this list starting with 1 1
+  fib := fib (u64 1) (u64 1)
 
-      - name: syntax check
-        run: make syntaxcheck
+  # create fibonacci as a Unary function
+  fib := fib[]
+
+  # use `fib`
+  for i in 0..50 do
+    say "$i:{fib i}"
+
+test_fib1
+test_fib2

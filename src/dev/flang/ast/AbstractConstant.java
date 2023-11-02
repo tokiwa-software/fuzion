@@ -90,6 +90,27 @@ public abstract class AbstractConstant extends Expr
   }
 
 
+  /**
+   * Is this a compile-time constant?
+   */
+  @Override
+  public boolean isCompileTimeConst()
+  {
+    // NYI everything ref, e.g. strings do not work yet.
+    // everything ref needs to live on the heap, does not work with compound literals.
+    return !type().isRef();
+  }
+
+
+  /**
+   * This expression as a compile time constant.
+   */
+  @Override
+  public AbstractConstant asCompileTimeConstant()
+  {
+    return this;
+  }
+
 }
 
 /* end of file */

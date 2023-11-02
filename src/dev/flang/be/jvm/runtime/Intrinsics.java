@@ -187,7 +187,8 @@ public class Intrinsics extends ANY
   public static char    u64_low16bits               (long   a          ) { return (char)          (      a) ; }
   public static int     u64_low32bits               (long   a          ) { return (int)           (      a) ; }
   public static long    u64_cast_to_i64             (long   a          ) { return                 (      a) ; }
-  public static double  u64_as_f64                  (long   a          ) { return Double.parseDouble(Long.toUnsignedString(a)); }  // NYI: why so complex?
+  public static double  u64_as_f64                  (long   a          ) { return a >= 0 ?     (double)  a
+                                                                                         : 2 * (double) (a >>> 1); }
   public static double  u64_cast_to_f64             (long   a          ) { return Double.longBitsToDouble(    a); }
   public static long    u64_prefix_minusDEGREE      (long   a          ) { return                 (  -   a); }
   public static long    u64_infix_plusDEGREE        (long   a, long   b) { return                 (a +   b); }

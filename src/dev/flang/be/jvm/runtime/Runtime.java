@@ -135,22 +135,6 @@ public class Runtime extends ANY
 
 
   /**
-   * The main thread. This is used by currentThread() to return
-   * _nyi_remove_main_FuzionThread_ in case of the main thread.
-   *
-   * NYI: On startup, the main code should better be run in a newly started
-   * instance of FuzionThread.  Then this special handling would not be needed.
-   */
-  static Thread _nyi_remove_mainthread_ = Thread.currentThread();
-
-
-  /**
-   * Thread instance for main thread. See @_nyi_remove_mainthread_.
-   */
-  static FuzionThread _nyi_remove_main_FuzionThread_ = new FuzionThread();
-
-
-  /**
    * This contains all open files/streams.
    */
   static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
@@ -231,6 +215,20 @@ public class Runtime extends ANY
 
 
   /**
+   * The main entry point: This is called from the main() function created for
+   * the compiled application to start a FuzionThread that executed the Fuzion
+   * application code given passed as argument f.
+   *
+   * @param f instance of an implementation of the Main interface that runs the
+   * main feature's precondition follewed by its code.
+   */
+  public static void run(Main f)
+  {
+    new FuzionThread(f);
+  }
+
+
+  /**
    * Get the current FuzionThread instance. In case the current thread is not a
    * thread attached to the Fuzion runtime, create a fatal error.
    *
@@ -240,10 +238,6 @@ public class Runtime extends ANY
   {
     FuzionThread result = null;
     var ct = Thread.currentThread();
-    if (ct == _nyi_remove_mainthread_)
-      {
-        ct = _nyi_remove_main_FuzionThread_;
-      }
     if (ct instanceof FuzionThread ft)
       {
         result = ft;

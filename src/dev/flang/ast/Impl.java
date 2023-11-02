@@ -473,7 +473,7 @@ public class Impl extends ANY
           {
             AstErrors.noActualCallFound(formalArg);
           }
-        else if (result == Types.t_UNDEFINED)
+        else if (result == Types.t_ERROR)
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
@@ -498,10 +498,6 @@ public class Impl extends ANY
           }
       }
 
-    if (result == Types.t_UNDEFINED)
-      {
-        result = Types.t_ERROR;
-      }
     return result;
   }
 

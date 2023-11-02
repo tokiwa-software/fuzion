@@ -950,21 +950,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param generics the generics argument to be passed to resultTypeRaw
    *
-   * @return the result type, Types.resolved.t_unit if none and null in case the
+   * @return the result type, Types.resolved.t_void if none and null in case the
    * type must be inferenced and is not available yet.
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    if (!res.state(this).atLeast(State.RESOLVING_TYPES))
-      {
-        res.resolveTypes(this);
-      }
-    var result = resultTypeRaw(res, generics);
-    if (result instanceof UnresolvedType rt)
-      {
-        result = rt.visit(Feature.findGenerics,outer());
-      }
-    return result;
+    return resultTypeRaw(res, generics);
   }
 
 

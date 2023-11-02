@@ -17,33 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to syntax check fz files.
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-name: syntax check fz files
-
-permissions:
-  contents: read
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
-
-env:
-  PRECONDITIONS: true
-  POSTCONDITIONS: true
-
-jobs:
-  run_tests:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: syntax check
-        run: make syntaxcheck
+override NAME = issue_2182
+include ../simple.mk

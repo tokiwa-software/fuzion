@@ -185,12 +185,11 @@ public class If extends ExprWithPos
           : t;
         result = result.union(t);
       }
-    if (result==Types.t_UNDEFINED)
+    if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
                                           "Incompatible types in branches of if expression",
                                           branches());
-        result = Types.t_ERROR;
       }
     return result;
   }

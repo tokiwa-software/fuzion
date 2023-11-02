@@ -240,6 +240,23 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
+      return constData(constCl, d, true);
+    }
+
+
+    /**
+     * Get a constant value of type constCl with given byte data d.
+     *
+     * @param constCl the clazz of the const we are creating
+     *
+     * @param d the serialized data to use for creating the constant
+     *
+     * @param onHeap should this constant be cloned to heap?
+     *
+     * @return
+     */
+    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap)
+    {
       return switch (_fuir.getSpecialId(constCl))
         {
           case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -270,9 +287,31 @@ public class C extends ANY
           }
           default ->
           {
-            Errors.error("Unsupported constant in C backend.",
-            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-            yield new Pair<>(CExpr.dummy(_fuir.clazzAsString(constCl)), CStmnt.EMPTY);
+            var sb = new StringBuilder();
+            var offset = 0;
+            var argCount = _fuir.clazzArgCount(constCl);
+            var l = new List<CStmnt>();
+
+            for (int i = 0; i < argCount; i++)
+              {
+                var arg = _fuir.clazzArg(constCl, i);
+                int bytes = _fuir.clazzArgFieldBytes(constCl, i);
+                sb.append("." + _names.fieldName(arg).code());
+                sb.append(" = ");
+                var cd = constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false);
+                l.add(cd._v1);
+                sb.append(cd._v0.code());
+                if (i + 1 != argCount)
+                  {
+                    sb.append(",");
+                  }
+                offset += bytes;
+              }
+
+            var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
+            yield onHeap
+              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.seq(l))
+              : new Pair<>(cl, CStmnt.seq(l));
           }
         };
     }

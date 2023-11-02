@@ -177,12 +177,23 @@ public class Types extends ANY implements ClassFileConstants
 
         if (cl == _fuir.clazzUniverse())
           {
+            cf.addImplements(Names.MAIN_INTERFACE);
             var maincl = _fuir.mainClazzId();
+            var bc_run =
+              Expr.UNIT
+              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
+              .andThen(invokeStatic(maincl, false)).drop()
+              .andThen(Expr.RETURN);
+            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>());
+            cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
+
             var bc_main =
               Expr.aload(0, JAVA_LANG_STRING.array())
               .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array()))
-              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
-              .andThen(invokeStatic(maincl, false)).drop()
+              .andThen(Expr.new0(cn, javaType(cl)))
+              .andThen(Expr.DUP)
+              .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
+              .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
               .andThen(Expr.RETURN);
             var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>());
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));

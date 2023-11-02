@@ -966,11 +966,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.t_UNDEFINED.
+   * such type exists, return Types.t_ERROR.
    *
    * @param that another type or null
    *
-   * @return a type that is assignable both from this and that, or Types.t_UNDEFINED if none
+   * @return a type that is assignable both from this and that, or Types.t_ERROR if none
    * exists.
    */
   AbstractType union(AbstractType that)
@@ -978,18 +978,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     AbstractType result =
       this == Types.t_ERROR                      ? Types.t_ERROR     :
       that == Types.t_ERROR                      ? Types.t_ERROR     :
-      this == Types.t_UNDEFINED                  ? Types.t_UNDEFINED :
-      that == Types.t_UNDEFINED                  ? Types.t_UNDEFINED :
+      that == null                               ? Types.t_ERROR     :
       this.compareTo(Types.resolved.t_void) == 0 ? that              :
       that.compareTo(Types.resolved.t_void) == 0 ? this              :
       this.isAssignableFrom(that)                ? this :
       that.isAssignableFrom(this)                ? that :
       this.isAssignableFrom(that.asRef())        ? this :
-      that.isAssignableFrom(this.asRef())        ? that : Types.t_UNDEFINED;
+      that.isAssignableFrom(this.asRef())        ? that : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_UNDEFINED ||
-       result == Types.t_ERROR     ||
+      (result == Types.t_ERROR     ||
        this.compareTo(Types.resolved.t_void) == 0 && result == that ||
        that.compareTo(Types.resolved.t_void) == 0 && result == this ||
        (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
@@ -1772,13 +1770,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * @return the type to use for inferencing instead of `t`.
+   * bytes used when serializing call that results in this type.
    */
-  public static AbstractType forInferencing(AbstractType t)
+  public int serializedSize()
   {
-    return t == Types.resolved.t_Const_String
-      ? Types.resolved.t_string
-      : t;
+    var ct = NumLiteral.findConstantType(this);
+    return ct == null
+      ? this.featureOfType().arguments().stream().mapToInt(a -> a.resultType().serializedSize()).sum()
+      : ct.bytes();
   }
 
 

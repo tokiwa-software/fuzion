@@ -751,7 +751,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
@@ -2303,6 +2303,41 @@ public class Feature extends AbstractFeature
 
     return result;
   }
+
+
+  /**
+   * In case this has not been resolved for types yet, do so. Next, try to
+   * determine the result type of this feature. If the type is not explicit, but
+   * needs to be inferenced, the result might still be null. Inferenced types
+   * become available once this is in state RESOLVED_TYPES.
+   *
+   * @param res Resolution instance use to resolve this for types.
+   *
+   * @param generics the generics argument to be passed to resultTypeRaw
+   *
+   * @return the result type, Types.resolved.t_void if none and null in case the
+   * type must be inferenced and is not available yet.
+   */
+  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
+  {
+    AbstractType result = Types.resolved.t_void;
+    if (result != null && !_resultTypeIfPresentRecursion)
+      {
+        _resultTypeIfPresentRecursion = impl()._kind == Impl.Kind.FieldActual;
+        if (!res.state(this).atLeast(State.RESOLVING_TYPES))
+          {
+            res.resolveTypes(this);
+          }
+        result = resultTypeRaw(res, generics);
+        if (result instanceof UnresolvedType rt)
+          {
+            result = rt.visit(Feature.findGenerics,outer());
+          }
+        _resultTypeIfPresentRecursion = false;
+      }
+    return result;
+  }
+  boolean _resultTypeIfPresentRecursion = false;
 
 
   /**

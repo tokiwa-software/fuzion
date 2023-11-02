@@ -499,11 +499,18 @@ public class DFA extends ANY
              c_array_f64  -> newConstArray(constCl, d, _call);
         case c_Const_String -> newConstString(d, _call);
         default ->
-        {
-          Errors.error("Unsupported constant in DFA analysis.",
-                       "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield null;
-        }
+          {
+            if (!_fuir.clazzIsChoice(constCl))
+              {
+                yield newValueConst(constCl, _call, ByteBuffer.wrap(d));
+              }
+            else
+              {
+                Errors.error("Unsupported constant in DFA analysis.",
+                             "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                yield null;
+              }
+          }
         };
       return new Pair<>(r, o);
     }
@@ -1878,6 +1885,53 @@ public class DFA extends ANY
     a.setField(this, data  , adata);
     r.setField(this, internalArray, a);
     return r;
+  }
+
+
+  /**
+   * deserialize value constant of type `constCl` from `b`
+   *
+   * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
+   *
+   * @param context for debugging: Reason that causes this const string to be
+   * part of the analysis.
+   *
+   * @param b the serialized data to be used when creating this constant
+   *
+   * @return an instance of `constCl` with fields initialized using the data from `b`.
+   */
+  private Value newValueConst(int constCl, Context context, ByteBuffer b)
+  {
+    return switch (_fuir.getSpecialId(constCl))
+      {
+        // we reached the "bottom" of this value const
+      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 -> new NumericValue(DFA.this, constCl,
+        b.order(ByteOrder.LITTLE_ENDIAN));
+        // complex instance
+      default ->
+        {
+          var result = newInstance(constCl, context);
+          var args = new List<Val>();
+          var offset = 0;
+          for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+            {
+              var f = _fuir.clazzArg(constCl, index);
+              var fr = _fuir.clazzArgClazz(constCl, index);
+              var n = _fuir.clazzArgFieldBytes(constCl, index);
+              var bytes = b.slice(offset, n);
+              offset += n;
+              var arg = newValueConst(fr, context, bytes);
+              args.add(arg);
+              result.setField(this, f, arg);
+            }
+
+          // register calls for constant creation even though
+          // not every backend actually performs these calls.
+          newCall(constCl, false, _universe, args, null /* new environment */, context);
+
+          yield result;
+        }
+      };
   }
 
 
