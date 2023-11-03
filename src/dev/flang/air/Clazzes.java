@@ -1120,20 +1120,14 @@ public class Clazzes extends ANY
       (Errors.any() || !thiz.dependsOnGenerics(),
        !thiz.isThisType());
 
-    Clazz outerClazz;
-    if (thiz.outer() != null)
-      {
-        outerClazz = clazz(thiz.outer());
-      }
-    else
-      {
-        outerClazz = null;
-      }
-
     var t = Types.intern(thiz);
     var result = _clazzesForTypes_.get(t);
     if (result == null)
       {
+        Clazz outerClazz = thiz.outer() != null
+          ? outerClazz = clazz(thiz.outer())
+          : null;
+
         result = create(t, outerClazz);
         _clazzesForTypes_.put(t, result);
       }
