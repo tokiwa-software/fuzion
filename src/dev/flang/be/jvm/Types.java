@@ -239,7 +239,8 @@ public class Types extends ANY implements ClassFileConstants
   Expr invokeStaticCombindedPreAndCall(int cc)
   {
     var cls   = _names.javaClass(cc);
-    var fname = Names.COMBINED_NAME;
+    var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) >= 0 ? Names.COMBINED_NAME
+                                                                       : Names.ROUTINE_NAME;
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),
