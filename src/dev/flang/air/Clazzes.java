@@ -104,11 +104,7 @@ public class Clazzes extends ANY
      */
     public Clazz getIfCreated()
     {
-      if (_t == null)
-        {
-          get();
-        }
-      else if (_clazz == null && _clazzesForTypes_.containsKey(_t.get()))
+      if (_clazz == null && _clazzesForTypes_.containsKey(_t.get()))
         {
           _clazz = clazz(_t.get());
         }
@@ -118,14 +114,7 @@ public class Clazzes extends ANY
     {
       if (_clazz == null)
         {
-          if (_t == null)
-            {
-              _clazz = clazz(Types.resolved.universe.selfType());
-            }
-          else
-            {
-              _clazz = clazz(_t.get());
-            }
+          _clazz = clazz(_t.get());
         }
       return _clazz;
     }
@@ -138,7 +127,7 @@ public class Clazzes extends ANY
   /**
    * Handy preallocated classes to be used during execution:
    */
-  public static final OnDemandClazz universe    = new OnDemandClazz(null);
+  public static final OnDemandClazz universe    = new OnDemandClazz(() -> Types.resolved.universe.selfType());
   public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
