@@ -2093,22 +2093,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Determine the nesting level of a given feature f. The nesting level is 0
-   * for the universe, 1 for any feature declared in the universe, and
-   * depth(f.outer())+1 for all the rest.
-   */
-  private int depth(AbstractFeature f)
-  {
-    if (CHECKS) check
-      (Errors.any() || f.isUniverse() || f.outer() != null);
-
-    return f.isUniverse() || (f.outer() == null)
-      ? 0
-      : depth(f.outer()) + 1;
-  }
-
-
-  /**
    * For a type clazz such as 'i32.type' return its name, such as 'i32'.
    */
   public String typeName()
