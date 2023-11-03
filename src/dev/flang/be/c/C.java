@@ -695,9 +695,9 @@ public class C extends ANY
    */
   private void createCode(CFile cf, COptions _options) throws IOException
   {
-    cf.print
-      ((_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
+    cf.print(
        "#define _POSIX_C_SOURCE 200809L\n" +
+       (_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
