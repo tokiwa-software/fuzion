@@ -41,6 +41,8 @@ ENV = \
   $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
+all: jvm c int
+
 int:
 	$(ENV) ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
