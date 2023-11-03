@@ -201,40 +201,38 @@ public read_line String ! reader is
 
   mi : mutate is
 
-  # NYI does not work with lambda syntax ()->
-  mi.go (ref : Function String
-          call String is
-            res := (mutate.array (array u8)).type.new mi
+  mi.go String ()->
+    res := (mutate.array (array u8)).type.new mi
 
-            while
-              match reader.read
-                io.end_of_file =>
-                  false
-                a array =>
+    while
+      match reader.read
+        io.end_of_file =>
+          false
+        a array =>
 
-                  # trailing carriage returns are dropped
-                  add_to_res(a array u8) is
-                    if !a.is_empty
-                      res.add (if a.last = character_encodings.ascii.cr
-                                (a.slice 0 a.count-1).as_array
-                              else
-                                a)
+          # trailing carriage returns are dropped
+          add_to_res(a array u8) is
+            if !a.is_empty
+              res.add (if a.last = character_encodings.ascii.cr
+                        (a.slice 0 a.count-1).as_array
+                      else
+                        a)
 
-                  match (container.searchable_sequence a).index_of character_encodings.ascii.lf
-                    idx i32 =>
-                      add_to_res (a.slice 0 idx).as_array
-                      reader.discard idx+1
-                      false
-                    nil =>
-                      add_to_res a
-                      reader.discard_all
-                      true
+          match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+            idx i32 =>
+              add_to_res (a.slice 0 idx).as_array
+              reader.discard idx+1
+              false
+            nil =>
+              add_to_res a
+              reader.discard_all
+              true
 
-            bytes :=
-              res
-                .flat_map_sequence u8 x->x
-                .as_array
+    bytes :=
+      res
+        .flat_map_sequence u8 x->x
+        .as_array
 
-            ref : String
-              utf8 Sequence u8 is
-                bytes)
+    ref : String
+      utf8 Sequence u8 is
+        bytes

@@ -60,7 +60,7 @@ is
 
   # the contents
   #
-  contents := mi.go (()->
+  contents := mi.go ()->
     for
       mcontents := (mutate.array (option (tuple HK V))).type.new mi allocated_size nil, mcontents
       k in ks
@@ -91,7 +91,6 @@ is
 
     else
       mcontents.as_array
-  )
 
 
   # get the value k is mapped to

@@ -46,4 +46,4 @@ stringtest is
 
   mi : mutate is
   mi.go ()->
-    say (String.type.from_marray ((mutate.array Any).type.new mi 1 nil))
+    say (String.type.from_mutable_array ((mutate.array Any).type.new mi 1 nil))
