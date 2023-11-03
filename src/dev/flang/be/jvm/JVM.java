@@ -1142,7 +1142,8 @@ should be avoided as much as possible.
                   .andThen(javaTypeOfTarget(cl).load(0));
                 for(var i = 0; i<_fuir.clazzArgCount(cl); i++)
                   {
-                    var jti = _types.javaType(_fuir.clazzResultClazz(_fuir.clazzArgClazz(cl, i)));
+                    var at = _fuir.clazzArgClazz(cl, i);
+                    var jti = _types.resultType(at);
                     bc_combined = bc_combined
                       .andThen(jti.load(argSlot(cl, i)));
                   }
