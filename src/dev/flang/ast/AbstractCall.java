@@ -67,6 +67,10 @@ public abstract class AbstractCall extends Expr
   public int _parentCallArgFieldIds = -1;
 
 
+  // used if this call is turned into a compile time constant in FUIR.
+  public Object innerClazz;
+
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -137,7 +141,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (isCompileTimeConst());
 
-    return new AbstractConstant() {
+    var result = new AbstractConstant() {
 
       @Override
       public SourcePosition pos()
@@ -181,6 +185,8 @@ public abstract class AbstractCall extends Expr
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
     };
+    result.runtimeClazz = innerClazz;
+    return result;
   }
 
 

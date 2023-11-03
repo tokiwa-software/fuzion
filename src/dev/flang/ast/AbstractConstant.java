@@ -35,6 +35,13 @@ package dev.flang.ast;
 public abstract class AbstractConstant extends Expr
 {
 
+  /**
+   * The clazz this abstract constant will result in.
+   *
+   * Not null only for calls that are turned into compile time constants.
+   */
+  public Object runtimeClazz;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
