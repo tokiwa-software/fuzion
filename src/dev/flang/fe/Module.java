@@ -28,7 +28,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Consts;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -214,7 +213,7 @@ public abstract class Module extends ANY
                 if (CHECKS) check
                   (cf != outer);
 
-                if ((f.modifiers() & Consts.MODIFIER_FIXED) == 0)
+                if (!f.isFixed())
                   {
                     var newfn = cf.handDown(null, f, fn, p, outer);
                     addInheritedFeature(set, outer, p, newfn, f);
@@ -254,6 +253,9 @@ public abstract class Module extends ANY
                            FeatureName fn,
                            AbstractFeature f)
   {
+    if (PRECONDITIONS)
+      require(!f.isFixed());
+
     var existing = set.get(fn);
     if (existing != null)
       {
