@@ -269,7 +269,11 @@ public class Intrinsics extends ANY
   public static double  f64_type_tan                (double a          ) { return         Math.tan  (         a); }
   public static double  f64_type_tanh               (double a          ) { return         Math.tanh (         a); }
 
-  public static void fuzion_std_exit (int code) { System.exit(code); }
+  public static void fuzion_std_exit (int code)
+  {
+    Runtime.unsafeIntrinsic();
+    System.exit(code);
+  }
 
   public static void fuzion_std_date_time(Object data)
   {
@@ -287,6 +291,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_bind0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -333,11 +338,13 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_listen(long sockfd, int backlog)
   {
+    Runtime.unsafeIntrinsic();
     return 0;
   }
 
   public static boolean fuzion_sys_net_accept(long sockfd, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -366,6 +373,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_connect0(int family, int socketType, int protocol, Object host0, Object port0, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -406,6 +414,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_get_peer_address(long sockfd, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -428,6 +437,7 @@ public class Intrinsics extends ANY
 
   public static char fuzion_sys_net_get_peer_port(long sockfd)
   {
+    Runtime.unsafeIntrinsic();
     try
       {
         if (Runtime._openStreams_.get(sockfd) instanceof SocketChannel sc)
@@ -444,6 +454,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_net_read(long sockfd, Object b, int length, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       {
         Runtime.ensure_not_frozen(b);
@@ -486,6 +497,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_write(long sockfd, Object fileContent, int l)
   {
+    Runtime.unsafeIntrinsic();
     try
       {
         var sc = (ByteChannel)Runtime._openStreams_.get(sockfd);
@@ -500,6 +512,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_close0(long sockfd)
   {
+    Runtime.unsafeIntrinsic();
     return Runtime._openStreams_.remove(sockfd)
       ? 0
       : -1;
@@ -507,6 +520,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_net_set_blocking0(long sockfd, int blocking)
   {
+    Runtime.unsafeIntrinsic();
     var asc = (AbstractSelectableChannel)Runtime._openStreams_.get(sockfd);
     try
       {
@@ -521,6 +535,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_fileio_flush(long fd)
   {
+    Runtime.unsafeIntrinsic();
     var s = Runtime._openStreams_.get(fd);
     if (s instanceof PrintStream ps)
       {
@@ -531,6 +546,7 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_fileio_read(long fd, Object d, int l)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(d);
 
@@ -564,12 +580,7 @@ public class Intrinsics extends ANY
         var s = Runtime._openStreams_.get(f);
         if (s instanceof RandomAccessFile raf)
           {
-            /* NYI:
-            if (!ENABLE_UNSAFE_INTRINSICS)
-              {
-                Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-              }
-            */
+            Runtime.unsafeIntrinsic();
             raf.write(fileContent);
           }
         else if (s instanceof OutputStream os)
@@ -586,6 +597,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_delete(Object s)
   {
+    Runtime.unsafeIntrinsic();
     Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
     try
       {
@@ -599,6 +611,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_move(Object o, Object n)
   {
+    Runtime.unsafeIntrinsic();
     Path oldPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) o));
     Path newPath = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) n));
     try
@@ -614,6 +627,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_create_dir(Object s)
   {
+    Runtime.unsafeIntrinsic();
     Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
     try
       {
@@ -628,6 +642,7 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_open(Object s, Object res, byte mode)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -665,6 +680,7 @@ public class Intrinsics extends ANY
 
   public static byte fuzion_sys_fileio_close(long fd)
   {
+    Runtime.unsafeIntrinsic();
     return (byte) (Runtime._openStreams_.remove(fd)
                                     ? 0
                                     : -1);
@@ -672,11 +688,13 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI : should be altered in the future to not resolve symbolic links
   {
+    Runtime.unsafeIntrinsic();
     return fuzion_sys_fileio_stats(s, stats);
   }
 
   public static boolean fuzion_sys_fileio_stats(Object s, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -714,6 +732,7 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_seek(long fd, short s, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -734,6 +753,7 @@ public class Intrinsics extends ANY
 
   public static void fuzion_sys_fileio_file_position(long fd, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -752,6 +772,7 @@ public class Intrinsics extends ANY
 
   public static Object fuzion_sys_fileio_mmap(long fd, long offset, long size, Object res)
   {
+    Runtime.unsafeIntrinsic();
     if (CHECKS)
       Runtime.ensure_not_frozen(res);
 
@@ -783,15 +804,18 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_fileio_munmap(Object adr, long size)
   {
+    Runtime.unsafeIntrinsic();
     return 0;
   }
 
   public static byte fuzion_sys_fileio_mapped_buffer_get(Object buf, long i)
   {
+    Runtime.unsafeIntrinsic();
     return ((ByteBuffer)buf).get((int) i);
   }
   public static void fuzion_sys_fileio_mapped_buffer_set(Object buf, long i, byte b)
   {
+    Runtime.unsafeIntrinsic();
     ((ByteBuffer)buf).put((int) i, b);
   }
 
@@ -809,6 +833,7 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
+    Runtime.unsafeIntrinsic();
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 

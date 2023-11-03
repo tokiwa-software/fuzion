@@ -36,6 +36,8 @@ import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
 
+import dev.flang.be.jvm.runtime.Runtime;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -472,6 +474,10 @@ should be avoided as much as possible.
       {
         Errors.showAndExit();
         jvm._runner = new Runner();
+        if (!jvm._options.enableUnsafeIntrinsics())
+          {
+            Runtime.disableUnsafeIntrinsics();
+          }
       }
       void compile(JVM jvm, int cl)
       {
