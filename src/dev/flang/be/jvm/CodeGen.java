@@ -403,11 +403,42 @@ class CodeGen
               .andThen(_types.invokeStaticCombindedPreAndCall(cc));
 
             var rt = _fuir.clazzResultClazz(cc);
-            res = _fuir.clazzIsVoidType(rt) ? new Pair<>(null, call)
-                                            : new Pair<>(call, Expr.UNIT);
+            res = makePair(call, rt);
           }
       }
     return res;
+  }
+
+
+  /**
+   * Create a value / code pair from code that produces a value of the given
+   * Fuzion type.
+   *
+   * In case of a 'normal' type, this just creates a Pair with _v0 set to value
+   * and _v1 to Expr.UNIT.
+   *
+   * For a type that is compiled to a unit type (Java's void type), execution of
+   * the code in value is still require even though the value will be unused, so
+   * we return Pair(Expr.UNIT, value).
+   *
+   * Finally, if rt is Fuzion's void type, i.e., the execution will never
+   * return, this creates Pair(null, value).
+   *
+   * @param value code to calculate a value of type rt
+   *
+   * @param rt the type, may be unit or void
+   *
+   * @return a Pair that produces the value and the desired side effects.
+   */
+  Pair<Expr, Expr> makePair(Expr value, int rt)
+  {
+    var code = Expr.UNIT;
+    if (_types.javaType(rt) == PrimitiveType.type_void)
+      { // there is no Java value, so treat as code:
+        code = value;
+        value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
+      }
+    return new Pair(value, code);
   }
 
 
@@ -649,10 +680,9 @@ class CodeGen
    */
   Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int c, int i)
   {
+    Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
-    Expr code = Expr.UNIT;
-    var val = Expr.UNIT;
-    var rt = _fuir.clazzResultClazz(cc);
+    var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -685,12 +715,11 @@ class CodeGen
                   // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
                   )
                 { // then we can do tail recursion optimization!
+
                   // if present, store target to local #0
-                  var o = _fuir.clazzOuterRef(cl);
-                  var ot = o == -1 ? -1 : _fuir.clazzResultClazz(o);
-                  code = (ot == -1) ? code.andThen(tvalue.drop())
-                                    : tvalue
-                                        .andThen(_types.javaType(ot).store(0));
+                  var ot = _jvm.javaTypeOfTarget(cl);
+                  var code = ot == PrimitiveType.type_void ? tvalue.drop()
+                                                           : tvalue.andThen(ot.store(0));
 
                   // store arguments to local vars
                   for (int ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
@@ -701,7 +730,8 @@ class CodeGen
                   // perform tail call by goto startLabel
                   code = code.andThen(Expr.gotoLabel(_jvm.startLabel(cl)));
 
-                  val = null; // result is void, we do not return from this path.
+                  res = new Pair(null,  // result is void, we do not return from this path.
+                                 code);
                 }
               else
                 {
@@ -712,46 +742,23 @@ class CodeGen
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
                     .andThen(_types.invokeStatic(cc, preCalled));
 
-                  if (!true)  // NYI: the following code does not work, seams like a unit-type val is sometimes thrown away instead of .drop()ped.
-                    {
-                      if (preCalled || _fuir.clazzIsVoidType(rt))
-                        {
-                          code = call;
-                          val = preCalled ? Expr.UNIT : null;
-                        }
-                      else
-                        {
-                          val = call;
-                          code = Expr.UNIT;
-                        }
-                    }
-                  else
-                    {
-                      if (!preCalled && _fuir.hasData(rt))
-                        {
-                          val = call;
-                        }
-                      else
-                        {
-                          code = call;
-                          if (_fuir.clazzIsVoidType(rt))
-                            {
-                              val = null;
-                            }
-                        }
-                    }
+                  res = makePair(call, rt);
                 }
+            }
+          else
+            {
+              res = new Pair(Expr.UNIT, Expr.UNIT);
             }
           break;
         }
       case Field:
         {
-          val = _jvm.readField(tvalue, oc, cc, rt);
+          res = makePair(_jvm.readField(tvalue, oc, cc, rt), rt);
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
       }
-    return new Pair<>(val, code);
+    return res;
   }
 
 
