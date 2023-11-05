@@ -1927,6 +1927,10 @@ public class DFA extends ANY
 
           // register calls for constant creation even though
           // not every backend actually performs these calls.
+          if (_fuir.hasPrecondition(constCl))
+            {
+              newCall(constCl, true, _universe, args, null /* new environment */, context);
+            }
           newCall(constCl, false, _universe, args, null /* new environment */, context);
 
           yield result;

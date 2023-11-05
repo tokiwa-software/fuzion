@@ -997,8 +997,7 @@ class CodeGen
                     .andThen(c._v0);
                 }
               result = result
-                //.andThen(_types.invokeStaticCombindedPreAndCall(constCl));  // does not work since features used in precondition may be missing
-                .andThen(_types.invokeStatic(constCl, false));
+                .andThen(_types.invokeStaticCombindedPreAndCall(constCl));
 
               yield new Pair<>(result, Expr.UNIT);
             }
