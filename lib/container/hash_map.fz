@@ -56,13 +56,13 @@ is
   collision (at i32) =>
     (at + 1) % allocated_size  # NYI: dumb collision function, check literature and improve!
 
+  mi : mutate is
 
   # the contents
   #
-  contents :=
+  contents := mi.go ()->
     for
-      mi := mutate.type.install_default
-      mcontents := mutate.env.array (option (tuple HK V)) allocated_size nil, mcontents
+      mcontents := (mutate.array (option (tuple HK V))).type.new mi allocated_size nil, mcontents
       k in ks
       v in vs
     do

@@ -115,21 +115,24 @@ reader =>
 #
 read_bytes(n i32) Sequence u8 ! reader is
 
-  res := mut ((marray (array u8)).type.new)
+  mi : mutate is
 
-  while ((res.get.flat_map_sequence u8 x->x).count < n &&
-    match reader.read
-      io.end_of_file => false
-      a (array u8) =>
-        reader.discard a.count
-        res <- res.get.add a
-        true
-    )
+  mi.go ()->
 
-  res
-    .get
-    .flat_map_sequence u8 x->x
-    .as_array
+    res := (mutate.array (array u8)).type.new mi
+
+    while ((res.flat_map_sequence u8 x->x).count < n &&
+      match reader.read
+        io.end_of_file => false
+        a (array u8) =>
+          reader.discard a.count
+          res.add a
+          true
+      )
+
+    res
+      .flat_map_sequence u8 x->x
+      .as_array
 
 
 
@@ -155,30 +158,38 @@ is
           error => false
       .count
 
-  codepoints(str_arr marray String) =>
+  codepoints(str_arr Mutable_Array String) =>
     (str_arr.map_sequence (str -> valid_codepoints str)).fold i32.type.sum
 
 
-  for str_arr := (marray String).type.new 1 (as_string reader.read), str_arr.add (as_string reader.read)
-  while (codepoints str_arr < n &&
-    match reader.read
-      io.end_of_file =>
-        # if we have not discarded/read anything yet, raise end of file error
-        if str_arr.count = 1
-          reader.raise (error "-- end of file --")
-        false
-      a array =>
-        reader.discard_all
-        true)
-  else
+  mi : mutate is
+  mi.go ()->
 
+    str_arr := (mutate.array String).type.new mi 1 (as_string reader.read)
     str := String.type.join str_arr
     res := str.substring_codepoint 0 (min n str.codepoint_length)
 
-    # discard only the bytes we are using in result
-    reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
+    while (codepoints str_arr < n &&
+      match reader.read
+        io.end_of_file =>
+          # if we have not discarded/read anything yet, raise end of file error
+          if str_arr.count = 1
+            reader.raise (error "-- end of file --")
+          false
+        a array =>
+          reader.discard_all
+          true)
+    do
+      str_arr.add (as_string reader.read)
+    else
 
-    res
+      str := String.type.join str_arr
+      res := str.substring_codepoint 0 n
+
+      # discard only the bytes we are using in result
+      reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
+
+      res
 
 
 
@@ -188,38 +199,40 @@ is
 #
 public read_line String ! reader is
 
-  res := mut ((marray (array u8)).type.new)
+  mi : mutate is
 
-  while
-    match reader.read
-      io.end_of_file =>
-        false
-      a array =>
+  mi.go String ()->
+    res := (mutate.array (array u8)).type.new mi
 
-        # trailing carriage returns are dropped
-        add_to_res(a array u8) is
-          if !a.is_empty
-            res <- res.get.add (if a.last = character_encodings.ascii.cr
-                                  (a.slice 0 a.count-1).as_array
-                                else
-                                  a)
+    while
+      match reader.read
+        io.end_of_file =>
+          false
+        a array =>
 
-        match (container.searchable_sequence a).index_of character_encodings.ascii.lf
-          idx i32 =>
-            add_to_res (a.slice 0 idx).as_array
-            reader.discard idx+1
-            false
-          nil =>
-            add_to_res a
-            reader.discard_all
-            true
+          # trailing carriage returns are dropped
+          add_to_res(a array u8) is
+            if !a.is_empty
+              res.add (if a.last = character_encodings.ascii.cr
+                        (a.slice 0 a.count-1).as_array
+                      else
+                        a)
 
-  bytes :=
-    res
-      .get
-      .flat_map_sequence u8 x->x
-      .as_array
+          match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+            idx i32 =>
+              add_to_res (a.slice 0 idx).as_array
+              reader.discard idx+1
+              false
+            nil =>
+              add_to_res a
+              reader.discard_all
+              true
 
-  ref : String
-    utf8 Sequence u8 is
-      bytes
+    bytes :=
+      res
+        .flat_map_sequence u8 x->x
+        .as_array
+
+    ref : String
+      utf8 Sequence u8 is
+        bytes

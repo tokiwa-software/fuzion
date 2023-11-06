@@ -172,17 +172,21 @@ public mutate : simple_effect is
 
   # create a mutable array.
   #
-  public array (# element type
+  module:public array (# element type
          redef T type,
 
          # length of the array to create
          public length i32,
 
-         # initial value for elements
-         init T
-        ) : Sequence T, mutable_element
+         # contents of the array
+         module data fuzion.sys.internal_array T,
+         _ unit
+
+        ) : Mutable_Array T, mutable_element
+  pre
+    safety: (length ≥ 0) && (length ≤ data.length)
   is
-    private ma := (marray T).type.new length init
+
 
     # a sequence of all valid indices to access this array. Useful e.g., for
     # `for`-loops:
@@ -190,7 +194,8 @@ public mutate : simple_effect is
     #   for i in arr.indices do
     #     say arr[i]
     #
-    public indices => ma.indices
+    public indices => 0..length-1
+
 
     # is this sequence known to be finite?  For infinite sequences, features like
     # count diverge.
@@ -204,8 +209,8 @@ public mutate : simple_effect is
       pre
         safety: 0 ≤ i < length
     is
-      check_and_replace
-      ma[i]
+      data[i]
+
 
     # set element at given index i to given value o
     #
@@ -214,29 +219,72 @@ public mutate : simple_effect is
         safety: 0 ≤ i < length
     is
       check_and_replace
-      ma[i] := o
+      data[i] := o
+
+
+    # add an element at the end of this array
+    #
+    public add (o T) unit
+    is
+      check_and_replace
+      d := if (data.length > length) data
+        else
+          new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
+          for i in indices do
+            new_data[i] := data[i]
+          new_data
+      d[length] := o
+      set data := d
+      set length := length+1
 
 
     # create immutable array from this
     #
-    public redef as_array => ma.as_array
+    public redef as_array =>
+      array T length (i -> data[i])
 
 
-    # create a list from this marray
+    # create a list from this array
     #
-    public redef as_list => ma.as_list
+    public redef as_list =>
+      # since array is mutable,
+      # we first copy the elements
+      # to an immutable array.
+      as_array.as_list
 
 
     # map the array to a new array applying function f to all elements
     #
-    public map(B type, f T -> B) => ma.map B f
+    public map(B type, f T -> B) =>
+      map_sequence B f
 
 
-    # fold the elements of this array using the given monoid.
+    # initialize one-dimensional mutable array
     #
-    # e.g., to sum the elements of an array of i32, use a.fold i32.sum
+    public type.new
+     (LM type : mutate,
+
+      # length of the array to create
+      length i32,
+
+      # initial value for elements
+      init T
+
+     ) Mutable_Array T
+    is
+      data := fuzion.sys.internal_array_init T length
+
+      for x in data.indices do
+        data[x] := init
+
+      LM.env.array T length data unit
+
+
+    # initialize an empty mutable array of type T
     #
-    public redef fold (m Monoid T) => ma.fold 0 m.e m
+    public type.new (LM type : mutate) Mutable_Array T is
+      LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
+
 
 
   # install default instance of mutate
@@ -255,3 +303,20 @@ public mut =>
 # create a new mutable value of type T with initial value v
 #
 public mut(T type, v T) => mut.new T v
+
+
+# an interface defining a mutable array
+#
+public Mutable_Array(redef T type) ref : Sequence T is
+
+  # add an element at the end of the sequence
+  public add(t T) unit is abstract
+
+  # set element at index i to o
+  public set [ ] (i i32, o T) unit is abstract
+
+  # the indices of the array
+  public indices i32.infix .. is abstract
+
+  # the length of the array
+  public length i32 is abstract

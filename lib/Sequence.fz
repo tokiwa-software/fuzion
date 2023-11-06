@@ -61,6 +61,12 @@ public Sequence(T type) ref is
   public as_stream stream T is as_list.as_stream
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  public finite => false
+
+
   # is this Sequence empty?
   #
   public is_empty => as_list.is_empty
@@ -386,12 +392,6 @@ public Sequence(T type) ref is
     match drop n
       nil => nil
       c Cons => c.head
-
-
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  public finite => false
 
 
   # the nth element in the sequence, must exist
