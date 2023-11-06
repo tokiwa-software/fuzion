@@ -1631,7 +1631,7 @@ should be avoided as much as possible.
 
   /**
    * Clone a value if it is of value type. This is required since value types in
-   * the JVM backend are currently imlemented as reference values to instances
+   * the JVM backend are currently implemented as reference values to instances
    * of a Java class, so they have reference semantics.  To get value semantics,
    * this creates a new instance and copies all the fields from value into the
    * new instance.

@@ -59,7 +59,7 @@ public abstract class AbstractConstant extends Expr
 
   /**
    * The type of the constant.  This may be different to the the user-visible
-   * `type()` of this constant, in particular, for a constnat string, `type()`
+   * `type()` of this constant, in particular, for a constant string, `type()`
    * returns `String`, while `typeOfConstant` is the actual child of `String`
    * used for constants: `Const_String`.
    *
