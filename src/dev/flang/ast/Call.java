@@ -384,7 +384,7 @@ public class Call extends AbstractCall
                AbstractType type)
   {
     if (PRECONDITIONS) require
-      (generics.stream().allMatch(g -> !g.containsError()));
+      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()));
     this._pos = pos;
     this._name = name;
     this._select = select;
