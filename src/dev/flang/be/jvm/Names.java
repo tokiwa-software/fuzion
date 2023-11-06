@@ -149,8 +149,9 @@ public class Names extends ANY implements ClassFileConstants
   private static final String INTERFACE_PREFIX = "fzI_";
   private static final String DYNAMIC_FUNCTION_PREFIX = "fzD_";
 
-  static final String PRECONDITION_NAME = "fzPrecondition";
-  static final String ROUTINE_NAME      = "fzRoutine";
+  static final String PRECONDITION_NAME = "fzPrecondition";           // method with code for the precondition
+  static final String ROUTINE_NAME      = "fzRoutine";                // method with code for the routine
+  static final String COMBINED_NAME     = "fzPreconditionAndRoutine"; // method that calls precondition followed by routine, to reduce code size
   static
   {
     if (CHECKS) check

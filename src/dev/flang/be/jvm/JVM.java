@@ -1134,7 +1134,92 @@ should be avoided as much as possible.
                                        new List<>(), new List<>());
 
         cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
+
+        // If both precondition and routine exists, create a helper that calls both combined
+        if (!pre && _fuir.hasPrecondition(cl))
+          {
+            var bc_combined = Expr.UNIT;
+            var jt = _types.javaType(_fuir.clazzResultClazz(cl));
+
+            // In a loop, generate two calls, one for the precondition (preCond
+            // == true), then for the actual routine (preCond == false):
+            var preCond = true;
+            do
+              {
+                bc_combined = bc_combined
+                  .andThen(javaTypeOfTarget(cl).load(0));
+                for(var i = 0; i<_fuir.clazzArgCount(cl); i++)
+                  {
+                    var at = _fuir.clazzArgClazz(cl, i);
+                    var jti = _types.resultType(at);
+                    bc_combined = bc_combined
+                      .andThen(jti.load(argSlot(cl, i)));
+                  }
+                bc_combined = bc_combined
+                  .andThen(Expr.invokeStatic(_names.javaClass(cl),
+                                             _names.function(cl, preCond),
+                                             _types.descriptor(cl, preCond),
+                                             preCond ? PrimitiveType.type_void : jt));
+                preCond = !preCond;
+              }
+            while (!preCond);
+
+            bc_combined = bc_combined
+              .andThen(jt.return0());
+
+            var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
+                                             numLocals(cl, pre) /* NYI, num locals! */,
+                                             bc_combined,
+                                             new List<>(), new List<>());
+            cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
+          }
       }
+  }
+
+
+
+  /**
+   * Get the slot of the local var for argument #i.
+   *
+   * The Java method cl receives its target and arguments in the first local var
+   * slots on the Java stack.  This helper determines the slot number of a given
+   * argument.
+   *
+   * @param cl the clazz we are compiling.
+   *
+   * @param i the local variable index whose slot we are looking for.
+   *
+   * @return the slot that contains arg #i on a call to the Java code for `cl`.
+   */
+  public int argSlot(int cl, int i)
+  {
+    if (PRECONDITIONS) require
+      (0 <= i,
+       i < _fuir.clazzArgCount(cl));
+
+    var l = javaTypeOfTarget(cl).stackSlots();
+    for (var j = 0; j < i; j++)
+      {
+        var t = _fuir.clazzArgClazz(cl, j);
+        l = l + _types.javaType(t).stackSlots();
+      }
+    return l;
+  }
+
+
+  /**
+   * Get the Java type for target (outer ref) in the given routine.  Note that
+   * the slot number of the target ref is always 0.
+   *
+   * @param cl the clazz we are compiling.
+   *
+   * @return the Java type of the outer ref, PrimitiveType.type_void if none.
+   */
+  public JavaType javaTypeOfTarget(int cl)
+  {
+    var o = _fuir.clazzOuterRef(cl);
+    return o == -1 ? PrimitiveType.type_void
+                   : _types.javaType(_fuir.clazzResultClazz(o));
   }
 
 
