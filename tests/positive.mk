@@ -31,6 +31,8 @@
 FUZION_OPTIONS ?=
 FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
+all: jvm c int
+
 int:
 	$(FUZION) $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 

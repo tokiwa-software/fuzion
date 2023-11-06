@@ -32,6 +32,8 @@ FUZION_OPTIONS ?=
 FUZION = ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
 EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '`
 
+all: jvm c int
+
 int:
 	$(FUZION) $(NAME) 2>err.txt || echo -n
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1

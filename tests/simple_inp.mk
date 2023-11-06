@@ -37,6 +37,8 @@ FILE = $(NAME).fz
 STDIN = $(NAME).fz.stdin
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 
+all: jvm c int
+
 int:
 	cat $(STDIN) | ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
