@@ -2333,6 +2333,7 @@ public class Feature extends AbstractFeature
         result = resultTypeIfPresent(res);
         if (result instanceof UnresolvedType rt)
           {
+            // NYI try to remove this visitation with findGenerics, see PR: #2210
             result = rt.visit(Feature.findGenerics,outer());
           }
         result = result == null ? null : result.applyTypePars(this, generics);
