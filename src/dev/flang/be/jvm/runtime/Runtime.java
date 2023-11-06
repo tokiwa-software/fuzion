@@ -220,7 +220,7 @@ public class Runtime extends ANY
    * application code given passed as argument f.
    *
    * @param f instance of an implementation of the Main interface that runs the
-   * main feature's precondition follewed by its code.
+   * main feature's precondition followed by its code.
    */
   public static void run(Main f)
   {
@@ -784,7 +784,7 @@ public class Runtime extends ANY
     if (CHECKS)
       {
         // note that the internal array for `array unit` is null, we never
-        // freeze this since modifcations of unit-type arrays are pretty
+        // freeze this since modifications of unit-type arrays are pretty
         // harmless.
         if (p != null)
           {
