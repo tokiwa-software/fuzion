@@ -901,42 +901,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * resultTypeRaw returns the result type of this feature using the
+   * resultTypeIfPresent returns the result type of this feature using the
    * formal generic argument.
    *
    * @return this feature's result type using the formal generics, null in
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw(Resolution res)
+  AbstractType resultTypeIfPresent(Resolution res)
   {
     return resultType();
-  }
-
-
-  /**
-   * resultTypeRaw returns the result type of this feature with given
-   * actual generics applied.
-   *
-   * @param generics the actual generic arguments to create the type, or null if
-   * generics should not be replaced.
-   *
-   * @return this feature's result type using the given actual generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference to a field declared later).
-   */
-  AbstractType resultTypeRaw(Resolution res, List<AbstractType> actualGenerics)
-  {
-    if (CHECKS) check
-      (res.state(this).atLeast(State.RESOLVING_TYPES));
-
-    var result = resultTypeRaw(res);
-    if (result != null)
-      {
-        result = result.applyTypePars(this, actualGenerics);
-      }
-
-    return result;
   }
 
 
@@ -948,14 +922,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param res Resolution instance use to resolve this for types.
    *
-   * @param generics the generics argument to be passed to resultTypeRaw
+   * @param generics the generic arguments to be applied to resultType.
    *
    * @return the result type, Types.resolved.t_void if none and null in case the
    * type must be inferenced and is not available yet.
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    return resultTypeRaw(res, generics);
+    return resultType()
+      .applyTypePars(this, generics);
   }
 
 

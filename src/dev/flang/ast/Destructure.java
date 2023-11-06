@@ -314,7 +314,6 @@ public class Destructure extends Expr
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();
-                var frmlTs = g.replaceOpen(t.generics());
                 int select = 0;
                 for (var tfs : g.replaceOpen(t.generics()))
                   {

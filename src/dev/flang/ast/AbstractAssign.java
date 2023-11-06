@@ -222,7 +222,7 @@ public abstract class AbstractAssign extends Expr
   {
     return  _assignedField != Types.f_ERROR
          && res.state(_assignedField).atLeast(State.RESOLVED_TYPES)
-         && _assignedField.resultTypeRaw(res) != null;
+         && _assignedField.resultTypeIfPresent(res) != null;
   }
 
 
