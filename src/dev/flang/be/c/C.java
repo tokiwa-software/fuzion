@@ -1169,7 +1169,7 @@ public class C extends ANY
     var t = _names.struct(cl);
     return CStmnt.seq(CStmnt.decl(t + "*", tmp),
                       tmp.assign(CExpr.call(malloc(), new List<>(CExpr.sizeOfType(t)))),
-                      _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
+                      _fuir.clazzIsRef(cl) ? tmp.deref().field(CNames.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
   }
 
 
@@ -1359,9 +1359,6 @@ public class C extends ANY
    */
   CStmnt tailRecursion(int cl, int c, int i, int tc, List<CExpr> a)
   {
-    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
-                                   : CNames.CURRENT.deref();
-
     var l = new List<CStmnt>();
     if (_fuir.hasData(tc) && !_tailCall.firstArgIsOuter(cl, c, i))
       {
@@ -1550,8 +1547,6 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var cur = _fuir.clazzIsRef(cl) ? fields(CNames.CURRENT, cl)
-                                   : CNames.CURRENT.deref();
     var l = new List<CStmnt>();
     l.add(_ai.process(cl, pre)._v1);
     var res = _fuir.clazzResultClazz(cl);
