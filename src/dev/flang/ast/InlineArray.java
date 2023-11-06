@@ -121,12 +121,12 @@ public class InlineArray extends ExprWithPos
           }
         else
           {
-            _type =
-              t == null ? null :
-              Types.intern(new ResolvedNormalType(new List<>(t),
-                                                  new List<>(t),
-                                                  null,
-                                                  Types.resolved.f_array));
+            _type = t == null
+              ? null
+              : ResolvedNormalType.create(new List<>(t),
+                                          new List<>(t),
+                                          null,
+                                          Types.resolved.f_array);
           }
       }
     return _type;

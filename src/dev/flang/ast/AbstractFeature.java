@@ -480,19 +480,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           : createThisType();
         _selfType = result;
       }
-    if (state().atLeast(State.RESOLVED_TYPES))
-      {
-        result = Types.intern(result);
-      }
 
     if (POSTCONDITIONS) ensure
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this,
-       true || // this condition is very expensive to check and obviously true:
-       !state().atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
-       );
+       Errors.any() || result.featureOfType() == this);
 
     return result;
   }
@@ -526,14 +519,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           {
             result = ResolvedNormalType.newType(result, of.thisType());
           }
-        result = Types.intern(result);
         if (innerFixed)
           {
             _thisTypeFixed = result;
           }
         else
           {
-            result = Types.intern(result.asThis());
+            result = result.asThis();
             _thisType = result;
           }
       }
@@ -883,18 +875,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    var o = isUniverse() || outer().isUniverse() ? null : Types.intern(outer().selfType()).asThis();
+    var o = isUniverse() || outer().isUniverse() ? null : outer().selfType().asThis();
     var g = generics().asActuals();
-    var result = new ResolvedNormalType(g, g, o, this);
+    var result = ResolvedNormalType.create(g, g, o, this);
 
     if (POSTCONDITIONS) ensure
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this,
-       true || // this condition is very expensive to check and obviously true:
-       !state().atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
-       );
+       Errors.any() || result.featureOfType() == this);
 
     return result;
   }
@@ -1208,8 +1197,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                         a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
                         for (var tg : frmlTs)
                           {
-                            if (CHECKS) check
-                              (tg == Types.intern(tg));
                             a[i] = tg;
                             i++;
                           }
@@ -1223,7 +1210,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                             actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                           }
                         ti = ti.applyTypePars(c.calledFeature(), actualTypes);
-                        a[i] = Types.intern(ti);
+                        a[i] = ti;
                       }
                   }
               }
@@ -1433,8 +1420,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
-        if (CHECKS) check
-          (frmlT == Types.intern(frmlT));
 
         result[argnum] = frmlT;
         argnum++;

@@ -288,8 +288,7 @@ public class Clazzes extends ANY
   public static Clazz create(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
-      (actualType == Types.intern(actualType),
-       Errors.any() || !actualType.dependsOnGenerics(),
+      (Errors.any() || !actualType.dependsOnGenerics(),
        Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
@@ -1113,16 +1112,15 @@ public class Clazzes extends ANY
       (Errors.any() || !thiz.dependsOnGenerics(),
        !thiz.isThisType());
 
-    var t = Types.intern(thiz);
-    var result = _clazzesForTypes_.get(t);
+    var result = _clazzesForTypes_.get(thiz);
     if (result == null)
       {
         Clazz outerClazz = thiz.outer() != null
           ? outerClazz = clazz(thiz.outer())
           : null;
 
-        result = create(t, outerClazz);
-        _clazzesForTypes_.put(t, result);
+        result = create(thiz, outerClazz);
+        _clazzesForTypes_.put(thiz, result);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1153,8 +1151,7 @@ public class Clazzes extends ANY
        outerClazz != null || thiz.featureOfType().outer() == null,
        Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
-    var t = Types.intern(thiz);
-    var result = create(t, select, outerClazz);
+    var result = create(thiz, select, outerClazz);
 
     return result;
   }

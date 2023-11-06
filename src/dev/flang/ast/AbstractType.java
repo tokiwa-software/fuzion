@@ -398,7 +398,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var p: actual_type.featureOfType().inherits())
                   {
-                    var pt = Types.intern(actual_type.actualType(p.type()));
+                    var pt = actual_type.actualType(p.type());
                     if (actual_type.isRef())
                       {
                         pt = pt.asRef();
@@ -438,7 +438,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || t != null && Types.intern(t).isAssignableFrom(actual);
+            result = result || t != null && t.isAssignableFrom(actual);
           }
       }
     return result;
@@ -454,9 +454,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean constraintAssignableFrom(AbstractType actual)
   {
     if (PRECONDITIONS) require
-      (Types.intern(this  ) == this,
-       Types.intern(actual) == actual,
-       this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
+      (this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
        actual.isGenericArgument() || actual.featureOfType() != null || Errors.any(),
        Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
@@ -487,7 +485,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     for (var p: actual.featureOfType().inherits())
                       {
-                        var pt = Types.intern(p.type().applyTypePars(actual));
+                        var pt = p.type().applyTypePars(actual);
                         if (constraintAssignableFrom(pt))
                           {
                             result = true;
@@ -895,11 +893,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         int i1 = 0;
         for (var t1 : g)
           {
-            t1 = Types.intern(t1);
             int i2 = 0;
             for (var t2 : g)
               {
-                t2 = Types.intern(t2);
                 if (i1 < i2)
                   {
                     if (!t1.disjoint(t2) &&
@@ -1015,7 +1011,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result =
           (to == null && oo == null) ?  0 :
           (to == null && oo != null) ? -1 :
-          (to != null && oo == null) ? +1 : Types.intern(to).compareTo(Types.intern(oo));
+          (to != null && oo == null) ? +1 : to.compareTo(oo);
       }
     return result;
   }
@@ -1282,10 +1278,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (CHECKS) check
               (!f.isThisRef());
 
-            result = Types.intern(new ResolvedNormalType(g,
-                                                         g,
-                                                         outer().typeType(res),
-                                                         f));
+            result = ResolvedNormalType.create(g,
+                                               g,
+                                               outer().typeType(res),
+                                               f);
           }
       }
     return result;
@@ -1407,7 +1403,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             t = t.replace_type_parameter_of_type_origin(f);
           }
       }
-    return Types.intern(t);
+    return t;
   }
 
 
@@ -1463,7 +1459,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = new ResolvedNormalType(this, ng, unresolvedGenerics(), no);
+            result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), no);
           }
       }
     return result;
@@ -1671,14 +1667,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = Types.intern(f.constraint());
+        var c = f.constraint();
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
         if (f != null && a != null &&
             !c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(Types.intern(a)))
+            !c.constraintAssignableFrom(a))
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {

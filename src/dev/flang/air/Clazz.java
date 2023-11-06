@@ -350,7 +350,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
     this._type = (actualType != Types.t_ERROR && this._outer != null)
-      ? Types.intern(ResolvedNormalType.newType(actualType, this._outer._type))
+      ? ResolvedNormalType.newType(actualType, this._outer._type)
       : actualType;
     this._dynamicBinding = null;
   }
@@ -642,7 +642,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         t = this._outer.actualType(t);
       }
-    return Types.intern(t);
+    return t;
   }
 
 
@@ -718,7 +718,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForTypeFeature(o);
           }
-        t = Types.intern(new ResolvedNormalType(t, g, g, o, true));
+        t = ResolvedNormalType.create(t, g, g, o, true);
       }
     return t;
   }
@@ -1473,9 +1473,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (other != null,
        this .getClass() == Clazz.class,
-       other.getClass() == Clazz.class,
-       this ._type == Types.intern(this ._type),
-       other._type == Types.intern(other._type));
+       other.getClass() == Clazz.class);
 
     var result =
       this._select < other._select ? -1 :
@@ -1761,8 +1759,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (isChoice(),
-       !staticTypeOfValue.dependsOnGenerics(),
-       staticTypeOfValue == Types.intern(staticTypeOfValue));
+       !staticTypeOfValue.dependsOnGenerics());
 
     int result = -1;
     int index = 0;
