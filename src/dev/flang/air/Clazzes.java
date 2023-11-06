@@ -817,6 +817,9 @@ public class Clazzes extends ANY
           {
             c._sid = getRuntimeClazzIds(3);
           }
+        // A bit hacky..., this is used for calls that
+        // are turned into constants in FUIR.
+        c.innerClazz = innerClazz;
         outerClazz.setRuntimeData(c._sid + 0, innerClazz       );
         outerClazz.setRuntimeData(c._sid + 1, tclazz           );
         outerClazz.setRuntimeData(c._sid + 2, preconditionClazz);
@@ -861,6 +864,7 @@ public class Clazzes extends ANY
 
     var p = c.pos();
     var const_clazz = clazz(c, outerClazz);
+    c.runtimeClazz = const_clazz;
     const_clazz.instantiated(p);
     if (const_clazz.feature() == Types.resolved.f_array)
       { // add clazzes touched by constant creation:

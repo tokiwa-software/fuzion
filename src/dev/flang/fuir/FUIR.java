@@ -1775,29 +1775,15 @@ hw25 is
 
     Clazz clazz;
     var ic = _codeIds.get(c).get(ix);
-    var t = ((AbstractConstant) ic).typeOfConstant();
-    if      (t.compareTo(Types.resolved.t_bool        ) == 0) { clazz = Clazzes.bool        .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_i8          ) == 0) { clazz = Clazzes.i8          .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_i16         ) == 0) { clazz = Clazzes.i16         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_i32         ) == 0) { clazz = Clazzes.i32         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_i64         ) == 0) { clazz = Clazzes.i64         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_u8          ) == 0) { clazz = Clazzes.u8          .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_u16         ) == 0) { clazz = Clazzes.u16         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_u32         ) == 0) { clazz = Clazzes.u32         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_u64         ) == 0) { clazz = Clazzes.u64         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_f32         ) == 0) { clazz = Clazzes.f32         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_f64         ) == 0) { clazz = Clazzes.f64         .getIfCreated(); }
-    else if (t.compareTo(Types.resolved.t_Const_String) == 0) { clazz = Clazzes.Const_String.getIfCreated(); }
-    // this abstract constant was a call
-    else if (ic instanceof AbstractConstant)
+    if (ic instanceof AbstractConstant ac)
       {
-        clazz = Clazzes.clazz(t);
+        clazz = (Clazz)ac.runtimeClazz;
       }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
-    else { throw new Error("Unexpected type for ExprKind.Const: " + t + ", expr: " + ic); }
+    else { throw new Error("Unexpected type for ExprKind.Const, expr: " + ic); }
     return id(clazz);
   }
 
