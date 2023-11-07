@@ -1427,9 +1427,9 @@ should be avoided as much as possible.
    *
    * @param arrayCl the clazz of the array to be created
    *
-   * @param bytes the bytes of the array as a Java string.
+   * @param arr expr producing the java array, e.g. double[].
    */
-  Pair<Expr, Expr> const_array(int arrayCl, Expr bytes)
+  Pair<Expr, Expr> const_array(int arrayCl, Expr arr)
   {
     var internalArray  = _fuir.lookup_array_internal_array(arrayCl);
     var fuzionSysArray = _fuir.clazzResultClazz(internalArray);
@@ -1439,11 +1439,11 @@ should be avoided as much as possible.
       .andThen(Expr.DUP)                              //        cs, cs
       .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
       .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
-      .andThen(bytes)                                 //        cs, cs, fsa, fsa, byt
-      .andThen(Expr.DUP_X2)                           //        cs, cs, byt, fsa, fsa, byt
-      .andThen(putfield(data))                        //        cs, cs, byt, fsa
-      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, byt, fsa
-      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, byt
+      .andThen(arr)                                   //        cs, cs, fsa, fsa, arr
+      .andThen(Expr.DUP_X2)                           //        cs, cs, arr, fsa, fsa, arr
+      .andThen(putfield(data))                        //        cs, cs, arr, fsa
+      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, arr, fsa
+      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, arr
       .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, fsa, fsa, len
       .andThen(putfield(length))                      //        cs, cs, fsa
       .andThen(putfield(internalArray))               //        cs
