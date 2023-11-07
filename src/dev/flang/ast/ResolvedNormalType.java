@@ -128,6 +128,9 @@ public class ResolvedNormalType extends ResolvedType
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(t, g, ug, o));
@@ -163,6 +166,9 @@ public class ResolvedNormalType extends ResolvedType
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(t, g, ug, o, fixOuterThisType));
@@ -188,6 +194,9 @@ public class ResolvedNormalType extends ResolvedType
     this(g, ug, o, f, refOrVal, true);
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(g, ug, o, f, refOrVal));
@@ -211,6 +220,9 @@ public class ResolvedNormalType extends ResolvedType
     this(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(g, ug, o, f));
@@ -269,6 +281,9 @@ public class ResolvedNormalType extends ResolvedType
     this._refOrVal = refOrVal;
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(List<AbstractType> g,
                                           List<AbstractType> ug,
                                           AbstractType o,
@@ -299,6 +314,9 @@ public class ResolvedNormalType extends ResolvedType
     this._feature           = original._feature;
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(ResolvedNormalType original, RefOrVal refOrVal)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, refOrVal));
@@ -338,6 +356,9 @@ public class ResolvedNormalType extends ResolvedType
     this._feature           = original._feature;
   }
 
+  /**
+   * instantiate a new ResolvedNormalType and return its unique instance.
+   */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
     return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, originalOuterFeature));
