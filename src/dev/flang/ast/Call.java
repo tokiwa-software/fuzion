@@ -1269,7 +1269,7 @@ public class Call extends AbstractCall
   private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
   {
     int cnt = 1;
-    var frmlT = frml.resultTypeRaw(res);
+    var frmlT = frml.resultTypeIfPresent(res);
     if (CHECKS) check
       (frmlT == Types.intern(frmlT));
 
