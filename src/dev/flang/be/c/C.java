@@ -289,33 +289,105 @@ public class C extends ANY
           }
           default ->
           {
-            var sb = new StringBuilder();
-            var offset = 0;
-            var argCount = _fuir.clazzArgCount(constCl);
-            var l = new List<CStmnt>();
-
-            for (int i = 0; i < argCount; i++)
+            if (_fuir.clazzIsArray(constCl))
               {
-                var arg = _fuir.clazzArg(constCl, i);
-                int bytes = _fuir.clazzArgFieldBytes(constCl, i);
-                sb.append("." + _names.fieldName(arg).code());
-                sb.append(" = ");
-                var cd = constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false);
-                l.add(cd._v1);
-                sb.append(cd._v0.code());
-                if (i + 1 != argCount)
-                  {
-                    sb.append(",");
-                  }
-                offset += bytes;
+                var elementType      = _fuir.inlineArrayElementClazz(constCl);
+                var bytesPerField    = _fuir.clazzBytes(elementType);
+                var tmp              = _names.newTemp();
+                var tmpR             = _names.newTemp();
+                var c_internal_array = _fuir.lookup_array_internal_array(constCl);
+                var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
+                var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
+                var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
+                var internal_array   = _names.fieldName(c_internal_array);
+                var data             = _names.fieldName(c_data);
+                var length           = _names.fieldName(c_length);
+                var sysArray         = fields(tmp, constCl).field(internal_array);
+                var type             = _types.clazz(constCl);
+                var typeR            = type + "*";
+                var stmnts = CStmnt.seq(CStmnt.decl(type, tmp),
+                                      CStmnt.decl(typeR, tmpR),
+                                      sysArray.field(data).assign(CExpr.call(CNames.HEAP_CLONE._name, // NYI cast to void* should suffice but does
+                                                                                                      // not work yet for e.g. floats: say [f32 -17.3, f32 1.2]
+                                                                              new List<>(arrayInit(d, elementType),
+                                                                                        CExpr.sizeOfType(_types.clazz(elementType))
+                                                                                          .mul(CExpr.int32const(d.length / bytesPerField))
+                                                                                        ))),
+                                      sysArray.field(length).assign(CExpr.int32const(d.length / bytesPerField)),
+                                      tmpR.assign(CExpr.call(CNames.HEAP_CLONE._name,
+                                                              new List<>(tmp.adrOf(),
+                                                                        tmp.sizeOfExpr())).castTo(typeR)));
+                yield new Pair<>(tmpR.deref(),
+                                  stmnts);
               }
+            else
+              {
+                var sb = new StringBuilder();
+                var offset = 0;
+                var argCount = _fuir.clazzArgCount(constCl);
+                var l = new List<CStmnt>();
 
-            var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
-            yield onHeap
-              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.seq(l))
-              : new Pair<>(cl, CStmnt.seq(l));
+                for (int i = 0; i < argCount; i++)
+                  {
+                    var arg = _fuir.clazzArg(constCl, i);
+                    int bytes = _fuir.clazzArgFieldBytes(constCl, i);
+                    sb.append("." + _names.fieldName(arg).code());
+                    sb.append(" = ");
+                    var cd = constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false);
+                    l.add(cd._v1);
+                    sb.append(cd._v0.code());
+                    if (i + 1 != argCount)
+                      {
+                        sb.append(",");
+                      }
+                    offset += bytes;
+                  }
+
+                var cl = CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
+                yield onHeap
+                  ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(cl.adrOf(), cl.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.seq(l))
+                  : new Pair<>(cl, CStmnt.seq(l));
+              }
           }
         };
+    }
+
+
+    /**
+     * create an array with the given bytes as input.
+     *
+     * @param d the data of the array
+     *
+     * @param elementType i8, f32, etc.
+     */
+    public CExpr arrayInit(byte[] d, int elementType)
+    {
+      var bytesPerField = _fuir.clazzBytes(elementType);
+      return new CExpr() {
+        int precedence()
+        {
+          return 0;
+        }
+
+        void code(CString sb)
+        {
+          sb.append("(" + _names.struct(elementType) + "[]){");
+          for(int i = 0; i < d.length; i = i + bytesPerField)
+            {
+              var b = ByteBuffer.wrap(d, i, bytesPerField);
+              byte[] bb = new byte[b.remaining()];
+              b.get(bb);
+              constData(elementType, bb, false)
+                ._v0
+                .code(sb);
+              if (i + bytesPerField != d.length)
+                {
+                  sb.append(", ");
+                }
+            }
+          sb.append("}");
+        }
+      };
     }
 
 

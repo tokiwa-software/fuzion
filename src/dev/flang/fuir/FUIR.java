@@ -1797,13 +1797,18 @@ hw25 is
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const);
+       codeAt(c, ix) == ExprKind.Const || codeAt(c, ix) == ExprKind.Call
+       );
 
     var ic = _codeIds.get(c).get(ix);
     if      (ic instanceof AbstractConstant co) { return co.data(); }
-    else if (ic instanceof InlineArray)
+    else if (ic instanceof AbstractCall ac && ac.isCompileTimeConst())
       {
-        throw new Error("NYI: FUIR support for InlineArray still missing");
+        return ac.asCompileTimeConstant().data();
+      }
+    else if (ic instanceof InlineArray ia)
+      {
+        return ia.asCompileTimeConstant().data();
       }
     throw new Error("Unexpected constant type " + ((Expr) ic).type() + ", expected bool, i32, u32, i64, u64, or string");
   }
@@ -2063,7 +2068,7 @@ hw25 is
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
-      case Const   -> "Const";
+      case Const   -> "Const of type " + clazzAsString(constClazz(c, ix));
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
@@ -2077,6 +2082,7 @@ hw25 is
       case Env     -> "Env";
       case Pop     -> "Pop";
       case Unit    -> "Unit";
+      case InlineArray -> "InlineArray";
       };
   }
 
@@ -2339,6 +2345,7 @@ hw25 is
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Unit    -> codeIndex(c, ix, -1);
+      case InlineArray -> { check(false); yield codeIndex(c, ix, -1); }
       };
   }
 
@@ -2435,6 +2442,10 @@ hw25 is
             l.add(ac.asCompileTimeConstant());
           }
       }
+    else if (e instanceof InlineArray ia && isConst(ia))
+      {
+        l.add(ia.asCompileTimeConstant());
+      }
     else
       {
         super.toStack(l, e, dumpResult);
@@ -2469,6 +2480,69 @@ hw25 is
     return result;
   }
 
+
+  /**
+   * the clazz of the elements of the array
+   *
+   * @param constCl, e.g. `array (tuple i32 codepoint)`
+   *
+   * @return e.g. `tuple i32 codepoint`
+   */
+  public int inlineArrayElementClazz(int constCl)
+  {
+    if (PRECONDITIONS) require
+      (clazzIsArray(constCl));
+
+    var result = Clazzes.clazz(clazz(constCl)._type.generics().get(0))._idInFUIR;
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0);
+
+    return result;
+  }
+
+
+  /**
+   * Is `constCl` an array?
+   */
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazz(constCl)._type.featureOfType() == Types.resolved.f_array;
+  }
+
+
+  /**
+   * How many bytes are used when serializing this clazz?
+   */
+  public int clazzBytes(int cl)
+  {
+    return clazz(cl)._type.serializedSize();
+  }
+
+
+  /**
+   * Can this array be turned into a compile-time constant?
+   */
+  private boolean isConst(InlineArray ia)
+  {
+    return
+      !ia.type().dependsOnGenerics() &&
+      !ia.type().containsThisType() &&
+      // NYI nested arrays
+      ia.elementType().featureOfType().compareTo(Types.resolved.f_array) != 0 &&
+      ia._elements
+        .stream()
+        .allMatch(el -> {
+          var s = new List<>();
+          super.toStack(s, el);
+          return s
+            .stream()
+            .allMatch(x -> {
+              // NYI string constants
+              return x instanceof AbstractConstant c && c.isCompileTimeConst() || x instanceof AbstractCall ac && isConst(ac);
+            });
+        });
+  }
 
 }
 

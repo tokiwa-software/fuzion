@@ -1507,6 +1507,7 @@ Expression
       case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
+      case InlineArray -> inlineArrayNextPos(eAt);
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
       };
   }
@@ -2053,6 +2054,65 @@ Env
   int envNextPos(int at)
   {
     return typeNextPos(envTypePos(at));
+  }
+
+
+
+  /*
+
+--asciidoc--
+
+InlineArray
+^^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | int           | size in fum
+
+   | true     | 1      | Code          | Code
+
+   | true     | 1      | int           | element count
+
+   | true     | n      | Code          | element
+|====
+
+--asciidoc--
+   *   +---------------------------------------------------------------------------------+
+   *   | InlineArray                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | size in fum                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Code          | Code                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | element count                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Code          | element                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  private int inlineArrayNextPos(int at)
+  {
+    var sz = data().getInt(at);
+    return at + 4 /* size int */ + sz /* size of code and type */;
+  }
+  int inlineArrayCodePos(int at)
+  {
+    return at+4;
+  }
+  int inlineArrayCodeElementCountPos(int at)
+  {
+    return codeNextPos(inlineArrayCodePos(at));
+  }
+  int inlineArrayCodeElementCount(int at)
+  {
+    return data().getInt(inlineArrayCodeElementCountPos(at));
+  }
+  int inlineArrayCodeElementCodePos(int at)
+  {
+    return inlineArrayCodeElementCountPos(at)+4;
   }
 
 

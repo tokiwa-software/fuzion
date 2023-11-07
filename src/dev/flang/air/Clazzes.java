@@ -44,6 +44,7 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
+import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
@@ -965,25 +966,20 @@ public class Clazzes extends ANY
 
 
   /**
-   * Find all static clazzes for this Tag and store them in outerClazz.
+   * Find all static clazzes for this array and store them in outerClazz.
+   *
+   * @param v
    */
-  public static void findClazzes(InlineArray i, Clazz outerClazz)
+  public static void findClazzes(ExpressionVisitor v, InlineArray i, Clazz outerClazz)
   {
+    // we can not yet decide if array is const
+    // so we need to visit the code
+    i.code().visitExpressions(v);
+
     Clazz ac = clazz(i, outerClazz);
-    if (i._arrayClazzId < 0)
-      {
-        i._arrayClazzId = getRuntimeClazzIds(2);
-      }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internal_array, i).resultClazz();
-    sa.instantiated(i);
-    outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
-    outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
-    ac.instantiated(i);
-    var ec = outerClazz.actualClazz(i.elementType());
-    for (var e : i._elements)
-      {
-        propagateExpectedClazz(e, ec, outerClazz);
-      }
+    // memorize the runtime type to be used when turning
+    // this inline array into a compile-time constant.
+    i.clazz = ac;
   }
 
 
