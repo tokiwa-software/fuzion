@@ -961,7 +961,7 @@ public abstract class Expr extends ByteCode
         {
           code(ba, O_anewarray, cf.cpClass(type.refDescriptor()));
         }
-    };
+      };
   }
 
 
