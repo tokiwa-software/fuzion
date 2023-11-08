@@ -1671,7 +1671,7 @@ public class Feature extends AbstractFeature
           }
         choiceTypeCheckAndInternalFields(res);
 
-        _resultType = resultTypeRaw(res);
+        _resultType = resultTypeIfPresent(res);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -2241,14 +2241,15 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * resultTypeRaw returns the result type of this feature using the
+   * resultTypeIfPresent returns the result type of this feature using the
    * formal generic argument.
    *
    * @return this feature's result type using the formal generics, null in
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  AbstractType resultTypeRaw(Resolution res)
+  @Override
+  AbstractType resultTypeIfPresent(Resolution res)
   {
     AbstractType result;
 
@@ -2261,7 +2262,7 @@ public class Feature extends AbstractFeature
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = outer().resultTypeRaw(res);
+        result = outer().resultTypeIfPresent(res);
       }
     else if (_impl._kind == Impl.Kind.FieldDef    ||
              _impl._kind == Impl.Kind.FieldActual ||
@@ -2313,11 +2314,12 @@ public class Feature extends AbstractFeature
    *
    * @param res Resolution instance use to resolve this for types.
    *
-   * @param generics the generics argument to be passed to resultTypeRaw
+   * @param generics the generic arguments to be applied to resultType.
    *
    * @return the result type, Types.resolved.t_void if none and null in case the
    * type must be inferenced and is not available yet.
    */
+  @Override
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
     AbstractType result = Types.resolved.t_void;
@@ -2328,11 +2330,13 @@ public class Feature extends AbstractFeature
           {
             res.resolveTypes(this);
           }
-        result = resultTypeRaw(res, generics);
+        result = resultTypeIfPresent(res);
         if (result instanceof UnresolvedType rt)
           {
+            // NYI try to remove this visitation with findGenerics, see PR: #2210
             result = rt.visit(Feature.findGenerics,outer());
           }
+        result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
       }
     return result;
@@ -2346,12 +2350,13 @@ public class Feature extends AbstractFeature
    *
    * @return the result type, t_ERROR in case of an error. Never null.
    */
+  @Override
   public AbstractType resultType()
   {
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw(null) : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresent(null) : null;
     if (result == null)
       {
         if (CHECKS) check

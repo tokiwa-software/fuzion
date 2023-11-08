@@ -360,7 +360,7 @@ class CodeGen
   /**
    * Optimization for call for the common case that a precondition is checked
    * followed by a call to a statically bound routine of the same class. This
-   * call is then replaced by by a call to a combined method that checks the
+   * call is then replaced by a call to a combined method that checks the
    * precondition and then calls the routine.
    *
    * @param cl the clazz we are compiling

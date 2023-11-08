@@ -1634,12 +1634,15 @@ public class AstErrors extends ANY
 
   static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, List<Pair<SourcePosition, AbstractType>> foundAt)
   {
-    error(pos,
-          "Incompatible types found during type inference for type parameters",
-          "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
-          foundAt.stream()
+    if (!any() || foundAt.stream().noneMatch(p -> p._v1 == Types.t_ERROR))
+      {
+        error(pos,
+              "Incompatible types found during type inference for type parameters",
+              "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
+              foundAt.stream()
                  .map(p -> s(p._v1) + " found at " + p._v0.show() + "\n")
                  .collect(Collectors.joining()));
+      }
   }
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)

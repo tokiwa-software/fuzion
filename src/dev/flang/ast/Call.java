@@ -1268,7 +1268,7 @@ public class Call extends AbstractCall
   private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
   {
     int cnt = 1;
-    var frmlT = frml.resultTypeRaw(res);
+    var frmlT = frml.resultTypeIfPresent(res);
 
     var declF = _calledFeature.outer();
     var heir = _target.typeForCallTarget();
@@ -1954,7 +1954,10 @@ public class Call extends AbstractCall
             var gt = _generics.get(i);
             var nt = gt == Types.t_UNDEFINED ? actualType
                                              : gt.union(actualType);
-            if (nt == Types.t_ERROR)
+            if (nt == Types.t_ERROR &&
+                // if there was an earlier error, do not treat this as a conflict:
+                !(gt         == Types.t_ERROR ||
+                  actualType == Types.t_ERROR    ))
               {
                 conflict[i] = true;
               }

@@ -477,7 +477,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   abstract class CPEntry implements Comparable<CPEntry>
   {
-    // the index in the constant pool. Will be valied by every CPEntry handed
+    // the index in the constant pool. Will be validated by every CPEntry handed
     // out by one of the cp* methods since they will all be added to _cpool.
     int _index = -1;
 

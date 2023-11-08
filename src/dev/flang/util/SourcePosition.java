@@ -292,7 +292,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
   /**
    * The actual text in the source code this source position points to.
-   * If this SourcePosition instance is not a SourceRange this returns an emtpy string.
+   * If this SourcePosition instance is not a SourceRange this returns an empty string.
    *
    * @return
    */
