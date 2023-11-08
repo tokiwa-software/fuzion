@@ -33,8 +33,9 @@ hello_world is
   # read someone's name from standard input
   #
   get_name String is
-    io.stdin.read_line ? name String => name
-                       | e error => panic "Could not get your name!"
+    (io.stdin.with ()->
+      io.buffered.read_line) ? name String => name
+                             | e error => panic "Could not get your name!"
 
   # greet someone with the name given
   #
@@ -67,11 +68,11 @@ ex_gcd is
   common_divisors_of(a, b i32) list i32 is
     x := max a.abs b.abs
     y := 1..x
-    y.as_list.flatMap i32 (i->
+    y.as_list.flat_map i32 (i->
       if (a % i = 0) && (b % i = 0)
         [-i, i].as_list
       else
-        lists.empty i32)
+        (list i32).type.empty)
 
   gcd(a, b i32) i32
     pre
@@ -109,7 +110,7 @@ generator_effect is
   #
   list.traverse unit is
     match list.this
-      c Cons => (example.gen A).env.yield c.head; c.tail.traverse
+      c Cons => (generator_effect.gen A).env.yield c.head; c.tail.traverse
       nil =>
 
   # bind the yield operation dynamically
