@@ -336,16 +336,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public AbstractType asRef()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     // throw new Error("asRef not available for unresolved type");
     return this;
     /*
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new ResolvedNormalType(this, RefOrVal.Boxed));
+        result = ResolvedNormalType.create(this, RefOrVal.Boxed);
       }
       return result;*/
   }
@@ -357,16 +354,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public AbstractType asThis()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     //throw new Error("asThis not available for unresolved type");
     return this;
     /*
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
-        result = Types.intern(new ResolvedNormalType(this, RefOrVal.ThisType));
+        result = ResolvedNormalType.create(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
@@ -384,16 +378,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public AbstractType asValue()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     //throw new Error("asValue not available for unresolved type");
     return this;
     /*
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new ResolvedNormalType(this, RefOrVal.Value));
+        result = ResolvedNormalType.create(this, RefOrVal.Value);
       }
     return result;
     */
@@ -679,7 +670,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           {
             result = resolveFeature(res, outerfeat);
             result = result.resolveGenerics(this, res, outerfeat);
-            result = Types.intern(result);
           }
       }
     return result;
@@ -765,7 +755,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         _resolved =
           result != null     ? result :
           f == Types.f_ERROR ? Types.t_ERROR
-                             : new ResolvedNormalType(generics(),
+                             : ResolvedNormalType.create(generics(),
                                                       unresolvedGenerics(),
                                                       o,
                                                       f,

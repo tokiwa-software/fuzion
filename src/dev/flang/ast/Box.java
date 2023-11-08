@@ -82,7 +82,7 @@ public class Box extends Expr
        !(value instanceof Box));
 
     this._value = value;
-    var t = Types.intern(value.type());
+    var t = value.type();
     this._type = needsBoxingForGenericOrThis(frmlT) ? t : t.asRef();
   }
 
