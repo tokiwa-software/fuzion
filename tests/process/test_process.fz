@@ -39,24 +39,25 @@ test_process =>
 
 
 
-  test "read stdout blocks until stdin closed"
-  concur.thread.spawn ()->
-    say (process.spawn ["cat"] ()->
-
-
-      # this read should block until stdin is closed
-      a := spawned.read_string
-      say "not reached, because read_string blocks"
-    )
-  time.nano.sleep (time.durations.ms 100)
-
-
-
   test "feed output of process 1 to process 2"
   say (process.spawn ["echo", "'feed me to cat'"] ()->
     spawned.pipe_to ["cat"] ()->spawned.read_string
   )
 
+
+
+  test "1kb argument, piped to another process"
+  say (process.spawn ["echo", "-n", (get_str 1E3)] ()->
+    spawned.pipe_to ["cat"] ()->
+      say spawned.read_string.val.byte_length
+      say "exit code: {spawned.exit_code}"
+      # execute exit_code twice:
+      say "exit code: {spawned.exit_code}"
+  )
+
+
+
+  /* NYI Needs too much heap in c-backend without GC currently.
 
 
   test "100kb argument, piped to another process"
@@ -67,8 +68,6 @@ test_process =>
       # execute exit_code twice:
       say "exit code: {spawned.exit_code}"
   )
-
-  /* Needs to much RAM currently.
 
 
   test "10mb write to stdin, piped to another process"

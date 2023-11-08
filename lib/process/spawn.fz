@@ -258,12 +258,8 @@ is
     .as_array
 
 
-  env_var_c_strings := env_var_strings
-    .map_sequence (x -> sys.c_string x)
-    .as_array
-
   # posix_spawn needs last arg to be NULL
-  env_data := array fuzion.sys.Pointer env_var_c_strings.count+1 (i -> if i<env_var_c_strings.count then env_var_c_strings[i] else NULL)
+  env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
   res_data := array i64 4 i->0
 
