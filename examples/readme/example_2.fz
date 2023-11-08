@@ -1,0 +1,30 @@
+ex_gcd is
+  max(a, b i32) i32 is
+    if a > b then a else b
+
+  common_divisors_of(a, b i32) list i32 is
+    x := max a.abs b.abs
+    y := 1..x
+    y.as_list.flat_map i32 (i->
+      if (a % i = 0) && (b % i = 0)
+        [-i, i].as_list
+      else
+        (list i32).type.empty)
+
+  gcd(a, b i32) i32
+    pre
+      safety: (a != 0 || b != 0)
+    post
+      safety: a % result = 0,
+      safety: b % result = 0,
+      pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (gcd.this.result % cur = 0))
+  is
+    if b = 0
+      a
+    else
+      gcd b (a % b)
+
+
+  say (gcd 8 12)
+  say (gcd -8 12)
+  say (gcd 28 0)

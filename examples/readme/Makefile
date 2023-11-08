@@ -17,17 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature pedantic
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion example Makefile
 #
 # -----------------------------------------------------------------------
 
-# pedantic -- condition qualifier for conditions that are pedantic
-#
-# pedantic is a condition qualifier for conditions a pedantic purist would require,
-# but that a more relaxed hacker would prefer to do without.
-#
-# currently, pedantic always returns true.
-#
-public pedantic => true
+all: example_1 example_2 example_3
+
+example_1:
+	../../bin/fz example_1.fz
+
+example_2:
+	../../bin/fz example_2.fz
+
+example_3:
+	../../bin/fz example_3.fz

@@ -1,0 +1,21 @@
+hello_world is
+  # read someone's name from standard input
+  #
+  get_name String is
+    (io.stdin.with ()->
+      io.buffered.read_line) ? name String => name
+                             | e error => panic "Could not get your name!"
+
+  # greet someone with the name given
+  #
+  greet(name String) is
+    say "Hello, {name}!"
+
+  # greet the user
+  #
+  x := greet get_name
+
+  # you can access any feature - even argument features of other features
+  # from outside
+  #
+  say "How are you, {x.name}?"

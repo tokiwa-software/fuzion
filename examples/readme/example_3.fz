@@ -1,0 +1,18 @@
+generator_effect is
+  # define a generator effect with a yield operation
+  #
+  gen(T type,
+      yield T->unit    # yield is called by code to yield values
+      ) : simple_effect is
+
+  # traverse a list and yield the elements
+  #
+  list.traverse unit is
+    match list.this
+      c Cons => (generator_effect.gen A).env.yield c.head; c.tail.traverse
+      nil =>
+
+  # bind the yield operation dynamically
+  #
+  (gen i32 (i -> say "yielded $i")).use (()->
+    [0,8,15].as_list.traverse)
