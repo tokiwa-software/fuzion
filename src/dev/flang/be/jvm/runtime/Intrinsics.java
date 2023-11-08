@@ -866,29 +866,28 @@ public class Intrinsics extends ANY
   }
 
 
-  public static int fuzion_sys_process_create(Object arg, int arg_len, Object env_var, int env_var_len, Object arg5, Object arg6,
-    Object arg7)
+  public static int fuzion_sys_process_create(Object args, int arg_len, Object env_vars, int env_vars_len, Object res, Object args_str, Object env_str)
   {
     var process_and_args = Arrays
-      .stream((Object[]) arg)
+      .stream((Object[]) args)
       .limit(arg_len - 1)
       .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
       .collect(Collectors.toList());
 
-    var env_vars = Arrays
-      .stream((Object[]) env_var)
-      .limit(env_var_len - 1)
+    var env_var_map = Arrays
+      .stream((Object[]) env_vars)
+      .limit(env_vars_len - 1)
       .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
       .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
 
-    var result = (long[]) arg5;
+    var result = (long[]) res;
 
     try
       {
         var pb = new ProcessBuilder()
           .command(process_and_args);
 
-        pb.environment().putAll(env_vars);
+        pb.environment().putAll(env_var_map);
 
         var process = pb.start();
 
@@ -911,41 +910,36 @@ public class Intrinsics extends ANY
     return p.exitValue();
   }
 
-  public static int fuzion_sys_pipe_read(long desc, byte[] buff)
+  public static int fuzion_sys_pipe_read(long desc, Object buffer, int len)
   {
-    if (Runtime._openStreams_.get(desc) instanceof InputStream is)
+    var is = (InputStream) Runtime._openStreams_.get(desc);
+    try
       {
-        try
-          {
-            var readBytes = is.read(buff);
+        var readBytes = is.read((byte[])buffer);
 
-            return readBytes == -1
-                                   ? 0
-                                   : readBytes;
-          }
-        catch (IOException e)
-          {
-            return -1;
-          }
+        return readBytes == -1
+                                ? 0
+                                : readBytes;
       }
-    throw new RuntimeException("illegal");
+    catch (IOException e)
+      {
+        return -1;
+      }
   }
 
-  public static int fuzion_sys_pipe_write(long desc, byte[] buff)
+  public static int fuzion_sys_pipe_write(long desc, Object buffer, int len)
   {
-    if (Runtime._openStreams_.get(desc) instanceof OutputStream os)
+    var os = (OutputStream)Runtime._openStreams_.get(desc);
+    try
       {
-        try
-          {
-            os.write(buff);
-            return buff.length;
-          }
-        catch (IOException e)
-          {
-            return -1;
-          }
+        var buff = (byte[]) buffer;
+        os.write(buff);
+        return buff.length;
       }
-    throw new RuntimeException("illegal");
+    catch (IOException e)
+      {
+        return -1;
+      }
   }
 
   public static int fuzion_sys_pipe_close(long desc)

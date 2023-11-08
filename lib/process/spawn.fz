@@ -244,9 +244,10 @@ pre process_and_args.length > 0,
 is
 
   sys := fuzion.sys
+  NULL := [u8 0].internal_array.data
 
   # posix_spawn needs last arg to be NULL
-  arg_data := array Any process_and_args.count+1 (i -> if i<process_and_args.length then sys.c_string process_and_args[i] else Any)
+  arg_data := array fuzion.sys.Pointer process_and_args.count+1 (i -> if i<process_and_args.length then sys.c_string process_and_args[i] else NULL)
 
 
   env_var_strings := env_vars
@@ -262,7 +263,7 @@ is
     .as_array
 
   # posix_spawn needs last arg to be NULL
-  env_data := array Any env_var_c_strings.count+1 (i -> if i<env_var_c_strings.count then env_var_c_strings[i] else Any)
+  env_data := array fuzion.sys.Pointer env_var_c_strings.count+1 (i -> if i<env_var_c_strings.count then env_var_c_strings[i] else NULL)
 
   res_data := array i64 4 i->0
 
