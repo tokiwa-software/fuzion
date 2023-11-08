@@ -1,0 +1,23 @@
+===  Test: write to stdin of process  ===
+close write: true
+close write again: false
+Hello from the other side.
+exit code: [0]
+===  Test: read stdout of process  ===
+eecchhoo
+
+exit code: [0]
+===  Test: pass environment variable  ===
+content
+
+exit code: [0]
+===  Test: feed output of process 1 to process 2  ===
+'feed me to cat'
+
+===  Test: read stdout blocks until stdin closed  ===
+1) closing write
+2) read: 
+3) exit code: [0]
+===  Test: 100kb argument, piped to another process  ===
+100000
+exit code: [0,0]

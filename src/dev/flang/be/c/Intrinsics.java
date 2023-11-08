@@ -66,6 +66,7 @@ public class Intrinsics extends ANY
   static CIdent A3 = new CIdent("arg3");
   static CIdent A4 = new CIdent("arg4");
   static CIdent A5 = new CIdent("arg5");
+  static CIdent A6 = new CIdent("arg6");
 
   /**
    * Predefined identifier to access errno macro.
@@ -435,57 +436,11 @@ public class Intrinsics extends ANY
         );
     put("fuzion.sys.fileio.open"   , (c,cl,outer,in) ->
         {
-          var filePointer = new CIdent("fp");
-          var openResults = new CIdent("open_results");
-          return CStmnt.seq(
-            CExpr.decl("FILE *", filePointer),
-            CExpr.decl("fzT_1i64 *", openResults),
-            openResults.assign(A1.castTo("fzT_1i64 *")),
-            errno.assign(new CIdent("0")),
-            CStmnt.suitch(
-              A2,
-              new List<>(
-                CStmnt.caze(
-                  new List<>(CExpr.int8const(0)),
-                  CStmnt.seq(
-                    // open file for reading, binary mode
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("rb")))),
-                    CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
-                    CStmnt.BREAK
-                    )
-                  ),
-                CStmnt.caze(
-                  new List<>(CExpr.int8const(1)),
-                  CStmnt.seq(
-                    // open file read-, write-, binary-mode. creates new file if not exists.
-                    // if file is not empty, any writes will overwrite the contents in the file.
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
-                    CExpr.call("fseek", new List<>(filePointer, CExpr.int32const(0), new CIdent("SEEK_SET"))),
-                    CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
-                    CStmnt.BREAK
-                    )
-                  ),
-                CStmnt.caze(
-                  new List<>(CExpr.int8const(2)),
-                  CStmnt.seq(
-                    // open file read-, write-, binary-mode. creates new file if not exists.
-                    // writes happen at end of file.
-                    filePointer.assign(CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("a+b")))),
-                    CExpr.iff(CExpr.notEq(filePointer, new CIdent("NULL")),
-                      CStmnt.seq(openResults.index(0).assign(filePointer.castTo("fzT_1i64")))),
-                    CStmnt.BREAK
-                    )
-                  )
-                ),
-              CStmnt.seq(
-                CExpr.fprintfstderr("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\n"),
-                CExpr.exit(1)
-                )
-              ),
-            openResults.index(1).assign(errno.castTo("fzT_1i64"))
-            );
+          return CExpr.call("fzE_file_open", new List<>(
+              A0.castTo("char *"),
+              A1.castTo("int64_t *"),
+              A2.castTo("int8_t")))
+              .ret();
         }
         );
     put("fuzion.sys.fileio.close"   , (c,cl,outer,in) ->
@@ -542,6 +497,41 @@ public class Intrinsics extends ANY
       new CIdent("stdout").castTo("fzT_1i64").ret());
     put("fuzion.sys.err.stderr"      , (c,cl,outer,in) ->
       new CIdent("stderr").castTo("fzT_1i64").ret());
+
+    put("fuzion.sys.process.create", (c,cl,outer,in) ->
+      CExpr.call("fzE_process_create", new List<>(
+        // args
+        A0.castTo("char **"),
+        A1.castTo("size_t"),
+        // env
+        A2.castTo("char **"),
+        A3.castTo("size_t"),
+        // result
+        A4.castTo("int64_t *"),
+        // args as space separated string
+        A5.castTo("char *"),
+        // env vars as NULL separated string
+        A6.castTo("char *")
+        )).ret());
+
+    put("fuzion.sys.process.wait", (c,cl,outer,in) ->
+      CExpr.call("fzE_process_wait", new List<>(A0.castTo("int64_t"))).ret());
+
+    put("fuzion.sys.pipe.read", (c,cl,outer,in) ->
+      CExpr.call("fzE_pipe_read", new List<>(
+        A0.castTo("int64_t") /* descriptor/handle */,
+        A1.castTo("char *")  /* buffer */,
+        A2.castTo("size_t")  /* buffer size */)).ret());
+
+    put("fuzion.sys.pipe.write", (c,cl,outer,in) ->
+      CExpr.call("fzE_pipe_write", new List<>(
+        A0.castTo("int64_t") /* descriptor/handle */,
+        A1.castTo("char *")  /* buffer */,
+        A2.castTo("size_t")  /* buffer size */)).ret());
+
+    put("fuzion.sys.pipe.close", (c,cl,outer,in) ->
+      CExpr.call("fzE_pipe_close", new List<>(
+        A0.castTo("int64_t") /* descriptor/handle */)).ret());
 
         /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.

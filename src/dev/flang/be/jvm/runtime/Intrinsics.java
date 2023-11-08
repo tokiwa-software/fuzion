@@ -43,11 +43,13 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import dev.flang.be.jvm.runtime.Runtime.SystemErrNo;
 import dev.flang.util.ANY;
@@ -829,7 +831,7 @@ public class Intrinsics extends ANY
       {
         throw new Error("unexpected interrupt", ie);
       }
-  };
+  }
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
@@ -863,6 +865,95 @@ public class Intrinsics extends ANY
     Runtime._startedThreads_.remove(threadId);
   }
 
+
+  public static int fuzion_sys_process_create(Object arg, int arg_len, Object env_var, int env_var_len, Object arg5, Object arg6,
+    Object arg7)
+  {
+    var process_and_args = Arrays
+      .stream((Object[]) arg)
+      .limit(arg_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toList());
+
+    var env_vars = Arrays
+      .stream((Object[]) env_var)
+      .limit(env_var_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
+
+    var result = (long[]) arg5;
+
+    try
+      {
+        var pb = new ProcessBuilder()
+          .command(process_and_args);
+
+        pb.environment().putAll(env_vars);
+
+        var process = pb.start();
+
+        result[0] = Runtime._openProcesses_.add(process);
+        result[1] = Runtime._openStreams_.add(process.getOutputStream());
+        result[2] = Runtime._openStreams_.add(process.getInputStream());
+        result[3] = Runtime._openStreams_.add(process.getErrorStream());
+        return 0;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_process_wait(long desc)
+  {
+    var p = Runtime._openProcesses_.get(desc);
+    Runtime._openStreams_.remove(desc);
+    return p.exitValue();
+  }
+
+  public static int fuzion_sys_pipe_read(long desc, byte[] buff)
+  {
+    if (Runtime._openStreams_.get(desc) instanceof InputStream is)
+      {
+        try
+          {
+            var readBytes = is.read(buff);
+
+            return readBytes == -1
+                                   ? 0
+                                   : readBytes;
+          }
+        catch (IOException e)
+          {
+            return -1;
+          }
+      }
+    throw new RuntimeException("illegal");
+  }
+
+  public static int fuzion_sys_pipe_write(long desc, byte[] buff)
+  {
+    if (Runtime._openStreams_.get(desc) instanceof OutputStream os)
+      {
+        try
+          {
+            os.write(buff);
+            return buff.length;
+          }
+        catch (IOException e)
+          {
+            return -1;
+          }
+      }
+    throw new RuntimeException("illegal");
+  }
+
+  public static int fuzion_sys_pipe_close(long desc)
+  {
+    return Runtime._openStreams_.remove(desc)
+                                              ? 0
+                                              : -1;
+  }
 
 }
 

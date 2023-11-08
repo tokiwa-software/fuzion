@@ -1,0 +1,42 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.process
+#
+# -----------------------------------------------------------------------
+
+# fuzion.sys.process -- unit type grouping routines related to process
+#
+module process is
+
+
+
+
+  # NYI stdin/out/err, pwd
+  # NYI cleanup after process exit
+  # NYI cleanup resources (process handle windows, close pipes)
+  module create(args fuzion.sys.Pointer, arg_len i32, env_vars fuzion.sys.Pointer, env_vars_len i32, res fuzion.sys.Pointer, args_str fuzion.sys.Pointer, env_str fuzion.sys.Pointer) i32 is intrinsic
+
+
+  #
+  module wait(p i64) u32 is intrinsic
+
+  # send_signal(p i64, signal i32) NYI is intrinsic
+  # is_alive(p i64) NYI is intrinsic
+  # exit_code(p i64) NYI is intrinsic

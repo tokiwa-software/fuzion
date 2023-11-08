@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.sys.pipe
+#
+# -----------------------------------------------------------------------
+
+# fuzion.sys.pipe -- unit type grouping routines related to pipe
+#
+module pipe is
+
+
+  # returns -1 on error, 0 on end_of_file, number of read bytes otherwise.
+  #
+  module read(
+    # the descriptor
+    desc i64,
+    # the internal array data representing the container for the bytes to be read
+    file_array Any,
+    # the length of the array that represents the file bytes
+    file_array_length i32) i32 is intrinsic
+
+  # returns -1 on error, number of written bytes otherwise.
+  #
+  module write(
+    # the descriptor
+    desc i64,
+    # the internal array data representing the content bytes to write
+    content Any,
+    # the length of the internal array representing the content
+    content_length i32) i32 is intrinsic
+
+
+  module close(
+              # descriptor
+              desc i64) i32 is intrinsic

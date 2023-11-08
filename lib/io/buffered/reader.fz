@@ -27,7 +27,7 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+module:public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
