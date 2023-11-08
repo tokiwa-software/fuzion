@@ -19,8 +19,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of check_simple_example.sh script, runs simple test using the
-#  interpreter backend
+#  Source code of record_simple_example_int.sh script, records expected output of
+#  simple test using interpreter backend
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -28,7 +28,7 @@
 
 set -euo pipefail
 
-# Run the fuzion example given as an argument $2 and compare the stdout/stderr
+# Run the fuzion example given as an argument $2 and store the stdout/stderr
 # output to $2.expected_out and $2.expected_err.
 #
 # The fz command is given as argument $1
@@ -40,11 +40,9 @@ SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
 
-RC=0
 if [ -f "$2".skip ]; then
-    echo "SKIP $2"
+    echo "SKIPPED $2"
 else
-    echo -n "RUN $2 "
     unset OPT
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=.*$"      && export OPT=-Dfuzion.debugLevel=10
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=9( .*|)$" && export OPT=-Dfuzion.debugLevel=9
@@ -57,20 +55,7 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 "$2" >tmp_out.txt 2>tmp_err.txt) || true
-    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
-    expout=$2.expected_out
-    experr=$2.expected_err
-    if [ -f "$2".expected_out_int ]; then
-        expout=$2.expected_out_int
-    fi
-    if [ -f "$2".expected_err_int ]; then
-        experr=$2.expected_err_int
-    fi
-    # show diff in stdout unless an unexpected output occured to stderr:
-    (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
-    diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
-    RC=$?
-    rm tmp_out.txt tmp_err.txt
+    (FUZION_DISABLE_ANSI_ESCAPES=true $1 -interpreter "$2" >"$2".expected_out 2>"$2".expected_err) || true
+    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err
+    echo "RECORDED $2"
 fi
-exit $RC
