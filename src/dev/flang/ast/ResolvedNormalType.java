@@ -446,7 +446,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(ResolvedNormalType.create(this, RefOrVal.Boxed));
+        result = ResolvedNormalType.create(this, RefOrVal.Boxed);
       }
     return result;
   }
@@ -464,7 +464,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
-        result = Types.intern(ResolvedNormalType.create(this, RefOrVal.ThisType));
+        result = ResolvedNormalType.create(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
@@ -487,7 +487,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(ResolvedNormalType.create(this, RefOrVal.Value));
+        result = ResolvedNormalType.create(this, RefOrVal.Value);
       }
     return result;
   }
