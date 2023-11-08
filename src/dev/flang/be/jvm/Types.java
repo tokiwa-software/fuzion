@@ -65,8 +65,6 @@ public class Types extends ANY implements ClassFileConstants
 
   private final TreeMap<Integer, ClassFile> _interfaceFiles = new TreeMap<>();
 
-  private boolean[] _boxed;
-
   JavaType UNIVERSE_TYPE;
 
 
@@ -81,14 +79,6 @@ public class Types extends ANY implements ClassFileConstants
     this._fuir = fuir;
     this._names = names;
     this._choices = new Choices(fuir, names, this);
-    this._boxed = new boolean[_fuir.lastClazz() - _fuir.firstClazz() + 1];
-    for (var cl = _fuir.firstClazz(); cl <= _fuir.lastClazz(); cl++)
-      {
-        if (_fuir.clazzIsBoxed(cl))
-          {
-            _boxed[_fuir.clazzAsValue(cl) - _fuir.firstClazz()] = true;
-          }
-      }
   }
 
 
@@ -199,8 +189,6 @@ public class Types extends ANY implements ClassFileConstants
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
           }
       }
-
-    var ix = cl - _fuir.firstClazz();
   }
 
 
@@ -399,28 +387,6 @@ public class Types extends ANY implements ClassFileConstants
     if (POSTCONDITIONS) ensure
       (result != null);
     return result;
-  }
-
-
-  /**
-   * Do we need to declare a type for the given clazz? This is true for choice
-   * and routine, but also for intrinsics if they have a pre-condition, since
-   * the code for the pre-condition is generated and may access the instance
-   * associated with cl.
-   *
-   * @param cl a clazz id.
-   *
-   * @return true iff a type and struct declaration is needed for cl.
-   */
-  private boolean needsTypeDeclaration(int cl)
-  {
-    return switch (_fuir.clazzKind(cl))
-      {
-      case Choice, Routine -> true; // !isScalar(cl); // special handling of stdlib clazzes known to the compiler
-      case Intrinsic       -> true || _fuir.hasPrecondition(cl);
-      default              -> false;
-      };
-
   }
 
 
