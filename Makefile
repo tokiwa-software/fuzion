@@ -102,6 +102,7 @@ FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
+MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
 MOD_JAVA_DATATRANSFER_DIR      = $(BUILD_DIR)/modules/java.datatransfer
@@ -277,7 +278,8 @@ FUZION_BASE = \
 			$(BUILD_DIR)/bin/fz \
 			$(BUILD_DIR)/bin/fzjava \
 			$(MOD_BASE) \
-			$(MOD_TERMINAL)
+			$(MOD_TERMINAL) \
+			$(MOD_LOCK_FREE)
 
 # NYI: This is missing the following modules from JDK 17:
 #
@@ -570,6 +572,10 @@ $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 $(MOD_TERMINAL): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/terminal.fz
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src -saveLib=$@
+
+$(MOD_LOCK_FREE): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/lock_free/src/lock_free.fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/lock_free/src -saveLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -1066,19 +1072,19 @@ run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm
 
@@ -1088,19 +1094,19 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
