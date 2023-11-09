@@ -377,7 +377,10 @@ public class C extends ANY
               var b = ByteBuffer.wrap(d, i, bytesPerField);
               byte[] bb = new byte[b.remaining()];
               b.get(bb);
-              constData(elementType, bb, false)
+              var cd = constData(elementType, bb, false);
+              if (CHECKS) check
+                (cd._v1.code().isEmpty()); // NYI if constant has side-effects...
+              cd
                 ._v0
                 .code(sb);
               if (i + bytesPerField != d.length)

@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
@@ -591,13 +592,24 @@ public class DFA extends ANY
 
       var elementClazz = _fuir.inlineArrayElementClazz(constCl);
       var data = _fuir.clazzField(_fuir.clazzResultClazz(sa), 0);
-      var length = _fuir.clazzField(_fuir.clazzResultClazz(sa), 1);
+      var lengthField = _fuir.clazzField(_fuir.clazzResultClazz(sa), 1);
+
+      var elementBytes = _fuir.clazzBytes(elementClazz);
+      var elCount = d.remaining() / elementBytes;
 
       byte[] bb = new byte[d.remaining()];
       d.get(bb);
+      var sysArray = new SysArray(DFA.this, constData(elementClazz, bb)._v0.value());
+      for (int i = 0; i < d.remaining(); i=i+elementBytes)
+        {
+          var idx = new NumericValue(DFA.this, _fuir.clazz(SpecialClazzes.c_i32), i/elementBytes);
+          bb = new byte[elementBytes];
+          d.slice(i, elementBytes).get(bb);
+          sysArray.setel(idx, constData(elementClazz, bb)._v0.value());
+        }
 
-      sa0.setField(DFA.this, data, new SysArray(DFA.this, constData(elementClazz, bb)._v0.value() /* NYI only one element is init */));
-      sa0.setField(DFA.this, length, new NumericValue(DFA.this, _fuir.clazzResultClazz(length) /*, NYI length */));
+      sa0.setField(DFA.this, data, sysArray);
+      sa0.setField(DFA.this, lengthField, new NumericValue(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
       result.setField(DFA.this, sa, sa0);
       return result;
     }
