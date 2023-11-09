@@ -207,4 +207,5 @@ generics_negative is
       g2 list PARENT_TYPE_PARAMETER => v : g2  // 55. should flag an error: PARENT_TYPE_PARAMETER not visible
       g3 => option PARENT_TYPE_PARAMETER nil   // 56. should flag an error: PARENT_TYPE_PARAMETER not visible
 
-    _ :=  (child.f 23)
+    _ :=  (child.f1 23)
+    _ :=  (child.f2 23:nil)
