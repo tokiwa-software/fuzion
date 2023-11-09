@@ -384,7 +384,8 @@ public class Call extends AbstractCall
                AbstractType type)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()));
+      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
+       _type == null || _type != Types.t_ERROR);
     this._pos = pos;
     this._name = name;
     this._select = select;
@@ -1456,11 +1457,15 @@ public class Call extends AbstractCall
     // fields during recursion.  We use only the non-recursive (i.e., non-void)
     // ones:
     if (_type == null ||
-        t5 != Types.resolved.t_void ||
+        t5.compareTo(Types.resolved.t_void) != 0 ||
         !(_calledFeature instanceof Feature cf) ||
         cf.impl()._kind != Impl.Kind.FieldActual)
       {
         _type = t5;
+      }
+    if (_type == Types.t_ERROR)
+      {
+        _calledFeature = Types.f_ERROR;
       }
   }
 

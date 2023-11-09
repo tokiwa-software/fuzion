@@ -571,6 +571,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
   {
+    if (PRECONDITIONS) require
+      (!typeParameters.contains(Types.t_ERROR));
+
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
@@ -630,6 +633,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
+    if (PRECONDITIONS)
+      require(this != Types.f_ERROR && t != Types.t_ERROR);
+
     var tl = new List<AbstractType>();
     for (var ta0 : typeArguments())
       {
@@ -758,6 +764,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     tp.add(atp);
                   }
               }
+            if (CHECKS) check
+              (!tp.contains(Types.t_ERROR));
+
             inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
           }
       }
@@ -877,7 +886,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var o = isUniverse() || outer().isUniverse() ? null : outer().selfType().asThis();
     var g = generics().asActuals();
-    var result = ResolvedNormalType.create(g, g, o, this);
+    var result = new ResolvedNormalType(g, g, o, this);
 
     if (POSTCONDITIONS) ensure
       (result != null,

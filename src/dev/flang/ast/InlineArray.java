@@ -123,7 +123,7 @@ public class InlineArray extends ExprWithPos
           {
             _type = t == null
               ? null
-              : ResolvedNormalType.create(new List<>(t),
+              : new ResolvedNormalType(new List<>(t),
                                           new List<>(t),
                                           null,
                                           Types.resolved.f_array);

@@ -300,7 +300,7 @@ public class Clazzes extends ANY
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
-        if (o._type == actualType && actualType != Types.t_ERROR &&
+        if (o._type.compareTo(actualType) == 0 && actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
             // This is a little ugly: we do not want outer to be a value
@@ -322,7 +322,7 @@ public class Clazzes extends ANY
             chain.append("1: "+actualType+" at "+actualType.declarationPos().show()+"\n");
             int i = 2;
             Clazz c = outer;
-            while (c._type != actualType)
+            while (c._type.compareTo(actualType) != 0)
               {
                 chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
                 c = c._outer;

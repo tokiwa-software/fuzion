@@ -73,7 +73,7 @@ public class ArrayConstant extends Constant
     super(pos);
 
     this._elements = elements;
-    this._type = ResolvedNormalType.create(Types.resolved.f_array.selfType(),
+    this._type = new ResolvedNormalType(Types.resolved.f_array.selfType(),
                                         new List<>(et),
                                         new List<>(),
                                         Types.resolved.universe.selfType());

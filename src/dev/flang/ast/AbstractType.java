@@ -1278,7 +1278,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (CHECKS) check
               (!f.isThisRef());
 
-            result = ResolvedNormalType.create(g,
+            result = new ResolvedNormalType(g,
                                                g,
                                                outer().typeType(res),
                                                f);
@@ -1459,7 +1459,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), no);
+            result = new ResolvedNormalType(this, ng, unresolvedGenerics(), no);
           }
       }
     return result;

@@ -342,7 +342,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, RefOrVal.Boxed);
+        result = new ResolvedNormalType(this, RefOrVal.Boxed);
       }
       return result;*/
   }
@@ -360,7 +360,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
-        result = ResolvedNormalType.create(this, RefOrVal.ThisType);
+        result = new ResolvedNormalType(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
@@ -384,7 +384,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, RefOrVal.Value);
+        result = new ResolvedNormalType(this, RefOrVal.Value);
       }
     return result;
     */
@@ -755,7 +755,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         _resolved =
           result != null     ? result :
           f == Types.f_ERROR ? Types.t_ERROR
-                             : ResolvedNormalType.create(generics(),
+                             : new ResolvedNormalType(generics(),
                                                       unresolvedGenerics(),
                                                       o,
                                                       f,
