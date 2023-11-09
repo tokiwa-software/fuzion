@@ -863,14 +863,8 @@ public class Intrinsics extends ANY
                                 CExpr.decl("struct " + CNames.fzThreadStartRoutineArg.code() + "*", arg),
 
                                 pt.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("pthread_t")))),
-                                CExpr.iff(pt.eq(CNames.NULL),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("pthread_t")),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
 
                                 arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
-                                CExpr.iff(arg.eq(CNames.NULL),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
 
                                 arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
                                 arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),

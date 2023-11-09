@@ -63,6 +63,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 
+static inline void *fzE_malloc_safe(size_t size) {
+#ifdef GC_H
+  void *p = GC_MALLOC(size);
+#else
+  void *p = malloc(size);
+#endif
+  if (p == NULL) {
+    fprintf(stderr, "*** malloc(%zu) failed ***\n", size);
+    exit(1);
+  }
+  return p;
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -448,15 +461,6 @@ int fzE_munmap(void * mapped_address, const int file_size){
 #else
   return munmap(mapped_address, file_size);
 #endif
-}
-
-
-// used to return a string as is; in Fuzion with
-//   fzE_return_string (input Any) String is native
-// this can be used to cast a c_string from type Any
-// to a String.
-char * fzE_return_string(void * in) {
-  return in;
 }
 
 

@@ -1668,16 +1668,7 @@ public class C extends ANY
    */
   String malloc()
   {
-    return _options._useBoehmGC ? "GC_MALLOC" : "malloc";
-  }
-
-
-  /**
-   * @return the name of realloc function that is used
-   */
-  String realloc()
-  {
-    return _options._useBoehmGC ? "GC_REALLOC" : "realloc";
+    return "fzE_malloc_safe";
   }
 
 
