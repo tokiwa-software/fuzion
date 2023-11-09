@@ -557,7 +557,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     for (var p: feature().inherits())
       {
         var pt = p.type();
-        var pc = actualClazz(isRef() && pt != Types.resolved.t_void ? pt.asRef() : pt.asValue());
+        var pc = actualClazz(isRef() && pt.compareTo(Types.resolved.t_void) != 0 ? pt.asRef() : pt.asValue());
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);
