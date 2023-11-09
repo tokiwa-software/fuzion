@@ -509,7 +509,7 @@ public class Call extends AbstractCall
       //
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
-      targetIsTypeParameter()          ? new Generic(tc.calledFeature()).type() :
+      targetIsTypeParameter()          ? tc.calledFeature().genericType() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
                                        : targetTypeOrConstraint(res);
   }
@@ -721,7 +721,7 @@ public class Call extends AbstractCall
     var targetVoid = false;
     if (PRECONDITIONS) require
       (res.state(thiz) == State.RESOLVING_INHERITANCE
-       ? res.state(thiz.outer()).atLeast(State.RESOLVED_DECLARATIONS)
+       ? res.state(thiz.outer()).atLeast(State.RESOLVING_DECLARATIONS)
        : res.state(thiz)        .atLeast(State.RESOLVED_DECLARATIONS));
 
     if (_calledFeature == null)
@@ -748,7 +748,7 @@ public class Call extends AbstractCall
                       }
                   }
                 var calledName = FeatureName.get(_name, _actuals.size());
-                var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
+                var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
                 if (fo == null)
                   { // handle `fun a.b.c` and implicit calls `f()` that expand to `f.call()`:
                     fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
@@ -756,9 +756,9 @@ public class Call extends AbstractCall
                 else if (fo._feature != Types.f_ERROR &&
                          _generics.isEmpty() &&
                          _actuals.size() != fo._feature.valueArguments().size() &&
-                         !fo._feature.hasOpenGenericsArgList())
+                         !fo._feature.hasOpenGenericsArgList(res))
                   {
-                    splitOffTypeArgs(fo._feature, thiz);
+                    splitOffTypeArgs(res, fo._feature, thiz);
                   }
                 if (fo != null)
                   {
@@ -844,7 +844,7 @@ public class Call extends AbstractCall
       .findExactOrCandidate(
         fos,
         (FeatureName fn) -> fn.equalsExceptId(calledName),
-        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList()
+        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)
     );
   }
 
@@ -935,7 +935,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature surrounding this call
    */
-  private void splitOffTypeArgs(AbstractFeature calledFeature, AbstractFeature outer)
+  private void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
   {
     var g = new List<AbstractType>();
     var a = new List<Expr>();
@@ -964,7 +964,6 @@ public class Call extends AbstractCall
             AbstractType t = _actualsNew.get(i)._type;
             if (t != null)
               {
-                t = t.visit(Feature.findGenerics, outer);
                 g.add(t);
               }
             ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
@@ -994,7 +993,7 @@ public class Call extends AbstractCall
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
-  AbstractType asType(AbstractFeature outer, AbstractFeature tp)
+  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
   {
     var g = _generics;
     if (!_actuals.isEmpty())
@@ -1003,15 +1002,15 @@ public class Call extends AbstractCall
         g.addAll(_generics);
         for (var a : _actuals)
           {
-            g.add(a.asType(outer, tp));
+            g.add(a.asType(res, outer, tp));
           }
       }
     AbstractType result = new ParsedType(pos(), _name, g,
                                          _target == null             ||
                                          _target instanceof Universe ||
                                          _target instanceof Current     ? null
-                                                                        : _target.asType(outer, tp));
-    return result.visit(Feature.findGenerics, outer);
+                                                                        : _target.asType(res, outer, tp));
+    return result.visit(res.findGenerics, outer);
   }
 
 
@@ -1954,10 +1953,7 @@ public class Call extends AbstractCall
             var gt = _generics.get(i);
             var nt = gt == Types.t_UNDEFINED ? actualType
                                              : gt.union(actualType);
-            if (nt == Types.t_ERROR &&
-                // if there was an earlier error, do not treat this as a conflict:
-                !(gt         == Types.t_ERROR ||
-                  actualType == Types.t_ERROR    ))
+            if (nt == Types.t_ERROR)
               {
                 conflict[i] = true;
               }

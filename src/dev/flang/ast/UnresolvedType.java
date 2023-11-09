@@ -533,8 +533,11 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @return this type with all generic arguments that were found replaced by
    * instances of TypeParameter.
    */
-  AbstractType findGenerics(AbstractFeature outerfeat)
+  AbstractType findGenerics(Resolution res, AbstractFeature outerfeat)
   {
+    if (PRECONDITIONS) require
+      (res != null);
+
     // NYI   if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
@@ -547,17 +550,21 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             AstErrors.formalGenericAsOuterType(pos(), this);
           }
       }
-    else
+    else if (!(this instanceof BuiltInType))
       {
-        var o = outerfeat;
-        Generic generic;
-        do
+        Generic generic = null;
+        if (!outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS))
           {
-            generic = o.getGeneric(_name);
-            o = o.outer();
+            res.resolveDeclarations(outerfeat);
           }
-        while (generic == null && o != null);
-
+        if (outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS) || outerfeat.isUniverse())
+          {
+            var fo = res._module.lookupType(pos(), outerfeat, _name, ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE, true, true);
+            if (fo != null && fo._feature.isTypeParameter())
+              {
+                generic = fo._feature.generic();
+              }
+          }
         if (generic != null)
           {
             result = generic.type();
@@ -566,7 +573,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
               }
 
-            if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
+            if (!(outerfeat instanceof Feature of && (of.isLastArgType(this) || of.isLastArgType(result))))
               {
                 result.ensureNotOpen(pos());
               }
@@ -576,7 +583,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       }
     if (result == this)
       {
-        _generics = _generics.map(t -> t.findGenerics(outerfeat));
+        _generics = _generics.map(t -> t.findGenerics(res, outerfeat));
         _generics.freeze();
       }
 
@@ -606,7 +613,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVING_DECLARATIONS));
 
     AbstractType result = this;
     var o = outerfeat;
@@ -614,7 +621,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (isMatchingTypeFeature(o))
           {
-            result = new Generic(o.typeArguments().get(0)).type();
+            result = o.typeArguments().get(0).genericType();
             o = null;
           }
         else
@@ -656,12 +663,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
+       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVING_DECLARATIONS));
 
     AbstractType result = resolveThisType(res, outerfeat);
     if (result == this)
       {
-        result = findGenerics(outerfeat);
+        result = findGenerics(res, outerfeat);
         if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
           {
             result.ensureNotOpen(pos());
@@ -691,7 +698,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outerfeat != null,
        outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
 
-    findGenerics(outerfeat);
+    findGenerics(res, outerfeat);
     if (_resolved == null)
       {
         AbstractType result = null;
@@ -717,7 +724,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             if (CHECKS) check
               (!isThisType());
             var mayBeFreeType = mayBeFreeType() && outerfeat.isValueArgument();
-            var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType);
+            var fo = res._module.lookupType(pos(), of, _name, o == null, mayBeFreeType, false);
             if (fo == null)
               {
                 result = addAsFreeType(res, outerfeat);
@@ -731,7 +738,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 f = fo._feature;
                 if (o == null && f.isTypeParameter())
                   {
-                    var generic = new Generic(f);
+                    var generic = f.generic();
                     if (!_generics.isEmpty())
                       {
                         AstErrors.formalGenericWithGenericArgs(pos(), this, generic);

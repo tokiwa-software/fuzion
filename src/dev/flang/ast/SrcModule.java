@@ -69,9 +69,11 @@ public interface SrcModule
   void findDeclaredOrInheritedFeatures(Feature outer);
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
   void checkTypes(Feature f);
-  FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean mayBeFreeType);
+  FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean ignoreNotFound, boolean mayBeOpen);
 
   void addTypeFeature(AbstractFeature outerType,
+                      Feature         innerType);
+  void addTypeParameter(AbstractFeature outerType,
                       Feature         innerType);
 
   /*----------------------  methods needed by AIR  ----------------------*/

@@ -109,19 +109,6 @@ public class Env extends ExprWithPos
 
 
   /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * @param outer the root feature that contains this expression.
-   */
-  public void findGenerics(AbstractFeature outer)
-  {
-    // NYI: Check if qual starts with the name of a formal generic in outer or
-    // outer.outer..., flag an error if this is the case.
-  }
-
-
-  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res this is called during type resolution, res gives the resolution

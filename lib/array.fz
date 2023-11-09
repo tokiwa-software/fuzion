@@ -31,7 +31,7 @@
 # Note: This uses dummy unit-type args to avoid
 # name clash with routine array(T,length,init).
 #
-module:public array(redef T type,
+module:public array(T type,
       module internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,

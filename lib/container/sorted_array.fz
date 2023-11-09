@@ -38,7 +38,7 @@
 public sorted_array
   (
   # array element type
-  redef T type,
+  T type,
 
   # orginal, unsorted Sequence
   #

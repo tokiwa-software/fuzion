@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.FeatureName;
@@ -213,16 +214,17 @@ public abstract class Module extends ANY
                 if (CHECKS) check
                   (cf != outer);
 
+                var res = this instanceof SourceModule sm ? sm._res : null;
                 if (!f.isFixed())
                   {
-                    var newfn = cf.handDown(null, f, fn, p, outer);
+                    var newfn = cf.handDown(res, f, fn, p, outer);
                     addInheritedFeature(set, outer, p, newfn, f);
                   }
                 else
                   {
                     for (var f2 : f.redefines())
                       {
-                        var newfn = cf.handDown(null, f2, fn, p, outer);
+                        var newfn = cf.handDown(res, f2, fn, p, outer);
                         addInheritedFeature(set, outer, p, newfn, f2);
                       }
                   }

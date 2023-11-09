@@ -261,7 +261,7 @@ test_local_mutate is
              LM type : mutate,
 
              # type of data stored in ring cells
-             redef T type,
+             T type,
 
              # the data stored in this cell.
              data T) ref : Ring T is

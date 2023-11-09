@@ -48,7 +48,7 @@ is
 
   # shorthand to replace the effect installed in env
   # and return a
-  replace(T type, a T) T is
+  replace(X type, a X) X is
     replace
     a
 

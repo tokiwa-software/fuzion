@@ -36,7 +36,7 @@
 # to implement any of these results in an endless recursion when the Sequence
 # is used.
 #
-public Sequence(T type) ref is
+public Sequence(public T type) ref is
 
 
   # create a list from this Sequence.

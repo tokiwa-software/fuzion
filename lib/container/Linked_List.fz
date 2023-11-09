@@ -23,7 +23,7 @@
 
 # abstract type for 'Linked_List'
 #
-public Linked_List(redef T type) ref : Sequence T is
+public Linked_List(T type) ref : Sequence T is
 
 
   # next is the following element of the linked list, or nil if there are

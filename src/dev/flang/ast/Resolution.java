@@ -132,6 +132,15 @@ public class Resolution extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * FeatureVisitor to call findGenerics() on all types.
+   */
+  FeatureVisitor findGenerics = new FeatureVisitor()
+    {
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(Resolution.this, outer); }
+    };
+
+
   final FuzionOptions _options;
 
 
@@ -440,7 +449,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (state(af).atLeast(State.RESOLVED_DECLARATIONS));
+      (state(af).atLeast(State.RESOLVING_DECLARATIONS));
   }
 
 

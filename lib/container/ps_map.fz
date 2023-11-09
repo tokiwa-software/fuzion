@@ -51,7 +51,7 @@ private:public ps_map
    PK type : property.orderable,
 
    # value type
-   redef V type,
+   V type,
 
    # the array containg the sorted arrays, see below for details
    data fuzion.sys.internal_array (tuple PK V),

@@ -100,7 +100,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return new type this was replaced with in case generics were found.
    */
-  AbstractType findGenerics(AbstractFeature outerfeat)
+  AbstractType findGenerics(Resolution res, AbstractFeature outerfeat)
   {
     return this;
   }
@@ -1325,7 +1325,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = new Generic(tc.calledFeature()).type();
+            result = tc.calledFeature().genericType();
           }
       }
     else

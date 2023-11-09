@@ -1194,10 +1194,6 @@ public class Feature extends AbstractFeature
       (_detectedCyclicInheritance || _state.atLeast(State.RESOLVED_INHERITANCE));
   }
 
-  static FeatureVisitor findGenerics = new FeatureVisitor()
-    {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(outer); }
-    };
 
   /*
    * Declaration resolution for a feature f: For all declarations of features in
@@ -1232,7 +1228,8 @@ public class Feature extends AbstractFeature
              * Find all the types used in this that refer to formal generic arguments of
              * this or any of this' outer classes.
              */
-            visit(findGenerics);
+            resolveArgumentTypes(res);
+            visit(res.findGenerics);
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1244,7 +1241,7 @@ public class Feature extends AbstractFeature
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_DECLARATIONS));
+      (_state.atLeast(State.RESOLVING_DECLARATIONS));
   }
 
 
@@ -2184,11 +2181,18 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
+    // A call to generics() has the side effects of setting _generics,
+    // _arguments and _typeArguments
+    var unused = generics();
+
+    // Now we patch the new type parameter ta into _arguments, _typeArguments
+    // and _generics:
     var a = _arguments;
-    _arguments = new List<>();
-    _arguments.addAll(a);
-    _arguments.add(_typeArguments.size(), ta);
-    _typeArguments.add(ta);
+    _arguments = new List<>(a);
+    var tas = typeArguments();
+    _arguments.add(tas.size(), ta);
+    tas.add(ta);
+
     // NYI: For now, we keep the original FeatureName since changing it would
     // require updating res._module.declaredFeatures /
     // declaredOrInheritedFeatures. This means free types do not increase the
@@ -2200,9 +2204,11 @@ public class Feature extends AbstractFeature
     //
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
-    var g = new Generic(ta);
+
+    var g = ta.generic();
     _generics = _generics.addTypeParameter(g);
-    res.resolveTypes(ta);
+    res._module.addTypeParameter(this, ta);
+    this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return g;
   }
@@ -2322,7 +2328,7 @@ public class Feature extends AbstractFeature
   @Override
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    AbstractType result = Types.resolved.t_void;
+    AbstractType result = Types.resolved == null ? null : Types.resolved.t_void;
     if (result != null && !_resultTypeIfPresentRecursion)
       {
         _resultTypeIfPresentRecursion = impl()._kind == Impl.Kind.FieldActual;
@@ -2334,7 +2340,7 @@ public class Feature extends AbstractFeature
         if (result instanceof UnresolvedType rt)
           {
             // NYI try to remove this visitation with findGenerics, see PR: #2210
-            result = rt.visit(Feature.findGenerics,outer());
+            result = rt.visit(res.findGenerics,outer());
           }
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
@@ -2527,7 +2533,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || _state.atLeast(State.RESOLVED_DECLARATIONS));
+      (isUniverse() || _state.atLeast(State.RESOLVING_DECLARATIONS));
 
     Feature result = _outerRef;
 

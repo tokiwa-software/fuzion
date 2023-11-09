@@ -173,7 +173,7 @@ public mutate : simple_effect is
   # create a mutable array.
   #
   module:public array (# element type
-         redef T type,
+         T type,
 
          # length of the array to create
          public length i32,
@@ -307,7 +307,7 @@ public mut(T type, v T) => mut.new T v
 
 # an interface defining a mutable array
 #
-public Mutable_Array(redef T type) ref : Sequence T is
+public Mutable_Array(T type) ref : Sequence T is
 
   # add an element at the end of the sequence
   public add(t T) unit is abstract
