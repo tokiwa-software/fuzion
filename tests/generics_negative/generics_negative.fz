@@ -193,3 +193,18 @@ generics_negative is
         z  := option Z  nil      // 53. should flag an error: ambiguous type parameter
 
   _ := ambiguousTypeParameterName
+
+  inheriting_type_parameter =>
+
+    parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
+
+    child : parent u8 23 is
+
+      f1(x      PARENT_TYPE_PARAMETER) => $v + $v  // ok, this is a new free type, not inhertied type parameter
+      f2(x list PARENT_TYPE_PARAMETER) => $v + $v  // ok, this is a new free type, not inhertied type parameter
+
+      g1      PARENT_TYPE_PARAMETER => v       // 54. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g2 list PARENT_TYPE_PARAMETER => v : g2  // 55. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g3 => option PARENT_TYPE_PARAMETER nil   // 56. should flag an error: PARENT_TYPE_PARAMETER not visible
+
+    _ :=  (child.f 23)
