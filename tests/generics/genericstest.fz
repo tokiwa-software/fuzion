@@ -230,4 +230,19 @@ genericstest is
 
   inherting_type_parameteres
 
+  not_inheriting_type_parameter =>
+
+    parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
+
+    child : parent u8 23 is
+      f(x PARENT_TYPE_PARAMETER) => $x + $v + $x
+      g(x BLABLA)                => $x + $v + $x
+
+    chck ((child.f [1,2,3]) = "[1,2,3]23[1,2,3]") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
+    chck ((child.g [4,5,6]) = "[4,5,6]23[4,5,6]") "BLABLA is a free type"
+    chck ((child.f 2000000000) = "2000000000232000000000") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
+    chck ((child.g 1230000000) = "1230000000231230000000") "BLABLA is a free type"
+
+  not_inheriting_type_parameter
+
   exit
