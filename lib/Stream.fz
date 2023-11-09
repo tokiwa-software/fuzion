@@ -42,7 +42,7 @@
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
 # of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
-public stream(redef T type) ref : Sequence T is
+public stream(T type) ref : Sequence T is
 
   as_list0 option (list T) := nil
 

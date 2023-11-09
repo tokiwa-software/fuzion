@@ -128,6 +128,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String _main;
 
+
+  /**
+   * Resolution instance
+   */
   Resolution _res;
 
 
@@ -637,6 +641,24 @@ public class SourceModule extends Module implements SrcModule, MirModule
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
+  public void addTypeParameter(AbstractFeature outer,
+                               Feature typeParameter)
+  {
+    var d = data(outer);
+    var fn = typeParameter.featureName();
+    if (d._declaredFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
+        d._declaredFeatures.put(fn, typeParameter);
+      }
+    if (d._declaredOrInheritedFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
+        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+      }
+  }
 
 
   /**
@@ -647,7 +669,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * determined.
    *
    * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declare and declaredOrInherited.
+   * to declaredFeatures and declaredOrInherited.
    *
    * @param outer the outer feature
    *
@@ -1001,6 +1023,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var foundFieldInScope = false;
     do
       {
+        if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
+          {
+            _res.resolveDeclarations(curOuter);
+          }
         var foundFieldInThisScope = foundFieldInScope;
         var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
         if (fs.size() >= 1 && use != null && traverseOuter)
@@ -1086,7 +1112,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
   {
-    return lookupType(pos, outer, name, traverseOuter, false);
+    return lookupType(pos, outer, name, traverseOuter, false, false);
   }
 
 
@@ -1118,7 +1144,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                     AbstractFeature outer,
                                     String name,
                                     boolean traverseOuter,
-                                    boolean ignoreNotFound)
+                                    boolean ignoreNotFound,
+                                    boolean mayBeOpen)
   {
     if (PRECONDITIONS) require
       (Errors.any() || outer != Types.f_ERROR);
@@ -1136,7 +1163,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (typeVisible(pos._sourceFile, f, true))
               {
                 if (f.definesType() ||
-                    f.isTypeParameter() && !f.isOpenTypeParameter())
+                    f.isTypeParameter() && (mayBeOpen || !f.isOpenTypeParameter()))
                   {
                     type_fs.add(f);
                     result = fo;

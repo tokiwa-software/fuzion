@@ -465,13 +465,17 @@ public list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # fmap lifts a function from A to B to a function from list A to list B
   #
-  public type.fmap(A, B type, f A -> B) list A -> list B is
+  public type.fmap(B type, f A -> B) list A -> list B is
     l -> l.map B f
 
 
   # monoid of lists with infix concatentation operation.
   #
-  public type.concat_monoid(A type) : Monoid (list A) is
+  # NYI: Name should be `concat_monoid`, we use `list_concat_monoid`
+  # to avoid clash with inherited `Sequence.type.concat_monoid`. Maybe
+  # the inherited one should be renamed once renmaing is supported.
+  #
+  public type.list_concat_monoid : Monoid (list A) is
 
     # associative operation
     #

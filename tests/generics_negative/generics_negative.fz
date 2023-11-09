@@ -182,4 +182,14 @@ generics_negative is
     y.f 9 10 8            // 50. should flag an error: incompatible argument #2
     y.f 9 false "8"       // 51. should flag an error: incompatible argument #3
   opengenerics12
-  unit
+
+  ambiguousTypeParameterName =>
+    outer(X, Y, Z type) is
+      inner(X type, Y2 type, Z type)
+      is
+        x  := option X  nil      // 52. should flag an error: ambiguous type parameter
+        y  := option Y  nil
+        y2 := option Y2 nil
+        z  := option Z  nil      // 53. should flag an error: ambiguous type parameter
+
+  _ := ambiguousTypeParameterName

@@ -26,7 +26,7 @@
 # hash_map -- an immutable hash map from keys HK to values V
 #
 public hash_map(HK type : property.hashable,
-        redef V type,
+        V type,
         ks array HK,
         vs array V) : Map HK V
   pre
@@ -132,4 +132,3 @@ is
   # empty -- convenience routine to create an empty instance of hash_map
   #
   public type.empty => container.hash_map HK V [] []
-

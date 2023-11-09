@@ -1,5 +1,15 @@
 
---CURDIR--/test_free_types_negative.fz:49:3: error 1: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:121:7: error 1: Free type must not mask existing type.
+  y(a EXISTING_TYPE : numeric) =>             # 9. should flag an error, free type must not mask existing type
+------^^^^^^^^^^^^^
+The free type 'EXISTING_TYPE' masks an existing type defined by 'test_free_type_negative.EXISTING_TYPE'.
+The existing type was declared at --CURDIR--/test_free_types_negative.fz:120:3:
+  EXISTING_TYPE is
+--^^^^^^^^^^^^^
+To solve this, you may use a different name for free type 'EXISTING_TYPE'.
+
+
+--CURDIR--/test_free_types_negative.fz:49:3: error 2: Incompatible types found during type inference for type parameters
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
@@ -11,7 +21,7 @@ Types inferred for first type parameter 'T':
 -----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:52:3: error 2: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:52:3: error 3: Incompatible types found during type inference for type parameters
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
@@ -23,7 +33,7 @@ Types inferred for first type parameter 'T':
 -----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:61:3: error 3: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:61:3: error 4: Incompatible types found during type inference for type parameters
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
 --^
 Types inferred for first type parameter '#_0':
@@ -35,7 +45,7 @@ Types inferred for first type parameter '#_0':
 ----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:115:17: error 4: Could not find called feature
+--CURDIR--/test_free_types_negative.fz:115:17: error 5: Could not find called feature
   neg(x i33) => -x   # 8. should flag an error that is not too confusing
 ----------------^
 Feature not found: 'prefix -' (no arguments)
@@ -46,7 +56,7 @@ To solve this, you might replace the free type 'test_free_type_negative.neg.i33'
 --------^^^
 
 
---CURDIR--/test_free_types_negative.fz:142:9: error 5: Failed to infer actual type parameters
+--CURDIR--/test_free_types_negative.fz:142:9: error 6: Failed to infer actual type parameters
   say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
 --------^^^^^^
 In call to 'test_free_type_negative.apply2', no actual type parameters are given and inference of the type parameters failed.
@@ -54,22 +64,12 @@ Expected type parameters: 'A, B'
 Type inference failed for 2 type parameters 'A', 'B'
 
 
---CURDIR--/test_free_types_negative.fz:150:9: error 6: Failed to infer actual type parameters
+--CURDIR--/test_free_types_negative.fz:150:9: error 7: Failed to infer actual type parameters
   say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
 --------^^^^^^^
 In call to 'test_free_type_negative.apply3a', no actual type parameters are given and inference of the type parameters failed.
 Expected type parameters: 'A, B'
 Type inference failed for 2 type parameters 'A', 'B'
-
-
---CURDIR--/test_free_types_negative.fz:121:7: error 7: Free type must not mask existing type.
-  y(a EXISTING_TYPE : numeric) =>             # 9. should flag an error, free type must not mask existing type
-------^^^^^^^^^^^^^
-The free type 'EXISTING_TYPE' masks an existing type defined by 'test_free_type_negative.EXISTING_TYPE'.
-The existing type was declared at --CURDIR--/test_free_types_negative.fz:120:3:
-  EXISTING_TYPE is
---^^^^^^^^^^^^^
-To solve this, you may use a different name for free type 'EXISTING_TYPE'.
 
 
 --CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter

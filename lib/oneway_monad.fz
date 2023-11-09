@@ -31,7 +31,7 @@
 #
 public oneway_monad(
 
-  redef A type,
+  A type,
 
   OMA type : oneway_monad A OMA,
 

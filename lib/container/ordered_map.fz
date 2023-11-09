@@ -33,7 +33,7 @@
 # keys.length.
 #
 public ordered_map(OK type : property.orderable,
-           redef V type,
+           V type,
            ks array OK,
            vs array V) : Map OK V
   pre

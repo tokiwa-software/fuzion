@@ -138,7 +138,7 @@ public class Generic extends ANY implements Comparable<Generic>
   public AbstractType constraint(Resolution res)
   {
     if (PRECONDITIONS) require
-      (res.state(feature()).atLeast(State.RESOLVED_DECLARATIONS));
+      (res.state(feature()).atLeast(State.RESOLVING_DECLARATIONS));
 
     res.resolveTypes(_typeParameter);
     return constraint();

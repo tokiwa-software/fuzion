@@ -418,7 +418,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
-  AbstractType asType(AbstractFeature outer, AbstractFeature tp)
+  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
   {
     if (tp == null)
       {

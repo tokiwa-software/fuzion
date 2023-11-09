@@ -983,6 +983,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
+    if (PRECONDITIONS) require
+      (// type parameters never get redefined, they are effectively fixed.
+       // However, type features get replaced by actual type parameters in the
+       // inheritance call. Instead of searching for the redefinition, the type
+       // should be replaced by the actual type.
+       !f.isTypeParameter());
+
     var fn = f.featureName();
     var tf = feature();
     if (tf != Types.f_ERROR && f != Types.f_ERROR && tf != Types.resolved.f_void)
@@ -994,7 +1001,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var p: chain)
               {
-                fn = f.outer().handDown(_module, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
               }
           }
       }
@@ -1158,29 +1165,43 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     if (innerClazz == null)
       {
+        AbstractType t = null;
         var f = fa._f;
-        AbstractFeature af = findRedefinition(f);
-        if (CHECKS) check
-          (Errors.any() || af != null || isEffectivelyAbstract(f));
+        if (f.isTypeParameter())
+          { // type parameters do not get inherited, but replaced by the actual
+            // type given in the inherits call:
+            t = f.selfType();   // e.g., `(Types.get T).T`
+            if (CHECKS)
+              check(Errors.any() || fa._tp.isEmpty());  // there should not be an actual type parameters to a type parameter
+            t = actualType(t);  // e.g., `(Types.get (array f64)).T`
+          }
+        else
+          {
+            var af = findRedefinition(f);
+            if (CHECKS) check
+              (Errors.any() || af != null || isEffectivelyAbstract(f));
+            if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
+              {
+                var aaf = af != null ? af : f;
+                if (isEffectivelyAbstract(aaf))
+                  {
+                    if (_abstractCalled == null)
+                      {
+                        _abstractCalled = new TreeSet<>();
+                      }
+                    _abstractCalled.add(aaf);
+                  }
 
-        if (f == Types.f_ERROR || af == null && !isEffectivelyAbstract(f))
+                t = aaf.selfType().applyTypePars(aaf, fa._tp);
+                t = actualType(t);
+              }
+          }
+        if (t == null)
           {
             innerClazz = Clazzes.error.get();
           }
         else
           {
-            var aaf = af != null ? af : f;
-            if (isEffectivelyAbstract(aaf))
-              {
-                if (_abstractCalled == null)
-                  {
-                    _abstractCalled = new TreeSet<>();
-                  }
-                _abstractCalled.add(aaf);
-              }
-
-            AbstractType t = aaf.selfType().applyTypePars(aaf, fa._tp);
-            t = actualType(t);
 
 /*
   We have the following possibilities when calling a feature `f` declared in do `on`
@@ -1294,8 +1315,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
               {
                 clazzForFieldX(f, select);
               }
-            if (CHECKS) check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == aaf);
           }
       }
     if (p != null && !isInheritanceCall)
@@ -1305,7 +1324,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
+      (Errors.any() || fa._f.isTypeParameter() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
        innerClazz != null);
 
     return innerClazz;
@@ -2102,7 +2121,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a type parameter, return the actual type.
+   * For a type parameter, return the clazz of the actual type.
+   *
+   * Example:
+   *
+   * For `(Types.get (array f64)).T` this results in `array f64`.
    */
   public Clazz typeParameterActualType()
   {
