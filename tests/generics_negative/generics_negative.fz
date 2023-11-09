@@ -200,8 +200,8 @@ generics_negative is
 
     child : parent u8 23 is
 
-      f1(x      PARENT_TYPE_PARAMETER) => $v + $v  // ok, this is a new free type, not inhertied type parameter
-      f2(x list PARENT_TYPE_PARAMETER) => $v + $v  // ok, this is a new free type, not inhertied type parameter
+      f1(x      PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inhertied type parameter
+      f2(x list PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inhertied type parameter
 
       g1      PARENT_TYPE_PARAMETER => v       // 54. should flag an error: PARENT_TYPE_PARAMETER not visible
       g2 list PARENT_TYPE_PARAMETER => v : g2  // 55. should flag an error: PARENT_TYPE_PARAMETER not visible
