@@ -228,10 +228,9 @@ genericstest is
     chck (b.show_ty = "Type of '" +                "list codepoint"   + "'") "(z codepoint).show_ty should be 'list codepoint'"
     chck (b.show_tz = "Type of '" +                     "codepoint"   + "'") "(z codepoint).show_ty should be 'codepoint'"
 
-  inherting_type_parameteres
 
-  not_inheriting_type_parameter =>
-
+    # check that type parameter if used in child's arg list is not used, but a free type:
+    #
     parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
 
     child : parent u8 23 is
@@ -243,6 +242,6 @@ genericstest is
     chck ((child.f 2000000000) = "2000000000232000000000") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
     chck ((child.g 1230000000) = "1230000000231230000000") "BLABLA is a free type"
 
-  not_inheriting_type_parameter
+  inherting_type_parameteres
 
   exit
