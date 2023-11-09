@@ -187,4 +187,47 @@ genericstest is
     unit
   opengenerics12
 
+  inherting_type_parameteres =>
+
+    # check that type parameters are not inherited and can be replaced
+    # by a type parameter with the same name in the heir:
+    #
+    p(T type)                is show_tp => $T
+    x(T type) : p (array  T) is show_tx => $T
+    y(T type) : x (option T) is show_ty => $T
+    z(T type) : y (list   T) is show_tz => $T
+
+    a := z u64
+    chck (a.show_tp = "Type of '" + "array (option (list u64))" + "'") "(z u64).show_tp should be 'array (option (list u64))'"
+    chck (a.show_tx = "Type of '" +        "option (list u64)"  + "'") "(z u64).show_tx should be 'option (list u64)'"
+    chck (a.show_ty = "Type of '" +                "list u64"   + "'") "(z u64).show_ty should be 'list u64'"
+    chck (a.show_tz = "Type of '" +                     "u64"   + "'") "(z u64).show_ty should be 'u64'"
+
+    b := z String
+    chck (b.show_tp = "Type of '" + "array (option (list String))" + "'") "(z String).show_tp should be 'array (option (list String))'"
+    chck (b.show_tx = "Type of '" +        "option (list String)"  + "'") "(z String).show_tx should be 'option (list String)'"
+    chck (b.show_ty = "Type of '" +                "list String"   + "'") "(z String).show_ty should be 'list String'"
+    chck (b.show_tz = "Type of '" +                     "String"   + "'") "(z String).show_ty should be 'String'"
+
+    # base line test with different type parameter names
+    #
+    p1(TP type)                  is show_tp => $TP
+    x1(TX type) : p1 (array  TX) is show_tx => $TX
+    y1(TY type) : x1 (option TY) is show_ty => $TY
+    z1(TZ type) : y1 (list   TZ) is show_tz => $TZ  # note that TP, TX, TY are not visible here
+
+    a := z1 i8
+    chck (a.show_tp = "Type of '" + "array (option (list i8))" + "'") "(z i8).show_tp should be 'array (option (list i8))'"
+    chck (a.show_tx = "Type of '" +        "option (list i8)"  + "'") "(z i8).show_tx should be 'option (list i8)'"
+    chck (a.show_ty = "Type of '" +                "list i8"   + "'") "(z i8).show_ty should be 'list i8'"
+    chck (a.show_tz = "Type of '" +                     "i8"   + "'") "(z i8).show_ty should be 'i8'"
+
+    b := z1 codepoint
+    chck (b.show_tp = "Type of '" + "array (option (list codepoint))" + "'") "(z codepoint).show_tp should be 'array (option (list codepoint))'"
+    chck (b.show_tx = "Type of '" +        "option (list codepoint)"  + "'") "(z codepoint).show_tx should be 'option (list codepoint)'"
+    chck (b.show_ty = "Type of '" +                "list codepoint"   + "'") "(z codepoint).show_ty should be 'list codepoint'"
+    chck (b.show_tz = "Type of '" +                     "codepoint"   + "'") "(z codepoint).show_ty should be 'codepoint'"
+
+  inherting_type_parameteres
+
   exit
