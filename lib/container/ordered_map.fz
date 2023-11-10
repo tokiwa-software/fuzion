@@ -32,8 +32,9 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-public ordered_map(OK type : property.orderable,
-           V type,
+public ordered_map(
+           public OK type : property.orderable,
+           public V  type,
            ks array OK,
            vs array V) : Map OK V
   pre

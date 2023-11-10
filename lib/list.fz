@@ -41,7 +41,7 @@
 #
 #
 #
-public list(A type) : choice nil (Cons A (list A)), Sequence A is
+public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 # NYI: #530 (review comment): The following should work but causes an error:
 # list(A type) : nil | Cons A (list A), Sequence A is
 

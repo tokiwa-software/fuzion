@@ -49,7 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(T type) :
+public outcome(public T type) :
   choice T error, /* ...  NYI: this should be open generic! */
   monad T (outcome T)
 is

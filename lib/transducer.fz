@@ -43,7 +43,8 @@
 # TA   result     type
 # B    input      type
 # C    transduced type
-public transducer(TA,B,C type, td ((TA,B) -> TA) ->  (TA,C) -> TA) is
+public transducer(public TA, B, C type,
+                  td ((TA,B) -> TA) ->  (TA,C) -> TA) is
 
   # use the transducer with reducing function `rf`.
   public call(rf (TA,B) -> TA) =>

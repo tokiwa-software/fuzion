@@ -34,7 +34,8 @@
 # applied to generic types.
 #
 #
-public monad (A type, MA type : monad A MA) is
+public monad (public A type,
+              public MA type : monad A MA) is
 
 
   # monadic operator within the same monad

@@ -27,9 +27,9 @@
 #
 # option represents an optional value of type T
 #
-public option(T type) :
-  choice T nil,
-  monad T (option T)
+public option(public T type)
+  : choice T nil,
+    monad T (option T)
 is
 
   # Does this option contain a value of type T?

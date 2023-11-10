@@ -69,7 +69,8 @@ public fuzion.java is
 
   # A Java array
   #
-  public Array(T type, private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
+  public Array(public T type,
+               private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
   is
     length                  => array_length T Array.this
     redef finite            => true

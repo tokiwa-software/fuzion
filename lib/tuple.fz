@@ -118,4 +118,5 @@
 # A tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
 # is a type that has only one single value: '()'.
 #
-public tuple(A type..., public values A) is
+public tuple(public A type...,
+             public values A) is
