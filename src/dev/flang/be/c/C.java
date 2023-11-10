@@ -285,10 +285,7 @@ public class C extends ANY
           case c_array_f64 -> constArray(constCl, SpecialClazzes.c_f64, d);
           case c_Const_String ->
           {
-            var result = constString(d);
-            yield onHeap
-              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr())), CStmnt.EMPTY)
-              : new Pair<>(result.adrOf(), CStmnt.EMPTY);
+            yield new Pair<>(constString(d, onHeap), CStmnt.EMPTY);
           }
           default ->
           {
@@ -1025,18 +1022,6 @@ public class C extends ANY
 
 
   /**
-   * Create code to create a constant string and assign it to a new temp
-   * variable.
-   */
-  CStmnt constString(byte[] bytes, CIdent tmp)
-  {
-    return constString(CExpr.string(bytes),
-                       CExpr.int32const(bytes.length),
-                       tmp);
-  }
-
-
-  /**
    * produce CExpr for given special clazz sc and byte buffer bbLE.
    *
    * @param sc the spezial clazz we we are generating the CExpr for.
@@ -1179,45 +1164,42 @@ public class C extends ANY
 
 
   /**
-   * Create code to create a constant string and assign it to a new temp
-   * variable.
+   * Create CExpr to create a constant string.
    *
-   * @param bytes C code resulting in char* to bytes of this string
+   * @param bytes the serialized bytes of the UTF-8 string.
    *
-   * @param len length of this string, in bytes
+   * @param onHeap should the string be allocated on the heap?
    *
-   * @param tmp local var the new string should be assigned to
+   * Example code:
+   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
-  CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
+  CExpr constString(byte[] bytes, boolean onHeap)
   {
-    var cs            = _fuir.clazz_Const_String();
-    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
-    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var sysArray = fields(tmp, cs).field(internal_array);
-    return CStmnt.seq(declareAllocAndInitClazzId(cs, tmp),
-                      sysArray.field(data  ).assign(bytes.castTo("void *")),
-                      sysArray.field(length).assign(len));
+    return constString(CExpr.string(bytes), CExpr.int32const(bytes.length), onHeap);
   }
 
 
   /**
    * Create CExpr to create a constant string.
    *
-   * @param bytes the serialized bytes of the UTF-8 string.
+   * @param str CExpr the creates a c string.
+   *
+   * @param len CExpr that returns the size_t of the string
+   *
+   * @param onHeap should the string be allocated on the heap?
    *
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
-  CExpr constString(byte[] bytes)
+  CExpr constString(CExpr str, CExpr len, boolean onHeap)
   {
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
 
     var sysArray = CExpr.compoundLiteral(
         _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_Const_String_internal_array())),
-        "." + data.code() + " = " + CExpr.string(bytes).castTo("void *").code() +  "," +
-          "." + length.code() + " = " + CExpr.int32const(bytes.length).code());
+        "." + data.code() + " = " + str.castTo("void *").code() +  "," +
+          "." + length.code() + " = " + len.code());
 
     var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
 
@@ -1226,11 +1208,15 @@ public class C extends ANY
         _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
         "." + internal_array.code() + " = " + sysArray.code());
 
-    return CExpr
+    var result = CExpr
       .compoundLiteral(
         _names.struct(_fuir.clazz_Const_String()),
         "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(_fuir.clazz_Const_String()).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + constStr.code());
+
+    return onHeap
+      ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
+      : result.adrOf();
   }
 
 
@@ -1638,10 +1624,11 @@ public class C extends ANY
       {
         case c_Const_String -> {
           var str = new CIdent("str");
-          var res = new CIdent("res");
-          yield CStmnt.seq(CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
-                           constString(str, CExpr.call("strlen", new List<>(str)), res),
-                           res.castTo(_types.clazz(rc)).ret());
+          yield CStmnt.seq(
+            CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
+            constString(str, CExpr.call("strlen", new List<>(str)), true)
+              .castTo(_types.clazz(rc))
+              .ret());
         }
         default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
       };
