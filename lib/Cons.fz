@@ -27,7 +27,7 @@
 #
 # A Cons is a ref to a cell that contains a head and a tail
 #
-public Cons(A, B type) ref is
+public Cons(public A, B type) ref is
 
   public head A is abstract
 

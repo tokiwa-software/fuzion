@@ -24,7 +24,10 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable, VAL type) : Map KEY VAL is
+private:public mutable_tree_map(public LM  type : mutate,
+                                public KEY type : property.orderable,
+                                public VAL type                      ) : Map KEY VAL
+is
 
 
   # the root entry of this map
@@ -34,7 +37,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
   #
   # if this map is entry, this is nil
   #
-  private root := LM.env.new (option (Entry LM KEY VAL)) nil
+  private root := LM.env.new (option Entry) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
@@ -103,7 +106,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # in this step, the helper feature to actually add the mapping
     # is called first. then the AVL rebalancing is done
     #
-    private put_recursively(node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) is
+    private put_recursively(node option Entry) tuple (option Entry) (option VAL) is
       (new_node, old_val) := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
@@ -116,10 +119,10 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # in this step, the actual addition of the mapping to the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private insert_or_modify_entries(node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) is
+    private insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) is
       match node
         nil =>
-          new_node := Entry LM KEY VAL k v
+          new_node := Entry k v
           (option new_node, option VAL nil)
         e Entry =>
           if k < e.key
@@ -132,7 +135,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
             (option e, old_val)
           else
             old_val := e.val
-            new_node := Entry LM KEY VAL k v
+            new_node := Entry k v
             new_node.left <- e.left.get
             new_node.right <- e.right.get
             (option new_node, option old_val)
@@ -156,7 +159,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # in this step, the helper feature to actually remove the
     # mapping is called first. then the AVL rebalancing is done
     #
-    private remove_recursively(k KEY, node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) is
+    private remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) is
       (new_node, old_val) := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
@@ -167,7 +170,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # minimal here means the node with the smallest key, by the given
     # ordering of the keys
     #
-    minimum(node option (Entry LM KEY VAL)) option (Entry LM KEY VAL) is
+    minimum(node option Entry) option Entry is
       node ? nil => nil
            | e Entry =>
              e.left.get ? nil => e
@@ -181,9 +184,9 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # in this step, the actual removal of the mapping from the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private remove_or_modify_entries(k KEY, node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) is
+    private remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) is
       match node
-        nil => (option (Entry LM KEY VAL) nil, option VAL nil)
+        nil => (option Entry nil, option VAL nil)
         e Entry =>
           if k < e.key
             (node, old_val) := remove_recursively k e.left.get
@@ -203,7 +206,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
                   r Entry =>
                     m := minimum e.right.get
 
-                    new_node := Entry LM KEY VAL m.get.key m.get.val
+                    new_node := Entry m.get.key m.get.val
                     new_node.left <- l
 
                     (nr, old_val) := remove_recursively m.get.key e.right.get
@@ -221,11 +224,11 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  private rebalance(node option (Entry LM KEY VAL)) option (Entry LM KEY VAL) is
+  private rebalance(node option Entry) option Entry is
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    private height(node option (Entry LM KEY VAL)) i32 is
+    private height(node option Entry) i32 is
       match node
         nil => -1
         e Entry => e.height.get
@@ -234,7 +237,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    private balance_factor(node option (Entry LM KEY VAL)) i32 is
+    private balance_factor(node option Entry) i32 is
       match node
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -243,7 +246,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
     # recalculates and updates the heights of the subtrees in the
     # subtree whose root is the given node
     #
-    private fix_height(node option (Entry LM KEY VAL)) =>
+    private fix_height(node option Entry) =>
       match node
         nil =>
         e Entry =>
@@ -255,7 +258,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
 
     # rotate right at the given node
     #
-    private rotate_right(node option (Entry LM KEY VAL)) option (Entry LM KEY VAL) is
+    private rotate_right(node option Entry) option Entry is
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
@@ -272,7 +275,7 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
 
     # rotate left at the given node
     #
-    private rotate_left(node option (Entry LM KEY VAL)) option (Entry LM KEY VAL) is
+    private rotate_left(node option Entry) option Entry is
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -320,8 +323,8 @@ private:public mutable_tree_map(LM type : mutate, KEY type : property.orderable,
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  private fold(B type, init B, f (B, Entry LM KEY VAL) -> B) B is
-    fold0(init B, node option (Entry LM KEY VAL)) B is
+  private fold(B type, init B, f (B, Entry) -> B) B is
+    fold0(init B, node option Entry) B is
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
 

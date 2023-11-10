@@ -28,7 +28,7 @@
 # try provides an operation 'raise' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (T type) : effect effect_mode.plain
+public try (public T type) : effect effect_mode.plain
 is
 
   # mutuable field to receive the error in case raise is called

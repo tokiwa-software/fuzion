@@ -266,7 +266,10 @@ private root_node(CTK type : property.hashable, CTV type) : choice (Indirection_
 
 
 # the ctrie
-private:public ctrie(CTK type : property.hashable, CTV type, private root concur.atomic (root_node CTK CTV), private read_only bool) : Map CTK CTV
+private:public ctrie(public CTK type : property.hashable,
+                     public CTV type,
+                     private root concur.atomic (root_node CTK CTV),
+                     private read_only bool) : Map CTK CTV
 is
 
   # the data structure as human readable string

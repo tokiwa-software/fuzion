@@ -35,7 +35,8 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-public fraction(B type : integer,
+public fraction(
+         public B type : integer,
          public numerator,
                 denominator B
         ) : numeric

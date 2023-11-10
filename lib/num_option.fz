@@ -29,9 +29,9 @@
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
 #
-public num_option(T type : numeric) :
-  choice T nil,
-  monad T (num_option T)
+public num_option(public T type : numeric)
+  : choice T nil,
+    monad T (num_option T)
 is
 
   # Does this option contain a value of type T?
