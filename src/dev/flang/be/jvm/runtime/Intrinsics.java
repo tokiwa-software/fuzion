@@ -906,7 +906,7 @@ public class Intrinsics extends ANY
   public static int fuzion_sys_process_wait(long desc)
   {
     var p = Runtime._openProcesses_.get(desc);
-    Runtime._openStreams_.remove(desc);
+    Runtime._openProcesses_.remove(desc);
     return p.exitValue();
   }
 

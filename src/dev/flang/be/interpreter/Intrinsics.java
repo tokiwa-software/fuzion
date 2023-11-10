@@ -1353,7 +1353,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.process.wait"    , (interpreter, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var p = _openProcesses_.get(desc);
-      _openStreams_.remove(desc);
+      _openProcesses_.remove(desc);
       return new i32Value(p.exitValue());
     });
 
