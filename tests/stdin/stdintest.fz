@@ -28,7 +28,7 @@ stdintest =>
   say (io.stdin.with (()->
 
     read(n i32) => io.buffered.read_string n
-    read_line => io.buffered.read_line
+    read_line => io.buffered.read_line ? str String => str | io.end_of_file => ""
 
     a := read 1
     # read 0 should not read anything
