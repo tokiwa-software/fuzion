@@ -90,38 +90,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * This is only needed for ast.Type, for fe.LibraryType
-   * this is a NOP.
-   *
-   * @param feat the root feature that contains this type.
-   *
-   * @return new type this was replaced with in case generics were found.
-   */
-  AbstractType findGenerics(Resolution res, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
-   * resolve 'abc.this' within a type feature of `abc`.  This is only needed for
-   * ast.Type, for fe.LibraryType this is a NOP.
-   *
-   * @param feat the outer feature this type is declared in.
-   *
-   * @return new type in case this refers to 'abc.this', replaced by type
-   * parameter THIS#TYPE if in type feature.
-   */
-  AbstractType resolveThisType(AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
@@ -148,25 +116,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param outerfeat the outer feature this type is declared in.
    */
   AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
-   * For a Type that is not a generic argument, resolve the feature of that
-   * type.  Unlike Type.resolve(), this does not check the generic arguments, so
-   * this can be used for type inferencing for the actual generics as in a match
-   * case.
-   *
-   * This is only needed for ast.Type, for fe.LibraryType this is a NOP.
-   *
-   * @param feat the outer feature this type is declared in, used for resolution
-   * of generic parameters etc.
-   *
-   * @return new type this was replaced with in case generics were found.
-   */
-  AbstractType resolveFeature(Resolution res, AbstractFeature outerfeat)
   {
     return this;
   }
@@ -200,27 +149,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (checkedForGeneric());
 
     return isGenericArgument() && genericArgument().isOpen();
-  }
-
-
-  /**
-   * Check if this.isOpenGeneric(). If so, create a compile-time error.
-   *
-   * @return true iff !isOpenGeneric()
-   */
-  public boolean ensureNotOpen(HasSourcePosition pos)
-  {
-    boolean result = true;
-
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
-    if (isOpenGeneric())
-      {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos.pos(), genericArgument());
-        result = false;
-      }
-    return result;
   }
 
 

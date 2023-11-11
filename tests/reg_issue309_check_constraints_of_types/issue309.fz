@@ -26,9 +26,9 @@
 
 issue309 is
   a is
-  b Set a is abstract          // 1. should flag an error: Incompatible type parameter
+  b container.Set a is abstract          // 1. should flag an error: Incompatible type parameter
 
-  b(T type) Set T is abstract  // 2. should flag an error: Incompatible type parameter
+  b(T type) container.Set T is abstract  // 2. should flag an error: Incompatible type parameter
 
   c(T type : property.equatable) is
   d c a is abstract            // 3. should flag an error: Incompatible type parameter

@@ -443,7 +443,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         if (res != null)
                           {
-                            af.visit(res.findGenerics);
+                            af.visit(res.resolveTypesOnly);
                           }
                         t = af.returnType().functionReturnType();
                       }

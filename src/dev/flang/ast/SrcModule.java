@@ -69,7 +69,7 @@ public interface SrcModule
   void findDeclaredOrInheritedFeatures(Feature outer);
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
   void checkTypes(Feature f);
-  FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean ignoreNotFound, boolean mayBeOpen);
+  FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean ignoreNotFound);
 
   void addTypeFeature(AbstractFeature outerType,
                       Feature         innerType);

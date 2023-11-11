@@ -167,6 +167,23 @@ public class Case extends AbstractCase
     _field = f;
     _types = l;
     _code  = c;
+    if (f != null)
+      {
+        if (f.returnType().functionReturnType() instanceof UnresolvedType ut)
+          {
+            ut.doIgnoreEmptyActualTypePars();
+          }
+      }
+    if (l != null)
+      {
+        for (var t : l)
+          {
+            if (t instanceof UnresolvedType ut)
+              {
+                ut.doIgnoreEmptyActualTypePars();
+              }
+          }
+      }
   }
 
 
@@ -286,12 +303,8 @@ public class Case extends AbstractCase
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
-    t = t.resolveFeature(res, outer);
+    t = t.resolve(res, outer);
     var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
-    if (!inferGenerics)
-      {
-        t = t.resolve(res, outer);
-      }
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
