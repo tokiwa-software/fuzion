@@ -662,7 +662,7 @@ public class ResolvedNormalType extends ResolvedType
         ResolvedType _resolved = null;
 
         /**
-         * This is a bit ugly, even though this type is a ResovledType, the generics are not.
+         * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         AbstractType resolve(Resolution res, AbstractFeature outerfeat)
         {

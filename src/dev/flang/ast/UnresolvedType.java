@@ -140,7 +140,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * If set, resolution of this type should not check if the actual type
-   * parameters are valid.  This is set for types usind in a match case when the
+   * parameters are valid.  This is set for types used in a match case when the
    * actual type parameters are inferred from the subject type as in
    *
    *   x list i32 := [1,2,3].as_list
@@ -735,7 +735,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Called by Case.java for case entries that may infer atual type parameters
+   * Called by Case.java for case entries that may infer actual type parameters
    * from the subjects.
    */
   void doIgnoreEmptyActualTypePars()
