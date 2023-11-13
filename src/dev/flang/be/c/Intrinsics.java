@@ -92,11 +92,9 @@ public class Intrinsics extends ANY
   {
     put("Type.name"            , (c,cl,outer,in) ->
         {
-          var tmp = new CIdent("tmp");
-          var str = c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl));
-          var rc  = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(c.constString(str, tmp),
-                            tmp.castTo(c._types.clazz(rc)).ret());
+          return c
+            .constString( c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)), true)
+            .ret();
         });
 
     put("concur.atomic.compare_and_swap0",  (c,cl,outer,in) ->
@@ -310,11 +308,11 @@ public class Intrinsics extends ANY
     put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
-          var tmp = new CIdent("tmp");
           var str = CNames.GLOBAL_ARGV.index(A0);
           var rc = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(c.constString(str,CExpr.call("strlen",new List<>(str)), tmp),
-                            tmp.castTo(c._types.clazz(rc)).ret());
+          return c
+            .constString(str, CExpr.call("strlen",new List<>(str)), true)
+            .castTo(c._types.clazz(rc)).ret();
         });
     put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
     put("fuzion.sys.fileio.read"         , (c,cl,outer,in) ->
@@ -771,13 +769,13 @@ public class Intrinsics extends ANY
 
     put("Any.as_string"        , (c,cl,outer,in) ->
         {
-          var res = new CIdent("res");
           var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
           var instname = "instance[" + clname + "]";
           var instchars = instname.getBytes(StandardCharsets.UTF_8);
           var rc = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(c.constString(instchars, res),
-                            res.castTo(c._types.clazz(rc)).ret());
+          return c
+            .constString(instchars, true)
+            .castTo(c._types.clazz(rc)).ret();
         });
 
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
@@ -816,13 +814,12 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.get0", (c,cl,outer,in) ->
         {
-          var tmp = new CIdent("tmp");
           var str = new CIdent("str");
           var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(CStmnt.decl("char *", str),
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
-                            c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
-                            tmp.castTo(c._types.clazz(rc)).ret());
+                            c.constString(str, CExpr.call("strlen",new List<>(str)), true)
+                             .castTo(c._types.clazz(rc)).ret());
         });
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {
