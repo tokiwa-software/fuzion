@@ -101,7 +101,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Souce code position range of this Expression. null if not known.
+   * Source code position range of this Expression. null if not known.
    */
   private SourceRange _range;
 
@@ -530,7 +530,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return value;
       }
-    // Case 2.1: ambigous assignment via subtype
+    // Case 2.1: ambiguous assignment via subtype
     //
     // example:
     //
