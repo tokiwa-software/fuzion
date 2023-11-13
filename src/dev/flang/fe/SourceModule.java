@@ -251,7 +251,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name) ->
                              {
-                               return lookupType(SourcePosition.builtIn, _universe, name, false)
+                               return lookupType(SourcePosition.builtIn, _universe, name, false, false)
                                 ._feature
                                 .selfType();
                              },
@@ -507,7 +507,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)._feature
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0, false)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -1108,35 +1108,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * (i.e., use is qualified with outer).
    *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
-   * FeatureAndOuter.ERROR in case of an error.
-   */
-  public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
-  {
-    return lookupType(pos, outer, name, traverseOuter, false, false);
-  }
-
-
-  /**
-   * Lookup the feature that is referenced in a non-generic type.  There might
-   * be several features with the given name and different argument counts.
-   * Then, only the feature that is a constructor defines the type.
-   *
-   * If there are several such constructors, the type is ambiguous and an error
-   * will be produced.
-   *
-   * Also, if there is no such type, an error will be produced.
-   *
-   * @param pos the position of the type.
-   *
-   * @param outer the outer feature of the type
-   *
-   * @param name the name of the type
-   *
-   * @param traverseOuter true to collect all the features found in outer and
-   * outer's outer (i.e., use is unqualified), false to search in outer only
-   * (i.e., use is qualified with outer).
-   *
-   * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
    */
@@ -1144,8 +1115,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                     AbstractFeature outer,
                                     String name,
                                     boolean traverseOuter,
-                                    boolean ignoreNotFound,
-                                    boolean mayBeOpen)
+                                    boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
       (Errors.any() || outer != Types.f_ERROR);
@@ -1162,8 +1132,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var f = fo._feature;
             if (typeVisible(pos._sourceFile, f, true))
               {
-                if (f.definesType() ||
-                    f.isTypeParameter() && (mayBeOpen || !f.isOpenTypeParameter()))
+                if (f.definesType() || f.isTypeParameter())
                   {
                     type_fs.add(f);
                     result = fo;

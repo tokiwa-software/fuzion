@@ -1229,7 +1229,7 @@ public class Feature extends AbstractFeature
              * this or any of this' outer classes.
              */
             resolveArgumentTypes(res);
-            visit(res.findGenerics);
+            visit(res.resolveTypesOnly);
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1324,7 +1324,7 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_TYPES;
 
         resolveArgumentTypes(res);
-        visit(new ResolveTypes(res));
+        visit(res.resolveTypesFully);
 
         if (hasThisType())
           {
@@ -1334,7 +1334,7 @@ public class Feature extends AbstractFeature
 
         if (_impl._kind == Impl.Kind.FieldActual)
           {
-            _impl.visitInitialValues(new ResolveTypes(res));
+            _impl.visitInitialValues(res.resolveTypesFully);
           }
 
         _state = State.RESOLVED_TYPES;
@@ -2337,11 +2337,7 @@ public class Feature extends AbstractFeature
             res.resolveTypes(this);
           }
         result = resultTypeIfPresent(res);
-        if (result instanceof UnresolvedType rt)
-          {
-            // NYI try to remove this visitation with findGenerics, see PR: #2210
-            result = rt.visit(res.findGenerics,outer());
-          }
+        result = result == null ? null : result.resolve(res, outer());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
       }

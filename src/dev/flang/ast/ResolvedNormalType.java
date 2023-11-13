@@ -579,65 +579,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * resolve this type
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param feat the outer feature this type is declared in, used
-   * for resolution of generic parameters etc.
-   */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
-  {
-    if (PRECONDITIONS) require
-      (outerfeat != null,
-       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
-
-    // NYI: cleanup: Basically, resolution should no longer be needed here, but
-    // be done on UnresolvedType. Need to check how we can move this to
-    // Unresolvedtype.
-    var result = resolveGenerics(declarationPos(), res, outerfeat);
-    result = Types.intern(result);
-    return result;
-  }
-
-
-  /**
-   * For a normal type, resolve the actual type parameters.
-   *
-   * @param pos source code position of the unresolved types whose generics we
-   * are resolving.
-   *
-   * @param res the resolution instance
-   *
-   * @param outerfeat the outer feature this type is declared in.
-   */
-  AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
-  {
-    AbstractType result = this;
-    if (isThisType() && _generics.isEmpty())
-      {
-        this._generics = _feature.generics().asActuals();
-        this._generics.freeze();
-      }
-    this._generics = FormalGenerics.resolve(res, _generics, outerfeat);
-    this._generics.freeze();
-    if (CHECKS) check
-      (Errors.any() || _feature != null);
-    if (result.containsError() ||
-        _feature != null &&
-        !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                           pos.pos(),
-                                                           "type",
-                                                           "Type: " + toString() + "\n"))
-      {
-        result = Types.t_ERROR;
-      }
-    return result;
-  }
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
@@ -711,13 +652,28 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType)Types.intern(
+    return (ResolvedNormalType) Types.intern(
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
         {
           return originalOuterFeature;
         }
+        ResolvedType _resolved = null;
+
+        /**
+         * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
+         */
+        AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+        {
+          if (_resolved == null)
+            {
+              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), _feature, _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+            }
+          return _resolved;
+        }
+
+
       });
   }
 

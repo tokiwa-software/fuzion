@@ -719,10 +719,13 @@ public class Call extends AbstractCall
   boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
   {
     var targetVoid = false;
+
     if (PRECONDITIONS) require
-      (res.state(thiz) == State.RESOLVING_INHERITANCE
+      (thiz.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
+       ||
+       (res.state(thiz) == State.RESOLVING_INHERITANCE
        ? res.state(thiz.outer()).atLeast(State.RESOLVING_DECLARATIONS)
-       : res.state(thiz)        .atLeast(State.RESOLVED_DECLARATIONS));
+       : res.state(thiz)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
     if (_calledFeature == null)
       {
@@ -1010,7 +1013,7 @@ public class Call extends AbstractCall
                                          _target instanceof Universe ||
                                          _target instanceof Current     ? null
                                                                         : _target.asType(res, outer, tp));
-    return result.visit(res.findGenerics, outer);
+    return result.resolve(res, outer);
   }
 
 
@@ -2219,10 +2222,10 @@ public class Call extends AbstractCall
               }
           }
         inferFormalArgTypesFromActualArgs(outer);
-        if (_calledFeature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                                    pos(),
-                                                                    "call",
-                                                                    "Called feature: "+_calledFeature.qualifiedName()+"\n"))
+        if (_calledFeature.generics().errorIfSizeDoesNotMatch(_generics,
+                                                              pos(),
+                                                              "call",
+                                                              "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;
             var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further

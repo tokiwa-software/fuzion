@@ -175,10 +175,10 @@ generics_negative is
     x.f 3 true 5
     x.f "String" false 7  // 47. should flag an error: incompatible argument #1
     x.f 4 3 7             // 48. should flag an error: incompatible argument #2
-    x.f 4 false "false"   // 49. should flag an error: incompatible argument #3
+    x.f 4 false "false"   // 49.a should flag an error: incompatible argument #3
     y F i32 bool i32 := x
     y.f 3 true 5
-    y.f "String" false 8  // 49. should flag an error: incompatible argument #1
+    y.f "String" false 8  // 49.b should flag an error: incompatible argument #1
     y.f 9 10 8            // 50. should flag an error: incompatible argument #2
     y.f 9 false "8"       // 51. should flag an error: incompatible argument #3
   opengenerics12

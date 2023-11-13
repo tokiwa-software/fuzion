@@ -133,12 +133,23 @@ public class Resolution extends ANY
 
 
   /**
-   * FeatureVisitor to call findGenerics() on all types.
+   * FeatureVisitor to call resolve() on all types.
+   *
+   * This is used during state RESOLVING_DECLARATIONS to find called features.
    */
-  FeatureVisitor findGenerics = new FeatureVisitor()
+  FeatureVisitor resolveTypesOnly = new FeatureVisitor()
     {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(Resolution.this, outer); }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer); }
     };
+
+
+  /**
+   * FeatureVisitor to call resolveTypes() on Expr-essions and resolve() on all
+   * types.
+   *
+   * This is used during state RESOLVING_TYPES.
+   */
+  FeatureVisitor resolveTypesFully = new Feature.ResolveTypes(this);
 
 
   final FuzionOptions _options;
@@ -487,8 +498,7 @@ public class Resolution extends ANY
    */
   Expr resolveType(Expr e, AbstractFeature outer)
   {
-    var rt = new Feature.ResolveTypes(this);
-    return e.visit(rt, outer);
+    return e.visit(resolveTypesFully, outer);
   }
 
 

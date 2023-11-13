@@ -1,5 +1,14 @@
 
---CURDIR--/main.fz:67:5: error 1: Could not find called feature
+--CURDIR--/main.fz:54:22: error 1: Type not found
+  priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
+---------------------^^^
+Type 'mod' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'mod'
+in feature: 'a'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/main.fz:67:5: error 2: Could not find called feature
   b.mod_pub // should flag an error should not be callable
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
@@ -8,15 +17,6 @@ In call: 'b.mod_pub'
 To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $FUZION/lib/b.fz:26:17:
   module:public mod_pub is
 ----------------^
-
-
---CURDIR--/main.fz:54:22: error 2: Type not found
-  priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
----------------------^^^
-Type 'mod' was not found, no corresponding feature nor formal type parameter exists
-Type that was not found: 'mod'
-in feature: 'a'
-To solve this, check the spelling of the type you have used.
 
 
 --CURDIR--/main.fz:28:18: error 3: Feature specifying type visibility does not define a type.

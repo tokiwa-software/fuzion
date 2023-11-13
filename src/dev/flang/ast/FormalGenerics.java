@@ -119,8 +119,8 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Check if the given actualGenerics match the formal generics in this. IF
-   * not, create a compiler error.
+   * Check if the number of actualGenerics match this FormalGenerics. If not,
+   * create a compiler error.
    *
    * @param actualGenerics the actual generics to check
    *
@@ -134,25 +134,23 @@ public class FormalGenerics extends ANY
    *
    * @return true iff size and type of actualGenerics does match
    */
-  public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
-                                               SourcePosition pos,
-                                               String detail1,
-                                               String detail2)
+  public boolean errorIfSizeDoesNotMatch(List<AbstractType> actualGenerics,
+                                         SourcePosition pos,
+                                         String detail1,
+                                         String detail2)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
 
-    boolean result = true;
-    if (!sizeMatches(actualGenerics))
+    var result = sizeMatches(actualGenerics);
+    if (!result)
       {
-        result = false;
         AstErrors.wrongNumberOfGenericArguments(this,
                                                 actualGenerics,
                                                 pos,
                                                 detail1,
                                                 detail2);
       }
-    // NYI: check that generics match the generic constraints
     return result;
   }
 

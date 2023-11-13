@@ -68,7 +68,7 @@ public class OuterType extends UnresolvedType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
+       res.state(outerfeat).atLeast(State.RESOLVING_DECLARATIONS));
 
     return outerfeat.outer().thisType(false);
   }
