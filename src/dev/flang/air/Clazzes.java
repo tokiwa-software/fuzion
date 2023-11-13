@@ -279,7 +279,7 @@ public class Clazzes extends ANY
    * @param select in case actualType is a field with open generic result, this
    * chooses the actual field from outer's actual generics. -1 otherwise.
    *
-   * @param clazz the runtime clazz of the outer feature of
+   * @param outer the runtime clazz of the outer feature of
    * actualType.featureOfType.
    *
    * @return the existing or newly created Clazz that represents actualType
@@ -293,7 +293,7 @@ public class Clazzes extends ANY
 
     Clazz o = outer;
     var ao = actualType.featureOfType().outer();
-    while (o != null)
+    while (actualType.featureOfType().isConstructor() && o != null)
       {
         if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
           {
@@ -312,7 +312,6 @@ public class Clazzes extends ANY
             //
             // So instead of testing !o.isRef() we use
             // !o._type.featureOfType().isThisRef().
-            o._type.featureOfType().isConstructor() &&
             !o._type.featureOfType().isThisRef() &&
             !o._type.featureOfType().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
