@@ -2040,6 +2040,12 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void redefMoreRestrictiveVisibility(Feature f, AbstractFeature redefined)
+  {
+    error(f.pos(), "Redefinition must not have more restrictive visibility.",
+      "To solve this, increase the visibility of " + s(f) + " to at least " + s(redefined.visibility()));
+  }
+
 }
 
 /* end of file */

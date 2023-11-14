@@ -84,4 +84,16 @@ To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a 
 ------^^^^^^^^
 To solve this, increase the visibility of 'm.my_false' or do not use this feature in the precondition.
 
-13 errors.
+
+--CURDIR--/main.fz:80:18: error 14: Redefinition must not have more restrictive visibility.
+    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+-----------------^
+To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
+
+
+--CURDIR--/main.fz:82:12: error 15: Redefinition must not have more restrictive visibility.
+    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+-----------^
+To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
+
+15 errors.

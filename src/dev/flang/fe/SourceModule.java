@@ -58,6 +58,7 @@ import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -1276,9 +1277,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public void checkTypes(Feature f)
   {
+    if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
+      {
+        f.setVisbility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
+      }
+
     f.impl().checkTypes(f);
     var args = f.arguments();
-    int ean = args.size();
     var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
@@ -1346,10 +1351,29 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
+    checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
+  }
+
+
+  private void checkRedefVisibility(Feature f)
+  {
+    if (!f.isTypeFeaturesThisType()
+    // Function.call is public while actual lambdas-impl are not.
+    // If lambda-impl were public then result-type and all arg-types
+    // would have to be public as well. Hence this exception.
+    && !f.isLambdaCall())
+    {
+      for (var redefined : f.redefines()) {
+        if (redefined.visibility().ordinal() > f.visibility().ordinal())
+          {
+            AstErrors.redefMoreRestrictiveVisibility(f, redefined);
+          }
+      }
+    }
   }
 
 
