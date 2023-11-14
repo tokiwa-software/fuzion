@@ -273,16 +273,6 @@ public class C extends ANY
           case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_array_i8  -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_i16 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_i32 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_i64 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_u8  -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_u16 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_u32 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_u64 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_f32 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
-          case c_array_f64 -> new Pair<>(constArray(constCl, d), CStmnt.EMPTY);
           case c_Const_String ->
           {
             yield new Pair<>(constString(d, onHeap), CStmnt.EMPTY);
@@ -381,7 +371,7 @@ public class C extends ANY
     public CExpr arrayInit(byte[] d, int elementType)
     {
       var bytesPerField = _fuir.clazzBytes(elementType);
-      return new CExpr() {
+      var result = new CExpr() {
         int precedence()
         {
           return 0;
@@ -390,27 +380,30 @@ public class C extends ANY
         void code(CString sb)
         {
           sb.append("(" + _names.struct(elementType) + "[]){");
-          for(int i = 0; i < d.length; i = i + bytesPerField)
+          for (int i = 0; i < d.length; i = i + bytesPerField)
             {
               var b = ByteBuffer.wrap(d, i, bytesPerField);
               byte[] bb = new byte[b.remaining()];
               b.get(bb);
               var cd = constData(elementType, bb, false);
-              if (CHECKS) check
-                (cd._v1.code().isEmpty()); // NYI if constant has side-effects...
-              cd
-                ._v0
-                .code(sb);
+              cd._v0
+                .code(sb.append("\n"));
               if (i + bytesPerField != d.length)
                 {
-                  sb.append(", ");
+                  sb.append(",");
                 }
             }
           sb.append("}");
         }
-      }
-      // cast could be "struct fzT_fuzion__sys_RPointer *"
-      .castTo("void *");
+      };
+      return switch (_fuir.getSpecialId(elementType))
+        {
+          // NYI why do we have to use heap alloc here?
+        case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
+          yield CExpr.call(CNames.HEAP_CLONE._name, new List<>(result, CExpr.int32const(d.length)));
+        default:
+          yield result.castTo("void *");
+        };
     }
 
 
