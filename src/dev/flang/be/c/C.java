@@ -935,7 +935,7 @@ public class C extends ANY
             ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
             var tvar = _names.newTemp();
             var tt0 = _types.clazz(tc);
-            ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
+            ol.add(CStmnt.decl(tt0, tvar, tvalue));
             tvalue = tvar;
           }
         if (isCall && _fuir.hasData(rt) && ccs.length > 2)
