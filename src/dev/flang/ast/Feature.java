@@ -114,6 +114,15 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is visiblity explicitly specified in source code (or already set)?
+   */
+  public boolean isVisibilitySpecified()
+  {
+    return _visibility != Visi.UNSPECIFIED;
+  }
+
+
+  /**
    * This is used for feature defined using `choice of`
    * to set same visibility for choice elements as for choice in Parser.
    *
@@ -122,7 +131,7 @@ public class Feature extends AbstractFeature
   public void setVisbility(Visi v)
   {
     if (PRECONDITIONS) require
-      (state() == State.LOADING);
+      (_visibility == Visi.UNSPECIFIED);
 
     _visibility = v;
   }
@@ -2546,6 +2555,15 @@ public class Feature extends AbstractFeature
     return (other instanceof Feature of)
       ? _id - of._id
       : +1;
+  }
+
+
+  /**
+   * Is this the `call` implementation of a lambda?
+   */
+  public boolean isLambdaCall()
+  {
+    return false;
   }
 
 

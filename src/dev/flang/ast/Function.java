@@ -262,8 +262,14 @@ public class Function extends ExprWithPos
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var f = new Feature(pos(), rt, new List<String>("call"), a, _inherits, _contract, new Impl(_expr.pos(), _expr, im));
-            this._feature = f;
+            _feature = new Feature(pos(), rt, new List<String>("call"), a, _inherits, _contract, new Impl(_expr.pos(), _expr, im))
+              {
+                @Override
+                public boolean isLambdaCall()
+                {
+                  return true;
+                }
+              };
 
             var inheritsName = Types.FUNCTION_NAME;
             if (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2)
@@ -278,7 +284,7 @@ public class Function extends ExprWithPos
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Expr> expressions = new List<Expr>(f);
+            List<Expr> expressions = new List<Expr>(_feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
@@ -293,8 +299,8 @@ public class Function extends ExprWithPos
             if (inferResultType)
               {
                 res.resolveDeclarations(_wrapper);
-                res.resolveTypes(f);
-                result = f.resultType();
+                res.resolveTypes(_feature);
+                result = _feature.resultType();
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
@@ -510,14 +516,21 @@ public class Function extends ExprWithPos
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
-            Feature fcall = new Feature(pos(), Visi.PUB,
+            Feature fcall = new Feature(pos(), Visi.PRIV,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
                                         formal_args,
                                         NO_CALLS,
                                         Contract.EMPTY_CONTRACT,
-                                        new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef));
+                                        new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef))
+                                        {
+                                          @Override
+                                          public boolean isLambdaCall()
+                                          {
+                                            return true;
+                                          }
+                                        };
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();

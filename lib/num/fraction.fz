@@ -81,12 +81,12 @@ is
 
   # identity element for 'infix +'
   #
-  module fixed type.zero => B.zero ⁄ B.one
+  public fixed type.zero => B.zero ⁄ B.one
 
 
   # identity element for 'infix *'
   #
-  module fixed type.one => B.one ⁄ B.one
+  public fixed type.one => B.one ⁄ B.one
 
 
   # equality

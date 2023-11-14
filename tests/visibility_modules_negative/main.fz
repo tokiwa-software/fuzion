@@ -68,4 +68,20 @@ public m =>
   feat1(arg1 b.mod_pub) is // even though type is usable
   b.get_mod_pub.child // and we can call feature on the type
 
+
+
+  # Redefinition must not have more restrictive visibility.
+  redef_test is
+    public b unit is
+      unit
+    public e unit is abstract
+
+  redef_test_0 : redef_test is
+    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+      unit
+    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+      unit
+
+
+
   unit
