@@ -2530,6 +2530,8 @@ hw25 is
       !ia.type().containsThisType() &&
       // NYI nested arrays
       ia.elementType().featureOfType().compareTo(Types.resolved.f_array) != 0 &&
+      // some backends have special handling for array void.
+      ia.elementType().compareTo(Types.resolved.t_void) != 0 &&
       ia._elements
         .stream()
         .allMatch(el -> {
