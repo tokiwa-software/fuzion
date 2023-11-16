@@ -1205,7 +1205,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            for (AbstractCall c : heir.findInheritanceChain(outer()))
+            a = AbstractFeature.handDownStatic(res, inh, a, heir);
+          }
+      }
+    return a;
+  }
+
+  public static AbstractType handDownStatic(List<AbstractCall> inh, AbstractType a, AbstractFeature heir)
+  {
+    return handDownStatic(null, inh, new AbstractType[] { a }, heir)[0];
+  }
+  public static List<AbstractType> handDownStatic(List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
+  {
+    var ar1 = a.toArray(new AbstractType[a.size()]);
+    var ar2 = handDownStatic(null, inh, ar1, heir);
+    var al = new List<AbstractType>(ar2);
+    return al;
+  }
+  public static AbstractType[] handDownStatic(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  {
+            for (AbstractCall c : inh)
               {
                 for (int i = 0; i < a.length; i++)
                   {
@@ -1233,10 +1252,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       }
                   }
               }
-          }
-      }
-    return a;
+            return a;
   }
+
 
 
   /**
@@ -1256,7 +1274,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       res.state(heir).atLeast(State.CHECKING_TYPES1));
+       res == null || res.state(heir).atLeast(State.CHECKING_TYPES1));
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 
@@ -1268,7 +1286,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Find the chain of inheritance calls from this to its parent f.
+   * Find the chain of inheritance calls from this to its parent ancestor.
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result

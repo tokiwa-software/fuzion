@@ -452,6 +452,15 @@ public class List<T>
       }
     return g;
   }
+  public List<T> flatMap(Function<T,List<T>> f)
+  {
+    var result = new List<T>();
+    for (var i = 0; i < size(); i++)
+      {
+        result.addAll(f.apply(get(i)));
+      }
+    return result;
+  }
 
 
   /**

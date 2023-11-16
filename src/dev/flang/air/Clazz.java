@@ -659,11 +659,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.any() || !t.isOpenGeneric());
 
-    t = t.applyToGenericsAndOuter(x -> actualType(x));
-    t = replaceThisType(t);
-
-    return t.isThisType() ? findOuter(t.featureOfType(), t.featureOfType())
-                          : Clazzes.clazz(actualType(t, -1));
+    return Clazzes.clazz(actualType(t));
   }
 
 
@@ -1508,8 +1504,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * visit all the code in f, including inherited features, by fc.
    */
-  private void inspectCode(ExpressionVisitor fc, AbstractFeature f)
+  private void inspectCode(List<AbstractCall> inh, AbstractFeature f, AbstractFeature child)
   {
+    var fc = new EV(inh, f, child);
     f.visitExpressions(fc);
     Stream
       .concat(f.contract().req.stream(), f.contract().ens.stream())
@@ -1543,11 +1540,41 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
         if (cf != null)
           {
-            inspectCode(fc, cf);
+            var inh1 = new List<AbstractCall>();
+            inh1.add(c);
+            inh1.addAll(inh);
+            inspectCode(inh1, cf, child);
           }
       }
   }
 
+
+  class EV implements ExpressionVisitor
+  {
+    List<AbstractCall> _inh;
+    AbstractFeature _f, _child;
+    EV(List<AbstractCall> inh, AbstractFeature f, AbstractFeature child)
+      {
+        _inh = inh;
+        _f = f;
+        _child = child;
+      }
+    public void action (Expr e)
+    {
+      if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this, _inh, _child); }
+      else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this, _inh, _child); }
+      else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this, _inh, _child); }
+      else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this, _inh, _child); }
+      else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this, _inh, _child); }
+      else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this, _inh, _child); }
+      else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this, _inh, _child); }
+      else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this, _inh, _child); }
+    }
+    public void action(AbstractCase c)
+    {
+      Clazzes.findClazzes(c, Clazz.this, _inh, _child);
+    }
+  }
 
   /**
    * Find all inner clazzes of this that are referenced when this is executed
@@ -1557,25 +1584,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (this._type != Types.t_ADDRESS)
       {
         var f = feature();
-        inspectCode(new ExpressionVisitor()
-          {
-            public void action (Expr e)
-            {
-              if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this); }
-              else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this); }
-              else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this); }
-              else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this); }
-              else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this); }
-              else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this); }
-            }
-            public void action(AbstractCase c)
-            {
-              Clazzes.findClazzes(c, Clazz.this);
-            }
-          },
-          f);
+        inspectCode(new List<>(), f, f);
 
         for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
           {
@@ -2079,7 +2088,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // the inherits call
         if (outer == null)
           {
-            outer = Clazzes.clazz(target, this);
+            outer = Clazzes.clazz(target, this, new List<>(), feature());
           }
         if (CHECKS) check
           (result == null || result == outer);
@@ -2205,6 +2214,42 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For a direct parent p of this clazz's feature, find the outer clazz of the
+   * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
+   * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
+   * `getOuter(i32)` will be `universe`.
+   *
+   * @param p a feature that is either equal to this or a direct parent of x.
+   *
+   * @param pos source position for error reporting only.
+   */
+  Clazz getOuter(AbstractFeature p, HasSourcePosition pos)
+  {
+    var res =
+      p.hasOuterRef()        ? /* we either inherit from p as in
+                                *
+                                *     x : a.b.c.p is ...
+                                *
+                                * or x = p.  So the outer of `x` with respect
+                                * to `p` is `a.b.c`, which is the result type
+                                * of `p`'s outer ref:
+                                */
+                                lookup(p.outerRef(), pos).resultClazz() :
+      p.isUniverse() ||
+      p.outer().isUniverse() ? Clazzes.universe.get()
+                             : /* a field or choice, so there is no inherits
+                                * call that could select a different outer:
+                                 */
+                               _outer;
+
+    if (CHECKS) check
+      (res != null);
+
+    return res;
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -2236,11 +2281,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var ft = f.resultType();
-        var t = _outer.actualType(ft, _select);
-        result = actualClazz(t);
+        result = Clazzes.down(f.resultType(), _select, this, new List<>(), feature(), feature());
         if (result.feature().isTypeFeature())
           {
-            result = actualClazz(result._type.generics().get(0)).typeClazz();
+            var ac = Clazzes.down(result._type.generics().get(0), this, new List<>(), feature(), feature());
+            result = ac.typeClazz();
           }
       }
     return result;
@@ -2378,6 +2423,76 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return result;
   }
 
+
+  List<AbstractType> handDownAllLevels2(List<AbstractType> t0, List<AbstractCall> inh, AbstractFeature child, HasSourcePosition pos)
+  {
+    var t = AbstractFeature.handDownStatic(inh, t0, child);
+    var o = child;
+    var oc = this;
+    while (!o.isUniverse() && o != null && oc != null &&
+            /* This case, then stop at io.out.#type vs. io.out
+
+oc: (((io.#type io).out.#type io.out).default_print_handler).println of: io.Print_Handler.println false false
+oc: ((io.#type io).out.#type io.out).default_print_handler of: io.Print_Handler true true
+oc: (io.#type io).out.#type io.out of: io true true
+oc: io.#type io of: universe true true
+
+             */
+           !(oc.feature().isTypeFeature() && !o.isTypeFeature()))
+      {
+        var f = oc.feature();
+        if (oc.feature().isConstructor())
+          {
+            var inh2 = oc.feature().tryFindInheritanceChain(o);
+            t = AbstractFeature.handDownStatic(inh2, t, o);
+          }
+        if (oc.feature().isConstructor()) // NYI: remove!
+          {
+            var ocf = oc;
+            var t1 = t.flatMap(x -> x.applyTypeParsNoInheritanceOpen(ocf._type));
+            var t2 = t1.map(x -> x.replace_this_type_by_actual_outer(ocf._type));
+            t = t2;
+          }
+        oc = oc.getOuter(o,pos);
+        o = o.outer();
+      }
+    return t;
+  }
+
+
+  AbstractType handDownAllLevels2(AbstractType t0, List<AbstractCall> inh, AbstractFeature child, HasSourcePosition pos)
+  {
+    var t = AbstractFeature.handDownStatic(inh, t0, child);
+    var o = child;
+    var oc = this;
+    while (!o.isUniverse() && o != null && oc != null &&
+            /* This case, then stop at io.out.#type vs. io.out
+
+oc: (((io.#type io).out.#type io.out).default_print_handler).println of: io.Print_Handler.println false false
+oc: ((io.#type io).out.#type io.out).default_print_handler of: io.Print_Handler true true
+oc: (io.#type io).out.#type io.out of: io true true
+oc: io.#type io of: universe true true
+
+             */
+           !(oc.feature().isTypeFeature() && !o.isTypeFeature()))
+      {
+        var f = oc.feature();
+        if (oc.feature().isConstructor())
+          {
+            var inh2 = oc.feature().tryFindInheritanceChain(o);
+            t = AbstractFeature.handDownStatic(inh2, t, o);
+          }
+        if (oc.feature().isConstructor()) // NYI: remove!
+          {
+            var t1 = t.applyTypeParsNoInheritance(oc._type);
+            var t2 = t1.replace_this_type_by_actual_outer(oc._type);
+            t = t2;
+          }
+        oc = oc.getOuter(o,pos);
+        o = o.outer();
+      }
+    return t;
+  }
 
   /**
    * For an open generic type ft find the actual type parameters within this
