@@ -1205,25 +1205,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            a = AbstractFeature.handDownStatic(res, inh, a, heir);
+            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
           }
       }
     return a;
   }
 
-  public static List<AbstractType> handDownStatic(List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        a = a.flatMap(t -> t.isOpenGeneric()
-                           ? t.genericArgument().replaceOpen(actualTypes)
-                           : new List<>(t.applyTypePars(f, actualTypes)));
-      }
-    return a;
-  }
-  public static AbstractType[] handDownStatic(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+
+  /**
+   * Helper for handDown() to hadn down an array of types along a given inheritance chain.
+   *
+   * @param res the resolution instance
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @param a the original array of types that is to be handed down
+   *
+   * @param heir the feature that inherits the types
+   *
+   * @return a new array of types as they are visible in heir. The length might
+   * be different due to open type parameters being replaced by a list of types.
+   */
+  static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
@@ -1244,10 +1247,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             else
               {
                 var actualTypes = c.actualTypeParameters();
-                if (res != null)
-                  {
-                    actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
-                  }
+                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
                 ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                 a[i] = ti;
               }

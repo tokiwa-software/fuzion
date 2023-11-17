@@ -1032,7 +1032,7 @@ public class Clazzes extends ANY
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (tclazz != c_void.get())
           {
-            var at = AbstractFeature.handDownStatic(inh, c.actualTypeParameters(), outerClazz.feature());
+            var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
                                                             outerClazz.actualGenerics(at),
                                                             false),

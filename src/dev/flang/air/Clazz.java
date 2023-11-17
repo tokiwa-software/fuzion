@@ -102,6 +102,46 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
+  /**
+   * Expression visitor to find clazzes used by expressions.
+   */
+  class EV implements ExpressionVisitor
+  {
+    List<AbstractCall> _inh;
+
+    /**
+     * Constructor to visit expressions in the current clazz that were inherited
+     * by teh given inh chain.
+     *
+     * @param inh for code that is added due to inlining of inherits calls, this
+     * gives the chain of inherits calls that brought the code here, from the
+     * parent down to the child feature.
+     */
+    EV(List<AbstractCall> inh)
+      {
+        _inh = inh;
+      }
+
+    public void action (Expr e)
+    {
+      if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this, _inh); }
+      else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
+      else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
+      else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this, _inh); }
+      else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this, _inh); }
+      else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this, _inh); }
+      else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this, _inh); }
+      else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this, _inh); }
+    }
+
+    public void action(AbstractCase c)
+    {
+      Clazzes.findClazzes(c, Clazz.this, _inh);
+    }
+
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -1442,7 +1482,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private void inspectCode(List<AbstractCall> inh, AbstractFeature f)
   {
-    var fc = new EV(inh, f);
+    var fc = new EV(inh);
     f.visitExpressions(fc);
     Stream
       .concat(f.contract().req.stream(), f.contract().ens.stream())
@@ -1484,32 +1524,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
   }
 
-
-  class EV implements ExpressionVisitor
-  {
-    List<AbstractCall> _inh;
-    AbstractFeature _f;
-    EV(List<AbstractCall> inh, AbstractFeature f)
-      {
-        _inh = inh;
-        _f = f;
-      }
-    public void action (Expr e)
-    {
-      if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this, _inh); }
-      else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
-      else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
-      else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this, _inh); }
-      else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, Clazz.this, _inh); }
-      else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this, _inh); }
-      else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this, _inh); }
-      else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this, _inh); }
-    }
-    public void action(AbstractCase c)
-    {
-      Clazzes.findClazzes(c, Clazz.this, _inh);
-    }
-  }
 
   /**
    * Find all inner clazzes of this that are referenced when this is executed
@@ -2356,6 +2370,31 @@ public class Clazz extends ANY implements Comparable<Clazz>
         }
       }
     return result;
+  }
+
+
+  /**
+   * Hnd down a list of types along a given inheritance chain.
+   *
+   * @param tl the original list of types to be handed down
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @return a new list of types as they are appear after inheritance. The
+   * length might be different due to open type parameters being replaced by a
+   * list of types.
+   */
+  public List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
+  {
+    for (AbstractCall c : inh)
+      {
+        var f = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        tl = tl.flatMap(t -> t.isOpenGeneric()
+                             ? t.genericArgument().replaceOpen(actualTypes)
+                             : new List<>(t.applyTypePars(f, actualTypes)));
+      }
+    return tl;
   }
 
 
