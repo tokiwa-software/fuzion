@@ -829,7 +829,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (g.isOpen())
               {
-                result = g.replaceOpen(actualGenerics).get(select);
+                var tl = g.replaceOpen(actualGenerics);
+                if (CHECKS) check
+                  (Errors.any() || select >= 0 && select <= tl.size());
+                if (select >= 0 && select <= tl.size())
+                  {
+                    result = tl.get(select);
+                  }
+                else
+                  {
+                    result = Types.t_ERROR;
+                  }
               }
             else
               {

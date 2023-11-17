@@ -2192,7 +2192,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                                _outer;
 
     if (CHECKS) check
-      (res != null);
+      (Errors.any() || res != null);
 
     return res;
   }
@@ -2429,7 +2429,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       !t.isOpenGeneric() || (select >= 0),
+       Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
     for (AbstractCall c : inh)
@@ -2473,10 +2473,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)),
+       Errors.any() || inh != null,
        pos != null);
 
     var o = feature();
-    var t1 = handDownThroughInheritsCalls(t, select, inh);
+    var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
     var oc = this;
     while (!o.isUniverse() && o != null && oc != null &&
 
@@ -2494,14 +2495,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var f = oc.feature();
         var inh2 = oc.feature().tryFindInheritanceChain(o);
-        t1 = handDownThroughInheritsCalls(t1, select, inh2);
-        t1 = t1.applyTypeParsLocally(oc._type, select);
-        if (inh2.size() > 0)
+        if (CHECKS) check
+          (Errors.any() || inh2 != null);
+        if (inh2 != null)
           {
-            o = oc.feature();
+            t1 = handDownThroughInheritsCalls(t1, select, inh2);
+            t1 = t1.applyTypeParsLocally(oc._type, select);
+            if (inh2.size() > 0)
+              {
+                o = oc.feature();
+              }
           }
         t1 = t1.replace_this_type_by_actual_outer(oc._type);
-        oc = oc.getOuter(o,pos);
+        oc = oc.getOuter(o, pos);
         o = o.outer();
       }
 
