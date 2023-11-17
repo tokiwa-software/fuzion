@@ -1433,7 +1433,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         if (!arg.isTypeFeaturesThisType())
           {
-            var s = arg.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+            var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
             if (!s.isEmpty())
               {
                 AstErrors.argTypeMoreRestrictiveVisbility(f, arg, s);
@@ -1450,12 +1450,35 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void checkResultTypeVisibility(Feature f)
   {
-    var s = f.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+    var s = f.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
     if (!s.isEmpty())
       {
         AstErrors.resultTypeMoreRestrictiveVisibility(f, s);
       }
   }
+
+
+  /**
+   * Returns the effective visibility of a feature.
+   *
+   * Example:
+   * A feature might be marked as public but one its
+   * outer features type visibility is private.
+   * Then the features effective visibility is also private.
+   */
+  private Visi effectiveFeatureVisibility(Feature f)
+  {
+    var result = f.visibility().featureVisibility();
+    var o = f.outer();
+    while (o != null)
+      {
+        var ov = o.visibility().typeVisibility();
+        result = ov.ordinal() < result.ordinal() ? ov : result;
+        o = o.outer();
+      }
+    return result;
+  }
+
 
 
   /*---------------------------  library file  --------------------------*/

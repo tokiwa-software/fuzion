@@ -51,7 +51,7 @@ issue293 is
 
 
   # a reducing function takes a previous result and a value and returns a new result
-  public reducing_fn(TACC, T type) ref : Function TACC TACC T is
+  reducing_fn(TACC, T type) ref : Function TACC TACC T is
 
   # TACC result     type
   # B    input      type
