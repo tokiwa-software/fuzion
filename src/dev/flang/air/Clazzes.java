@@ -718,6 +718,9 @@ public class Clazzes extends ANY
    * @param ec the expected result clazz of e
    *
    * @param outerClazz the current clazz
+   *
+   * @param inh the inherintance chain that brought the code here (in case it is
+   * an inlined inherits call).
    */
   static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz, List<AbstractCall> inh)
   {
@@ -1008,10 +1011,8 @@ public class Clazzes extends ANY
   /**
    * Determine the result clazz of an Expr.
    *
-   * NYI: Temporary solution, will be replaced by dynamic calls.
-   *
-   * This is fairly inefficient compared to dynamic
-   * binding.
+   * @param inh the inherintance chain that brought the code here (in case it is
+   * an inlined inherits call).
    */
   public static Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh)
   {

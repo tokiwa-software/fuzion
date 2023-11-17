@@ -2374,7 +2374,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Hnd down a list of types along a given inheritance chain.
+   * Hand down a list of types along a given inheritance chain.
    *
    * @param tl the original list of types to be handed down
    *

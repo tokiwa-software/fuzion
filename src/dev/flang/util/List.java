@@ -452,6 +452,15 @@ public class List<T>
       }
     return g;
   }
+
+
+  /**
+   * Create a mapping of this list by applying f to all elements and
+   * concatenating the resulting lists.
+   *
+   * @return a new list that is the concatenation of the results of applying f
+   * to all elements.
+   */
   public List<T> flatMap(Function<T,List<T>> f)
   {
     var result = new List<T>();
