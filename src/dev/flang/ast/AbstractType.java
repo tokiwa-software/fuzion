@@ -761,6 +761,119 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param target the target whose actuals type parameters should be applied to
+   * this.
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractType target, int select)
+  {
+    if (PRECONDITIONS) require
+      (target != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
+
+    var result = this;
+    if (dependsOnGenerics())
+      {
+        result = result.applyTypeParsLocally(target.featureOfType(), target.generics(), select);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       actualGenerics != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
+
+    var result = this;
+    if (result.isGenericArgument())
+      {
+        Generic g = result.genericArgument();
+        if (g.formalGenerics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+          {
+            g = g.typeFeatureOrigin();
+          }
+        if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+          {
+            if (g.isOpen())
+              {
+                result = g.replaceOpen(actualGenerics).get(select);
+              }
+            else
+              {
+                result = g.replace(actualGenerics);
+              }
+          }
+      }
+    else
+      {
+        var generics = result.generics();
+        var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
+          ? actualGenerics
+          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, -1));
+        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
+
+        /* types of type features require special handling since the type
+         * feature has one additional first type parameter --the underlying
+         * type: this_type--, and all other type parameters need to be converted
+         * to the actual type relative to that.
+         */
+        if (isTypeType())
+          {
+            var this_type = g2.get(0);
+            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
+                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
+                                                           : this_type.actualType(x));
+          }
+
+        if (g2 != result.generics() ||
+            o2 != result.outer()       )
+          {
+            var hasError = o2 == Types.t_ERROR;
+            for (var t : g2)
+              {
+                hasError = hasError || (t == Types.t_ERROR);
+              }
+            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -1060,7 +1173,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
    */
-  private AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
   {
     return replace_this_type_by_actual_outer(tt, null);
   }
