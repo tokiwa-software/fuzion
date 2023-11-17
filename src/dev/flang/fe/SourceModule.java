@@ -759,7 +759,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         // Module.declaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = new TreeMap<>();
       }
-    findInheritedFeatures(d._declaredOrInheritedFeatures, outer);
+    findInheritedFeatures(d._declaredOrInheritedFeatures, outer, _dependsOn);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
   }
@@ -968,6 +968,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /*--------------------------  feature lookup  -------------------------*/
+
+
+  @Override
+  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
+  {
+    return this.declaredOrInheritedFeatures(outer, _dependsOn);
+  }
 
 
   /**

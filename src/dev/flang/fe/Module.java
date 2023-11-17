@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -42,8 +42,10 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourceFile;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 
@@ -193,8 +195,10 @@ public abstract class Module extends ANY
    * @param set the set to add inherited features to
    *
    * @param outer the inheriting feature
+   *
+   * @param modules the additional modules where we should look for declared or inherited features
    */
-  void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer)
+  void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, Module[] modules)
   {
     for (var p : outer.inherits())
       {
@@ -207,7 +211,7 @@ public abstract class Module extends ANY
             data(cf)._heirs.add(outer);
             resolveDeclarations(cf);
 
-            for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+            for (var fnf : declaredOrInheritedFeatures(cf, modules).entrySet())
               {
                 var fn = fnf.getKey();
                 var f = fnf.getValue();
@@ -308,13 +312,13 @@ public abstract class Module extends ANY
     var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
-    var definesType = af.definesType() || ignoreDefinesType;
 
             // generated inline code may access base library features
     return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
-      || definesType && (usedIn.sameAs(definedIn)
-      || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
-      || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB);
+      || (usedIn.sameAs(definedIn)
+          || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
+          || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB)
+        && (af.definesType() || ignoreDefinesType);
   }
 
 
@@ -362,8 +366,10 @@ public abstract class Module extends ANY
    * module.  Result is never null.
    *
    * @param outer the declaring feature
+   *
+   * @param modules the additional modules where we should look for declared or inherited features
    */
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
@@ -377,51 +383,68 @@ public abstract class Module extends ANY
             // NYI: cleanup: See #462: Remove once sub-directories are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
+          }
+        s = new TreeMap<>();
 
-            s = olf._libModule.declaredFeatures(olf);
-            olf._libModule.findInheritedFeatures(s, olf);
-            for (var e : declaredFeatures(outer).entrySet())
-              {
-                var f = e.getValue();
-                if (!(f instanceof LibraryFeature flf && flf._libModule == olf._libModule))
-                  { // f is a qualified feature that was added in a different module
-                    var fn = f.featureName();
-                    var existing = s.get(fn);
-                    // NYI: We need proper visibility handling, e.g., it might
-                    // be ok to have
-                    //
-                    // * modules 'A', 'B', 'C' where 'A' declares 'a' with a
-                    //   private feature 'a.f' and 'B' adds its own 'a.f' used
-                    //   by 'C' that depends on 'B'
-                    //
-                    // * modules 'A', 'B', 'C', 'D' where 'A' declares 'a' with
-                    //   no inner feature 'a.f', but both B and C declare
-                    //   different 'a.f' that are visible to but not used by 'D'
-                    //
-                    // * same as previous, but there is some syntax for 'D' to
-                    //   chose 'a.[B].f' or 'a.[C].f'.
-                    //
-                    if (existing != null && f != existing)
-                      {
-                        AstErrors.duplicateFeatureDeclaration(f.pos(), outer, s.get(fn));
-                      }
-                    else
-                      {
-                        s.put(f.featureName(), f);
-                      }
-                  }
-              }
-          }
-        else
+        // first we search in additional modules
+        for (Module libraryModule : modules)
           {
-            s = declaredFeatures(outer);
+            for (var e : libraryModule.declaredFeatures(outer).entrySet())
+              {
+                addToDeclaredOrInherited(s, e, outer);
+              }
+            libraryModule.findInheritedFeatures(s, outer, modules);
           }
+
+        // then we search in this module
+        for (var e : declaredFeatures(outer).entrySet())
+          {
+            addToDeclaredOrInherited(s, e, outer);
+          }
+
         // NYI: cleanup: See #479: there are two places that initialize
         // _declaredOrInheritedFeatures: this place and
         // SourceModule.findDeclaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = s;
       }
     return s;
+  }
+
+
+  /**
+   * Add feature in `e` to `s`, raising an error if feature is already defined.
+   *
+   * @param s set of declared or inherited features.
+   *
+   * @param e the newly found feature to be added
+   *
+   * @param outer the declaring feature
+   */
+  private void addToDeclaredOrInherited(SortedMap<FeatureName, AbstractFeature> s, Entry<FeatureName, AbstractFeature> e,
+    AbstractFeature outer)
+  {
+    var f = e.getValue();
+    // f is a qualified feature
+    var fn = f.featureName();
+    var existing = s.get(fn);
+    if (existing != null && f != existing && !sameModule(f, outer))
+      {
+        AstErrors.duplicateFeatureDeclaration(f.pos(), outer, existing);
+      }
+    else if (sameModule(f, outer) || visibleFor(f, outer))
+      {
+        s.put(f.featureName(), f);
+      }
+  }
+
+
+  /**
+   * Are `a` and `b` defined in the same module?
+   */
+  private boolean sameModule(AbstractFeature a, AbstractFeature b)
+  {
+    return a instanceof Feature && b instanceof Feature
+     || (a instanceof LibraryFeature lf && b instanceof LibraryFeature olf && lf._libModule == olf._libModule);
   }
 
 }
