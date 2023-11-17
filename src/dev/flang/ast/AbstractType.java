@@ -496,23 +496,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-  private static List<AbstractType> applyTypeParsNoInheritance(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics));
-
-    List<AbstractType> result;
-    if (genericsToReplace instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f))  /* shortcut for properly handling open generics list */
-      {
-        result = actualGenerics;
-      }
-    else
-      {
-        result = genericsToReplace.map(t -> t.applyTypeParsNoInheritance(f, actualGenerics));
-      }
-    return result;
-  }
 
 
   /**
@@ -649,54 +632,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-  public AbstractType applyTypeParsNoInheritance(AbstractType target)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * featureOfType.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    if (dependsOnGenerics())
-      {
-        if (target.isGenericArgument())
-          {
-            result = result.applyTypeParsNoInheritance(target.genericArgument().constraint());
-          }
-        else
-          {
-            result = result.applyTypeParsNoInheritance(target.featureOfType(), target.generics());
-            if (target.outer() != null)
-              {
-                result = result.applyTypeParsNoInheritance(target.outer());
-              }
-          }
-      }
-    return result;
-  }
-  public List<AbstractType> applyTypeParsNoInheritanceOpen(AbstractType target)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * featureOfType.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
-    var result = new List<AbstractType>(this);
-    if (dependsOnGenerics())
-      {
-        if (target.isGenericArgument())
-          {
-            result = new List<>(applyTypeParsNoInheritance(target.genericArgument().constraint()));
-          }
-        else
-          {
-            result = new List<>(applyTypeParsNoInheritanceOpen(target.featureOfType(), target.generics()));
-            if (target.outer() != null)
-              {
-                result = result.flatMap(x -> x.applyTypeParsNoInheritanceOpen(target.outer()));
-              }
-          }
-      }
-    return result;
-  }
 
 
   /**
@@ -824,15 +759,64 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return result;
   }
 
-  public AbstractType applyTypeParsNoInheritance(AbstractFeature f, List<AbstractType> actualGenerics)
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param target the target whose actuals type parameters should be applied to
+   * this.
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractType target, int select)
   {
     if (PRECONDITIONS) require
-      (f != null);
+      (target != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
 
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
+    var result = this;
+    if (dependsOnGenerics())
+      {
+        result = result.applyTypeParsLocally(target.featureOfType(), target.generics(), select);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       actualGenerics != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
+
     var result = this;
     if (result.isGenericArgument())
       {
@@ -843,12 +827,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
-            result = g.replace(actualGenerics);
+            if (g.isOpen())
+              {
+                result = g.replaceOpen(actualGenerics).get(select);
+              }
+            else
+              {
+                result = g.replace(actualGenerics);
+              }
           }
       }
     else
       {
-        var g2 = applyTypeParsNoInheritance(f, result.generics(), actualGenerics);
+        var generics = result.generics();
+        var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
+          ? actualGenerics
+          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, -1));
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
         /* types of type features require special handling since the type
@@ -872,76 +866,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 hasError = hasError || (t == Types.t_ERROR);
               }
-            result = hasError ? Types.t_ERROR : result.applyTypeParsNoInheritance(g2, o2);
-          }
-      }
-    result = result;
-
-    return result;
-  }
-  public List<AbstractType> applyTypeParsNoInheritanceOpen(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
-    var result = new List<AbstractType>(this);
-    if (isGenericArgument())
-      {
-        Generic g = genericArgument();
-        if (g.formalGenerics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-          {
-            g = g.typeFeatureOrigin();
-          }
-        if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            if (g.isOpen())
-              {
-                result = g.replaceOpen(actualGenerics);
-              }
-            else
-              {
-                result = new List<>(g.replace(actualGenerics));
-              }
-          }
-      }
-    else
-      {
-        var g2 = applyTypeParsNoInheritance(f, generics(), actualGenerics);
-        var o2 = (outer() == null) ? null : outer().applyTypePars(f, actualGenerics);
-
-        /* types of type features require special handling since the type
-         * feature has one additional first type parameter --the underlying
-         * type: this_type--, and all other type parameters need to be converted
-         * to the actual type relative to that.
-         */
-        if (isTypeType())
-          {
-            var this_type = g2.get(0);
-            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
-                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
-                                                           : this_type.actualType(x));
-          }
-
-        if (g2 != generics() ||
-            o2 != outer()       )
-          {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
-              {
-                hasError = hasError || (t == Types.t_ERROR);
-              }
-            result = new List<>(hasError ? Types.t_ERROR : applyTypeParsNoInheritance(g2, o2));
+            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
           }
       }
     return result;
   }
 
-  public static String _msg = "";
-  public static boolean CLAZZES_PHASE = false;
 
   /**
    * For a type that is not a type parameter, create a new variant using given
@@ -961,13 +891,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument());
 
     throw new Error("actualType not supported for "+getClass());
-  }
-  public AbstractType applyTypeParsNoInheritance(List<AbstractType> g2, AbstractType o2)
-  {
-    if (PRECONDITIONS) require
-      (!isGenericArgument());
-
-    return applyTypePars(g2, o2);
   }
 
 

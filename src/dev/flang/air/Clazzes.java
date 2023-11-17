@@ -678,7 +678,7 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractAssign a, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(AbstractAssign a, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (a != null, outerClazz != null);
@@ -693,11 +693,11 @@ public class Clazzes extends ANY
             a._tid = getRuntimeClazzIds(3);
           }
 
-        Clazz sClazz = clazz(a._target, outerClazz, inh, child);
+        Clazz sClazz = clazz(a._target, outerClazz, inh);
         outerClazz.setRuntimeClazz(a._tid, sClazz);
         var vc = sClazz.asValue();
         var fc = vc.lookup(a._assignedField, a);
-        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz, inh, child);
+        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz, inh);
         if (isUsed(a._assignedField))
           {
             outerClazz.setRuntimeClazz(a._tid + 1, fc);
@@ -719,11 +719,11 @@ public class Clazzes extends ANY
    *
    * @param outerClazz the current clazz
    */
-  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (e instanceof Box b)
       {
-        Clazz vc = clazz(b._value, outerClazz, inh, child);
+        Clazz vc = clazz(b._value, outerClazz, inh);
         Clazz rc = vc;
         if (ec.isRef() ||
             (ec._type.isChoice() &&
@@ -746,7 +746,7 @@ public class Clazzes extends ANY
           }
         else
           {
-            propagateExpectedClazz(b._value, ec, outerClazz, inh, child);
+            propagateExpectedClazz(b._value, ec, outerClazz, inh);
           }
       }
     else if (e instanceof AbstractBlock b)
@@ -754,12 +754,12 @@ public class Clazzes extends ANY
         var s = b._expressions;
         if (!s.isEmpty())
           {
-            propagateExpectedClazz(s.getLast(), ec, outerClazz, inh, child);
+            propagateExpectedClazz(s.getLast(), ec, outerClazz, inh);
           }
       }
     else if (e instanceof Tag t)
       {
-        propagateExpectedClazz(t._value, ec, outerClazz, inh, child);
+        propagateExpectedClazz(t._value, ec, outerClazz, inh);
       }
   }
 
@@ -784,7 +784,7 @@ public class Clazzes extends ANY
    * and will be used both as frame clazz for d<i32,p> and as the context for
    * call to e<z>.
    */
-  public static void findClazzes(AbstractCall c, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(AbstractCall c, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -794,7 +794,7 @@ public class Clazzes extends ANY
         return;  // previous errors, give up
       }
 
-    var tclazz  = clazz(c.target(), outerClazz, inh, child);
+    var tclazz  = clazz(c.target(), outerClazz, inh);
     var cf      = c.calledFeature();
     var callToOuterRef = c.target().isCallToOuterRef();
     boolean dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
@@ -826,9 +826,12 @@ public class Clazzes extends ANY
         var i = 0;
         for (var a : c.actuals())
           {
-            if (i < afs.length)  // NYI: check boxing for open generic argument lists
+            if (CHECKS) check
+              (Errors.any() || i < afs.length);
+            if (i < afs.length) // actuals and formals may mismatch due to previous errors,
+                                // see tests/typeinference_for_formal_args_negative
               {
-                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz, inh, child);
+                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz, inh);
               }
             i++;
           }
@@ -856,13 +859,13 @@ public class Clazzes extends ANY
    *
    * @param outerClazz the surrounding clazz
    */
-  public static void findClazzes(AbstractConstant c, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(AbstractConstant c, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
 
     var p = c.pos();
-    var const_clazz = clazz(c, outerClazz, inh, child);
+    var const_clazz = clazz(c, outerClazz, inh);
     c.runtimeClazz = const_clazz;
     const_clazz.instantiated(p);
     if (const_clazz.feature() == Types.resolved.f_array)
@@ -887,20 +890,20 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(If i, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(If i, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (i._runtimeClazzId < 0)
       {
         i._runtimeClazzId = getRuntimeClazzIds(1);
       }
-    outerClazz.setRuntimeClazz(i._runtimeClazzId, clazz(i.cond, outerClazz, inh, child));
+    outerClazz.setRuntimeClazz(i._runtimeClazzId, clazz(i.cond, outerClazz, inh));
   }
 
 
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractCase c, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(AbstractCase c, Clazz outerClazz, List<AbstractCall> inh)
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do
     // we need to store in outerClazz.outer?
@@ -917,14 +920,14 @@ public class Clazzes extends ANY
       {
         var fOrFc = isUsed(f)
           ? outerClazz.lookup(f)
-          : outerClazz.actualClazz(f.resultType());  // NYI: Clazzes.c_void.get();
+          : Clazzes.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.c_void.get(), does not work in interpreter backend yet...
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
     else if (t != null)
       {
         for (var caseType : t)
           {
-            var ct = down(caseType, outerClazz, inh, child, c);
+            var ct = outerClazz.handDown(caseType, inh, c);
             outerClazz.setRuntimeClazz(i, ct);
             i++;
           }
@@ -935,7 +938,7 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractMatch m, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(AbstractMatch m, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (m._runtimeClazzId < 0)
       {
@@ -943,7 +946,7 @@ public class Clazzes extends ANY
         // we need to store in outerClazz.outer?
         m._runtimeClazzId = getRuntimeClazzIds(1);
       }
-    var subjClazz = clazz(m.subject(), outerClazz, inh, child);
+    var subjClazz = clazz(m.subject(), outerClazz, inh);
     outerClazz.setRuntimeClazz(m._runtimeClazzId, subjClazz);
   }
 
@@ -951,10 +954,10 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this Tag and store them in outerClazz.
    */
-  public static void findClazzes(Tag t, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(Tag t, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz vc = clazz(t._value, outerClazz, inh, child);
-    var tc = down(t._taggedType, outerClazz, inh, child, t);
+    Clazz vc = clazz(t._value, outerClazz, inh);
+    var tc = outerClazz.handDown(t._taggedType, inh, t);
     if (t._valAndTaggedClazzId < 0)
       {
         t._valAndTaggedClazzId = getRuntimeClazzIds(2);
@@ -968,9 +971,9 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this Tag and store them in outerClazz.
    */
-  public static void findClazzes(InlineArray i, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(InlineArray i, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz ac = clazz(i, outerClazz, inh, child);
+    Clazz ac = clazz(i, outerClazz, inh);
     if (i._arrayClazzId < 0)
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
@@ -980,10 +983,10 @@ public class Clazzes extends ANY
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
     ac.instantiated(i);
-    var ec = down(i.elementType(), outerClazz, inh, child, i);
+    var ec = outerClazz.handDown(i.elementType(), inh, i);
     for (var e : i._elements)
       {
-        propagateExpectedClazz(e, ec, outerClazz, inh, child);
+        propagateExpectedClazz(e, ec, outerClazz, inh);
       }
   }
 
@@ -991,45 +994,14 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this Env and store them in outerClazz.
    */
-  public static void findClazzes(Env v, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static void findClazzes(Env v, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz ac = clazz(v, outerClazz, inh, child);
+    Clazz ac = clazz(v, outerClazz, inh);
     if (v._clazzId < 0)
       {
         v._clazzId = getRuntimeClazzId();
       }
     outerClazz.setRuntimeClazz(v._clazzId, ac);
-  }
-
-
-  static Clazz down(AbstractType t, int select, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child, HasSourcePosition pos)
-  {
-    AbstractType t2;
-    if (select < 0)
-      {
-        var t1 = AbstractFeature.handDownStatic(inh, t, child);
-        t2 = outerClazz.handDownAllLevels2(t1, inh, child, pos);
-      }
-    else
-      {
-        var tl1 = AbstractFeature.handDownStatic(inh, new List<>(t), child);
-        var tl2 = outerClazz.handDownAllLevels2(tl1, inh, child, pos);
-        t2 = tl2.get(select);
-      }
-    var t3 = outerClazz.replaceThisType(t2);
-    var t4 = outerClazz.actualType(t3);
-    if (false && t3.compareTo(t4) != 0)
-      {
-        System.out.println("down of "+t+" outer "+outerClazz+" t3 is "+t3);
-        System.out.println("down of "+t+" outer "+outerClazz+" t4 is "+t4);
-      }
-    return Clazzes.clazz(t4);
-  }
-
-
-  static Clazz down(AbstractType t, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child, HasSourcePosition pos)
-  {
-    return down(t, -1, outerClazz, inh, child, pos);
   }
 
 
@@ -1041,26 +1013,26 @@ public class Clazzes extends ANY
    * This is fairly inefficient compared to dynamic
    * binding.
    */
-  public static Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh, AbstractFeature child)
+  public static Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh)
   {
     Clazz result;
     if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
-        result = resExpr != null ? clazz(resExpr, outerClazz, inh, child)
+        result = resExpr != null ? clazz(resExpr, outerClazz, inh)
                                  : c_unit.get();
       }
     else if (e instanceof Box b)
       {
-        result = down(b.type(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(b.type(), inh, e);
       }
 
     else if (e instanceof AbstractCall c)
       {
-        var tclazz = clazz(c.target(), outerClazz, inh, child);
+        var tclazz = clazz(c.target(), outerClazz, inh);
         if (tclazz != c_void.get())
           {
-            var at = AbstractFeature.handDownStatic(inh, c.actualTypeParameters(), child);
+            var at = AbstractFeature.handDownStatic(inh, c.actualTypeParameters(), outerClazz.feature());
             var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
                                                             outerClazz.actualGenerics(at),
                                                             false),
@@ -1081,12 +1053,12 @@ public class Clazzes extends ANY
 
     else if (e instanceof If i)
       {
-        result = down(i.type(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(i.type(), inh, e);
       }
 
     else if (e instanceof AbstractMatch m)
       {
-        result = down(m.type(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(m.type(), inh, e);
       }
 
     else if (e instanceof Universe)
@@ -1096,22 +1068,22 @@ public class Clazzes extends ANY
 
     else if (e instanceof AbstractConstant c)
       {
-        result = down(c.typeOfConstant(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(c.typeOfConstant(), inh, e);
       }
 
     else if (e instanceof Tag tg)
       {
-        result = down(tg._taggedType, outerClazz, inh, child, e);
+        result = outerClazz.handDown(tg._taggedType, inh, e);
       }
 
     else if (e instanceof InlineArray ia)
       {
-        result = down(ia.type(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(ia.type(), inh, e);
       }
 
     else if (e instanceof Env v)
       {
-        result = down(v.type(), outerClazz, inh, child, e);
+        result = outerClazz.handDown(v.type(), inh, e);
       }
 
     else

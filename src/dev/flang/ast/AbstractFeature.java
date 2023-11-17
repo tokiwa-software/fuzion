@@ -1211,50 +1211,50 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return a;
   }
 
-  public static AbstractType handDownStatic(List<AbstractCall> inh, AbstractType a, AbstractFeature heir)
-  {
-    return handDownStatic(null, inh, new AbstractType[] { a }, heir)[0];
-  }
   public static List<AbstractType> handDownStatic(List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
   {
-    var ar1 = a.toArray(new AbstractType[a.size()]);
-    var ar2 = handDownStatic(null, inh, ar1, heir);
-    var al = new List<AbstractType>(ar2);
-    return al;
+    for (AbstractCall c : inh)
+      {
+        var f = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        a = a.flatMap(t -> t.isOpenGeneric()
+                           ? t.genericArgument().replaceOpen(actualTypes)
+                           : new List<>(t.applyTypePars(f, actualTypes)));
+      }
+    return a;
   }
   public static AbstractType[] handDownStatic(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
   {
-            for (AbstractCall c : inh)
+    for (AbstractCall c : inh)
+      {
+        for (int i = 0; i < a.length; i++)
+          {
+            var ti = a[i];
+            if (ti.isOpenGeneric())
               {
-                for (int i = 0; i < a.length; i++)
+                var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
+                a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
+                for (var tg : frmlTs)
                   {
-                    var ti = a[i];
-                    if (ti.isOpenGeneric())
-                      {
-                        var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
-                        a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                        for (var tg : frmlTs)
-                          {
-                            a[i] = tg;
-                            i++;
-                          }
-                        i = i - 1;
-                      }
-                    else
-                      {
-                        var actualTypes = c.actualTypeParameters();
-                        if (res != null)
-                          {
-                            actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
-                          }
-                        ti = ti.applyTypePars(c.calledFeature(), actualTypes);
-                        a[i] = ti;
-                      }
+                    a[i] = tg;
+                    i++;
                   }
+                i = i - 1;
               }
-            return a;
+            else
+              {
+                var actualTypes = c.actualTypeParameters();
+                if (res != null)
+                  {
+                    actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                  }
+                ti = ti.applyTypePars(c.calledFeature(), actualTypes);
+                a[i] = ti;
+              }
+          }
+      }
+    return a;
   }
-
 
 
   /**
