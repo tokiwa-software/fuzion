@@ -299,6 +299,22 @@ public abstract class Module extends ANY
 
 
   /**
+   * Does this qualify for compiler generated code, e.g. array initialization?
+   *
+   * @param usedIn
+   * @param m
+   * @param v
+   * @return
+   */
+  private boolean isCompilerGeneratedCode(SourceFile usedIn, Module m, Visi v)
+  {
+    return SourceFile._builtIn_ == usedIn
+      && v.ordinal() >= Visi.MOD.ordinal()
+      && m.name().equals(FuzionConstants.BASE_MODULE_NAME);
+  }
+
+
+  /**
    * Is type defined by feature `af` visible in file `usedIn`?
    * If `af` does not define a type, result is false.
    *
@@ -312,12 +328,10 @@ public abstract class Module extends ANY
     var m = (af instanceof LibraryFeature lf) ? lf._libModule : this;
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
+    var tv = af.visibility().typeVisibility();
 
-            // generated inline code may access base library features
-    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
-      || (usedIn.sameAs(definedIn)
-          || (v == Visi.PRIVMOD || v == Visi.MOD) && this == m
-          || v == Visi.PRIVPUB || v == Visi.MODPUB ||  v == Visi.PUB)
+    return isCompilerGeneratedCode(usedIn, m, v)
+      || (usedIn.sameAs(definedIn) || tv == Visi.MOD && this == m || tv == Visi.PUB)
         && (af.definesType() || ignoreDefinesType);
   }
 
@@ -334,8 +348,7 @@ public abstract class Module extends ANY
     var definedIn = af.pos()._sourceFile;
     var v = af.visibility();
 
-            // generated inline code may access base library features
-    return SourceFile._builtIn_ == usedIn && v.ordinal() >= Visi.MOD.ordinal() && m.name().equals(FuzionConstants.BASE_MODULE_NAME)
+    return isCompilerGeneratedCode(usedIn, m, v)
             // built-in or generated features like #loop0
             || af.pos().isBuiltIn()
             // in same file
