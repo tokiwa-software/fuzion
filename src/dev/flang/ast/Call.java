@@ -2273,7 +2273,7 @@ public class Call extends AbstractCall
                                         if (!t2.isGenericArgument())
                                           {
                                             var f2 = t2.featureOfType();
-                                            if (!f2.isUniverse())
+                                            if (!f2.isUniverse() && f2.state().atLeast(State.RESOLVED_INHERITANCE))
                                               {
                                                 var t2f = f2.typeFeature(res);
                                               }
