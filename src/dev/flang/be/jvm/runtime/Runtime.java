@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.be.interpreter.OpenResources; // NYI: remove dependency!
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 

@@ -573,18 +573,24 @@ should be avoided as much as possible.
         try
           {
             String[] dependencies = {
-              "dev/flang/be/interpreter/OpenResources.class",
               "dev/flang/be/jvm/runtime/Any.class",
               "dev/flang/be/jvm/runtime/AnyI.class",
               "dev/flang/be/jvm/runtime/FuzionThread.class",
               "dev/flang/be/jvm/runtime/Intrinsics.class",
+              "dev/flang/be/jvm/runtime/Main.class",
+              "dev/flang/be/jvm/runtime/OpenResources.class",
               "dev/flang/be/jvm/runtime/Runtime.class",
               "dev/flang/be/jvm/runtime/Runtime$1.class",
               "dev/flang/be/jvm/runtime/Runtime$2.class",
               "dev/flang/be/jvm/runtime/Runtime$3.class",
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
+              "dev/flang/util/Errors.class",
+              "dev/flang/util/FatalError.class",
+              "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
+              "dev/flang/util/SourcePosition.class",
+              "dev/flang/util/SourceRange.class",
             };
 
             for (var d : dependencies)
