@@ -927,7 +927,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.featureOfType() == this,
+       result.featureOfType().generics().sizeMatches(result.generics()));
 
     return result;
   }
