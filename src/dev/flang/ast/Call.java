@@ -1126,7 +1126,9 @@ public class Call extends AbstractCall
    */
   AbstractType typeForInferencing()
   {
-    return _type;
+    return (_calledFeature instanceof Feature f) && f.isAnonymousInnerFeature() && f.inherits().getFirst().type().isRef()
+      ? f.inherits().getFirst().type()
+      : _type;
   }
 
 
