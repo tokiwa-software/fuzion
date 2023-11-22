@@ -1024,7 +1024,7 @@ public class C extends ANY
   /**
    * produce CExpr for given special clazz sc and byte buffer bbLE.
    *
-   * @param sc the spezial clazz we we are generating the CExpr for.
+   * @param sc the special clazz we we are generating the CExpr for.
    *
    * @param bbLE byte buffer (little endian)
    *
@@ -1171,7 +1171,7 @@ public class C extends ANY
    * @param onHeap should the string be allocated on the heap?
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
   CExpr constString(byte[] bytes, boolean onHeap)
   {
@@ -1189,7 +1189,7 @@ public class C extends ANY
    * @param onHeap should the string be allocated on the heap?
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
   CExpr constString(CExpr str, CExpr len, boolean onHeap)
   {

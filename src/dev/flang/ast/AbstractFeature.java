@@ -1213,7 +1213,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Helper for handDown() to hadn down an array of types along a given inheritance chain.
+   * Helper for handDown() to hand down an array of types along a given inheritance chain.
    *
    * @param res the resolution instance
    *

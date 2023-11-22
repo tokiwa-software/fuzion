@@ -665,7 +665,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *  - otherwise, resolve the formal generics and check that their number
    *    matches what is required
    *
-   * Finally, create instance of ResolvedNomralType
+   * Finally, create instance of ResolvedNormalType
    *
    * @param res The resolution instance
    *
