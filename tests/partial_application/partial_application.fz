@@ -1,0 +1,178 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test partial_application
+#
+# -----------------------------------------------------------------------
+
+# this test contains different cases of partial function application
+#
+partial_application is
+
+  test(msg, got, exp String) =>
+    if got = exp
+      say "PASSED: $msg: got '$got'"
+    else
+      say "FAILED: $msg: got '$got' expected '$exp'"
+      set_exit_code 1
+
+  test "map +(1+0):" $([1,2,3,4].map +(1+0)) "[2,3,4,5]"
+
+  x := [1,2,3,4].map +(1+0); say x
+
+  data := 1..10
+
+  qqq(f,g i32->i32) =>
+  qqq x->2*x x->3*x
+
+  # NYI:  m := data.map x->2*x; say m
+  m := data.map x->2*x ; say m
+  m := data.map *2     ; say m
+  m := data.map 2*     ; say m
+
+  say (data.map (arg0 -> 3.infix* arg0))
+
+  say (data.map 4.infix*)
+
+  easy(f i32->i32) =>
+    say (f 42)
+
+  easy x->x*x
+  easy 5.infix*
+  easy 7*
+  easy (7 *)
+  easy 17-
+  easy (17 -)
+  easy %17
+  easy (% 17)
+  easy (-(17+0))
+  easy -(17+0)
+#  easy -(17)
+#  easy (- 17)
+#  easy -17
+
+#  x Unary i32 i32 := 5 *
+
+  ambig Unary String i32 => x->"#$x#"
+  ambig(x, y i32) String => "$x $y"
+
+  test(f i32->String) => say (f 32168)
+
+#  test ambig          # should cause an error: Ambiguous call to `ambig (3 arguments)` or `ambig (2 arguments)`
+#  test (ambig 4711)
+  test x->(ambig 4711 x)
+
+  without_tp =>
+
+    f_0_args                                 => "-"
+    f_1_args(a1 i32                        ) => "$a1"
+    f_2_args(a1 i32, a2 i32                ) => "$a1,$a2"
+    f_3_args(a1 i32, a2 i32, a3 i32        ) => "$a1,$a2,$a3"
+    f_4_args(a1 i32, a2 i32, a3 i32, a4 i32) => "$a1,$a2,$a3,$a4"
+
+    fun_arg_with_0_args(f ()               ->String                                ) String => f()
+    fun_arg_with_1_args(f  i32             ->String, a1 i32                        ) String => f a1
+    fun_arg_with_2_args(f (i32,i32        )->String, a1 i32, a2 i32                ) String => f a1 a2
+    fun_arg_with_3_args(f (i32,i32,i32    )->String, a1 i32, a2 i32, a3 i32        ) String => f a1 a2 a3
+    fun_arg_with_4_args(f (i32,i32,i32,i32)->String, a1 i32, a2 i32, a3 i32, a4 i32) String => f a1 a2 a3 a4
+
+  #  say (fun_arg_with_0_args  f_0_args            )
+  #  say (fun_arg_with_0_args (f_1_args 42        ))
+  #  say (fun_arg_with_0_args (f_2_args 47 11     ))
+  #  say (fun_arg_with_0_args (f_3_args 32 16 8   ))
+  #  say (fun_arg_with_0_args (f_4_args  4  2 0 69))
+
+    say (fun_arg_with_1_args  f_1_args 42     )
+    say (fun_arg_with_1_args (f_2_args 47     ) 11)
+    say (fun_arg_with_1_args (f_3_args 32 16  )  8)
+    say (fun_arg_with_1_args (f_4_args  4  2 0) 69)
+
+    say (fun_arg_with_2_args (f_2_args     ) 47 11)
+    say (fun_arg_with_2_args (f_3_args 32  ) 16  8)
+    say (fun_arg_with_2_args (f_4_args  4 2)  0 69)
+
+    say (fun_arg_with_3_args  f_3_args    32 16  8)
+    say (fun_arg_with_3_args (f_4_args 4)  2  0 69)
+
+    say (fun_arg_with_4_args f_4_args 4 2 0 69)
+
+
+  #  say (fun_arg_with_no_args f_0_args)
+  #  say (fun_arg_with_no_args (f_1_args 42))
+  #  say (fun_arg_with_no_args (f_2_args 47 11))
+  #  say (fun_arg_with_no_args (f_3_args 32 16 8))
+
+  without_tp
+/*
+  with_tp =>
+
+    f_0_args                             => "-"
+    f_1_args(a1 T1                     ) => "$a1"
+    f_2_args(a1 T1, a2 T2              ) => "$a1,$a2"
+    f_3_args(a1 T1, a2 T2, a3 T3       ) => "$a1,$a2,$a3"
+    f_4_args(a1 T1, a2 T2, a3 T3, a4 T4) => "$a1,$a2,$a3,$a4"
+
+    fun_arg_with_0_args(f ()           ->R                            ) R => f()
+    fun_arg_with_1_args(f  A1          ->R, a1 A1                     ) R => f a1
+    fun_arg_with_2_args(f (A1,A2      )->R, a1 A1, a2 A2              ) R => f a1 a2
+    fun_arg_with_3_args(f (A1,A2,A3   )->R, a1 A1, a2 A2, a3 A3       ) R => f a1 a2 a3
+    fun_arg_with_4_args(f (A1,A2,A3,A4)->R, a1 A1, a2 A2, a3 A3, a4 A4) R => f a1 a2 a3 a4
+
+  #  say (fun_arg_with_0_args String  f_0_args            )
+  #  say (fun_arg_with_0_args String (f_1_args 42        ))
+  #  say (fun_arg_with_0_args String (f_2_args 47 11     ))
+  #  say (fun_arg_with_0_args String (f_3_args 32 16 8   ))
+  #  say (fun_arg_with_0_args String (f_4_args  4  2 0 69))
+
+  #  say (fun_arg_with_1_args String i32  f_1_args 42     )
+    say (fun_arg_with_1_args String i32 (f_2_args 47     ) 11)
+    say (fun_arg_with_1_args String i32 (f_3_args 32 16  )  8)
+    say (fun_arg_with_1_args String i32 (f_4_args  4  2 0) 69)
+
+  #  say (fun_arg_with_2_args String i32 i32 (f_2_args     ) 47 11)
+    say (fun_arg_with_2_args String i32 i32 (f_3_args 32  ) 16  8)
+    say (fun_arg_with_2_args String i32 i32 (f_4_args  4 2)  0 69)
+
+  #  say (fun_arg_with_3_args String i32 i32 i32  f_3_args    32 16  8)
+    say (fun_arg_with_3_args String i32 i32 i32 (f_4_args 4)  2  0 69)
+
+  #  say (fun_arg_with_4_args String i32 i32 i32 i32 f_4_args 4 2 0 69)
+
+
+  #  say (fun_arg_with_no_args f_0_args)
+  #  say (fun_arg_with_no_args (f_1_args 42))
+  #  say (fun_arg_with_no_args (f_2_args 47 11))
+  #  say (fun_arg_with_no_args (f_3_args 32 16 8))
+
+  with_tp
+  */
+
+/*
+  f2_no_arg => "-"
+  f2_one_arg( a1 i32) => "$a1"
+  f2_two_args(a1 i32, a2 i32) => "$a1,$a2"
+  f2_three_args(a1 i32, a2 i32, a3 i32) => "$a1,$a2,$a3"
+
+  fun2_arg_with_no_args(f ()->String) String => f()
+  fun2_arg_with_one_arg(f i32->String, a1 i32) String => f a1
+  fun2_arg_with_two_args(f (i32,i32)->String, a1 i32, a2 i32) String => f a1 a2
+  fun2_arg_with_three_args(f (i32,i32,i32)->String, a1 i32, a2 i32, a3 i32) String => f a1 a2 a3
+
+  say (fun2_arg_with_one_arg (f2_two_args 47) 11)
+*/

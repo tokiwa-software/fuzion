@@ -300,6 +300,53 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
+  boolean mustNotContainDeclaratains(String what, AbstractFeature outer)
+  {
+    var result = true;
+    var declarations = new List<Feature>();
+    visit(new FeatureVisitor()
+      {
+        public Expr action (Feature f, AbstractFeature outer)
+        {
+          declarations.add(f);
+          return f;
+        }
+      },
+      outer);
+
+    if (!declarations.isEmpty())
+      {
+        /*
+         * NYI: Instead of producing an error here, we could instead remove what
+         * was done during SourceModule.findDeclarations() performed in this
+         * expression, or, alternatively, create a new parse tree for this
+         * expression and use that instead.
+         *
+         * Examples that cause this problem are
+         *
+         *     l(t Lazy i32) is
+         *     _ := l ({
+         *               x is
+         *               y => 4711
+         *               c := 0815
+         *               c+y
+         *             })
+         *
+         * or using implicit declarations created for a loop:
+         *
+         *     l(t Lazy l) is
+         *       n => t
+         *
+         *     f l is l (do)
+         *     _ := f.n
+         */
+        AstErrors.declarationsInLazy(what, this, declarations);
+        result = false;
+      }
+    return result;
+  }
+
+
   /**
    * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
@@ -320,47 +367,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        var declarationsInLazy = new List<Feature>();
-        visit(new FeatureVisitor()
-          {
-            public Expr action (Feature f, AbstractFeature outer)
-            {
-              declarationsInLazy.add(f);
-              return f;
-            }
-          },
-          outer);
-
-        if (!declarationsInLazy.isEmpty())
-          {
-            /*
-             * NYI: Instead of producing an error here, we could instead remove what
-             * was done during SourceModule.findDeclarations() performed in this
-             * expression, or, alternatively, create a new parse tree for this
-             * expression and use that instead.
-             *
-             * Examples that cause this problem are
-             *
-             *     l(t Lazy i32) is
-             *     _ := l ({
-             *               x is
-             *               y => 4711
-             *               c := 0815
-             *               c+y
-             *             })
-             *
-             * or using implicit declarations created for a loop:
-             *
-             *     l(t Lazy l) is
-             *       n => t
-             *
-             *     f l is l (do)
-             *     _ := f.n
-             */
-            AstErrors.declarationsInLazy(this, declarationsInLazy);
-            result = ERROR_VALUE;
-          }
-        else
+        if (mustNotContainDeclaratains("a lazy value", outer))
           {
             var fn = new Function(pos(),
                                   new List<>(),
@@ -378,6 +385,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
                 }
               },
               fn._feature);
+          }
+        else
+          {
+            result = ERROR_VALUE;
           }
       }
     return result;

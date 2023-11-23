@@ -1727,7 +1727,7 @@ public class Feature extends AbstractFeature
             // phase
             public boolean visitActualsLate() { return true; }
             public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Call  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public Expr  action(Call           c, AbstractFeature outer) { return c.wrapActualsInLazy(res, outer); }
           });
 
         if (isConstructor())
@@ -2550,6 +2550,16 @@ public class Feature extends AbstractFeature
       (!hasOuterRef() || result != null);
 
     return result;
+  }
+
+
+  /**
+   * Check if this is an outer ref field.
+   */
+  public boolean isOuterRef()
+  {
+    var o = outer();
+    return o != null && (o instanceof Feature of ? of._outerRef : o.outerRef()) == this;
   }
 
 

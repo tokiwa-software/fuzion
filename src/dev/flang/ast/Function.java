@@ -168,7 +168,6 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-
     // if expected type is choice, examine if there is exactly one
     // array in choice generics, if so use this for further type propagation.
     var choices = t
@@ -186,6 +185,34 @@ public class Function extends ExprWithPos
 
     _type = propagateExpectedType2(res, outer, t, false);
     return this;
+  }
+
+
+  static int arity(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (t.isFunctionType());
+
+    var f = t.featureOfType();
+    if (f == Types.resolved.f_function)
+      {
+        return t.generics().size() - 1;
+      }
+    else
+      {
+        /* This code is currently limited to direct children of Function, but
+         * that is ok since this is the case for all remaining types with
+         * t.isFunctionType().
+         */
+        for (var p : f.inherits())
+          {
+            if (p.calledFeature().equals(Types.resolved.f_function))
+              {
+                return p.actualTypeParameters().size() - 1;
+              }
+          }
+        throw new Error("Function.arity failed to find arity of "+t);
+      }
   }
 
 
@@ -211,11 +238,7 @@ public class Function extends ExprWithPos
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
-        if (t != Types.t_ERROR &&
-            (t.isGenericArgument() ||
-             t.featureOfType() != Types.resolved.f_function &&
-             t.featureOfType() != Types.resolved.f_Lazy     &&
-             t.featureOfType() != Types.resolved.f_Unary       ))
+        if (!t.isFunctionType() && !t.isLazyType())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
             t = Types.t_ERROR;
@@ -476,7 +499,7 @@ public class Function extends ExprWithPos
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
     if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
       {
-        if (this._feature == null)
+        if (this._feature == null) // NYI: is this case still used?
           { /* We have an expression of the form
              *
              *   fun a.b.f

@@ -1305,7 +1305,7 @@ public class AstErrors extends ANY
   static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
     if (CHECKS) check
-      (any()  || expectedType != Types.t_ERROR);
+      (any() || expectedType != Types.t_ERROR);
 
     if (expectedType != Types.t_ERROR)
       {
@@ -1447,12 +1447,18 @@ public class AstErrors extends ANY
 
   static void expectedFunctionTypeForLambda(SourcePosition pos, AbstractType t)
   {
-    error(pos,
-          "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
-          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
-          "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
-          "Target type: " + s(t) + "\n" +
-          "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
+    if (CHECKS) check
+      (any() || t != Types.t_ERROR);
+
+    if (t != Types.t_ERROR)
+      {
+        error(pos,
+              "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
+              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+              "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
+              "Target type: " + s(t) + "\n" +
+              "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
+      }
   }
 
   static void noTypeInferenceFromLambda(SourcePosition pos)
@@ -1967,7 +1973,7 @@ public class AstErrors extends ANY
   }
 
 
-  public static void declarationsInLazy(Expr lazy, List<Feature> declarations)
+  public static void declarationsInLazy(String what, Expr lazy, List<Feature> declarations)
   {
     StringBuilder declarationsMsg = new StringBuilder();
     for (var f : declarations)
@@ -1976,7 +1982,7 @@ public class AstErrors extends ANY
       }
 
     error(lazy.pos(),
-          "IMPLEMENTATION RESTRICTION: An expression used as a lazy value cannot contain feature declarations",
+          "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
           "Declared features:\n" +
           declarationsMsg +
           "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +

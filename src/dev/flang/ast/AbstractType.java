@@ -989,12 +989,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff this is a fun type
    */
-  public boolean isFunType()
+  public boolean isFunctionType()
+  {
+    return
+      this != Types.t_ERROR &&
+      !isGenericArgument() &&
+      (featureOfType() == Types.resolved.f_function ||
+       featureOfType() == Types.resolved.f_Unary);
+  }
+  public boolean isAnyFunctionType()
   {
     return
       !isGenericArgument() &&
       (featureOfType() == Types.resolved.f_function ||
-       featureOfType() == Types.resolved.f_Unary);
+       featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
   }
 
 
@@ -1006,6 +1014,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isLazyType()
   {
     return
+      this != Types.t_ERROR &&
       !isGenericArgument() &&
       featureOfType() == Types.resolved.f_Lazy;
   }
