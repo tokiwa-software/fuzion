@@ -23,9 +23,12 @@
 #
 # -----------------------------------------------------------------------
 
-# void -- type with no values
+# void -- the default empty type
 #
 # NOTE: For a counterpart to void in C, Java, etc., see unit.fz
+#
+# void is the bottom type in Fuzion, the default empty type that is a subtype of all
+# other types.
 #
 # It is impossible to create any values of this type, consequently, it is impossible
 # to assign anything to a field of void type.
@@ -52,7 +55,7 @@
 # Since no value of type void can ever be produced, the assignment is dead code that
 # will be removed by the fuzion implementation.
 #
-# Type void may be used as an actual generic argument for a generic feature.  If this
+# Type void may be used as an actual type argument for a type parameter.  If this
 # is done, it will turn all features that have arguments of that type into absurd
 # features.  Also, this will ensure that any feature that produces a result of that
 # type to never return a result (typically to not be callable in the first place as
