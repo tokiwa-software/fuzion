@@ -938,11 +938,21 @@ public class C extends ANY
             ol.add(CStmnt.decl(tt0, tvar, tvalue));
             tvalue = tvar;
           }
+
+        // see: #1835 why we need this. Without this the calls result
+        // is correctly detected to escape, heap cloned but then dereferenced
+        // and put onto the stack which defeats the purpose of the heap clone.
+        var callsResultEscapes = isCall
+          && _fuir.hasData(rt)
+          && ccs.length > 2
+          && _fuir.doesResultEscape(cl, c, i)
+          && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0));
+
         if (isCall && _fuir.hasData(rt) && ccs.length > 2)
           {
             var resvar = _names.newTemp();
             res = resvar;
-            ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
+            ol.add(CStmnt.decl(_types.clazzField(cc0) + (callsResultEscapes ? "*" : ""), resvar));
           }
         var cazes = new List<CStmnt>();
         CStmnt acc = CStmnt.EMPTY;
@@ -974,7 +984,7 @@ public class C extends ANY
                       }
                     acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
                                      acc,
-                                     assign(res, rv, rt));
+                                     assign(res, callsResultEscapes ? rv.adrOf() : rv, rt));
                   }
               }
             else
@@ -994,11 +1004,11 @@ public class C extends ANY
                                                   CExpr.string(_fuir.clazzAsString(cl ))));
           }
         ol.add(acc);
-        res = isCall ?
-          (_fuir.clazzIsVoidType(rt) ? null :
-           _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-                                                                   : res)
-           :  res;
+        res = _fuir.clazzIsVoidType(rt)
+          ? null
+          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+            ? res.deref()
+            : res;
       }
 
     return new Pair<>(res, CStmnt.seq(ol));
