@@ -2046,6 +2046,12 @@ public class AstErrors extends ANY
       "To solve this, increase the visibility of " + s(f) + " to at least " + s(redefined.visibility()));
   }
 
+  public static void contractExpressionMustResultInBool(Expr cond)
+  {
+    error(cond.pos(), "A expression of a contract must result in bool.",
+      "To solve this, change the expression to return a bool.");
+  }
+
 }
 
 /* end of file */

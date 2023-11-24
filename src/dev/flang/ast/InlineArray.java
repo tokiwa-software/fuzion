@@ -269,9 +269,7 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * check the types in this assignment
-   *
-   * @param outer the root feature that contains this expression.
+   * check the types in this InlineArray
    */
   public void checkTypes()
   {

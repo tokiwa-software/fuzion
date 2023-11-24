@@ -247,7 +247,7 @@ public abstract class AbstractAssign extends Expr
   /**
    * check the types in this assignment
    *
-   * @param outer the root feature that contains this expression.
+   * @param res the Resolution that performs this checkTypes
    */
   public void checkTypes(Resolution res)
   {

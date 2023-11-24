@@ -1,0 +1,7 @@
+
+--CURDIR--/test_issue1838.fz:27:7: error 1: A expression of a contract must result in bool.
+  pre c
+------^
+To solve this, change the expression to return a bool.
+
+one error.
