@@ -58,7 +58,7 @@ public class JVMOptions extends FuzionOptions
     /**
      * Create instances when the universe is initialized.  This is good if a
      * constant is used repeatedly, but it adds startup overhead and wasted
-     * resources for constants used in code that is never exectued or executed
+     * resources for constants used in code that is never executed or executed
      * only very infrequently (such as error handling code after a fatal error).
      */
     onUniverseInitialization;
@@ -105,7 +105,7 @@ public class JVMOptions extends FuzionOptions
 
 
   /**
-   * Constant creation strategy to be used for non-primitiv-type constants.
+   * Constant creation strategy to be used for non-primitive-type constants.
    */
   final ConstantCreation _constantCreationStrategy = ConstantCreation.onUniverseInitialization;
 

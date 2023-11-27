@@ -144,7 +144,7 @@ public class Resolution extends ANY
 
 
   /**
-   * FeatureVisitor to call resolveTypes() on Expr-essions and resolve() on all
+   * FeatureVisitor to call resolveTypes() on Expressions and resolve() on all
    * types.
    *
    * This is used during state RESOLVING_TYPES.

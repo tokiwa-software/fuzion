@@ -1255,7 +1255,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   /**
-   * That path of this class file relative to the eclasspath directory it should
+   * That path of this class file relative to the classpath directory it should
    * be contained in.
    */
   public Path classFile()
