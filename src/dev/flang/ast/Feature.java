@@ -1727,7 +1727,7 @@ public class Feature extends AbstractFeature
             // phase
             public boolean visitActualsLate() { return true; }
             public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { return c.wrapActualsInLazy(res, outer); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
           });
 
         if (isConstructor())

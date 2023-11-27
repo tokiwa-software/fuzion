@@ -832,20 +832,6 @@ public class Call extends AbstractCall
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
         findOperatorOnOuter(res, thiz);
       }
-    if (_calledFeature == null &&                 // nothing found, so flag error
-        true )
-      // (Types.resolved == null ||                // may happen when building bad base.fum
-      // targetFeature != Types.resolved.f_void)) // but allow to call anything on void
-        /*
-        if (_calledFeature == null)
-          {
-            _calledFeature = Types.f_ERROR;
-            if (_target == null)
-              {
-                _target = Expr.ERROR_VALUE;
-              }
-          }
-        */
     if (_calledFeature == Types.f_ERROR)
       {
         _actuals = new List<>();
@@ -1964,14 +1950,7 @@ public class Call extends AbstractCall
                   }
                 if (l != a)
                   {
-                    var lx = l;
-                    var vaix = vai;
-                    _actuals = _actuals.setOrClone(vaix, l);
-                    outer.whenResolvedTypes
-                      (() ->
-                       {
-                         _actuals = _actuals.setOrClone(vaix, res.resolveType(lx, outer));
-                       });
+                    _actuals = _actuals.setOrClone(vai, l);
                   }
               }
           }
@@ -2002,6 +1981,7 @@ public class Call extends AbstractCall
   private void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var cf = _calledFeature;
+    // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
         int count = 1; // argument count, for error messages
@@ -2486,7 +2466,6 @@ public class Call extends AbstractCall
             _type = Types.t_ERROR;
           }
         resolveFormalArgumentTypes(res);
-
       }
     if (_type != null &&
         // exclude call to create type instance, it requires origin's type parameters:
@@ -2567,10 +2546,9 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public Expr wrapActualsInLazy(Resolution res, AbstractFeature outer)
+  public void wrapActualsInLazy(Resolution res, AbstractFeature outer)
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, formalType));
-    return this;
   }
 
 
@@ -2646,7 +2624,8 @@ public class Call extends AbstractCall
    */
   public void checkTypes(AbstractFeature outer)
   {
-    check (_type != null);
+    check
+      (_type != null);
     if (_type != Types.t_ERROR)
       {
         var o = _type;
