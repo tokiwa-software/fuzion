@@ -1,0 +1,3 @@
+issue_2237 =>
+  a array i32 := []
+  _ := a.some_feat
