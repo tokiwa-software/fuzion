@@ -1245,7 +1245,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     _type = new ClassType(name);
     _version = DEFAULT_VERSION;
     _cpool = new CPool();
-    _flags = ACC_PUBLIC | (interfce ? ACC_INTERFACE : ACC_SUPER);
+    _flags = ACC_PUBLIC | (interfce ? (ACC_INTERFACE|ACC_ABSTRACT) : ACC_SUPER);
     _this = cpClass(name);
     _super = cpClass(supr == null ? "java/lang/Object" : supr);
   }
