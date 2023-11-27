@@ -191,7 +191,7 @@ public class Function extends ExprWithPos
   static int arity(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t.isFunctionType());
+      (t.isAnyFunctionType());
 
     var f = t.featureOfType();
     if (f == Types.resolved.f_function)

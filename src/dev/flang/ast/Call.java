@@ -765,7 +765,6 @@ public class Call extends AbstractCall
                 ff.resolveArgumentTypes(res);
               }
           }
-        if (fos.size() > 0) _foundSomething = true;
         var calledName = FeatureName.get(_name, _actuals.size());
         var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
         if (fo == null)
@@ -880,7 +879,26 @@ public class Call extends AbstractCall
       }
   }
 
-  boolean _foundSomething = false;
+
+  String newNameForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    var n = Function.arity(expectedType);
+    var name = _name;
+    String result = null;
+    if (name.startsWith("prefix ") && (n == 1))
+      { // -v ==> x->x-v
+        result = "infix " + _name.substring("prefix ".length());
+      }
+    else if (name.startsWith("postfix ") && (n == 1))
+      { // -v ==> x->x-v
+        result = "infix " + _name.substring("postfix ".length());
+      }
+    else if (name.startsWith("infix ") && (n == 1))
+      { // -v ==> x->x-v
+        result = "infix " + _name.substring("infix ".length());
+      }
+    return result;
+  }
 
 
   /**
@@ -895,7 +913,7 @@ public class Call extends AbstractCall
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr applyPartiallyN(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr applyPartially(Resolution res, AbstractFeature outer, AbstractType t)
   {
     Expr result;
     var n = Function.arity(t);
@@ -903,38 +921,22 @@ public class Call extends AbstractCall
       {
         _pendingError = null;
         List<ParsedName> pns = new List<>();
-        String prefix = "#p" + (_id_++) + "arg";
         for (var i = 0; i < n; i++)
           {
-            var pn = new ParsedName(pos(), prefix + i);
-            pns.add(pn);
+            String p = "#p" + (_id_++);
+            pns.add(new ParsedName(pos(), p));
           }
-        boolean targetOk = false;
         Expr code = this;
-        if (_name.startsWith("prefix ") && (n == 1))
+        if (_name.startsWith("prefix "))
           { // -v ==> x->x-v
-            _calledFeature = null;
-            _name = "infix " + _name.substring("prefix ".length());
-            var v = _target;
-            _target = new ParsedCall(null, pns.get(0));
-            targetOk = true;
             _actuals = _actuals.clone();
-            _actuals.add(v);
+            _actuals.add(_target);
             _actualsNew = _actualsNew.clone();
-            _actualsNew.add(new Actual(v));
+            _actualsNew.add(new Actual(_target));
+            _target = new ParsedCall(null, pns.get(0));
           }
         else
           {
-            if (_name.startsWith("postfix ") && (n == 1))
-              { // v- => x->v-x
-                _name = "infix " + _name.substring("postfix ".length());
-                targetOk = true;
-              }
-            if (_name.startsWith("infix ") && (n == 1))
-              {
-                targetOk = true;
-              }
-
             for (var i = 0; i < n; i++)
               {
                 var c = new ParsedCall(null, pns.get(i));
@@ -949,28 +951,38 @@ public class Call extends AbstractCall
                               new List<>(),
                               Contract.EMPTY_CONTRACT,
                               code);
-
+        //var nyi = fn.propagateExpectedType2(res, outer, t, true);
         result = fn;
-        fn.resolveTypes(res, outer);
-        if (!targetOk)
-            result = fn.propagateExpectedType(res, outer, t);
-        if (!targetOk)
+        var nn = newNameForPartial(res, outer, t);
+        if (nn != null)
           {
-          //          if (!targetOk)
-            //          var  targetOK = targetOk;
-          visit(new FeatureVisitor()
-            {
-              public Expr action(Call c, AbstractFeature outer)
+            _name = nn;
+            _calledFeature = null;
+          }
+        fn.resolveTypes(res, outer);
+        if (nn == null)
+          {
+            result = result.propagateExpectedType(res, outer, t);
+          }
+        //        if (fn._feature != null)
+          //        if (nn == null)
+          {
+            //            System.out.println("TARGET update for "+this+" fn._feature is "+(fn._feature == null ? "null" : fn._feature.qualifiedName()));
+            visit(new FeatureVisitor()
               {
-                //                System.out.println("update target outer "+outer.qualifiedName()+" "+outer.state()+" "+c.pos().show());
-                //                if (c == Call.this && targetOK)
-                //                  return c;
-                //                else
+                public Expr action(Call c, AbstractFeature outer)
+                {
+                  //            System.out.println("TARGET update for "+Call.this+" actioon on "+c);
                   return c.updateTarget(res, outer);
-              }
-            },
-            fn._feature);
-        }
+                }
+              },
+              fn._feature);
+          }
+          //else
+            if (false)
+          {
+            System.out.println("NO TARGET update for "+this);
+          }
       }
     else
       {
@@ -1913,53 +1925,55 @@ public class Call extends AbstractCall
   void propagateForPartial(Resolution res, AbstractFeature outer)
   {
     var cf = _calledFeature;
-    int count = 1; // argument count, for error messages
 
     ListIterator<Expr> aargs = _actuals.listIterator();
     var va = cf.valueArguments();
     var vai = 0;
     for (var frml : va)
       {
-        if (CHECKS) check
-          (true || Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
+        if (aargs.hasNext())
+          {
+            var actual = aargs.next();
+            var t = frml.resultTypeIfPresent(res, NO_GENERICS);
+            if (t.isFunctionType())
+              {
+                // var actual = resolveTypeForNextActual(null, aargs, res, outer);
+                // var actualType = typeFromActual(actual, outer);
+                if (resultExpression(actual) instanceof Call ac)
+                  {
+                    Expr l = ac;
 
-        if (res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
-        {
-          var t = frml.resultTypeIfPresent(res, NO_GENERICS);
-          var g = t.isGenericArgument() ? t.genericArgument() : null;
-          if (g != null && g.feature() == cf && g.isOpen())
-            {
-            }
-          else if (aargs.hasNext())
-            {
-              count++;
-              var actual = aargs.next();
-              if (expectedTypeMayResultInPartialApplication(t))
-                {
-                  // var actual = resolveTypeForNextActual(null, aargs, res, outer);
-                  // var actualType = typeFromActual(actual, outer);
-                  if (resultExpression(actual) instanceof Call ac)
-                    {
-                      if (!false) {
-                        var l = ac.propagateExpectedTypeRaw(res, outer, t);
-                      if (l != null)
+                    if (ac._calledFeature != null)
+                      {
+                        res.resolveTypes(ac._calledFeature);
+                        var rt = ac._calledFeature.resultTypeIfPresent(res);
+                        if (rt != null && !(rt.isAnyFunctionType() && Function.arity(rt) == Function.arity(t)) && !rt.isGenericArgument())
+                          {
+                            l = ac.applyPartially(res, outer, t);
+                          }
+                        else
+                          { // NYI: check that partial application does not lead to ambiguity
+                          }
+                      }
+                    else if (ac._pendingError != null                    || /* nothing found */
+                             ac.newNameForPartial(res, outer, t) != null    /* not checked yet */)
+                      {
+                        l = ac.applyPartially(res, outer, t);
+                      }
+                      if (l != ac)
                         {
+                          var lx = l;
                           var vaix = vai;
                           _actuals = _actuals.setOrClone(vaix, l);
                           outer.whenResolvedTypes
                             (() ->
                              {
-                               _actuals = _actuals.setOrClone(vaix, res.resolveType(l, outer));
+                               _actuals = _actuals.setOrClone(vaix, res.resolveType(lx, outer));
                              });
                         }
-                      }
-                    }
-                }
-              else
-                {
-                }
-            }
-        }
+                  }
+              }
+          }
         vai++;
       }
   }
@@ -2435,7 +2449,6 @@ public class Call extends AbstractCall
           }
 
         propagateForPartial(res, outer);
-
         if (needsToInferTypeParametersFromArgs())
           {
             inferGenericsFromArgs(res, outer);
@@ -2472,6 +2485,7 @@ public class Call extends AbstractCall
             _type = Types.t_ERROR;
           }
         resolveFormalArgumentTypes(res);
+
       }
     if (_type != null &&
         // exclude call to create type instance, it requires origin's type parameters:
@@ -2512,29 +2526,6 @@ public class Call extends AbstractCall
     return _pendingError == null && result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
       : result;
-  }
-
-
-  public Expr propagateExpectedTypeRaw(Resolution res, AbstractFeature outer, AbstractType expectedRawType)
-  {
-    if (_calledFeature != null)
-      {
-        return applyPartiallyA(res, outer, expectedRawType);
-      }
-    else
-      {
-        if (false)
-          System.out.println("applyPartially, found "+(_calledFeature == null ? "NOTHING"+_foundSomething : _calledFeature.qualifiedName()+" "
-                                                       +_calledFeature.resultTypeIfPresent(res) )+" at "+pos().show());
-        if (_foundSomething              ||
-            _name.startsWith("prefix " ) ||
-            _name.startsWith("postfix ") ||
-            _name.startsWith("infix "  )    )
-          {
-            return applyPartiallyN(res, outer, expectedRawType);
-          }
-      }
-    return null;
   }
 
 
@@ -2579,38 +2570,6 @@ public class Call extends AbstractCall
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, formalType));
     return this;
-  }
-
-
-  boolean expectedTypeMayResultInPartialApplication(AbstractType t)
-  {
-    return t.isFunctionType() && Function.arity(t) > 0;
-  }
-
-  Expr applyPartiallyA(Resolution res, AbstractFeature outer, AbstractType t)
-  {
-    Expr result = this;
-    if (_calledFeature != null && expectedTypeMayResultInPartialApplication(t))
-      {
-        res.resolveTypes(_calledFeature);
-        var rt = _calledFeature.resultTypeIfPresent(res);
-        if (rt != null && !rt.isAnyFunctionType())
-          {
-            result = applyPartiallyN(res, outer, t);
-          }
-      }
-    return result;
-  }
-
-
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
-  {
-    Expr result = super.wrapInLazy(res, outer, t);
-    if (result == this && _calledFeature != null)
-      {
-        result = propagateExpectedTypeRaw(res, outer, t);
-      }
-    return result;
   }
 
 
@@ -2823,6 +2782,7 @@ public class Call extends AbstractCall
   {
     if (_targetFrom != null)
       {
+        //System.out.println("updateTarget for "+this+" state "+outer.state()+" "+(outer.state().atLeast(State.RESOLVING_DECLARATIONS)?"ACTION from "+_targetFrom+" outer "+outer.qualifiedName():"NOP"));
         _target =
           true || outer.state().atLeast(State.RESOLVING_DECLARATIONS)
           ? _targetFrom.target(pos(), res, outer)

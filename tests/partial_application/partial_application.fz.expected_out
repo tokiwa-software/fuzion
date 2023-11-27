@@ -1,28 +1,36 @@
 PASSED: map +(1+0):: got '[2,3,4,5]'
-[2,3,4,5]
-[2,4,6,8,10,12,14,16,18,20]
-[2,4,6,8,10,12,14,16,18,20]
-[2,4,6,8,10,12,14,16,18,20]
-[3,6,9,12,15,18,21,24,27,30]
-[4,8,12,16,20,24,28,32,36,40]
-1764
-210
-294
-294
--25
--25
-8
-8
-25
-25
-4711 32168
-42
-47,11
-32,16,8
-4,2,0,69
-47,11
-32,16,8
-4,2,0,69
-32,16,8
-4,2,0,69
-4,2,0,69
+PASSED: qqq lambdas : got '84 126'
+PASSED: qqq partials: got '84 126'
+PASSED: data.map x->2*x    : got '[2,4,6,8,10,12,14,16,18,20]'
+PASSED: data.map    2*     : got '[2,4,6,8,10,12,14,16,18,20]'
+PASSED: data.map    *2     : got '[2,4,6,8,10,12,14,16,18,20]'
+PASSED: data.map 3.infix*  : got '[3,6,9,12,15,18,21,24,27,30]'
+PASSED: data.map 3.prefix* : got '[3,6,9,12,15,18,21,24,27,30]'
+PASSED: data.map 3.postfix*: got '[3,6,9,12,15,18,21,24,27,30]'
+PASSED: data.map 4.infix*  : got '[4,8,12,16,20,24,28,32,36,40]'
+PASSED: easy x->x*x   : got '1764'
+PASSED: easy 5.infix* : got '210'
+PASSED: easy 7*       : got '294'
+PASSED: easy (7 *)    : got '294'
+PASSED: easy 17-      : got '-25'
+PASSED: easy (17 -)   : got '-25'
+PASSED: easy %17      : got '8'
+PASSED: easy (% 17)   : got '8'
+PASSED: easy (-(17+0)): got '25'
+PASSED: easy -(17+0)  : got '25'
+PASSED: test x->(ambig 4711 x): got '4711 32168'
+PASSED: fun_arg 0 0: got '-'
+PASSED: fun arg 0 1: got '42'
+PASSED: fun arg 0 2: got '47,11'
+PASSED: fun arg 0 3: got '32,16,8'
+PASSED: fun arg 0 4: got '4,2,0,69'
+PASSED: fun arg 1 1: got '42'
+PASSED: fun arg 1 2: got '47,11'
+PASSED: fun arg 1 3: got '32,16,8'
+PASSED: fun arg 1 4: got '4,2,0,69'
+PASSED: fun arg 2 2: got '47,11'
+PASSED: fun arg 2 3: got '32,16,8'
+PASSED: fun arg 2 4: got '4,2,0,69'
+PASSED: fun arg 3 3: got '32,16,8'
+PASSED: fun arg 3 4: got '4,2,0,69'
+PASSED: fun arg 4 4: got '4,2,0,69'
