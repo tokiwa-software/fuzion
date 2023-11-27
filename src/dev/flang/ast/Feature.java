@@ -1809,6 +1809,10 @@ public class Feature extends AbstractFeature
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
+
+            /* if an error is reported in a call it might no longer make sense to check the actuals: */
+            public boolean visitActualsLate() { return true; }
+
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
             public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
