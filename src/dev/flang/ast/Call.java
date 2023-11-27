@@ -2629,7 +2629,6 @@ public class Call extends AbstractCall
    */
   public void checkTypes(AbstractFeature outer)
   {
-    reportPendingError();
     check (_type != null);
     if (_type != Types.t_ERROR)
       {
@@ -2724,6 +2723,10 @@ public class Call extends AbstractCall
    */
   Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
   {
+    // in case lookup of the called feature failed and this could not be fixed
+    // later by partial application, then report this error now:
+    reportPendingError();
+
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
