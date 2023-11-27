@@ -760,7 +760,8 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
+      !isFreeType() || _outer.arguments().contains(this));
 
     return _outer;
   }
@@ -2513,7 +2514,7 @@ public class Feature extends AbstractFeature
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state == State.FINDING_DECLARATIONS);
+      (_state.atLeast(State.FINDING_DECLARATIONS));
 
     if (hasOuterRef())
       {
@@ -2525,6 +2526,8 @@ public class Feature extends AbstractFeature
                                 outerRefType,
                                 outerRefName(),
                                 this);
+
+        whenResolvedTypes(()->_outerRef.scheduleForResolution(res));
       }
   }
 

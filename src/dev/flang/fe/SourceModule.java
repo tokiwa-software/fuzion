@@ -564,7 +564,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.setOuter(outer);
     inner.setState(State.FINDING_DECLARATIONS);
     inner.checkName();
-    inner.addOuterRef(_res);
+
+    if (outer == null)
+      {
+        inner.addOuterRef(_res);
+      }
+    else
+      {
+        // fixes issue #1787
+        // We need to wait until `inner` has its final type parameters.
+        // This may include type parameters received via free types.
+        // (Creating outer ref uses `createThisType()` which calls `generics()`.)
+        outer.whenResolvedDeclarations(() -> {
+          inner.addOuterRef(_res);
+        });
+      }
 
     if (outer != null)
       {
