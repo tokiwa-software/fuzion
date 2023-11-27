@@ -1,0 +1,16 @@
+
+--CURDIR--/issue_2252.fz:27:13: error 1: 'match' subject type must not be a type parameter
+      match ft
+------------^^
+Matched type: 'issue_2252.a.some_feat.T'
+which is a type parameter declared at --CURDIR--/issue_2252.fz:26:18:
+    some_feat(ft T) is
+-----------------^
+
+
+--CURDIR--/issue_2252.fz:27:13: error 2: 'match' subject type must be a choice type
+      match ft
+------------^^
+Matched type: 'issue_2252.a.some_feat.T', which is not a choice type
+
+2 errors.
