@@ -327,8 +327,8 @@ say c.x
 d is
   y => 3
   x d.this is
-    d.this
     redef as_string => "d"
+    d.this
 
 t is
   e : d is

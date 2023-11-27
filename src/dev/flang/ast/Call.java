@@ -632,7 +632,7 @@ public class Call extends AbstractCall
   /**
    * Does this call a non-generic infix operator?
    */
-  boolean isInfixOperator()
+  private boolean isInfixOperator()
   {
     return
       _name.startsWith("infix ") &&
@@ -716,7 +716,7 @@ public class Call extends AbstractCall
    * @return true if everything is fine, false in case the target results in
    * void and we hence can replace the call by _target.
    */
-  boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
+  private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
   {
     var targetVoid = false;
 
@@ -852,7 +852,7 @@ public class Call extends AbstractCall
   }
 
 
-  void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
+  private void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
   {
     // NYI: check why _actuals.listIterator cannot be done inside
     // whenResolvedTypes. If it could, the 'if calledFeature != null / Error
@@ -905,7 +905,7 @@ public class Call extends AbstractCall
    *
    * @param thiz the surrounding feature
    */
-  void findOperatorOnOuter(Resolution res, AbstractFeature thiz)
+  private void findOperatorOnOuter(Resolution res, AbstractFeature thiz)
   {
     if (_name.startsWith("infix "  ) ||
         _name.startsWith("prefix " ) ||
@@ -1761,7 +1761,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt)
+  private void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
@@ -1834,7 +1834,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this call.
    */
-  void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
+  private void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
   {
     ListIterator<Expr> aargs = _actuals.listIterator();
     for (var frml : _calledFeature.valueArguments())
@@ -2104,7 +2104,7 @@ public class Call extends AbstractCall
    * @return true iff this is a expression that can produce the result of e (but
    * not necessarily the only one).
    */
-  boolean returnsThis(Expr e)
+  private boolean returnsThis(Expr e)
   {
     if (e instanceof If i)
       {
