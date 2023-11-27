@@ -1,0 +1,5 @@
+issue_2213 =>
+  mi : mutate is
+  mi.go ()->
+    ball is
+    balls := (mutate.array ball).type.new mi 1 ball

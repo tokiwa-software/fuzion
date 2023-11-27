@@ -767,6 +767,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private List<AbstractCall> typeFeatureInherits(Resolution res)
   {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_INHERITANCE));
+
     var inh = new List<AbstractCall>();
     for (var pc: inherits())
       {
