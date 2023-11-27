@@ -932,7 +932,7 @@ public class Call extends AbstractCall
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check
               (Errors.any() || n == 1,
-               Errory.any() || _actuals.size() == 0);
+               Errors.any() || _actuals.size() == 0);
             _actuals   .add(           _target );
             _actualsNew.add(new Actual(_target));
             _target = new ParsedCall(null, pns.get(0));
