@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Function <description>
+ * Function represents a lambda expression `(x,y) -> f x y` in Fuzion.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -68,14 +68,7 @@ public class Function extends ExprWithPos
 
 
   /**
-   * For function declaration of the kind
-   *
-   *  fun int (Object o, int i) { result =* o.hash_code + i; }
-   *
-   * this is the declared feature
-   *
-   *  int (Object o, int i) { result =* o.hash_code + i; }
-   *
+   * The implementation of `Function.call` that contains the code of this lambda.
    */
   AbstractFeature _feature;
 
@@ -93,22 +86,17 @@ public class Function extends ExprWithPos
 
 
   /**
-   * For a function defined inline, this is the wrapper that calls the inline
-   * feature.
+   * The feature that inherits from `Function` that implements this lambda in
+   * its `call` feature.
    */
   Feature _wrapper;
 
 
   /**
-   * Fields for a lambda of the form
-   *
-   *   (x,y) pre y != 0 -> x*y
-   *
-   * In this case, _wrapper and _call will be created during propagateExpectedType().
+   * Names of argument fields `x, y` of a lambda `x, y -> f x y`
    */
-  List<ParsedName> _names;  // names of the arguments: "x", "y"
-  List<AbstractCall> _inherits; // inherits calls, currently always empty
-  Contract _contract;   // contract of the lambda
+  List<ParsedName> _names;
+
   Expr _expr;           // the right hand side of the '->'
 
 
@@ -118,31 +106,22 @@ public class Function extends ExprWithPos
   /**
    * Constructor for a lambda of the form
    *
-   *   (x,y) pre y != 0 -> x*y
+   *   (x,y) -> x*y
    *
    * @param pos the sourcecode position, used for error messages.
    *
    * @param names the names of the arguments, "x", "y"
    *
-   * @param i the inheritance clause, currently always empty list
-   *
-   * @param c the contract
-   *
    * @param e the code on the right hand side of '->'.
    */
   public Function(SourcePosition pos,
                   List<ParsedName> names,
-                  List<AbstractCall> i,
-                  Contract c,
                   Expr e)
   {
     super(pos);
 
     _names = names;
-    _inherits = i;
-    _contract = c;
     _expr = e;
-    _wrapper = null;
   }
 
 
@@ -217,34 +196,6 @@ public class Function extends ExprWithPos
   }
 
 
-  static int arity(AbstractType t)
-  {
-    if (PRECONDITIONS) require
-      (t.isAnyFunctionType());
-
-    var f = t.featureOfType();
-    if (f == Types.resolved.f_function)
-      {
-        return t.generics().size() - 1;
-      }
-    else
-      {
-        /* This code is currently limited to direct children of Function, but
-         * that is ok since this is the case for all remaining types with
-         * t.isFunctionType().
-         */
-        for (var p : f.inherits())
-          {
-            if (p.calledFeature().equals(Types.resolved.f_function))
-              {
-                return p.actualTypeParameters().size() - 1;
-              }
-          }
-        throw new Error("Function.arity failed to find arity of "+t);
-      }
-  }
-
-
   /**
    * Special version of propagateExpectedType(res, outer, t) tries to infer the
    * result type of a lambda.
@@ -314,7 +265,7 @@ public class Function extends ExprWithPos
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            _feature = new Feature(pos(), rt, new List<String>("call"), a, _inherits, _contract, new Impl(_expr.pos(), _expr, im))
+            _feature = new Feature(pos(), rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -323,15 +274,10 @@ public class Function extends ExprWithPos
                 }
               };
 
-            var inheritsName = Types.FUNCTION_NAME;
-            if (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2)
-              {
-                inheritsName = Types.UNARY_NAME;
-              }
-            else if (t.featureOfType() == Types.resolved.f_Lazy && gs.size() == 1)
-              {
-                inheritsName = Types.LAZY_NAME;
-              }
+            var inheritsName =
+              (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
+              (t.featureOfType() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
+                                                                              : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
@@ -387,63 +333,6 @@ public class Function extends ExprWithPos
   }
 
 
-  private AbstractFeature functionOrRoutine()
-  {
-    var f = this._feature == null ? this._call.calledFeature()
-                                  : this._feature;
-    if (CHECKS) check
-      (Errors.any() || f != null);
-
-    if (f != null)
-      {
-        var t = typeForInferencing();
-        AbstractFeature tf = null;
-
-        if (t != null)
-          {
-            tf = t.featureOfType();
-          }
-
-        if (tf != null)
-          {
-            f = tf;
-          }
-        else
-          {
-            f = Types.resolved.f_function;
-          }
-      }
-    return f;
-  }
-
-  /**
-   * Produce the list of actual generic arguments to be passed to
-   * functionOrRoutine.
-   */
-  List<AbstractType> generics(Resolution res)
-  {
-    List<AbstractType> generics = new List<>();
-
-    var f = this._feature == null ? this._call.calledFeature()
-                                  : this._feature;
-    if (CHECKS) check
-      (Errors.any() || f != null);
-
-    if (f != null)
-      {
-        generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                     ? ff.resultTypeForTypeInference(pos(), res, UnresolvedType.NONE)
-                     : new BuiltInType(FuzionConstants.UNIT_NAME));
-        for (var a : f.arguments())
-          {
-            res.resolveTypes(a);
-            generics.add(a.resultType());
-          }
-      }
-    return generics;
-  }
-
-
   /**
    * determine the static type of all expressions and declared features in this feature
    *
@@ -453,22 +342,33 @@ public class Function extends ExprWithPos
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
+    check(this._call == null || this._feature != null);
     if (this._call == null)
       {
         // do not do anything yet, we are waiting for propagateExpectedType to
         // tell us what we are.
       }
-    else if (this._feature == null)
-      {
-        var fr = functionOrRoutine();
-        var ug = generics(res);
-        var generics = FormalGenerics.resolve(res, ug, outer);
-        _type = fr != null ? ResolvedNormalType.create(generics, ug, null, fr).resolve(res, outer)
-                           : Types.t_ERROR;
-      }
     else
       {
-        _inheritsCall._generics = generics(res);
+        List<AbstractType> generics = new List<>();
+
+        var f = this._feature;
+        if (CHECKS) check
+          (Errors.any() || f != null);
+
+        if (f != null)
+          {
+            generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
+                         ? ff.resultTypeForTypeInference(pos(), res, UnresolvedType.NONE)
+                         : new BuiltInType(FuzionConstants.UNIT_NAME));
+            for (var a : f.arguments())
+              {
+                res.resolveTypes(a);
+                generics.add(a.resultType());
+              }
+          }
+
+        _inheritsCall._generics = generics;
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
@@ -528,93 +428,7 @@ public class Function extends ExprWithPos
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
     if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
       {
-        if (this._feature == null) // NYI: is this case still used?
-          { /* We have an expression of the form
-             *
-             *   fun a.b.f
-             *
-             * so we replace it by
-             *
-             * --Fun<id>-- : Function<R,A1,A2,...>
-             * {
-             *   public redef R call(A1 a1, A2 a2, ...)
-             *   {
-             *     result = a.b.f(a1, a2, ...);
-             *   }
-             * }
-             * [..]
-             *         --Fun<id>--()
-             * [..]
-             */
-            Call call = this._call;
-            var calledFeature = call.calledFeature();
-            /* NYI: "fun a.b" special cases: check what can go wrong with
-             * calledTarget and flag an error. Possible errors or special cases
-             * are
-             *
-             *  - calling an abstract feature
-             *  - calling a redefined feature
-             *  - calling a single feature
-             *  - calling a feature in a different module
-             */
-            var actual_args = new List<Actual>();
-            var formal_args = new List<AbstractFeature>();
-            int argnum = 1;
-            for (var f : calledFeature.arguments())
-              {
-                String name = "a"+argnum;
-                actual_args.add(new Actual(new Call(pos(), null, name)));
-                formal_args.add(new Feature(pos(), Visi.PRIV, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
-                argnum++;
-              }
-            Call callWithArgs = new Call(pos(), null, call.name(), actual_args);
-            Feature fcall = new Feature(pos(), Visi.PRIV,
-                                        Consts.MODIFIER_REDEFINE,
-                                        NoType.INSTANCE, // calledFeature.returnType,
-                                        new List<String>("call"),
-                                        formal_args,
-                                        NO_CALLS,
-                                        Contract.EMPTY_CONTRACT,
-                                        new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef))
-                                        {
-                                          @Override
-                                          public boolean isLambdaCall()
-                                          {
-                                            return true;
-                                          }
-                                        };
-
-            // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            var fr = functionOrRoutine();
-            var args = new List<Actual>();
-            for (var g : _type.generics())
-              {
-                args.add(new Actual(g));
-              }
-            List<AbstractCall> inherits = new List<>(new Call(pos(), null, fr.featureName().baseName(), args));
-
-            List<Expr> expressions = new List<Expr>(fcall);
-
-            String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
-            Feature function = new Feature(pos(),
-                                           Visi.PRIV,
-                                           0,
-                                           RefType.INSTANCE,
-                                           new List<String>(wrapperName),
-                                           NO_FEATURES,
-                                           inherits,
-                                           Contract.EMPTY_CONTRACT,
-                                           new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
-            res._module.findDeclarations(function, call.target().type().featureOfType());
-            result = new Call(pos(),
-                              call.target(),
-                              function)
-              .resolveTypes(res, outer);
-          }
-        else
-          {
-            result = _call;
-          }
+        result = _call;
       }
     return result;
   }
@@ -627,9 +441,7 @@ public class Function extends ExprWithPos
    */
   public String toString()
   {
-    return (_feature == null)
-      ? "function CALL: " + _call
-      : "function FEATURE: " + _feature;
+    return _names + " -> " + _expr;
   }
 
 }

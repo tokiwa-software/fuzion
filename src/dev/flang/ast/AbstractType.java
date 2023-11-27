@@ -1007,6 +1007,40 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * For a function type (see isAnyFunctionType()), return the arity of the
+   * funcion.
+   *
+   * @return the number of arguments to be passed to this function type.
+   */
+  int arity()
+  {
+    if (PRECONDITIONS) require
+      (isAnyFunctionType());
+
+    var f = featureOfType();
+    if (f == Types.resolved.f_function)
+      {
+        return generics().size() - 1;
+      }
+    else
+      {
+        /* This code is currently limited to direct children of Function, but
+         * that is ok since this is the case for all remaining types with
+         * t.isFunctionType().
+         */
+        for (var p : f.inherits())
+          {
+            if (p.calledFeature().equals(Types.resolved.f_function))
+              {
+                return p.actualTypeParameters().size() - 1;
+              }
+          }
+        throw new Error("AbstractType.arity failed to find arity of " + this);
+      }
+  }
+
+
+  /**
    * isLazyType checks if this is a lazy function type.
    *
    * @return true iff this is a lazy type

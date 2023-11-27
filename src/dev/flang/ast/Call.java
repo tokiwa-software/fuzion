@@ -868,7 +868,7 @@ public class Call extends AbstractCall
 
   String newNameForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
-    var n = Function.arity(expectedType);
+    var n = expectedType.arity();
     var name = _name;
     String result = null;
     if (name.startsWith("prefix ") && (n == 1))
@@ -902,7 +902,7 @@ public class Call extends AbstractCall
   public Expr applyPartially(Resolution res, AbstractFeature outer, AbstractType t)
   {
     Expr result;
-    var n = Function.arity(t);
+    var n = t.arity();
     if (mustNotContainDeclarations("a partially applied function call", outer))
       {
         _pendingError = null;
@@ -940,8 +940,6 @@ public class Call extends AbstractCall
           }
         var fn = new Function(pos(),
                               pns,
-                              new List<>(),
-                              Contract.EMPTY_CONTRACT,
                               this)
           {
             public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
@@ -1917,7 +1915,7 @@ public class Call extends AbstractCall
                       {
                         res.resolveTypes(ac._calledFeature);
                         var rt = ac._calledFeature.resultTypeIfPresent(res);
-                        if (rt != null && !(rt.isAnyFunctionType() && Function.arity(rt) == Function.arity(t)) && !rt.isGenericArgument())
+                        if (rt != null && !(rt.isAnyFunctionType() && rt.arity() == t.arity()) && !rt.isGenericArgument())
                           {
                             l = ac.applyPartially(res, outer, t);
                           }
@@ -1933,15 +1931,13 @@ public class Call extends AbstractCall
                   }
                 else if (a instanceof NumLiteral n &&
                          n.explicitSign() != null &&
-                         Function.arity(t) == 1)
+                         t.arity() == 1)
                   { // convert `map -1` into `map x->x-1`
                     List<ParsedName> pns = new List<>();
                     String p = FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
                     pns.add(new ParsedName(pos(), p));
                     var fn = new Function(pos(),
                                           pns,
-                                          new List<>(),
-                                          Contract.EMPTY_CONTRACT,
                                           new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
                                                          new ParsedName(n.signPos(), "infix "+n.explicitSign()),  // `infix +` or `infix -`
                                                          new List<>(new Actual(n.stripSign()))));                 // constant w/o sign

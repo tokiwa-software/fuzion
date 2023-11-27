@@ -2003,19 +2003,16 @@ argNamesOpt : argNames
 
 
   /**
-   * Parse a simple lambda expression, i.e., one without parentheses around the
-   * arguments.
+   * Parse the right hand side of a lambda expression including the `->`.
    *
-lambda      : contract "->" block
+lambda      : "->" block
             ;
    */
   Expr lambda(List<ParsedName> n)
   {
     SourcePosition pos = tokenSourcePos();
-    var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
-    Contract   c = contract();
     matchOperator("->", "lambda");
-    return new Function(pos, n, i, c, block());
+    return new Function(pos, n, block());
   }
 
 
@@ -2024,17 +2021,10 @@ lambda      : contract "->" block
    * position of the parser.
    *
    * @return true iff the next token(s) start a plainLambda.
-   *
    */
   boolean isLambdaPrefix()
   {
-    var f = this;
-    if (isContractPrefix()) // fork only if really needed
-      {
-        f = fork();
-        f.contract();
-      }
-    return f.isOperator("->");
+    return isOperator("->");
   }
 
 

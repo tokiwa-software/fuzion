@@ -389,8 +389,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
           {
             var fn = new Function(pos(),
                                   new List<>(),
-                                  new List<>(),
-                                  Contract.EMPTY_CONTRACT,
                                   result);
 
             result = fn.propagateExpectedType(res, outer, t);
