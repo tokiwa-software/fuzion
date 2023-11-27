@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 import java.math.BigInteger;
 
@@ -332,13 +333,66 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Create new constant by flipping the sign.
+   * Create new constant by adding the given sign to a NumLiteral that so far
+   * did not have a sign.
+   *
+   * @param sign the new sign
+   *
+   * @param signPos the source code position of the sign, must be directly
+   * before this NumLiterals position.
    */
-  public NumLiteral neg(SourcePosition pos)
+  public NumLiteral addSign(String sign, SourcePosition signPos)
   {
-    var o = _originalString;
-    var s = o.startsWith("-") ? o.substring(1) : "-" + o;
-    return new NumLiteral(pos, s, _base, _mantissa, _exponent2, _exponent5);
+    if (PRECONDITIONS) require
+      (sign.equals("+") || sign.equals("-"),
+       !_originalString.startsWith("+") && !_originalString.startsWith("-"));
+
+    var s = sign + _originalString;
+    var newPos = new SourceRange(signPos._sourceFile, signPos.bytePos(), pos().byteEndPos());
+    return new NumLiteral(newPos, s, _base, _mantissa, _exponent2, _exponent5);
+  }
+
+
+  /**
+   * Create new constant by removing the added sign.
+   *
+   * @return a NumLiteral equal to the original one `addSign` was called on.
+   */
+  public NumLiteral stripSign()
+  {
+    if (PRECONDITIONS) require
+      (explicitSign() != null);
+
+    var s = _originalString.substring(1);
+    var newPos = new SourceRange(pos()._sourceFile, pos().bytePos()+1, pos().byteEndPos());
+    return new NumLiteral(newPos, s, _base, _mantissa, _exponent2, _exponent5);
+  }
+
+
+  /**
+   * If this NumLiteral has an explicit sign as in `+127 or `-128`, return that
+   * sign as a String, return null otherwise.
+   *
+   * @return "+", "-", or null,
+   */
+  public String explicitSign()
+  {
+    return
+      _originalString.startsWith("+") ? "+" :
+      _originalString.startsWith("-") ? "-"
+                                     : null;
+  }
+
+
+  /**
+   * Get the source code position of the explicit sign.
+   */
+  public SourceRange signPos()
+  {
+    if (PRECONDITIONS) require
+      (explicitSign() != null);
+
+    return new SourceRange(pos()._sourceFile, pos().bytePos(), pos().bytePos()+1);
   }
 
 

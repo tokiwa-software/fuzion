@@ -223,6 +223,18 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Argument field in a partial function such as
+   *
+   *   m := s.map (f 42)
+   *
+   * that will be converted into
+   *
+   *   m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   */
+  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
+
+
+  /**
    * Suffix added to module files.
    */
   public static final String MODULE_FILE_SUFFIX = ".fum";

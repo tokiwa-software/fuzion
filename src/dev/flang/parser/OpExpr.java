@@ -206,8 +206,9 @@ public class OpExpr extends ANY
           {                       // prefix op:
             Expr e2 = expr(max+1);
             Expr e =
-              (op.text.equals("+") && (e2 instanceof NumLiteral i2)) ? i2             :
-              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new ParsedCall(e2, new ParsedName(op.pos, "prefix "+op.text));
+              (op.text.equals("+") && (e2 instanceof NumLiteral i2) && op.pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op.pos) :
+              (op.text.equals("-") && (e2 instanceof NumLiteral i2) && op.pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op.pos) :
+              new ParsedCall(e2, new ParsedName(op.pos, "prefix "+op.text));
             els.remove(max+1);
             els.set(max, e);
           }

@@ -923,7 +923,7 @@ public class Call extends AbstractCall
         List<ParsedName> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
-            String p = "#p" + (_id_++);
+            String p = FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
             pns.add(new ParsedName(pos(), p));
           }
         _actuals    = _actuals   .clone();
@@ -1923,10 +1923,10 @@ public class Call extends AbstractCall
               {
                 // var actual = resolveTypeForNextActual(null, aargs, res, outer);
                 // var actualType = typeFromActual(actual, outer);
-                if (resultExpression(actual) instanceof Call ac)
+                var a = resultExpression(actual);
+                Expr l = a;
+                if (a instanceof Call ac)
                   {
-                    Expr l = ac;
-
                     if (ac._calledFeature != null)
                       {
                         res.resolveTypes(ac._calledFeature);
@@ -1944,17 +1944,34 @@ public class Call extends AbstractCall
                       {
                         l = ac.applyPartially(res, outer, t);
                       }
-                      if (l != ac)
-                        {
-                          var lx = l;
-                          var vaix = vai;
-                          _actuals = _actuals.setOrClone(vaix, l);
-                          outer.whenResolvedTypes
-                            (() ->
-                             {
-                               _actuals = _actuals.setOrClone(vaix, res.resolveType(lx, outer));
-                             });
-                        }
+                  }
+                else if (a instanceof NumLiteral n &&
+                         n.explicitSign() != null &&
+                         Function.arity(t) == 1)
+                  { // convert `map -1` into `map x->x-1`
+                    List<ParsedName> pns = new List<>();
+                    String p = FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
+                    pns.add(new ParsedName(pos(), p));
+                    var fn = new Function(pos(),
+                                          pns,
+                                          new List<>(),
+                                          Contract.EMPTY_CONTRACT,
+                                          new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
+                                                         new ParsedName(n.signPos(), "infix "+n.explicitSign()),  // `infix +` or `infix -`
+                                                         new List<>(new Actual(n.stripSign()))));                 // constant w/o sign
+                    fn.resolveTypes(res, outer);
+                    l = fn;
+                  }
+                if (l != a)
+                  {
+                    var lx = l;
+                    var vaix = vai;
+                    _actuals = _actuals.setOrClone(vaix, l);
+                    outer.whenResolvedTypes
+                      (() ->
+                       {
+                         _actuals = _actuals.setOrClone(vaix, res.resolveType(lx, outer));
+                       });
                   }
               }
           }
@@ -2513,7 +2530,7 @@ public class Call extends AbstractCall
   }
 
 
-  static int _id_ = 0;
+  static int _partialFunctionArgumentId_ = 0;
 
 
   /**

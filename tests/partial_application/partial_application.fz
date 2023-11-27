@@ -52,6 +52,10 @@ partial_application is
   test "data.map x->2*x    " (data.map x->2*x       ) "[2,4,6,8,10,12,14,16,18,20]"
   test "data.map    2*     " (data.map    2*        ) "[2,4,6,8,10,12,14,16,18,20]"
   test "data.map    *2     " (data.map    *2        ) "[2,4,6,8,10,12,14,16,18,20]"
+  test "data.map    2+     " (data.map    2+        ) "[3,4,5,6,7,8,9,10,11,12]"
+  test "data.map    +2     " (data.map    +2        ) "[3,4,5,6,7,8,9,10,11,12]"
+  test "data.map    2-     " (data.map    2-        ) "[1,0,-1,-2,-3,-4,-5,-6,-7,-8]"
+  test "data.map    -2     " (data.map    -2        ) "[-1,0,1,2,3,4,5,6,7,8]"
   test "data.map 3.infix*  " (data.map    3.infix*  ) "[3,6,9,12,15,18,21,24,27,30]"
   test "data.map 3.prefix* " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # NYI: this should not work!
   test "data.map 3.postfix*" (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # NYI: this should not work!
@@ -69,10 +73,15 @@ partial_application is
   test "easy %17      " (easy %17)       "8"
   test "easy (% 17)   " (easy (% 17))    "8"
   test "easy (-(17+0))" (easy (-(17+0))) "25"
-  test "easy -(17+0)  " (easy -(17+0))   "25"
-#  easy -(17)
-#  easy (- 17)
-#  easy -17
+  test "easy -(17+0)  " (easy -(17+0)  ) "25"
+  test "easy -(17)    " (easy -(17)    ) "25"
+  test "easy (- 17)   " (easy (- 17)   ) "25"
+  test "easy -17      " (easy -17      ) "25"
+  test "easy (+(17+0))" (easy (+(17+0))) "59"
+  test "easy +(17+0)  " (easy +(17+0)  ) "59"
+  test "easy +(17)    " (easy +(17)    ) "59"
+  test "easy (+ 17)   " (easy (+ 17)   ) "59"
+  test "easy +17      " (easy +17      ) "59"
   test "easy +o" (easy +o) "43"
   test "easy -o" (easy -o) "41"
   test "easy o+" (easy o+) "43"
