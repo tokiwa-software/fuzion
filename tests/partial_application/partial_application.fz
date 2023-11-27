@@ -32,14 +32,16 @@ partial_application is
       say "FAILED: $msg: got '$got' expected '$exp'"
       set_exit_code 1
 
-  test "map +(1+0):" $([1,2,3,4].map +(1+0)) "[2,3,4,5]"
+  test "map +(1+0)" $([1,2,3,4].map +(1+0)) "[2,3,4,5]"
 
   o := 1
   t := 2
-#  test "map +o:" $([1,2,3,4].map +o) "[2,3,4,5]"
-#  test "map -o:" $([1,2,3,4].map -o) "[0,1,2,3]"
-#  test "map *t:" $([1,2,3,4].map *t) "[2,4,6,8]"
-#  test "map %t:" $([1,2,3,4].map %2) "[0,1,0,1]"
+  test "map +o" $([1,2,3,4].map +o) "[2,3,4,5]"
+  test "map -o" $([1,2,3,4].map -o) "[0,1,2,3]"
+  test "map o+" $([1,2,3,4].map o+) "[2,3,4,5]"
+  test "map o-" $([1,2,3,4].map o-) "[0,-1,-2,-3]"
+  test "map *t" $([1,2,3,4].map *t) "[2,4,6,8]"
+  test "map %t" $([1,2,3,4].map %t) "[1,0,1,0]"
 
   qqq(f,g i32->i32) => "{f 42} {g 42}"
   test "qqq lambdas " (qqq x->2*x x->3*x) "84 126"
@@ -71,6 +73,12 @@ partial_application is
 #  easy -(17)
 #  easy (- 17)
 #  easy -17
+  test "easy +o" (easy +o) "43"
+  test "easy -o" (easy -o) "41"
+  test "easy o+" (easy o+) "43"
+  test "easy o-" (easy o-) "-41"
+  test "easy *t" (easy *t) "84"
+  test "easy %t" (easy %t) "0"
 
 #  x Unary i32 i32 := 5 *
 

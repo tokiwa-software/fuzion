@@ -917,7 +917,7 @@ public class Call extends AbstractCall
   {
     Expr result;
     var n = Function.arity(t);
-    if (mustNotContainDeclaratains("a partially applied function call", outer))
+    if (mustNotContainDeclarations("a partially applied function call", outer))
       {
         _pendingError = null;
         List<ParsedName> pns = new List<>();
@@ -926,63 +926,47 @@ public class Call extends AbstractCall
             String p = "#p" + (_id_++);
             pns.add(new ParsedName(pos(), p));
           }
-        Expr code = this;
+        _actuals    = _actuals   .clone();
+        _actualsNew = _actualsNew.clone();
         if (_name.startsWith("prefix "))
-          { // -v ==> x->x-v
-            _actuals = _actuals.clone();
-            _actuals.add(_target);
-            _actualsNew = _actualsNew.clone();
+          { // -v ==> x->x-v   -- swap target and first actual:
+            if (CHECKS) check
+              (Errors.any() || n == 1,
+               Errory.any() || _actuals.size() == 0);
+            _actuals   .add(           _target );
             _actualsNew.add(new Actual(_target));
             _target = new ParsedCall(null, pns.get(0));
           }
         else
-          {
+          { // fill up actuals with arguments of the lambda:
             for (var i = 0; i < n; i++)
               {
                 var c = new ParsedCall(null, pns.get(i));
-                _actuals = _actuals.clone();
-                _actuals.add(c);
-                _actualsNew = _actualsNew.clone();
+                _actuals   .add(           c );
                 _actualsNew.add(new Actual(c));
               }
           }
-        var fn = new Function(pos(),
-                              pns,
-                              new List<>(),
-                              Contract.EMPTY_CONTRACT,
-                              code);
-        //var nyi = fn.propagateExpectedType2(res, outer, t, true);
-        result = fn;
         var nn = newNameForPartial(res, outer, t);
         if (nn != null)
           {
             _name = nn;
             _calledFeature = null;
           }
+        var fn = new Function(pos(),
+                              pns,
+                              new List<>(),
+                              Contract.EMPTY_CONTRACT,
+                              this)
+          {
+            public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+            {
+              var rs = super.propagateExpectedType2(res, outer, t, inferResultType);
+              updateTarget(res);
+              return rs;
+            }
+          };
+        result = fn;
         fn.resolveTypes(res, outer);
-        if (nn == null)
-          {
-            result = result.propagateExpectedType(res, outer, t);
-          }
-        //        if (fn._feature != null)
-          //        if (nn == null)
-          {
-            //            System.out.println("TARGET update for "+this+" fn._feature is "+(fn._feature == null ? "null" : fn._feature.qualifiedName()));
-            visit(new FeatureVisitor()
-              {
-                public Expr action(Call c, AbstractFeature outer)
-                {
-                  //            System.out.println("TARGET update for "+Call.this+" actioon on "+c);
-                  return c.updateTarget(res, outer);
-                }
-              },
-              fn._feature);
-          }
-          //else
-            if (false)
-          {
-            System.out.println("NO TARGET update for "+this);
-          }
       }
     else
       {
@@ -2782,11 +2766,7 @@ public class Call extends AbstractCall
   {
     if (_targetFrom != null)
       {
-        //System.out.println("updateTarget for "+this+" state "+outer.state()+" "+(outer.state().atLeast(State.RESOLVING_DECLARATIONS)?"ACTION from "+_targetFrom+" outer "+outer.qualifiedName():"NOP"));
-        _target =
-          true || outer.state().atLeast(State.RESOLVING_DECLARATIONS)
-          ? _targetFrom.target(pos(), res, outer)
-          : _target;
+        _target = _targetFrom.target(pos(), res, outer);
       }
     return this;
   }

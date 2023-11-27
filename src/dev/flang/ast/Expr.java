@@ -300,7 +300,25 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
-  boolean mustNotContainDeclaratains(String what, AbstractFeature outer)
+  /**
+   * Check that this Expr does not contain any inner declarations of
+   * features. Produce an error otherwise.
+   *
+   * An expression used as a lazy value or a partially applied call must not
+   * contain any innter declarations.  There is is no fundamental problem, it
+   * just requires that the front end would not add the feature declarations
+   * found in this expression to the outer feature eagerly, but onyl after
+   * processing of lazy values and partial application was done.
+   *
+   * @param what the reason why we are checking this, "a lazy value" or "a
+   * partially applied function call".
+   *
+   * @param outer the outer feature, currently unused.
+   *
+   * @return true iff no declarations were found and, consequently, no error was
+   * produced.
+   */
+  boolean mustNotContainDeclarations(String what, AbstractFeature outer)
   {
     var result = true;
     var declarations = new List<Feature>();
@@ -367,7 +385,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        if (mustNotContainDeclaratains("a lazy value", outer))
+        if (mustNotContainDeclarations("a lazy value", outer))
           {
             var fn = new Function(pos(),
                                   new List<>(),
@@ -377,14 +395,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
             result = fn.propagateExpectedType(res, outer, t);
             fn.resolveTypes(res, outer);
-            visit(new FeatureVisitor()
-              {
-                public Expr action(Call c, AbstractFeature outer)
-                {
-                  return c.updateTarget(res, outer);
-                }
-              },
-              fn._feature);
+            fn.updateTarget(res);
           }
         else
           {

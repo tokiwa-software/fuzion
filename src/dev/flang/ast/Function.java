@@ -188,6 +188,35 @@ public class Function extends ExprWithPos
   }
 
 
+  /**
+   * In case of partial application and lazy values, it might happen that the
+   * target of calls might need to get resolved again since the original target
+   * was relative to the feature the expression was used in, while now it must
+   * be resolved relative to the feature declared implicitly by this lambda,
+   * which add one level of nesting.
+   *
+   * This must be called after this Function's resolveTypes was resolved since
+   * this creates the new feature surrounding the expression.
+   *
+   * What this does is for all calls `c` in the expression that is wrapped in
+   * this lambda, call `c.updateTarget` with this lambda's feature as `outer`
+   * argument.
+   *
+   * @param res the resolution instance.
+   */
+  void updateTarget(Resolution res)
+  {
+    _expr = _expr.visit(new FeatureVisitor()
+      {
+        public Expr action(Call c, AbstractFeature outer)
+        {
+          return c.updateTarget(res, outer);
+        }
+      },
+      _feature);
+  }
+
+
   static int arity(AbstractType t)
   {
     if (PRECONDITIONS) require
