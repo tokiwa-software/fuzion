@@ -1564,22 +1564,11 @@ actualArgs  : actualsList
    */
   boolean endsActuals(boolean atMinIndent)
   {
-    return isOperator('.') || endsActuals(current(atMinIndent));
-  }
-
-
-  /**
-   * Does the given current token end a list of space separated actual arguments to a
-   * call.
-   *
-   * @param t the token
-   *
-   * @return true if t ends actual arguments
-   */
-  boolean endsActuals(Token t)
-  {
     return
-      switch (t)
+      // `.call` ends immediately
+      isOperator('.') ||
+
+      switch (current(atMinIndent))
       {
       case t_semicolon       ,
            t_comma           ,
@@ -1610,19 +1599,34 @@ actualArgs  : actualsList
            t_barLimit        ,
            t_eof             -> true;
 
-      // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
-      // xyz', i.e, stuck to the called function, we do not parse it as part
-      // of the args.
-      //
-      // ignoredTokenBefore(): An operator '-' like this 'f a b - xyz', so the
-      // arg list ends with 'b' and '-' will be parsed as an infix operator on
-      // 'f a b' and 'xyz'.
-      case t_op            -> !ignoredTokenBefore() || ignoredTokenAfter();
+      case t_op            ->
+        {
+          if (// !ignoredTokenBefore(): We have an operator '-' like this
+              // 'f-xyz', 'f- xyz', i.e, stuck to the called function, we do not
+              // parse it as part of the args.
+              !ignoredTokenBefore() ||
+
+              // ignoredTokenBefore() and ignoredTokenAfter(): An operator '-'
+              // like this 'f a b - xyz', so the arg list ends with 'b' and '-'
+              // will be parsed as an infix operator on 'f a b' and 'xyz'.
+              ignoredTokenAfter())
+            {
+              yield true;
+            }
+          else
+            { // ignoredTokenBefore() and !ignoredTokenAfter(): An operator '-'
+              // like this '(... f a b -)', so the arg list ends with 'b' and '-'
+              // will be parsed as an postfix operator on 'f a b' (see #2272).
+              var f = fork();
+              f.next();
+              yield f.endsActuals(atMinIndent);
+            }
+        }
 
       // No more actuals if we have a string continuation as in "value $x is
       // ok" for the string after '$x' or in "bla{f a b}blub" for the string
       // after 'f a b'.
-      default              -> isContinuedString(t);
+      default              -> isContinuedString(current(atMinIndent));
       };
   }
 
