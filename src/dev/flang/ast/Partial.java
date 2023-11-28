@@ -33,7 +33,8 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Partial represents partially applied functions and related syntax sugar and provides mathos for handling of partial evalution.
+ * Partial represents partially applied operators and related syntax sugar and
+ * provides mathods for handling of partial evalution.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -47,16 +48,29 @@ public class Partial extends ExprWithPos
   /*-------------------------  static variables -------------------------*/
 
 
+  /**
+   * We will need to generate names for input variables of lambda expressions,
+   * so this counter is used to ensure these names are unique.
+   */
   static int _partialFunctionArgumentId_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * The operator this partial function implements.
+   */
   final String _op;
 
 
+  /**
+   * Once we have received the target type through propagateExpectedType[2](),
+   * this will be set to the Function instance that implements the lambda and
+   * that will replace this instance.
+   */
   private Function _function = null;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -81,11 +95,20 @@ public class Partial extends ExprWithPos
   /*--------------------------  static methods  -------------------------*/
 
 
-
+  /**
+   * Create a new, unique argument name for use in a automatically generated
+   * lambda.
+   */
   static String argName()
   {
     return FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
   }
+
+
+  /**
+   * Create a new, unique argument name for use in a automatically generated
+   * lambda and return is as an instance of ParsedName at the given position.
+   */
   static ParsedName argName(SourcePosition pos)
   {
     return new ParsedName(pos, argName());
