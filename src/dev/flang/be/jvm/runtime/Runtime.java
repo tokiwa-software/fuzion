@@ -737,8 +737,6 @@ public class Runtime extends ANY
       {
         var t = new FuzionThread(r, code);
         result = _startedThreads_.add(t);
-        // result = t.getId();
-        // result = t.threadId(); // NYI: use for Java >=19
       }
     return result;
   }

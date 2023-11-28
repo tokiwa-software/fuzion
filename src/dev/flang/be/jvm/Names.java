@@ -329,7 +329,7 @@ public class Names extends ANY implements ClassFileConstants
      */
     String get(int cl)
     {
-      int num = clazzId2num(cl);
+      int num = _fuir.clazzId2num(cl);
       _cache.ensureCapacity(num + 1);
       while (_cache.size() <= num)  // why is there no ArrayList.setSize?
         {
@@ -518,15 +518,6 @@ public class Names extends ANY implements ClassFileConstants
           }
       }
     return sb.toString();
-  }
-
-
-  /**
-   * NYI: Documentation, just discard the sign?
-   */
-  private int clazzId2num(int cl)
-  {
-    return cl & 0xFFFffff; // NYI: give a name to this constant
   }
 
 
