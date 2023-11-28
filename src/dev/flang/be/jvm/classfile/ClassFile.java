@@ -29,6 +29,7 @@ package dev.flang.be.jvm.classfile;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 import java.io.ByteArrayOutputStream;
@@ -1189,9 +1190,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
   /*----------------------------  variables  ----------------------------*/
 
-
-  final boolean _verbose = false;  // NYI: initialize
-
+  private final FuzionOptions _opt;
 
   public final String _name;
   public final ClassType _type;
@@ -1228,9 +1227,9 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(String name, String supr)
+  public ClassFile(FuzionOptions opt, String name, String supr)
   {
-    this(name, supr, false);
+    this(opt, name, supr, false);
   }
 
 
@@ -1239,8 +1238,9 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(String name, String supr, boolean interfce)
+  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce)
   {
+    _opt = opt;
     _name = name;
     _type = new ClassType(name);
     _version = DEFAULT_VERSION;
@@ -1271,11 +1271,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   public void write(Path dir) throws IOException
   {
     var fp = dir.resolve(classFile());
-
-    if (_verbose) // NYI: Use Options.verbosePrintln?
-      {
-        System.out.println(" + " + fp);
-      }
+    _opt.verbosePrintln(" + " + fp);
     Files.write(fp, bytes());
   }
 
@@ -1392,7 +1388,7 @@ public class ClassFile extends ANY implements ClassFileConstants
                                      List<Attribute> attributes)
   {
     return new CodeAttribute(where,
-                             10, /* NYI: code.max_locals() */
+                             code.max_locals(),
                              code,
                              exception_table,
                              attributes);

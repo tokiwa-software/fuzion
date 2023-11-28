@@ -33,6 +33,7 @@ import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 import java.util.TreeMap;
@@ -48,6 +49,9 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  private final FuzionOptions _opt;
 
 
   /**
@@ -74,8 +78,9 @@ public class Types extends ANY implements ClassFileConstants
   /**
    * Create instance of Types
    */
-  public Types(FUIR fuir, Names names)
+  public Types(JVMOptions opt, FUIR fuir, Names names)
   {
+    this._opt = opt;
     this._fuir = fuir;
     this._names = names;
     this._choices = new Choices(fuir, names, this);
@@ -114,7 +119,7 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(cn, Names.ANY_CLASS);
+        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS);
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())
@@ -314,7 +319,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   private void makeInterface(int cl)
   {
-    var i = new ClassFile(_names.javaInterface(cl), "java/lang/Object", true);
+    var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true);
     _interfaceFiles.put(cl, i);
     if (!_fuir.clazzIsChoice(cl))
       {

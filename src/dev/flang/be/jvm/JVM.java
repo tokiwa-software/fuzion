@@ -756,7 +756,7 @@ should be avoided as much as possible.
     fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _fuir = fuir;
     _names = new Names(fuir);
-    _types = new Types(fuir, _names);
+    _types = new Types(opt, fuir, _names);
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
     var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
