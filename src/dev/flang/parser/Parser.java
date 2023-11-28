@@ -1467,8 +1467,10 @@ callTail    : indexCallOpt dotCallOpt
 indexCallOpt: indexCall
             |
             ;
-dotCallOpt  : dot call
+dotCallOpt  : dotCall
             |
+            ;
+dotCall     : dot call
             ;
    */
   Call callTail(boolean skippedDot, Call target)
@@ -1869,7 +1871,8 @@ operatorExpr  : opExpr
   /**
    * Parse opExpr
    *
-opExpr      : ( op
+opExpr      : dotCall
+            | ( op
               )*
               opTail
             | op
@@ -1877,28 +1880,35 @@ opExpr      : ( op
    */
   Expr opExpr()
   {
-    var oe = new OpExpr();
-    Operator singleOperator = null;
-    if (current() == Token.t_op)
+     if (skipDot())
       {
-        singleOperator = op();
-        oe.add(singleOperator);
-        while (current() == Token.t_op)
-          {
-            singleOperator = null;
-            oe.add(op());
-          }
+        return Partial.dotCall(tokenSourcePos(), a->call(a));
       }
-    if (singleOperator == null || isTermPrefix())
-      {
-        oe.add(opTail());
-        return oe.toExpr();
-      }
-    else
-      {
-        return new Partial(singleOperator._pos,
-                           singleOperator._text);
-      }
+     else
+       {
+         var oe = new OpExpr();
+         Operator singleOperator = null;
+         if (current() == Token.t_op)
+           {
+             singleOperator = op();
+             oe.add(singleOperator);
+             while (current() == Token.t_op)
+               {
+                 singleOperator = null;
+                 oe.add(op());
+               }
+           }
+         if (singleOperator == null || isTermPrefix())
+           {
+             oe.add(opTail());
+             return oe.toExpr();
+           }
+         else
+           {
+             return new Partial(singleOperator._pos,
+                                singleOperator._text);
+           }
+       }
   }
 
 

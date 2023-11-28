@@ -78,6 +78,11 @@ partial_application is
   test "((u64 11)..15).map ( ! )" (((u64 11)..15).map ( ! )) "[39916800,479001600,6227020800,87178291200,1307674368000]"
 #  say (((u64 11)..20).map (!!))    # should cause an error: ambiguous prefix and postfix !
 
+  test "data.map (.as_string)  " (data.map (.as_string)) "[1,2,3,4,5,6,7,8,9,10]"
+  test "data.map (.as_string 2)" (data.map (.as_string 2)) "[1,10,11,100,101,110,111,1000,1001,1010]"
+  test "data.map (.as_string 3)" (data.map (.as_string 3)) "[1,2,10,11,12,20,21,22,100,101]"
+#  test "data.map (.as_string)" (data.map .as_string) "[1,2,3,4,5,6,7,8,9,10]"  # should cause an error
+
   data := [1,2,3,4,5,6,7,8,9,10]  # do not use 1..10 due to #2271
   test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1,4,9,16,25,36,49,64,81,100]"
   test "data.zip data (+)" (data.zip data (+)) "[2,4,6,8,10,12,14,16,18,20]"

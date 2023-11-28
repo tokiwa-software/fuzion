@@ -92,6 +92,27 @@ public class Partial extends ExprWithPos
   }
 
 
+  /**
+   * Create a partial call of the form `.f` that will be turned into a lambda `x -> x.f`.
+   *
+   * @param pos the source position of the call
+   *
+   * @param call a callback into the parser to create the call for the target
+   * provided as an argument.  The target must be the cal to the bound variable
+   * of the lambda expression.
+   *
+   * @return the corresponding lambda expression.
+   */
+  public static Function dotCall(SourcePosition pos, java.util.function.Function<Expr,Call> call)
+  {
+    var a = argName(pos);
+    var c = call.apply(new ParsedCall(null, a));
+    return new Function(c.pos(),
+                        new List<>(a),
+                        c);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
