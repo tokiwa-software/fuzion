@@ -1022,7 +1022,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring or inheriting feature
    *
-   * @param name the name of the feature
+   * @param name the name of the feature, may starts with
+   * FuzionConstants.UNARY_OPERATOR_PREFIX, which means that both prefix and
+   * postfix variants should match.
    *
    * @param use the call, assign or destructure we are trying to resolve, used
    * to find field in scope, or null if fields should not be checked for scope
@@ -1035,6 +1037,45 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * together with the outer feature where they were found.
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  {
+    List<FeatureAndOuter> result;
+    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
+        var prefixName = FuzionConstants.PREFIX_OPERATOR_PREFIX + op;
+        var postfxName = FuzionConstants.POSTFIX_OPERATOR_PREFIX + op;
+        result = new List<>();
+        result.addAll(lookup0(outer, prefixName, use, traverseOuter, hidden));
+        result.addAll(lookup0(outer, postfxName, use, traverseOuter, hidden));
+      }
+    else
+      {
+        result = lookup0(outer, name, use, traverseOuter, hidden);
+      }
+    return result;
+  }
+
+
+  /**
+   * Find set of candidate features in an unqualified access (call or
+   * assignment).  If several features match the name but have different
+   * argument counts, return all of them.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param name the name of the feature
+   *
+   * @param use the call, assign or destructure we are trying to resolve, used
+   * to find field in scope, or null if fields should not be checked for scope
+   *
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
+   *
+   * @return in case we found features visible in the call's scope, the features
+   * together with the outer feature where they were found.
+   */
+  private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());

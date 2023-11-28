@@ -1007,6 +1007,26 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * If this is a choice type, extract function type that might be one of the
+   * choices.
+   *
+   * @return if this is a choice and there is exactly one choice for which
+   * isFuncitonType() holds, return that type, otherwise return this.
+   */
+  AbstractType functionTypeFromChoice()
+  {
+    // if expected type is choice, examine if there is exactly one
+    // array in choice generics, if so use this for further type propagation.
+    var choices = choices()
+      .filter(cg -> cg.isFunctionType())
+      .collect(List.collector());
+    return choices.size() == 1
+      ? choices.getFirst()
+      : this;
+  }
+
+
+  /**
    * For a function type (see isAnyFunctionType()), return the arity of the
    * funcion.
    *

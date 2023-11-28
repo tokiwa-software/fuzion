@@ -61,6 +61,25 @@ partial_application is
   test "data.map 3.postfix*" (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # NYI: this should not work!
   test "data.map 4.infix*  " (data.map    4.infix*  ) "[4,8,12,16,20,24,28,32,36,40]"
 
+  i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)
+  integer.postfix !  => if integer.this <= integer.this.type.one then integer.this.type.one else integer.this * (integer.this-integer.this.type.one)!
+  i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
+  u64.postfix     !!  => if val <= u64 1 then u64 1 else val * (val-1)!!
+  u64.prefix      !!  => if val <= u64 1 then u64 1 else val * !!(val-1)
+
+  test "data.map +" (data.map +) "[1,2,3,4,5,6,7,8,9,10]"
+  test "data.map -" (data.map -) "[-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]"
+  test "data.map !!" (data.map !!) "[1,2,6,24,120,720,5040,40320,362880,3628800]"
+  test "data.map !" (data.map !) "[1,2,6,24,120,720,5040,40320,362880,3628800]"
+  test "((u64 11)..20).map !" (((u64 11)..20).map !) "[39916800,479001600,6227020800,87178291200,1307674368000,20922789888000,355687428096000,6402373705728000,121645100408832000,2432902008176640000]"
+#  say (((u64 11)..20).map ! )    # NYI: does not work
+#  say (((u64 11)..20).map !!)    # should cause an error: ambiguous prefix and postfix !
+
+  data := [1,2,3,4,5,6,7,8,9,10]  # do not use 1..10 due to #2271
+  test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1,4,9,16,25,36,49,64,81,100]"
+  test "data.zip data +" (data.zip data +) "[2,4,6,8,10,12,14,16,18,20]"
+  test "data.zip data *" (data.zip data *) "[1,4,9,16,25,36,49,64,81,100]"
+
   easy(f i32->i32) =>
     f 42
 

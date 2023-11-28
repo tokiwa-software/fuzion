@@ -147,22 +147,7 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    // if expected type is choice, examine if there is exactly one
-    // array in choice generics, if so use this for further type propagation.
-    var choices = t
-      .choices()
-      .filter(cg -> !cg.isGenericArgument() && (
-        cg.featureOfType() == Types.resolved.f_Unary ||
-        cg.featureOfType() == Types.resolved.f_Lazy  ||
-        cg.featureOfType() == Types.resolved.f_function)
-      )
-      .collect(List.collector());
-    if (choices.size() == 1)
-      {
-        t = choices.getFirst();
-      }
-
-    _type = propagateExpectedType2(res, outer, t, false);
+    _type = propagateExpectedType2(res, outer, t.functionTypeFromChoice(), false);
     return this;
   }
 
@@ -210,8 +195,9 @@ public class Function extends ExprWithPos
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
-   * @return if inferResultType, the result type inferred from this lambda, if
-   * !inferResultType, t. In any case Types.t_ERROR in case of an error.
+   * @return if inferResultType, the result type inferred from this lambda or
+   * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
+   * case of error, return Types.t_ERROR.
    */
   public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {

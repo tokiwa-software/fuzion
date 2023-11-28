@@ -428,6 +428,30 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * Special version of propagateExpectedType(res, outer, t) tries to infer the
+   * result type of a lambda or partially applied functin.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   *
+   * @param inferResultType true if the result type of this lambda should be
+   * inferred.
+   *
+   * @return if inferResultType, the result type inferred from this lambda or
+   * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
+   * case of error, return Types.t_ERROR.
+   */
+  public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  {
+    return inferResultType ? Types.t_UNDEFINED : t;
+  }
+
+
+  /**
    * Check if this expression can also be parsed as a type and return that type. Otherwise,
    * report an error (AstErrors.expectedActualTypeInCall).
    *

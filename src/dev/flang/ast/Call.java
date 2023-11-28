@@ -871,17 +871,13 @@ public class Call extends AbstractCall
     var n = expectedType.arity();
     var name = _name;
     String result = null;
-    if (name.startsWith("prefix ") && (n == 1))
+    if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX) && (n == 1))
       { // -v ==> x->x-v
-        result = "infix " + _name.substring("prefix ".length());
+        result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
       }
-    else if (name.startsWith("postfix ") && (n == 1))
+    else if (name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX) && (n == 1))
       { // -v ==> x->x-v
-        result = "infix " + _name.substring("postfix ".length());
-      }
-    else if (name.startsWith("infix ") && (n == 1))
-      { // -v ==> x->x-v
-        result = "infix " + _name.substring("infix ".length());
+        result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
       }
     return result;
   }
@@ -909,12 +905,11 @@ public class Call extends AbstractCall
         List<ParsedName> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
-            String p = FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
-            pns.add(new ParsedName(pos(), p));
+            pns.add(Partial.argName(pos()));
           }
         _actuals    = _actuals   .clone();
         _actualsNew = _actualsNew.clone();
-        if (_name.startsWith("prefix "))
+        if (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check
               (Errors.any() || n == 1,
@@ -1037,9 +1032,9 @@ public class Call extends AbstractCall
    */
   private void findOperatorOnOuter(Resolution res, AbstractFeature thiz)
   {
-    if (_name.startsWith("infix "  ) ||
-        _name.startsWith("prefix " ) ||
-        _name.startsWith("postfix ")    )
+    if (_name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX  ) ||
+        _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
+        _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(thiz, _name, this, true, false);
@@ -1934,12 +1929,13 @@ public class Call extends AbstractCall
                          t.arity() == 1)
                   { // convert `map -1` into `map x->x-1`
                     List<ParsedName> pns = new List<>();
-                    String p = FuzionConstants.PARTIAL_FUNCTION_ARGUMENT_PREFIX + (_partialFunctionArgumentId_++);
-                    pns.add(new ParsedName(pos(), p));
+                    pns.add(Partial.argName(pos()));
                     var fn = new Function(pos(),
                                           pns,
                                           new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
-                                                         new ParsedName(n.signPos(), "infix "+n.explicitSign()),  // `infix +` or `infix -`
+                                                         new ParsedName(n.signPos(),
+                                                                        FuzionConstants.INFIX_OPERATOR_PREFIX +
+                                                                        n.explicitSign()),                        // `infix +` or `infix -`
                                                          new List<>(new Actual(n.stripSign()))));                 // constant w/o sign
                     fn.resolveTypes(res, outer);
                     l = fn;
@@ -2027,6 +2023,10 @@ public class Call extends AbstractCall
                     else if (resultExpression(actual) instanceof Function af)
                       {
                         checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                      }
+                    else if (resultExpression(actual) instanceof Partial ap)
+                      {
+                        checked[vai] = inferGenericLambdaResult(res, outer, t, ap, actual.pos(), conflict, foundAt);
                       }
                   }
               }
@@ -2242,16 +2242,13 @@ public class Call extends AbstractCall
   private boolean inferGenericLambdaResult(Resolution res,
                                            AbstractFeature outer,
                                            AbstractType formalType,
-                                           Function af,
+                                           Expr af,
                                            SourcePosition pos,
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
-    if (!formalType.isGenericArgument() &&
-        (formalType.featureOfType() == Types.resolved.f_function ||
-         formalType.featureOfType() == Types.resolved.f_Unary ||
-         formalType.featureOfType() == Types.resolved.f_Lazy) &&
+    if ((formalType.isFunctionType() || formalType.isLazyType()) &&
         formalType.generics().get(0).isGenericArgument()
         )
       {
@@ -2503,9 +2500,6 @@ public class Call extends AbstractCall
       ? Call.ERROR // short circuit this call
       : result;
   }
-
-
-  static int _partialFunctionArgumentId_ = 0;
 
 
   /**

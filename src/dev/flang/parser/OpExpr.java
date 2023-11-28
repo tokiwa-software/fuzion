@@ -36,6 +36,7 @@ import dev.flang.ast.ParsedCall;
 import dev.flang.ast.ParsedName;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 /**
@@ -197,7 +198,7 @@ public class OpExpr extends ANY
           {             // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedCall(e1, new ParsedName(op.pos, "infix "+op.text), new List<>(new Actual(e2)));
+            Expr e = new ParsedCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_OPERATOR_PREFIX + op._text), new List<>(new Actual(e2)));
             els.remove(max+1);
             els.remove(max);
             els.set(max-1, e);
@@ -206,16 +207,16 @@ public class OpExpr extends ANY
           {                       // prefix op:
             Expr e2 = expr(max+1);
             Expr e =
-              (op.text.equals("+") && (e2 instanceof NumLiteral i2) && op.pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op.pos) :
-              (op.text.equals("-") && (e2 instanceof NumLiteral i2) && op.pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op.pos) :
-              new ParsedCall(e2, new ParsedName(op.pos, "prefix "+op.text));
+              (op._text.equals("+") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op._pos) :
+              (op._text.equals("-") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op._pos) :
+              new ParsedCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text));
             els.remove(max+1);
             els.set(max, e);
           }
         else
           {                                          // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new ParsedCall( e1, new ParsedName(op.pos, "postfix "+op.text));
+            Expr e = new ParsedCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text));
             els.remove(max);
             els.set(max-1, e);
           }
@@ -347,7 +348,7 @@ public class OpExpr extends ANY
    */
   int precedence(Operator op, Kind kind)
   {
-    char c = op.text.charAt(0);
+    char c = op._text.charAt(0);
     int i=0;
     while ((   i<precedences.length             )
            && (precedences[i].chars.indexOf(c)<0))
@@ -453,7 +454,7 @@ public class OpExpr extends ANY
    */
   boolean isRightToLeft(Operator op)
   {
-    char c = op.text.charAt(0);
+    char c = op._text.charAt(0);
     return RIGHT_TO_LEFT_CHARS.indexOf(c) >= 0;
   }
 
