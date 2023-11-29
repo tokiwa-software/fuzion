@@ -852,9 +852,9 @@ public class Call extends AbstractCall
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || calledFeature() != Types.f_ERROR || targetVoid,
-       Errors.any() || _target         != Expr.ERROR_VALUE,
-       calledFeature() != null || _pendingError != null,
-       Errors.any() || _target         != null || _pendingError != null);
+       Errors.any() || _target        != Expr.ERROR_VALUE,
+       Errors.any() || _calledFeature != null || _pendingError != null,
+       Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
   }
