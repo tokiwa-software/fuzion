@@ -985,6 +985,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check if this is a choice and exactly one variant of the choice matches the
+   * given predicate. If so, return that variant.
+   *
+   * @param p a predicate over AbstracType
+   *
+   * @return the single choice type for which p holds, this if this is not a
+   * choice or the number of matches is not 1.
+   */
+  AbstractType findInChoice(java.util.function.Predicate<AbstractType> p)
+  {
+    return choices()
+      .filter(p)
+      .collect(Collectors.reducing((a, b) -> null))  // get single element or null if multiple
+      .orElse(this);
+  }
+
+
+  /**
    * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
    *
    * @return true iff this is a fun type
@@ -1016,13 +1034,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType functionTypeFromChoice()
   {
     // if expected type is choice, examine if there is exactly one
-    // array in choice generics, if so use this for further type propagation.
-    var choices = choices()
-      .filter(cg -> cg.isFunctionType())
-      .collect(List.collector());
-    return choices.size() == 1
-      ? choices.getFirst()
-      : this;
+    // function in choice generics
+    return findInChoice(cg -> cg.isFunctionType());
   }
 
 
@@ -1044,19 +1057,38 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        /* This code is currently limited to direct children of Function, but
-         * that is ok since this is the case for all remaining types with
-         * t.isFunctionType().
-         */
-        for (var p : f.inherits())
+        var result = arityFromParents(f);
+        if (result >= 0)
           {
-            if (p.calledFeature().equals(Types.resolved.f_function))
-              {
-                return p.actualTypeParameters().size() - 1;
-              }
+            return result;
           }
         throw new Error("AbstractType.arity failed to find arity of " + this);
       }
+  }
+
+
+  /**
+   * Recursive helper for `arity` to determine the arity by inspecting the
+   * parents of `f`.
+   *
+   * @param f a feature
+   *
+   * @return the arity in case f inherits from `Function`, -1 otherwise.
+   */
+  private int arityFromParents(AbstractFeature f)
+  {
+    for (var p : f.inherits())
+      {
+        var pf = p.calledFeature();
+        var result = pf.equals(Types.resolved.f_function)
+          ? p.actualTypeParameters().size() - 1
+          : arityFromParents(pf);
+        if (result >= 0)
+          {
+            return result;
+          }
+      }
+    return -1;
   }
 
 

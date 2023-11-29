@@ -452,6 +452,35 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * Try to perform partial application such that this expression matches
+   * `expectedType`.  Note that this may happen twice:
+   *
+   * 1. during RESLVING_DECLARATIONS phase of outer when resolving arguments to
+   *    a call such as `l.map +1`. In this case, expectedType may be a function
+   *    type `Function R A` with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type `R` is unknown since it is the
+   *    result type of this expression.
+   *
+   * 2. during TYPES_INFERENCING phase when the target variable's type is fully
+   *    resolved and this gets propagated to this expression.
+   *
+   * Note that this does not perform resolveTypes on the results since that
+   * would be too early during 1. but it is required in 2.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    return this;
+  }
+
+
+  /**
    * Check if this expression can also be parsed as a type and return that type. Otherwise,
    * report an error (AstErrors.expectedActualTypeInCall).
    *

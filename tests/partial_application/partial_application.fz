@@ -116,13 +116,34 @@ partial_application is
   test "easy *t" (easy *t) "84"
   test "easy %t" (easy %t) "0"
 
-#  x1 Unary i32 i32 := 5 *
-  x2 Unary i32 i32 := -
-  test "x2.call  42" (x2.call  42) "-42"
-  test "x2.call -12" (x2.call -12)  "12"
-  x3 Function i32 i32 i32 := -
-  test "x3.call  333  111" (x3.call  333  111)  "222"
-  test "x3.call -333 -111" (x3.call -333 -111) "-222"
+  x01 Unary i32 i32 := 5 *;   test "data.map x01" (data.map x01) "[5,10,15,20,25,30,35,40,45,50]"
+  x02 Unary i32 i32 := 5*;    test "data.map x02" (data.map x02) "[5,10,15,20,25,30,35,40,45,50]"
+  x03 Unary i32 i32 := *5;    test "data.map x03" (data.map x03) "[5,10,15,20,25,30,35,40,45,50]"
+  x04 Unary i32 i32 := * 5;   test "data.map x04" (data.map x04) "[5,10,15,20,25,30,35,40,45,50]"
+  x05 Unary i32 i32 := (*5);  test "data.map x05" (data.map x05) "[5,10,15,20,25,30,35,40,45,50]"
+  x06 Unary i32 i32 := 5 *  ; test "data.map x06" (data.map x06) "[5,10,15,20,25,30,35,40,45,50]"
+  x07 Unary i32 i32 := 5*   ; test "data.map x07" (data.map x07) "[5,10,15,20,25,30,35,40,45,50]"
+  x08 Unary i32 i32 := *5   ; test "data.map x08" (data.map x08) "[5,10,15,20,25,30,35,40,45,50]"
+  x09 Unary i32 i32 := * 5  ; test "data.map x09" (data.map x09) "[5,10,15,20,25,30,35,40,45,50]"
+  x10 Unary i32 i32 := (*5) ; test "data.map x10" (data.map x10) "[5,10,15,20,25,30,35,40,45,50]"
+
+  y01 Unary i32 i32 := 3 -;  test "data.map y01" (data.map y01) "[2,1,0,-1,-2,-3,-4,-5,-6,-7]"
+  y02 Unary i32 i32 := 3-;   test "data.map y02" (data.map y02) "[2,1,0,-1,-2,-3,-4,-5,-6,-7]"
+  y03 Unary i32 i32 := -3;   test "data.map y03" (data.map y03) "[-2,-1,0,1,2,3,4,5,6,7]"
+  y04 Unary i32 i32 := - 3;  test "data.map y04" (data.map y04) "[-2,-1,0,1,2,3,4,5,6,7]"
+  y05 Unary i32 i32 := (-3); test "data.map y05" (data.map y05) "[-2,-1,0,1,2,3,4,5,6,7]"
+  y06 Unary i32 i32 := 3 +;  test "data.map y06" (data.map y06) "[4,5,6,7,8,9,10,11,12,13]"
+  y07 Unary i32 i32 := 3+;   test "data.map y07" (data.map y07) "[4,5,6,7,8,9,10,11,12,13]"
+  y08 Unary i32 i32 := +3;   test "data.map y08" (data.map y08) "[4,5,6,7,8,9,10,11,12,13]"
+  y09 Unary i32 i32 := + 3;  test "data.map y09" (data.map y09) "[4,5,6,7,8,9,10,11,12,13]"
+  y10 Unary i32 i32 := (+3); test "data.map y10" (data.map y10) "[4,5,6,7,8,9,10,11,12,13]"
+
+  y2 Unary i32 i32 := -
+  test "y2.call  42" (y2.call  42) "-42"
+  test "y2.call -12" (y2.call -12)  "12"
+  y3 Function i32 i32 i32 := -
+  test "y3.call  333  111" (y3.call  333  111)  "222"
+  test "y3.call -333 -111" (y3.call -333 -111) "-222"
 
   ambig Unary String i32 => x->"#$x#"
   ambig(x, y i32) String => "$x $y"

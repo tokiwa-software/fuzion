@@ -866,18 +866,70 @@ public class Call extends AbstractCall
   }
 
 
-  String newNameForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  /**
+   * Perform partial application for a Call. In particular, this can make the
+   * following changes:
+   *
+   *   f x y      ==>  a,b,c -> f x y a b c
+   *   ++ x       ==>  a -> a ++ x
+   *   x ++       ==>  a -> x ++ a
+   *
+   * @see Expr.propagateExpectedTypeForPartial for details.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  @Override
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
-    var n = expectedType.arity();
+    Expr l = this;
+    if (_calledFeature != null)
+      {
+        res.resolveTypes(_calledFeature);
+        var rt = _calledFeature.resultTypeIfPresent(res);
+        if (rt != null && !(rt.isAnyFunctionType() && rt.arity() == expectedType.arity()) && !rt.isGenericArgument())
+          {
+            l = applyPartially(res, outer, expectedType);
+          }
+        else
+          { // NYI: check that partial application does not lead to ambiguity
+          }
+      }
+    else if (_pendingError != null                   || /* nothing found */
+             newNameForPartial(expectedType) != null    /* must search for a different name */)
+      {
+        l = applyPartially(res, outer, expectedType);
+      }
+    return l;
+  }
+
+
+  /**
+   * Check if partial application would change the name of the called feature
+   * for this call.
+   *
+   * @param expectedType the expected function type
+   *
+   * @return the new name or null in case the name stays unchanged.
+   */
+  String newNameForPartial(AbstractType expectedType)
+  {
     var name = _name;
     String result = null;
-    if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX) && (n == 1))
-      { // -v ==> x->x-v
-        result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
-      }
-    else if (name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX) && (n == 1))
-      { // -v ==> x->x-v
-        result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
+    if (expectedType.arity() == 1)
+      {
+        if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
+          { // -v ==> x->x-v
+            result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
+          }
+        else if (name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX))
+          { // -v ==> x->x-v
+            result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
+          }
       }
     return result;
   }
@@ -927,11 +979,12 @@ public class Call extends AbstractCall
                 _actualsNew.add(new Actual(c));
               }
           }
-        var nn = newNameForPartial(res, outer, t);
+        var nn = newNameForPartial(t);
         if (nn != null)
           {
             _name = nn;
             _calledFeature = null;
+            _pendingError = null;
           }
         var fn = new Function(pos(),
                               pns,
@@ -1900,46 +1953,8 @@ public class Call extends AbstractCall
             var t = frml.resultTypeIfPresent(res, NO_GENERICS);
             if (t.isFunctionType())
               {
-                // var actual = resolveTypeForNextActual(null, aargs, res, outer);
-                // var actualType = typeFromActual(actual, outer);
                 var a = resultExpression(actual);
-                Expr l = a;
-                if (a instanceof Call ac)
-                  {
-                    if (ac._calledFeature != null)
-                      {
-                        res.resolveTypes(ac._calledFeature);
-                        var rt = ac._calledFeature.resultTypeIfPresent(res);
-                        if (rt != null && !(rt.isAnyFunctionType() && rt.arity() == t.arity()) && !rt.isGenericArgument())
-                          {
-                            l = ac.applyPartially(res, outer, t);
-                          }
-                        else
-                          { // NYI: check that partial application does not lead to ambiguity
-                          }
-                      }
-                    else if (ac._pendingError != null                    || /* nothing found */
-                             ac.newNameForPartial(res, outer, t) != null    /* not checked yet */)
-                      {
-                        l = ac.applyPartially(res, outer, t);
-                      }
-                  }
-                else if (a instanceof NumLiteral n &&
-                         n.explicitSign() != null &&
-                         t.arity() == 1)
-                  { // convert `map -1` into `map x->x-1`
-                    List<ParsedName> pns = new List<>();
-                    pns.add(Partial.argName(pos()));
-                    var fn = new Function(pos(),
-                                          pns,
-                                          new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
-                                                         new ParsedName(n.signPos(),
-                                                                        FuzionConstants.INFIX_OPERATOR_PREFIX +
-                                                                        n.explicitSign()),                        // `infix +` or `infix -`
-                                                         new List<>(new Actual(n.stripSign()))));                 // constant w/o sign
-                    fn.resolveTypes(res, outer);
-                    l = fn;
-                  }
+                Expr l = a.propagateExpectedTypeForPartial(res, outer, t);
                 if (l != a)
                   {
                     _actuals = _actuals.setOrClone(vai, l);
@@ -2528,6 +2543,38 @@ public class Call extends AbstractCall
 
 
   /**
+   * During type inference: Inform this expression that it is used in an
+   * environment that expects the given type.  In particular, if this
+   * expression's result is assigned to a field, this will be called with the
+   * type of the field.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   *
+   * @return either this or a new Expr that replaces thiz and produces the
+   * result. In particular, if the result is assigned to a temporary field, this
+   * will be replaced by the expression that reads the field.
+   */
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    Expr r = this;
+    if (t.isFunctionType() && (_type == null || !_type.isAnyFunctionType()))
+      {
+        r = propagateExpectedTypeForPartial(res, outer, t);
+        if (r != this)
+          {
+            r.propagateExpectedType(res, outer, t);
+          }
+      }
+    return r;
+  }
+
+
+  /**
    * During type inference: Wrap expressions that are assigned to lazy actuals
    * in functions.
    *
@@ -2614,6 +2661,7 @@ public class Call extends AbstractCall
    */
   public void checkTypes(AbstractFeature outer)
   {
+    reportPendingError();
     check
       (_type != null);
     if (_type != Types.t_ERROR)
@@ -2709,14 +2757,10 @@ public class Call extends AbstractCall
    */
   Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
   {
-    // in case lookup of the called feature failed and this could not be fixed
-    // later by partial application, then report this error now:
-    reportPendingError();
-
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
-    if (!Errors.any() && !isInheritanceCall())
+    if (_pendingError == null && !Errors.any() && !isInheritanceCall())
       {
         // convert
         //   a && b into if a b     else false
