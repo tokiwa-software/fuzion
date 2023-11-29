@@ -32,7 +32,7 @@ import dev.flang.ast.Actual;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.ParsedCall;
+import dev.flang.ast.ParsedOperatorCall;
 import dev.flang.ast.ParsedName;
 
 import dev.flang.util.ANY;
@@ -195,28 +195,28 @@ public class OpExpr extends ANY
           }
         Operator op = op(max);
         if (isExpr(max-1) && isExpr(max+1))
-          {             // infix op:
+          { // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_OPERATOR_PREFIX + op._text), new List<>(new Actual(e2)));
+            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_OPERATOR_PREFIX + op._text), e2);
             els.remove(max+1);
             els.remove(max);
             els.set(max-1, e);
           }
         else if (isExpr(max+1))
-          {                       // prefix op:
+          { // prefix op:
             Expr e2 = expr(max+1);
             Expr e =
               (op._text.equals("+") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op._pos) :
               (op._text.equals("-") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op._pos) :
-              new ParsedCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text));
+              new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text));
             els.remove(max+1);
             els.set(max, e);
           }
         else
-          {                                          // postfix op:
+          { // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new ParsedCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text));
+            Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text));
             els.remove(max);
             els.set(max-1, e);
           }

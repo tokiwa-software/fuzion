@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test partial_application
+#
+# -----------------------------------------------------------------------
+
+# this test contains different cases of partial function application
+#
+partial_application_negative is
+
+  test(msg String, got Any, exp String) =>
+    if $got = exp
+      say "PASSED: $msg: got '$got'"
+    else
+      say "FAILED: $msg: got '$got' expected '$exp'"
+      _ := set_exit_code 1
+
+  data := 1..10
+
+  test "data.map 3.infix*  " (data.map    3.infix*) "[3,6,9,12,15,18,21,24,27,30]"
+  test "data.map 3.prefix*  " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.prefix-  " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
+
+  x1 := data.map *3
+  x2 := data.map 3*
+  # x3 := (data.map 3.infix*)   // NYI, should work!
+  x4 := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
+  x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
+  #  x3 := data.map 4.infix*   // NYI, should work!
+
+  ambig Unary String i32 => x->"#$x#"
+  ambig(x, y i32) String => "$x $y"
+
+  test(f i32->String) => f 32168
+
+  test ambig             // 6. should NYI flag an error: Ambiguous call to `ambig (3 arguments)` or `ambig (2 arguments)`
+  test (ambig 4711)
+  test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"

@@ -57,8 +57,6 @@ partial_application is
   test "data.map    2-     " (data.map    2-        ) "[1,0,-1,-2,-3,-4,-5,-6,-7,-8]"
   test "data.map    -2     " (data.map    -2        ) "[-1,0,1,2,3,4,5,6,7,8]"
   test "data.map 3.infix*  " (data.map    3.infix*  ) "[3,6,9,12,15,18,21,24,27,30]"
-  test "data.map 3.prefix* " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # NYI: this should not work!
-  test "data.map 3.postfix*" (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # NYI: this should not work!
   test "data.map 4.infix*  " (data.map    4.infix*  ) "[4,8,12,16,20,24,28,32,36,40]"
 
   i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)

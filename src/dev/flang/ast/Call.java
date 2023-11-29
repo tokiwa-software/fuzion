@@ -923,6 +923,16 @@ public class Call extends AbstractCall
 
 
   /**
+   * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
+   * or `t.g`?
+   */
+  boolean isOperatorCall()
+  {
+    return false;
+  }
+
+
+  /**
    * Check if partial application would change the name of the called feature
    * for this call.
    *
@@ -934,7 +944,7 @@ public class Call extends AbstractCall
   {
     var name = _name;
     String result = null;
-    if (expectedType.arity() == 1)
+    if (expectedType.arity() == 1 && isOperatorCall())
       {
         if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v
