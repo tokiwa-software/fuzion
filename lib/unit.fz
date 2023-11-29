@@ -98,6 +98,6 @@ public unit is
   #
   # Since there is exactly one value of type unit, the operation, the equality
   # and the identity element of this monoid are canonically defined.
-  type.monoid : Monoid unit is
+  public type.monoid : Monoid unit is
     redef infix ∙ (a, b unit) unit is unit
     redef e unit is unit
