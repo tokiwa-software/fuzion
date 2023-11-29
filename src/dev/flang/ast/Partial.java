@@ -158,9 +158,14 @@ public class Partial extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
+    Expr result = this;
     t = t.functionTypeFromChoice();
     var type = propagateExpectedType2(res, outer, t, false);
-    return this;
+    if (_function != null)
+      {
+        result = _function.propagateExpectedType(res, outer, type);
+      }
+    return result;
   }
 
 
@@ -186,27 +191,27 @@ public class Partial extends ExprWithPos
   public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (t.isFunctionType() && t.arity() == 1)
+    if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
       {
         var a = argName(pos());
-        var op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
+        List<ParsedName> args = new List<>(a);
+        List<Actual> actuals = new List<>();
+        String op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
+        if (t.arity() == 2)
+          {
+            var b = argName(pos());
+            args.add(b);
+            actuals.add(new Actual(new ParsedCall(null, b)));
+            op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
+          }
         _function = new Function(pos(),
-                                 new List<>(a),
+                                 args,
                                  new ParsedCall(new ParsedCall(null, a),
                                                 new ParsedName(pos(), op),
-                                                new List<>()));
-        result = _function.propagateExpectedType2(res, outer, t, inferResultType);
+                                                actuals));
       }
-    else if (t.isFunctionType() && t.arity() == 2)
+    if (_function != null)
       {
-        var a = argName(pos());
-        var b = argName(pos());
-        var op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
-        _function = new Function(pos(),
-                                 new List<>(a, b),
-                                 new ParsedCall(new ParsedCall(null, a),
-                                                new ParsedName(pos(), op),
-                                                new List<>(new Actual(new ParsedCall(null, b)))));
         result = _function.propagateExpectedType2(res, outer, t, inferResultType);
       }
     return result;

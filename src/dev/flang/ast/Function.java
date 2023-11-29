@@ -196,7 +196,7 @@ public class Function extends ExprWithPos
    * inferred.
    *
    * @return if inferResultType, the result type inferred from this lambda or
-   * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
+   * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)

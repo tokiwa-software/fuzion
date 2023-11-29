@@ -116,7 +116,13 @@ partial_application is
   test "easy *t" (easy *t) "84"
   test "easy %t" (easy %t) "0"
 
-#  x Unary i32 i32 := 5 *
+#  x1 Unary i32 i32 := 5 *
+  x2 Unary i32 i32 := -
+  test "x2.call  42" (x2.call  42) "-42"
+  test "x2.call -12" (x2.call -12)  "12"
+  x3 Function i32 i32 i32 := -
+  test "x3.call  333  111" (x3.call  333  111)  "222"
+  test "x3.call -333 -111" (x3.call -333 -111) "-222"
 
   ambig Unary String i32 => x->"#$x#"
   ambig(x, y i32) String => "$x $y"
