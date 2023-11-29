@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Function extends ExprWithPos
+public class Function extends AbstractLambda
 {
 
 
@@ -147,7 +147,7 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    _type = propagateExpectedType2(res, outer, t.functionTypeFromChoice(), false);
+    _type = propagateExpectedTypeToLambda(res, outer, t.functionTypeFromChoice(), false);
     return this;
   }
 
@@ -199,7 +199,7 @@ public class Function extends ExprWithPos
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)

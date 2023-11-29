@@ -38,7 +38,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Partial extends ExprWithPos
+public class Partial extends AbstractLambda
 {
 
 
@@ -160,14 +160,13 @@ public class Partial extends ExprWithPos
   {
     Expr result = this;
     t = t.functionTypeFromChoice();
-    var type = propagateExpectedType2(res, outer, t, false);
+    var type = propagateExpectedTypeToLambda(res, outer, t, false);
     if (_function != null)
       {
         result = _function.propagateExpectedType(res, outer, type);
       }
     return result;
   }
-
 
 
   /**
@@ -188,7 +187,7 @@ public class Partial extends ExprWithPos
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -212,7 +211,7 @@ public class Partial extends ExprWithPos
       }
     if (_function != null)
       {
-        result = _function.propagateExpectedType2(res, outer, t, inferResultType);
+        result = _function.propagateExpectedTypeToLambda(res, outer, t, inferResultType);
       }
     return result;
   }

@@ -123,7 +123,7 @@ public class Call extends AbstractCall
               }
           }
       }
-    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateExpectedType2 performs gs.set
+    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateExpectedTypeToLambda performs gs.set
     return res;
   }
 
@@ -149,6 +149,15 @@ public class Call extends AbstractCall
    * loadCalledFeature() is called.
    */
   public AbstractFeature _calledFeature;
+
+
+  /**
+   * After an unsuccessful attempt was made to find the called feature, this
+   * will be set to a runnable that reports the corresponding error. The error
+   * output is delayed because partial application may later fix this once we
+   * know better what the expected target type is.
+   */
+  Runnable _pendingError = null;
 
 
   /**
@@ -844,14 +853,19 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || calledFeature() != Types.f_ERROR || targetVoid,
        Errors.any() || _target         != Expr.ERROR_VALUE,
-       //       calledFeature() != null,
-       true || _target         != null);
+       calledFeature() != null || _pendingError != null,
+       Errors.any() || _target         != null || _pendingError != null);
 
     return !targetVoid;
   }
 
-  Runnable _pendingError = null;
 
+  /**
+   * Check if there is a pending error from an unsseccessful attempt to find the
+   * called feature.  If so, report the corresponding error and set this call
+   * into an error state (with _calledFeature, _target, _actuals and _type set
+   * to suitable error values).
+   */
   void reportPendingError()
   {
     if (_pendingError != null)
@@ -990,9 +1004,9 @@ public class Call extends AbstractCall
                               pns,
                               this)
           {
-            public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+            public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
             {
-              var rs = super.propagateExpectedType2(res, outer, t, inferResultType);
+              var rs = super.propagateExpectedTypeToLambda(res, outer, t, inferResultType);
               updateTarget(res);
               return rs;
             }
@@ -1924,19 +1938,13 @@ public class Call extends AbstractCall
 
 
   /**
-   * TBW...
+   * Perform phase 1. of the calls to @see Expr.propagateExpectedTypeForPartial:
+   * while the actual type parameters may not be known yet for this call, try to
+   * create partial application lambdas for the actual arguments where needed.
    *
    * @param res the resolution instance.
    *
    * @param outer the root feature that contains this expression.
-   *
-   * @param checked boolean array for all cf.valuedArguments() that have been
-   * checked already.
-   *
-   * @param conflict set of generics that caused conflicts
-   *
-   * @param foundAt the position of the expressions from which actual generics
-   * were taken.
    */
   void propagateForPartial(Resolution res, AbstractFeature outer)
   {
@@ -2035,13 +2043,9 @@ public class Call extends AbstractCall
                         inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
                         checked[vai] = true;
                       }
-                    else if (resultExpression(actual) instanceof Function af)
+                    else if (resultExpression(actual) instanceof AbstractLambda al)
                       {
-                        checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
-                      }
-                    else if (resultExpression(actual) instanceof Partial ap)
-                      {
-                        checked[vai] = inferGenericLambdaResult(res, outer, t, ap, actual.pos(), conflict, foundAt);
+                        checked[vai] = inferGenericLambdaResult(res, outer, t, al, actual.pos(), conflict, foundAt);
                       }
                   }
               }
@@ -2245,7 +2249,7 @@ public class Call extends AbstractCall
    *
    * @param formalType the (possibly generic) formal type
    *
-   * @param actualType the actual type
+   * @param al the lambda-expression we try to get the result from
    *
    * @param pos source code position of the expression actualType was derived from
    *
@@ -2257,7 +2261,7 @@ public class Call extends AbstractCall
   private boolean inferGenericLambdaResult(Resolution res,
                                            AbstractFeature outer,
                                            AbstractType formalType,
-                                           Expr af,
+                                           AbstractLambda al,
                                            SourcePosition pos,
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
@@ -2274,7 +2278,7 @@ public class Call extends AbstractCall
             var at = actualArgType(res, formalType);
             if (!at.containsUndefined(true))
               {
-                var rt = af.propagateExpectedType2(res, outer, at, true);
+                var rt = al.propagateExpectedTypeToLambda(res, outer, at);
                 if (rt != null)
                   {
                     _generics = _generics.setOrClone(ri, rt);

@@ -1003,9 +1003,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
+   * isFunType checks if this is a function type used for lambda expressions,
+   * e.g., "(i32, i32) -> String".
    *
-   * @return true iff this is a fun type
+   * @return true iff this is a function type based on `Function` or `Unary`.
    */
   public boolean isFunctionType()
   {
@@ -1015,6 +1016,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (featureOfType() == Types.resolved.f_function ||
        featureOfType() == Types.resolved.f_Unary);
   }
+
+
+  /**
+   * Check if this any function type, i.e., inherits directly or indirectly from
+   * `Function`.
+   *
+   * @return true if this is a type based on a feature that is or inherits from `Function`.
+   */
   public boolean isAnyFunctionType()
   {
     return
