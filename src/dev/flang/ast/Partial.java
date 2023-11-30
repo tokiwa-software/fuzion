@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * Partial represents partially applied operators and related syntax sugar and
- * provides mathods for handling of partial evalution.
+ * provides methods for handling of partial evalution.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

@@ -153,7 +153,7 @@ public class Call extends AbstractCall
 
   /**
    * After an unsuccessful attempt was made to find the called feature, this
-   * will be set to a runnable that reports the corresponding error. The error
+   * will be set to a Runnable that reports the corresponding error. The error
    * output is delayed because partial application may later fix this once we
    * know better what the expected target type is.
    */
@@ -754,7 +754,7 @@ public class Call extends AbstractCall
 
         if (_name == Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
-            _calledFeature = Types.f_ERROR;
+            setToErrorState();
           }
       }
 
@@ -933,10 +933,6 @@ public class Call extends AbstractCall
           {
             l = applyPartially(res, outer, expectedType);
           }
-        else
-          {
-            checkPartialAmbiguity(res, outer, expectedType);
-          }
       }
     else if (_pendingError != null                   || /* nothing found */
              newNameForPartial(expectedType) != null    /* must search for a different name */)
@@ -1003,17 +999,17 @@ public class Call extends AbstractCall
    */
   String newNameForPartial(AbstractType expectedType)
   {
-    var name = _name;
     String result = null;
     if (expectedType.arity() == 1 && isOperatorCall())
       {
+        var name = _name;
         if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v
-            result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
+            result = FuzionConstants.INFIX_OPERATOR_PREFIX + name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
           }
         else if (name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v
-            result = FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
+            result = FuzionConstants.INFIX_OPERATOR_PREFIX + name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
       }
     return result;
@@ -1767,7 +1763,7 @@ public class Call extends AbstractCall
         if (_select >= sz)
           {
             AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-            _calledFeature = Types.f_ERROR;
+            setToErrorState();
             t = Types.t_ERROR;
           }
         else
@@ -2491,6 +2487,9 @@ public class Call extends AbstractCall
         result.resolveTypes(res, outer);
       }
 
+    if (CHECKS) check
+      (_calledFeature != null || _pendingError != null);
+
     if (_calledFeature == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
@@ -2585,7 +2584,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (true || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
+      (Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
     return _pendingError == null && result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call

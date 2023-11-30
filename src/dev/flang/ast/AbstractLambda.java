@@ -77,8 +77,8 @@ public abstract class AbstractLambda extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
-   * result type of a lambda or partially applied functin.
+   * Special version of propagateExpectedType(res, outer, t) that tries to infer
+   * the result type of a lambda or partially applied functin.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.

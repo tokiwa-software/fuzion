@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -993,7 +994,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the single choice type for which p holds, this if this is not a
    * choice or the number of matches is not 1.
    */
-  AbstractType findInChoice(java.util.function.Predicate<AbstractType> p)
+  AbstractType findInChoice(Predicate<AbstractType> p)
   {
     return choices()
       .filter(p)
@@ -1042,8 +1043,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType functionTypeFromChoice()
   {
-    // if expected type is choice, examine if there is exactly one
-    // function in choice generics
     return findInChoice(cg -> cg.isFunctionType());
   }
 
