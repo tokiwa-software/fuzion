@@ -31,7 +31,18 @@ Target feature: 'i32'
 In call: '3.postfix*'
 
 
---CURDIR--/partial_application_negative.fz:56:8: error 5: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:64:38: error 5: Could not find called feature
+  test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  # 9. should flag an error: dot-call partials require parentheses
+-------------------------------------^^^
+Feature not found: 'map' (no arguments)
+Target feature: 'has_interval.infix ..'
+In call: 'map'
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $FUZION/lib/has_interval.fz:122:12:
+    public map(B type, f Unary B has_interval.this)  => map_sequence f
+-----------^
+
+
+--CURDIR--/partial_application_negative.fz:56:8: error 6: Ambiguity between direct and partially applied call target
   test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
 -------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:49:3:
@@ -43,7 +54,7 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:57:9: error 6: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:57:9: error 7: Ambiguity between direct and partially applied call target
   test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
 --------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:50:3:
@@ -55,7 +66,7 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:58:9: error 7: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:58:9: error 8: Ambiguity between direct and partially applied call target
   test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
 --------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:51:3:
@@ -67,11 +78,11 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:39:46: error 8: Wrong number of actual arguments in call
+--CURDIR--/partial_application_negative.fz:39:46: error 9: Wrong number of actual arguments in call
   test "data.map 3.prefix-  " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
 ---------------------------------------------^^^^^^^
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'num.wrap_around.prefix -'
 Formal arguments: 
 
-8 errors.
+9 errors.
