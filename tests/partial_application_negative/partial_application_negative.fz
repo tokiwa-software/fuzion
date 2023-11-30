@@ -46,11 +46,15 @@ partial_application_negative is
   x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
   #  x3 := data.map 4.infix*   // NYI, should work!
 
-  ambig Unary String i32 => x->"#$x#"
-  ambig(x, y i32) String => "$x $y"
+  ambig        Unary String i32 => x->"#$x#"
+  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+  ambig(x,y i32)     String     => "$x $y"
+  ambig(x,y,z i32)   String     => "$x $y $z"
 
   test(f i32->String) => f 32168
 
-  test ambig             // 6. should NYI flag an error: Ambiguous call to `ambig (3 arguments)` or `ambig (2 arguments)`
-  test (ambig 4711)
+  test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
+  test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
+  test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
+
   test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"

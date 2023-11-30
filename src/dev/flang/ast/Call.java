@@ -186,6 +186,14 @@ public class Call extends AbstractCall
   public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
+  /**
+   * Flag that is set be resolveImmediateFunctionCall if a call `f()` is
+   * converted to `f.call` for nullary functions or lazy values.  This is needed
+   * to avoid a possible error for a potential partial application ambiguity.
+   */
+  boolean _wasImplicitImmediateCall = false;
+
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -872,11 +880,27 @@ public class Call extends AbstractCall
       {
         _pendingError.run();
         _pendingError = null;
-        _calledFeature = Types.f_ERROR;
-        _target = Expr.ERROR_VALUE;
-        _actuals = new List<>();
-        _type = Types.t_ERROR;
+        setToErrorState();
       }
+  }
+
+
+  /**
+   * After an error occured for this call, set the called feature, target and
+   * type all to correspdonding error values to avoid further error
+   * reporting. Also erase all actual arguments.
+   */
+  void setToErrorState()
+  {
+    if (PRECONDITIONS) require
+      (Errors.any());
+
+    _calledFeature = Types.f_ERROR;
+    _target = Expr.ERROR_VALUE;
+    _actuals = new List<>();
+    _actualsNew = new List<>();
+    _generics = new List<>();
+    _type = Types.t_ERROR;
   }
 
 
@@ -910,7 +934,8 @@ public class Call extends AbstractCall
             l = applyPartially(res, outer, expectedType);
           }
         else
-          { // NYI: check that partial application does not lead to ambiguity
+          {
+            checkPartialAmbiguity(res, outer, expectedType);
           }
       }
     else if (_pendingError != null                   || /* nothing found */
@@ -919,6 +944,42 @@ public class Call extends AbstractCall
         l = applyPartially(res, outer, expectedType);
       }
     return l;
+  }
+
+
+  /**
+   * check that partial application would not lead to to ambiguity. See
+   * tests/partial_application_negative for examples: In case a call can be made
+   * directly and partial application would find another possible target that
+   * would also be valid, we flag an error.
+   *
+   * This prevents the situation where a library API change that adds a new
+   * feature f' with fewer arguments than an existing feature f would result in
+   * code that used partial application in a call to f to suddenly call f'
+   * without notice.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    if (!_wasImplicitImmediateCall && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
+      {
+        var n = expectedType.arity() + _actuals.size();
+        var calledName = FeatureName.get(_name, n);
+        var targetFeature = targetFeature(res, outer);
+        var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
+        var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
+        if (fo != null && fo._feature != _calledFeature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
+            setToErrorState();
+          }
+      }
   }
 
 
@@ -1436,6 +1497,7 @@ public class Call extends AbstractCall
           .resolveTypes(res, outer);
         _actualsNew = NO_PARENTHESES;
         _actuals = Expr.NO_EXPRS;
+        _wasImplicitImmediateCall = true;
       }
     return result;
   }
@@ -2576,13 +2638,17 @@ public class Call extends AbstractCall
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     Expr r = this;
-    if (t.isFunctionType() && (_type == null || !_type.isAnyFunctionType()))
+    if (t.isFunctionType())
       {
-        r = propagateExpectedTypeForPartial(res, outer, t);
-        if (r != this)
-          {
-            r.propagateExpectedType(res, outer, t);
-          }
+        checkPartialAmbiguity(res, outer, t);
+        if (_type != Types.t_ERROR && (_type == null || !_type.isAnyFunctionType()))
+        {
+          r = propagateExpectedTypeForPartial(res, outer, t);
+          if (r != this)
+            {
+              r.propagateExpectedType(res, outer, t);
+            }
+        }
       }
     return r;
   }

@@ -1,0 +1,77 @@
+
+--CURDIR--/partial_application_negative.fz:45:20: error 1: Could not find called feature
+  x4 := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
+-------------------^^^^^^^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '3.prefix*'
+
+
+--CURDIR--/partial_application_negative.fz:46:20: error 2: Could not find called feature
+  x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
+-------------------^^^^^^^^
+Feature not found: 'postfix *' (no arguments)
+Target feature: 'i32'
+In call: '3.postfix*'
+
+
+--CURDIR--/partial_application_negative.fz:38:46: error 3: Could not find called feature
+  test "data.map 3.prefix*  " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
+---------------------------------------------^^^^^^^
+Feature not found: 'prefix *' (one argument)
+Target feature: 'i32'
+In call: '3.prefix*'
+
+
+--CURDIR--/partial_application_negative.fz:40:47: error 4: Could not find called feature
+  test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
+----------------------------------------------^^^^^^^^
+Feature not found: 'postfix *' (one argument)
+Target feature: 'i32'
+In call: '3.postfix*'
+
+
+--CURDIR--/partial_application_negative.fz:56:8: error 5: Ambiguity between direct and partially applied call target
+  test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
+-------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:49:3:
+  ambig        Unary String i32 => x->"#$x#"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:50:3:
+  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:57:9: error 6: Ambiguity between direct and partially applied call target
+  test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
+--------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:50:3:
+  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:51:3:
+  ambig(x,y i32)     String     => "$x $y"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:58:9: error 7: Ambiguity between direct and partially applied call target
+  test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
+--------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:51:3:
+  ambig(x,y i32)     String     => "$x $y"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:52:3:
+  ambig(x,y,z i32)   String     => "$x $y $z"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:39:46: error 8: Wrong number of actual arguments in call
+  test "data.map 3.prefix-  " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
+---------------------------------------------^^^^^^^
+Number of actual arguments is 1, while call expects no arguments.
+Called feature: 'num.wrap_around.prefix -'
+Formal arguments: 
+
+8 errors.

@@ -2058,6 +2058,21 @@ public class AstErrors extends ANY
       "To solve this, change the expression to return a bool.");
   }
 
+  public static void partialApplicationAmbiguity(SourcePosition pos,
+                                                 AbstractFeature directCall,
+                                                 AbstractFeature partialCall)
+  {
+    if (directCall != Types.f_ERROR && partialCall != Types.f_ERROR)
+      {
+        error(pos, "Ambiguity between direct and partially applied call target",
+              "This call can be resolved in two ways, either as a direct call to " + s(directCall) +
+              " declared at " + directCall.pos().show() +  "\n" +
+              "or by partially applying arguments to a call to " + s(partialCall) +
+              " declared at " + partialCall.pos().show() +  ".\n" +
+              "To solve this, rename one of the ambiguous features.");
+      }
+  }
+
 }
 
 /* end of file */
