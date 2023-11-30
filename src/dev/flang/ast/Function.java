@@ -147,7 +147,7 @@ public class Function extends AbstractLambda
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    _type = propagateExpectedTypeToLambda(res, outer, t.functionTypeFromChoice(), false);
+    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(), false);
     return this;
   }
 
@@ -199,7 +199,7 @@ public class Function extends AbstractLambda
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)

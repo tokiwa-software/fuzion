@@ -123,7 +123,7 @@ public class Call extends AbstractCall
               }
           }
       }
-    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateExpectedTypeToLambda performs gs.set
+    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
     return res;
   }
 
@@ -808,7 +808,7 @@ public class Call extends AbstractCall
         else if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
           { // give a more specific error when trying to call a choice feature
             AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-            _calledFeature = Types.f_ERROR;
+            setToErrorState();
           }
         else
           {
@@ -1075,9 +1075,9 @@ public class Call extends AbstractCall
                               pns,
                               this)
           {
-            public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+            public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
             {
-              var rs = super.propagateExpectedTypeToLambda(res, outer, t, inferResultType);
+              var rs = super.propagateTypeAndInferResult(res, outer, t, inferResultType);
               updateTarget(res);
               return rs;
             }
@@ -2350,7 +2350,7 @@ public class Call extends AbstractCall
             var at = actualArgType(res, formalType);
             if (!at.containsUndefined(true))
               {
-                var rt = al.propagateExpectedTypeToLambda(res, outer, at);
+                var rt = al.inferLambdaResultType(res, outer, at);
                 if (rt != null)
                   {
                     _generics = _generics.setOrClone(ri, rt);

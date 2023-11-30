@@ -56,22 +56,23 @@ public abstract class AbstractLambda extends ExprWithPos
 
 
   /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
-   * result type of a lambda or partially applied functin.
+   * Try to infer the result of a lambda or partially applied function from a
+   * partial expected type result type of a lambda.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param t the expected type, this might be a Function type with some type
+   * parameters, particularly the result type, still undefined.
    *
    * @return the result type inferred from this lambda or Types.t_UNDEFINED if
    * not result type available.
    */
-  public AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t)
+  public AbstractType inferLambdaResultType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    return propagateExpectedTypeToLambda(res, outer, t, true);
+    return propagateTypeAndInferResult(res, outer, t, true);
   }
 
 
@@ -93,7 +94,10 @@ public abstract class AbstractLambda extends ExprWithPos
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  protected abstract AbstractType propagateExpectedTypeToLambda(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType);
+  protected abstract AbstractType propagateTypeAndInferResult(Resolution res,
+                                                              AbstractFeature outer,
+                                                              AbstractType t,
+                                                              boolean inferResultType);
 
 }
 
