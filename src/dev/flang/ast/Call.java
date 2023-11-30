@@ -2584,7 +2584,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || result.typeForInferencing() != Types.t_ERROR);
+      (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
     return _pendingError == null && result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
       ? Call.ERROR // short circuit this call
