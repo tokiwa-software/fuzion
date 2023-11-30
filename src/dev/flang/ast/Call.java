@@ -967,7 +967,7 @@ public class Call extends AbstractCall
    */
   void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
-    if (!_wasImplicitImmediateCall && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
+    if (!_wasImplicitImmediateCall && _calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
       {
         var n = expectedType.arity() + _actuals.size();
         var calledName = FeatureName.get(_name, n);
