@@ -192,6 +192,17 @@ public class Call extends AbstractCall
    * to avoid a possible error for a potential partial application ambiguity.
    */
   boolean _wasImplicitImmediateCall = false;
+  int _originalArgCount;
+
+
+  /**
+   * A call that has been moved to a new instance of Call due to syntax sugar.
+   * In particular, a call "a < b" on the right hand side of a chained boolean
+   * call will be moved here while this will be replaced by a call to
+   * `bool.infix &&`.  Also, an implicit call like `f()` that is turned into
+   * `f.call`  will see the  new call moved to this.
+   */
+  Call _movedTo = null;
 
 
   /*-------------------------- constructors ---------------------------*/
@@ -612,14 +623,15 @@ public class Call extends AbstractCall
                                   thiz);
             Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
             Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-            Expr result = new Call(pos(), t2, _name, _actualsNew)
+            var movedTo = new Call(pos(), t2, _name, _actualsNew)
               {
                 boolean isChainedBoolRHS() { return true; }
               };
+            this._movedTo = movedTo;
             Expr as = new Assign(res, pos(), tmp, b, thiz);
             t1 = res.resolveType(t1    , thiz);
             as = res.resolveType(as    , thiz);
-            result = res.resolveType(result, thiz);
+            var result = res.resolveType(movedTo, thiz);
             cb._actuals.set(cb._actuals.size()-1,
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
@@ -901,6 +913,10 @@ public class Call extends AbstractCall
     _actualsNew = new List<>();
     _generics = new List<>();
     _type = Types.t_ERROR;
+    if (_movedTo != null)
+      {
+        _movedTo.setToErrorState();
+      }
   }
 
 
@@ -919,17 +935,21 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
+    if (PRECONDITIONS) require
+      (expectedType.isFunctionType());
+
     Expr l = this;
-    if (_calledFeature != null)
+    if (_calledFeature != null &&
+        partiallyApplicableAlternative(res, outer, expectedType) != null)
       {
         res.resolveTypes(_calledFeature);
         var rt = _calledFeature.resultTypeIfPresent(res);
-        if (rt != null && !(rt.isAnyFunctionType() && rt.arity() == expectedType.arity()) && !rt.isGenericArgument())
+        if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
           {
             l = applyPartially(res, outer, expectedType);
           }
@@ -940,6 +960,37 @@ public class Call extends AbstractCall
         l = applyPartially(res, outer, expectedType);
       }
     return l;
+  }
+
+
+  /**
+   * Try to find an alternative called feature by using partial application. If
+   * a suitable alternative is found, return it.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param expectedType the expected type.
+   */
+  FeatureAndOuter partiallyApplicableAlternative(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    if (PRECONDITIONS) require
+      (expectedType.isFunctionType());
+
+    FeatureAndOuter result = null;
+    if (_name != null)  // NYI: CLEANUP: _name is null for call to anonymous inner feature. Should better be the name of the called feature
+      {
+        var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
+        var targetFeature = targetFeature(res, outer);
+        var newName = newNameForPartial(expectedType);
+        var name = newName != null ? newName : _name;
+        var fos = res._module.lookup(targetFeature, name, this, _target == null, false);
+        var calledName = FeatureName.get(name, n);
+        result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.typeArguments().isEmpty() && ff.valueArguments().size() == n);
+      }
+    return result;
   }
 
 
@@ -963,14 +1014,12 @@ public class Call extends AbstractCall
    */
   void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
-    if (!_wasImplicitImmediateCall && _calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
+    if (_calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
       {
-        var n = expectedType.arity() + _actuals.size();
-        var calledName = FeatureName.get(_name, n);
-        var targetFeature = targetFeature(res, outer);
-        var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
-        var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
-        if (fo != null && fo._feature != _calledFeature)
+        var fo = partiallyApplicableAlternative(res, outer, expectedType);
+        if (fo != null &&
+            fo._feature != _calledFeature &&
+            newNameForPartial(expectedType) == null)
           {
             AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
             setToErrorState();
@@ -1451,14 +1500,14 @@ public class Call extends AbstractCall
    * Helper function called during resolveTypes to resolve syntactic sugar that
    * allows directly calling a function returned by a call.
    *
-   * If this is a normal call (e.g. "f.g") whose result is a function type,
-   * ("fun (int a,b) float"), and if g does not take any arguments, syntactic
-   * sugar allows an implicit call to Function/Routine.call, i.e., "f.g(3,5)" is
-   * a short form of "f.g.call(3,5)".
+   * If this is a normal call (e.g. `f.g`) whose result is a function type,
+   * (`(i32,i32) -> f64`), and if `g` does not take any arguments, syntactic
+   * sugar allows an implicit call to `Function.call`, i.e., `f.g 3 5` is
+   * a short form of `f.g.call 3 5`.
    *
-   * NYI: we could also permit "f.g(x,y)(3,5)" as a short form for
-   * "f.g(x,y).call(3,5)" in case g takes arguments.  But this might be too
-   * confusing and it would require a change in the grammar.
+   * NYI: we could also permit `(f.g x y) 3 5` as a short form for `(f.g x
+   * y).call 3 5` in case `g` takes arguments.  But this might be too confusing
+   * and it would require a change in the grammar.
    *
    * @param res the resolution instance.
    *
@@ -1485,15 +1534,27 @@ public class Call extends AbstractCall
                           null,
                           null)
           {
+            @Override
             Expr originalLazyValue()
             {
               return wasLazy ? Call.this : super.originalLazyValue();
             }
+            @Override
+            public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
+            {
+              if (expectedType.isFunctionType())
+                { // produce an error if the original call is ambiguous with partial application
+                  Call.this.checkPartialAmbiguity(res, outer, expectedType);
+                }
+              return super.propagateExpectedType(res, outer, expectedType);
+            }
           }
           .resolveTypes(res, outer);
+        _movedTo = result;
+        _wasImplicitImmediateCall = true;
+        _originalArgCount = _actuals.size();
         _actualsNew = NO_PARENTHESES;
         _actuals = Expr.NO_EXPRS;
-        _wasImplicitImmediateCall = true;
       }
     return result;
   }
@@ -2637,17 +2698,17 @@ public class Call extends AbstractCall
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     Expr r = this;
-    if (t.isFunctionType())
+    if (t.isFunctionType() && !_wasImplicitImmediateCall)
       {
         checkPartialAmbiguity(res, outer, t);
         if (_type != Types.t_ERROR && (_type == null || !_type.isAnyFunctionType()))
-        {
-          r = propagateExpectedTypeForPartial(res, outer, t);
-          if (r != this)
-            {
-              r.propagateExpectedType(res, outer, t);
-            }
-        }
+          {
+            r = propagateExpectedTypeForPartial(res, outer, t);
+            if (r != this)
+              {
+                r.propagateExpectedType(res, outer, t);
+              }
+          }
       }
     return r;
   }

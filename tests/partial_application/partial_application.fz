@@ -287,9 +287,14 @@ partial_application is
 
   test(f i32->String) => f 32168
 
-  test ambig
-#  test (ambig 4711)     # should cause an error
+  test "test     ambig        " (test     ambig        ) "#32168#"
   test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"
+  test ambig
+  test x->(ambig 4711 x)
+  am1 := test     ambig
+  am2 := test x->(ambig 64 x)
+  test "test am1              " am1                      "#32168#"
+  test "test am2              " am2                      "64 32168"
 
   without_tp =>
 

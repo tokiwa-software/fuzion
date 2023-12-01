@@ -34,9 +34,13 @@ partial_application_negative is
 
   data := 1..10
 
-  test "data.map 3.infix*  " (data.map    3.infix*) "[3,6,9,12,15,18,21,24,27,30]"
-  test "data.map 3.prefix*  " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
-  test "data.map 3.prefix-  " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
+  test "data.map 3*          " (data.map    3*) "[3,6,9,12,15,18,21,24,27,30]"    // ok
+  test "data.map *3          " (data.map    *3) "[3,6,9,12,15,18,21,24,27,30]"    // ok
+  test "data.map -3          " (data.map    -3) "[3,6,9,12,15,18,21,24,27,30]"    // ok
+
+  test "data.map 3.infix*    " (data.map    3.infix*) "[3,6,9,12,15,18,21,24,27,30]"
+  test "data.map 3.prefix*   " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
 
   x1 := data.map *3
@@ -59,6 +63,15 @@ partial_application_negative is
 
   test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"
 
+  ambig2 Unary String i32 => x->"#$x#"
+  ambig2(x, y i32) String => "$x $y"
+
+  test2(f i32->String) => f 32168
+
+  a1 i32->String := ambig2          // ok
+  a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
+  test2             ambig2          // ok
+  test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
 
   test "data.map (.as_string)" (data.map (.as_string)) "[1,2,3,4,5,6,7,8,9,10]"
-  test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  # 9. should flag an error: dot-call partials require parentheses
+  test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  // 11. should flag an error: dot-call partials require parentheses
