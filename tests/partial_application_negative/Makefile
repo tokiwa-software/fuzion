@@ -35,22 +35,25 @@ all: jvm int c
 
 jvm:
 	NAME=partial_application_negative make -f ../negative.mk jvm
-	NAME=partial_application_negative make -f ../simple.mk jvm
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk jvm
 c:
 	NAME=partial_application_negative make -f ../negative.mk c
-	NAME=partial_application_negative make -f ../simple.mk c
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk c
 int:
 	NAME=partial_application_negative make -f ../negative.mk int
-	NAME=partial_application_negative make -f ../simple.mk int
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk int
+
+show:
+	NAME=partial_application_negative make -f ../negative.mk show
 
 record:
-	NAME=partial_application_negative make -f ../simple.mk record
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record
 
 record_jvm:
-	NAME=partial_application_negative make -f ../simple.mk record_jvm
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_jvm
 
 record_c:
-	NAME=partial_application_negative make -f ../simple.mk record_c
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_c
 
 record_int:
-	NAME=partial_application_negative make -f ../simple.mk record_int
+	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_int
