@@ -1785,21 +1785,27 @@ public class AstErrors extends ANY
 
   static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
   {
-    error(pos,
-          msg,
-          "Incompatible result types in different branches:\n" +
-          typesMsg("block returns", "blocks return", types, positions));
+    if (!any() || types.stream().noneMatch(p -> p == Types.t_ERROR))
+      {
+        error(pos,
+              msg,
+              "Incompatible result types in different branches:\n" +
+              typesMsg("block returns", "blocks return", types, positions));
+      }
   }
 
   static void incompatibleTypesOfActualArguments(AbstractFeature formalArg,
                                                  List<AbstractType> types,
                                                  Map<AbstractType, List<SourcePosition>> positions)
   {
-    error(formalArg.pos(),
-          "Type inference from actual arguments failed due to incompatible types of actual arguments",
-          "For the formal argument " + s(formalArg) + " " +
-          "the following incompatible actual arguments where found for type inference:\n" +
-          typesMsg("actual is", "actuals are", types, positions));
+    if (!any() || types.stream().noneMatch(p -> p == Types.t_ERROR))
+      {
+        error(formalArg.pos(),
+              "Type inference from actual arguments failed due to incompatible types of actual arguments",
+              "For the formal argument " + s(formalArg) + " " +
+              "the following incompatible actual arguments where found for type inference:\n" +
+              typesMsg("actual is", "actuals are", types, positions));
+      }
   }
 
   static void noActualCallFound(AbstractFeature formalArg)
