@@ -35,6 +35,7 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -687,9 +688,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   public String toStringWrapped()
   {
-    return toString().contains(" ")
-           ? "(" + toString() + ")"
-           : toString();
+    return StringHelpers.wrapInParentheses(toString());
   }
 
 
