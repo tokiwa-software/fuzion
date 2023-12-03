@@ -59,6 +59,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
 
@@ -1382,10 +1383,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public String toStringWrapped()
   {
-    var s = toString();
-    return s.contains(" ")
-           ? "(" + s + ")"
-           : s;
+    return StringHelpers.wrapInParentheses(toString());
   }
 
 
