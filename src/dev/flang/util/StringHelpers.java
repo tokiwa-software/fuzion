@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source code of class ANY
+ * Source code of class StringHelpers
  *
  *---------------------------------------------------------------------*/
 
