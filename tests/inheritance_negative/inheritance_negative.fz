@@ -25,7 +25,7 @@
 
 inheritance_negative is
 
-  // this is forbidded since the second u in strm2.u.u is a value type with the same value type as outer type
+  // this is forbidden since the second u in strm2.u.u is a value type with the same value type as outer type
   strm2.u.print
   strm2.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm2 ref is

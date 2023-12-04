@@ -114,6 +114,15 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is visiblity explicitly specified in source code (or already set)?
+   */
+  public boolean isVisibilitySpecified()
+  {
+    return _visibility != Visi.UNSPECIFIED;
+  }
+
+
+  /**
    * This is used for feature defined using `choice of`
    * to set same visibility for choice elements as for choice in Parser.
    *
@@ -122,7 +131,7 @@ public class Feature extends AbstractFeature
   public void setVisbility(Visi v)
   {
     if (PRECONDITIONS) require
-      (state() == State.LOADING);
+      (_visibility == Visi.UNSPECIFIED);
 
     _visibility = v;
   }
@@ -751,7 +760,8 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
+      !isFreeType() || _outer.arguments().contains(this));
 
     return _outer;
   }
@@ -1194,10 +1204,6 @@ public class Feature extends AbstractFeature
       (_detectedCyclicInheritance || _state.atLeast(State.RESOLVED_INHERITANCE));
   }
 
-  static FeatureVisitor findGenerics = new FeatureVisitor()
-    {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.findGenerics(outer); }
-    };
 
   /*
    * Declaration resolution for a feature f: For all declarations of features in
@@ -1232,7 +1238,8 @@ public class Feature extends AbstractFeature
              * Find all the types used in this that refer to formal generic arguments of
              * this or any of this' outer classes.
              */
-            visit(findGenerics);
+            resolveArgumentTypes(res);
+            visit(res.resolveTypesOnly);
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1244,7 +1251,7 @@ public class Feature extends AbstractFeature
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_DECLARATIONS));
+      (_state.atLeast(State.RESOLVING_DECLARATIONS));
   }
 
 
@@ -1327,7 +1334,7 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_TYPES;
 
         resolveArgumentTypes(res);
-        visit(new ResolveTypes(res));
+        visit(res.resolveTypesFully);
 
         if (hasThisType())
           {
@@ -1337,7 +1344,7 @@ public class Feature extends AbstractFeature
 
         if (_impl._kind == Impl.Kind.FieldActual)
           {
-            _impl.visitInitialValues(new ResolveTypes(res));
+            _impl.visitInitialValues(res.resolveTypesFully);
           }
 
         _state = State.RESOLVED_TYPES;
@@ -1720,7 +1727,7 @@ public class Feature extends AbstractFeature
             // phase
             public boolean visitActualsLate() { return true; }
             public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Call  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
           });
 
         if (isConstructor())
@@ -1802,11 +1809,16 @@ public class Feature extends AbstractFeature
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
+
+            /* if an error is reported in a call it might no longer make sense to check the actuals: */
+            public boolean visitActualsLate() { return true; }
+
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
             public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
+            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
           });
         checkTypes(res);
 
@@ -2184,11 +2196,18 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
+    // A call to generics() has the side effects of setting _generics,
+    // _arguments and _typeArguments
+    var unused = generics();
+
+    // Now we patch the new type parameter ta into _arguments, _typeArguments
+    // and _generics:
     var a = _arguments;
-    _arguments = new List<>();
-    _arguments.addAll(a);
-    _arguments.add(_typeArguments.size(), ta);
-    _typeArguments.add(ta);
+    _arguments = new List<>(a);
+    var tas = typeArguments();
+    _arguments.add(tas.size(), ta);
+    tas.add(ta);
+
     // NYI: For now, we keep the original FeatureName since changing it would
     // require updating res._module.declaredFeatures /
     // declaredOrInheritedFeatures. This means free types do not increase the
@@ -2200,9 +2219,11 @@ public class Feature extends AbstractFeature
     //
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
-    var g = new Generic(ta);
+
+    var g = ta.generic();
     _generics = _generics.addTypeParameter(g);
-    res.resolveTypes(ta);
+    res._module.addTypeParameter(this, ta);
+    this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return g;
   }
@@ -2322,7 +2343,7 @@ public class Feature extends AbstractFeature
   @Override
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    AbstractType result = Types.resolved.t_void;
+    AbstractType result = Types.resolved == null ? null : Types.resolved.t_void;
     if (result != null && !_resultTypeIfPresentRecursion)
       {
         _resultTypeIfPresentRecursion = impl()._kind == Impl.Kind.FieldActual;
@@ -2331,11 +2352,7 @@ public class Feature extends AbstractFeature
             res.resolveTypes(this);
           }
         result = resultTypeIfPresent(res);
-        if (result instanceof UnresolvedType rt)
-          {
-            // NYI try to remove this visitation with findGenerics, see PR: #2210
-            result = rt.visit(Feature.findGenerics,outer());
-          }
+        result = result == null ? null : result.resolve(res, outer());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
       }
@@ -2502,7 +2519,7 @@ public class Feature extends AbstractFeature
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state == State.FINDING_DECLARATIONS);
+      (_state.atLeast(State.FINDING_DECLARATIONS));
 
     if (hasOuterRef())
       {
@@ -2514,6 +2531,8 @@ public class Feature extends AbstractFeature
                                 outerRefType,
                                 outerRefName(),
                                 this);
+
+        whenResolvedTypes(()->_outerRef.scheduleForResolution(res));
       }
   }
 
@@ -2527,7 +2546,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || _state.atLeast(State.RESOLVED_DECLARATIONS));
+      (isUniverse() || _state.atLeast(State.RESOLVING_DECLARATIONS));
 
     Feature result = _outerRef;
 
@@ -2539,6 +2558,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Check if this is an outer ref field.
+   */
+  public boolean isOuterRef()
+  {
+    var o = outer();
+    return o != null && (o instanceof Feature of ? of._outerRef : o.outerRef()) == this;
+  }
+
+
+  /**
    * Compare this to other for sorting Feature
    */
   public int compareTo(AbstractFeature other)
@@ -2546,6 +2575,15 @@ public class Feature extends AbstractFeature
     return (other instanceof Feature of)
       ? _id - of._id
       : +1;
+  }
+
+
+  /**
+   * Is this the `call` implementation of a lambda?
+   */
+  public boolean isLambdaCall()
+  {
+    return false;
   }
 
 

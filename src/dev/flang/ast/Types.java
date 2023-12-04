@@ -111,7 +111,7 @@ public class Types extends ANY
   public static AbstractType t_UNDEFINED;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static AbstractType t_ERROR;
+  public static ResolvedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
   public static Feature f_ERROR = new Feature(true);
@@ -217,10 +217,10 @@ public class Types extends ANY
       f_TRUE          = universe.get(mod, "TRUE");
       f_FALSE         = universe.get(mod, "FALSE");
       f_bool          = universe.get(mod, "bool");
-      f_bool_NOT      = f_bool.get(mod, "prefix !");
-      f_bool_AND      = f_bool.get(mod, "infix &&");
-      f_bool_OR       = f_bool.get(mod, "infix ||");
-      f_bool_IMPLIES  = f_bool.get(mod, "infix :");
+      f_bool_NOT      = f_bool.get(mod, FuzionConstants.PREFIX_OPERATOR_PREFIX + "!");
+      f_bool_AND      = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
+      f_bool_OR       = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||");
+      f_bool_IMPLIES  = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":");
       f_debug         = universe.get(mod, "debug", 0);
       f_debug_level   = universe.get(mod, "debug_level");
       f_function      = universe.get(mod, FUNCTION_NAME);

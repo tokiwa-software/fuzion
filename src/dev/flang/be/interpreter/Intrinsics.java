@@ -646,12 +646,7 @@ public class Intrinsics extends ANY
         {
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
           var statique = in.equals("fuzion.java.get_static_field0");
-          var actualGenerics = innerClazz._type.generics();
-          if ((actualGenerics == null) || (actualGenerics.size() != 1))
-            {
-              Errors.fatal("fuzion.java.get_static_field called with wrong number of actual generic arguments");
-            }
-          Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
+          Clazz resultClazz = innerClazz.actualGenerics()[0];
           return args ->
             {
               Instance clazzOrThizI = (Instance) args.get(1);
@@ -669,8 +664,7 @@ public class Intrinsics extends ANY
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
           var virtual     = in.equals("fuzion.java.call_v0");
           var constructor = in.equals("fuzion.java.call_c0");
-          var actualGenerics = innerClazz._type.generics();
-          Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
+          Clazz resultClazz = innerClazz.actualGenerics()[0];
           return args ->
             {
               int a = 1;

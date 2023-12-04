@@ -35,7 +35,8 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-public fraction(B type : integer,
+public fraction(
+         public B type : integer,
          public numerator,
                 denominator B
         ) : numeric
@@ -81,12 +82,12 @@ is
 
   # identity element for 'infix +'
   #
-  module fixed type.zero => B.zero ⁄ B.one
+  public fixed type.zero => B.zero ⁄ B.one
 
 
   # identity element for 'infix *'
   #
-  module fixed type.one => B.one ⁄ B.one
+  public fixed type.one => B.one ⁄ B.one
 
 
   # equality

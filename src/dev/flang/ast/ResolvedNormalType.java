@@ -107,8 +107,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Constructor to create a type from an existing type after formal generics
-   * have been replaced in the generics arguments and in the outer type.
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    *
    * @param t the original type
    *
@@ -118,28 +117,19 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  private ResolvedNormalType(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
+  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
   {
-    this(t, g, ug, o, false);
-
     if (PRECONDITIONS) require
       ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
-  }
 
-  /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
-   */
-  public static ResolvedNormalType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
-  {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(t, g, ug, o));
+    return create(t, g, ug, o, false);
   }
 
 
   /**
-   * Constructor to create a type from an existing type after formal generics
-   * have been replaced in the generics arguments and in the outer type.
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    *
    * @param t the original type
    *
@@ -151,32 +141,19 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param fixOuterThisType NYI: CLEANUP: #737, see below, unclear why this is needed.
    */
-  private ResolvedNormalType(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
+  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
   {
-    this(g,
-         ug,
-         o,
-         t.featureOfType(),
-         refOrVal(t),
-         fixOuterThisType);
-
     if (PRECONDITIONS) require
       ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
-  }
 
-  /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
-   */
-  public static ResolvedNormalType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
-  {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(t, g, ug, o, fixOuterThisType));
+    return create(g, ug, o, t.featureOfType(), refOrVal(t), fixOuterThisType);
   }
 
 
   /**
-   * Constructor
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    *
    * @param g the actual generic arguments (resolved)
    *
@@ -189,22 +166,14 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param refOrVal
    */
-  private ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
+  public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
-    this(g, ug, o, f, refOrVal, true);
-  }
-
-  /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
-   */
-  public static ResolvedNormalType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
-  {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(g, ug, o, f, refOrVal));
+    return create(g, ug, o, f, refOrVal, true);
   }
 
 
   /**
-   * Constructor
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    *
    * @param g the actual generic arguments (resolved)
    *
@@ -215,17 +184,9 @@ public class ResolvedNormalType extends ResolvedType
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
    */
-  private ResolvedNormalType(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
+  public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
-    this(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
-  }
-
-  /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
-   */
-  public static ResolvedNormalType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
-  {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(g, ug, o, f));
+    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
   }
 
 
@@ -282,16 +243,25 @@ public class ResolvedNormalType extends ResolvedType
   }
 
   /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    */
-  public static ResolvedNormalType create(List<AbstractType> g,
-                                          List<AbstractType> ug,
-                                          AbstractType o,
-                                          AbstractFeature f,
-                                          RefOrVal refOrVal,
-                                          boolean fixOuterThisType)
+  public static ResolvedType create(List<AbstractType> g,
+                                    List<AbstractType> ug,
+                                    AbstractType o,
+                                    AbstractFeature f,
+                                    RefOrVal refOrVal,
+                                    boolean fixOuterThisType)
   {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType));
+    if (f == Types.f_ERROR ||
+        g.stream().anyMatch(x -> x == Types.t_ERROR))
+      {
+        return Types.t_ERROR;
+      }
+    else
+      {
+        return (ResolvedType) Types.intern
+          (new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType));
+      }
   }
 
 
@@ -312,10 +282,13 @@ public class ResolvedNormalType extends ResolvedType
     this._unresolvedGenerics = original._unresolvedGenerics;
     this._outer             = original._outer;
     this._feature           = original._feature;
+
+    if (POSTCONDITIONS) ensure
+      (featureOfType().generics().sizeMatches(generics()));
   }
 
   /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, RefOrVal refOrVal)
   {
@@ -357,7 +330,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
   /**
-   * instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType and return its unique instance.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
@@ -369,7 +342,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, true);
   }
 
 
@@ -579,65 +552,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * resolve this type
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param feat the outer feature this type is declared in, used
-   * for resolution of generic parameters etc.
-   */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
-  {
-    if (PRECONDITIONS) require
-      (outerfeat != null,
-       outerfeat != null && res.state(outerfeat).atLeast(State.RESOLVED_DECLARATIONS));
-
-    // NYI: cleanup: Basically, resolution should no longer be needed here, but
-    // be done on UnresolvedType. Need to check how we can move this to
-    // Unresolvedtype.
-    var result = resolveGenerics(declarationPos(), res, outerfeat);
-    result = Types.intern(result);
-    return result;
-  }
-
-
-  /**
-   * For a normal type, resolve the actual type parameters.
-   *
-   * @param pos source code position of the unresolved types whose generics we
-   * are resolving.
-   *
-   * @param res the resolution instance
-   *
-   * @param outerfeat the outer feature this type is declared in.
-   */
-  AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
-  {
-    AbstractType result = this;
-    if (isThisType() && _generics.isEmpty())
-      {
-        this._generics = _feature.generics().asActuals();
-        this._generics.freeze();
-      }
-    this._generics = FormalGenerics.resolve(res, _generics, outerfeat);
-    this._generics.freeze();
-    if (CHECKS) check
-      (Errors.any() || _feature != null);
-    if (result.containsError() ||
-        _feature != null &&
-        !_feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                           pos.pos(),
-                                                           "type",
-                                                           "Type: " + toString() + "\n"))
-      {
-        result = Types.t_ERROR;
-      }
-    return result;
-  }
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
@@ -711,13 +625,28 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType)Types.intern(
+    return (ResolvedNormalType) Types.intern(
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
         {
           return originalOuterFeature;
         }
+        ResolvedType _resolved = null;
+
+        /**
+         * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
+         */
+        AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+        {
+          if (_resolved == null)
+            {
+              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), _feature, _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+            }
+          return _resolved;
+        }
+
+
       });
   }
 

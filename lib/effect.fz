@@ -109,7 +109,7 @@ is
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
-private Effect_Call(redef R type, f () -> R) ref : Function unit is
+private Effect_Call(R type, f () -> R) ref : Function unit is
   res option R := nil
   call =>
     set res := f()

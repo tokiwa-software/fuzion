@@ -28,7 +28,7 @@
 # For unary functions, function composition is possible if the result type of
 # the first function matches the argument type of the second function.
 #
-public Unary(T, U type) ref : Function T U is
+public Unary(public T, U type) ref : Function T U is
 
 
   # function composition

@@ -42,9 +42,9 @@ public class Operator extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  public final SourceRange pos;
+  public final SourceRange _pos;
 
-  public final String text;
+  public final String _text;
 
   public final boolean _whiteSpaceBefore, _whiteSpaceAfter;
 
@@ -74,8 +74,8 @@ public class Operator extends ANY
       (pos != null,
        text != null);
 
-    this.pos = pos;
-    this.text = text;
+    this._pos = pos;
+    this._text = text;
     this._whiteSpaceBefore = whiteSpaceBefore;
     this._whiteSpaceAfter = whiteSpaceAfter;
   }
@@ -89,7 +89,7 @@ public class Operator extends ANY
    */
   public String toString()
   {
-    return "OP:"+text;
+    return "OP:" + _text;
   }
 
 }

@@ -58,6 +58,7 @@ import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.mir.MIR;
 import dev.flang.mir.MirModule;
 
@@ -128,6 +129,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String _main;
 
+
+  /**
+   * Resolution instance
+   */
   Resolution _res;
 
 
@@ -247,7 +252,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name) ->
                              {
-                               return lookupType(SourcePosition.builtIn, _universe, name, false)
+                               return lookupType(SourcePosition.builtIn, _universe, name, false, false)
                                 ._feature
                                 .selfType();
                              },
@@ -503,7 +508,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0)._feature
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0, false)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -559,7 +564,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.setOuter(outer);
     inner.setState(State.FINDING_DECLARATIONS);
     inner.checkName();
-    inner.addOuterRef(_res);
+
+    if (outer == null)
+      {
+        inner.addOuterRef(_res);
+      }
+    else
+      {
+        // fixes issue #1787
+        // We need to wait until `inner` has its final type parameters.
+        // This may include type parameters received via free types.
+        // (Creating outer ref uses `createThisType()` which calls `generics()`.)
+        outer.whenResolvedDeclarations(() -> {
+          inner.addOuterRef(_res);
+        });
+      }
 
     if (outer != null)
       {
@@ -637,6 +656,24 @@ public class SourceModule extends Module implements SrcModule, MirModule
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
+  public void addTypeParameter(AbstractFeature outer,
+                               Feature typeParameter)
+  {
+    var d = data(outer);
+    var fn = typeParameter.featureName();
+    if (d._declaredFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
+        d._declaredFeatures.put(fn, typeParameter);
+      }
+    if (d._declaredOrInheritedFeatures != null)
+      {
+        if (CHECKS) check
+          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
+        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+      }
+  }
 
 
   /**
@@ -647,7 +684,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * determined.
    *
    * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declare and declaredOrInherited.
+   * to declaredFeatures and declaredOrInherited.
    *
    * @param outer the outer feature
    *
@@ -736,7 +773,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         // Module.declaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = new TreeMap<>();
       }
-    findInheritedFeatures(d._declaredOrInheritedFeatures, outer);
+    findInheritedFeatures(d._declaredOrInheritedFeatures, outer, _dependsOn);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
   }
@@ -947,6 +984,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /*--------------------------  feature lookup  -------------------------*/
 
 
+  @Override
+  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
+  {
+    return this.declaredOrInheritedFeatures(outer, _dependsOn);
+  }
+
+
   /**
    * Find feature with given name in outer.
    *
@@ -978,7 +1022,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring or inheriting feature
    *
-   * @param name the name of the feature
+   * @param name the name of the feature, may starts with
+   * FuzionConstants.UNARY_OPERATOR_PREFIX, which means that both prefix and
+   * postfix variants should match.
    *
    * @param use the call, assign or destructure we are trying to resolve, used
    * to find field in scope, or null if fields should not be checked for scope
@@ -992,6 +1038,45 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
+    List<FeatureAndOuter> result;
+    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
+        var prefixName = FuzionConstants.PREFIX_OPERATOR_PREFIX + op;
+        var postfxName = FuzionConstants.POSTFIX_OPERATOR_PREFIX + op;
+        result = new List<>();
+        result.addAll(lookup0(outer, prefixName, use, traverseOuter, hidden));
+        result.addAll(lookup0(outer, postfxName, use, traverseOuter, hidden));
+      }
+    else
+      {
+        result = lookup0(outer, name, use, traverseOuter, hidden);
+      }
+    return result;
+  }
+
+
+  /**
+   * Find set of candidate features in an unqualified access (call or
+   * assignment).  If several features match the name but have different
+   * argument counts, return all of them.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param name the name of the feature
+   *
+   * @param use the call, assign or destructure we are trying to resolve, used
+   * to find field in scope, or null if fields should not be checked for scope
+   *
+   * @param traverseOuter true to collect all the features found in outer and
+   * outer's outer (i.e., use is unqualified), false to search in outer only
+   * (i.e., use is qualified with outer).
+   *
+   * @return in case we found features visible in the call's scope, the features
+   * together with the outer feature where they were found.
+   */
+  private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  {
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
 
@@ -1001,6 +1086,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var foundFieldInScope = false;
     do
       {
+        if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
+          {
+            _res.resolveDeclarations(curOuter);
+          }
         var foundFieldInThisScope = foundFieldInScope;
         var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
         if (fs.size() >= 1 && use != null && traverseOuter)
@@ -1082,35 +1171,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * (i.e., use is qualified with outer).
    *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
-   * FeatureAndOuter.ERROR in case of an error.
-   */
-  public FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter)
-  {
-    return lookupType(pos, outer, name, traverseOuter, false);
-  }
-
-
-  /**
-   * Lookup the feature that is referenced in a non-generic type.  There might
-   * be several features with the given name and different argument counts.
-   * Then, only the feature that is a constructor defines the type.
-   *
-   * If there are several such constructors, the type is ambiguous and an error
-   * will be produced.
-   *
-   * Also, if there is no such type, an error will be produced.
-   *
-   * @param pos the position of the type.
-   *
-   * @param outer the outer feature of the type
-   *
-   * @param name the name of the type
-   *
-   * @param traverseOuter true to collect all the features found in outer and
-   * outer's outer (i.e., use is unqualified), false to search in outer only
-   * (i.e., use is qualified with outer).
-   *
-   * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
    */
@@ -1135,8 +1195,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             var f = fo._feature;
             if (typeVisible(pos._sourceFile, f, true))
               {
-                if (f.definesType() ||
-                    f.isTypeParameter() && !f.isOpenTypeParameter())
+                if (f.definesType() || f.isTypeParameter())
                   {
                     type_fs.add(f);
                     result = fo;
@@ -1280,9 +1339,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public void checkTypes(Feature f)
   {
+    if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
+      {
+        f.setVisbility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
+      }
+
     f.impl().checkTypes(f);
     var args = f.arguments();
-    int ean = args.size();
     var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
@@ -1350,10 +1413,29 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
+    checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
+  }
+
+
+  private void checkRedefVisibility(Feature f)
+  {
+    if (!f.isTypeFeaturesThisType()
+    // Function.call is public while actual lambdas-impl are not.
+    // If lambda-impl were public then result-type and all arg-types
+    // would have to be public as well. Hence this exception.
+    && !f.isLambdaCall())
+    {
+      for (var redefined : f.redefines()) {
+        if (redefined.visibility().ordinal() > f.visibility().ordinal())
+          {
+            AstErrors.redefMoreRestrictiveVisibility(f, redefined);
+          }
+      }
+    }
   }
 
 
@@ -1413,7 +1495,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         if (!arg.isTypeFeaturesThisType())
           {
-            var s = arg.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+            var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
             if (!s.isEmpty())
               {
                 AstErrors.argTypeMoreRestrictiveVisbility(f, arg, s);
@@ -1430,12 +1512,35 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void checkResultTypeVisibility(Feature f)
   {
-    var s = f.resultType().moreRestrictiveVisibility(f.visibility().featureVisibility());
+    var s = f.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
     if (!s.isEmpty())
       {
         AstErrors.resultTypeMoreRestrictiveVisibility(f, s);
       }
   }
+
+
+  /**
+   * Returns the effective visibility of a feature.
+   *
+   * Example:
+   * A feature might be marked as public but one its
+   * outer features type visibility is private.
+   * Then the features effective visibility is also private.
+   */
+  private Visi effectiveFeatureVisibility(Feature f)
+  {
+    var result = f.visibility().featureVisibility();
+    var o = f.outer();
+    while (o != null)
+      {
+        var ov = o.visibility().typeVisibility();
+        result = ov.ordinal() < result.ordinal() ? ov : result;
+        o = o.outer();
+      }
+    return result;
+  }
+
 
 
   /*---------------------------  library file  --------------------------*/

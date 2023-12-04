@@ -100,7 +100,7 @@ public mutate : simple_effect is
   # 'mutate' effect in the current environment
   #
   public new (
-    T type,
+    public T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
     private mutable_value T
@@ -172,8 +172,9 @@ public mutate : simple_effect is
 
   # create a mutable array.
   #
-  module:public array (# element type
-         redef T type,
+  module:public array (
+         # element type
+         public T type,
 
          # length of the array to create
          public length i32,
@@ -307,7 +308,7 @@ public mut(T type, v T) => mut.new T v
 
 # an interface defining a mutable array
 #
-public Mutable_Array(redef T type) ref : Sequence T is
+public Mutable_Array(public T type) ref : Sequence T is
 
   # add an element at the end of the sequence
   public add(t T) unit is abstract

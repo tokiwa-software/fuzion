@@ -52,7 +52,8 @@ public array2(T type,
 # one-dimensional immutable arrays with an additional access function with
 # two index parameters.
 #
-private:public array2(redef T type,
+private:public array2(
+       public T type,
        public length0, length1 i32,
        redef internal_array fuzion.sys.internal_array T,
        _ unit,

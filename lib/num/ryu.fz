@@ -31,7 +31,7 @@
 #
 # NYI lacks documentation
 #
-public ryū(T type : float) is
+public ryū(public T type : float) is
 
   five := T.from_u32 5
 
@@ -1006,4 +1006,3 @@ public ryū(T type : float) is
 
     if is_negative then "-" else ""
       + (if scientific_notation then scientific else full)
-

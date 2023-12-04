@@ -101,7 +101,7 @@ generics_negative is
   r2r3a := r2 3 false
   r2r4a := r2 3 false 7          // 22. should flag an error, wrong number of arguments
 
-  opengenerics23 A B C is
+  opengenerics23(A, B, C type) is
     f(a A.i32) i32 is 3          // 23. should flag an error: generic used as outer type
     x A i32 := any               // 24. should flag an error: generic must not have generic args
 
@@ -128,7 +128,7 @@ generics_negative is
     x3 3 true 3                  // 36. should flag an error: wrong argument count
     x3 3                         // 37. should flag an error: wrong argument count
 
-    g A B C is
+    g(A, B, C type) is
     x4 g := any                  // 38. should flag an error: not enough generics
     x5 g i32 := any              // 39. should flag an error: not enough generics
     x6 g i32 i32 := any          // 40. should flag an error: not enough generics
@@ -154,10 +154,10 @@ generics_negative is
       B(V,W type, y U) is
         p is
           say "y is $y"
-    x0 (A i32 bool  ) := A i32 bool
-    x1 ((A i32 bool  ).B String bool) := (A i32 bool).B String bool true
-    x2 ((A i32 i32   ).B String bool) := (A i64 bool).B String bool true  // 45. should flag an error: incompatible types
-    x3 ((A i32 String).B String bool) := x1                               // 46. should flag an error: incompatible types
+    x0 A i32 bool   := A i32 bool
+    x1 (A i32 bool  ).B String bool := (A i32 bool).B String bool true
+    x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  // 45. should flag an error: incompatible types
+    x3 (A i32 String).B String bool := x1                               // 46. should flag an error: incompatible types
     x1.p
     x2.p
     x3.p
@@ -175,11 +175,37 @@ generics_negative is
     x.f 3 true 5
     x.f "String" false 7  // 47. should flag an error: incompatible argument #1
     x.f 4 3 7             // 48. should flag an error: incompatible argument #2
-    x.f 4 false "false"   // 49. should flag an error: incompatible argument #3
+    x.f 4 false "false"   // 49.a should flag an error: incompatible argument #3
     y F i32 bool i32 := x
     y.f 3 true 5
-    y.f "String" false 8  // 49. should flag an error: incompatible argument #1
+    y.f "String" false 8  // 49.b should flag an error: incompatible argument #1
     y.f 9 10 8            // 50. should flag an error: incompatible argument #2
     y.f 9 false "8"       // 51. should flag an error: incompatible argument #3
   opengenerics12
-  unit
+
+  ambiguousTypeParameterName =>
+    outer(X, Y, Z type) is
+      inner(X type, Y2 type, Z type)
+      is
+        x  := option X  nil      // 52. should flag an error: ambiguous type parameter
+        y  := option Y  nil
+        y2 := option Y2 nil
+        z  := option Z  nil      // 53. should flag an error: ambiguous type parameter
+
+  _ := ambiguousTypeParameterName
+
+  inheriting_type_parameter =>
+
+    parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
+
+    child : parent u8 23 is
+
+      f1(x      PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inherited type parameter
+      f2(x list PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inherited type parameter
+
+      g1      PARENT_TYPE_PARAMETER => v       // 54. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g2 list PARENT_TYPE_PARAMETER => v : g2  // 55. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g3 => option PARENT_TYPE_PARAMETER nil   // 56. should flag an error: PARENT_TYPE_PARAMETER not visible
+
+    _ :=  (child.f1 23)
+    _ :=  (child.f2 23:nil)

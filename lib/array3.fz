@@ -56,7 +56,8 @@ public array3(T type,
 # one-dimensional immutable arrays with an additional access function with
 # three index parameters.
 #
-private:public array3(redef T type,
+private:public array3(
+       public T type,
        public length0, length1, length2 i32,
        redef internal_array fuzion.sys.internal_array T,
        _ unit,

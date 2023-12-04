@@ -31,7 +31,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     LM type : mutate,
 
                     # type of data stored in this list
-                    redef T type,
+                    T type,
 
                     # the data stored in this element.
                     data T) ref : Linked_List T is

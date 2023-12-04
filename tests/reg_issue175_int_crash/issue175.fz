@@ -47,5 +47,5 @@
 issue175 is
   m(K,V type, k K, v V) ref is
     e tuple K V := (k,v)
-  om(redef K, V type, k1 K, v1 V) : m K V k1 v1 is
+  om(K, V type, k1 K, v1 V) : m K V k1 v1 is
   x m String i32 := om "one" 1

@@ -300,10 +300,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Obtain the effective name of this feature when actualGenerics are the
    * actual generics of its outer() feature.
    */
-  public FeatureName effectiveName(List<AbstractType> actualGenerics)
+  private FeatureName effectiveName(Resolution res, List<AbstractType> actualGenerics)
   {
     var result = featureName();
-    if (hasOpenGenericsArgList())
+    if (hasOpenGenericsArgList(res))
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
@@ -407,8 +407,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Check if this features argument list contains arguments of open generic
    * type. If this is the case, then the argCount of the feature name may change
    * when inherited.
+   *
+   * @return true iff arg list has open generic arg.
    */
   public boolean hasOpenGenericsArgList()
+  {
+    return hasOpenGenericsArgList(null);
+  }
+
+
+  /**
+   * Check if this features argument list contains arguments of open generic
+   * type. If this is the case, then the argCount of the feature name may change
+   * when inherited.
+   *
+   * @param res resolution used before type resolution is done to resolve
+   * argument types. May be null after type resolution.
+   *
+   * @return true iff arg list has open generic arg.
+   */
+  boolean hasOpenGenericsArgList(Resolution res)
   {
     boolean result = false;
     AbstractFeature o = this;
@@ -423,7 +441,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     AbstractType t;
                     if (a instanceof Feature af)
                       {
-                        af.visit(Feature.findGenerics);
+                        if (res != null)
+                          {
+                            af.visit(res.resolveTypesOnly);
+                          }
                         t = af.returnType().functionReturnType();
                       }
                     else
@@ -441,22 +462,45 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Find formal generic argument of this feature with given name.
+   * Get instance of Generic that corresponds to this type parameter.
+   *
+   * NYI: Since there is a 1-to-1 correspondent between type parameter features
+   * and Generic we could remove Generic completely.
    *
    * @param name the name of a formal generic argument.
    *
    * @return null if name is not the name of a formal generic argument
    * of this. Otherwise, a reference to the formal generic argument.
    */
-  public Generic getGeneric(String name)
+  public Generic generic()
   {
-    Generic result = generics().get(name);
+    if (PRECONDITIONS) require
+      (isTypeParameter());
 
-    if (POSTCONDITIONS) ensure
-      ((result == null) || (result.name().equals(name) && (result.feature() == this)));
-    // result == null ==> for all g in generics: !g.name.equals(name)
+    if (_generic == null)
+      {
+        _generic = new Generic(this);
+      }
+    return _generic;
+  }
 
-    return result;
+
+  /**
+   * Cached result of generic().
+   */
+  private Generic _generic;
+
+
+  /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  public AbstractType genericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return generic().type();
   }
 
 
@@ -610,7 +654,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         if (!first)
           {
-            tl.add(new Generic(ta).type());
+            tl.add(ta.genericType());
           }
         first = false;
       }
@@ -686,7 +730,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
                                       visibility().typeVisibility(),
-                                      inh.isEmpty() ? 0 : Consts.MODIFIER_REDEFINE,
+                                      0,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
@@ -723,6 +767,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private List<AbstractCall> typeFeatureInherits(Resolution res)
   {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_INHERITANCE));
+
     var inh = new List<AbstractCall>();
     for (var pc: inherits())
       {
@@ -883,7 +930,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.featureOfType() == this,
+       result.featureOfType().generics().sizeMatches(result.generics()));
 
     return result;
   }
@@ -1101,7 +1149,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * - explicit renaming during inheritance
    *
-   * @param module the main SrcModule if available (used for debugging only)
+   * @param res in case this is called during the front end phase, this is the
+   * resolution instance, null otherwise.
    *
    * @param f a feature that is declared in or inherited by this feature
    *
@@ -1109,20 +1158,19 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param p an inheritance call in heir inheriting from this
    *
-   * @param the heir that contains the inheritance call p
+   * @param heir the heir that contains the inheritance call p
    *
    * @return the new feature name as seen within heir.
    */
-  public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
+  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f || f.hasOpenGenericsArgList(),
-       this != heir);
+      (this != heir);
 
-    if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
+    if (f.outer() == p.calledFeature())
       {
         // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
-        fn = f.effectiveName(p.actualTypeParameters());
+        fn = f.effectiveName(res, p.actualTypeParameters());
       }
 
     return fn;
@@ -1161,33 +1209,51 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            for (AbstractCall c : heir.findInheritanceChain(outer()))
+            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+          }
+      }
+    return a;
+  }
+
+
+  /**
+   * Helper for handDown() to hand down an array of types along a given inheritance chain.
+   *
+   * @param res the resolution instance
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @param a the original array of types that is to be handed down
+   *
+   * @param heir the feature that inherits the types
+   *
+   * @return a new array of types as they are visible in heir. The length might
+   * be different due to open type parameters being replaced by a list of types.
+   */
+  static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  {
+    for (AbstractCall c : inh)
+      {
+        for (int i = 0; i < a.length; i++)
+          {
+            var ti = a[i];
+            if (ti.isOpenGeneric())
               {
-                for (int i = 0; i < a.length; i++)
+                var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
+                a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
+                for (var tg : frmlTs)
                   {
-                    var ti = a[i];
-                    if (ti.isOpenGeneric())
-                      {
-                        var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
-                        a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                        for (var tg : frmlTs)
-                          {
-                            a[i] = tg;
-                            i++;
-                          }
-                        i = i - 1;
-                      }
-                    else
-                      {
-                        var actualTypes = c.actualTypeParameters();
-                        if (res != null)
-                          {
-                            actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
-                          }
-                        ti = ti.applyTypePars(c.calledFeature(), actualTypes);
-                        a[i] = ti;
-                      }
+                    a[i] = tg;
+                    i++;
                   }
+                i = i - 1;
+              }
+            else
+              {
+                var actualTypes = c.actualTypeParameters();
+                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                ti = ti.applyTypePars(c.calledFeature(), actualTypes);
+                a[i] = ti;
               }
           }
       }
@@ -1212,7 +1278,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       res.state(heir).atLeast(State.CHECKING_TYPES1));
+       res == null || res.state(heir).atLeast(State.CHECKING_TYPES1));
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 
@@ -1224,7 +1290,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Find the chain of inheritance calls from this to its parent f.
+   * Find the chain of inheritance calls from this to its parent ancestor.
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result
@@ -1434,7 +1500,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isFixed()
   {
-    return (modifiers() & Consts.MODIFIER_FIXED) != 0;
+    return (modifiers() & Consts.MODIFIER_FIXED) != 0 || isTypeParameter();
   }
 
   /**
@@ -1601,7 +1667,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var l = new List<Generic>();
             for (var a0 : typeArguments())
               {
-                l.add(new Generic(a0));
+                l.add(a0.generic());
               }
             _generics = new FormalGenerics(l);
           }

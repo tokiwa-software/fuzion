@@ -1467,8 +1467,10 @@ callTail    : indexCallOpt dotCallOpt
 indexCallOpt: indexCall
             |
             ;
-dotCallOpt  : dot call
+dotCallOpt  : dotCall
             |
+            ;
+dotCall     : dot call
             ;
    */
   Call callTail(boolean skippedDot, Call target)
@@ -1564,22 +1566,11 @@ actualArgs  : actualsList
    */
   boolean endsActuals(boolean atMinIndent)
   {
-    return isOperator('.') || endsActuals(current(atMinIndent));
-  }
-
-
-  /**
-   * Does the given current token end a list of space separated actual arguments to a
-   * call.
-   *
-   * @param t the token
-   *
-   * @return true if t ends actual arguments
-   */
-  boolean endsActuals(Token t)
-  {
     return
-      switch (t)
+      // `.call` ends immediately
+      isOperator('.') ||
+
+      switch (current(atMinIndent))
       {
       case t_semicolon       ,
            t_comma           ,
@@ -1610,19 +1601,34 @@ actualArgs  : actualsList
            t_barLimit        ,
            t_eof             -> true;
 
-      // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
-      // xyz', i.e, stuck to the called function, we do not parse it as part
-      // of the args.
-      //
-      // ignoredTokenBefore(): An operator '-' like this 'f a b - xyz', so the
-      // arg list ends with 'b' and '-' will be parsed as an infix operator on
-      // 'f a b' and 'xyz'.
-      case t_op            -> !ignoredTokenBefore() || ignoredTokenAfter();
+      case t_op            ->
+        {
+          if (// !ignoredTokenBefore(): We have an operator '-' like this
+              // 'f-xyz', 'f- xyz', i.e, stuck to the called function, we do not
+              // parse it as part of the args.
+              !ignoredTokenBefore() ||
+
+              // ignoredTokenBefore() and ignoredTokenAfter(): An operator '-'
+              // like this 'f a b - xyz', so the arg list ends with 'b' and '-'
+              // will be parsed as an infix operator on 'f a b' and 'xyz'.
+              ignoredTokenAfter())
+            {
+              yield true;
+            }
+          else
+            { // ignoredTokenBefore() and !ignoredTokenAfter(): An operator '-'
+              // like this '(... f a b -)', so the arg list ends with 'b' and '-'
+              // will be parsed as an postfix operator on 'f a b' (see #2272).
+              var f = fork();
+              f.next();
+              yield f.endsActuals(atMinIndent);
+            }
+        }
 
       // No more actuals if we have a string continuation as in "value $x is
       // ok" for the string after '$x' or in "bla{f a b}blub" for the string
       // after 'f a b'.
-      default              -> isContinuedString(t);
+      default              -> isContinuedString(current(atMinIndent));
       };
   }
 
@@ -1725,7 +1731,7 @@ actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
   /**
    * An actual argument
    *
-actual   : expr | type
+actual   : operatorExpr | type
          ;
 
    */
@@ -1747,7 +1753,7 @@ actual   : expr | type
       {
         var f = fork();
         var t0 = f.type();
-        e = exprWithResult();
+        e = operatorExpr();
         // we might have an expr 'a.x+d(4)' while the type parsed is
         // just 'a.x', so eagerly take the expr in this case:
         t = f.tokenPos() == tokenPos() ? t0 : null;
@@ -1757,7 +1763,7 @@ actual   : expr | type
     else if (hasExpr)
       {
         t = null;
-        e = exprWithResult();
+        e = operatorExpr();
       }
     else
       {
@@ -1775,7 +1781,7 @@ actual   : expr | type
    * An expr that does not exceed a single line unless it is enclosed by { } or
    * ( ).
    *
-exprInLine  : exprWithResult   // within one line
+exprInLine  : operatorExpr   // within one line
             | bracketTerm      // stretching over one or several lines
             ;
    */
@@ -1814,7 +1820,7 @@ exprInLine  : exprWithResult   // within one line
         break;
       }
     sameLine(line);
-    result = exprWithResult();
+    result = operatorExpr();
     sameLine(oldLine);
     return result;
   }
@@ -1823,14 +1829,14 @@ exprInLine  : exprWithResult   // within one line
   /**
    * Parse
    *
-exprWithResult: opExpr
-              ( QUESTION expr  COLON expr
-              | QUESTION casesBars
-              |
-              )
-            ;
+operatorExpr  : opExpr
+                ( QUESTION expr  COLON expr
+                | QUESTION casesBars
+                |
+                )
+              ;
    */
-  Expr exprWithResult()
+  Expr operatorExpr()
   {
     Expr result = opExpr();
     SourcePosition pos = tokenSourcePos();
@@ -1847,12 +1853,12 @@ exprWithResult: opExpr
           {
             i.ok();
             var eac = endAtColon(true);
-            Expr f = exprWithResult();
+            Expr f = operatorExpr();
             endAtColon(eac);
             i.next();
             i.ok();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = exprWithResult();
+            Expr g = operatorExpr();
             i.end();
             result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
                                                                      new Actual(g)));
@@ -1865,20 +1871,44 @@ exprWithResult: opExpr
   /**
    * Parse opExpr
    *
-opExpr      : ( op
+opExpr      : dotCall
+            | ( op
               )*
               opTail
+            | op
             ;
    */
   Expr opExpr()
   {
-    OpExpr oe = new OpExpr();
-    while (current() == Token.t_op)
+     if (skipDot())
       {
-        oe.add(op());
+        return Partial.dotCall(tokenSourcePos(), a->call(a));
       }
-    oe.add(opTail());
-    return oe.toExpr();
+     else
+       {
+         var oe = new OpExpr();
+         Operator singleOperator = null;
+         if (current() == Token.t_op)
+           {
+             singleOperator = op();
+             oe.add(singleOperator);
+             while (current() == Token.t_op)
+               {
+                 singleOperator = null;
+                 oe.add(op());
+               }
+           }
+         if (singleOperator == null || isTermPrefix())
+           {
+             oe.add(opTail());
+             return oe.toExpr();
+           }
+         else
+           {
+             return new Partial(singleOperator._pos,
+                                singleOperator._text);
+           }
+       }
   }
 
 
@@ -1924,7 +1954,7 @@ klammer     : klammerExpr
 klammerExpr : LPAREN expr RPAREN
             ;
 tuple       : LPAREN RPAREN
-            | LPAREN expr (COMMA expr)+ RPAREN
+            | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
             ;
 klammerLambd: LPAREN argNamesOpt RPAREN lambda
             ;
@@ -1938,7 +1968,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(exprWithResult()));
+                             tupleElements.add(new Actual(operatorExpr()));
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -2003,19 +2033,16 @@ argNamesOpt : argNames
 
 
   /**
-   * Parse a simple lambda expression, i.e., one without parentheses around the
-   * arguments.
+   * Parse the right hand side of a lambda expression including the `->`.
    *
-lambda      : contract "->" block
+lambda      : "->" block
             ;
    */
   Expr lambda(List<ParsedName> n)
   {
     SourcePosition pos = tokenSourcePos();
-    var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
-    Contract   c = contract();
     matchOperator("->", "lambda");
-    return new Function(pos, n, i, c, block());
+    return new Function(pos, n, block());
   }
 
 
@@ -2024,17 +2051,10 @@ lambda      : contract "->" block
    * position of the parser.
    *
    * @return true iff the next token(s) start a plainLambda.
-   *
    */
   boolean isLambdaPrefix()
   {
-    var f = this;
-    if (isContractPrefix()) // fork only if really needed
-      {
-        f = fork();
-        f.contract();
-      }
-    return f.isOperator("->");
+    return isOperator("->");
   }
 
 
@@ -2072,13 +2092,13 @@ inlineArray : LBRACKET RBRACKET
             | LBRACKET cmaSepElmts RBRACKET
             | LBRACKET semiSepElmts RBRACKET
             ;
-cmaSepElmts : expr addCmaElmts
+cmaSepElmts : operatorExpr addCmaElmts
             ;
 addCmaElmts : COMMA cmaSepElmts
             | COMMA
             |
             ;
-semiSepElmts: expr addSemiElmts
+semiSepElmts: operatorExpr addSemiElmts
             ;
 addSemiElmts: SEMI semiSepElmts
             | SEMI
@@ -2091,7 +2111,7 @@ addSemiElmts: SEMI semiSepElmts
     var elements = new List<Expr>();
     bracketTermWithNLs(CROCHETS, "inlineArray",
                        () -> {
-                         elements.add(exprWithResult());
+                         elements.add(operatorExpr());
                          var sep = current();
                          var s = sep;
                          var p1 = tokenPos();
@@ -2100,7 +2120,7 @@ addSemiElmts: SEMI semiSepElmts
                            {
                              if (current() != Token.t_rcrochet)
                                {
-                                 elements.add(exprWithResult());
+                                 elements.add(operatorExpr());
                                }
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
@@ -2606,7 +2626,7 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse exprs
    *
-exprs      : exprWithResult semiOrFlatLF exprs (semiOrFlatLF | )
+exprs       : operatorExpr semiOrFlatLF exprs (semiOrFlatLF | )
             |
             ;
    */
@@ -2763,17 +2783,17 @@ exprs      : exprWithResult semiOrFlatLF exprs (semiOrFlatLF | )
 expr        : feature
             | assign
             | destructure
-            | exprInLine
             | checkexpr
+            | operatorExpr
             ;
    */
   Expr expr()
   {
     return
-      isCheckPrefix()       ? checkexpr()  :
+      isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
-      isFeaturePrefix()     ? feature()     : exprWithResult();
+      isFeaturePrefix()     ? feature()     : operatorExpr();
   }
 
 

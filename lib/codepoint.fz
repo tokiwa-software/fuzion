@@ -34,7 +34,7 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  module redef utf8 Sequence u8 is
+  public redef utf8 Sequence u8 is
     if      codepoint.type.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
     else if codepoint.type.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
@@ -61,39 +61,39 @@ is
 
   # range of values encoded in one byte
   #
-  module type.ascii => u32 0 .. 0x7f
+  public type.ascii => u32 0 .. 0x7f
 
   # 0 to 9
-  module type.ascii_digit => u32 0x30 .. 0x39
+  public type.ascii_digit => u32 0x30 .. 0x39
 
   # A to Z (uppercase only)
-  module type.A_to_Z => u32 0x41 .. 0x5A
+  public type.A_to_Z => u32 0x41 .. 0x5A
 
   # a to z (lowercase only)
-  module type.a_to_z => u32 0x61 .. 0x7A
+  public type.a_to_z => u32 0x61 .. 0x7A
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  module type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
+  public type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #
-  module type.utf8_encoded_in_one_byte => ascii
+  public type.utf8_encoded_in_one_byte => ascii
 
 
   # range of values encoded in two bytes
   #
-  module type.utf8_encoded_in_two_bytes => u32 0x80 .. 0x7ff
+  public type.utf8_encoded_in_two_bytes => u32 0x80 .. 0x7ff
 
 
   # range of values encoded in three bytes
   #
-  module type.utf8_encoded_in_three_bytes => u32 0x800 .. 0xffff
+  public type.utf8_encoded_in_three_bytes => u32 0x800 .. 0xffff
 
 
   # range of values encoded in four bytes
   #
-  module type.utf8_encoded_in_four_bytes => u32 0x10000 .. 0x10ffff
+  public type.utf8_encoded_in_four_bytes => u32 0x10000 .. 0x10ffff
 
 
   # range reserved for utf16 surrogate pairs
@@ -103,7 +103,7 @@ is
 
   # values guaranteed never to be a legal unicode character
   #
-  module type.not_a_character => u32 0xfffe .. 0xffff
+  public type.not_a_character => u32 0xfffe .. 0xffff
 
 
   # return the number of bytes of this utf-8 character

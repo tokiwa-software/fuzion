@@ -26,8 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 import java.math.BigInteger;
 
@@ -332,13 +334,66 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Create new constant by flipping the sign.
+   * Create new constant by adding the given sign to a NumLiteral that so far
+   * did not have a sign.
+   *
+   * @param sign the new sign
+   *
+   * @param signPos the source code position of the sign, must be directly
+   * before this NumLiterals position.
    */
-  public NumLiteral neg(SourcePosition pos)
+  public NumLiteral addSign(String sign, SourcePosition signPos)
   {
-    var o = _originalString;
-    var s = o.startsWith("-") ? o.substring(1) : "-" + o;
-    return new NumLiteral(pos, s, _base, _mantissa, _exponent2, _exponent5);
+    if (PRECONDITIONS) require
+      (sign.equals("+") || sign.equals("-"),
+       !_originalString.startsWith("+") && !_originalString.startsWith("-"));
+
+    var s = sign + _originalString;
+    var newPos = new SourceRange(signPos._sourceFile, signPos.bytePos(), pos().byteEndPos());
+    return new NumLiteral(newPos, s, _base, _mantissa, _exponent2, _exponent5);
+  }
+
+
+  /**
+   * Create new constant by removing the added sign.
+   *
+   * @return a NumLiteral equal to the original one `addSign` was called on.
+   */
+  public NumLiteral stripSign()
+  {
+    if (PRECONDITIONS) require
+      (explicitSign() != null);
+
+    var s = _originalString.substring(1);
+    var newPos = new SourceRange(pos()._sourceFile, pos().bytePos()+1, pos().byteEndPos());
+    return new NumLiteral(newPos, s, _base, _mantissa, _exponent2, _exponent5);
+  }
+
+
+  /**
+   * If this NumLiteral has an explicit sign as in `+127 or `-128`, return that
+   * sign as a String, return null otherwise.
+   *
+   * @return "+", "-", or null,
+   */
+  public String explicitSign()
+  {
+    return
+      _originalString.startsWith("+") ? "+" :
+      _originalString.startsWith("-") ? "-"
+                                     : null;
+  }
+
+
+  /**
+   * Get the source code position of the explicit sign.
+   */
+  public SourceRange signPos()
+  {
+    if (PRECONDITIONS) require
+      (explicitSign() != null);
+
+    return new SourceRange(pos()._sourceFile, pos().bytePos(), pos().bytePos()+1);
   }
 
 
@@ -700,6 +755,41 @@ public class NumLiteral extends Constant
 
 
   /**
+   * Perform partial application for a NumLiteral. In particular, this converts
+   * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
+   *
+   * @see Expr.propagateExpectedTypeForPartial for details.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  @Override
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    Expr result = this;
+    if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
+      { // convert `map -1` into `map x->x-1`
+        List<ParsedName> pns = new List<>();
+        pns.add(Partial.argName(pos()));
+        var fn = new Function(pos(),
+                              pns,
+                              new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
+                                             new ParsedName(signPos(),
+                                                            FuzionConstants.INFIX_OPERATOR_PREFIX +
+                                                            explicitSign()),                          // `infix +` or `infix -`
+                                             new List<>(new Actual(stripSign()))));                   // constant w/o sign
+        fn.resolveTypes(res, outer);
+        result = fn;
+      }
+    return result;
+  }
+
+
+  /**
    * During type inference: Inform this expression that it is used in an
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
@@ -718,20 +808,24 @@ public class NumLiteral extends Constant
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    // if expected type is choice, examine if there is exactly one
-    // array in choice generics, if so use this for further type propagation.
-    var choices = t.choices().filter(cg -> !cg.isGenericArgument() && findConstantType(cg) != null).collect(List.collector());
-    if (choices.size() == 1)
+    var result = propagateExpectedTypeForPartial(res, outer, t);
+    if (result != this)
       {
-        t = choices.getFirst();
+        result = result.propagateExpectedType(res, outer, t);
       }
-
-    if (_type == null && findConstantType(t) != null)
+    else
       {
-        _type = t;
-        checkRange();
+        // if expected type is choice, examine if there is exactly one numeric
+        // constant type in choice generics, if so use that for further type
+        // propagation.
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null);
+        if (_type == null && findConstantType(t) != null)
+          {
+            _type = t;
+            checkRange();
+          }
       }
-    return this;
+    return result;
   }
 
 

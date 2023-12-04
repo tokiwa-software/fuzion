@@ -34,7 +34,7 @@ public sign : choice num.plus num.minus, property.equatable is
 
   # equality: are these signs equal?
   #
-  module fixed type.equality(a, b num.sign) bool is
+  public fixed type.equality(a, b num.sign) bool is
     match a
       num.plus =>
         match b
@@ -45,7 +45,7 @@ public sign : choice num.plus num.minus, property.equatable is
           num.plus => false
           num.minus => true
 
-  module redef as_string String is
+  public redef as_string String is
     match sign.this
       num.plus => ""
       num.minus => "-"

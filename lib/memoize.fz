@@ -52,7 +52,7 @@
 #
 # NYI constraint for T should be property.orderable, has_hashcode, or has_ordinal
 #
-memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R is
+public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R is
   ref : Unary R T
 
     # the memory

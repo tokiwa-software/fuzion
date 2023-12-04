@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +39,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
 
@@ -90,38 +92,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Find all the types used in this that refer to formal generic arguments of
-   * this or any of this' outer classes.
-   *
-   * This is only needed for ast.Type, for fe.LibraryType
-   * this is a NOP.
-   *
-   * @param feat the root feature that contains this type.
-   *
-   * @return new type this was replaced with in case generics were found.
-   */
-  AbstractType findGenerics(AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
-   * resolve 'abc.this' within a type feature of `abc`.  This is only needed for
-   * ast.Type, for fe.LibraryType this is a NOP.
-   *
-   * @param feat the outer feature this type is declared in.
-   *
-   * @return new type in case this refers to 'abc.this', replaced by type
-   * parameter THIS#TYPE if in type feature.
-   */
-  AbstractType resolveThisType(AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
@@ -148,25 +118,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param outerfeat the outer feature this type is declared in.
    */
   AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
-   * For a Type that is not a generic argument, resolve the feature of that
-   * type.  Unlike Type.resolve(), this does not check the generic arguments, so
-   * this can be used for type inferencing for the actual generics as in a match
-   * case.
-   *
-   * This is only needed for ast.Type, for fe.LibraryType this is a NOP.
-   *
-   * @param feat the outer feature this type is declared in, used for resolution
-   * of generic parameters etc.
-   *
-   * @return new type this was replaced with in case generics were found.
-   */
-  AbstractType resolveFeature(Resolution res, AbstractFeature outerfeat)
   {
     return this;
   }
@@ -200,27 +151,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (checkedForGeneric());
 
     return isGenericArgument() && genericArgument().isOpen();
-  }
-
-
-  /**
-   * Check if this.isOpenGeneric(). If so, create a compile-time error.
-   *
-   * @return true iff !isOpenGeneric()
-   */
-  public boolean ensureNotOpen(HasSourcePosition pos)
-  {
-    boolean result = true;
-
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
-    if (isOpenGeneric())
-      {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos.pos(), genericArgument());
-        result = false;
-      }
-    return result;
   }
 
 
@@ -833,6 +763,129 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param target the target whose actuals type parameters should be applied to
+   * this.
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractType target, int select)
+  {
+    if (PRECONDITIONS) require
+      (target != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
+
+    var result = this;
+    if (dependsOnGenerics())
+      {
+        result = result.applyTypeParsLocally(target.featureOfType(), target.generics(), select);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       actualGenerics != null,
+       Errors.any() || !isOpenGeneric() || (select >= 0));
+
+    var result = this;
+    if (result.isGenericArgument())
+      {
+        Generic g = result.genericArgument();
+        if (g.formalGenerics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+          {
+            g = g.typeFeatureOrigin();
+          }
+        if (g.formalGenerics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+          {
+            if (g.isOpen())
+              {
+                var tl = g.replaceOpen(actualGenerics);
+                if (CHECKS) check
+                  (Errors.any() || select >= 0 && select <= tl.size());
+                if (select >= 0 && select <= tl.size())
+                  {
+                    result = tl.get(select);
+                  }
+                else
+                  {
+                    result = Types.t_ERROR;
+                  }
+              }
+            else
+              {
+                result = g.replace(actualGenerics);
+              }
+          }
+      }
+    else
+      {
+        var generics = result.generics();
+        var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
+          ? actualGenerics
+          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, -1));
+        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
+
+        /* types of type features require special handling since the type
+         * feature has one additional first type parameter --the underlying
+         * type: this_type--, and all other type parameters need to be converted
+         * to the actual type relative to that.
+         */
+        if (isTypeType())
+          {
+            var this_type = g2.get(0);
+            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
+                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
+                                                           : this_type.actualType(x));
+          }
+
+        if (g2 != result.generics() ||
+            o2 != result.outer()       )
+          {
+            var hasError = o2 == Types.t_ERROR;
+            for (var t : g2)
+              {
+                hasError = hasError || (t == Types.t_ERROR);
+              }
+            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -934,16 +987,117 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
+   * Check if this is a choice and exactly one variant of the choice matches the
+   * given predicate. If so, return that variant.
    *
-   * @return true iff this is a fun type
+   * @param p a predicate over AbstracType
+   *
+   * @return the single choice type for which p holds, this if this is not a
+   * choice or the number of matches is not 1.
    */
-  public boolean isFunType()
+  AbstractType findInChoice(Predicate<AbstractType> p)
+  {
+    return choices()
+      .filter(p)
+      .collect(Collectors.reducing((a, b) -> null))  // get single element or null if multiple
+      .orElse(this);
+  }
+
+
+  /**
+   * isFunType checks if this is a function type used for lambda expressions,
+   * e.g., "(i32, i32) -> String".
+   *
+   * @return true iff this is a function type based on `Function` or `Unary`.
+   */
+  public boolean isFunctionType()
+  {
+    return
+      this != Types.t_ERROR &&
+      !isGenericArgument() &&
+      (featureOfType() == Types.resolved.f_function ||
+       featureOfType() == Types.resolved.f_Unary);
+  }
+
+
+  /**
+   * Check if this any function type, i.e., inherits directly or indirectly from
+   * `Function`.
+   *
+   * @return true if this is a type based on a feature that is or inherits from `Function`.
+   */
+  public boolean isAnyFunctionType()
   {
     return
       !isGenericArgument() &&
       (featureOfType() == Types.resolved.f_function ||
-       featureOfType() == Types.resolved.f_Unary);
+       featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
+  }
+
+
+  /**
+   * If this is a choice type, extract function type that might be one of the
+   * choices.
+   *
+   * @return if this is a choice and there is exactly one choice for which
+   * isFuncitonType() holds, return that type, otherwise return this.
+   */
+  AbstractType functionTypeFromChoice()
+  {
+    return findInChoice(cg -> cg.isFunctionType());
+  }
+
+
+  /**
+   * For a function type (see isAnyFunctionType()), return the arity of the
+   * funcion.
+   *
+   * @return the number of arguments to be passed to this function type.
+   */
+  int arity()
+  {
+    if (PRECONDITIONS) require
+      (isAnyFunctionType());
+
+    var f = featureOfType();
+    if (f == Types.resolved.f_function)
+      {
+        return generics().size() - 1;
+      }
+    else
+      {
+        var result = arityFromParents(f);
+        if (result >= 0)
+          {
+            return result;
+          }
+        throw new Error("AbstractType.arity failed to find arity of " + this);
+      }
+  }
+
+
+  /**
+   * Recursive helper for `arity` to determine the arity by inspecting the
+   * parents of `f`.
+   *
+   * @param f a feature
+   *
+   * @return the arity in case f inherits from `Function`, -1 otherwise.
+   */
+  private int arityFromParents(AbstractFeature f)
+  {
+    for (var p : f.inherits())
+      {
+        var pf = p.calledFeature();
+        var result = pf.equals(Types.resolved.f_function)
+          ? p.actualTypeParameters().size() - 1
+          : arityFromParents(pf);
+        if (result >= 0)
+          {
+            return result;
+          }
+      }
+    return -1;
   }
 
 
@@ -955,6 +1109,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isLazyType()
   {
     return
+      this != Types.t_ERROR &&
       !isGenericArgument() &&
       featureOfType() == Types.resolved.f_Lazy;
   }
@@ -1132,7 +1287,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tt the type feature we are calling (`equatable.type` in the example)
    * above).
    */
-  private AbstractType replace_this_type_by_actual_outer(AbstractType tt)
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt)
   {
     return replace_this_type_by_actual_outer(tt, null);
   }
@@ -1325,7 +1480,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = new Generic(tc.calledFeature()).type();
+            result = tc.calledFeature().genericType();
           }
       }
     else
@@ -1598,10 +1753,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public String toStringWrapped()
   {
-    var s = toString();
-    return s.contains(" ")
-           ? "(" + s + ")"
-           : s;
+    return StringHelpers.wrapInParentheses(toString());
   }
 
 
@@ -1610,9 +1762,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public String asStringWrapped()
   {
-    var s = asString();
-    return s.contains(" ") ? "(" + s + ")"
-                           :       s      ;
+    return StringHelpers.wrapInParentheses(asString());
   }
 
 
